@@ -478,6 +478,7 @@ void CSSMathExpressionBinaryOperation::AccumulatePixelsAndPercent(
 }
 
 double CSSMathExpressionBinaryOperation::DoubleValue() const {
+  DCHECK(HasDoubleValue(ResolvedUnitType())) << CustomCSSText();
   return Evaluate(left_side_->DoubleValue(), right_side_->DoubleValue());
 }
 

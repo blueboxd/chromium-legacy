@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace now_playing {
@@ -56,8 +56,8 @@ class CONTENT_EXPORT NowPlayingInfoCenterNotifier
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
   // Used to receive updates to the active media controller.
-  mojo::Receiver<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_receiver_{this};
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NowPlayingInfoCenterNotifier);
 };

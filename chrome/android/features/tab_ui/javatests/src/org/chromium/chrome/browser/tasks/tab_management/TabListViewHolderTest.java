@@ -12,6 +12,7 @@ import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -179,6 +181,43 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertTrue(
                 mSelectableTabGridViewHolder.actionButton.getBackground().getLevel() == 0);
         Assert.assertTrue(mSelectableTabGridViewHolder.actionButton.getDrawable() == null);
+    }
+
+    @Test
+    @MediumTest
+    public void testAnimationRestored() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mGridModel.set(TabProperties.IS_SELECTED, true);
+            mGridModel.set(TabProperties.CARD_ANIMATION_STATUS,
+                    ClosableTabGridViewHolder.AnimationStatus.CARD_RESTORE);
+        });
+        CriteriaHelper.pollUiThread(
+                () -> !((ClosableTabGridViewHolder) mTabGridViewHolder).getIsAnimatingForTesting());
+        Drawable selectedTabRestoredBackground =
+                mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
+        Assert.assertNotNull(selectedTabRestoredBackground);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mGridModel.set(TabProperties.IS_SELECTED, false);
+            mGridModel.set(TabProperties.CARD_ANIMATION_STATUS,
+                    ClosableTabGridViewHolder.AnimationStatus.CARD_RESTORE);
+        });
+        CriteriaHelper.pollUiThread(
+                () -> !((ClosableTabGridViewHolder) mTabGridViewHolder).getIsAnimatingForTesting());
+        Drawable normalTabRestoredBackground =
+                mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
+        Assert.assertNotNull(normalTabRestoredBackground);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            // After restoring, the background should be the same because for post-M devices, the
+            // selected state is reflected through foreground and the background is always the same.
+            Assert.assertSame(selectedTabRestoredBackground, normalTabRestoredBackground);
+        } else {
+            // For pre-M devices, after restoring, the background should still reflect the selection
+            // status.
+            Assert.assertTrue(selectedTabRestoredBackground instanceof InsetDrawable);
+            Assert.assertNotSame(normalTabRestoredBackground, selectedTabRestoredBackground);
+        }
     }
 
     @Test

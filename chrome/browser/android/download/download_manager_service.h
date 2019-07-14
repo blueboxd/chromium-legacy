@@ -23,7 +23,7 @@
 
 using base::android::JavaParamRef;
 
-class Profile;
+class ProfileKey;
 
 namespace download {
 class DownloadItem;
@@ -178,10 +178,6 @@ class DownloadManagerService
   download::DownloadItem* GetDownload(const std::string& download_guid,
                                       bool is_off_the_record);
 
-  // Creates the InProgressDownloadmanager when running with ServiceManager
-  // only mode.
-  void CreateInProgressDownloadManager();
-
   // Helper method to record the interrupt reason UMA for the first background
   // download.
   void RecordFirstBackgroundInterruptReason(
@@ -234,7 +230,7 @@ class DownloadManagerService
   }
 
   // Helper method to reset the SimpleDownloadManagerCoordinator if needed.
-  void ResetCoordinatorIfNeeded(Profile* profile);
+  void ResetCoordinatorIfNeeded(ProfileKey* profile_key);
 
   // Helper method to reset the SimpleDownloadManagerCoordinator for a given
   // profile type.

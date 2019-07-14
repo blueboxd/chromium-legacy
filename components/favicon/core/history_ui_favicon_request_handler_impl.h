@@ -54,14 +54,14 @@ class HistoryUiFaviconRequestHandlerImpl
   void GetRawFaviconForPageURL(const GURL& page_url,
                                int desired_size_in_pixel,
                                favicon_base::FaviconRawBitmapCallback callback,
-                               FaviconRequestOrigin request_origin,
+                               HistoryUiFaviconRequestOrigin request_origin,
                                FaviconRequestPlatform request_platform,
                                const GURL& icon_url_for_uma,
                                base::CancelableTaskTracker* tracker) override;
 
   void GetFaviconImageForPageURL(const GURL& page_url,
                                  favicon_base::FaviconImageCallback callback,
-                                 FaviconRequestOrigin request_origin,
+                                 HistoryUiFaviconRequestOrigin request_origin,
                                  const GURL& icon_url_for_uma,
                                  base::CancelableTaskTracker* tracker) override;
 
@@ -76,7 +76,7 @@ class HistoryUiFaviconRequestHandlerImpl
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback response_callback,
-      FaviconRequestOrigin origin,
+      HistoryUiFaviconRequestOrigin origin,
       FaviconRequestPlatform platform,
       const GURL& icon_url_for_uma,
       bool can_query_google_server,
@@ -90,7 +90,7 @@ class HistoryUiFaviconRequestHandlerImpl
   void OnImageLocalDataAvailable(
       const GURL& page_url,
       favicon_base::FaviconImageCallback response_callback,
-      FaviconRequestOrigin origin,
+      HistoryUiFaviconRequestOrigin origin,
       const GURL& icon_url_for_uma,
       bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
@@ -105,7 +105,7 @@ class HistoryUiFaviconRequestHandlerImpl
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
       const GURL& icon_url_for_uma,
-      FaviconRequestOrigin origin);
+      HistoryUiFaviconRequestOrigin origin);
 
   // Called once the request to the favicon server has finished. If the request
   // succeeded, |local_lookup_callback| is called to effectively retrieve the
@@ -115,7 +115,7 @@ class HistoryUiFaviconRequestHandlerImpl
   void OnGoogleServerDataAvailable(
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
-      FaviconRequestOrigin origin,
+      HistoryUiFaviconRequestOrigin origin,
       const GURL& group_to_clear,
       favicon_base::GoogleFaviconServerRequestStatus status);
 

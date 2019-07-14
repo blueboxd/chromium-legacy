@@ -78,8 +78,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   media_session::mojom::MediaControllerPtr media_controller_ptr_;
 
   // Used to receive updates to the active media controller.
-  mojo::Receiver<media_session::mojom::MediaControllerObserver>
-      observer_receiver_{this};
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      observer_binding_{this};
 
   // Used to receive updates to the active media's icon.
   mojo::Receiver<media_session::mojom::MediaControllerImageObserver>

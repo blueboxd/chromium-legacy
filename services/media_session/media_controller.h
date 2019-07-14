@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -39,8 +38,7 @@ class MediaController : public mojom::MediaController,
   void Resume() override;
   void Stop() override;
   void ToggleSuspendResume() override;
-  void AddObserver(
-      mojo::PendingRemote<mojom::MediaControllerObserver> observer) override;
+  void AddObserver(mojom::MediaControllerObserverPtr observer) override;
   void PreviousTrack() override;
   void NextTrack() override;
   void Seek(base::TimeDelta seek_time) override;
@@ -99,7 +97,7 @@ class MediaController : public mojom::MediaController,
   AudioFocusRequest* session_ = nullptr;
 
   // Observers that are observing |this|.
-  mojo::RemoteSet<mojom::MediaControllerObserver> observers_;
+  mojo::InterfacePtrSet<mojom::MediaControllerObserver> observers_;
 
   // Binding for |this| to act as an observer to |session_|.
   mojo::Binding<mojom::MediaSessionObserver> session_binding_{this};

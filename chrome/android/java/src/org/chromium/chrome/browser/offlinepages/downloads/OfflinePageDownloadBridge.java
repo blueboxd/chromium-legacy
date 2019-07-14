@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.download.DownloadSharedPreferenceEntry;
 import org.chromium.chrome.browser.download.DownloadSharedPreferenceHelper;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -58,17 +57,13 @@ public class OfflinePageDownloadBridge {
      */
     public static OfflinePageDownloadBridge getInstance() {
         if (sInstance == null) {
-            sInstance = new OfflinePageDownloadBridge(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            sInstance = new OfflinePageDownloadBridge();
         }
         return sInstance;
     }
 
-    private OfflinePageDownloadBridge(Profile profile) {
-        // If |profile| is incognito profile, switch to the regular one since
-        // downloads are shared between them.
-        mNativeOfflinePageDownloadBridge =
-                sIsTesting ? 0L : nativeInit(profile.getOriginalProfile());
+    private OfflinePageDownloadBridge() {
+        mNativeOfflinePageDownloadBridge = sIsTesting ? 0L : nativeInit();
     }
 
     /** Destroys the native portion of the bridge. */
@@ -264,7 +259,7 @@ public class OfflinePageDownloadBridge {
         return null;
     }
 
-    private native long nativeInit(Profile profile);
+    private native long nativeInit();
     private native void nativeDestroy(long nativeOfflinePageDownloadBridge);
     private static native void nativeStartDownload(Tab tab, String origin);
 }

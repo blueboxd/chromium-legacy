@@ -215,9 +215,12 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
 
   bool IsZero() const;
 
-  // TODO(crbug.com/979895): Make sure this functions are called only when
-  // applicable: on a numeric literal, or on a calc() that can be resolved into
-  // a single value without extra context (e.g., CSSToLengthConversionData).
+  // TODO(crbug.com/979895): The semantics of these untyped getters are not very
+  // clear if |this| is a math function. Do not add new callers before further
+  // refactoring and cleanups.
+  // These getters can be called only when |this| is a numeric literal or a math
+  // expression can be resolved into a single numeric value *without any type
+  // conversion* (e.g., between px and em). Otherwise, it hits a DCHECK.
   double GetDoubleValue() const;
   float GetFloatValue() const { return GetValue<float>(); }
   int GetIntValue() const { return GetValue<int>(); }

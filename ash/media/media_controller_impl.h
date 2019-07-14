@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/account_id/account_id.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 class PrefRegistrySimple;
@@ -138,8 +138,8 @@ class ASH_EXPORT MediaControllerImpl
 
   service_manager::Connector* const connector_;
 
-  mojo::Receiver<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_receiver_{this};
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_{this};
 
   MediaClient* client_ = nullptr;
 

@@ -36,6 +36,7 @@ sync_protocol_bases = [
   "model_type_state",
   "model_type_store_schema_descriptor",
   "mountain_share_specifics",
+  "nigori_local_data",
   "nigori_specifics",
   "password_specifics",
   "persisted_entity_data",

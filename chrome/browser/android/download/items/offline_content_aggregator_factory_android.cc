@@ -5,6 +5,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "chrome/android/chrome_jni_headers/OfflineContentAggregatorFactory_jni.h"
+#include "chrome/browser/android/profile_key_util.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -15,14 +16,11 @@ using base::android::JavaParamRef;
 
 // Takes a Java Profile and returns a Java OfflineContentAggregatorBridge.
 static base::android::ScopedJavaLocalRef<jobject>
-JNI_OfflineContentAggregatorFactory_GetOfflineContentAggregatorForProfile(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jprofile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  DCHECK(profile);
+JNI_OfflineContentAggregatorFactory_GetOfflineContentAggregator(JNIEnv* env) {
+  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
+  DCHECK(profile_key);
   offline_items_collection::OfflineContentAggregator* aggregator =
-      OfflineContentAggregatorFactory::GetInstance()->GetForKey(
-          profile->GetProfileKey());
+      OfflineContentAggregatorFactory::GetInstance()->GetForKey(profile_key);
   return offline_items_collection::android::OfflineContentAggregatorBridge::
       GetBridgeForOfflineContentAggregator(aggregator);
 }

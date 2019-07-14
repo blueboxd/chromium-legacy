@@ -78,8 +78,8 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
      *         state. If not, restore it to original state.
      */
     void updateSelectedTabForMergeToGroup(int index, boolean isSelected) {
-        int status = isSelected ? TabListRecyclerView.AnimationStatus.SELECTED_CARD_ZOOM_IN
-                                : TabListRecyclerView.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
+        int status = isSelected ? ClosableTabGridViewHolder.AnimationStatus.SELECTED_CARD_ZOOM_IN
+                                : ClosableTabGridViewHolder.AnimationStatus.SELECTED_CARD_ZOOM_OUT;
         if (index < 0 || index >= size()
                 || get(index).get(TabProperties.CARD_ANIMATION_STATUS) == status)
             return;
@@ -97,8 +97,8 @@ class TabListModel extends PropertyListModel<PropertyModel, PropertyKey> {
      *         If not, restore it to original state.
      */
     void updateHoveredTabForMergeToGroup(int index, boolean isHovered) {
-        int status = isHovered ? TabListRecyclerView.AnimationStatus.HOVERED_CARD_ZOOM_IN
-                               : TabListRecyclerView.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
+        int status = isHovered ? ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_IN
+                               : ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_OUT;
         if (index < 0 || index >= size()
                 || get(index).get(TabProperties.CARD_ANIMATION_STATUS) == status)
             return;

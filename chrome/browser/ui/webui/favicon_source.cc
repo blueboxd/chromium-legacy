@@ -33,13 +33,29 @@
 #include "url/gurl.h"
 
 namespace {
-favicon::FaviconRequestOrigin ParseFaviconRequestOrigin(const GURL& url) {
+
+// web_contents->GetURL in general will not necessarily yield the original URL
+// that started the request, but we're only interested in verifying if it was
+// issued by a history page, for whom this is the case. If it is not possible to
+// obtain the URL, we return the empty GURL.
+GURL GetUnsafeRequestOrigin(
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter) {
+  content::WebContents* web_contents = wc_getter.Run();
+  return web_contents ? web_contents->GetURL() : GURL();
+}
+
+bool ParseHistoryUiOrigin(const GURL& url,
+                          favicon::HistoryUiFaviconRequestOrigin* origin) {
   GURL history_url(chrome::kChromeUIHistoryURL);
-  if (url == history_url.Resolve(chrome::kChromeUIHistorySyncedTabs))
-    return favicon::FaviconRequestOrigin::HISTORY_SYNCED_TABS;
-  if (url == history_url)
-    return favicon::FaviconRequestOrigin::HISTORY;
-  return favicon::FaviconRequestOrigin::UNKNOWN;
+  if (url == history_url) {
+    *origin = favicon::HistoryUiFaviconRequestOrigin::HISTORY;
+    return true;
+  }
+  if (url == history_url.Resolve(chrome::kChromeUIHistorySyncedTabs)) {
+    *origin = favicon::HistoryUiFaviconRequestOrigin::HISTORY_SYNCED_TABS;
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -108,13 +124,6 @@ void FaviconSource::StartDataRequest(
   int desired_size_in_pixel =
       std::ceil(parsed.size_in_dip * parsed.device_scale_factor);
 
-  content::WebContents* web_contents = wc_getter.Run();
-  // web_contents->GetURL will not necessarily yield the original URL that
-  // started the request, but for collecting metrics for chrome://history and
-  // chrome://history/syncedTabs this will be ok.
-  favicon::FaviconRequestOrigin unsafe_request_origin =
-      web_contents ? ParseFaviconRequestOrigin(web_contents->GetURL())
-                   : favicon::FaviconRequestOrigin::UNKNOWN;
   if (parsed.is_icon_url) {
     // TODO(michaelbai): Change GetRawFavicon to support combination of
     // IconType.
@@ -143,7 +152,10 @@ void FaviconSource::StartDataRequest(
       }
     }
 
-    if (!parsed.allow_favicon_server_fallback) {
+    favicon::HistoryUiFaviconRequestOrigin parsed_history_ui_origin;
+    if (!parsed.allow_favicon_server_fallback ||
+        !ParseHistoryUiOrigin(GetUnsafeRequestOrigin(wc_getter),
+                              &parsed_history_ui_origin)) {
       // Request from local storage only.
       // TODO(victorvianna): Expose fallback_to_host in FaviconRequestHandler
       // API and move the explanatory comment for |fallback_to_host| here.
@@ -179,7 +191,7 @@ void FaviconSource::StartDataRequest(
                        base::Unretained(this),
                        IconRequest(callback, url, parsed.size_in_dip,
                                    parsed.device_scale_factor)),
-        unsafe_request_origin, favicon::FaviconRequestPlatform::kDesktop,
+        parsed_history_ui_origin, favicon::FaviconRequestPlatform::kDesktop,
         /*icon_url_for_uma=*/
         open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
         &cancelable_task_tracker_);

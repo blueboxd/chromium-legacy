@@ -84,8 +84,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         @Override
         public OfflineContentProvider getOfflineContentProvider() {
-            return OfflineContentAggregatorFactory.forProfile(
-                    Profile.getLastUsedProfile().getOriginalProfile());
+            return OfflineContentAggregatorFactory.get();
         }
 
         @Override

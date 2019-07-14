@@ -70,7 +70,11 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool IsBinaryOperation() const { return false; }
 
   virtual bool IsZero() const = 0;
+
+  // Resolves the expression into one value *without doing any type conversion*.
+  // Hits DCHECK if type conversion is required.
   virtual double DoubleValue() const = 0;
+
   virtual double ComputeLengthPx(const CSSToLengthConversionData&) const = 0;
   virtual void AccumulateLengthArray(CSSLengthArray&,
                                      double multiplier) const = 0;

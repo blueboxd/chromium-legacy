@@ -40,14 +40,13 @@ public class OfflineContentAggregatorFactory {
     }
 
     /**
-     * Used to get access to the {@link OfflineContentProvider} associated with {@code profile}.
-     * The same {@link OfflineContentProvider} will be returned for the same {@link Profile}.
-     * @param profile The {@link Profile} that owns the {@link OfflineContentProvider}.
-     * @return An {@link OfflineContentProvider} instance.
+     * Used to get access to the offline content aggregator.
+     * @return An {@link OfflineContentProvider} instance representing the offline content
+     *         aggregator.
      */
-    public static OfflineContentProvider forProfile(Profile profile) {
+    public static OfflineContentProvider get() {
         if (sProvider == null) {
-            sProvider = getProvider(nativeGetOfflineContentAggregatorForProfile(profile));
+            sProvider = getProvider(nativeGetOfflineContentAggregator());
         }
         return sProvider;
     }
@@ -60,6 +59,5 @@ public class OfflineContentAggregatorFactory {
         }
     }
 
-    private static native OfflineContentProvider nativeGetOfflineContentAggregatorForProfile(
-            Profile profile);
+    private static native OfflineContentProvider nativeGetOfflineContentAggregator();
 }

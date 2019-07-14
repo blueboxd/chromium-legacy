@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/audio_focus_request.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 
@@ -131,31 +130,29 @@ void MediaController::ToggleSuspendResume() {
   }
 }
 
-void MediaController::AddObserver(
-    mojo::PendingRemote<mojom::MediaControllerObserver> observer) {
+void MediaController::AddObserver(mojom::MediaControllerObserverPtr observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  mojo::Remote<mojom::MediaControllerObserver> media_controller_observer(
-      std::move(observer));
   if (session_) {
-    media_controller_observer->MediaSessionChanged(session_->id());
+    observer->MediaSessionChanged(session_->id());
   } else {
-    media_controller_observer->MediaSessionChanged(base::nullopt);
+    observer->MediaSessionChanged(base::nullopt);
   }
 
   // Flush the new observer with the current state.
-  media_controller_observer->MediaSessionInfoChanged(session_info_.Clone());
-  media_controller_observer->MediaSessionMetadataChanged(session_metadata_);
-  media_controller_observer->MediaSessionActionsChanged(session_actions_);
+  observer->MediaSessionInfoChanged(session_info_.Clone());
+  observer->MediaSessionMetadataChanged(session_metadata_);
+  observer->MediaSessionActionsChanged(session_actions_);
 
-  observers_.Add(std::move(media_controller_observer));
+  observers_.AddPtr(std::move(observer));
 }
 
 void MediaController::MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto& observer : observers_)
+  observers_.ForAllPtrs([&info](mojom::MediaControllerObserver* observer) {
     observer->MediaSessionInfoChanged(info.Clone());
+  });
 
   session_info_ = std::move(info);
 }
@@ -164,8 +161,9 @@ void MediaController::MediaSessionMetadataChanged(
     const base::Optional<MediaMetadata>& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto& observer : observers_)
+  observers_.ForAllPtrs([&metadata](mojom::MediaControllerObserver* observer) {
     observer->MediaSessionMetadataChanged(metadata);
+  });
 
   session_metadata_ = metadata;
 }
@@ -174,8 +172,9 @@ void MediaController::MediaSessionActionsChanged(
     const std::vector<mojom::MediaSessionAction>& actions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  for (auto& observer : observers_)
+  observers_.ForAllPtrs([&actions](mojom::MediaControllerObserver* observer) {
     observer->MediaSessionActionsChanged(actions);
+  });
 
   session_actions_ = actions;
 }
@@ -272,8 +271,9 @@ void MediaController::SetMediaSession(AudioFocusRequest* session) {
   session_ = session;
 
   // We should always notify the observers that the media session has changed.
-  for (auto& observer : observers_)
+  observers_.ForAllPtrs([session](mojom::MediaControllerObserver* observer) {
     observer->MediaSessionChanged(session->id());
+  });
 
   // Add |this| as an observer for |session|.
   mojo::PendingRemote<mojom::MediaSessionObserver> observer;
@@ -291,13 +291,13 @@ void MediaController::ClearMediaSession() {
 
   // If we are no longer bound to a session we should flush the observers
   // with empty data.
-  for (auto& observer : observers_) {
+  observers_.ForAllPtrs([](mojom::MediaControllerObserver* observer) {
     observer->MediaSessionChanged(base::nullopt);
     observer->MediaSessionInfoChanged(nullptr);
     observer->MediaSessionMetadataChanged(base::nullopt);
     observer->MediaSessionActionsChanged(
         std::vector<mojom::MediaSessionAction>());
-  }
+  });
 
   for (auto& holder : image_observers_)
     holder->ClearImage();

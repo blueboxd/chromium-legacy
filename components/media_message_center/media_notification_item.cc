@@ -63,10 +63,8 @@ MediaNotificationItem::MediaNotificationItem(
 
   if (media_controller_ptr_.is_bound()) {
     // Bind an observer to the associated media controller.
-    mojo::PendingRemote<media_session::mojom::MediaControllerObserver>
-        media_controller_observer;
-    observer_receiver_.Bind(
-        media_controller_observer.InitWithNewPipeAndPassReceiver());
+    media_session::mojom::MediaControllerObserverPtr media_controller_observer;
+    observer_binding_.Bind(mojo::MakeRequest(&media_controller_observer));
     media_controller_ptr_->AddObserver(std::move(media_controller_observer));
 
     // TODO(https://crbug.com/931397): Use dip to calculate the size.

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_TOOLBAR_BUTTON_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace service_manager {
@@ -43,8 +43,8 @@ class MediaToolbarButtonController
   media_session::mojom::MediaControllerPtr media_controller_ptr_;
 
   // Used to receive updates to the active media controller.
-  mojo::Receiver<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_receiver_{this};
+  mojo::Binding<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaToolbarButtonController);
 };

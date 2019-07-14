@@ -21,12 +21,12 @@
 #include "chrome/android/chrome_jni_headers/DownloadManagerService_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/android/download/download_startup_utils.h"
 #include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/android/download/service/download_task_scheduler.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -208,17 +208,20 @@ void DownloadManagerService::Init(JNIEnv* env,
                                   jobject obj,
                                   bool is_full_browser_started) {
   java_ref_.Reset(env, obj);
-  if (is_full_browser_started)
+  if (is_full_browser_started) {
     OnFullBrowserStarted(env, obj);
-  else
-    CreateInProgressDownloadManager();
+  } else {
+    DownloadStartupUtils::EnsureDownloadSystemInitialized(false);
+    ResetCoordinatorIfNeeded(
+        ProfileKeyStartupAccessor::GetInstance()->profile_key());
+  }
 }
 
 void DownloadManagerService::OnFullBrowserStarted(JNIEnv* env, jobject obj) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  ResetCoordinatorIfNeeded(profile);
+  ResetCoordinatorIfNeeded(profile->GetProfileKey());
 }
 
 void DownloadManagerService::Observe(
@@ -228,7 +231,7 @@ void DownloadManagerService::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
-      ResetCoordinatorIfNeeded(profile);
+      ResetCoordinatorIfNeeded(profile->GetProfileKey());
     } break;
     default:
       NOTREACHED();
@@ -643,20 +646,6 @@ download::DownloadItem* DownloadManagerService::GetDownload(
   return coordinator ? coordinator->GetDownloadByGuid(download_guid) : nullptr;
 }
 
-void DownloadManagerService::CreateInProgressDownloadManager() {
-  download::InProgressDownloadManager* in_progress_manager =
-      DownloadManagerUtils::GetInProgressDownloadManager(
-          ProfileKeyStartupAccessor::GetInstance()->profile_key());
-  in_progress_manager->set_download_start_observer(
-      DownloadControllerBase::Get());
-  in_progress_manager->set_intermediate_path_cb(
-      base::BindRepeating(&DownloadTargetDeterminer::GetCrDownloadPath));
-  download::SimpleDownloadManagerCoordinator* coordinator =
-      SimpleDownloadManagerCoordinatorFactory::GetForKey(
-          ProfileKeyStartupAccessor::GetInstance()->profile_key());
-  UpdateCoordinator(coordinator, false);
-}
-
 void DownloadManagerService::RecordFirstBackgroundInterruptReason(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -712,15 +701,14 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
 
   content::DownloadManager* manager =
       content::BrowserContext::GetDownloadManager(profile);
-  ResetCoordinatorIfNeeded(profile);
+  ResetCoordinatorIfNeeded(profile->GetProfileKey());
   return manager;
 }
 
-void DownloadManagerService::ResetCoordinatorIfNeeded(Profile* profile) {
+void DownloadManagerService::ResetCoordinatorIfNeeded(ProfileKey* profile_key) {
   download::SimpleDownloadManagerCoordinator* coordinator =
-      SimpleDownloadManagerCoordinatorFactory::GetForKey(
-          profile->GetProfileKey());
-  UpdateCoordinator(coordinator, profile->IsOffTheRecord());
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(profile_key);
+  UpdateCoordinator(coordinator, profile_key->IsOffTheRecord());
 }
 
 void DownloadManagerService::UpdateCoordinator(

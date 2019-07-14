@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/download/public/common/all_download_event_notifier.h"
 #include "components/download/public/common/download_item.h"
@@ -17,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
+#include "components/offline_items_collection/core/offline_item.h"
 
 using DownloadItem = download::DownloadItem;
 using SimpleDownloadManagerCoordinator =
@@ -33,7 +35,9 @@ class SkBitmap;
 
 // This class handles the task of observing the downloads associated with a
 // SimpleDownloadManagerCoordinator and notifies UI about updates about various
-// downloads.
+// downloads. This is a per-profile class which works with both reduced mode and
+// full browser mode. It also provides internal buffering of the download
+// actions if the required backend is not ready.
 class DownloadOfflineContentProvider
     : public KeyedService,
       public OfflineContentProvider,
@@ -49,11 +53,13 @@ class DownloadOfflineContentProvider
       SimpleDownloadManagerCoordinator* manager);
 
   // OfflineContentProvider implmentation.
+
+  // Some of these methods can be run in reduced mode while others require the
+  // full browser process to be started as mentioned below.
+
+  // Methods that require full browser process.
   void OpenItem(LaunchLocation location, const ContentId& id) override;
   void RemoveItem(const ContentId& id) override;
-  void CancelDownload(const ContentId& id) override;
-  void PauseDownload(const ContentId& id) override;
-  void ResumeDownload(const ContentId& id, bool has_user_gesture) override;
   void GetItemById(
       const ContentId& id,
       OfflineContentProvider::SingleItemCallback callback) override;
@@ -68,6 +74,11 @@ class DownloadOfflineContentProvider
   void RenameItem(const ContentId& id,
                   const std::string& name,
                   RenameCallback callback) override;
+
+  // Methods that can be run in reduced mode.
+  void CancelDownload(const ContentId& id) override;
+  void PauseDownload(const ContentId& id) override;
+  void ResumeDownload(const ContentId& id, bool has_user_gesture) override;
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
@@ -82,6 +93,17 @@ class DownloadOfflineContentProvider
   void OnDownloadDestroyed(DownloadItem* download) override;
 
  private:
+  enum class State {
+    // Download system is not yet initialized.
+    UNINITIALIZED,
+
+    // Only active downloads have been loaded.
+    ACTIVE_DOWNLOADS_ONLY,
+
+    // All downloads including ones from history have been loaded.
+    HISTORY_LOADED,
+  };
+
   // SimpleDownloadManagerCoordinator::Observer overrides
   void OnDownloadsInitialized(bool active_downloads_only) override;
   void OnManagerGoingDown() override;
@@ -112,6 +134,9 @@ class DownloadOfflineContentProvider
   std::unique_ptr<download::AllDownloadEventNotifier::Observer>
       all_download_observer_;
   bool checked_for_externally_removed_downloads_;
+  State state_;
+  base::circular_deque<base::OnceClosure> pending_actions_for_reduced_mode_;
+  base::circular_deque<base::OnceClosure> pending_actions_for_full_browser_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_{this};
 

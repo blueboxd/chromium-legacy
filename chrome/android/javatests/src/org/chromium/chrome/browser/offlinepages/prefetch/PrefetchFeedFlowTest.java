@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -273,8 +272,7 @@ public class PrefetchFeedFlowTest {
     }
 
     private static OfflineContentProvider offlineContentProvider() {
-        return OfflineContentAggregatorFactory.forProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        return OfflineContentAggregatorFactory.get();
     }
 
     private OfflineItem findItemByUrl(String url) throws InterruptedException, TimeoutException {

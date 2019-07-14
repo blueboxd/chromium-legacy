@@ -245,8 +245,7 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
                             new SystemDownloadNotifier(), new Handler(), UPDATE_DELAY_MILLIS));
             DownloadController.setDownloadNotificationService(
                     DownloadManagerService.getDownloadManagerService());
-            OfflineContentAggregatorFactory.forProfile(null).addObserver(
-                    new TestDownloadBackendObserver());
+            OfflineContentAggregatorFactory.get().addObserver(new TestDownloadBackendObserver());
         });
     }
 

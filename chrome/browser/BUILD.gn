@@ -2340,6 +2340,8 @@ jumbo_split_static_library("browser") {
       "android/download/download_media_parser.h",
       "android/download/download_media_parser_bridge.cc",
       "android/download/download_media_parser_bridge.h",
+      "android/download/download_startup_utils.cc",
+      "android/download/download_startup_utils.h",
       "android/download/download_utils.cc",
       "android/download/download_utils.h",
       "android/download/duplicate_download_infobar_delegate.cc",

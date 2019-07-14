@@ -100,12 +100,10 @@ public class OfflineTestUtil {
         final AtomicReference<ArrayList<OfflineItem>> result =
                 new AtomicReference<ArrayList<OfflineItem>>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            OfflineContentAggregatorFactory
-                    .forProfile(Profile.getLastUsedProfile().getOriginalProfile())
-                    .getAllItems(items -> {
-                        result.set(items);
-                        finished.notifyCalled();
-                    });
+            OfflineContentAggregatorFactory.get().getAllItems(items -> {
+                result.set(items);
+                finished.notifyCalled();
+            });
         });
         finished.waitForCallback(0);
         return result.get();

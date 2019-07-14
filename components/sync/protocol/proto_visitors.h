@@ -24,6 +24,7 @@
 #include "components/sync/protocol/history_delete_directive_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/mountain_share_specifics.pb.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/persisted_entity_data.pb.h"
@@ -617,6 +618,35 @@ VISIT_PROTO_FIELDS(const sync_pb::ReplacedNavigation& proto) {
   VISIT(first_committed_url);
   VISIT(first_timestamp_msec);
   VISIT_ENUM(first_page_transition);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::CryptographerData& proto) {
+  VISIT(key_bag);
+  VISIT(default_key_name);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::CustomPassphraseKeyDerivationParams& proto) {
+  VISIT(custom_passphrase_key_derivation_method);
+  VISIT(custom_passphrase_key_derivation_salt);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::NigoriModel& proto) {
+  VISIT(cryptographer_data);
+  VISIT(current_keystore_key_name);
+  VISIT(pending_keys);
+  VISIT(passphrase_type);
+  VISIT(keystore_migration_time);
+  VISIT(custom_passphrase_time);
+  VISIT(custom_passphrase_key_derivation_params);
+  VISIT(encrypt_everything);
+  VISIT_REP(encrypted_types_specifics_field_numbers);
+  VISIT_REP(keystore_keys);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::NigoriLocalData& proto) {
+  VISIT(model_type_state);
+  VISIT(entity_metadata);
+  VISIT(nigori_model);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {

@@ -111,8 +111,10 @@ class TabGridViewBinder {
             TabListMediator.IphProvider provider = item.get(TabProperties.IPH_PROVIDER);
             if (provider != null) provider.showIPH(holder.thumbnail);
         } else if (TabProperties.CARD_ANIMATION_STATUS == propertyKey) {
-            TabListRecyclerView.scaleTabGridCardView(
-                    holder.itemView, item.get(TabProperties.CARD_ANIMATION_STATUS));
+            boolean isSelected = item.get(TabProperties.IS_SELECTED);
+            ((ClosableTabGridViewHolder) holder)
+                    .scaleTabGridCardView(
+                            item.get(TabProperties.CARD_ANIMATION_STATUS), isSelected);
         }
     }
 

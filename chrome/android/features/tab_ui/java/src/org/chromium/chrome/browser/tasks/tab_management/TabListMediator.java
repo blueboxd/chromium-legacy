@@ -887,7 +887,7 @@ class TabListMediator {
                                 getCreateGroupButtonListener(tab, isSelected))
                         .with(TabProperties.ALPHA, 1f)
                         .with(TabProperties.CARD_ANIMATION_STATUS,
-                                TabListRecyclerView.AnimationStatus.CARD_RESTORE)
+                                ClosableTabGridViewHolder.AnimationStatus.CARD_RESTORE)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER,
                                 mSelectableTabOnClickListener)
                         .with(TabProperties.TAB_SELECTION_DELEGATE, getTabSelectionDelegate())

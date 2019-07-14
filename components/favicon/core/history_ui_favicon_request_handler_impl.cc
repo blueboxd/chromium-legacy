@@ -26,48 +26,42 @@ namespace favicon {
 
 namespace {
 
-void RecordFaviconAvailabilityMetric(FaviconRequestOrigin origin,
+void RecordFaviconAvailabilityMetric(HistoryUiFaviconRequestOrigin origin,
                                      FaviconAvailability availability) {
   switch (origin) {
-    case FaviconRequestOrigin::HISTORY:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.HISTORY",
+    case HistoryUiFaviconRequestOrigin::HISTORY:
+      UMA_HISTOGRAM_ENUMERATION("Sync.SyncedHistoryFaviconAvailability.HISTORY",
                                 availability);
       break;
-    case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.SYNCED_TABS",
-                                availability);
+    case HistoryUiFaviconRequestOrigin::HISTORY_SYNCED_TABS:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.SyncedHistoryFaviconAvailability.SYNCED_TABS", availability);
       break;
-    case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.RECENTLY_CLOSED_TABS",
-                                availability);
-      break;
-    case FaviconRequestOrigin::UNKNOWN:
-      UMA_HISTOGRAM_ENUMERATION("Sync.FaviconAvailability.UNKNOWN",
-                                availability);
+    case HistoryUiFaviconRequestOrigin::RECENTLY_CLOSED_TABS:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Sync.SyncedHistoryFaviconAvailability.RECENTLY_CLOSED_TABS",
+          availability);
       break;
   }
 }
 
-void RecordFaviconServerGroupingMetric(FaviconRequestOrigin origin,
+void RecordFaviconServerGroupingMetric(HistoryUiFaviconRequestOrigin origin,
                                        int group_size) {
   DCHECK_GE(group_size, 0);
   switch (origin) {
-    case FaviconRequestOrigin::HISTORY:
+    case HistoryUiFaviconRequestOrigin::HISTORY:
       base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.HISTORY", group_size);
+          "Sync.RequestGroupSizeForSyncedHistoryFavicons.HISTORY", group_size);
       break;
-    case FaviconRequestOrigin::HISTORY_SYNCED_TABS:
+    case HistoryUiFaviconRequestOrigin::HISTORY_SYNCED_TABS:
       base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.SYNCED_TABS", group_size);
-      break;
-    case FaviconRequestOrigin::RECENTLY_CLOSED_TABS:
-      base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.RECENTLY_CLOSED_TABS",
+          "Sync.RequestGroupSizeForSyncedHistoryFavicons.SYNCED_TABS",
           group_size);
       break;
-    case FaviconRequestOrigin::UNKNOWN:
+    case HistoryUiFaviconRequestOrigin::RECENTLY_CLOSED_TABS:
       base::UmaHistogramCounts100(
-          "Sync.SizeOfFaviconServerRequestGroup.UNKNOWN", group_size);
+          "Sync.RequestGroupSizeForSyncedHistoryFavicons.RECENTLY_CLOSED_TABS",
+          group_size);
       break;
   }
 }
@@ -116,7 +110,7 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback callback,
-    FaviconRequestOrigin request_origin,
+    HistoryUiFaviconRequestOrigin request_origin,
     FaviconRequestPlatform request_platform,
     const GURL& icon_url_for_uma,
     base::CancelableTaskTracker* tracker) {
@@ -135,7 +129,7 @@ void HistoryUiFaviconRequestHandlerImpl::GetRawFaviconForPageURL(
 void HistoryUiFaviconRequestHandlerImpl::GetFaviconImageForPageURL(
     const GURL& page_url,
     favicon_base::FaviconImageCallback callback,
-    FaviconRequestOrigin request_origin,
+    HistoryUiFaviconRequestOrigin request_origin,
     const GURL& icon_url_for_uma,
     base::CancelableTaskTracker* tracker) {
   // First attempt to find the icon locally.
@@ -153,7 +147,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     const GURL& page_url,
     int desired_size_in_pixel,
     favicon_base::FaviconRawBitmapCallback response_callback,
-    FaviconRequestOrigin origin,
+    HistoryUiFaviconRequestOrigin origin,
     FaviconRequestPlatform platform,
     const GURL& icon_url_for_uma,
     bool can_query_google_server,
@@ -214,7 +208,7 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
 void HistoryUiFaviconRequestHandlerImpl::OnImageLocalDataAvailable(
     const GURL& page_url,
     favicon_base::FaviconImageCallback response_callback,
-    FaviconRequestOrigin origin,
+    HistoryUiFaviconRequestOrigin origin,
     const GURL& icon_url_for_uma,
     bool can_query_google_server,
     base::CancelableTaskTracker* tracker,
@@ -273,7 +267,7 @@ void HistoryUiFaviconRequestHandlerImpl::RequestFromGoogleServer(
     base::OnceClosure empty_response_callback,
     base::OnceClosure local_lookup_callback,
     const GURL& icon_url_for_uma,
-    FaviconRequestOrigin origin) {
+    HistoryUiFaviconRequestOrigin origin) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation(
           "history_ui_favicon_request_handler_get_favicon",
@@ -332,7 +326,7 @@ void HistoryUiFaviconRequestHandlerImpl::RequestFromGoogleServer(
 void HistoryUiFaviconRequestHandlerImpl::OnGoogleServerDataAvailable(
     base::OnceClosure empty_response_callback,
     base::OnceClosure local_lookup_callback,
-    FaviconRequestOrigin origin,
+    HistoryUiFaviconRequestOrigin origin,
     const GURL& group_to_clear,
     favicon_base::GoogleFaviconServerRequestStatus status) {
   if (!group_to_clear.is_empty()) {

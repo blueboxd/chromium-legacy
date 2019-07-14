@@ -193,6 +193,8 @@ public class DownloadBroadcastManager extends Service {
                                 .onBackgroundDownloadStarted(id.id);
                     }
                 }
+
+                DownloadStartupUtils.ensureDownloadSystemInitialized(browserStarted);
                 propagateInteraction(intent);
             }
 

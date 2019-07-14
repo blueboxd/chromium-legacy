@@ -502,6 +502,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/DownloadSnackbarController.java",
   "java/src/org/chromium/chrome/browser/download/DownloadUmaStatsEntry.java",
   "java/src/org/chromium/chrome/browser/download/DownloadUpdate.java",
+  "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
   "java/src/org/chromium/chrome/browser/download/DownloadUtils.java",
   "java/src/org/chromium/chrome/browser/download/MediaStoreHelper.java",
   "java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java",

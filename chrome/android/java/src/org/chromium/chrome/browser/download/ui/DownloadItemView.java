@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils.ViewAction;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
@@ -184,8 +183,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public boolean getThumbnail(Callback<Bitmap> callback) {
         if (!mItem.isOfflinePage()) return false;
-        OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
-                .getVisualsForItem(((OfflineItem) mItem.getItem()).id, (id, visuals) -> {
+        OfflineContentAggregatorFactory.get().getVisualsForItem(
+                ((OfflineItem) mItem.getItem()).id, (id, visuals) -> {
                     if (visuals == null) {
                         callback.onResult(null);
                     } else {

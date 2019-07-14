@@ -904,8 +904,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     }
 
     private OfflineContentProvider getOfflineContentProvider() {
-        return OfflineContentAggregatorFactory.forProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        return OfflineContentAggregatorFactory.get();
     }
 
     private void removeNotification(ContentId contentId) {

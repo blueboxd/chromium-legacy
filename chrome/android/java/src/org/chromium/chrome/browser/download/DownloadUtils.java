@@ -646,8 +646,7 @@ public class DownloadUtils {
     public static void openItem(ContentId contentId, boolean isOffTheRecord,
             @DownloadMetrics.DownloadOpenSource int source) {
         if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
-            OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
-                    .openItem(LaunchLocation.PROGRESS_BAR, contentId);
+            OfflineContentAggregatorFactory.get().openItem(LaunchLocation.PROGRESS_BAR, contentId);
         } else {
             DownloadManagerService.getDownloadManagerService().openDownload(
                     contentId, isOffTheRecord, source);

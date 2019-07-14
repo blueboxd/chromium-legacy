@@ -6,16 +6,13 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
@@ -27,13 +24,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * A custom RecyclerView implementation for the tab grid, to handle show/hide logic in class.
@@ -41,18 +34,6 @@ import java.lang.annotation.RetentionPolicy;
 class TabListRecyclerView extends RecyclerView {
     public static final long BASE_ANIMATION_DURATION_MS = 218;
     public static final long FINAL_FADE_IN_DURATION_MS = 50;
-    public static final long RESTORE_ANIMATION_DURATION_MS = 10;
-    @IntDef({AnimationStatus.SELECTED_CARD_ZOOM_IN, AnimationStatus.SELECTED_CARD_ZOOM_OUT,
-            AnimationStatus.HOVERED_CARD_ZOOM_IN, AnimationStatus.HOVERED_CARD_ZOOM_OUT,
-            AnimationStatus.CARD_RESTORE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface AnimationStatus {
-        int CARD_RESTORE = 0;
-        int SELECTED_CARD_ZOOM_OUT = 1;
-        int SELECTED_CARD_ZOOM_IN = 2;
-        int HOVERED_CARD_ZOOM_OUT = 3;
-        int HOVERED_CARD_ZOOM_IN = 4;
-    }
 
     /**
      * Field trial parameter for downsampling scaling factor.
@@ -363,60 +344,6 @@ class TabListRecyclerView extends RecyclerView {
         rect.top -= loc[1];
         rect.bottom -= loc[1];
         return rect;
-    }
-
-    /**
-     * Play the zoom-in and zoom-out animations for tab grid card.
-     * @param view   The view of the {@link TabGridViewHolder} that is playing animations.
-     * @param status The target animation status in {@link AnimationStatus}.
-     *
-     */
-    static void scaleTabGridCardView(View view, @AnimationStatus int status) {
-        Context context = view.getContext();
-        final View backgroundView = view.findViewById(R.id.background_view);
-        final View contentView = view.findViewById(R.id.content_view);
-        final int cardNormalMargin =
-                (int) context.getResources().getDimension(R.dimen.tab_list_card_padding);
-        final int cardBackgroundMargin =
-                (int) context.getResources().getDimension(R.dimen.tab_list_card_background_margin);
-        final Drawable greyBackground =
-                AppCompatResources.getDrawable(context, R.drawable.tab_grid_card_background_grey);
-        final Drawable normalBackground =
-                AppCompatResources.getDrawable(context, R.drawable.popup_bg);
-        boolean isZoomIn = status == AnimationStatus.SELECTED_CARD_ZOOM_IN
-                || status == AnimationStatus.HOVERED_CARD_ZOOM_IN;
-        boolean isHovered = status == AnimationStatus.HOVERED_CARD_ZOOM_IN
-                || status == AnimationStatus.HOVERED_CARD_ZOOM_OUT;
-        boolean isRestore = status == AnimationStatus.CARD_RESTORE;
-        long duration = isRestore ? RESTORE_ANIMATION_DURATION_MS : BASE_ANIMATION_DURATION_MS;
-        float scale = isZoomIn ? 0.8f : 1f;
-        MarginLayoutParams backgroundParams = (MarginLayoutParams) backgroundView.getLayoutParams();
-        View animateView = isHovered ? contentView : view;
-
-        if (status == AnimationStatus.HOVERED_CARD_ZOOM_IN) {
-            backgroundParams.setMargins(
-                    cardNormalMargin, cardNormalMargin, cardNormalMargin, cardNormalMargin);
-            backgroundView.setBackground(greyBackground);
-        }
-
-        AnimatorSet scaleAnimator = new AnimatorSet();
-        if (!isZoomIn) {
-            scaleAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    // Restore normal background status.
-                    backgroundParams.setMargins(cardBackgroundMargin, cardBackgroundMargin,
-                            cardBackgroundMargin, cardBackgroundMargin);
-                    backgroundView.setBackground(normalBackground);
-                }
-            });
-        }
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(animateView, "scaleX", scale);
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(animateView, "scaleY", scale);
-        scaleX.setDuration(duration);
-        scaleY.setDuration(duration);
-        scaleAnimator.play(scaleX).with(scaleY);
-        scaleAnimator.start();
     }
 
     /**

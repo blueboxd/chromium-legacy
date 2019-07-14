@@ -167,19 +167,23 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
   bool IsPushedByFloats() const { return is_pushed_by_floats_; }
 
-  NGContainerFragmentBuilder& ResetAdjoiningFloatTypes() {
-    adjoining_floats_ = kFloatTypeNone;
+  NGContainerFragmentBuilder& ResetAdjoiningObjectTypes() {
+    adjoining_object_types_ = kAdjoiningNone;
     return *this;
   }
-  NGContainerFragmentBuilder& AddAdjoiningFloatTypes(NGFloatTypes floats) {
-    adjoining_floats_ |= floats;
+  NGContainerFragmentBuilder& AddAdjoiningObjectTypes(
+      NGAdjoiningObjectTypes adjoining_object_types) {
+    adjoining_object_types_ |= adjoining_object_types;
     return *this;
   }
-  NGContainerFragmentBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
-    adjoining_floats_ = floats;
+  NGContainerFragmentBuilder& SetAdjoiningObjectTypes(
+      NGAdjoiningObjectTypes adjoining_object_types) {
+    adjoining_object_types_ = adjoining_object_types;
     return *this;
   }
-  NGFloatTypes AdjoiningFloatTypes() const { return adjoining_floats_; }
+  NGAdjoiningObjectTypes AdjoiningObjectTypes() const {
+    return adjoining_object_types_;
+  }
 
   NGContainerFragmentBuilder& SetHasBlockFragmentation() {
     has_block_fragmentation_ = true;
@@ -230,7 +234,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGBreakTokenVector child_break_tokens_;
   NGBreakTokenVector inline_break_tokens_;
 
-  NGFloatTypes adjoining_floats_ = kFloatTypeNone;
+  NGAdjoiningObjectTypes adjoining_object_types_ = kAdjoiningNone;
 
   bool is_self_collapsing_ = false;
   bool is_pushed_by_floats_ = false;

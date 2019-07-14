@@ -61,7 +61,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     container_builder_.SetIsSelfCollapsing();
   if (result.IsPushedByFloats())
     container_builder_.SetIsPushedByFloats();
-  container_builder_.AddAdjoiningFloatTypes(result.AdjoiningFloatTypes());
+  container_builder_.SetAdjoiningObjectTypes(result.AdjoiningObjectTypes());
 
   for (const auto& request : ConstraintSpace().BaselineRequests()) {
     base::Optional<LayoutUnit> baseline = physical_fragment.Baseline(request);

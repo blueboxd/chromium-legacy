@@ -303,20 +303,4 @@ NGPositionedFloat PositionFloat(
   return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
 }
 
-NGFloatTypes ToFloatTypes(EClear clear) {
-  switch (clear) {
-    default:
-      NOTREACHED();
-      FALLTHROUGH;
-    case EClear::kNone:
-      return kFloatTypeNone;
-    case EClear::kLeft:
-      return kFloatTypeLeft;
-    case EClear::kRight:
-      return kFloatTypeRight;
-    case EClear::kBoth:
-      return kFloatTypeBoth;
-  };
-}
-
 }  // namespace blink

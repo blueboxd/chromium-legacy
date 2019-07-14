@@ -114,7 +114,7 @@ NGLayoutResult::NGLayoutResult(
           /* has_valid_space */ cache_space && builder->space_,
           /* is_self_collapsing */ builder->is_self_collapsing_,
           /* is_pushed_by_floats */ builder->is_pushed_by_floats_,
-          /* adjoining_floats */ builder->adjoining_floats_,
+          /* adjoining_object_types */ builder->adjoining_object_types_,
           /* has_descendant_that_depends_on_percentage_block_size */
           builder->has_descendant_that_depends_on_percentage_block_size_) {
 #if DCHECK_IS_ON()
@@ -220,7 +220,8 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
   DCHECK_EQ(bitfields_.is_self_collapsing, other.bitfields_.is_self_collapsing);
   DCHECK_EQ(bitfields_.is_pushed_by_floats,
             other.bitfields_.is_pushed_by_floats);
-  DCHECK_EQ(bitfields_.adjoining_floats, other.bitfields_.adjoining_floats);
+  DCHECK_EQ(bitfields_.adjoining_object_types,
+            other.bitfields_.adjoining_object_types);
 
   DCHECK_EQ(bitfields_.initial_break_before,
             other.bitfields_.initial_break_before);

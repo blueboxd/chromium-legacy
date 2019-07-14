@@ -145,16 +145,16 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // of floats.
   bool IsPushedByFloats() const { return bitfields_.is_pushed_by_floats; }
 
-  // Return the types (none, left, right, both) of preceding adjoining
-  // floats. These are floats that are added while the in-flow BFC block offset
-  // is still unknown. The floats may or may not be unpositioned (pending). That
-  // depends on which layout pass we're in. Adjoining floats should be treated
-  // differently when calculating clearance on a block with adjoining
-  // block-start margin (in such cases we will know up front that the block will
-  // need clearance, since, if it doesn't, the float will be pulled along with
-  // the block, and the block will fail to clear).
-  NGFloatTypes AdjoiningFloatTypes() const {
-    return bitfields_.adjoining_floats;
+  // Returns the types of preceding adjoining objects.
+  // See |NGAdjoiningObjectTypes|.
+  //
+  // Adjoining floats should be treated differently when calculating clearance
+  // on a block with adjoining block-start margin (in such cases we will know
+  // up front that the block will need clearance, since, if it doesn't, the
+  // float will be pulled along with the block, and the block will fail to
+  // clear).
+  NGAdjoiningObjectTypes AdjoiningObjectTypes() const {
+    return bitfields_.adjoining_object_types;
   }
 
   // Returns true if the initial (pre-layout) block-size of this fragment was
@@ -292,16 +292,17 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     // We define the default constructor so that the |has_rare_data| bit is
     // never uninitialized (potentially allowing a dangling pointer).
     Bitfields()
-        : Bitfields(/* has_valid_space */ false,
-                    /* is_self_collapsing */ false,
-                    /* is_pushed_by_floats */ false,
-                    /* adjoining_floats */ NGFloatTypeValue::kFloatTypeNone,
-                    /* has_descendant_that_depends_on_percentage_block_size */
-                    false) {}
+        : Bitfields(
+              /* has_valid_space */ false,
+              /* is_self_collapsing */ false,
+              /* is_pushed_by_floats */ false,
+              /* adjoining_object_types */ kAdjoiningNone,
+              /* has_descendant_that_depends_on_percentage_block_size */
+              false) {}
     Bitfields(bool has_valid_space,
               bool is_self_collapsing,
               bool is_pushed_by_floats,
-              NGFloatTypes adjoining_floats,
+              NGAdjoiningObjectTypes adjoining_object_types,
               bool has_descendant_that_depends_on_percentage_block_size)
         : has_rare_data(false),
           has_rare_data_exclusion_space(false),
@@ -311,7 +312,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
           has_forced_break(false),
           is_self_collapsing(is_self_collapsing),
           is_pushed_by_floats(is_pushed_by_floats),
-          adjoining_floats(static_cast<unsigned>(adjoining_floats)),
+          adjoining_object_types(static_cast<unsigned>(adjoining_object_types)),
           is_initial_block_size_indefinite(false),
           has_descendant_that_depends_on_percentage_block_size(
               has_descendant_that_depends_on_percentage_block_size),
@@ -329,7 +330,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
     unsigned is_self_collapsing : 1;
     unsigned is_pushed_by_floats : 1;
-    unsigned adjoining_floats : 3;  // NGFloatTypes
+    unsigned adjoining_object_types : 3;  // NGAdjoiningObjectTypes
 
     unsigned is_initial_block_size_indefinite : 1;
     unsigned has_descendant_that_depends_on_percentage_block_size : 1;

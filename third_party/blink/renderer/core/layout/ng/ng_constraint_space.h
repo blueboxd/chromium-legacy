@@ -31,6 +31,19 @@ enum NGFragmentationType {
   kFragmentRegion
 };
 
+// "adjoining" objects (either floats or inline-level OOF-positioned nodes) are
+// used to indicate that a particular node might need a relayout once its BFC
+// block-offset is resvoled. E.g. their position depends on the final BFC
+// block-offset being known.
+enum NGAdjoiningObjectTypeValue {
+  kAdjoiningNone = 0b000,
+  kAdjoiningFloatLeft = 0b001,
+  kAdjoiningFloatRight = 0b010,
+  kAdjoiningFloatBoth = 0b011,
+  kAdjoiningInlineOutOfFlow = 0b100
+};
+typedef int NGAdjoiningObjectTypes;
+
 // Tables have two passes, a "measure" phase (for determining the table row
 // height), and a "layout" phase.
 // See: https://drafts.csswg.org/css-tables-3/#row-layout
@@ -377,17 +390,19 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() ? rare_data_->forced_bfc_block_offset : base::nullopt;
   }
 
-  // Return the types (none, left, right, both) of preceding adjoining
-  // floats. These are floats that are added while the in-flow BFC offset is
-  // still unknown. The floats may or may not be unpositioned (pending). That
-  // depends on which layout pass we're in. They are typically positioned if
-  // ForcedBfcOffset() is known. Adjoining floats should be treated differently
-  // when calculating clearance on a block with adjoining block-start margin.
-  // (in such cases we will know up front that the block will need clearance,
-  // since, if it doesn't, the float will be pulled along with the block, and
-  // the block will fail to clear).
-  NGFloatTypes AdjoiningFloatTypes() const {
-    return bitfields_.adjoining_floats;
+  // Returns the types of preceding adjoining objects.
+  // See |NGAdjoiningObjectTypes|.
+  //
+  // Adjoining floats are positioned at their correct position if the
+  // |ForcedBfcBlockOffset()| is known.
+  //
+  // Adjoining floats should be treated differently when calculating clearance
+  // on a block with adjoining block-start margin (in such cases we will know
+  // up front that the block will need clearance, since, if it doesn't, the
+  // float will be pulled along with the block, and the block will fail to
+  // clear).
+  NGAdjoiningObjectTypes AdjoiningObjectTypes() const {
+    return bitfields_.adjoining_object_types;
   }
 
   // Return true if there were any earlier floats that may affect the current
@@ -549,7 +564,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     explicit Bitfields(WritingMode writing_mode)
         : has_rare_data(false),
-          adjoining_floats(static_cast<unsigned>(kFloatTypeNone)),
+          adjoining_object_types(static_cast<unsigned>(kAdjoiningNone)),
           writing_mode(static_cast<unsigned>(writing_mode)),
           direction(static_cast<unsigned>(TextDirection::kLtr)),
           is_shrink_to_fit(false),
@@ -564,7 +579,7 @@ class CORE_EXPORT NGConstraintSpace final {
           replaced_percentage_block_storage(kSameAsAvailable) {}
 
     bool MaySkipLayout(const Bitfields& other) const {
-      return adjoining_floats == other.adjoining_floats &&
+      return adjoining_object_types == other.adjoining_object_types &&
              writing_mode == other.writing_mode && flags == other.flags &&
              baseline_requests == other.baseline_requests;
     }
@@ -580,7 +595,7 @@ class CORE_EXPORT NGConstraintSpace final {
     }
 
     unsigned has_rare_data : 1;
-    unsigned adjoining_floats : 3;  // NGFloatTypes
+    unsigned adjoining_object_types : 3;  // NGAdjoiningObjectTypes
     unsigned writing_mode : 3;
     unsigned direction : 1;
 

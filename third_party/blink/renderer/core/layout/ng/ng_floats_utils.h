@@ -23,16 +23,6 @@ struct NGUnpositionedFloat;
 
 typedef Vector<NGPositionedFloat, 8> NGPositionedFloatVector;
 
-// TODO(ikilpatrick): Rename this to NGAdjoiningObjectTypes.
-enum NGFloatTypeValue {
-  kFloatTypeNone = 0b000,
-  kFloatTypeLeft = 0b001,
-  kFloatTypeRight = 0b010,
-  kFloatTypeBoth = 0b011,
-  kAdjoiningInlineOutOfFlow = 0b100
-};
-typedef int NGFloatTypes;
-
 // Returns the inline size (relative to {@code parent_space}) of the
 // unpositioned float.
 LayoutUnit ComputeMarginBoxInlineSizeForUnpositionedFloat(
@@ -51,8 +41,6 @@ PositionFloat(const LogicalSize& float_available_size,
               const NGConstraintSpace& parent_space,
               const ComputedStyle& parent_style,
               NGExclusionSpace* exclusion_space);
-
-NGFloatTypes ToFloatTypes(EClear clear);
 
 }  // namespace blink
 

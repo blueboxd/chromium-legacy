@@ -46,16 +46,34 @@ inline scoped_refptr<const NGLayoutResult> LayoutInflow(
                      : To<NGBlockNode>(node)->Layout(space, break_token);
 }
 
+NGAdjoiningObjectTypes ToAdjoiningObjectTypes(EClear clear) {
+  switch (clear) {
+    default:
+      NOTREACHED();
+      FALLTHROUGH;
+    case EClear::kNone:
+      return kAdjoiningNone;
+    case EClear::kLeft:
+      return kAdjoiningFloatLeft;
+    case EClear::kRight:
+      return kAdjoiningFloatRight;
+    case EClear::kBoth:
+      return kAdjoiningFloatBoth;
+  };
+}
+
 // Return true if a child is to be cleared past adjoining floats. These are
 // floats that would otherwise (if 'clear' were 'none') be pulled down by the
 // BFC block offset of the child. If the child is to clear floats, though, we
 // obviously need separate the child from the floats and move it past them,
 // since that's what clearance is all about. This means that if we have any such
 // floats to clear, we know for sure that we get clearance, even before layout.
-inline bool HasClearancePastAdjoiningFloats(NGFloatTypes adjoining_floats,
-                                            const ComputedStyle& child_style,
-                                            const ComputedStyle& cb_style) {
-  return ToFloatTypes(ResolvedClear(child_style, cb_style)) & adjoining_floats;
+inline bool HasClearancePastAdjoiningFloats(
+    NGAdjoiningObjectTypes adjoining_object_types,
+    const ComputedStyle& child_style,
+    const ComputedStyle& cb_style) {
+  return ToAdjoiningObjectTypes(ResolvedClear(child_style, cb_style)) &
+         adjoining_object_types;
 }
 
 // Adjust BFC block offset for clearance, if applicable. Return true of
@@ -364,17 +382,18 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   container_builder_.SetBfcLineOffset(
       ConstraintSpace().BfcOffset().line_offset);
 
-  if (NGFloatTypes float_types = ConstraintSpace().AdjoiningFloatTypes()) {
+  if (NGAdjoiningObjectTypes adjoining_object_types =
+          ConstraintSpace().AdjoiningObjectTypes()) {
     DCHECK(!ConstraintSpace().IsNewFormattingContext());
     DCHECK(!container_builder_.BfcBlockOffset());
 
-    // If there were preceding adjoining floats, they will be affected when the
-    // BFC block offset gets resolved or updated. We then need to roll back and
-    // re-layout those floats with the new BFC block offset, once the BFC block
-    // offset is updated.
+    // If there were preceding adjoining objects, they will be affected when the
+    // BFC block-offset gets resolved or updated. We then need to roll back and
+    // re-layout those objects with the new BFC block-offset, once the BFC
+    // block-offset is updated.
     abort_when_bfc_block_offset_updated_ = true;
 
-    container_builder_.SetAdjoiningFloatTypes(float_types);
+    container_builder_.SetAdjoiningObjectTypes(adjoining_object_types);
   }
 
   // If we are resuming from a break token our start border and padding is
@@ -646,8 +665,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
   if (container_builder_.BfcBlockOffset()) {
     // If we know our BFC block-offset we should have correctly placed all
-    // adjoining floats, and shouldn't propagate this information to siblings.
-    container_builder_.ResetAdjoiningFloatTypes();
+    // adjoining objects, and shouldn't propagate this information to siblings.
+    container_builder_.ResetAdjoiningObjectTypes();
   } else {
     // If we don't know our BFC block-offset yet, we know that for
     // margin-collapsing purposes we are self-collapsing.
@@ -672,7 +691,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
   // Only layout absolute and fixed children if we aren't going to revisit this
   // layout.
-  if (!container_builder_.AdjoiningFloatTypes() ||
+  if (!container_builder_.AdjoiningObjectTypes() ||
       ConstraintSpace().ForcedBfcBlockOffset()) {
     NGBoxStrut borders_and_scrollbars =
         container_builder_.Borders() + container_builder_.Scrollbar();
@@ -683,11 +702,11 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 
 #if DCHECK_IS_ON()
   // If we have any unpositioned floats at this stage, our parent will pick up
-  // this by examining adjoining float types returned, so that we get relayout
-  // with a forced BFC block offset once it's known.
+  // this by examining adjoining object types returned, so that we get relayout
+  // with a forced BFC block-offset once it's known.
   if (!unpositioned_floats_.IsEmpty()) {
     DCHECK(!container_builder_.BfcBlockOffset());
-    DCHECK(container_builder_.AdjoiningFloatTypes());
+    DCHECK(container_builder_.AdjoiningObjectTypes());
   }
 
   // If we're not participating in a fragmentation context, no block
@@ -809,7 +828,7 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     // Due to this we need to mark this node as having adjoining objects, and
     // perform a re-layout if our position shifts.
     if (!container_builder_.BfcBlockOffset()) {
-      container_builder_.AddAdjoiningFloatTypes(kAdjoiningInlineOutOfFlow);
+      container_builder_.AddAdjoiningObjectTypes(kAdjoiningInlineOutOfFlow);
       abort_when_bfc_block_offset_updated_ = true;
     }
 
@@ -846,10 +865,10 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   DCHECK(!unpositioned_floats_.Contains(unpositioned_float));
 
   if (!container_builder_.BfcBlockOffset()) {
-    container_builder_.AddAdjoiningFloatTypes(
+    container_builder_.AddAdjoiningObjectTypes(
         unpositioned_float.IsLineLeft(ConstraintSpace().Direction())
-            ? kFloatTypeLeft
-            : kFloatTypeRight);
+            ? kAdjoiningFloatLeft
+            : kAdjoiningFloatRight);
   }
   unpositioned_floats_.push_back(std::move(unpositioned_float));
 
@@ -921,7 +940,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     bool has_clearance_past_adjoining_floats =
         ConstraintSpace().AncestorHasClearancePastAdjoiningFloats() ||
         HasClearancePastAdjoiningFloats(
-            container_builder_.AdjoiningFloatTypes(), child_style, Style());
+            container_builder_.AdjoiningObjectTypes(), child_style, Style());
 
     if (has_clearance_past_adjoining_floats) {
       child_bfc_offset_estimate = NextBorderEdge(*previous_inflow_position);
@@ -1235,7 +1254,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       child_inline_node && !child_inline_node->IsEmptyInline();
   bool has_clearance_past_adjoining_floats =
       !container_builder_.BfcBlockOffset() && child.IsBlock() &&
-      HasClearancePastAdjoiningFloats(container_builder_.AdjoiningFloatTypes(),
+      HasClearancePastAdjoiningFloats(container_builder_.AdjoiningObjectTypes(),
                                       child.Style(), Style());
 
   base::Optional<LayoutUnit> forced_bfc_block_offset;
@@ -1389,10 +1408,10 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       // positioned in the incorrect position.
       //
       // TODO(layout-dev): A more optimal version of this is to set this flag
-      // only if the child tree *added* any floats which it failed to position.
-      // Currently, we risk relaying out the sub-tree for no reason, because
-      // we're not able to make this distinction.
-      if (layout_result->AdjoiningFloatTypes() &&
+      // only if the child tree *added* any adjoining objects which it failed
+      // to position. Currently, we risk relaying out the sub-tree for no
+      // reason, because we're not able to make this distinction.
+      if (layout_result->AdjoiningObjectTypes() &&
           !child_space.ForcedBfcBlockOffset())
         self_collapsing_child_needs_relayout = true;
     }
@@ -1478,10 +1497,10 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   // propagated adjoining floats.
   exclusion_space_ = layout_result->ExclusionSpace();
 
-  // Only self-collapsing children should have adjoining floats.
-  DCHECK(!layout_result->AdjoiningFloatTypes() || is_self_collapsing);
-  container_builder_.SetAdjoiningFloatTypes(
-      layout_result->AdjoiningFloatTypes());
+  // Only self-collapsing children should have adjoining objects.
+  DCHECK(!layout_result->AdjoiningObjectTypes() || is_self_collapsing);
+  container_builder_.SetAdjoiningObjectTypes(
+      layout_result->AdjoiningObjectTypes());
 
   // If we don't know our BFC block-offset yet, and the child stumbled into
   // something that needs it (unable to position floats yet), we need abort
@@ -1499,7 +1518,7 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
   // has been positioned.
   if (!container_builder_.BfcBlockOffset()) {
     abort_when_bfc_block_offset_updated_ |=
-        layout_result->AdjoiningFloatTypes();
+        layout_result->AdjoiningObjectTypes();
     // If our BFC block offset is unknown, and the child got pushed down by
     // floats, so will we.
     if (layout_result->IsPushedByFloats())
@@ -2191,8 +2210,10 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
   if (!is_new_fc) {
     builder.SetExclusionSpace(exclusion_space_);
-    if (!has_bfc_block_offset)
-      builder.SetAdjoiningFloatTypes(container_builder_.AdjoiningFloatTypes());
+    if (!has_bfc_block_offset) {
+      builder.SetAdjoiningObjectTypes(
+          container_builder_.AdjoiningObjectTypes());
+    }
   }
 
   if (ConstraintSpace().HasBlockFragmentation()) {

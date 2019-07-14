@@ -557,7 +557,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
       // yet. Due to this we need to mark this node as having adjoining
       // objects, and perform a re-layout if our position shifts.
       if (is_empty_inline)
-        container_builder_.AddAdjoiningFloatTypes(kAdjoiningInlineOutOfFlow);
+        container_builder_.AddAdjoiningObjectTypes(kAdjoiningInlineOutOfFlow);
     } else {
       // A block-level OOF element positions itself on the "next" line. However
       // only shifts down if there is inline-level content.
@@ -785,11 +785,11 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
 
     // We're just going to collapse through this one, so whatever went in on one
-    // side will go out on the other side. The position of the adjoining floats
+    // side will go out on the other side. The position of the adjoining objects
     // will be affected by any subsequent block, until the BFC block offset is
     // resolved.
-    container_builder_.AddAdjoiningFloatTypes(
-        ConstraintSpace().AdjoiningFloatTypes());
+    container_builder_.AddAdjoiningObjectTypes(
+        ConstraintSpace().AdjoiningObjectTypes());
 
     // For the empty lines, most of the logic here are not necessary, but in
     // some edge cases we still need to create box fragments, such as when it
@@ -798,9 +798,9 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   } else {
     DCHECK(ConstraintSpace().MarginStrut().IsEmpty());
 
-    // The BFC block offset was determined before entering this algorithm. This
-    // means that there should be no adjoining floats.
-    DCHECK(!ConstraintSpace().AdjoiningFloatTypes());
+    // The BFC block-offset was determined before entering this algorithm. This
+    // means that there should be no adjoining objects.
+    DCHECK(!ConstraintSpace().AdjoiningObjectTypes());
   }
 
   // In order to get the correct list of layout opportunities, we need to
@@ -948,9 +948,9 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
           ComputeContentSize(line_info, exclusion_space, line_height));
 
       // As we aren't an empty inline we should have correctly placed all
-      // our adjoining floats, and shouldn't propagate this information
+      // our adjoining objects, and shouldn't propagate this information
       // to siblings.
-      container_builder_.ResetAdjoiningFloatTypes();
+      container_builder_.ResetAdjoiningObjectTypes();
 
       if (opportunity.rect.BlockStartOffset() >
           ConstraintSpace().BfcOffset().block_offset)
@@ -989,11 +989,11 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
     if (item.Type() != NGInlineItem::kFloating || should_ignore_floats)
       continue;
 
-    container_builder_.AddAdjoiningFloatTypes(
+    container_builder_.AddAdjoiningObjectTypes(
         ResolvedFloating(item.GetLayoutObject()->StyleRef().Floating(),
                          ConstraintSpace().Direction()) == EFloat::kLeft
-            ? kFloatTypeLeft
-            : kFloatTypeRight);
+            ? kAdjoiningFloatLeft
+            : kAdjoiningFloatRight);
 
     // If we are an empty inline, and don't have the special forced BFC
     // block-offset yet, there is no way to position any floats.

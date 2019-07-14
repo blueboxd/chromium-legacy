@@ -202,9 +202,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
-    if (!is_new_fc_)
-      space_.bitfields_.adjoining_floats = static_cast<unsigned>(floats);
+  NGConstraintSpaceBuilder& SetAdjoiningObjectTypes(
+      NGAdjoiningObjectTypes adjoining_object_types) {
+    if (!is_new_fc_) {
+      space_.bitfields_.adjoining_object_types =
+          static_cast<unsigned>(adjoining_object_types);
+    }
 
     return *this;
   }
@@ -293,7 +296,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     to_constraint_space_called_ = true;
 #endif
 
-    DCHECK(!is_new_fc_ || !space_.bitfields_.adjoining_floats);
+    DCHECK(!is_new_fc_ || !space_.bitfields_.adjoining_object_types);
     DCHECK_EQ(space_.HasFlag(NGConstraintSpace::kOrthogonalWritingModeRoot),
               !is_in_parallel_flow_ || force_orthogonal_writing_mode_root_);
 

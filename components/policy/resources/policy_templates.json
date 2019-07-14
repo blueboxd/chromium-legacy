@@ -3598,9 +3598,9 @@
       'desc': '''<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> provides for the secure update and installation of extensions. However, the content of some extensions hosted outside of the Chrome Web Store may only be protected by insecure signing or hashing algorithms such as SHA1. When this policy is disabled, fresh installation of and updates to such extensions will not be permitted by Chrome (until the extension developers rebuild the extension with stronger algorithms). When this policy is enabled, installation and updates for such extensions will be permitted.
 
           This will default to the enabled behavior when unset.
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 75, this will default to the disabled behavior when unset.
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 76, this will default to the disabled behavior when unset.
 
-          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 77, this policy will be ignored and treated as disabled.''',
+          Starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 78, this policy will be ignored and treated as disabled.''',
     },
     {
       'name': 'ExtensionAllowedTypes',

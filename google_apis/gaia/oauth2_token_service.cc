@@ -26,16 +26,14 @@
 
 OAuth2TokenService::OAuth2TokenService(
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : delegate_(std::move(delegate)), all_credentials_loaded_(false) {
+    : delegate_(std::move(delegate)) {
   DCHECK(delegate_);
-  AddObserver(this);
   token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
       this /* OAuth2AccessTokenManager::Delegate* */);
 }
 
 OAuth2TokenService::~OAuth2TokenService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RemoveObserver(this);
 }
 
 OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
@@ -97,15 +95,7 @@ void OAuth2TokenService::OnAccessTokenFetched(
 
 bool OAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
-  return RefreshTokenIsAvailable(account_id);
-}
-
-void OAuth2TokenService::AddObserver(OAuth2TokenServiceObserver* observer) {
-  delegate_->AddObserver(observer);
-}
-
-void OAuth2TokenService::RemoveObserver(OAuth2TokenServiceObserver* observer) {
-  delegate_->RemoveObserver(observer);
+  return delegate_->RefreshTokenIsAvailable(account_id);
 }
 
 void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
@@ -116,47 +106,6 @@ void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
 void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
     OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
   token_manager_->RemoveDiagnosticsObserver(observer);
-}
-
-bool OAuth2TokenService::AreAllCredentialsLoaded() const {
-  return all_credentials_loaded_;
-}
-
-std::vector<CoreAccountId> OAuth2TokenService::GetAccounts() const {
-  if (!AreAllCredentialsLoaded())
-    return std::vector<CoreAccountId>();
-
-  return delegate_->GetAccounts();
-}
-
-bool OAuth2TokenService::RefreshTokenIsAvailable(
-    const CoreAccountId& account_id) const {
-  return delegate_->RefreshTokenIsAvailable(account_id);
-}
-
-bool OAuth2TokenService::RefreshTokenHasError(
-    const CoreAccountId& account_id) const {
-  return GetAuthError(account_id) != GoogleServiceAuthError::AuthErrorNone();
-}
-
-GoogleServiceAuthError OAuth2TokenService::GetAuthError(
-    const CoreAccountId& account_id) const {
-  GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
-  DCHECK(!error.IsTransientError());
-  return error;
-}
-
-void OAuth2TokenService::OnRefreshTokensLoaded() {
-  all_credentials_loaded_ = true;
-}
-
-void OAuth2TokenService::CancelAllRequests() {
-  token_manager_->CancelAllRequests();
-}
-
-void OAuth2TokenService::CancelRequestsForAccount(
-    const CoreAccountId& account_id) {
-  token_manager_->CancelRequestsForAccount(account_id);
 }
 
 void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(

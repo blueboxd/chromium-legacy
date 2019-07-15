@@ -14,5 +14,8 @@ if (is_win || is_mac || is_desktop_linux || is_chromeos) {
       "//chrome/browser/performance_manager:mojo_bindings",
       "//chrome/browser/resource_coordinator:mojo_bindings",
     ]
+
+    # TODO(https://crbug.com/968369): Change to use new names.
+    use_old_js_lite_bindings_names = true
   }
 }

@@ -32,6 +32,7 @@
 @property(nonatomic, readwrite, strong) UIColor* cellDetailColor;
 @property(nonatomic, readwrite, strong) UIColor* headerFooterDetailColor;
 @property(nonatomic, readwrite, strong) UIColor* tintColor;
+@property(nonatomic, readwrite, strong) UIColor* solidButtonTextColor;
 
 @end
 

@@ -12,13 +12,13 @@ using base::android::ScopedJavaLocalRef;
 namespace device {
 
 // static
-UsbConfigDescriptor UsbConfigurationAndroid::Convert(
+mojom::UsbConfigurationInfoPtr UsbConfigurationAndroid::Convert(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& usb_configuration) {
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbConfiguration_create(env, usb_configuration);
 
-  UsbConfigDescriptor config(
+  mojom::UsbConfigurationInfoPtr config = BuildUsbConfigurationInfoPtr(
       Java_ChromeUsbConfiguration_getConfigurationValue(env, wrapper),
       Java_ChromeUsbConfiguration_isSelfPowered(env, wrapper),
       Java_ChromeUsbConfiguration_isRemoteWakeup(env, wrapper),
@@ -26,11 +26,11 @@ UsbConfigDescriptor UsbConfigurationAndroid::Convert(
 
   base::android::JavaObjectArrayReader<jobject> interfaces(
       Java_ChromeUsbConfiguration_getInterfaces(env, wrapper));
-  config.interfaces.reserve(interfaces.size());
+  config->interfaces.reserve(interfaces.size());
   for (auto interface : interfaces) {
-    config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
+    config->interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
   }
-  AggregateInterfacesForConfig(&config);
+  AggregateInterfacesForConfig(config.get());
 
   return config;
 }

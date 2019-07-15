@@ -47,12 +47,19 @@ source_set("tab_grid") {
   ]
 }
 
+source_set("tab_grid_ui_constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "tab_grid_constants.h",
+    "tab_grid_constants.mm",
+  ]
+}
+
 source_set("tab_grid_ui") {
   sources = [
     "tab_grid_bottom_toolbar.h",
     "tab_grid_bottom_toolbar.mm",
-    "tab_grid_constants.h",
-    "tab_grid_constants.mm",
     "tab_grid_empty_state_view.h",
     "tab_grid_empty_state_view.mm",
     "tab_grid_new_tab_button.h",
@@ -71,7 +78,9 @@ source_set("tab_grid_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":tab_grid_ui_constants",
     "grid:grid_ui",
+    "grid:grid_ui_constants",
     "resources:new_tab_floating_button",
     "resources:new_tab_floating_button_incognito",
     "resources:new_tab_toolbar_button",
@@ -130,14 +139,12 @@ source_set("egtest_support") {
   ]
 
   deps = [
-    ":tab_grid_ui",
-    "grid:grid_ui",
+    ":tab_grid_ui_constants",
+    "grid:grid_ui_constants",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ui/base",
@@ -154,6 +161,7 @@ source_set("eg_tests") {
 
   deps = [
     ":egtest_support",
+    ":tab_grid_ui_constants",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/tabs:tabs",

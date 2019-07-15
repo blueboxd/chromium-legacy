@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
+#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
@@ -26,7 +25,7 @@ namespace {
 // Returns the popup row containing the |url| as suggestion.
 id<GREYMatcher> PopupRowWithUrl(GURL url) {
   return grey_allOf(
-      grey_kindOfClass([OmniboxPopupRow class]),
+      grey_kindOfClassName(@"OmniboxPopupRow"),
       grey_descendant(chrome_test_util::StaticTextWithAccessibilityLabel(
           base::SysUTF8ToNSString(url.GetContent()))),
       nil);
@@ -299,6 +298,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Try to switch to the first tab.
   [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
       performAction:grey_tap()];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   // Check that the URL has been opened in a new foreground tab.
   [ChromeEarlGrey waitForWebStateContainingText:kPage1];

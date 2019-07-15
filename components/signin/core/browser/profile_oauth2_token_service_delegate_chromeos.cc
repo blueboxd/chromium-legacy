@@ -156,6 +156,8 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
 
   auto it = errors_.find(account_id);
   if (it != errors_.end()) {
+    if (error == it->second.last_auth_error)
+      return;
     // Update the existing error.
     if (error.state() == GoogleServiceAuthError::NONE)
       errors_.erase(it);

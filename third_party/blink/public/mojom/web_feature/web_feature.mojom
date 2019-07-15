@@ -2345,6 +2345,10 @@ enum WebFeature {
   kLinkPrefetchLoadEvent = 2956,
   kLinkPrefetchErrorEvent = 2957,
   kFontSizeWebkitXxxLarge = 2958,
+  kV8Database_ChangeVersion_Method = 2959,
+  kV8Database_Transaction_Method = 2960,
+  kV8Database_ReadTransaction_Method = 2961,
+  kV8SQLTransaction_ExecuteSql_Method = 2962,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

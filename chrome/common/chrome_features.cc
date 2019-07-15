@@ -701,7 +701,7 @@ bool UseDisplayWideColorGamut() {
 #if defined(OS_CHROMEOS)
 // Enables or disables the FTL signaling service for CRD sessions in Kiosk mode.
 const base::Feature kUseFtlSignalingForCrdHostDelegate{
-    "UseFtlSignalingForCrdHostDelegate", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseFtlSignalingForCrdHostDelegate", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_CHROMEOS)

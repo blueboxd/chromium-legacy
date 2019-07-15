@@ -291,6 +291,12 @@
 // Returns a matcher for "Open In..." button.
 + (id<GREYMatcher>)openInButton;
 
+// Returns the GREYMatcher for the button that opens the tab grid.
++ (id<GREYMatcher>)tabGridOpenButton;
+
+// Returns the GREYMatcher for the cell at |index| in the tab grid.
++ (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_APP_INTERFACE_H_

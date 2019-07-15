@@ -1902,7 +1902,7 @@ class ServiceManifestOwnerTest(unittest.TestCase):
 
 class BannedFunctionCheckTest(unittest.TestCase):
 
-  def testBannedIosObcjFunctions(self):
+  def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
     input_api.files = [
       MockFile('some/ios/file.mm',
@@ -1913,6 +1913,10 @@ class BannedFunctionCheckTest(unittest.TestCase):
                 '}']),
       MockFile('another/ios_file.mm',
                ['class SomeTest : public testing::Test {};']),
+      MockFile('some/ios/file_egtest.mm',
+               ['- (void)testSomething { EXPECT_OCMOCK_VERIFY(aMock); }']),
+      MockFile('some/ios/file_unittest.mm',
+               ['TEST_F(SomeTest, TestThis) { EXPECT_OCMOCK_VERIFY(aMock); }']),
     ]
 
     errors = PRESUBMIT._CheckNoBannedFunctions(input_api, MockOutputApi())
@@ -1920,6 +1924,8 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('some/ios/file.mm' in errors[0].message)
     self.assertTrue('another/ios_file.mm' in errors[0].message)
     self.assertTrue('some/mac/file.mm' not in errors[0].message)
+    self.assertTrue('some/ios/file_egtest.mm' in errors[0].message)
+    self.assertTrue('some/ios/file_unittest.mm' not in errors[0].message)
 
   def testBannedMojoFunctions(self):
     input_api = MockInputApi()

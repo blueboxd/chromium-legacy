@@ -18,7 +18,6 @@
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
-#include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -36,15 +35,15 @@ const char kReceiverName[] = "test_receiver_name";
 
 class MockSharingService : public SharingService {
  public:
-  MockSharingService(syncer::SyncService* sync_service,
-                              std::unique_ptr<SharingFCMHandler> fcm_handler)
-      : SharingService(nullptr,
-                       nullptr,
-                       nullptr,
-                       nullptr,
+  explicit MockSharingService(std::unique_ptr<SharingFCMHandler> fcm_handler)
+      : SharingService(/* sync_prefs= */ nullptr,
+                       /* vapid_key_manager= */ nullptr,
+                       /* sharing_device_registration= */ nullptr,
+                       /* fcm_sender= */ nullptr,
                        std::move(fcm_handler),
-                       nullptr,
-                       sync_service) {}
+                       /* device_info_tracker= */ nullptr,
+                       /* local_device_info_provider= */ nullptr,
+                       /* sync_service */ nullptr) {}
 
   ~MockSharingService() override = default;
 
@@ -62,10 +61,7 @@ class ClickToCallSharingDialogControllerTest : public testing::Test {
  public:
   ClickToCallSharingDialogControllerTest() {}
 
-  syncer::FakeSyncService fake_sync_service_;
-
   NiceMock<MockSharingService> mock_sharing_service_{
-      &fake_sync_service_,
       std::make_unique<SharingFCMHandler>(nullptr, nullptr)};
 
   ClickToCallSharingDialogController click_to_call_sharing_dialog_controller_{

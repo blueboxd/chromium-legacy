@@ -38,7 +38,8 @@ class PrefRegistrySimple;
 // won't be cached.
 //
 // Note: requests should be started from the UI thread.
-class ProfileOAuth2TokenService : public OAuth2TokenService {
+class ProfileOAuth2TokenService : public OAuth2TokenService,
+                                  public OAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
                                        bool /* is_refresh_token_valid */,
@@ -55,6 +56,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Add or remove observers of this token service.
+  void AddObserver(OAuth2TokenServiceObserver* observer);
+  void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -167,6 +172,34 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
                           const CoreAccountId& account_id);
 #endif
 
+  // Returns true iff all credentials have been loaded from disk.
+  bool AreAllCredentialsLoaded() const;
+
+  void set_all_credentials_loaded_for_testing(bool loaded) {
+    all_credentials_loaded_ = loaded;
+  }
+
+  // Lists account IDs of all accounts with a refresh token maintained by this
+  // instance.
+  // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
+  // will return true.
+  // Note: If tokens have not been fully loaded yet, an empty list is returned.
+  std::vector<CoreAccountId> GetAccounts() const;
+
+  // Returns true if a refresh token exists for |account_id|. If false, calls to
+  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
+  // Note: This will return |true| if and only if |account_id| is contained in
+  // the list returned by |GetAccounts|.
+  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
+
+  // Returns true if a refresh token exists for |account_id| and it is in a
+  // persistent error state.
+  bool RefreshTokenHasError(const CoreAccountId& account_id) const;
+
+  // Returns the auth error associated with |account_id|. Only persistent errors
+  // will be returned.
+  GoogleServiceAuthError GetAuthError(const CoreAccountId& account_id) const;
+
   // Exposes the ability to update auth errors to tests.
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error);
@@ -187,11 +220,20 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // used to request the tokens.
   void ClearCacheForAccount(const CoreAccountId& account_id);
 
+  // Cancels all requests that are currently in progress.
+  void CancelAllRequests();
+
+  // Cancels all requests related to a given |account_id|.
+  void CancelRequestsForAccount(const CoreAccountId& account_id);
+
   // Creates a new device ID if there are no accounts, or if the current device
   // ID is empty.
   void RecreateDeviceIdIfNeeded();
 
   PrefService* user_prefs_;
+
+  // Whether all credentials have been loaded.
+  bool all_credentials_loaded_;
 
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableFromSourceCallback on_refresh_token_available_callback_;
@@ -201,6 +243,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
       signin_metrics::SourceForRefreshTokenOperation::kUnknown;
 
   FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, UpdateClearsCache);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest, CancelAllRequests);
+  FRIEND_TEST_ALL_PREFIXES(ProfileOAuth2TokenServiceTest,
+                           CancelRequestsForAccount);
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

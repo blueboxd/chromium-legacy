@@ -8,12 +8,13 @@ cr.define('downloads', function() {
       /** @type {downloads.mojom.PageCallbackRouter} */
       this.callbackRouter = new downloads.mojom.PageCallbackRouter();
 
-      /** @type {downloads.mojom.PageHandlerProxy} */
-      this.handler = new downloads.mojom.PageHandlerProxy();
+      /** @type {downloads.mojom.PageHandlerRemote} */
+      this.handler = new downloads.mojom.PageHandlerRemote();
 
-      const factory = downloads.mojom.PageHandlerFactory.getProxy();
+      const factory = downloads.mojom.PageHandlerFactory.getRemote();
       factory.createPageHandler(
-          this.callbackRouter.$.createProxy(), this.handler.$.createRequest());
+          this.callbackRouter.$.bindNewPipeAndPassRemote(),
+          this.handler.$.bindNewPipeAndPassReceiver());
     }
   }
 

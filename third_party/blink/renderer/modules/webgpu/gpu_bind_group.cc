@@ -23,7 +23,9 @@ DawnBindGroupBinding AsDawnType(const GPUBindGroupBinding* webgpu_binding) {
     GPUBufferBinding* buffer =
         webgpu_binding->resource().GetAsGPUBufferBinding();
     dawn_binding.offset = buffer->offset();
-    dawn_binding.size = buffer->size();
+    // UINT64_MAX is used as a special value in Dawn to indicate that it should
+    // use the whole size of the buffer.
+    dawn_binding.size = buffer->hasSize() ? buffer->size() : UINT64_MAX;
     dawn_binding.buffer = AsDawnType(buffer->buffer());
 
   } else if (webgpu_binding->resource().IsGPUSampler()) {

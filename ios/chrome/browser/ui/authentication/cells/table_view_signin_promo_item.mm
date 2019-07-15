@@ -46,6 +46,11 @@ const CGFloat kMargin = 16;
     [cell.signinPromoView.secondaryButton setTitleColor:styler.tintColor
                                                forState:UIControlStateNormal];
   }
+  if (styler.solidButtonTextColor) {
+    [cell.signinPromoView.primaryButton
+        setTitleColor:styler.solidButtonTextColor
+             forState:UIControlStateNormal];
+  }
 }
 
 @end

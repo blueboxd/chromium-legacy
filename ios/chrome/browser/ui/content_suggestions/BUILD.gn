@@ -151,9 +151,6 @@ source_set("content_suggestions_constant") {
     "ntp_home_constant.mm",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  deps = [
-    "//ios/chrome/browser/ui/util",
-  ]
 }
 
 source_set("content_suggestions_ui_util") {
@@ -167,6 +164,7 @@ source_set("content_suggestions_ui_util") {
     "//base:i18n",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/signin:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/location_bar:constants",

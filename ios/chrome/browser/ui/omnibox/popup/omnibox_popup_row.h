@@ -9,9 +9,6 @@
 
 @class OmniboxPopupTruncatingLabel;
 
-// Accessibility identifier for the Switch to Open Tab button.
-extern NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
-
 @class OmniboxPopupRow;
 
 // Accessibility delegate for handling the row actions.

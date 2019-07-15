@@ -172,6 +172,9 @@ mojom("mojom_platform") {
     "//url/mojom:url_mojom_origin",
   ]
 
+  # TODO(https://crbug.com/968369): Change to use new names.
+  use_old_js_lite_bindings_names = true
+
   # iOS doesn't use and must not depend on //media
   if (!is_ios) {
     public_deps += [
@@ -238,6 +241,9 @@ mojom("android_mojo_bindings") {
     sources += [ "unhandled_tap_notifier/unhandled_tap_notifier.mojom" ]
     public_deps += [ "//ui/gfx/geometry/mojo" ]
   }
+
+  # TODO(https://crbug.com/968369): Change to use new names.
+  use_old_js_lite_bindings_names = true
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
@@ -484,4 +490,7 @@ mojom("authenticator_test_mojo_bindings") {
 
   # Don't scramble message IDs so they are redistributable to external tests.
   scramble_message_ids = false
+
+  # TODO(https://crbug.com/968369): Change to use new names.
+  use_old_js_lite_bindings_names = true
 }

@@ -66,10 +66,10 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   const base::string16& product_string() const { return product_string_; }
   const base::string16& serial_number() const { return serial_number_; }
   const GURL& webusb_landing_page() const { return webusb_landing_page_; }
-  const std::vector<UsbConfigDescriptor>& configurations() const {
+  const std::vector<mojom::UsbConfigurationInfoPtr>& configurations() const {
     return descriptor_.configurations;
   }
-  const UsbConfigDescriptor* active_configuration() const {
+  const mojom::UsbConfigurationInfo* active_configuration() const {
     return active_configuration_;
   }
 
@@ -150,7 +150,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // The current device configuration descriptor. May be null if the device is
   // in an unconfigured state; if not null, it is a pointer to one of the
   // items in |descriptor_.configurations|.
-  const UsbConfigDescriptor* active_configuration_ = nullptr;
+  const mojom::UsbConfigurationInfo* active_configuration_ = nullptr;
 
   // Weak pointers to open handles. HandleClosed() will be called before each
   // is freed.

@@ -259,7 +259,6 @@
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_service.h"
 #include "components/services/unzip/public/interfaces/constants.mojom.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"

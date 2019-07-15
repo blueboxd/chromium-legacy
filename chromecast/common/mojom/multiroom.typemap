@@ -6,10 +6,10 @@ mojom = "//chromecast/common/mojom/multiroom.mojom"
 
 public_headers = [ "//chromecast/public/media/media_pipeline_device_params.h" ]
 
-traits_headers = [ "//chromecast/common/mojom/multiroom_struct_traits.h" ]
+traits_headers = [ "//chromecast/common/mojom/multiroom_mojom_traits.h" ]
 
 sources = [
-  "//chromecast/common/mojom/multiroom_struct_traits.h",
+  "//chromecast/common/mojom/multiroom_mojom_traits.h",
 ]
 
 public_deps = [

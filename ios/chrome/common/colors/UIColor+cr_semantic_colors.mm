@@ -27,7 +27,11 @@
     return UIColor.secondarySystemBackgroundColor;
   }
 #endif
-  return UIColor.whiteColor;
+  // This is the value for secondarySystemBackgroundColor in light mode.
+  return [UIColor colorWithRed:244 / (CGFloat)0xFF
+                         green:244 / (CGFloat)0xFF
+                          blue:248 / (CGFloat)0xFF
+                         alpha:1];
 }
 
 #pragma mark - System Grouped Background Colors

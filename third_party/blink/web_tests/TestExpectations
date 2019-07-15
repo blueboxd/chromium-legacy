@@ -3220,6 +3220,8 @@ crbug.com/983157 external/wpt/css/filter-effects/animation/backdrop-filter-inter
 crbug.com/983157 virtual/scalefactor200/external/wpt/css/filter-effects/animation/backdrop-filter-interpolation-003.html [ Crash ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-content/quotes-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Failure ]
@@ -3235,7 +3237,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-007.html [ Fai
 crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-007.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-overline-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-009.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-006.html [ Failure ]

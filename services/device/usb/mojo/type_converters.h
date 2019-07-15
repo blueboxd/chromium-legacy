@@ -17,18 +17,10 @@
 // that uses these conversions explicitly or implicitly.
 
 namespace device {
-struct UsbConfigDescriptor;
 class UsbDevice;
 }  // namespace device
 
 namespace mojo {
-
-template <>
-struct TypeConverter<device::mojom::UsbConfigurationInfoPtr,
-                     device::UsbConfigDescriptor> {
-  static device::mojom::UsbConfigurationInfoPtr Convert(
-      const device::UsbConfigDescriptor& config);
-};
 
 template <>
 struct TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice> {
@@ -41,17 +33,6 @@ struct TypeConverter<device::mojom::UsbIsochronousPacketPtr,
                      device::UsbDeviceHandle::IsochronousPacket> {
   static device::mojom::UsbIsochronousPacketPtr Convert(
       const device::UsbDeviceHandle::IsochronousPacket& packet);
-};
-
-template <typename A, typename B>
-struct TypeConverter<std::vector<A>, std::vector<B>> {
-  static std::vector<A> Convert(const std::vector<B>& input) {
-    std::vector<A> result;
-    result.reserve(input.size());
-    for (const B& item : input)
-      result.push_back(mojo::ConvertTo<A>(item));
-    return result;
-  }
 };
 
 }  // namespace mojo

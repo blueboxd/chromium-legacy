@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_COMMON_MOJOM_MULTIROOM_STRUCT_TRAITS_H_
-#define CHROMECAST_COMMON_MOJOM_MULTIROOM_STRUCT_TRAITS_H_
+#ifndef CHROMECAST_COMMON_MOJOM_MULTIROOM_MOJOM_TRAITS_H_
+#define CHROMECAST_COMMON_MOJOM_MULTIROOM_MOJOM_TRAITS_H_
 
 #include "base/logging.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
@@ -46,4 +46,4 @@ struct mojo::EnumTraits<chromecast::mojom::AudioChannel,
   }
 };
 
-#endif  // CHROMECAST_COMMON_MOJOM_MULTIROOM_STRUCT_TRAITS_H_
+#endif  // CHROMECAST_COMMON_MOJOM_MULTIROOM_MOJOM_TRAITS_H_

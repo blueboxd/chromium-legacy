@@ -81,12 +81,6 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
   void set_auto_post_fetch_response_on_message_loop(bool auto_post_response);
 
- protected:
-  // OAuth2TokenService overrides.
-  void CancelAllRequests() override;
-
-  void CancelRequestsForAccount(const CoreAccountId& account_id) override;
-
  private:
   FakeOAuth2AccessTokenManager* GetFakeAccessTokenManager();
 

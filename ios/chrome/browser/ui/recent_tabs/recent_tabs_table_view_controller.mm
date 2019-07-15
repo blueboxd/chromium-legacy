@@ -44,6 +44,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -54,6 +55,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -224,7 +226,11 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       [[TableViewImageItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
   historyItem.image = [UIImage imageNamed:@"show_history"];
-  historyItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  if (self.styler.tintColor) {
+    historyItem.textColor = self.styler.tintColor;
+  } else {
+    historyItem.textColor = [UIColor colorNamed:kTintColor];
+  }
   historyItem.accessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
   [model addItem:historyItem

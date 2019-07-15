@@ -3406,6 +3406,13 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Cancelled"/>
 </enum>
 
+<enum name="AutofillAssistantPaymentRequestAutofillInfoChanged">
+  <int value="0" label="Changed &amp; Success"/>
+  <int value="1" label="Not changed &amp; Success"/>
+  <int value="2" label="Changed &amp; Failure"/>
+  <int value="3" label="Not changed &amp; Failure"/>
+</enum>
+
 <enum name="AutofillAssistantPaymentRequestPrefilled">
   <int value="0" label="Initially complete &amp; Success"/>
   <int value="1" label="Initially incomplete &amp; Success"/>
@@ -23874,6 +23881,10 @@ Called by update_net_error_codes.py.-->
   <int value="2956" label="LinkPrefetchLoadEvent"/>
   <int value="2957" label="LinkPrefetchErrorEvent"/>
   <int value="2958" label="FontSizeWebkitXxxLarge"/>
+  <int value="2959" label="V8Database_ChangeVersion_Method"/>
+  <int value="2960" label="V8Database_Transaction_Method"/>
+  <int value="2961" label="V8Database_ReadTransaction_Method"/>
+  <int value="2962" label="V8SQLTransaction_ExecuteSql_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33536,6 +33547,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2141661938" label="AnimatedAppMenuIcon:enabled"/>
   <int value="-2141247271" label="AndroidOmniboxPreviewsBadge:enabled"/>
   <int value="-2138883960" label="AutofillRejectCompanyBirthyearName:disabled"/>
+  <int value="-2136259447" label="PasswordManagerOnboardingAndroid:disabled"/>
   <int value="-2134333982" label="ShowArcFilesApp:enabled"/>
   <int value="-2134244069" label="HttpFormWarning:enabled"/>
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
@@ -34302,6 +34314,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
+  <int value="-1143108160" label="PasswordManagerOnboardingAndroid:enabled"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
   <int value="-1142034548" label="BuiltInModuleKvStorage:enabled"/>
   <int value="-1137696948" label="enable-chromeos-account-manager"/>

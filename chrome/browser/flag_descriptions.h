@@ -1473,6 +1473,12 @@ extern const char kOfflinePagesShowAlternateDinoPageDescription[];
 extern const char kOffliningRecentPagesName[];
 extern const char kOffliningRecentPagesDescription[];
 
+extern const char kPasswordManagerOnboardingAndroidName[];
+extern const char kPasswordManagerOnboardingAndroidDescription[];
+
+extern const char kProcessSharingWithStrictSiteInstancesName[];
+extern const char kProcessSharingWithStrictSiteInstancesDescription[];
+
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
@@ -1504,9 +1510,6 @@ extern const char kSiteIsolationForPasswordSitesDescription[];
 
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
-
-extern const char kProcessSharingWithStrictSiteInstancesName[];
-extern const char kProcessSharingWithStrictSiteInstancesDescription[];
 
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];

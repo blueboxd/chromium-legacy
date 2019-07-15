@@ -165,9 +165,13 @@ void SharingSyncPreference::SetVapidKey(
 
 void SharingSyncPreference::SetVapidKeyChangeObserver(
     const base::RepeatingClosure& obs) {
+  ClearVapidKeyChangeObserver();
+  pref_change_registrar_.Add(prefs::kSharingVapidKey, obs);
+}
+
+void SharingSyncPreference::ClearVapidKeyChangeObserver() {
   if (pref_change_registrar_.IsObserved(prefs::kSharingVapidKey))
     pref_change_registrar_.Remove(prefs::kSharingVapidKey);
-  pref_change_registrar_.Add(prefs::kSharingVapidKey, obs);
 }
 
 std::map<std::string, SharingSyncPreference::Device>

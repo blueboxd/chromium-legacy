@@ -142,23 +142,25 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
   } else {
     // Pre-lollipop only the first configuration was supported. Build a basic
     // configuration out of the available interfaces.
-    UsbConfigDescriptor config(1,      // Configuration value, reasonable guess.
-                               false,  // Self powered, arbitrary default.
-                               false,  // Remote wakeup, rbitrary default.
-                               0);     // Maximum power, aitrary default.
+    mojom::UsbConfigurationInfoPtr config = BuildUsbConfigurationInfoPtr(
+        1,      // Configuration value, reasonable guess.
+        false,  // Self powered, arbitrary default.
+        false,  // Remote wakeup, rbitrary default.
+        0);     // Maximum power, aitrary default.
 
     JavaObjectArrayReader<jobject> interfaces(
         Java_ChromeUsbDevice_getInterfaces(env, wrapper));
-    config.interfaces.reserve(interfaces.size());
+    config->interfaces.reserve(interfaces.size());
     for (auto interface : interfaces) {
-      config.interfaces.push_back(UsbInterfaceAndroid::Convert(env, interface));
+      config->interfaces.push_back(
+          UsbInterfaceAndroid::Convert(env, interface));
     }
-    AggregateInterfacesForConfig(&config);
-    descriptor_.configurations.push_back(config);
+    AggregateInterfacesForConfig(config.get());
+    descriptor_.configurations.push_back(std::move(config));
   }
 
   if (configurations().size() > 0)
-    ActiveConfigurationChanged(configurations()[0].configuration_value);
+    ActiveConfigurationChanged(configurations()[0]->configuration_value);
 }
 
 UsbDeviceAndroid::~UsbDeviceAndroid() {}

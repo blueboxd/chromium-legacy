@@ -72,7 +72,7 @@ const uint8_t kConfig2Descriptor[] = {
 };
 // clang-format on
 
-void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
+void ExpectConfig1Info(const mojom::UsbConfigurationInfo& config) {
   // Config 1
   EXPECT_EQ(1, config.configuration_value);
   EXPECT_FALSE(config.self_powered);
@@ -133,7 +133,7 @@ void ExpectConfig1Descriptor(const UsbConfigDescriptor& config) {
   EXPECT_EQ(0u, config.interfaces[1]->alternates[0]->extra_data.size());
 }
 
-void ExpectConfig2Descriptor(const UsbConfigDescriptor& config) {
+void ExpectConfig2Info(const mojom::UsbConfigurationInfo& config) {
   // Config 2
   EXPECT_EQ(2, config.configuration_value);
   EXPECT_TRUE(config.self_powered);
@@ -191,8 +191,8 @@ void ExpectDeviceDescriptor(const UsbDeviceDescriptor& descriptor) {
   EXPECT_EQ(0x5678, descriptor.product_id);
   EXPECT_EQ(0x0100, descriptor.device_version);
   ASSERT_EQ(2u, descriptor.configurations.size());
-  ExpectConfig1Descriptor(descriptor.configurations[0]);
-  ExpectConfig2Descriptor(descriptor.configurations[1]);
+  ExpectConfig1Info(*descriptor.configurations[0]);
+  ExpectConfig2Info(*descriptor.configurations[1]);
 }
 
 void OnReadDescriptors(std::unique_ptr<UsbDeviceDescriptor> descriptor) {
@@ -246,15 +246,16 @@ TEST_F(UsbDescriptorsTest, ReadDescriptors) {
 }
 
 TEST_F(UsbDescriptorsTest, NoInterfaceAssociations) {
-  UsbConfigDescriptor config(1, false, false, 0);
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 1, 255, 255, 255));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(1, 0, 255, 255, 255));
-  config.AssignFirstInterfaceNumbers();
+  mojom::UsbConfigurationInfoPtr config =
+      BuildUsbConfigurationInfoPtr(1, false, false, 0);
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 1, 255, 255, 255));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(1, 0, 255, 255, 255));
+  AssignFirstInterfaceNumbers(config.get());
 
-  EXPECT_EQ(0, config.interfaces[0]->first_interface);
-  EXPECT_EQ(0, config.interfaces[1]->first_interface);
-  EXPECT_EQ(1, config.interfaces[2]->first_interface);
+  EXPECT_EQ(0, config->interfaces[0]->first_interface);
+  EXPECT_EQ(0, config->interfaces[1]->first_interface);
+  EXPECT_EQ(1, config->interfaces[2]->first_interface);
 }
 
 TEST_F(UsbDescriptorsTest, InterfaceAssociations) {
@@ -271,73 +272,77 @@ TEST_F(UsbDescriptorsTest, InterfaceAssociations) {
   static const uint8_t kIAD4[] = {0x08, 0x0b, 0x04, 0x02,
                                   0xff, 0xff, 0xff, 0x00};
 
-  UsbConfigDescriptor config(1, false, false, 0);
-  config.extra_data.assign(kIAD1, kIAD1 + sizeof(kIAD1));
-  config.extra_data.insert(config.extra_data.end(), kIAD2,
-                           kIAD2 + sizeof(kIAD2));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(1, 0, 255, 255, 255));
+  mojom::UsbConfigurationInfoPtr config =
+      BuildUsbConfigurationInfoPtr(1, false, false, 0);
+  config->extra_data.assign(kIAD1, kIAD1 + sizeof(kIAD1));
+  config->extra_data.insert(config->extra_data.end(), kIAD2,
+                            kIAD2 + sizeof(kIAD2));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(1, 0, 255, 255, 255));
   mojom::UsbInterfaceInfoPtr iface1a =
       BuildUsbInterfaceInfoPtr(1, 1, 255, 255, 255);
   iface1a->alternates[0]->extra_data.assign(kIAD3, kIAD3 + sizeof(kIAD3));
-  config.interfaces.push_back(std::move(iface1a));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(2, 0, 255, 255, 255));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(3, 0, 255, 255, 255));
+  config->interfaces.push_back(std::move(iface1a));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(2, 0, 255, 255, 255));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(3, 0, 255, 255, 255));
   mojom::UsbInterfaceInfoPtr iface4 =
       BuildUsbInterfaceInfoPtr(4, 0, 255, 255, 255);
   iface4->alternates[0]->extra_data.assign(kIAD4, kIAD4 + sizeof(kIAD4));
-  config.interfaces.push_back(std::move(iface4));
-  config.interfaces.push_back(BuildUsbInterfaceInfoPtr(5, 0, 255, 255, 255));
-  config.AssignFirstInterfaceNumbers();
+  config->interfaces.push_back(std::move(iface4));
+  config->interfaces.push_back(BuildUsbInterfaceInfoPtr(5, 0, 255, 255, 255));
+  AssignFirstInterfaceNumbers(config.get());
 
   // Interfaces 0 and 1 (plus 1's alternate) are a single function.
-  EXPECT_EQ(0, config.interfaces[0]->interface_number);
-  EXPECT_EQ(0, config.interfaces[0]->first_interface);
-  EXPECT_EQ(1, config.interfaces[1]->interface_number);
-  EXPECT_EQ(0, config.interfaces[1]->first_interface);
-  EXPECT_EQ(1, config.interfaces[2]->interface_number);
-  EXPECT_EQ(0, config.interfaces[2]->first_interface);
+  EXPECT_EQ(0, config->interfaces[0]->interface_number);
+  EXPECT_EQ(0, config->interfaces[0]->first_interface);
+  EXPECT_EQ(1, config->interfaces[1]->interface_number);
+  EXPECT_EQ(0, config->interfaces[1]->first_interface);
+  EXPECT_EQ(1, config->interfaces[2]->interface_number);
+  EXPECT_EQ(0, config->interfaces[2]->first_interface);
 
   // Interfaces 2 and 3 are their own functions.
-  EXPECT_EQ(2, config.interfaces[3]->interface_number);
-  EXPECT_EQ(2, config.interfaces[3]->first_interface);
-  EXPECT_EQ(3, config.interfaces[4]->interface_number);
-  EXPECT_EQ(3, config.interfaces[4]->first_interface);
+  EXPECT_EQ(2, config->interfaces[3]->interface_number);
+  EXPECT_EQ(2, config->interfaces[3]->first_interface);
+  EXPECT_EQ(3, config->interfaces[4]->interface_number);
+  EXPECT_EQ(3, config->interfaces[4]->first_interface);
 
   // Interfaces 4 and 5 are a single function.
-  EXPECT_EQ(4, config.interfaces[5]->interface_number);
-  EXPECT_EQ(4, config.interfaces[5]->first_interface);
-  EXPECT_EQ(5, config.interfaces[6]->interface_number);
-  EXPECT_EQ(4, config.interfaces[6]->first_interface);
+  EXPECT_EQ(4, config->interfaces[5]->interface_number);
+  EXPECT_EQ(4, config->interfaces[5]->first_interface);
+  EXPECT_EQ(5, config->interfaces[6]->interface_number);
+  EXPECT_EQ(4, config->interfaces[6]->first_interface);
 }
 
 TEST_F(UsbDescriptorsTest, CorruptInterfaceAssociations) {
   {
     // Descriptor is too short.
     static const uint8_t kIAD[] = {0x01};
-    UsbConfigDescriptor config(1, false, false, 0);
-    config.extra_data.assign(kIAD, kIAD + sizeof(kIAD));
-    config.AssignFirstInterfaceNumbers();
+    mojom::UsbConfigurationInfoPtr config =
+        BuildUsbConfigurationInfoPtr(1, false, false, 0);
+    config->extra_data.assign(kIAD, kIAD + sizeof(kIAD));
+    AssignFirstInterfaceNumbers(config.get());
   }
   {
     // Descriptor is too long.
     static const uint8_t kIAD[] = {0x09, 0x0b, 0x00, 0x00,
                                    0x00, 0x00, 0x00, 0x00};
-    UsbConfigDescriptor config(1, false, false, 0);
-    config.extra_data.assign(kIAD, kIAD + sizeof(kIAD));
-    config.AssignFirstInterfaceNumbers();
+    mojom::UsbConfigurationInfoPtr config =
+        BuildUsbConfigurationInfoPtr(1, false, false, 0);
+    config->extra_data.assign(kIAD, kIAD + sizeof(kIAD));
+    AssignFirstInterfaceNumbers(config.get());
   }
   {
     // References an undefined interface.
     static const uint8_t kIAD[] = {0x08, 0x0b, 0x07, 0x00,
                                    0xff, 0xff, 0xff, 0x00};
-    UsbConfigDescriptor config(1, false, false, 0);
-    config.interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
-    config.extra_data.assign(kIAD, kIAD + sizeof(kIAD));
-    config.AssignFirstInterfaceNumbers();
+    mojom::UsbConfigurationInfoPtr config =
+        BuildUsbConfigurationInfoPtr(1, false, false, 0);
+    config->interfaces.push_back(BuildUsbInterfaceInfoPtr(0, 0, 255, 255, 255));
+    config->extra_data.assign(kIAD, kIAD + sizeof(kIAD));
+    AssignFirstInterfaceNumbers(config.get());
 
-    EXPECT_EQ(0, config.interfaces[0]->interface_number);
-    EXPECT_EQ(0, config.interfaces[0]->first_interface);
+    EXPECT_EQ(0, config->interfaces[0]->interface_number);
+    EXPECT_EQ(0, config->interfaces[0]->first_interface);
   }
 }
 

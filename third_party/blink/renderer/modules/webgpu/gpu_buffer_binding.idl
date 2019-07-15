@@ -7,5 +7,6 @@
 dictionary GPUBufferBinding {
     required GPUBuffer buffer;
     unsigned long long offset = 0;
-    required unsigned long long size;
+    // If size is undefined, use the whole size of the buffer.
+    unsigned long long size;
 };

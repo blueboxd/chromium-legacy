@@ -85,11 +85,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // Referrer for the current page; does not include the fragment.
   NSString* _currentReferrerString;
 
-  // The WKNavigation captured when |stopLoading| was called. Used for reporting
-  // WebController.EmptyNavigationManagerCausedByStopLoading UMA metric which
-  // helps with diagnosing a navigation related crash (crbug.com/565457).
-  __weak WKNavigation* _stoppedWKNavigation;
-
   // CertVerification errors which happened inside
   // |webView:didReceiveAuthenticationChallenge:completionHandler:|.
   // Key is leaf-cert/host pair. This storage is used to carry calculated
@@ -697,24 +692,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // for example, if a page is reloaded after the start of the provisional
   // load but before the load has been committed.
   if (![[self.navigationStates lastAddedNavigation] isEqual:navigation]) {
-    return;
-  }
-
-  // TODO(crbug.com/570699): Remove this workaround once |stopLoading| does not
-  // discard pending navigation items.
-  if ((!self.webStateImpl ||
-       !self.webStateImpl->GetNavigationManagerImpl().GetVisibleItem()) &&
-      _stoppedWKNavigation &&
-      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
-      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
-    // App is going to crash in this state (crbug.com/565457). Crash will occur
-    // on dereferencing visible navigation item, which is null. This scenario is
-    // possible after pending load was stopped for a child window. Early return
-    // to prevent the crash and report UMA metric to check if crash happening
-    // because the load was stopped.
-    UMA_HISTOGRAM_BOOLEAN(
-        "WebController.EmptyNavigationManagerCausedByStopLoading",
-        [_stoppedWKNavigation isEqual:navigation]);
     return;
   }
 
@@ -2041,7 +2018,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 }
 
 - (void)stopLoading {
-  _stoppedWKNavigation = [self.navigationStates lastAddedNavigation];
   self.pendingNavigationInfo.cancelled = YES;
   _safeBrowsingWarningDetectionTimer.Stop();
   [self loadCancelled];

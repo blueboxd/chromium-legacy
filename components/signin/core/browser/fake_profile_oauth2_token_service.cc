@@ -95,15 +95,6 @@ FakeProfileOAuth2TokenService::GetPendingRequests() {
   return GetFakeAccessTokenManager()->GetPendingRequests();
 }
 
-void FakeProfileOAuth2TokenService::CancelAllRequests() {
-  GetFakeAccessTokenManager()->CancelAllRequests();
-}
-
-void FakeProfileOAuth2TokenService::CancelRequestsForAccount(
-    const CoreAccountId& account_id) {
-  GetFakeAccessTokenManager()->CancelRequestsForAccount(account_id);
-}
-
 FakeOAuth2AccessTokenManager*
 FakeProfileOAuth2TokenService::GetFakeAccessTokenManager() {
   return static_cast<FakeOAuth2AccessTokenManager*>(GetAccessTokenManager());

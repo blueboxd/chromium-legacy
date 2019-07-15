@@ -122,7 +122,10 @@ class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
                           const GoogleServiceAuthError& auth_error) override {
     last_err_account_id_ = account_id;
     last_err_ = auth_error;
+    on_auth_error_changed_calls++;
   }
+
+  int on_auth_error_changed_calls = 0;
 
   std::string last_err_account_id_;
   GoogleServiceAuthError last_err_;
@@ -287,6 +290,31 @@ TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
   EXPECT_EQ(error, delegate_->GetAuthError(account_info_.account_id));
   EXPECT_EQ(account_info_.account_id, observer.last_err_account_id_);
   EXPECT_EQ(error, observer.last_err_);
+}
+
+TEST_F(CrOSOAuthDelegateTest, ObserversAreNotNotifiedIfErrorDidntChange) {
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
+  auto error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
+
+  delegate_->UpdateAuthError(account_info_.account_id, error);
+  EXPECT_EQ(1, observer.on_auth_error_changed_calls);
+  delegate_->UpdateAuthError(account_info_.account_id, error);
+  EXPECT_EQ(1, observer.on_auth_error_changed_calls);
+}
+
+TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedIfErrorDidChange) {
+  TestOAuth2TokenServiceObserver observer(delegate_.get());
+  delegate_->UpdateAuthError(
+      account_info_.account_id,
+      GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
+  EXPECT_EQ(1, observer.on_auth_error_changed_calls);
+
+  delegate_->UpdateAuthError(
+      account_info_.account_id,
+      GoogleServiceAuthError(
+          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+  EXPECT_EQ(2, observer.on_auth_error_changed_calls);
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsInsertion) {

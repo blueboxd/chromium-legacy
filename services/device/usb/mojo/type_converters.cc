@@ -17,26 +17,6 @@
 namespace mojo {
 
 // static
-device::mojom::UsbConfigurationInfoPtr TypeConverter<
-    device::mojom::UsbConfigurationInfoPtr,
-    device::UsbConfigDescriptor>::Convert(const device::UsbConfigDescriptor&
-                                              config) {
-  auto info = device::mojom::UsbConfigurationInfo::New();
-  info->configuration_value = config.configuration_value;
-  info->self_powered = config.self_powered;
-  info->remote_wakeup = config.remote_wakeup;
-  info->maximum_power = config.maximum_power;
-  info->extra_data.assign(config.extra_data.begin(), config.extra_data.end());
-
-  info->interfaces.reserve(config.interfaces.size());
-  for (const auto& interface : config.interfaces) {
-    info->interfaces.push_back(interface->Clone());
-  }
-
-  return info;
-}
-
-// static
 device::mojom::UsbDeviceInfoPtr
 TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
     const device::UsbDevice& device) {
@@ -59,11 +39,14 @@ TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
   info->product_name = device.product_string();
   info->serial_number = device.serial_number();
   info->webusb_landing_page = device.webusb_landing_page();
-  const device::UsbConfigDescriptor* config = device.active_configuration();
+  const device::mojom::UsbConfigurationInfo* config =
+      device.active_configuration();
   info->active_configuration = config ? config->configuration_value : 0;
-  info->configurations =
-      mojo::ConvertTo<std::vector<device::mojom::UsbConfigurationInfoPtr>>(
-          device.configurations());
+
+  info->configurations.reserve(device.configurations().size());
+  for (const auto& config : device.configurations()) {
+    info->configurations.push_back(config->Clone());
+  }
   return info;
 }
 

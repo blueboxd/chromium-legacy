@@ -10,6 +10,7 @@ from url_blacklist.url_blacklist import *
 from url_whitelist.url_whitelist import *
 from extension_blacklist.extension_blacklist import *
 from extension_whitelist.extension_whitelist import *
+from bookmarkbar_enabled.bookmarkbar_enabled import *
 # TODO(mbinette): Fix TranslateEnabledTest on LUCI bots.
 # from translate_enabled.translate_enabled import *
 from youtube_restrict.youtube_restrict import *

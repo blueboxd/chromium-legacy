@@ -675,6 +675,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     styler.headerFooterDetailColor = UIColorFromRGB(
         kGridDarkThemeCellDetailColor, kGridDarkThemeCellDetailAlpha);
     styler.tintColor = UIColorFromRGB(kGridDarkThemeCellTintColor);
+    styler.solidButtonTextColor =
+        UIColorFromRGB(kGridDarkThemeCellSolidButtonTextColor);
   }
   self.remoteTabsViewController.styler = styler;
 

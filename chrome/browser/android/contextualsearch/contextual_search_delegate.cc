@@ -30,7 +30,6 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "components/variations/net/variations_http_headers.h"

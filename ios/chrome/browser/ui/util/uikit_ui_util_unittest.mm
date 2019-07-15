@@ -39,13 +39,33 @@ using UIKitUIUtilTest = PlatformTest;
 TEST_F(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
   UIViewController* viewController =
       [[UIViewController alloc] initWithNibName:nil bundle:nil];
-  if (base::ios::IsRunningOnIOS13OrLater() || IsIPadIdiom()) {
+
+  if (IsIPadIdiom()) {
     EXPECT_EQ(UIInterfaceOrientationMaskAll,
               [viewController supportedInterfaceOrientations]);
-  } else {
+    return;
+  }
+
+  // Running on iPhone iOS 12 or earlier.
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
     EXPECT_EQ(UIInterfaceOrientationMaskAllButUpsideDown,
               [viewController supportedInterfaceOrientations]);
+    return;
   }
+
+  // Running on iOS 13 iPhone.
+
+  // Starting with iOS 13, the default [UIViewController
+  // supportedInterfaceOrientations] returns UIInterfaceOrientationMaskAll.
+  // However, this is only true if the application was built with the Xcode 11
+  // SDK (in order to preserve old behavior).
+  UIInterfaceOrientationMask expectedMask =
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+      UIInterfaceOrientationMaskAll;
+#else
+      UIInterfaceOrientationMaskAllButUpsideDown;
+#endif
+  EXPECT_EQ(expectedMask, [viewController supportedInterfaceOrientations]);
 }
 
 TEST_F(UIKitUIUtilTest, TestGetUiFont) {

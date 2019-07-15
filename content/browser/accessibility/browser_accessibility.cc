@@ -1646,7 +1646,9 @@ bool BrowserAccessibility::AccessibilityPerformAction(
       return true;
     }
     case ax::mojom::Action::kScrollToMakeVisible:
-      manager_->ScrollToMakeVisible(*this, data.target_rect);
+      manager_->ScrollToMakeVisible(*this, data.target_rect,
+                                    data.horizontal_scroll_alignment,
+                                    data.vertical_scroll_alignment);
       return true;
     case ax::mojom::Action::kSetScrollOffset:
       manager_->SetScrollOffset(*this, data.target_point);

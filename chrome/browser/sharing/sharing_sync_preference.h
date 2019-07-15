@@ -77,8 +77,11 @@ class SharingSyncPreference {
   // Adds VAPID key to preferences for syncing across devices.
   void SetVapidKey(const std::vector<uint8_t>& vapid_key) const;
 
-  // Observe for VAPID key changes. Replace previously set observer.
+  // Observes for VAPID key changes. Replaces previously set observer.
   void SetVapidKeyChangeObserver(const base::RepeatingClosure& obs);
+
+  // Clears previously set observer.
+  void ClearVapidKeyChangeObserver();
 
   // Returns the map of guid to device from sharing preferences. Guid is same
   // as sync device guid.

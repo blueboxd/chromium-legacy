@@ -9,9 +9,7 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,14 +25,6 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 }  // namespace
 
 namespace chrome_test_util {
-
-id<GREYMatcher> TabGridOpenButton() {
-  if (IsRegularXRegularSizeClass()) {
-    return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
-  } else {
-    return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLBAR_SHOW_TABS);
-  }
-}
 
 id<GREYMatcher> TabGridDoneButton() {
   return grey_allOf(grey_accessibilityID(kTabGridDoneButtonIdentifier),
@@ -85,11 +75,6 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton() {
 
 id<GREYMatcher> TabGridOtherDevicesPanelButton() {
   return grey_accessibilityID(kTabGridRemoteTabsPageButtonIdentifier);
-}
-
-id<GREYMatcher> TabGridCellAtIndex(unsigned int index) {
-  return grey_allOf(grey_accessibilityID(IdentifierForCellAtIndex(index)),
-                    grey_sufficientlyVisible(), nil);
 }
 
 id<GREYMatcher> TabGridCloseButtonForCellAtIndex(unsigned int index) {

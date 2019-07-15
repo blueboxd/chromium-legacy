@@ -1053,6 +1053,11 @@
     "args": ["--enable-features=NativeFileSystemAPI"]
   },
   {
+    "prefix": "file-handling",
+    "base": "file-handling",
+    "args": ["--enable-features=NativeFileSystemAPI,FileHandlingAPI"]
+  },
+  {
     "prefix": "controls-refresh",
     "base": "fast/forms/controls-new-ui",
     "args": ["--enable-features=FormControlsRefresh"]

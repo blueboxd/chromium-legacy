@@ -9,9 +9,6 @@
 
 namespace chrome_test_util {
 
-// Returns the GREYMatcher for the button that opens the tab grid.
-id<GREYMatcher> TabGridOpenButton();
-
 // Returns the GREYMatcher for the button that closes the tab grid.
 id<GREYMatcher> TabGridDoneButton();
 
@@ -48,9 +45,6 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton();
 // Returns the GREYMatcher for the button to go to the other devices panel in
 // the tab grid.
 id<GREYMatcher> TabGridOtherDevicesPanelButton();
-
-// Returns the GREYMatcher for the cell at |index| in the tab grid.
-id<GREYMatcher> TabGridCellAtIndex(unsigned int index);
 
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.

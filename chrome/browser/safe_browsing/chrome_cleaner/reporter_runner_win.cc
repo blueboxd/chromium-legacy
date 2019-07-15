@@ -803,7 +803,7 @@ class ReporterRunner {
       return;
     }
 
-    if (!IsSRTPromptFeatureEnabled()) {
+    if (!IsUserInitiated(invocation_type_) && !IsSRTPromptFeatureEnabled()) {
       // Knowing about disabled field trial is more important than reporter not
       // finding anything to remove, so check this case first.
       RecordReporterStepHistogram(SW_REPORTER_NO_PROMPT_FIELD_TRIAL);

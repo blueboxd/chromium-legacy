@@ -296,8 +296,14 @@ class WebAXObject {
   // needed.
   BLINK_EXPORT bool ScrollToMakeVisible() const;
   // Same, but if the whole object can't be made visible, try for this subrect,
-  // in local coordinates.
-  BLINK_EXPORT bool ScrollToMakeVisibleWithSubFocus(const WebRect&) const;
+  // in local coordinates. We also allow passing horizontal and vertical scroll
+  // alignments. These specify where in the content area to scroll the object.
+  BLINK_EXPORT bool ScrollToMakeVisibleWithSubFocus(
+      const WebRect&,
+      ax::mojom::ScrollAlignment horizontal_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollAlignment vertical_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter) const;
   // Scroll this object to a given point in global coordinates of the top-level
   // window.
   BLINK_EXPORT bool ScrollToGlobalPoint(const WebPoint&) const;

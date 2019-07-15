@@ -33,7 +33,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_event_manager.h"

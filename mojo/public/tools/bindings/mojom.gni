@@ -1272,7 +1272,7 @@ template("mojom") {
           args += [ "--generate_fuzzing" ]
         }
 
-        if (!defined(invoker.use_old_js_lite_bindings_names) ||
+        if (defined(invoker.use_old_js_lite_bindings_names) &&
             invoker.use_old_js_lite_bindings_names) {
           args += [ "--use_old_js_lite_bindings_names" ]
         }

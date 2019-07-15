@@ -46,6 +46,14 @@ source_set("popup") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("popup_accessibility_identifier_constants") {
+  sources = [
+    "omnibox_popup_accessibility_identifier_constants.h",
+    "omnibox_popup_accessibility_identifier_constants.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("popup_ui") {
   sources = [
     "autocomplete_result_consumer.h",
@@ -74,6 +82,7 @@ source_set("popup_ui") {
     "simple_omnibox_icon.mm",
   ]
   deps = [
+    ":popup_accessibility_identifier_constants",
     "resources:omnibox_popup_tab_match",
     "//base",
     "//components/omnibox/common",
@@ -144,6 +153,7 @@ source_set("eg_tests") {
     "omnibox_popup_egtest.mm",
   ]
   deps = [
+    ":popup_accessibility_identifier_constants",
     ":popup_internal",
     ":popup_ui",
     "//base",
@@ -160,4 +170,27 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "omnibox_popup_egtest.mm",
+  ]
+  deps = [
+    ":popup_accessibility_identifier_constants",
+    "//base",
+    "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//net:test_support",
+  ]
+  libs = [ "UIKit.framework" ]
 }

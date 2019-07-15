@@ -365,4 +365,12 @@ id<GREYMatcher> OpenInButton() {
   return [ChromeMatchersAppInterface openInButton];
 }
 
+id<GREYMatcher> TabGridOpenButton() {
+  return [ChromeMatchersAppInterface tabGridOpenButton];
+}
+
+id<GREYMatcher> TabGridCellAtIndex(unsigned int index) {
+  return [ChromeMatchersAppInterface tabGridCellAtIndex:index];
+}
+
 }  // namespace chrome_test_util

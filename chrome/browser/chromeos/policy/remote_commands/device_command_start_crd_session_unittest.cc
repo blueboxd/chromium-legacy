@@ -437,31 +437,6 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoOauthToken) {
   run_loop_.Run();
 }
 
-TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoICEConfig) {
-  StubCRDHostDelegate delegate(
-      false /* has_active_session */, true /* are_services_ready */,
-      true /* is_running_kiosk */,
-      base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, false /* ice_config_success */,
-      true /* access_code_success */);
-
-  std::unique_ptr<RemoteCommandJob> job =
-      std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
-  InitializeJob(job.get(), kUniqueID, test_start_time_,
-                base::TimeDelta::FromSeconds(30),
-                false /* terminate_upon_input */);
-  bool success = job->Run(
-      base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::FAILED,
-                     CreateErrorPayload(
-                         DeviceCommandStartCRDSessionJob::FAILURE_NO_ICE_CONFIG,
-                         kTestNoICEConfigReason)));
-  EXPECT_TRUE(success);
-  run_loop_.Run();
-}
-
 TEST_F(DeviceCommandStartCRDSessionJobTest, TestErrorRunningCRDHost) {
   StubCRDHostDelegate delegate(
       false /* has_active_session */, true /* are_services_ready */,

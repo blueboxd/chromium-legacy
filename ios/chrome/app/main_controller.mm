@@ -1400,6 +1400,7 @@ enum class EnterTabSwitcherSnapshotResult {
       [[OrientationLimitingNavigationController alloc]
           initWithRootViewController:welcomeToChrome];
   [navController setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
+  navController.modalPresentationStyle = UIModalPresentationFullScreen;
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
   _isPresentingFirstRunUI = YES;

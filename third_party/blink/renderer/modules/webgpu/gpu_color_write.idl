@@ -7,7 +7,7 @@
 typedef unsigned long GPUColorWriteFlags;
 [
     RuntimeEnabled=WebGPU
-] interface GPUColorWriteBit {
+] interface GPUColorWrite {
     const unsigned long NONE = 0;
     const unsigned long RED = 1;
     const unsigned long GREEN = 2;

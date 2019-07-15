@@ -10,11 +10,18 @@
 // A fake ChromeIdentity used for testing.
 @interface FakeChromeIdentity : ChromeIdentity
 
-// Returns an autoreleased ChromeIdentity based on |email|, |gaiaID| and |name|.
+// Returns a ChromeIdentity based on |email|, |gaiaID| and |name|.
 // The |hashedGaiaID| property will be derived from |name|.
 + (FakeChromeIdentity*)identityWithEmail:(NSString*)email
                                   gaiaID:(NSString*)gaiaID
                                     name:(NSString*)name;
+
+// Returns a ChromeIdentity based on |email|, |gaiaID|, |name| and
+// |hostedDomain|. The |hashedGaiaID| property will be derived from |name|.
++ (FakeChromeIdentity*)identityWithEmail:(NSString*)email
+                                  gaiaID:(NSString*)gaiaID
+                                    name:(NSString*)name
+                            hostedDomain:(NSString*)hostedDomain;
 
 @end
 

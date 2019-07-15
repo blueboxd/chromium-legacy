@@ -83,7 +83,15 @@ GrpcChannelSharedPtr FtlGrpcContext::CreateChannel() {
 
 // static
 void FtlGrpcContext::FillClientContext(grpc::ClientContext* context) {
+#if defined(OS_CHROMEOS)
+  // Use the default Chrome API key for ChromeOS as the only host instance
+  // which runs there is used for the ChromeOS Enterprise Kiosk mode
+  // scenario.  If we decide to implement a remote access host for ChromeOS,
+  // then we will need a way for the caller to provide an API key.
+  context->AddMetadata("x-goog-api-key", google_apis::GetAPIKey());
+#else
   context->AddMetadata("x-goog-api-key", google_apis::GetRemotingAPIKey());
+#endif
 }
 
 // static

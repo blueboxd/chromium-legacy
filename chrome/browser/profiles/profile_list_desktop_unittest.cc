@@ -23,7 +23,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -10,7 +10,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/fcm_constants.h"
@@ -43,42 +42,30 @@ SharingDeviceRegistration::SharingDeviceRegistration(
 SharingDeviceRegistration::~SharingDeviceRegistration() = default;
 
 void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
-  // TODO(himanshujaju) : Extract a static function to convert ECPrivateKey* to
-  // Base64PublicKey in library.
-  crypto::ECPrivateKey* vapid_key = vapid_key_manager_->GetOrCreateKey();
-  if (!vapid_key) {
-    std::move(callback).Run(Result::FATAL_ERROR);
+  base::Optional<std::string> authorized_entity = GetAuthorizationEntity();
+  if (!authorized_entity) {
+    std::move(callback).Run(Result::ENCRYPTION_ERROR);
     return;
   }
 
-  std::string public_key;
-  if (!gcm::GetRawPublicKey(*vapid_key, &public_key)) {
-    std::move(callback).Run(Result::FATAL_ERROR);
-    return;
-  }
-
-  if (registered_public_key_ == public_key) {
-    // VAPID key hasn't changed, return success.
+  if (registered_authorized_entity_ == authorized_entity) {
+    // Authorized entity hasn't changed, return success.
     std::move(callback).Run(Result::SUCCESS);
     return;
   }
 
-  std::string base64_public_key;
-  base::Base64UrlEncode(public_key, base::Base64UrlEncodePolicy::OMIT_PADDING,
-                        &base64_public_key);
-
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
-      ->GetToken(base64_public_key, kFCMScope,
+      ->GetToken(*authorized_entity, kFCMScope,
                  /*options=*/{},
                  /*is_lazy=*/false,
                  base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,
                                 weak_ptr_factory_.GetWeakPtr(),
-                                std::move(callback), std::move(public_key)));
+                                std::move(callback), *authorized_entity));
 }
 
 void SharingDeviceRegistration::OnFCMTokenReceived(
     RegistrationCallback callback,
-    std::string public_key,
+    const std::string& authorized_entity,
     const std::string& fcm_registration_token,
     instance_id::InstanceID::Result result) {
   switch (result) {
@@ -87,37 +74,106 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
           kSharingFCMAppID,
           base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         std::move(public_key), fcm_registration_token));
+                         authorized_entity, fcm_registration_token));
       break;
     case instance_id::InstanceID::NETWORK_ERROR:
     case instance_id::InstanceID::SERVER_ERROR:
     case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
-      std::move(callback).Run(Result::TRANSIENT_ERROR);
+      std::move(callback).Run(Result::FCM_TRANSIENT_ERROR);
       break;
     case instance_id::InstanceID::INVALID_PARAMETER:
     case instance_id::InstanceID::UNKNOWN_ERROR:
     case instance_id::InstanceID::DISABLED:
-      std::move(callback).Run(Result::FATAL_ERROR);
+      std::move(callback).Run(Result::FCM_FATAL_ERROR);
       break;
   }
 }
 
 void SharingDeviceRegistration::OnEncryptionInfoReceived(
     RegistrationCallback callback,
-    std::string public_key,
+    const std::string& authorized_entity,
     const std::string& fcm_registration_token,
     std::string p256dh,
     std::string auth_secret) {
+  const syncer::DeviceInfo* local_device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  if (!local_device_info) {
+    std::move(callback).Run(Result::SYNC_SERVICE_ERROR);
+    return;
+  }
+
   int device_capabilities = GetDeviceCapabilities();
-  std::string device_guid =
-      local_device_info_provider_->GetLocalDeviceInfo()->guid();
   SharingSyncPreference::Device device(
       fcm_registration_token, std::move(p256dh), std::move(auth_secret),
       device_capabilities);
+  sharing_sync_preference_->SetSyncDevice(local_device_info->guid(), device);
 
-  sharing_sync_preference_->SetSyncDevice(device_guid, device);
-  registered_public_key_ = std::move(public_key);
+  registered_authorized_entity_ = authorized_entity;
   std::move(callback).Run(Result::SUCCESS);
+}
+
+void SharingDeviceRegistration::UnregisterDevice(
+    RegistrationCallback callback) {
+  registered_authorized_entity_.clear();
+
+  const syncer::DeviceInfo* local_device_info =
+      local_device_info_provider_->GetLocalDeviceInfo();
+  if (local_device_info)
+    sharing_sync_preference_->RemoveDevice(local_device_info->guid());
+
+  base::Optional<std::string> authorized_entity = GetAuthorizationEntity();
+  if (!authorized_entity) {
+    std::move(callback).Run(Result::ENCRYPTION_ERROR);
+    return;
+  }
+
+  instance_id_driver_->GetInstanceID(kSharingFCMAppID)
+      ->DeleteToken(
+          *authorized_entity, kFCMScope,
+          base::BindOnce(&SharingDeviceRegistration::OnFCMTokenDeleted,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SharingDeviceRegistration::OnFCMTokenDeleted(
+    RegistrationCallback callback,
+    instance_id::InstanceID::Result result) {
+  switch (result) {
+    case instance_id::InstanceID::SUCCESS:
+      // INVALID_PARAMETER is expected if InstanceID.GetToken hasn't been
+      // invoked since restart.
+    case instance_id::InstanceID::INVALID_PARAMETER:
+      std::move(callback).Run(Result::SUCCESS);
+      return;
+    case instance_id::InstanceID::NETWORK_ERROR:
+    case instance_id::InstanceID::SERVER_ERROR:
+    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+      std::move(callback).Run(Result::FCM_TRANSIENT_ERROR);
+      return;
+    case instance_id::InstanceID::UNKNOWN_ERROR:
+    case instance_id::InstanceID::DISABLED:
+      std::move(callback).Run(Result::FCM_FATAL_ERROR);
+      return;
+  }
+
+  NOTREACHED();
+}
+
+base::Optional<std::string> SharingDeviceRegistration::GetAuthorizationEntity()
+    const {
+  // TODO(himanshujaju) : Extract a static function to convert ECPrivateKey* to
+  // Base64PublicKey in library.
+  crypto::ECPrivateKey* vapid_key = vapid_key_manager_->GetOrCreateKey();
+  if (!vapid_key)
+    return base::nullopt;
+
+  std::string public_key;
+  if (!gcm::GetRawPublicKey(*vapid_key, &public_key))
+    return base::nullopt;
+
+  std::string base64_public_key;
+  base::Base64UrlEncode(public_key, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &base64_public_key);
+  return base::make_optional(std::move(base64_public_key));
 }
 
 int SharingDeviceRegistration::GetDeviceCapabilities() const {

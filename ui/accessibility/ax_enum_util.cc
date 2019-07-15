@@ -1213,6 +1213,46 @@ ax::mojom::ActionFlags ParseActionFlags(const char* action_flags) {
   return ax::mojom::ActionFlags::kNone;
 }
 
+const char* ToString(ax::mojom::ScrollAlignment scroll_alignment) {
+  switch (scroll_alignment) {
+    case ax::mojom::ScrollAlignment::kNone:
+      return "none";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
+      return "scrollAlignmentCenter";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
+      return "scrollAlignmentTop";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
+      return "scrollAlignmentBottom";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
+      return "scrollAlignmentLeft";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
+      return "scrollAlignmentRight";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
+      return "scrollAlignmentClosestEdge";
+  }
+
+  NOTREACHED() << scroll_alignment;
+  return "";
+}
+
+ax::mojom::ScrollAlignment ParseScrollAlignment(const char* scroll_alignment) {
+  if (0 == strcmp(scroll_alignment, "none"))
+    return ax::mojom::ScrollAlignment::kNone;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentCenter"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentTop"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentTop;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentBottom"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentBottom;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentLeft"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentLeft;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentRight"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentRight;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentClosestEdge"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge;
+  return ax::mojom::ScrollAlignment::kNone;
+}
+
 const char* ToString(ax::mojom::DefaultActionVerb default_action_verb) {
   switch (default_action_verb) {
     case ax::mojom::DefaultActionVerb::kNone:

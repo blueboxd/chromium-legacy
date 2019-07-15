@@ -15,7 +15,8 @@ namespace blink {
 
 const char DOMWindowLaunchParams::kSupplementName[] = "DOMWindowLaunchParams";
 
-DOMWindowLaunchParams::DOMWindowLaunchParams() {}
+DOMWindowLaunchParams::DOMWindowLaunchParams()
+    : launch_params_(MakeGarbageCollected<LaunchParams>()) {}
 DOMWindowLaunchParams::~DOMWindowLaunchParams() = default;
 
 Member<LaunchParams> DOMWindowLaunchParams::launchParams(
@@ -36,12 +37,6 @@ DOMWindowLaunchParams* DOMWindowLaunchParams::FromState(
   if (!supplement) {
     supplement = MakeGarbageCollected<DOMWindowLaunchParams>();
     ProvideTo(*window, supplement);
-
-    // TODO(crbug.com/829689): When a service is created for getting launch
-    // params from the browser process, use that instead of hard coding the
-    // launch params.
-    supplement->launch_params_ = MakeGarbageCollected<LaunchParams>(
-        HeapVector<Member<NativeFileSystemHandle>>());
   }
   return supplement;
 }

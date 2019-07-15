@@ -242,8 +242,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   void HitTest(const gfx::Point& point);
   void Increment(const BrowserAccessibility& node);
   void LoadInlineTextBoxes(const BrowserAccessibility& node);
-  void ScrollToMakeVisible(const BrowserAccessibility& node,
-                           gfx::Rect subfocus);
+  void ScrollToMakeVisible(
+      const BrowserAccessibility& node,
+      gfx::Rect subfocus,
+      ax::mojom::ScrollAlignment horizontal_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollAlignment vertical_scroll_alignment =
+          ax::mojom::ScrollAlignment::kScrollAlignmentCenter);
   void ScrollToPoint(const BrowserAccessibility& node, gfx::Point point);
   void SetAccessibilityFocus(const BrowserAccessibility& node);
   void SetFocus(const BrowserAccessibility& node);

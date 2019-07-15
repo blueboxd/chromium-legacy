@@ -9,5 +9,5 @@ dictionary GPUColorStateDescriptor {
 
     required GPUBlendDescriptor alphaBlend;
     required GPUBlendDescriptor colorBlend;
-    GPUColorWriteFlags writeMask = 15;  // GPUColorWriteFlags.ALL
+    GPUColorWriteFlags writeMask = 15;  // GPUColorWrite.ALL
 };

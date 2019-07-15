@@ -244,93 +244,26 @@ bool CombinedInterfaceInfo::IsValid() const {
   return interface && alternate;
 }
 
-UsbConfigDescriptor::UsbConfigDescriptor(const uint8_t* data)
-    : UsbConfigDescriptor(data[5] /* bConfigurationValue */,
-                          (data[7] & 0x02) != 0 /* bmAttributes */,
-                          (data[7] & 0x04) != 0 /* bmAttributes */,
-                          data[8] /* bMaxPower */) {
-  DCHECK_GE(data[0], kConfigurationDescriptorLength);
-  DCHECK_EQ(data[1], kConfigurationDescriptorType);
-}
-
-UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
-                                         bool self_powered,
-                                         bool remote_wakeup,
-                                         uint8_t maximum_power)
-    : configuration_value(configuration_value),
-      self_powered(self_powered),
-      remote_wakeup(remote_wakeup),
-      maximum_power(maximum_power) {}
-
-// Make a deep copy because |interfaces| are move-only.
-UsbConfigDescriptor::UsbConfigDescriptor(const UsbConfigDescriptor& other) {
-  configuration_value = other.configuration_value;
-  self_powered = other.self_powered;
-  remote_wakeup = other.remote_wakeup;
-  maximum_power = other.maximum_power;
-  extra_data = other.extra_data;
-  for (const auto& interface : other.interfaces) {
-    interfaces.push_back(interface->Clone());
-  }
-}
-
-UsbConfigDescriptor::UsbConfigDescriptor(UsbConfigDescriptor&& other) = default;
-
-UsbConfigDescriptor::~UsbConfigDescriptor() = default;
-
-void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
-  std::vector<UsbInterfaceAssociationDescriptor> functions;
-  ParseInterfaceAssociationDescriptors(extra_data, &functions);
-  for (const auto& interface : interfaces) {
-    DCHECK_EQ(1u, interface->alternates.size());
-    ParseInterfaceAssociationDescriptors(interface->alternates[0]->extra_data,
-                                         &functions);
-    for (auto& endpoint : interface->alternates[0]->endpoints)
-      ParseInterfaceAssociationDescriptors(endpoint->extra_data, &functions);
-  }
-
-  // libusb has collected interface association descriptors in the |extra_data|
-  // fields of other descriptor types. This may have disturbed their order
-  // but sorting by the bFirstInterface should fix it.
-  std::sort(functions.begin(), functions.end());
-
-  uint8_t remaining_interfaces = 0;
-  auto function_it = functions.cbegin();
-  auto interface_it = interfaces.begin();
-  while (interface_it != interfaces.end()) {
-    if (remaining_interfaces > 0) {
-      // Continuation of a previous function. Tag all alternate interfaces
-      // (which are guaranteed to be contiguous).
-      for (uint8_t interface_number = (*interface_it)->interface_number;
-           interface_it != interfaces.end() &&
-           (*interface_it)->interface_number == interface_number;
-           ++interface_it) {
-        (*interface_it)->first_interface = function_it->first_interface;
-      }
-      if (--remaining_interfaces == 0)
-        ++function_it;
-    } else if (function_it != functions.end() &&
-               (*interface_it)->interface_number ==
-                   function_it->first_interface) {
-      // Start of a new function.
-      (*interface_it)->first_interface = function_it->first_interface;
-      if (function_it->interface_count > 1)
-        remaining_interfaces = function_it->interface_count - 1;
-      else
-        ++function_it;
-      ++interface_it;
-    } else {
-      // Unassociated interfaces already have |first_interface| set to
-      // |interface_number|.
-      ++interface_it;
-    }
-  }
-}
-
 UsbDeviceDescriptor::UsbDeviceDescriptor() = default;
 
-UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) =
-    default;
+// Do a deep copy especially for |configurations|.
+UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) {
+  usb_version = other.usb_version;
+  device_class = other.device_class;
+  device_subclass = other.device_subclass;
+  device_protocol = other.device_protocol;
+  vendor_id = other.vendor_id;
+  product_id = other.product_id;
+  device_version = other.device_version;
+  i_manufacturer = other.i_manufacturer;
+  i_product = other.i_product;
+  i_serial_number = other.i_serial_number;
+  num_configurations = other.num_configurations;
+
+  for (const auto& config : other.configurations) {
+    configurations.push_back(config->Clone());
+  }
+}
 
 UsbDeviceDescriptor::UsbDeviceDescriptor(UsbDeviceDescriptor&& other) = default;
 
@@ -355,7 +288,7 @@ UsbDeviceDescriptor& UsbDeviceDescriptor::operator=(
 UsbDeviceDescriptor::~UsbDeviceDescriptor() = default;
 
 bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
-  UsbConfigDescriptor* last_config = nullptr;
+  mojom::UsbConfigurationInfo* last_config = nullptr;
   mojom::UsbInterfaceInfo* last_interface = nullptr;
   mojom::UsbEndpointInfo* last_endpoint = nullptr;
 
@@ -387,11 +320,11 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
         if (length < kConfigurationDescriptorLength)
           return false;
         if (last_config) {
-          last_config->AssignFirstInterfaceNumbers();
+          AssignFirstInterfaceNumbers(last_config);
           AggregateInterfacesForConfig(last_config);
         }
-        configurations.emplace_back(data);
-        last_config = &configurations.back();
+        configurations.push_back(BuildUsbConfigurationInfoPtr(data));
+        last_config = configurations.back().get();
         last_interface = nullptr;
         last_endpoint = nullptr;
         break;
@@ -428,7 +361,7 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
   }
 
   if (last_config) {
-    last_config->AssignFirstInterfaceNumbers();
+    AssignFirstInterfaceNumbers(last_config);
     AggregateInterfacesForConfig(last_config);
   }
 
@@ -599,7 +532,7 @@ UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(uint8_t interface_number,
 
 // Aggregate each alternate setting into an InterfaceInfo corresponding to its
 // interface number.
-void AggregateInterfacesForConfig(UsbConfigDescriptor* config) {
+void AggregateInterfacesForConfig(mojom::UsbConfigurationInfo* config) {
   std::map<uint8_t, device::mojom::UsbInterfaceInfo*> interface_map;
   std::vector<device::mojom::UsbInterfaceInfoPtr> interfaces =
       std::move(config->interfaces);
@@ -625,7 +558,7 @@ void AggregateInterfacesForConfig(UsbConfigDescriptor* config) {
 }
 
 CombinedInterfaceInfo FindInterfaceInfoFromConfig(
-    const UsbConfigDescriptor* config,
+    const mojom::UsbConfigurationInfo* config,
     uint8_t interface_number,
     uint8_t alternate_setting) {
   CombinedInterfaceInfo interface_info;
@@ -646,6 +579,77 @@ CombinedInterfaceInfo FindInterfaceInfoFromConfig(
     }
   }
   return interface_info;
+}
+
+UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(const uint8_t* data) {
+  DCHECK_GE(data[0], kConfigurationDescriptorLength);
+  DCHECK_EQ(data[1], kConfigurationDescriptorType);
+  return BuildUsbConfigurationInfoPtr(data[5] /* bConfigurationValue */,
+                                      (data[7] & 0x02) != 0 /* bmAttributes */,
+                                      (data[7] & 0x04) != 0 /* bmAttributes */,
+                                      data[8] /* bMaxPower */);
+}
+
+UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(
+    uint8_t configuration_value,
+    bool self_powered,
+    bool remote_wakeup,
+    uint8_t maximum_power) {
+  UsbConfigurationInfoPtr config = mojom::UsbConfigurationInfo::New();
+  config->configuration_value = configuration_value;
+  config->self_powered = self_powered;
+  config->remote_wakeup = remote_wakeup;
+  config->maximum_power = maximum_power;
+  return config;
+}
+
+void AssignFirstInterfaceNumbers(mojom::UsbConfigurationInfo* config) {
+  std::vector<UsbInterfaceAssociationDescriptor> functions;
+  ParseInterfaceAssociationDescriptors(config->extra_data, &functions);
+  for (const auto& interface : config->interfaces) {
+    DCHECK_EQ(1u, interface->alternates.size());
+    ParseInterfaceAssociationDescriptors(interface->alternates[0]->extra_data,
+                                         &functions);
+    for (auto& endpoint : interface->alternates[0]->endpoints)
+      ParseInterfaceAssociationDescriptors(endpoint->extra_data, &functions);
+  }
+
+  // libusb has collected interface association descriptors in the |extra_data|
+  // fields of other descriptor types. This may have disturbed their order
+  // but sorting by the bFirstInterface should fix it.
+  std::sort(functions.begin(), functions.end());
+
+  uint8_t remaining_interfaces = 0;
+  auto function_it = functions.cbegin();
+  auto interface_it = config->interfaces.begin();
+  while (interface_it != config->interfaces.end()) {
+    if (remaining_interfaces > 0) {
+      // Continuation of a previous function. Tag all alternate interfaces
+      // (which are guaranteed to be contiguous).
+      for (uint8_t interface_number = (*interface_it)->interface_number;
+           interface_it != config->interfaces.end() &&
+           (*interface_it)->interface_number == interface_number;
+           ++interface_it) {
+        (*interface_it)->first_interface = function_it->first_interface;
+      }
+      if (--remaining_interfaces == 0)
+        ++function_it;
+    } else if (function_it != functions.end() &&
+               (*interface_it)->interface_number ==
+                   function_it->first_interface) {
+      // Start of a new function.
+      (*interface_it)->first_interface = function_it->first_interface;
+      if (function_it->interface_count > 1)
+        remaining_interfaces = function_it->interface_count - 1;
+      else
+        ++function_it;
+      ++interface_it;
+    } else {
+      // Unassociated interfaces already have |first_interface| set to
+      // |interface_number|.
+      ++interface_it;
+    }
+  }
 }
 
 }  // namespace device

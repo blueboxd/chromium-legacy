@@ -60,8 +60,18 @@ void RemotingIceConfigRequest::NetworkTraversalClient::GetIceConfig(
       base::BindOnce(&NetworkTraversalService::Stub::AsyncGetIceConfig,
                      base::Unretained(network_traversal_.get())),
       apis::v1::GetIceConfigRequest(), std::move(callback));
+#if defined(OS_CHROMEOS)
+  // Use the default Chrome API key for ChromeOS as the only host instance
+  // which runs there is used for the ChromeOS Enterprise Kiosk mode
+  // scenario.  If we decide to implement a remote access host for ChromeOS,
+  // then we will need a way for the caller to provide an API key.
+  async_request->context()->AddMetadata("x-goog-api-key",
+                                        google_apis::GetAPIKey());
+#else
   async_request->context()->AddMetadata("x-goog-api-key",
                                         google_apis::GetRemotingAPIKey());
+#endif
+
   executor_.ExecuteRpc(std::move(async_request));
 }
 

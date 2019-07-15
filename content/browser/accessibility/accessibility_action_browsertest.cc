@@ -65,6 +65,40 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
     waiter.WaitForNotification();
   }
 
+  void ScrollNodeIntoView(BrowserAccessibility* node,
+                          ax::mojom::ScrollAlignment horizontal_alignment,
+                          ax::mojom::ScrollAlignment vertical_alignment,
+                          bool wait_for_event = true) {
+    gfx::Rect bounds = node->GetUnclippedScreenBoundsRect();
+
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kScrollPositionChanged);
+    ui::AXActionData action_data;
+    action_data.target_node_id = node->GetData().id;
+    action_data.action = ax::mojom::Action::kScrollToMakeVisible;
+    action_data.target_rect = gfx::Rect(0, 0, bounds.width(), bounds.height());
+    action_data.horizontal_scroll_alignment = horizontal_alignment;
+    action_data.vertical_scroll_alignment = vertical_alignment;
+    node->AccessibilityPerformAction(action_data);
+
+    if (wait_for_event)
+      waiter.WaitForNotification();
+  }
+
+  void ScrollToTop() {
+    AccessibilityNotificationWaiter waiter(
+        shell()->web_contents(), ui::kAXModeComplete,
+        ax::mojom::Event::kScrollPositionChanged);
+    BrowserAccessibility* document = GetManager()->GetRoot();
+    ui::AXActionData action_data;
+    action_data.target_node_id = document->GetData().id;
+    action_data.action = ax::mojom::Action::kSetScrollOffset;
+    action_data.target_point = gfx::Point(0, 0);
+    document->AccessibilityPerformAction(action_data);
+    waiter.WaitForNotification();
+  }
+
  private:
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
                                           ax::mojom::Role role,
@@ -623,5 +657,148 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, FocusLostOnDeletedNode) {
                      "var inner_doc = iframe.contentWindow.document;"
                      "inner_doc.getElementById('2').focus();");
 }
+
+// Action::kScrollToMakeVisible does not seem reliable on Android and we are
+// currently only using it for desktop screen readers.
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <!DOCTYPE html>
+      <html>
+      <body>
+        <div style='height: 5000px; width: 5000px;'></div>
+        <div aria-label='target' style='position: relative;
+             left: 2000px; width: 100px;'>One</div>
+        <div style='height: 5000px;'></div>
+      </body>
+      </html>"
+      )HTML");
+
+  BrowserAccessibility* root = GetManager()->GetRoot();
+  gfx::Rect doc_bounds = root->GetClippedScreenBoundsRect();
+
+  int one_third_doc_height = float{doc_bounds.height()} / 3.0;
+  int one_third_doc_width = float{doc_bounds.width()} / 3.0;
+
+  gfx::Rect doc_top_third = doc_bounds;
+  doc_top_third.set_height(one_third_doc_height);
+  gfx::Rect doc_left_third = doc_bounds;
+  doc_left_third.set_width(one_third_doc_width);
+
+  gfx::Rect doc_bottom_third = doc_top_third;
+  doc_bottom_third.set_y(doc_bounds.bottom() - one_third_doc_height);
+  gfx::Rect doc_right_third = doc_left_third;
+  doc_right_third.set_x(doc_bounds.right() - one_third_doc_width);
+
+  BrowserAccessibility* target_node =
+      FindNode(ax::mojom::Role::kGenericContainer, "target");
+  EXPECT_NE(target_node, nullptr);
+
+  ScrollNodeIntoView(target_node,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge);
+  gfx::Rect bounds = target_node->GetUnclippedScreenBoundsRect();
+  {
+    testing::Message message;
+    message << "Expected" << bounds.ToString() << " to be within "
+            << doc_bottom_third.ToString() << " and "
+            << doc_right_third.ToString();
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(doc_bottom_third.Contains(bounds));
+    EXPECT_TRUE(doc_right_third.Contains(bounds));
+  }
+
+  // Scrolling again should have no effect, since the node is already onscreen.
+  ScrollNodeIntoView(target_node,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+                     false /* wait_for_event */);
+  gfx::Rect new_bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_EQ(bounds, new_bounds);
+
+  ScrollToTop();
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  ScrollNodeIntoView(target_node,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentTop);
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  {
+    testing::Message message;
+    message << "Expected" << bounds.ToString() << " to be within "
+            << doc_top_third.ToString() << " and " << doc_left_third.ToString();
+    EXPECT_TRUE(doc_bounds.Contains(bounds));
+    EXPECT_TRUE(doc_top_third.Contains(bounds));
+    EXPECT_TRUE(doc_left_third.Contains(bounds));
+  }
+
+  ScrollToTop();
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  ScrollNodeIntoView(target_node,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentRight,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentBottom);
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  {
+    testing::Message message;
+    message << "Expected" << bounds.ToString() << " to be within "
+            << doc_bottom_third.ToString() << " and "
+            << doc_right_third.ToString();
+    EXPECT_TRUE(doc_bounds.Contains(bounds));
+    EXPECT_TRUE(doc_bottom_third.Contains(bounds));
+    EXPECT_TRUE(doc_right_third.Contains(bounds));
+  }
+
+  ScrollToTop();
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  // Now we test scrolling in only dimension at a time. When doing this, the
+  // scroll position in the other dimension should not be touched.
+  ScrollNodeIntoView(target_node, ax::mojom::ScrollAlignment::kNone,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentBottom);
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_GE(bounds.y(), doc_bottom_third.y());
+  EXPECT_LE(bounds.y(), doc_bottom_third.bottom());
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  ScrollToTop();
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  ScrollNodeIntoView(target_node,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentRight,
+                     ax::mojom::ScrollAlignment::kNone);
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_GE(bounds.x(), doc_right_third.x());
+  EXPECT_LE(bounds.x(), doc_right_third.right());
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  ScrollToTop();
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  EXPECT_FALSE(doc_bounds.Contains(bounds));
+
+  // When scrolling to the center, the target node should more or less be
+  // centered.
+  ScrollNodeIntoView(target_node,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+                     ax::mojom::ScrollAlignment::kScrollAlignmentCenter);
+  bounds = target_node->GetUnclippedScreenBoundsRect();
+  {
+    testing::Message message;
+    message << "Expected" << bounds.ToString() << " to not be within "
+            << doc_top_third.ToString() << ", " << doc_bottom_third.ToString()
+            << ", " << doc_left_third.ToString() << ", and "
+            << doc_right_third.ToString();
+    EXPECT_TRUE(doc_bounds.Contains(bounds));
+    EXPECT_FALSE(doc_top_third.Contains(bounds));
+    EXPECT_FALSE(doc_bottom_third.Contains(bounds));
+    EXPECT_FALSE(doc_right_third.Contains(bounds));
+    EXPECT_FALSE(doc_left_third.Contains(bounds));
+  }
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace content

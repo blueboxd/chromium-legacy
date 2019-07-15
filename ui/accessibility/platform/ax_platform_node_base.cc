@@ -1220,6 +1220,10 @@ bool AXPlatformNodeBase::ScrollToNode(ScrollType scroll_type) {
   ui::AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
+  action_data.horizontal_scroll_alignment =
+      ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+  action_data.vertical_scroll_alignment =
+      ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
   action_data.target_rect = r;
   GetDelegate()->AccessibilityPerformAction(action_data);
   return true;

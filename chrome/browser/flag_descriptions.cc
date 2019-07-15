@@ -2489,6 +2489,23 @@ const char kOffliningRecentPagesDescription[] =
     "Enable storing recently visited pages locally for offline use. Requires "
     "Offline Pages to be enabled.";
 
+const char kPasswordManagerOnboardingAndroidName[] =
+    "Password manager onboarding experience";
+const char kPasswordManagerOnboardingAndroidDescription[] =
+    "This flag enables showing the password manager onboarding experience.";
+
+extern const char kProcessSharingWithStrictSiteInstancesName[] =
+    "Process sharing with strict site instances";
+extern const char kProcessSharingWithStrictSiteInstancesDescription[] =
+    "When site isolation is disabled, this mode changes how sites are lumped "
+    "in to a shared process. Process selection is usually controlled with "
+    "site instances. With strict site isolation, each site on a page gets its "
+    "own site instance and process. With site isolation disabled and without "
+    "this mode, all sites that share a process are put into the same site "
+    "instance. This mode adds a third way: site instances are strictly "
+    "separated like strict site isolation, but process selection puts multiple "
+    "site instances in a single process.";
+
 const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
@@ -2545,18 +2562,6 @@ const char kStrictSiteIsolationDescription[] =
     "platform, enterprise policy, or field trial. See also "
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
-
-extern const char kProcessSharingWithStrictSiteInstancesName[] =
-    "Process sharing with strict site instances";
-extern const char kProcessSharingWithStrictSiteInstancesDescription[] =
-    "When site isolation is disabled, this mode changes how sites are lumped "
-    "in to a shared process. Process selection is usually controlled with "
-    "site instances. With strict site isolation, each site on a page gets its "
-    "own site instance and process. With site isolation disabled and without "
-    "this mode, all sites that share a process are put into the same site "
-    "instance. This mode adds a third way: site instances are strictly "
-    "separated like strict site isolation, but process selection puts multiple "
-    "site instances in a single process.";
 
 const char kTranslateAndroidManualTriggerName[] =
     "Enable manual translate trigger";

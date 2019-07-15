@@ -64,6 +64,29 @@
 
 namespace blink {
 
+namespace {
+blink::ScrollAlignmentBehavior ToBlinkScrollAlignmentBehavior(
+    ax::mojom::ScrollAlignment alignment) {
+  switch (alignment) {
+    case ax::mojom::ScrollAlignment::kNone:
+      return blink::kScrollAlignmentNoScroll;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
+      return blink::kScrollAlignmentCenter;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
+      return blink::kScrollAlignmentTop;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
+      return blink::kScrollAlignmentBottom;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
+      return blink::kScrollAlignmentLeft;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
+      return blink::kScrollAlignmentRight;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
+      return blink::kScrollAlignmentClosestEdge;
+  }
+  NOTREACHED() << alignment;
+}
+}  // namespace
+
 class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
  public:
   WebAXSparseAttributeClientAdapter(WebAXSparseAttributeClient& attribute_map)
@@ -1574,12 +1597,24 @@ bool WebAXObject::ScrollToMakeVisible() const {
 }
 
 bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
-    const WebRect& subfocus) const {
+    const WebRect& subfocus,
+    ax::mojom::ScrollAlignment horizontal_scroll_alignment,
+    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
   if (IsDetached())
     return false;
 
   ScopedActionAnnotator annotater(private_.Get());
-  return private_->RequestScrollToMakeVisibleWithSubFocusAction(subfocus);
+  auto horizontal_behavior =
+      ToBlinkScrollAlignmentBehavior(horizontal_scroll_alignment);
+  auto vertical_behavior =
+      ToBlinkScrollAlignmentBehavior(vertical_scroll_alignment);
+  blink::ScrollAlignment blink_horizontal_scroll_alignment = {
+      kScrollAlignmentNoScroll, horizontal_behavior, horizontal_behavior};
+  blink::ScrollAlignment blink_vertical_scroll_alignment = {
+      kScrollAlignmentNoScroll, vertical_behavior, vertical_behavior};
+  return private_->RequestScrollToMakeVisibleWithSubFocusAction(
+      subfocus, blink_horizontal_scroll_alignment,
+      blink_vertical_scroll_alignment);
 }
 
 bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {

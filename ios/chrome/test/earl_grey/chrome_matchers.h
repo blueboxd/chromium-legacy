@@ -286,6 +286,12 @@ id<GREYMatcher> HistoryClearBrowsingDataButton();
 
 // Returns a matcher for "Open In..." button.
 id<GREYMatcher> OpenInButton();
+
+// Returns the GREYMatcher for the button that opens the tab grid.
+id<GREYMatcher> TabGridOpenButton();
+
+// Returns the GREYMatcher for the cell at |index| in the tab grid.
+id<GREYMatcher> TabGridCellAtIndex(unsigned int index);
 }
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

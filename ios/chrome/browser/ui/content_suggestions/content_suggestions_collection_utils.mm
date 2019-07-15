@@ -7,7 +7,9 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/signin/feature_flags.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -105,6 +107,12 @@ CGFloat heightForLogoHeader(BOOL logoIsShowing,
     return headerHeight;
   }
   if (!logoIsShowing) {
+    if (IsIdentityDiscFeatureEnabled()) {
+      // Returns sufficient vertical space for the Identity Disc to be
+      // displayed.
+      return ntp_home::kIdentityAvatarDimension +
+             2 * ntp_home::kIdentityAvatarMargin;
+    }
     return kNonGoogleSearchHeaderHeightIPad;
   }
   if (!promoCanShow) {

@@ -371,15 +371,12 @@ class MediaStreamUIProxyFeaturePolicyTest
  protected:
   // The header policy should only be set once on page load, so we refresh the
   // page to simulate that.
-  void RefreshPageAndSetHeaderPolicy(RenderFrameHost* rfh,
-                                     blink::mojom::FeaturePolicyFeature feature,
-                                     bool enabled) {
-    NavigateAndCommit(rfh->GetLastCommittedURL());
-    std::vector<url::Origin> whitelist;
-    if (enabled)
-      whitelist.push_back(rfh->GetLastCommittedOrigin());
-    RenderFrameHostTester::For(rfh)->SimulateFeaturePolicyHeader(feature,
-                                                                 whitelist);
+  void RefreshPageAndSetHeaderPolicy(
+      blink::mojom::FeaturePolicyFeature feature) {
+    NavigateAndCommit(main_rfh()->GetLastCommittedURL());
+    std::vector<url::Origin> empty_whitelist;
+    RenderFrameHostTester::For(main_rfh())
+        ->SimulateFeaturePolicyHeader(feature, empty_whitelist);
   }
 
   void GetResultForRequest(std::unique_ptr<MediaStreamRequest> request,
@@ -488,9 +485,8 @@ TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
             devices[1].type);
 
   // Mic disabled.
-  RefreshPageAndSetHeaderPolicy(main_rfh(),
-                                blink::mojom::FeaturePolicyFeature::kMicrophone,
-                                /*enabled=*/false);
+  RefreshPageAndSetHeaderPolicy(
+      blink::mojom::FeaturePolicyFeature::kMicrophone);
   GetResultForRequest(
       CreateRequest(main_rfh(),
                     blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
@@ -502,9 +498,7 @@ TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
             devices[0].type);
 
   // Camera disabled.
-  RefreshPageAndSetHeaderPolicy(main_rfh(),
-                                blink::mojom::FeaturePolicyFeature::kCamera,
-                                /*enabled=*/false);
+  RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kCamera);
   GetResultForRequest(
       CreateRequest(main_rfh(),
                     blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
@@ -516,9 +510,7 @@ TEST_F(MediaStreamUIProxyFeaturePolicyTest, FeaturePolicy) {
             devices[0].type);
 
   // Camera disabled resulting in no devices being returned.
-  RefreshPageAndSetHeaderPolicy(main_rfh(),
-                                blink::mojom::FeaturePolicyFeature::kCamera,
-                                /*enabled=*/false);
+  RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kCamera);
   GetResultForRequest(
       CreateRequest(main_rfh(), blink::mojom::MediaStreamType::NO_SERVICE,
                     blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE),

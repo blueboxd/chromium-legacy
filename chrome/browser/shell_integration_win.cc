@@ -43,6 +43,7 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut_win.h"
 #include "chrome/browser/win/settings_app_monitor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -67,16 +68,6 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   // Return empty string if profile_path is empty
   if (profile_path.empty())
     return base::string16();
-
-  base::FilePath default_user_data_dir;
-  // Return empty string if profile_path is in default user data
-  // dir and is the default profile.
-  if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
-      profile_path.DirName() == default_user_data_dir &&
-      profile_path.BaseName().value() ==
-          base::ASCIIToUTF16(chrome::kInitialProfile)) {
-    return base::string16();
-  }
 
   // Get joined basenames of user data dir and profile.
   base::string16 basenames = profile_path.DirName().BaseName().value() +
@@ -142,21 +133,6 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   DCHECK(!app_name.empty());
 
   return win::GetAppModelIdForProfile(app_name, profile_path);
-}
-
-void MigrateTaskbarPinsCallback() {
-  // Get full path of chrome.
-  base::FilePath chrome_exe;
-  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
-    return;
-
-  base::FilePath pins_path;
-  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &pins_path)) {
-    NOTREACHED();
-    return;
-  }
-
-  win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
 }
 
 // Windows treats a given scheme as an Internet scheme only if its registry
@@ -733,9 +709,28 @@ void MigrateTaskbarPins() {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
+  base::FilePath pins_path;
+  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &pins_path)) {
+    NOTREACHED();
+    return;
+  }
+
   base::CreateCOMSTATaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback));
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&MigrateTaskbarPinsCallback, pins_path));
+}
+
+void MigrateTaskbarPinsCallback(const base::FilePath& pins_path) {
+  // Get full path of chrome.
+  base::FilePath chrome_exe;
+  if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
+    return;
+
+  win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
+
+  // Migrate any pinned PWA shortcuts.
+  win::MigrateShortcutsInPathInternal(web_app::GetChromeProxyPath(), pins_path);
 }
 
 void GetIsPinnedToTaskbarState(
@@ -796,6 +791,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // |updated_properties|.
     base::win::ShortcutProperties updated_properties;
 
+    base::string16 current_app_id;
+
     // Validate the existing app id for the shortcut.
     Microsoft::WRL::ComPtr<IPropertyStore> property_store;
     propvariant.Reset();
@@ -813,7 +810,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
             updated_properties.set_app_id(expected_app_id);
           break;
         case VT_LPWSTR:
-          if (expected_app_id != base::string16(propvariant.get().pwszVal))
+          current_app_id = base::string16(propvariant.get().pwszVal);
+          if (expected_app_id != current_app_id)
             updated_properties.set_app_id(expected_app_id);
           break;
         default:
@@ -827,7 +825,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     // |default_chromium_model_id|).
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(is_per_user_install));
-    if (expected_app_id == default_chromium_model_id) {
+    if (current_app_id == default_chromium_model_id) {
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {

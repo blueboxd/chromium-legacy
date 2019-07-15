@@ -53,6 +53,14 @@ struct StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData> {
   static ax::mojom::Event hit_test_event_to_fire(const ui::AXActionData& a) {
     return a.hit_test_event_to_fire;
   }
+  static ax::mojom::ScrollAlignment horizontal_scroll_alignment(
+      const ui::AXActionData& a) {
+    return a.horizontal_scroll_alignment;
+  }
+  static ax::mojom::ScrollAlignment vertical_scroll_alignment(
+      const ui::AXActionData& a) {
+    return a.vertical_scroll_alignment;
+  }
 
   static bool Read(ax::mojom::AXActionDataDataView data, ui::AXActionData* out);
 };

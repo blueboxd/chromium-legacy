@@ -4108,6 +4108,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 
+#if defined(OS_ANDROID)
+    {"password-manager-onboarding-android",
+     flag_descriptions::kPasswordManagerOnboardingAndroidName,
+     flag_descriptions::kPasswordManagerOnboardingAndroidDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kPasswordManagerOnboardingAndroid)},
+#endif  // defined(OS_ANDROID)
+
     {"enable-defer-all-script", flag_descriptions::kEnableDeferAllScriptName,
      flag_descriptions::kEnableDeferAllScriptDescription, kOsAll,
      FEATURE_VALUE_TYPE(previews::features::kDeferAllScriptPreviews)},

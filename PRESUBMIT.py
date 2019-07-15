@@ -228,6 +228,21 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
     ),
 )
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+# * Error flag. True if a match is a presubmit error, otherwise it's a warning.
+_BANNED_IOS_EGTEST_FUNCTIONS = (
+    (
+      r'/\bEXPECT_OCMOCK_VERIFY\b',
+      (
+        'EXPECT_OCMOCK_VERIFY should not be used in EarlGrey tests because ',
+        'it is meant for GTests. Use [mock verify] instead.'
+      ),
+      True,
+    ),
+)
+
 # Directories that contain deprecated Bind() or Callback types.
 # Find sub-directories from a given directory by running:
 # for i in `find . -maxdepth 1 -type d`; do
@@ -1687,7 +1702,7 @@ def _CheckNoBannedFunctions(input_api, output_api):
         return True
     return False
 
-  def IsIosObcjFile(affected_file):
+  def IsIosObjcFile(affected_file):
     local_path = affected_file.LocalPath()
     if input_api.os_path.splitext(local_path)[-1] not in ('.mm', '.m', '.h'):
       return False
@@ -1727,9 +1742,15 @@ def _CheckNoBannedFunctions(input_api, output_api):
       for func_name, message, error in _BANNED_OBJC_FUNCTIONS:
         CheckForMatch(f, line_num, line, func_name, message, error)
 
-  for f in input_api.AffectedFiles(file_filter=IsIosObcjFile):
+  for f in input_api.AffectedFiles(file_filter=IsIosObjcFile):
     for line_num, line in f.ChangedContents():
       for func_name, message, error in _BANNED_IOS_OBJC_FUNCTIONS:
+        CheckForMatch(f, line_num, line, func_name, message, error)
+
+  egtest_filter = lambda f: f.LocalPath().endswith(('_egtest.mm'))
+  for f in input_api.AffectedFiles(file_filter=egtest_filter):
+    for line_num, line in f.ChangedContents():
+      for func_name, message, error in _BANNED_IOS_EGTEST_FUNCTIONS:
         CheckForMatch(f, line_num, line, func_name, message, error)
 
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))

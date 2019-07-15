@@ -1,0 +1,28 @@
+<!doctype html>
+<title>Launch Params are available from JavaScript.</title>
+<link rel="help" href="https://github.com/WICG/file-handling/blob/master/explainer.md">
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+
+test(() => {
+  assert_true('launchParams' in window, 'window must have launchParams.');
+  assert_true(window.launchParams instanceof LaunchParams, 'launchParams must be a LaunchParams.');
+}, 'launchParams should be available off the global object.');
+
+test(() => {
+  assert_true('files' in window.launchParams, 'launchParams has files.');
+  assert_true(Array.isArray(window.launchParams.files), 'files must be an array.');
+
+  assert_equals(window.launchParams.files.length, 0);
+}, 'files should default to an empty array.');
+
+test(() => {
+  assert_true('request' in window.launchParams, 'launchParams has request.');
+  assert_true(window.launchParams.request instanceof Request, 'request must be a Request.');
+
+  assert_true('url' in window.launchParams.request, 'request has a url.');
+  assert_equals(window.launchParams.request.url, window.location.href);
+}, 'request is available and correct.');
+
+</script>

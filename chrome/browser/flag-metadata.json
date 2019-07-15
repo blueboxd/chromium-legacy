@@ -2707,6 +2707,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "password-manager-onboarding-android",
+    "owners": ["achulkov", "ioanap"],
+    "expiry_milestone": 80
+  },
+  {
     "name": "passwords-keyboard-accessory",
     "owners": [ "fhorschig" ],
     "expiry_milestone": 76

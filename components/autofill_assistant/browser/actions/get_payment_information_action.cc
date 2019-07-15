@@ -35,19 +35,116 @@ GetPaymentInformationAction::GetPaymentInformationAction(
 }
 
 GetPaymentInformationAction::~GetPaymentInformationAction() {
+  delegate_->GetPersonalDataManager()->RemoveObserver(this);
+
   // Report UMA histograms.
   if (presented_to_user_) {
     Metrics::RecordPaymentRequestPrefilledSuccess(initially_prefilled,
                                                   action_successful_);
+    Metrics::RecordPaymentRequestAutofillChanged(personal_data_changed_,
+                                                 action_successful_);
   }
 }
 
 void GetPaymentInformationAction::InternalProcessAction(
     ProcessActionCallback callback) {
-  const GetPaymentInformationProto& get_payment_information =
-      proto_.get_payment_information();
+  auto payment_options = CreateOptionsFromProto();
+  auto get_payment_information = proto_.get_payment_information();
+  payment_options->callback =
+      base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(get_payment_information), std::move(callback));
 
+  // Gather info for UMA histograms.
+  if (!presented_to_user_) {
+    presented_to_user_ = true;
+    initially_prefilled = IsInitialAutofillDataComplete(
+        delegate_->GetPersonalDataManager(), *payment_options);
+    delegate_->GetPersonalDataManager()->AddObserver(this);
+  }
+
+  if (get_payment_information.has_prompt()) {
+    delegate_->SetStatusMessage(get_payment_information.prompt());
+  }
+  delegate_->GetPaymentInformation(std::move(payment_options));
+}
+
+void GetPaymentInformationAction::OnGetPaymentInformation(
+    const GetPaymentInformationProto& get_payment_information,
+    ProcessActionCallback callback,
+    std::unique_ptr<PaymentInformation> payment_information) {
+  bool succeed = payment_information->succeed;
+  if (succeed) {
+    if (get_payment_information.ask_for_payment()) {
+      DCHECK(payment_information->card);
+      std::string card_issuer_network =
+          autofill::data_util::GetPaymentRequestData(
+              payment_information->card->network())
+              .basic_card_issuer_network;
+      processed_action_proto_->mutable_payment_details()
+          ->set_card_issuer_network(card_issuer_network);
+      delegate_->GetClientMemory()->set_selected_card(
+          std::move(payment_information->card));
+
+      if (!get_payment_information.billing_address_name().empty()) {
+        DCHECK(payment_information->billing_address);
+        delegate_->GetClientMemory()->set_selected_address(
+            get_payment_information.billing_address_name(),
+            std::move(payment_information->billing_address));
+      }
+    }
+
+    if (!get_payment_information.shipping_address_name().empty()) {
+      DCHECK(payment_information->shipping_address);
+      delegate_->GetClientMemory()->set_selected_address(
+          get_payment_information.shipping_address_name(),
+          std::move(payment_information->shipping_address));
+    }
+
+    if (get_payment_information.has_contact_details()) {
+      auto contact_details_proto = get_payment_information.contact_details();
+      autofill::AutofillProfile contact_profile;
+      contact_profile.SetRawInfo(
+          autofill::ServerFieldType::NAME_FULL,
+          base::ASCIIToUTF16(payment_information->payer_name));
+      autofill::data_util::NameParts parts = autofill::data_util::SplitName(
+          base::ASCIIToUTF16(payment_information->payer_name));
+      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
+                                 parts.given);
+      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE,
+                                 parts.middle);
+      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_LAST,
+                                 parts.family);
+      contact_profile.SetRawInfo(
+          autofill::ServerFieldType::EMAIL_ADDRESS,
+          base::ASCIIToUTF16(payment_information->payer_email));
+      contact_profile.SetRawInfo(
+          autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
+          base::ASCIIToUTF16(payment_information->payer_phone));
+      if (!contact_details_proto.contact_details_name().empty()) {
+        delegate_->GetClientMemory()->set_selected_address(
+            contact_details_proto.contact_details_name(),
+            std::make_unique<autofill::AutofillProfile>(contact_profile));
+      }
+    }
+    processed_action_proto_->mutable_payment_details()
+        ->set_is_terms_and_conditions_accepted(
+            payment_information->terms_and_conditions ==
+            TermsAndConditionsState::ACCEPTED);
+    processed_action_proto_->mutable_payment_details()->set_payer_email(
+        payment_information->payer_email);
+  }
+
+  UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);
+  action_successful_ = succeed;
+  std::move(callback).Run(std::move(processed_action_proto_));
+}
+
+std::unique_ptr<PaymentRequestOptions>
+GetPaymentInformationAction::CreateOptionsFromProto() const {
   auto payment_options = std::make_unique<PaymentRequestOptions>();
+  auto get_payment_information = proto_.get_payment_information();
+
   payment_options->request_terms_and_conditions =
       get_payment_information.request_terms_and_conditions();
   if (get_payment_information.has_contact_details()) {
@@ -89,99 +186,7 @@ void GetPaymentInformationAction::InternalProcessAction(
       payment_options->initial_terms_and_conditions = REQUIRES_REVIEW;
       break;
   }
-  // Gather info for UMA histograms.
-  if (!presented_to_user_) {
-    presented_to_user_ = true;
-    initially_prefilled = IsInitialAutofillDataComplete(
-        delegate_->GetPersonalDataManager(), *payment_options);
-  }
-
-  payment_options->callback =
-      base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(get_payment_information), std::move(callback));
-  if (get_payment_information.has_prompt()) {
-    delegate_->SetStatusMessage(get_payment_information.prompt());
-  }
-  delegate_->GetPaymentInformation(std::move(payment_options));
-}
-
-void GetPaymentInformationAction::OnGetPaymentInformation(
-    const GetPaymentInformationProto& get_payment_information,
-    ProcessActionCallback callback,
-    std::unique_ptr<PaymentInformation> payment_information) {
-  bool succeed = payment_information->succeed;
-  if (succeed) {
-    if (get_payment_information.ask_for_payment()) {
-      DCHECK(payment_information->card);
-      std::string card_issuer_network =
-          autofill::data_util::GetPaymentRequestData(
-              payment_information->card->network())
-              .basic_card_issuer_network;
-      processed_action_proto_->mutable_payment_details()
-          ->set_card_issuer_network(card_issuer_network);
-      DVLOG(3) << "Storing selected credit card in client memory.";
-      delegate_->GetClientMemory()->set_selected_card(
-          std::move(payment_information->card));
-
-      if (!get_payment_information.billing_address_name().empty()) {
-        DCHECK(payment_information->billing_address);
-        DVLOG(3) << "Storing billing address in client memory under '"
-                 << get_payment_information.billing_address_name() << "'.";
-        delegate_->GetClientMemory()->set_selected_address(
-            get_payment_information.billing_address_name(),
-            std::move(payment_information->billing_address));
-      }
-    }
-
-    if (!get_payment_information.shipping_address_name().empty()) {
-      DCHECK(payment_information->shipping_address);
-      DVLOG(3) << "Storing shipping address in client memory under '"
-               << get_payment_information.shipping_address_name() << "'.";
-      delegate_->GetClientMemory()->set_selected_address(
-          get_payment_information.shipping_address_name(),
-          std::move(payment_information->shipping_address));
-    }
-
-    if (get_payment_information.has_contact_details()) {
-      auto contact_details_proto = get_payment_information.contact_details();
-      autofill::AutofillProfile contact_profile;
-      contact_profile.SetRawInfo(
-          autofill::ServerFieldType::NAME_FULL,
-          base::ASCIIToUTF16(payment_information->payer_name));
-      autofill::data_util::NameParts parts = autofill::data_util::SplitName(
-          base::ASCIIToUTF16(payment_information->payer_name));
-      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
-                                 parts.given);
-      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE,
-                                 parts.middle);
-      contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_LAST,
-                                 parts.family);
-      contact_profile.SetRawInfo(
-          autofill::ServerFieldType::EMAIL_ADDRESS,
-          base::ASCIIToUTF16(payment_information->payer_email));
-      contact_profile.SetRawInfo(
-          autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
-          base::ASCIIToUTF16(payment_information->payer_phone));
-      if (!contact_details_proto.contact_details_name().empty()) {
-        DVLOG(3) << "Storing contact info in client memory under '"
-                 << contact_details_proto.contact_details_name() << "'.";
-        delegate_->GetClientMemory()->set_selected_address(
-            contact_details_proto.contact_details_name(),
-            std::make_unique<autofill::AutofillProfile>(contact_profile));
-      }
-    }
-    processed_action_proto_->mutable_payment_details()
-        ->set_is_terms_and_conditions_accepted(
-            payment_information->terms_and_conditions ==
-            TermsAndConditionsState::ACCEPTED);
-    processed_action_proto_->mutable_payment_details()->set_payer_email(
-        payment_information->payer_email);
-  }
-
-  UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);
-  action_successful_ = succeed;
-  std::move(callback).Run(std::move(processed_action_proto_));
+  return payment_options;
 }
 
 bool GetPaymentInformationAction::IsInitialAutofillDataComplete(
@@ -196,7 +201,7 @@ bool GetPaymentInformationAction::IsInitialAutofillDataComplete(
       auto completeContactIter =
           std::find_if(profiles.begin(), profiles.end(),
                        [&payment_options](const auto& profile) {
-                         return IsCompleteContact(profile, payment_options);
+                         return IsCompleteContact(*profile, payment_options);
                        });
       if (completeContactIter == profiles.end()) {
         return false;
@@ -206,8 +211,8 @@ bool GetPaymentInformationAction::IsInitialAutofillDataComplete(
     if (payment_options.request_shipping) {
       auto completeAddressIter =
           std::find_if(profiles.begin(), profiles.end(),
-                       [&payment_options](const auto& profile) {
-                         return IsCompleteAddress(profile, payment_options);
+                       [&payment_options](const auto* profile) {
+                         return IsCompleteAddress(*profile, payment_options);
                        });
       if (completeAddressIter == profiles.end()) {
         return false;
@@ -219,8 +224,8 @@ bool GetPaymentInformationAction::IsInitialAutofillDataComplete(
     auto credit_cards = personal_data_manager->GetCreditCards();
     auto completeCardIter = std::find_if(
         credit_cards.begin(), credit_cards.end(),
-        [&payment_options](const auto& credit_card) {
-          return IsCompleteCreditCard(credit_card, payment_options);
+        [&payment_options](const auto* credit_card) {
+          return IsCompleteCreditCard(*credit_card, payment_options);
         });
     if (completeCardIter == credit_cards.end()) {
       return false;
@@ -230,54 +235,54 @@ bool GetPaymentInformationAction::IsInitialAutofillDataComplete(
 }
 
 bool GetPaymentInformationAction::IsCompleteContact(
-    const autofill::AutofillProfile* profile,
+    const autofill::AutofillProfile& profile,
     const PaymentRequestOptions& payment_options) {
   if (payment_options.request_payer_name &&
-      profile->GetRawInfo(autofill::NAME_FULL).empty()) {
+      profile.GetRawInfo(autofill::NAME_FULL).empty()) {
     return false;
   }
 
   if (payment_options.request_payer_email &&
-      profile->GetRawInfo(autofill::EMAIL_ADDRESS).empty()) {
+      profile.GetRawInfo(autofill::EMAIL_ADDRESS).empty()) {
     return false;
   }
 
   if (payment_options.request_payer_phone &&
-      profile->GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER).empty()) {
+      profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER).empty()) {
     return false;
   }
   return true;
 }
 
 bool GetPaymentInformationAction::IsCompleteAddress(
-    const autofill::AutofillProfile* profile,
+    const autofill::AutofillProfile& profile,
     const PaymentRequestOptions& payment_options) {
   if (!payment_options.request_shipping) {
     return true;
   }
 
   auto address_data = autofill::i18n::CreateAddressDataFromAutofillProfile(
-      *profile, base::android::GetDefaultLocaleString());
+      profile, base::android::GetDefaultLocaleString());
   return autofill::addressinput::HasAllRequiredFields(*address_data);
 }
 
 bool GetPaymentInformationAction::IsCompleteCreditCard(
-    const autofill::CreditCard* credit_card,
+    const autofill::CreditCard& credit_card,
     const PaymentRequestOptions& payment_options) {
-  if (credit_card->record_type() != autofill::CreditCard::MASKED_SERVER_CARD &&
-      !credit_card->HasValidCardNumber()) {
+  if (credit_card.record_type() != autofill::CreditCard::MASKED_SERVER_CARD &&
+      !credit_card.HasValidCardNumber()) {
     // Can't check validity of masked server card numbers because they are
     // incomplete until decrypted.
     return false;
   }
 
-  if (!credit_card->HasValidExpirationDate() ||
-      credit_card->billing_address_id().empty()) {
+  if (!credit_card.HasValidExpirationDate() ||
+      credit_card.billing_address_id().empty()) {
     return false;
   }
 
   std::string basic_card_network =
-      autofill::data_util::GetPaymentRequestData(credit_card->network())
+      autofill::data_util::GetPaymentRequestData(credit_card.network())
           .basic_card_issuer_network;
   if (!payment_options.supported_basic_card_networks.empty() &&
       std::find(payment_options.supported_basic_card_networks.begin(),
@@ -287,6 +292,11 @@ bool GetPaymentInformationAction::IsCompleteCreditCard(
     return false;
   }
   return true;
+}
+
+void GetPaymentInformationAction::OnPersonalDataChanged() {
+  personal_data_changed_ = true;
+  delegate_->GetPersonalDataManager()->RemoveObserver(this);
 }
 
 }  // namespace autofill_assistant

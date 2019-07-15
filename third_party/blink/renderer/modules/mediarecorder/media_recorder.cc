@@ -356,6 +356,7 @@ void MediaRecorder::ContextDestroyed(ExecutionContext*) {
 
   stopped_ = true;
   stream_.Clear();
+  recorder_handler_->Stop();
   recorder_handler_ = nullptr;
 }
 

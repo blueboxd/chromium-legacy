@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -47,6 +48,11 @@
 #endif
 
 namespace {
+
+// Identifer for cell at given |index| in the tab grid.
+NSString* IdentifierForCellAtIndex(unsigned int index) {
+  return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
+}
 
 id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL is_toggled_on) {
   GREYMatchesBlock matches = ^BOOL(id element) {
@@ -596,6 +602,20 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 + (id<GREYMatcher>)openInButton {
   return [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:IDS_IOS_OPEN_IN];
+}
+
++ (id<GREYMatcher>)tabGridOpenButton {
+  if (IsRegularXRegularSizeClass()) {
+    return [self
+        buttonWithAccessibilityLabelID:IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER];
+  } else {
+    return [self buttonWithAccessibilityLabelID:IDS_IOS_TOOLBAR_SHOW_TABS];
+  }
+}
+
++ (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index {
+  return grey_allOf(grey_accessibilityID(IdentifierForCellAtIndex(index)),
+                    grey_sufficientlyVisible(), nil);
 }
 
 @end

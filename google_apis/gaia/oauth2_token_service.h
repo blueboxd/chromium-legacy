@@ -56,8 +56,7 @@ class OAuth2AccessTokenManager;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService : public OAuth2TokenServiceObserver,
-                           public OAuth2AccessTokenManager::Delegate {
+class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
  public:
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
@@ -79,10 +78,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   void OnAccessTokenFetched(const CoreAccountId& account_id,
                             const GoogleServiceAuthError& error) override;
 
-  // Add or remove observers of this token service.
-  void AddObserver(OAuth2TokenServiceObserver* observer);
-  void RemoveObserver(OAuth2TokenServiceObserver* observer);
-
   // TODO(https://crbug.com/967598): Remove these APIs once we can use
   // OAuth2AccessTokenManager without OAuth2TokenService.
   // Add or remove observers of access token manager.
@@ -90,34 +85,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
       OAuth2AccessTokenManager::DiagnosticsObserver* observer);
   void RemoveAccessTokenDiagnosticsObserver(
       OAuth2AccessTokenManager::DiagnosticsObserver* observer);
-
-  // Returns true iff all credentials have been loaded from disk.
-  bool AreAllCredentialsLoaded() const;
-
-  void set_all_credentials_loaded_for_testing(bool loaded) {
-    all_credentials_loaded_ = loaded;
-  }
-
-  // Lists account IDs of all accounts with a refresh token maintained by this
-  // instance.
-  // Note: For each account returned by |GetAccounts|, |RefreshTokenIsAvailable|
-  // will return true.
-  // Note: If tokens have not been fully loaded yet, an empty list is returned.
-  std::vector<CoreAccountId> GetAccounts() const;
-
-  // Returns true if a refresh token exists for |account_id|. If false, calls to
-  // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
-  // Note: This will return |true| if and only if |account_id| is contained in
-  // the list returned by |GetAccounts|.
-  bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const;
-
-  // Returns true if a refresh token exists for |account_id| and it is in a
-  // persistent error state.
-  bool RefreshTokenHasError(const CoreAccountId& account_id) const;
-
-  // Returns the auth error associated with |account_id|. Only persistent errors
-  // will be returned.
-  GoogleServiceAuthError GetAuthError(const CoreAccountId& account_id) const;
 
   // Deprecated. It's moved to OAuth2AccessTokenManager.
   void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
@@ -149,19 +116,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
   // fully manages access tokens independently of OAuth2TokenService.
   friend class OAuth2AccessTokenManager;
 
-  // OAuth2TokenServiceObserver:
-  void OnRefreshTokensLoaded() override;
-
-  // Cancels all requests that are currently in progress. Virtual so it can be
-  // overridden for tests.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual void CancelAllRequests();
-
-  // Cancels all requests related to a given |account_id|. Virtual so it can be
-  // overridden for tests.
-  // Deprecated. It's moved to OAuth2AccessTokenManager.
-  virtual void CancelRequestsForAccount(const CoreAccountId& account_id);
-
  private:
   // TODO(https://crbug.com/967598): Completely merge this class into
   // ProfileOAuth2TokenService.
@@ -172,9 +126,6 @@ class OAuth2TokenService : public OAuth2TokenServiceObserver,
 
   // The depth of batch changes.
   int batch_change_depth_;
-
-  // Whether all credentials have been loaded.
-  bool all_credentials_loaded_;
 
   std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 

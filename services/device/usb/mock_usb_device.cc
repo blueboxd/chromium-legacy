@@ -31,8 +31,8 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
 
 MockUsbDevice::~MockUsbDevice() = default;
 
-void MockUsbDevice::AddMockConfig(const UsbConfigDescriptor& config) {
-  descriptor_.configurations.push_back(config);
+void MockUsbDevice::AddMockConfig(mojom::UsbConfigurationInfoPtr config) {
+  descriptor_.configurations.push_back(std::move(config));
 }
 
 void MockUsbDevice::ActiveConfigurationChanged(int configuration_value) {

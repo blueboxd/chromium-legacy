@@ -12,7 +12,7 @@ namespace device {
 
 class UsbConfigurationAndroid {
  public:
-  static UsbConfigDescriptor Convert(
+  static mojom::UsbConfigurationInfoPtr Convert(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& usb_configuration);
 };

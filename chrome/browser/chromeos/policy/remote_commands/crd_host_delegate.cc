@@ -56,7 +56,6 @@ constexpr char kCRDConnectAuth[] = "authServiceWithToken";
 constexpr char kCRDConnectXMPPServer[] = "xmppServerAddress";
 constexpr char kCRDConnectXMPPTLS[] = "xmppServerUseTls";
 constexpr char kCRDConnectDirectoryBot[] = "directoryBotJid";
-constexpr char kCRDConnectICEConfig[] = "iceConfig";
 constexpr char kCRDConnectNoDialogs[] = "noDialogs";
 constexpr char kCRDTerminateUponInput[] = "terminateUponInput";
 
@@ -291,7 +290,7 @@ void CRDHostDelegate::OnICEConfigurationLoaded(
 
 void CRDHostDelegate::StartCRDHostAndGetCode(
     const std::string& oauth_token,
-    base::Value ice_config,
+    base::Value unused_ice_config,
     bool terminate_upon_input,
     DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
     DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
@@ -311,7 +310,6 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
   connect_params.SetKey(kCRDConnectXMPPTLS, base::Value(true));
   connect_params.SetKey(kCRDConnectDirectoryBot,
                         base::Value(kCRDConnectDirectoryBotValue));
-  connect_params.SetKey(kCRDConnectICEConfig, std::move(ice_config));
   connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));
   connect_params.SetKey(kCRDTerminateUponInput,
                         base::Value(terminate_upon_input));

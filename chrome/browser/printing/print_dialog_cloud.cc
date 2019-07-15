@@ -15,7 +15,6 @@
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/google/core/common/google_util.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"

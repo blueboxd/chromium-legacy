@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "ui/base/l10n/l10n_util.h"
 
 ProfileListDesktop::ProfileListDesktop(

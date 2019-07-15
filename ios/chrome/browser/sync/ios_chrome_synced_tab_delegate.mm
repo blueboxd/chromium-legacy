@@ -15,6 +15,7 @@
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,6 +26,8 @@ using web::NavigationItem;
 namespace {
 
 // Helper to access the correct NavigationItem, accounting for pending entries.
+// May return null in rare cases such as a FORWARD_BACK navigation cancelling a
+// slow-loading navigation.
 NavigationItem* GetPossiblyPendingItemAtIndex(web::WebState* web_state, int i) {
   int pending_index = web_state->GetNavigationManager()->GetPendingItemIndex();
   return (pending_index == i)
@@ -87,7 +90,10 @@ GURL IOSChromeSyncedTabDelegate::GetFaviconURLAtIndex(int i) const {
 ui::PageTransition IOSChromeSyncedTabDelegate::GetTransitionAtIndex(
     int i) const {
   NavigationItem* item = GetPossiblyPendingItemAtIndex(web_state_, i);
-  return item->GetTransitionType();
+  // If no item exists, there's no coherent PageTransition to be supplied.
+  // There's also no ui::PAGE_TRANSITION_UNKNOWN, so let's use the default,
+  // which is PAGE_TRANSITION_LINK.
+  return item ? item->GetTransitionType() : ui::PAGE_TRANSITION_LINK;
 }
 
 std::string IOSChromeSyncedTabDelegate::GetPageLanguageAtIndex(int i) const {

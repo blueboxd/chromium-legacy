@@ -863,7 +863,7 @@ void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
   DCHECK(device_);
   endpoints_.clear();
 
-  const UsbConfigDescriptor* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
   if (!config)
     return;
 

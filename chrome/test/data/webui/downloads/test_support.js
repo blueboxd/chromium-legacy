@@ -7,20 +7,21 @@ class TestDownloadsProxy {
     /** @type {downloads.mojom.PageCallbackRouter} */
     this.callbackRouter = new downloads.mojom.PageCallbackRouter();
 
-    /** @type {!downloads.mojom.PageInterface} */
-    this.pageRouterProxy = this.callbackRouter.$.createProxy();
+    /** @type {!downloads.mojom.PageRemote} */
+    this.callbackRouterRemote =
+        this.callbackRouter.$.bindNewPipeAndPassRemote();
 
     /** @type {downloads.mojom.PageHandlerInterface} */
-    this.handler = new TestDownloadsMojoHandler(this.pageRouterProxy);
+    this.handler = new FakePageHandler(this.callbackRouterRemote);
   }
 }
 
 /** @implements {downloads.mojom.PageHandlerInterface} */
-class TestDownloadsMojoHandler {
+class FakePageHandler {
   /** @param {downloads.mojom.PageInterface} */
-  constructor(pageRouterProxy) {
+  constructor(callbackRouterRemote) {
     /** @private {downloads.mojom.PageInterface} */
-    this.pageRouterProxy_ = pageRouterProxy;
+    this.callbackRouterRemote_ = callbackRouterRemote;
 
     /** @private {TestBrowserProxy} */
     this.callTracker_ = new TestBrowserProxy(['remove']);
@@ -36,8 +37,8 @@ class TestDownloadsMojoHandler {
 
   /** @override */
   async remove(id) {
-    this.pageRouterProxy_.removeItem(id);
-    await this.pageRouterProxy_.$.flushForTesting();
+    this.callbackRouterRemote_.removeItem(id);
+    await this.callbackRouterRemote_.$.flushForTesting();
     this.callTracker_.methodCalled('remove', id);
   }
 

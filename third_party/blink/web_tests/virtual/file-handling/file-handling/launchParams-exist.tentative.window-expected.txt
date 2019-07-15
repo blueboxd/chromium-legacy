@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS launchParams should be available off the global object.
+PASS files should default to an empty array.
+FAIL request is available and correct. assert_true: request must be a Request. expected true got false
+Harness: the test ran to completion.
+

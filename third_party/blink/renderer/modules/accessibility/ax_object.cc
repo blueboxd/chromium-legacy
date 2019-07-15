@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
@@ -3030,8 +3029,11 @@ bool AXObject::RequestScrollToMakeVisibleAction() {
 }
 
 bool AXObject::RequestScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& subfocus) {
-  return OnNativeScrollToMakeVisibleWithSubFocusAction(subfocus);
+    const IntRect& subfocus,
+    blink::ScrollAlignment horizontal_scroll_alignment,
+    blink::ScrollAlignment vertical_scroll_alignment) {
+  return OnNativeScrollToMakeVisibleWithSubFocusAction(
+      subfocus, horizontal_scroll_alignment, vertical_scroll_alignment);
 }
 
 bool AXObject::RequestSetSelectedAction(bool selected) {
@@ -3081,24 +3083,21 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
 }
 
 bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& rect) const {
+    const IntRect& rect,
+    blink::ScrollAlignment horizontal_scroll_alignment,
+    blink::ScrollAlignment vertical_scroll_alignment) const {
   Node* node = GetNode();
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
   if (!layout_object || !node->isConnected())
     return false;
   PhysicalRect target_rect =
       layout_object->LocalToAbsoluteRect(PhysicalRect(rect));
-  // TODO(szager): This scroll alignment is intended to preserve existing
-  // behavior to the extent possible, but it's not clear that this behavior is
-  // well-spec'ed or optimal.  In particular, it favors centering things in
-  // the visible viewport rather than snapping them to the closest edge, which
-  // is the default behavior of element.scrollIntoView.
-  ScrollAlignment scroll_alignment = {
-      kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
   layout_object->ScrollRectToVisible(
       target_rect,
-      WebScrollIntoViewParams(scroll_alignment, scroll_alignment,
-                              kProgrammaticScroll, false, kScrollBehaviorAuto));
+      WebScrollIntoViewParams(horizontal_scroll_alignment,
+                              vertical_scroll_alignment, kProgrammaticScroll,
+                              false /* make_visible_in_visual_viewport */,
+                              kScrollBehaviorAuto));
   AXObjectCache().PostNotification(
       AXObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       ax::mojom::Event::kLocationChanged);

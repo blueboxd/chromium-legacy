@@ -732,7 +732,9 @@ void BrowserAccessibilityManager::SignalEndOfTest() {
 
 void BrowserAccessibilityManager::ScrollToMakeVisible(
     const BrowserAccessibility& node,
-    gfx::Rect subfocus) {
+    gfx::Rect subfocus,
+    ax::mojom::ScrollAlignment horizontal_scroll_alignment,
+    ax::mojom::ScrollAlignment vertical_scroll_alignment) {
   if (!delegate_)
     return;
 
@@ -740,6 +742,8 @@ void BrowserAccessibilityManager::ScrollToMakeVisible(
   action_data.target_node_id = node.GetId();
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
   action_data.target_rect = subfocus;
+  action_data.horizontal_scroll_alignment = horizontal_scroll_alignment;
+  action_data.vertical_scroll_alignment = vertical_scroll_alignment;
   delegate_->AccessibilityPerformAction(action_data);
 }
 

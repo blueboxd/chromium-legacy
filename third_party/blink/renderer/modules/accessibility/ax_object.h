@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -966,7 +967,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool RequestIncrementAction();
   bool RequestScrollToGlobalPointAction(const IntPoint&);
   bool RequestScrollToMakeVisibleAction();
-  bool RequestScrollToMakeVisibleWithSubFocusAction(const IntRect&);
+  bool RequestScrollToMakeVisibleWithSubFocusAction(
+      const IntRect&,
+      blink::ScrollAlignment horizontal_scroll_alignment,
+      blink::ScrollAlignment vertical_scroll_alignment);
   bool RequestSetSelectedAction(bool);
   bool RequestSetSequentialFocusNavigationStartingPointAction();
   bool RequestSetValueAction(const String&);
@@ -988,7 +992,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool OnNativeScrollToGlobalPointAction(const IntPoint&) const;
   virtual bool OnNativeScrollToMakeVisibleAction() const;
   virtual bool OnNativeScrollToMakeVisibleWithSubFocusAction(
-      const IntRect&) const;
+      const IntRect&,
+      blink::ScrollAlignment horizontal_scroll_alignment,
+      blink::ScrollAlignment vertical_scroll_alignment) const;
   virtual bool OnNativeSetSelectedAction(bool);
   virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
   virtual bool OnNativeSetValueAction(const String&);

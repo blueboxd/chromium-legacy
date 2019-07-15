@@ -120,8 +120,10 @@ source_set("test_support") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "ios_chrome_synced_tab_delegate_unittest.mm",
     "profile_sync_service_factory_unittest.cc",
     "session_sync_service_factory_unittest.cc",
   ]
@@ -134,5 +136,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/web/public/test",
     "//testing/gtest",
+    "//ui/base",
   ]
 }

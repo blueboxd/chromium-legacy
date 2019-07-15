@@ -123,9 +123,9 @@ class InstanceID {
   // |authorized_entity|: the authorized entity passed when obtaining the token.
   // |scope|: the scope that was passed when obtaining the token.
   // |callback|: to be called once the asynchronous operation is done.
-  void DeleteToken(const std::string& authorized_entity,
-                   const std::string& scope,
-                   DeleteTokenCallback callback);
+  virtual void DeleteToken(const std::string& authorized_entity,
+                           const std::string& scope,
+                           DeleteTokenCallback callback);
 
   // Resets the app instance identifier and revokes all tokens associated with
   // it.

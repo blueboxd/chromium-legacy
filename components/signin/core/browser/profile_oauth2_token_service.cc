@@ -67,11 +67,15 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     PrefService* user_prefs,
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : OAuth2TokenService(std::move(delegate)), user_prefs_(user_prefs) {
+    : OAuth2TokenService(std::move(delegate)),
+      user_prefs_(user_prefs),
+      all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
+  AddObserver(this);
 }
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
+  RemoveObserver(this);
 }
 
 // static
@@ -84,6 +88,16 @@ void ProfileOAuth2TokenService::RegisterProfilePrefs(
 #endif
   registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
                                std::string());
+}
+
+void ProfileOAuth2TokenService::AddObserver(
+    OAuth2TokenServiceObserver* observer) {
+  delegate_->AddObserver(observer);
+}
+
+void ProfileOAuth2TokenService::RemoveObserver(
+    OAuth2TokenServiceObserver* observer) {
+  delegate_->RemoveObserver(observer);
 }
 
 std::unique_ptr<OAuth2AccessTokenManager::Request>
@@ -229,6 +243,34 @@ void ProfileOAuth2TokenService::ExtractCredentials(
 }
 #endif
 
+bool ProfileOAuth2TokenService::AreAllCredentialsLoaded() const {
+  return all_credentials_loaded_;
+}
+
+std::vector<CoreAccountId> ProfileOAuth2TokenService::GetAccounts() const {
+  if (!AreAllCredentialsLoaded())
+    return std::vector<CoreAccountId>();
+
+  return GetDelegate()->GetAccounts();
+}
+
+bool ProfileOAuth2TokenService::RefreshTokenIsAvailable(
+    const CoreAccountId& account_id) const {
+  return delegate_->RefreshTokenIsAvailable(account_id);
+}
+
+bool ProfileOAuth2TokenService::RefreshTokenHasError(
+    const CoreAccountId& account_id) const {
+  return GetAuthError(account_id) != GoogleServiceAuthError::AuthErrorNone();
+}
+
+GoogleServiceAuthError ProfileOAuth2TokenService::GetAuthError(
+    const CoreAccountId& account_id) const {
+  GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
+  DCHECK(!error.IsTransientError());
+  return error;
+}
+
 void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
@@ -237,8 +279,6 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
     const CoreAccountId& account_id) {
-  OAuth2TokenService::OnRefreshTokenAvailable(account_id);
-
   // Check if the newly-updated token is valid (invalid tokens are inserted when
   // the user signs out on the web with DICE enabled).
   bool is_valid = true;
@@ -263,8 +303,6 @@ void ProfileOAuth2TokenService::OnRefreshTokenAvailable(
 
 void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
     const CoreAccountId& account_id) {
-  OAuth2TokenService::OnRefreshTokenRevoked(account_id);
-
   // If this was the last token, recreate the device ID.
   RecreateDeviceIdIfNeeded();
 
@@ -279,7 +317,7 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
-  OAuth2TokenService::OnRefreshTokensLoaded();
+  all_credentials_loaded_ = true;
 
   DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
             GetDelegate()->load_credentials_state());
@@ -302,6 +340,15 @@ void ProfileOAuth2TokenService::ClearCache() {
 void ProfileOAuth2TokenService::ClearCacheForAccount(
     const CoreAccountId& account_id) {
   token_manager_->ClearCacheForAccount(account_id);
+}
+
+void ProfileOAuth2TokenService::CancelAllRequests() {
+  token_manager_->CancelAllRequests();
+}
+
+void ProfileOAuth2TokenService::CancelRequestsForAccount(
+    const CoreAccountId& account_id) {
+  token_manager_->CancelRequestsForAccount(account_id);
 }
 
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {

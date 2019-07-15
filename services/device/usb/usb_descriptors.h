@@ -27,6 +27,7 @@ using UsbUsageType = mojom::UsbUsageType;
 using UsbEndpointInfoPtr = mojom::UsbEndpointInfoPtr;
 using UsbAlternateInterfaceInfoPtr = mojom::UsbAlternateInterfaceInfoPtr;
 using UsbInterfaceInfoPtr = mojom::UsbInterfaceInfoPtr;
+using UsbConfigurationInfoPtr = mojom::UsbConfigurationInfoPtr;
 
 struct CombinedInterfaceInfo {
   CombinedInterfaceInfo() = default;
@@ -37,29 +38,6 @@ struct CombinedInterfaceInfo {
 
   const mojom::UsbInterfaceInfo* interface = nullptr;
   const mojom::UsbAlternateInterfaceInfo* alternate = nullptr;
-};
-
-struct UsbConfigDescriptor {
-  explicit UsbConfigDescriptor(const uint8_t* data);
-  UsbConfigDescriptor(uint8_t configuration_value,
-                      bool self_powered,
-                      bool remote_wakeup,
-                      uint8_t maximum_power);
-  UsbConfigDescriptor() = delete;
-  UsbConfigDescriptor(const UsbConfigDescriptor& other);
-  UsbConfigDescriptor(UsbConfigDescriptor&& other);
-  ~UsbConfigDescriptor();
-
-  // Scans through |extra_data| for interface association descriptors and
-  // populates |first_interface| for each interface in this configuration.
-  void AssignFirstInterfaceNumbers();
-
-  uint8_t configuration_value;
-  bool self_powered;
-  bool remote_wakeup;
-  uint8_t maximum_power;
-  std::vector<UsbInterfaceInfoPtr> interfaces;
-  std::vector<uint8_t> extra_data;
 };
 
 struct UsbDeviceDescriptor {
@@ -88,7 +66,7 @@ struct UsbDeviceDescriptor {
   uint8_t i_product = 0;
   uint8_t i_serial_number = 0;
   uint8_t num_configurations = 0;
-  std::vector<UsbConfigDescriptor> configurations;
+  std::vector<UsbConfigurationInfoPtr> configurations;
 };
 
 void ReadUsbDescriptors(
@@ -119,12 +97,22 @@ UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(uint8_t interface_number,
                                              uint8_t interface_subclass,
                                              uint8_t interface_protocol);
 
-void AggregateInterfacesForConfig(UsbConfigDescriptor* config);
+void AggregateInterfacesForConfig(mojom::UsbConfigurationInfo* config);
 
 CombinedInterfaceInfo FindInterfaceInfoFromConfig(
-    const UsbConfigDescriptor* config,
+    const mojom::UsbConfigurationInfo* config,
     uint8_t interface_number,
     uint8_t alternate_setting);
+
+UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(const uint8_t* data);
+
+UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(
+    uint8_t configuration_value,
+    bool self_powered,
+    bool remote_wakeup,
+    uint8_t maximum_power);
+
+void AssignFirstInterfaceNumbers(mojom::UsbConfigurationInfo* config);
 
 }  // namespace device
 

@@ -74,6 +74,13 @@ struct AX_EXPORT AXActionData {
 
   // The event to fire in response to a HIT_TEST action.
   ax::mojom::Event hit_test_event_to_fire = ax::mojom::Event::kNone;
+
+  // The scroll alignment to use for a SCROLL_TO_MAKE_VISIBLE action. The
+  // scroll alignment controls where a node is scrolled within the viewport.
+  ax::mojom::ScrollAlignment horizontal_scroll_alignment =
+      ax::mojom::ScrollAlignment::kNone;
+  ax::mojom::ScrollAlignment vertical_scroll_alignment =
+      ax::mojom::ScrollAlignment::kNone;
 };
 
 }  // namespace ui

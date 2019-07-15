@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//chrome/common/features.gni")
-import("//tools/grit/grit_rule.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/grit_rule.gni")
 
 grit("webui_test_resources") {
   source = "webui_test_resources.grd"
@@ -29,4 +29,7 @@ mojom("web_ui_test_bindings") {
   sources = [
     "webui/web_ui_test.mojom",
   ]
+
+  # TODO(https://crbug.com/968369): Change to use new names.
+  use_old_js_lite_bindings_names = true
 }

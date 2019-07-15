@@ -771,7 +771,8 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kScrollToMakeVisible:
       target.ScrollToMakeVisibleWithSubFocus(
           WebRect(data.target_rect.x(), data.target_rect.y(),
-                  data.target_rect.width(), data.target_rect.height()));
+                  data.target_rect.width(), data.target_rect.height()),
+          data.horizontal_scroll_alignment, data.vertical_scroll_alignment);
       break;
     case ax::mojom::Action::kScrollToPoint:
       target.ScrollToGlobalPoint(

@@ -10,8 +10,6 @@ mojom("mojo_bindings") {
   sources = [
     "test.test-mojom",
   ]
-
-  use_old_js_lite_bindings_names = false
 }
 
 mojom("mojo_old_names_bindings") {
@@ -19,6 +17,7 @@ mojom("mojo_old_names_bindings") {
   sources = [
     "test_old_names.test-mojom",
   ]
+  use_old_js_lite_bindings_names = true
 }
 
 js_type_check("closure_compile") {

@@ -15,13 +15,17 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
  * components/autofill_assistant/browser/metrics.h.
  */
 /* package */ class AutofillAssistantMetrics {
+    /**
+     * Note: Java-side constructors expect a (NUM_ENTRIES+1) value, but C++ works with implicitly
+     * defined enum boundaries using 'kMaxValue'. See crbug.com/983518.
+     */
     private static final EnumeratedHistogramSample ENUMERATED_DROP_OUT_REASON =
             new EnumeratedHistogramSample(
-                    "Android.AutofillAssistant.DropOutReason", DropOutReason.NUM_ENTRIES);
+                    "Android.AutofillAssistant.DropOutReason", DropOutReason.MAX_VALUE + 1);
 
     private static final EnumeratedHistogramSample ENUMERATED_ON_BOARDING =
             new EnumeratedHistogramSample(
-                    "Android.AutofillAssistant.OnBoarding", OnBoarding.NUM_ENTRIES);
+                    "Android.AutofillAssistant.OnBoarding", OnBoarding.MAX_VALUE + 1);
 
     /**
      * Records the reason for a drop out.

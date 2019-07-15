@@ -28,7 +28,7 @@ class MockUsbDevice : public UsbDevice {
   void Open(OpenCallback callback) override { OpenInternal(callback); }
   MOCK_METHOD1(OpenInternal, void(OpenCallback&));
 
-  void AddMockConfig(const UsbConfigDescriptor& config);
+  void AddMockConfig(mojom::UsbConfigurationInfoPtr config);
 
   // Public wrappers around protected functions.
   void ActiveConfigurationChanged(int configuration_value);

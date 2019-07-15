@@ -16,7 +16,7 @@ suite('manager tests', function() {
     PolymerTest.clearBody();
 
     testBrowserProxy = new TestDownloadsProxy();
-    pageRouterProxy = testBrowserProxy.pageRouterProxy;
+    callbackRouterRemote = testBrowserProxy.callbackRouterRemote;
     downloads.BrowserProxy.instance_ = testBrowserProxy;
 
     manager = document.createElement('downloads-manager');
@@ -25,13 +25,13 @@ suite('manager tests', function() {
   });
 
   test('long URLs elide', async () => {
-    pageRouterProxy.insertItems(0, [createDownload({
-                                  fileName: 'file name',
-                                  state: downloads.States.COMPLETE,
-                                  sinceString: 'Today',
-                                  url: 'a'.repeat(1000),
-                                })]);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.insertItems(0, [createDownload({
+                                       fileName: 'file name',
+                                       state: downloads.States.COMPLETE,
+                                       sinceString: 'Today',
+                                       url: 'a'.repeat(1000),
+                                     })]);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
 
     const item = manager.$$('downloads-item');
@@ -50,18 +50,18 @@ suite('manager tests', function() {
     const download1 = createDownload();
     const download2 = createDownload();
 
-    pageRouterProxy.insertItems(0, [download1, download2]);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.insertItems(0, [download1, download2]);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
     assertEquals(1, countDates());
 
-    pageRouterProxy.removeItem(0);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.removeItem(0);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
     assertEquals(1, countDates());
 
-    pageRouterProxy.insertItems(0, [download1]);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.insertItems(0, [download1]);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
     assertEquals(1, countDates());
   });
@@ -71,8 +71,8 @@ suite('manager tests', function() {
       dangerType: downloads.DangerType.DANGEROUS_FILE,
       state: downloads.States.DANGEROUS,
     });
-    pageRouterProxy.insertItems(0, [dangerousDownload]);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.insertItems(0, [dangerousDownload]);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
     assertTrue(!!manager.$$('downloads-item').$$('.dangerous'));
 
@@ -80,20 +80,20 @@ suite('manager tests', function() {
       dangerType: downloads.DangerType.NOT_DANGEROUS,
       state: downloads.States.COMPLETE,
     });
-    pageRouterProxy.updateItem(0, safeDownload);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.updateItem(0, safeDownload);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
     assertFalse(!!manager.$$('downloads-item').$$('.dangerous'));
   });
 
   test('remove', async () => {
-    pageRouterProxy.insertItems(0, [createDownload({
-                                  fileName: 'file name',
-                                  state: downloads.States.COMPLETE,
-                                  sinceString: 'Today',
-                                  url: 'a'.repeat(1000),
-                                })]);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.insertItems(0, [createDownload({
+                                       fileName: 'file name',
+                                       state: downloads.States.COMPLETE,
+                                       sinceString: 'Today',
+                                       url: 'a'.repeat(1000),
+                                     })]);
+    await callbackRouterRemote.$.flushForTesting();
     Polymer.dom.flush();
     const item = manager.$$('downloads-item');
 
@@ -106,27 +106,27 @@ suite('manager tests', function() {
 
   test('toolbar hasClearableDownloads set correctly', async () => {
     const clearable = createDownload();
-    pageRouterProxy.insertItems(0, [clearable]);
+    callbackRouterRemote.insertItems(0, [clearable]);
     const checkNotClearable = async state => {
       const download = createDownload({state: state});
-      pageRouterProxy.updateItem(0, clearable);
-      await pageRouterProxy.$.flushForTesting();
+      callbackRouterRemote.updateItem(0, clearable);
+      await callbackRouterRemote.$.flushForTesting();
       assertTrue(manager.$.toolbar.hasClearableDownloads);
-      pageRouterProxy.updateItem(0, download);
-      await pageRouterProxy.$.flushForTesting();
+      callbackRouterRemote.updateItem(0, download);
+      await callbackRouterRemote.$.flushForTesting();
       assertFalse(manager.$.toolbar.hasClearableDownloads);
     };
     await checkNotClearable(downloads.States.DANGEROUS);
     await checkNotClearable(downloads.States.IN_PROGRESS);
     await checkNotClearable(downloads.States.PAUSED);
 
-    pageRouterProxy.updateItem(0, clearable);
-    pageRouterProxy.insertItems(
+    callbackRouterRemote.updateItem(0, clearable);
+    callbackRouterRemote.insertItems(
         1, [createDownload({state: downloads.States.DANGEROUS})]);
-    await pageRouterProxy.$.flushForTesting();
+    await callbackRouterRemote.$.flushForTesting();
     assertTrue(manager.$.toolbar.hasClearableDownloads);
-    pageRouterProxy.removeItem(0);
-    await pageRouterProxy.$.flushForTesting();
+    callbackRouterRemote.removeItem(0);
+    await callbackRouterRemote.$.flushForTesting();
     assertFalse(manager.$.toolbar.hasClearableDownloads);
   });
 

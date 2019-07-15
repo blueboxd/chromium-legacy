@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ime/ime_window.h"
+#include "chrome/browser/ui/input_method/ime_window.h"
 
 #include <utility>
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ime/ime_native_window.h"
-#include "chrome/browser/ui/ime/ime_window_observer.h"
+#include "chrome/browser/ui/input_method/ime_native_window.h"
+#include "chrome/browser/ui/input_method/ime_window_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -104,7 +104,8 @@ void ImeWindow::FollowCursor(const gfx::Rect& cursor_bounds) {
   gfx::Rect screen_bounds =
       display::FindDisplayNearestPoint(
           display::Screen::GetScreen()->GetAllDisplays(),
-          gfx::Point(cursor_bounds.x(), cursor_bounds.y()))->bounds();
+          gfx::Point(cursor_bounds.x(), cursor_bounds.y()))
+          ->bounds();
   gfx::Rect window_bounds = native_window_->GetBounds();
   int screen_width = screen_bounds.x() + screen_bounds.width();
   int screen_height = screen_bounds.y() + screen_bounds.height();
@@ -168,10 +169,9 @@ content::WebContents* ImeWindow::OpenURLFromTab(
   return source;
 }
 
-bool ImeWindow::CanDragEnter(
-    content::WebContents* source,
-    const content::DropData& data,
-    blink::WebDragOperationsMask operations_allowed) {
+bool ImeWindow::CanDragEnter(content::WebContents* source,
+                             const content::DropData& data,
+                             blink::WebDragOperationsMask operations_allowed) {
   return false;
 }
 

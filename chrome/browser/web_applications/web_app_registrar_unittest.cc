@@ -195,16 +195,22 @@ TEST(WebAppRegistrar, GetAppDetails) {
   const GURL launch_url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(launch_url);
   const std::string name = "Name";
+  const std::string description = "Description";
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
 
   EXPECT_EQ(std::string(), registrar->GetAppShortName(app_id));
   EXPECT_EQ(GURL(), registrar->GetAppLaunchURL(app_id));
 
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetName(name);
+  web_app->SetDescription(description);
+  web_app->SetThemeColor(theme_color);
   web_app->SetLaunchUrl(launch_url);
   registrar->RegisterApp(std::move(web_app));
 
   EXPECT_EQ(name, registrar->GetAppShortName(app_id));
+  EXPECT_EQ(description, registrar->GetAppDescription(app_id));
+  EXPECT_EQ(theme_color, registrar->GetAppThemeColor(app_id));
   EXPECT_EQ(launch_url, registrar->GetAppLaunchURL(app_id));
 }
 

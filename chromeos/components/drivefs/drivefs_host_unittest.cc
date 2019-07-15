@@ -228,7 +228,7 @@ class FakeIdentityService
   void GetPrimaryAccountWhenAvailable(
       GetPrimaryAccountWhenAvailableCallback callback) override {
     auto account_id = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
-    std::move(callback).Run(CoreAccountId(account_id.GetAccountIdKey()),
+    std::move(callback).Run(CoreAccountId(account_id.GetUserEmail()),
                             account_id.GetGaiaId(), account_id.GetUserEmail(),
                             {});
   }

@@ -1742,9 +1742,6 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
   ProtocolHandler handler =
       ProtocolHandler::CreateProtocolHandler(protocol, url);
 
-  if (!handler.IsValid())
-    return;
-
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(context);
   if (registry->SilentlyHandleRegisterHandlerRequest(handler))

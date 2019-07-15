@@ -1674,6 +1674,10 @@ class FakeItem extends cr.ui.TreeItem {
     this.label = modelItem.label;
     this.directoryModel_ = tree.directoryModel;
 
+    if (tree.disabledContextMenu) {
+      cr.ui.contextMenuHandler.setContextMenu(this, tree.disabledContextMenu);
+    }
+
     const icon = queryRequiredElement('.icon', this);
     icon.classList.add('item-icon');
     icon.setAttribute('root-type-icon', rootType);
@@ -2250,6 +2254,7 @@ DirectoryTree.decorate =
 
 cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);
 cr.defineProperty(DirectoryTree, 'contextMenuForRootItems', cr.PropertyKind.JS);
+cr.defineProperty(DirectoryTree, 'disabledContextMenu', cr.PropertyKind.JS);
 
 /**
  * Creates a new DirectoryItem based on |modelItem|.

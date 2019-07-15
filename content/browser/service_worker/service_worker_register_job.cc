@@ -334,9 +334,8 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
-      context_->loader_factory_getter()->GetNetworkFactory(),
-      force_bypass_cache_, registration()->update_via_cache(),
-      time_since_last_check);
+      context_->GetLoaderFactoryBundleForUpdateCheck(), force_bypass_cache_,
+      registration()->update_via_cache(), time_since_last_check);
   update_checker_->Start(std::move(callback));
 }
 

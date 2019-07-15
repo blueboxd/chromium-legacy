@@ -50,6 +50,14 @@ CreateExtensionNavigationURLLoaderFactory(
     content::BrowserContext* browser_context,
     bool is_web_view_request);
 
+// Creates a new network::mojom::URLLoaderFactory implementation suitable for
+// handling service worker script requests initiated by the browser process to
+// extension URLs during service worker update check when
+// ServiceWorkerImportedScriptUpdateCheck is enabled.
+std::unique_ptr<network::mojom::URLLoaderFactory>
+CreateExtensionServiceWorkerScriptURLLoaderFactory(
+    content::BrowserContext* browser_context);
+
 // Creates a network::mojom::URLLoaderFactory implementation suitable for
 // handling subresource requests for extension URLs for the frame identified by
 // |render_process_id| and |render_frame_id|.

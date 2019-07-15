@@ -207,8 +207,7 @@ bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
     const ProtocolHandler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!RegisterProtocolHandler(handler, USER))
-    return;
+  RegisterProtocolHandler(handler, USER);
   SetDefault(handler);
   Save();
   NotifyChanged();
@@ -729,29 +728,23 @@ void ProtocolHandlerRegistry::NotifyChanged() {
     observer.OnProtocolHandlerRegistryChanged();
 }
 
-bool ProtocolHandlerRegistry::RegisterProtocolHandler(
+void ProtocolHandlerRegistry::RegisterProtocolHandler(
     const ProtocolHandler& handler,
     const HandlerSource source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(CanSchemeBeOverridden(handler.protocol()));
   DCHECK(!handler.IsEmpty());
-
-  // Ignore invalid handlers.
-  if (!handler.IsValid())
-    return false;
-
   ProtocolHandlerMultiMap& map =
       (source == POLICY) ? policy_protocol_handlers_ : user_protocol_handlers_;
   ProtocolHandlerList& list = map[handler.protocol()];
   if (!HandlerExists(handler, list))
     list.push_back(handler);
   if (IsRegistered(handler)) {
-    return true;
+    return;
   }
   if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol()))
     delegate_->RegisterExternalHandler(handler.protocol());
   InsertHandler(handler);
-  return true;
 }
 
 std::vector<const base::DictionaryValue*>
@@ -787,8 +780,7 @@ void ProtocolHandlerRegistry::RegisterProtocolHandlersFromPref(
        p != registered_handlers.end();
        ++p) {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(*p);
-    if (!RegisterProtocolHandler(handler, source))
-      continue;
+    RegisterProtocolHandler(handler, source);
     bool is_default = false;
     if ((*p)->GetBoolean("default", &is_default) && is_default) {
       SetDefault(handler);

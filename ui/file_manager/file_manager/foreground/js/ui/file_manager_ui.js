@@ -469,6 +469,8 @@ class FileManagerUI {
         util.queryDecoratedElement('#roots-context-menu', cr.ui.Menu);
     this.directoryTree.contextMenuForSubitems =
         util.queryDecoratedElement('#directory-tree-context-menu', cr.ui.Menu);
+    this.directoryTree.disabledContextMenu =
+        util.queryDecoratedElement('#disabled-context-menu', cr.ui.Menu);
 
     // Visible height of the directory tree depends on the size of progress
     // center panel. When the size of progress center panel changes, directory

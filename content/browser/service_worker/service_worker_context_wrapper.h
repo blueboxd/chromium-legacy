@@ -335,7 +335,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
       ChromeBlobStorageContext* blob_context,
-      URLLoaderFactoryGetter* url_loader_factory_getter);
+      URLLoaderFactoryGetter* url_loader_factory_getter,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          non_network_loader_factory_bundle_info_for_update_check);
   void ShutdownOnIO();
 
   // If |include_installing_version| is true, |callback| is called if there is
@@ -434,6 +436,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // RUNNING and STOPPING are considered "running". See the comments in
   // OnRunningStateChange.
   bool IsRunningStatus(EmbeddedWorkerStatus status);
+
+  // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+  CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+      BrowserContext* browser_context);
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.

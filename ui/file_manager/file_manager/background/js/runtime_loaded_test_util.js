@@ -287,12 +287,20 @@ test.util.sync.getActiveElement = (contentWindow, opt_styleNames) => {
 /**
  * Assigns the text to the input element.
  * @param {Window} contentWindow Window to be tested.
- * @param {string} query Query for the input element.
+ * @param {string|!Array<string>} query Query for the input element.
+ *     If |query| is an array, |query[0]| specifies the first element(s),
+ *     |query[1]| specifies elements inside the shadow DOM of the first element,
+ *     and so on.
  * @param {string} text Text to be assigned.
  */
 test.util.sync.inputText = (contentWindow, query, text) => {
-  const input = contentWindow.document.querySelector(query);
+  if (typeof query === 'string') {
+    query = [query];
+  }
+  const input =
+      test.util.sync.deepQuerySelectorAll_(contentWindow.document, query)[0];
   input.value = text;
+  input.dispatchEvent(new Event('change'));
 };
 
 /**

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -17,6 +18,7 @@
 #include "net/http/http_util.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 namespace {
@@ -64,6 +66,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kServiceWorkerImportedScriptUpdateCheck);
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     base::RunLoop run_loop;
     storage()->LazyInitializeForTest(run_loop.QuitClosure());
@@ -112,7 +116,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
         GURL(url), is_main_script, scope, force_bypass_cache, update_via_cache,
         time_since_last_check,
-        helper_->url_loader_factory_getter()->GetNetworkFactory(),
+        helper_->context()->GetLoaderFactoryBundleForUpdateCheck(),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,
@@ -150,6 +154,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
  protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
+  base::test::ScopedFeatureList feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSingleScriptUpdateCheckerTest);

@@ -198,8 +198,15 @@ bool AllowExtensionResourceLoad(const GURL& url,
 
   // Frame navigations to extensions have already been checked in
   // the ExtensionNavigationThrottle.
-  if (child_id == -1 && content::IsResourceTypeFrame(resource_type))
+  // Service Worker and the imported scripts can be loaded with extension URLs
+  // in browser process during update check when
+  // ServiceWorkerImportedScriptUpdateCheck is enabled.
+  if (child_id == -1 &&
+      (content::IsResourceTypeFrame(resource_type) ||
+       resource_type == content::ResourceType::kScript ||
+       resource_type == content::ResourceType::kServiceWorker)) {
     return true;
+  }
 
   // Allow the extension module embedder to grant permission for loads.
   if (ExtensionsBrowserClient::Get()->AllowCrossRendererResourceLoad(
@@ -653,6 +660,13 @@ CreateExtensionNavigationURLLoaderFactory(
     bool is_web_view_request) {
   return std::make_unique<ExtensionURLLoaderFactory>(browser_context,
                                                      is_web_view_request);
+}
+
+std::unique_ptr<network::mojom::URLLoaderFactory>
+CreateExtensionServiceWorkerScriptURLLoaderFactory(
+    content::BrowserContext* browser_context) {
+  return std::make_unique<ExtensionURLLoaderFactory>(
+      browser_context, /*is_web_view_request=*/false);
 }
 
 std::unique_ptr<network::mojom::URLLoaderFactory>

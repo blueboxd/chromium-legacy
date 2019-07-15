@@ -303,24 +303,6 @@ bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
   return a->frame_tree_node()->depth() < b->frame_tree_node()->depth();
 }
 
-bool AreValidRegisterProtocolHandlerArguments(const std::string& protocol,
-                                              const GURL& url,
-                                              const url::Origin& origin) {
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsPseudoScheme(protocol))
-    return false;
-
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return false;
-
-  url::Origin url_origin = url::Origin::Create(url);
-  if (!url_origin.IsSameOriginWith(origin))
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 std::unique_ptr<WebContents> WebContents::Create(
@@ -4867,12 +4849,10 @@ void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
   if (!delegate_)
     return;
 
-  if (!AreValidRegisterProtocolHandlerArguments(
-          protocol, url, source->GetLastCommittedOrigin())) {
-    ReceivedBadMessage(source->GetProcess(),
-                       bad_message::REGISTER_PROTOCOL_HANDLER_INVALID_URL);
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsPseudoScheme(protocol))
     return;
-  }
 
   delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
 }
@@ -4886,12 +4866,10 @@ void WebContentsImpl::OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
   if (!delegate_)
     return;
 
-  if (!AreValidRegisterProtocolHandlerArguments(
-          protocol, url, source->GetLastCommittedOrigin())) {
-    ReceivedBadMessage(source->GetProcess(),
-                       bad_message::REGISTER_PROTOCOL_HANDLER_INVALID_URL);
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsPseudoScheme(protocol))
     return;
-  }
 
   delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
 }

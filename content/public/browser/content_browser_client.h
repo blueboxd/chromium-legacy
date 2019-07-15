@@ -1191,6 +1191,17 @@ class CONTENT_EXPORT ContentBrowserClient {
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories);
 
+  // Allows the embedder to register per-scheme URLLoaderFactory
+  // implementations to handle service worker script requests initiated by the
+  // browser process for schemes not handled by the Network Service.
+  // Only called for service worker update check when
+  // ServiceWorkerImportedScriptUpdateCheck is enabled.
+  // The resulting |factories| must be used only by the browser process. The
+  // caller must not send any of |factories| to any other process.
+  virtual void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
+      BrowserContext* browser_context,
+      NonNetworkURLLoaderFactoryMap* factories);
+
   // Allows the embedder to register per-scheme URLLoaderFactory implementations
   // to handle subresource URL requests for schemes not handled by the Network
   // Service. This function can also be used to make a factory for other

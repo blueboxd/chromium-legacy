@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_IME_IME_WINDOW_FRAME_VIEW_H_
 
-#include "chrome/browser/ui/ime/ime_window.h"
+#include "chrome/browser/ui/input_method/ime_window.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 

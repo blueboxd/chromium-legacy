@@ -19,6 +19,7 @@
 #include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 namespace content {
@@ -107,9 +108,13 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
           base::MakeRefCounted<URLLoaderFactoryGetter>()) {
   scoped_refptr<base::SequencedTaskRunner> database_task_runner =
       base::ThreadTaskRunnerHandle::Get();
-  wrapper_->InitInternal(user_data_directory, std::move(database_task_runner),
-                         nullptr, nullptr, nullptr,
-                         url_loader_factory_getter_.get());
+  wrapper_->InitInternal(
+      user_data_directory, std::move(database_task_runner), nullptr, nullptr,
+      nullptr, url_loader_factory_getter_.get(),
+      blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
+          ? wrapper_->CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+                browser_context_.get())
+          : nullptr);
   wrapper_->process_manager()->SetProcessIdForTest(mock_render_process_id());
   wrapper_->process_manager()->SetNewProcessIdForTest(new_render_process_id());
   wrapper_->InitializeResourceContext(browser_context_->GetResourceContext());

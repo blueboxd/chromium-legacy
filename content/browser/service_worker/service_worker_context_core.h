@@ -113,6 +113,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
       URLLoaderFactoryGetter* url_loader_factory_getter,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          non_network_loader_factory_bundle_info_for_update_check,
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
           observer_list,
       ServiceWorkerContextWrapper* wrapper);
@@ -281,6 +283,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   int GetNextEmbeddedWorkerId();
 
+  // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  // Returns a factory bundle suitable for the browser process to use to fetch
+  // a non-installed service worker main script or imported script during an
+  // update check. It must not be sent to a renderer process. The bundle does
+  // not support reconnection to the network service, so it should be used for
+  // only a single service worker update check.
+  scoped_refptr<blink::URLLoaderFactoryBundle>
+  GetLoaderFactoryBundleForUpdateCheck();
+
  private:
   friend class ServiceWorkerContextCoreTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextCoreTest, FailureInfo);
@@ -347,6 +358,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64_t /* version_id */, FailureInfo> failure_counts_;
 
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+
+  scoped_refptr<blink::URLLoaderFactoryBundle>
+      loader_factory_bundle_for_update_check_;
 
   bool force_update_on_page_load_;
   // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().

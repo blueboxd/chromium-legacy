@@ -24,7 +24,7 @@ message WebAppProto {
   required string app_id = 1;
   required string launch_url = 2;
   required string name = 3;
-  required uint32 theme_color = 4;
+  optional uint32 theme_color = 4;
 
   // Local data members, not to be synced:
   optional string description = 5;

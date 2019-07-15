@@ -34,6 +34,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   web_app::AppId FindAppIdForUrl(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
+  std::string GetAppDescription(const web_app::AppId& app_id) const override;
+  base::Optional<SkColor> GetAppThemeColor(
+      const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
 
   // ExtensionRegistryObserver:

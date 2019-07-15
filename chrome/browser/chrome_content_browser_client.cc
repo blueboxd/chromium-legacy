@@ -4890,6 +4890,28 @@ void ChromeContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
 }
 
+void ChromeContentBrowserClient::
+    RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
+        content::BrowserContext* browser_context,
+        NonNetworkURLLoaderFactoryMap* factories) {
+#if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
+  DCHECK(browser_context);
+  DCHECK(factories);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  factories->emplace(
+      extensions::kExtensionScheme,
+      extensions::CreateExtensionServiceWorkerScriptURLLoaderFactory(
+          browser_context));
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#if defined(OS_CHROMEOS)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  factories->emplace(content::kExternalFileScheme,
+                     std::make_unique<chromeos::ExternalFileURLLoaderFactory>(
+                         profile, content::ChildProcessHost::kInvalidUniqueID));
+#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_CHROMEOS)
+}
+
 namespace {
 
 // The FileURLLoaderFactory provided to the extension background pages.

@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/ime/ime_native_window.h"
-#include "chrome/browser/ui/ime/ime_window.h"
+#include "chrome/browser/ui/input_method/ime_native_window.h"
+#include "chrome/browser/ui/input_method/ime_window.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"

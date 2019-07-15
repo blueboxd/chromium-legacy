@@ -761,9 +761,9 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
-  AddProtocolHandler("news", "https://abc.xyz/?url=%s");
+  AddProtocolHandler("abc", "https://abc.xyz/?url=%s");
 
-  ui_test_utils::NavigateToURL(browser(), GURL("news:something"));
+  ui_test_utils::NavigateToURL(browser(), GURL("abc:something"));
 
   base::string16 expected_title = base::ASCIIToUTF16("abc.xyz");
   content::TitleWatcher title_watcher(
@@ -773,10 +773,10 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
 
 // This is a regression test for crbug.com/969177.
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, HandlersIgnoredWhenDisabled) {
-  AddProtocolHandler("bitcoin", "https://abc.xyz/?url=%s");
+  AddProtocolHandler("abc", "https://abc.xyz/?url=%s");
   protocol_handler_registry()->Disable();
 
-  ui_test_utils::NavigateToURL(browser(), GURL("bitcoin:something"));
+  ui_test_utils::NavigateToURL(browser(), GURL("abc:something"));
 
   base::string16 tab_title;
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));

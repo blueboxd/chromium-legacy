@@ -67,8 +67,8 @@ void DriveFsAuth::AccountReady(const CoreAccountId& account_id,
   weak_ptr_factory_.InvalidateWeakPtrs();
   timer_->Stop();
   GetIdentityAccessor().GetAccessToken(
-      delegate_->GetAccountId().GetUserEmail(),
-      {"https://www.googleapis.com/auth/drive"}, kIdentityConsumerId,
+      account_id, {"https://www.googleapis.com/auth/drive"},
+      kIdentityConsumerId,
       base::BindOnce(&DriveFsAuth::GotChromeAccessToken,
                      base::Unretained(this)));
 }

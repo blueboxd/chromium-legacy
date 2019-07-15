@@ -54,6 +54,8 @@ class TestAppRegistrar : public AppRegistrar {
   AppId FindAppIdForUrl(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
+  std::string GetAppDescription(const AppId& app_id) const override;
+  base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
 
  private:

@@ -72,13 +72,12 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   proto->set_name(web_app.name());
 
-  DCHECK(web_app.theme_color());
-  proto->set_theme_color(web_app.theme_color().value());
-
   // Optional fields:
   proto->set_description(web_app.description());
   if (!web_app.scope().is_empty())
     proto->set_scope(web_app.scope().spec());
+  if (web_app.theme_color().has_value())
+    proto->set_theme_color(web_app.theme_color().value());
 
   for (const WebApp::IconInfo& icon : web_app.icons()) {
     WebAppIconInfoProto* icon_proto = proto->add_icons();
@@ -108,12 +107,6 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   }
   web_app->SetName(proto.name());
 
-  if (!proto.has_theme_color()) {
-    DLOG(ERROR) << "WebApp proto parse error: no theme_color field";
-    return nullptr;
-  }
-  web_app->SetThemeColor(proto.theme_color());
-
   // Optional fields:
   if (proto.has_description())
     web_app->SetDescription(proto.description());
@@ -127,6 +120,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     }
     web_app->SetScope(scope);
   }
+
+  if (proto.has_theme_color())
+    web_app->SetThemeColor(proto.theme_color());
 
   WebApp::Icons icons;
   for (int i = 0; i < proto.icons_size(); ++i) {

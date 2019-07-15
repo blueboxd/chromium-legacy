@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -131,6 +132,26 @@ std::string BookmarkAppRegistrar::GetAppShortName(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetExtension(app_id);
   return extension ? extension->short_name() : std::string();
+}
+
+std::string BookmarkAppRegistrar::GetAppDescription(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  return extension ? extension->description() : std::string();
+}
+
+base::Optional<SkColor> BookmarkAppRegistrar::GetAppThemeColor(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return base::nullopt;
+
+  base::Optional<SkColor> extension_theme_color =
+      AppThemeColorInfo::GetThemeColor(extension);
+  if (extension_theme_color)
+    return SkColorSetA(*extension_theme_color, SK_AlphaOPAQUE);
+
+  return base::nullopt;
 }
 
 const GURL& BookmarkAppRegistrar::GetAppLaunchURL(

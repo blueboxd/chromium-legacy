@@ -28,7 +28,6 @@ class WebApp {
   const std::string& description() const { return description_; }
   const GURL& launch_url() const { return launch_url_; }
   const GURL& scope() const { return scope_; }
-  // TODO(loyso): Remove Optional. This is a required field now.
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
 
   struct IconInfo {

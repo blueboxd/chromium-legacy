@@ -32,6 +32,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
@@ -39,6 +40,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
@@ -213,6 +215,7 @@ void ServiceWorkerContextWrapper::Init(
     ChromeBlobStorageContext* blob_context,
     URLLoaderFactoryGetter* loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(storage_partition_);
 
   is_incognito_ = user_data_directory.empty();
   // The database task runner is BLOCK_SHUTDOWN in order to support
@@ -225,7 +228,11 @@ void ServiceWorkerContextWrapper::Init(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   InitInternal(user_data_directory, std::move(database_task_runner),
                quota_manager_proxy, special_storage_policy, blob_context,
-               loader_factory_getter);
+               loader_factory_getter,
+               blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled()
+                   ? CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+                         storage_partition_->browser_context())
+                   : nullptr);
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -1126,16 +1133,21 @@ void ServiceWorkerContextWrapper::InitInternal(
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
     ChromeBlobStorageContext* blob_context,
-    URLLoaderFactoryGetter* loader_factory_getter) {
+    URLLoaderFactoryGetter* loader_factory_getter,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        non_network_loader_factory_bundle_info_for_update_check) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ServiceWorkerContextWrapper::InitInternal, this,
-                       user_data_directory, std::move(database_task_runner),
-                       base::RetainedRef(quota_manager_proxy),
-                       base::RetainedRef(special_storage_policy),
-                       base::RetainedRef(blob_context),
-                       base::RetainedRef(loader_factory_getter)));
+        base::BindOnce(
+            &ServiceWorkerContextWrapper::InitInternal, this,
+            user_data_directory, std::move(database_task_runner),
+            base::RetainedRef(quota_manager_proxy),
+            base::RetainedRef(special_storage_policy),
+            base::RetainedRef(blob_context),
+            base::RetainedRef(loader_factory_getter),
+            std::move(
+                non_network_loader_factory_bundle_info_for_update_check)));
     return;
   }
   DCHECK(!context_core_);
@@ -1145,8 +1157,9 @@ void ServiceWorkerContextWrapper::InitInternal(
 
   context_core_ = std::make_unique<ServiceWorkerContextCore>(
       user_data_directory, std::move(database_task_runner), quota_manager_proxy,
-      special_storage_policy, loader_factory_getter, core_observer_list_.get(),
-      this);
+      special_storage_policy, loader_factory_getter,
+      std::move(non_network_loader_factory_bundle_info_for_update_check),
+      core_observer_list_.get(), this);
 }
 
 void ServiceWorkerContextWrapper::FindRegistrationForScopeImpl(
@@ -1486,6 +1499,32 @@ ServiceWorkerContextWrapper::ExtractServiceWorkerRunningInfoFromVersionInfo(
 bool ServiceWorkerContextWrapper::IsRunningStatus(EmbeddedWorkerStatus status) {
   return status == EmbeddedWorkerStatus::RUNNING ||
          status == EmbeddedWorkerStatus::STOPPING;
+}
+
+std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
+    CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
+        BrowserContext* browser_context) {
+  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+  ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
+  GetContentClient()
+      ->browser()
+      ->RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
+          browser_context, &non_network_factories);
+
+  auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+  for (auto& pair : non_network_factories) {
+    const std::string& scheme = pair.first;
+    std::unique_ptr<network::mojom::URLLoaderFactory> factory =
+        std::move(pair.second);
+
+    network::mojom::URLLoaderFactoryPtr factory_ptr;
+    mojo::MakeStrongBinding(std::move(factory),
+                            mojo::MakeRequest(&factory_ptr));
+    factory_bundle->scheme_specific_factory_infos().emplace(
+        scheme, factory_ptr.PassInterface());
+  }
+
+  return factory_bundle;
 }
 
 }  // namespace content

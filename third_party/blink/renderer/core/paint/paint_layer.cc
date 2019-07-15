@@ -805,8 +805,8 @@ void PaintLayer::UpdateLayerPosition() {
   // LayoutBoxes will call UpdateSizeAndScrollingAfterLayout() from
   // LayoutBox::UpdateAfterLayout, but LayoutInlines will still need to update
   // their size.
-  if (GetLayoutObject().IsInline() && GetLayoutObject().IsLayoutInline())
-    UpdateSizeAndScrollingAfterLayout();
+  if (GetLayoutObject().IsLayoutInline())
+    UpdateSize();
   PhysicalOffset local_point;
   if (LayoutBox* box = GetLayoutBox()) {
     local_point += box->PhysicalLocation();

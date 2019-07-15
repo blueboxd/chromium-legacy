@@ -744,16 +744,21 @@ TEST_F(InstallManagerBookmarkAppTest, InstallOrUpdateWebAppFromSync) {
 TEST_F(InstallManagerBookmarkAppTest, GetAppDetails) {
   EXPECT_EQ(std::string(), app_registrar()->GetAppShortName("unknown"));
   EXPECT_EQ(GURL(), app_registrar()->GetAppLaunchURL("unknown"));
+  const base::Optional<SkColor> theme_color = SK_ColorBLUE;  // 0xAABBCCDD;
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = kAppUrl;
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
+  web_app_info->theme_color = theme_color;
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(kAppTitle, app_registrar()->GetAppShortName(extension->id()));
+  EXPECT_EQ(kAppDescription,
+            app_registrar()->GetAppDescription(extension->id()));
+  EXPECT_EQ(theme_color, app_registrar()->GetAppThemeColor(extension->id()));
   EXPECT_EQ(kAppUrl, app_registrar()->GetAppLaunchURL(extension->id()));
 }
 

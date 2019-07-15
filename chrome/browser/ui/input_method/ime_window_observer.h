@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_IME_IME_WINDOW_OBSERVER_H_
-#define CHROME_BROWSER_UI_IME_IME_WINDOW_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_INPUT_METHOD_IME_WINDOW_OBSERVER_H_
+#define CHROME_BROWSER_UI_INPUT_METHOD_IME_WINDOW_OBSERVER_H_
 
 namespace ui {
 
@@ -21,4 +21,4 @@ class ImeWindowObserver {
 
 }  // namespace ui
 
-#endif  // CHROME_BROWSER_UI_IME_IME_WINDOW_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_INPUT_METHOD_IME_WINDOW_OBSERVER_H_

@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
 class Profile;
@@ -82,6 +83,9 @@ class AppRegistrar {
 
   // TODO(ericwilligers): GetAppShortName should return base::string16.
   virtual std::string GetAppShortName(const AppId& app_id) const = 0;
+  virtual std::string GetAppDescription(const AppId& app_id) const = 0;
+  virtual base::Optional<SkColor> GetAppThemeColor(
+      const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
 
   void AddObserver(AppRegistrarObserver* observer);

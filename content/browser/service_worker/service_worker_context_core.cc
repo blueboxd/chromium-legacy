@@ -44,6 +44,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
@@ -249,6 +250,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy,
     URLLoaderFactoryGetter* url_loader_factory_getter,
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+        non_network_loader_factory_bundle_info_for_update_check,
     base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
         observer_list,
     ServiceWorkerContextWrapper* wrapper)
@@ -260,6 +263,11 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       was_service_worker_registered_(false),
       observer_list_(observer_list) {
   DCHECK(observer_list_);
+  if (non_network_loader_factory_bundle_info_for_update_check) {
+    loader_factory_bundle_for_update_check_ =
+        base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
+            std::move(non_network_loader_factory_bundle_info_for_update_check));
+  }
   // These get a WeakPtr from |weak_factory_|, so must be set after
   // |weak_factory_| is initialized.
   storage_ = ServiceWorkerStorage::Create(
@@ -275,6 +283,8 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
       providers_(old_context->providers_.release()),
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
       loader_factory_getter_(old_context->loader_factory_getter()),
+      loader_factory_bundle_for_update_check_(
+          std::move(old_context->loader_factory_bundle_for_update_check_)),
       was_service_worker_registered_(
           old_context->was_service_worker_registered_),
       observer_list_(old_context->observer_list_),
@@ -483,6 +493,26 @@ void ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin(
 
 int ServiceWorkerContextCore::GetNextEmbeddedWorkerId() {
   return next_embedded_worker_id_++;
+}
+
+scoped_refptr<blink::URLLoaderFactoryBundle>
+ServiceWorkerContextCore::GetLoaderFactoryBundleForUpdateCheck() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+
+  // Update the default factory in the bundle with a newly cloned network
+  // factory before update check because the old default factory may be invalid
+  // due to crash of network service.
+  network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+  loader_factory_getter_->CloneNetworkFactory(
+      mojo::MakeRequest(&network_factory_ptr));
+  auto factory_bundle_info =
+      std::make_unique<blink::URLLoaderFactoryBundleInfo>();
+  factory_bundle_info->default_factory_info() =
+      network_factory_ptr.PassInterface();
+  loader_factory_bundle_for_update_check_->Update(
+      std::move(factory_bundle_info));
+  return loader_factory_bundle_for_update_check_;
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(

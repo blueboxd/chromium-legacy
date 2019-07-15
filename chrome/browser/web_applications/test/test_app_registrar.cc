@@ -108,6 +108,17 @@ std::string TestAppRegistrar::GetAppShortName(const AppId&) const {
   return std::string();
 }
 
+std::string TestAppRegistrar::GetAppDescription(const AppId&) const {
+  NOTIMPLEMENTED();
+  return std::string();
+}
+
+base::Optional<SkColor> TestAppRegistrar::GetAppThemeColor(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return base::nullopt;
+}
+
 const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
   NOTIMPLEMENTED();
   return GURL::EmptyGURL();

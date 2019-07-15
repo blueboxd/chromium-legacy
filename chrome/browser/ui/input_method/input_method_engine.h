@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/ui/ime/ime_window.h"
-#include "chrome/browser/ui/ime/ime_window_observer.h"
+#include "chrome/browser/ui/input_method/ime_window.h"
+#include "chrome/browser/ui/input_method/ime_window_observer.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
 namespace content {

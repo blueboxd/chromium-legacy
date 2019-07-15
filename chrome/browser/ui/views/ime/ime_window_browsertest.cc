@@ -5,9 +5,9 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/ime/ime_native_window.h"
-#include "chrome/browser/ui/ime/ime_window.h"
-#include "chrome/browser/ui/ime/ime_window_observer.h"
+#include "chrome/browser/ui/input_method/ime_native_window.h"
+#include "chrome/browser/ui/input_method/ime_window.h"
+#include "chrome/browser/ui/input_method/ime_window_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/views/widget/widget.h"
 

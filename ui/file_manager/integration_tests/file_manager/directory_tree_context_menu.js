@@ -739,6 +739,7 @@
       ['#delete', true],
       ['#new-folder', true],
     ];
+
     // Open Files app on local Downloads.
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.photos, ENTRIES.hello],
@@ -807,6 +808,24 @@
     // Check the context menu for MyFiles>Downloads>photos.
     await checkContextMenu(
         appId, '/My files/Downloads/photos', photosMenus, false /* rootMenu */);
+
+    // Right click Linux files (FakeEntry).
+    const query = '#directory-tree [dir-type="FakeItem"]' +
+        '[entry-label="Linux files"]';
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil(
+            'fakeMouseRightClick', appId, [query]),
+        'fakeMouseRightClick failed');
+
+    // Wait a few milliseconds to give menu a chance to display.
+    await wait(REPEAT_UNTIL_INTERVAL);
+
+    // Fetch all visible cr-menu's.
+    const elements = await remoteCall.callRemoteTestUtil(
+        'queryAllElements', appId, ['cr-menu:not([hidden])']);
+
+    // Check: No context menus should be visible for FakeEntry.
+    chrome.test.assertEq(0, elements.length);
   };
 
   /**

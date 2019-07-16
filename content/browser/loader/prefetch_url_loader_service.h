@@ -13,7 +13,8 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -55,7 +56,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       ChromeBlobStorageContext* blob_storage_context);
 
   void GetFactory(
-      network::mojom::URLLoaderFactoryRequest request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       int frame_tree_node_id,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info,
       scoped_refptr<PrefetchedSignedExchangeCache>
@@ -124,9 +125,9 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
   ResourceContext* resource_context_ = nullptr;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  mojo::BindingSet<network::mojom::URLLoaderFactory,
-                   std::unique_ptr<BindContext>>
-      loader_factory_bindings_;
+  mojo::ReceiverSet<network::mojom::URLLoaderFactory,
+                    std::unique_ptr<BindContext>>
+      loader_factory_receivers_;
   // Used in the IO thread.
   mojo::Binding<blink::mojom::RendererPreferenceWatcher>
       preference_watcher_binding_;

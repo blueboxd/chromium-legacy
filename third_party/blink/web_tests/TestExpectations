@@ -2182,6 +2182,15 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
 crbug.com/983799 [ Win ] virtual/blink-cors/http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
+crbug.com/984429 [ Mac10.10 ] fast/text/basic/014.html [ Failure ]
+crbug.com/984429 [ Mac10.11 ] fast/text/basic/014.html [ Failure ]
+crbug.com/984429 [ Mac10.12 ] fast/text/basic/014.html [ Failure ]
+crbug.com/983790 external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Pass Failure Timeout ]
+crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
+crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failure ]
+crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.html [ Pass Timeout ]
+crbug.com/983788 http/tests/cookies/same-site/popup-cross-site-post.html [ Pass Timeout ]
+crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
 
 ### sheriff 2018-05-28
 

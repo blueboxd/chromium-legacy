@@ -10,7 +10,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/interfaces/engine_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"

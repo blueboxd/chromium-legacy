@@ -10,7 +10,7 @@ static_library("sandboxed_lnk_parser_test_util") {
 
   deps = [
     "//base",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/parsers/shortcut_parser/target:lnk_parser",
   ]

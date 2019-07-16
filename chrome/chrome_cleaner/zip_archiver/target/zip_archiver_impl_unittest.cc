@@ -12,7 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/constants/quarantine_constants.h"
-#include "chrome/chrome_cleaner/interfaces/zip_archiver.mojom.h"
+#include "chrome/chrome_cleaner/mojom/zip_archiver.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/zip_archiver/test_zip_archiver_util.h"
 #include "mojo/public/cpp/system/platform_handle.h"

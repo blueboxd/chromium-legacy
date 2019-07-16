@@ -207,7 +207,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       std::unique_ptr<Delivery>& delivery = it.second;
 
       std::string json;
-      SerializeReports(delivery->reports, tick_clock()->NowTicks(), &json);
+      SerializeReports(delivery->reports, tick_clock().NowTicks(), &json);
 
       int max_depth = 0;
       for (const ReportingReport* report : delivery->reports) {
@@ -259,8 +259,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     cache()->ClearReportsPending(delivery->reports);
   }
 
-  const ReportingPolicy& policy() { return context_->policy(); }
-  const base::TickClock* tick_clock() { return context_->tick_clock(); }
+  const ReportingPolicy& policy() const { return context_->policy(); }
+  const base::TickClock& tick_clock() const { return context_->tick_clock(); }
   ReportingDelegate* delegate() { return context_->delegate(); }
   ReportingCache* cache() { return context_->cache(); }
   ReportingUploader* uploader() { return context_->uploader(); }

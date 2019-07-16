@@ -132,14 +132,16 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
     SchemeMap scheme_specific_factory_infos,
     OriginMap initiator_specific_factory_infos,
     PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
-    network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        pending_prefetch_loader_factory,
     bool bypass_redirect_checks)
     : URLLoaderFactoryBundleInfo(std::move(default_factory_info),
                                  std::move(scheme_specific_factory_infos),
                                  std::move(initiator_specific_factory_infos),
                                  bypass_redirect_checks),
       direct_network_factory_info_(std::move(direct_network_factory_info)),
-      prefetch_loader_factory_info_(std::move(prefetch_loader_factory_info)) {
+      pending_prefetch_loader_factory_(
+          std::move(pending_prefetch_loader_factory)) {
   appcache_factory_info_ = std::move(appcache_factory_info);
 }
 
@@ -155,8 +157,8 @@ ChildURLLoaderFactoryBundleInfo::CreateFactory() {
   other->initiator_specific_factory_infos_ =
       std::move(initiator_specific_factory_infos_);
   other->direct_network_factory_info_ = std::move(direct_network_factory_info_);
-  other->prefetch_loader_factory_info_ =
-      std::move(prefetch_loader_factory_info_);
+  other->pending_prefetch_loader_factory_ =
+      std::move(pending_prefetch_loader_factory_);
   other->bypass_redirect_checks_ = bypass_redirect_checks_;
 
   return base::MakeRefCounted<ChildURLLoaderFactoryBundle>(std::move(other));
@@ -250,9 +252,9 @@ void ChildURLLoaderFactoryBundle::Update(
     direct_network_factory_.Bind(
         std::move(info->direct_network_factory_info()));
   }
-  if (info->prefetch_loader_factory_info()) {
+  if (info->pending_prefetch_loader_factory()) {
     prefetch_loader_factory_.Bind(
-        std::move(info->prefetch_loader_factory_info()));
+        std::move(info->pending_prefetch_loader_factory()));
   }
   URLLoaderFactoryBundle::Update(std::move(info));
 }
@@ -264,8 +266,9 @@ void ChildURLLoaderFactoryBundle::UpdateSubresourceOverrides(
 }
 
 void ChildURLLoaderFactoryBundle::SetPrefetchLoaderFactory(
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory) {
-  prefetch_loader_factory_ = std::move(prefetch_loader_factory);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory) {
+  prefetch_loader_factory_.Bind(std::move(prefetch_loader_factory));
 }
 
 bool ChildURLLoaderFactoryBundle::IsHostChildURLLoaderFactoryBundle() const {
@@ -301,6 +304,7 @@ ChildURLLoaderFactoryBundle::CloneInternal(bool include_appcache) {
         mojo::MakeRequest(&direct_network_factory_info));
   }
 
+  // TODO(crbug.com/955171): Replace this with PendingRemote.
   network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info;
   if (prefetch_loader_factory_) {
     prefetch_loader_factory_->Clone(
@@ -336,9 +340,10 @@ ChildURLLoaderFactoryBundle::PassInterface() {
     direct_network_factory_info = direct_network_factory_.PassInterface();
   }
 
-  network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      pending_prefetch_loader_factory;
   if (prefetch_loader_factory_) {
-    prefetch_loader_factory_info = prefetch_loader_factory_.PassInterface();
+    pending_prefetch_loader_factory = prefetch_loader_factory_.Unbind();
   }
 
   return std::make_unique<ChildURLLoaderFactoryBundleInfo>(
@@ -346,7 +351,7 @@ ChildURLLoaderFactoryBundle::PassInterface() {
       PassInterfacePtrMapToPtrInfoMap(std::move(scheme_specific_factories_)),
       PassInterfacePtrMapToPtrInfoMap(std::move(initiator_specific_factories_)),
       std::move(direct_network_factory_info),
-      std::move(prefetch_loader_factory_info), bypass_redirect_checks_);
+      std::move(pending_prefetch_loader_factory), bypass_redirect_checks_);
 }
 
 }  // namespace content

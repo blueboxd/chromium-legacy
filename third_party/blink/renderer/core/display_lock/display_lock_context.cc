@@ -415,8 +415,15 @@ bool DisplayLockContext::ShouldStyle(LifecycleTarget target) const {
 }
 
 void DisplayLockContext::DidStyle(LifecycleTarget target) {
-  if (state_ == kUnlocked)
+  if (state_ == kUnlocked) {
+    // If we're committing without finishing the acquire() first, it's possible
+    // for the state to be kUnlocked instead of kCommitting. We should still
+    // mark child reattachment & whitespace reattachment in that case.
+    MarkElementsForWhitespaceReattachment();
+    if (element_->ChildNeedsReattachLayoutTree())
+      element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
     return;
+  }
 
   if (target == kSelf) {
     if (ForceUnlockIfNeeded())
@@ -432,6 +439,9 @@ void DisplayLockContext::DidStyle(LifecycleTarget target) {
 
   if (state_ != kCommitting && state_ != kUpdating && !update_forced_)
     return;
+
+  if (element_->ChildNeedsReattachLayoutTree())
+    element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
 
   blocked_style_traversal_type_ = kStyleUpdateNotRequired;
 
@@ -644,6 +654,12 @@ bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
       if (blocked_style_traversal_type_ == kStyleUpdateChildren)
         element_->SetChildNeedsStyleRecalc();
       blocked_style_traversal_type_ = kStyleUpdateNotRequired;
+    } else if (element_->ChildNeedsReattachLayoutTree()) {
+      // Mark |element_| as style dirty, as we can't mark for child reattachment
+      // before style.
+      element_->SetNeedsStyleRecalc(kLocalStyleChange,
+                                    StyleChangeReasonForTracing::Create(
+                                        style_change_reason::kDisplayLock));
     }
     // Propagate to the ancestors, since the dirty bit in a locked subtree is
     // stopped at the locked ancestor.
@@ -724,6 +740,7 @@ bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
   // blocked, meaning we never blocked style during a walk. Instead we might
   // have not propagated the dirty bits up the tree.
   return element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc() ||
+         element_->ChildNeedsReattachLayoutTree() ||
          blocked_style_traversal_type_ > kStyleUpdateNotRequired;
 }
 

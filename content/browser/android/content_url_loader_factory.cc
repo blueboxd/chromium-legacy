@@ -18,7 +18,8 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/file_data_source.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
@@ -178,12 +179,12 @@ class ContentURLLoader : public network::mojom::URLLoader {
     // (i.e., no range request) this Seek is effectively a no-op.
     file.Seek(base::File::FROM_BEGIN, static_cast<int64_t>(first_byte_to_send));
 
-    data_producer_ = std::make_unique<mojo::FileDataPipeProducer>(
+    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle), /*observer=*/nullptr);
-    data_producer_->WriteFromFile(
-        std::move(file), total_bytes_to_send,
-        base::BindOnce(&ContentURLLoader::OnFileWritten,
-                       base::Unretained(this)));
+    data_producer_->Write(std::make_unique<mojo::FileDataSource>(
+                              std::move(file), total_bytes_to_send),
+                          base::BindOnce(&ContentURLLoader::OnFileWritten,
+                                         base::Unretained(this)));
   }
 
   void CompleteWithFailure(network::mojom::URLLoaderClientPtr client,
@@ -220,7 +221,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
     MaybeDeleteSelf();
   }
 
-  std::unique_ptr<mojo::FileDataPipeProducer> data_producer_;
+  std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
 

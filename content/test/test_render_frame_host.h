@@ -215,7 +215,8 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token) override;
   void SendCommitFailedNavigation(
       mojom::NavigationClient* navigation_client,

@@ -26,6 +26,7 @@ source_set("inttests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//components/url_formatter",
     "//ios/web_view:web_view+link",
     "//net",
     "//net:test_support",

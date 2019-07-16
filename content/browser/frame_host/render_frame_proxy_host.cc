@@ -27,6 +27,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
 #include "ipc/ipc_message.h"
@@ -103,7 +104,7 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
     // This can be removed once we don't have a swapped out state on
     // RenderFrame. See https://crbug.com/357747
     if (!frame_tree_node_->IsMainFrame())
-      Send(new FrameMsg_DeleteProxy(routing_id_));
+      Send(new UnfreezableFrameMsg_DeleteProxy(routing_id_));
   }
 
   // TODO(arthursonzogni): There are no known reason for removing the

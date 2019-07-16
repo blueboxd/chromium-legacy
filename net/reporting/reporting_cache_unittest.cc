@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/values_test_util.h"
@@ -19,12 +20,15 @@
 #include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace net {
 namespace {
+
+using CommandType = MockPersistentReportingStore::Command::Type;
 
 class TestReportingCacheObserver : public ReportingCacheObserver {
  public:
@@ -70,6 +74,18 @@ class ReportingCacheTest : public ReportingTestBase,
   }
 
   ~ReportingCacheTest() override { context()->RemoveCacheObserver(&observer_); }
+
+  void SetUp() override {
+    // All ReportingCache methods assume that the store has been initialized.
+    if (store()) {
+      store()->LoadReportingClients(
+          base::BindOnce([](std::vector<ReportingEndpoint>,
+                            std::vector<CachedReportingEndpointGroup>) {
+            // TODO(crbug.com/895821): Insert into the cache.
+          }));
+      store()->FinishLoading(true);
+    }
+  }
 
   TestReportingCacheObserver* observer() { return &observer_; }
 
@@ -415,6 +431,36 @@ TEST_P(ReportingCacheTest, RemoveClient) {
   EXPECT_EQ(2u, cache()->GetEndpointCount());
   EXPECT_FALSE(OriginClientExistsInCache(kOrigin1_));
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin2_));
+
+  if (store()) {
+    store()->Flush();
+    // SetEndpointInCache doesn't update store counts, which is why they go
+    // negative here.
+    // TODO(crbug.com/895821): Populate the cache via the store so we don't need
+    // negative counts.
+    EXPECT_EQ(-2, store()->StoredEndpointsCount());
+    EXPECT_EQ(-1, store()->StoredEndpointGroupsCount());
+    MockPersistentReportingStore::CommandList expected_commands;
+    EXPECT_EQ(2,
+              store()->CountCommands(CommandType::DELETE_REPORTING_ENDPOINT));
+    EXPECT_EQ(1, store()->CountCommands(
+                     CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin1_, kGroup1_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin1_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin1_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint1_}));
+    EXPECT_THAT(store()->GetAllCommands(),
+                testing::IsSupersetOf(expected_commands));
+  }
 }
 
 TEST_P(ReportingCacheTest, RemoveAllClients) {
@@ -431,6 +477,54 @@ TEST_P(ReportingCacheTest, RemoveAllClients) {
   EXPECT_EQ(0u, cache()->GetEndpointCount());
   EXPECT_FALSE(OriginClientExistsInCache(kOrigin1_));
   EXPECT_FALSE(OriginClientExistsInCache(kOrigin2_));
+
+  if (store()) {
+    store()->Flush();
+    // SetEndpointInCache doesn't update store counts, which is why they go
+    // negative here.
+    // TODO(crbug.com/895821): Populate the cache via the store so we don't need
+    // negative counts.
+    EXPECT_EQ(-4, store()->StoredEndpointsCount());
+    EXPECT_EQ(-3, store()->StoredEndpointGroupsCount());
+    MockPersistentReportingStore::CommandList expected_commands;
+    EXPECT_EQ(4,
+              store()->CountCommands(CommandType::DELETE_REPORTING_ENDPOINT));
+    EXPECT_EQ(3, store()->CountCommands(
+                     CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin1_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint1_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin1_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin2_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint1_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin2_, kGroup2_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin1_, kGroup1_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin2_, kGroup1_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin2_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    EXPECT_THAT(store()->GetAllCommands(),
+                testing::IsSupersetOf(expected_commands));
+  }
 }
 
 TEST_P(ReportingCacheTest, RemoveEndpointGroup) {
@@ -465,6 +559,41 @@ TEST_P(ReportingCacheTest, RemoveEndpointGroup) {
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin1_));
   EXPECT_TRUE(EndpointGroupExistsInCache(
       kOrigin1_, kGroup1_, OriginSubdomains::DEFAULT, kExpires1_));
+
+  if (store()) {
+    store()->Flush();
+    // SetEndpointInCache doesn't update store counts, which is why they go
+    // negative here.
+    // TODO(crbug.com/895821): Populate the cache via the store so we don't need
+    // negative counts.
+    EXPECT_EQ(-2, store()->StoredEndpointsCount());
+    EXPECT_EQ(-2, store()->StoredEndpointGroupsCount());
+    EXPECT_EQ(2,
+              store()->CountCommands(CommandType::DELETE_REPORTING_ENDPOINT));
+    EXPECT_EQ(2, store()->CountCommands(
+                     CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
+    MockPersistentReportingStore::CommandList expected_commands;
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin2_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint1_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin2_, kGroup2_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint2_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin2_, kGroup1_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin2_, kGroup2_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    EXPECT_THAT(store()->GetAllCommands(),
+                testing::IsSupersetOf(expected_commands));
+  }
 }
 
 TEST_P(ReportingCacheTest, RemoveEndpointsForUrl) {
@@ -497,6 +626,36 @@ TEST_P(ReportingCacheTest, RemoveEndpointsForUrl) {
   EXPECT_TRUE(FindEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_));
   EXPECT_FALSE(FindEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_));
   EXPECT_TRUE(FindEndpointInCache(kOrigin2_, kGroup2_, kEndpoint2_));
+
+  if (store()) {
+    store()->Flush();
+    // SetEndpointInCache doesn't update store counts, which is why they go
+    // negative here.
+    // TODO(crbug.com/895821): Populate the cache via the store so we don't need
+    // negative counts.
+    EXPECT_EQ(-2, store()->StoredEndpointsCount());
+    EXPECT_EQ(-1, store()->StoredEndpointGroupsCount());
+    EXPECT_EQ(2,
+              store()->CountCommands(CommandType::DELETE_REPORTING_ENDPOINT));
+    EXPECT_EQ(1, store()->CountCommands(
+                     CommandType::DELETE_REPORTING_ENDPOINT_GROUP));
+    MockPersistentReportingStore::CommandList expected_commands;
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin1_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint1_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT,
+        ReportingEndpoint(kOrigin2_, kGroup1_,
+                          ReportingEndpoint::EndpointInfo{kEndpoint1_}));
+    expected_commands.emplace_back(
+        CommandType::DELETE_REPORTING_ENDPOINT_GROUP,
+        CachedReportingEndpointGroup(
+            kOrigin2_, kGroup1_, OriginSubdomains::DEFAULT /* irrelevant */,
+            base::Time() /* irrelevant */, base::Time() /* irrelevant */));
+    EXPECT_THAT(store()->GetAllCommands(),
+                testing::IsSupersetOf(expected_commands));
+  }
 }
 
 TEST_P(ReportingCacheTest, GetClientsAsValue) {

@@ -41,10 +41,9 @@ interface DedicatedWorkerHostFactoryClient {
       // and its redirect information.
       WorkerMainScriptLoadParams main_script_load_params,
 
-      // Used for loading subresources where applicable. For example, this
-      // allows the worker to load chrome-extension:// URLs which the renderer's
-      // default loader factory can't load.
-      URLLoaderFactoryBundle? subresource_loader_factories,
+      // Used for loading subresources. This also supports non-network URLs like
+      // chrome-extension:// URLs.
+      URLLoaderFactoryBundle subresource_loader_factories,
 
       // Used to make fetches from the worker go through the controller service
       // worker. This is null when there're no controller service worker.

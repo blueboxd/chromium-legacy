@@ -28,6 +28,7 @@
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -169,6 +170,27 @@ class MockClock {
 };
 
 MockClock* MockClock::mock_clock_ = nullptr;
+
+class NavigationHandleSXGAttributeObserver : public WebContentsObserver {
+ public:
+  explicit NavigationHandleSXGAttributeObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  // WebContentsObserver implementation.
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
+    had_prefetched_alt_sxg_ =
+        navigation_handle->HasPrefetchedAlternativeSubresourceSignedExchange();
+  }
+
+  const base::Optional<bool>& had_prefetched_alt_sxg() const {
+    return had_prefetched_alt_sxg_;
+  }
+
+ private:
+  base::Optional<bool> had_prefetched_alt_sxg_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationHandleSXGAttributeObserver);
+};
 
 }  // namespace
 
@@ -2055,6 +2077,68 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
   NavigateToURLAndWaitTitle(next_page_url, "done");
 
   EXPECT_EQ(0, script_request_counter->GetRequestCount());
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeSubresourcePrefetchBrowserTest,
+                       DoNotSendUnrelatedSXG) {
+  const char* prefetch_path = "/prefetch.html";
+  const char* target_sxg_path = "/target.sxg";
+  const char* target_path = "/target.html";
+  const char* script_path = "/script.js";
+  const char* script_sxg_path = "/script_js.sxg";
+
+  auto script_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script_sxg_path);
+  auto script_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), script_path);
+  RegisterRequestHandler(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_EQ(0, GetPrefetchURLLoaderCallCount());
+
+  const GURL target_sxg_url = embedded_test_server()->GetURL(target_sxg_path);
+  const GURL target_url = embedded_test_server()->GetURL(target_path);
+  const GURL script_sxg_url = embedded_test_server()->GetURL(script_sxg_path);
+  const GURL script_url = embedded_test_server()->GetURL(script_path);
+
+  const net::SHA256HashValue target_header_integrity = {{0x01}};
+  const net::SHA256HashValue script_header_integrity = {{0x02}};
+
+  RegisterResponse(prefetch_path, ResponseEntry(base::StringPrintf(
+                                      "<body><link rel='prefetch' href='%s'>"
+                                      "<link rel='prefetch' href='%s'></body>",
+                                      target_sxg_path, script_sxg_path)));
+  RegisterResponse(script_path, ResponseEntry("document.title=\"from server\";",
+                                              "text/javascript"));
+  RegisterResponse(target_sxg_path,
+                   CreateSignedExchangeResponseEntry(
+                       "<head><title>Prefetch Target (SXG)</title>"
+                       "<script src=\"./script.js\"></script></head>"));
+  RegisterResponse(script_sxg_path, CreateSignedExchangeResponseEntry(
+                                        "document.title=\"from sxg\";"));
+  MockSignedExchangeHandlerFactory factory(
+      {MockSignedExchangeHandlerParams(
+           target_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           target_url, "text/html", {}, target_header_integrity),
+       MockSignedExchangeHandlerParams(
+           script_sxg_url, SignedExchangeLoadResult::kSuccess, net::OK,
+           script_url, "text/javascript", {}, script_header_integrity)});
+  ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path));
+
+  WaitUntilLoaded(target_sxg_url);
+  WaitUntilLoaded(script_sxg_url);
+
+  EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(0, script_request_counter->GetRequestCount());
+
+  NavigationHandleSXGAttributeObserver observer(shell()->web_contents());
+  NavigateToURLAndWaitTitle(target_sxg_url, "from server");
+
+  EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+  EXPECT_EQ(1, script_request_counter->GetRequestCount());
+  ASSERT_TRUE(observer.had_prefetched_alt_sxg().has_value());
+  EXPECT_FALSE(observer.had_prefetched_alt_sxg().value());
 }
 
 INSTANTIATE_TEST_SUITE_P(SignedExchangeSubresourcePrefetchBrowserTest,

@@ -24,7 +24,6 @@
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"

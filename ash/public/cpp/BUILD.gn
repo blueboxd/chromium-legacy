@@ -17,6 +17,8 @@ component("cpp") {
     "accessibility_focus_ring_controller.h",
     "accessibility_focus_ring_info.cc",
     "accessibility_focus_ring_info.h",
+    "ambient/photo_controller.cc",
+    "ambient/photo_controller.h",
     "android_intent_helper.cc",
     "android_intent_helper.h",
     "app_list/app_list_client.h",

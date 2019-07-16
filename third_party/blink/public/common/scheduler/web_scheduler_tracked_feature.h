@@ -62,9 +62,11 @@ enum class WebSchedulerTrackedFeature {
   kIndexedDBConnection = 28,
 
   kWebGL = 29,
+  kWebVR = 30,
+  kWebXR = 31,
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebGL
+  kMaxValue = kWebXR
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

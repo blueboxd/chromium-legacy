@@ -5,7 +5,7 @@
 #ifndef CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_SANDBOXED_JSON_PARSER_H_
 #define CHROME_CHROME_CLEANER_PARSERS_JSON_PARSER_SANDBOXED_JSON_PARSER_H_
 
-#include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
+#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/parsers/json_parser/json_parser_api.h"
 

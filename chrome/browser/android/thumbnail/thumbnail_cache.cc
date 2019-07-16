@@ -342,13 +342,31 @@ void ThumbnailCache::UpdateVisibleIds(const TabIdList& priority,
   ReadNextThumbnail();
 }
 
+void ThumbnailCache::ForkToSaveAsJpeg(
+    const base::Callback<void(bool, SkBitmap)>& callback,
+    int tab_id,
+    bool result,
+    SkBitmap bitmap) {
+  if (result && !bitmap.isNull())
+    SaveAsJpeg(tab_id, bitmap);
+  callback.Run(result, bitmap);
+}
+
 void ThumbnailCache::DecompressThumbnailFromFile(
     TabId tab_id,
     const base::Callback<void(bool, SkBitmap)>&
         post_decompress_callback) {
+  base::Callback<void(bool, SkBitmap)> transcoding_callback =
+      post_decompress_callback;
+  if (save_jpeg_thumbnails_) {
+    transcoding_callback = base::Bind(&ThumbnailCache::ForkToSaveAsJpeg,
+                                      weak_factory_.GetWeakPtr(),
+                                      post_decompress_callback, tab_id);
+  }
+
   base::Callback<void(sk_sp<SkPixelRef>, float, const gfx::Size&)>
-      decompress_task = base::Bind(
-          &ThumbnailCache::DecompressionTask, post_decompress_callback);
+      decompress_task =
+          base::Bind(&ThumbnailCache::DecompressionTask, transcoding_callback);
 
   file_sequenced_task_runner_->PostTask(
       FROM_HERE,
@@ -374,6 +392,8 @@ void ThumbnailCache::WriteThumbnailIfNecessary(
     sk_sp<SkPixelRef> compressed_data,
     float scale,
     const gfx::Size& content_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (write_tasks_count_ >= write_queue_max_size_)
     return;
 
@@ -390,6 +410,8 @@ void ThumbnailCache::WriteThumbnailIfNecessary(
 void ThumbnailCache::WriteJpegThumbnailIfNecessary(
     TabId tab_id,
     std::vector<uint8_t> compressed_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (compressed_data.empty())
     return;
   if (write_tasks_count_ >= write_queue_max_size_)
@@ -402,6 +424,18 @@ void ThumbnailCache::WriteJpegThumbnailIfNecessary(
   file_sequenced_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ThumbnailCache::WriteJpegTask, tab_id,
                                 std::move(compressed_data), post_write_task));
+}
+
+void ThumbnailCache::SaveAsJpeg(TabId tab_id, const SkBitmap& bitmap) {
+  base::Callback<void(std::vector<uint8_t>)> post_jpeg_compression_task =
+      base::Bind(&ThumbnailCache::WriteJpegThumbnailIfNecessary,
+                 weak_factory_.GetWeakPtr(), tab_id);
+
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::BEST_EFFORT,
+                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+                           base::BindOnce(&ThumbnailCache::JpegProcessingTask,
+                                          bitmap, post_jpeg_compression_task));
 }
 
 void ThumbnailCache::CompressThumbnailIfNecessary(
@@ -435,16 +469,7 @@ void ThumbnailCache::CompressThumbnailIfNecessary(
                      post_compression_task));
 
   if (save_jpeg_thumbnails_) {
-    base::Callback<void(std::vector<uint8_t>)> post_jpeg_compression_task =
-        base::Bind(&ThumbnailCache::WriteJpegThumbnailIfNecessary,
-                   weak_factory_.GetWeakPtr(), tab_id);
-
-    base::PostTaskWithTraits(
-        FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(&ThumbnailCache::JpegProcessingTask, bitmap,
-                       post_jpeg_compression_task));
+    SaveAsJpeg(tab_id, bitmap);
   }
 }
 
@@ -646,6 +671,8 @@ void ThumbnailCache::WriteJpegTask(
 }
 
 void ThumbnailCache::PostWriteTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   write_tasks_count_--;
 }
 

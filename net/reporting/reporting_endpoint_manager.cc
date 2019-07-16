@@ -104,14 +104,14 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
   void InformOfEndpointRequest(const GURL& endpoint, bool succeeded) override {
     if (!base::Contains(endpoint_backoff_, endpoint)) {
       endpoint_backoff_[endpoint] = std::make_unique<BackoffEntry>(
-          &policy().endpoint_backoff_policy, tick_clock());
+          &policy().endpoint_backoff_policy, &tick_clock());
     }
     endpoint_backoff_[endpoint]->InformOfRequest(succeeded);
   }
 
  private:
-  const ReportingPolicy& policy() { return context_->policy(); }
-  const base::TickClock* tick_clock() { return context_->tick_clock(); }
+  const ReportingPolicy& policy() const { return context_->policy(); }
+  const base::TickClock& tick_clock() const { return context_->tick_clock(); }
   ReportingDelegate* delegate() { return context_->delegate(); }
   ReportingCache* cache() { return context_->cache(); }
 

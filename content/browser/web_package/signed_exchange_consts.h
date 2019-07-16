@@ -28,6 +28,8 @@ constexpr char kCertChainCborMagic[] = u8"\U0001F4DC\u26D3";  // "📜⛓"
 constexpr char kCertKey[] = "cert";
 constexpr char kOcspKey[] = "ocsp";
 constexpr char kSctKey[] = "sct";
+constexpr char kAllowedAltSxg[] = "allowed-alt-sxg";
+constexpr char kHeaderIntegrity[] = "header-integrity";
 
 }  // namespace content
 

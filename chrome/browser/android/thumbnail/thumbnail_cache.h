@@ -18,6 +18,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/thumbnail/scoped_ptr_expiring_cache.h"
@@ -105,6 +106,12 @@ class ThumbnailCache : ThumbnailDelegate {
                                  const gfx::Size& content_size);
   void WriteJpegThumbnailIfNecessary(TabId tab_id,
                                      std::vector<uint8_t> compressed_data);
+  void SaveAsJpeg(TabId tab_id, const SkBitmap& bitmap);
+  void ForkToSaveAsJpeg(const base::Callback<void(bool, SkBitmap)>& callback,
+                        int tab_id,
+                        bool result,
+                        SkBitmap bitmap);
+
   void CompressThumbnailIfNecessary(TabId tab_id,
                                     const base::Time& time_stamp,
                                     const SkBitmap& bitmap,
@@ -179,6 +186,7 @@ class ThumbnailCache : ThumbnailDelegate {
   TabId primary_tab_id_ = -1;
 
   ui::UIResourceProvider* ui_resource_provider_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_;
   base::WeakPtrFactory<ThumbnailCache> weak_factory_;

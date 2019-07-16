@@ -80,7 +80,7 @@ void PrefetchURLLoaderService::InitializeResourceContext(
 }
 
 void PrefetchURLLoaderService::GetFactory(
-    network::mojom::URLLoaderFactoryRequest request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     int frame_tree_node_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> factories,
     scoped_refptr<PrefetchedSignedExchangeCache>
@@ -88,8 +88,8 @@ void PrefetchURLLoaderService::GetFactory(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto factory_bundle =
       network::SharedURLLoaderFactory::Create(std::move(factories));
-  loader_factory_bindings_.AddBinding(
-      this, std::move(request),
+  loader_factory_receivers_.Add(
+      this, std::move(receiver),
       std::make_unique<BindContext>(
           frame_tree_node_id, factory_bundle,
           std::move(prefetched_signed_exchange_cache)));
@@ -114,9 +114,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     prefetch_load_callback_for_testing_.Run();
 
   scoped_refptr<PrefetchedSignedExchangeCache> prefetched_signed_exchange_cache;
-  if (loader_factory_bindings_.dispatch_context()) {
+  if (loader_factory_receivers_.current_context()) {
     prefetched_signed_exchange_cache =
-        loader_factory_bindings_.dispatch_context()
+        loader_factory_receivers_.current_context()
             ->prefetched_signed_exchange_cache;
   }
 
@@ -150,21 +150,21 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const auto& dispatch_context = *loader_factory_bindings_.dispatch_context();
-  int frame_tree_node_id = dispatch_context.frame_tree_node_id;
+  const auto& current_context = *loader_factory_receivers_.current_context();
+  int frame_tree_node_id = current_context.frame_tree_node_id;
   CreateLoaderAndStart(
       std::move(request), routing_id, request_id, options, resource_request,
-      std::move(client), traffic_annotation, dispatch_context.factory,
+      std::move(client), traffic_annotation, current_context.factory,
       base::BindRepeating([](int id) { return id; }, frame_tree_node_id));
 }
 
 void PrefetchURLLoaderService::Clone(
     network::mojom::URLLoaderFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  loader_factory_bindings_.AddBinding(
+  loader_factory_receivers_.Add(
       this, std::move(request),
       std::make_unique<BindContext>(
-          loader_factory_bindings_.dispatch_context()));
+          loader_factory_receivers_.current_context()));
 }
 
 void PrefetchURLLoaderService::NotifyUpdate(

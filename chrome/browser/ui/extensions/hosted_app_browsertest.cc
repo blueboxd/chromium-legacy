@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1511,10 +1510,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
 
-  ASSERT_EQ(static_cast<extensions::HostedAppBrowserController*>(
-                app_browser->app_controller())
-                ->GetExtensionForTesting(),
-            app_);
+  ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_->id());
 }
 
 // Tests that reparenting the last browser tab doesn't close the browser window.
@@ -1526,10 +1522,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ReparentLastBrowserTab) {
   NavigateToURLAndWait(browser(), GetSecureAppURL());
 
   Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
-  ASSERT_EQ(static_cast<extensions::HostedAppBrowserController*>(
-                app_browser->app_controller())
-                ->GetExtensionForTesting(),
-            app_);
+  ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_->id());
 
   ASSERT_TRUE(IsBrowserOpen(browser()));
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
@@ -1751,9 +1744,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallPwaWithWindowMovedToTab) {
 IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
   SetupApp("https_app");
 
-  EXPECT_FALSE(static_cast<extensions::HostedAppBrowserController*>(
-                   app_browser_->app_controller())
-                   ->CreatedForInstalledPwa());
+  EXPECT_FALSE(app_browser_->app_controller()->CreatedForInstalledPwa());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreatedForInstalledPwaForPwa) {
@@ -1764,9 +1755,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreatedForInstalledPwaForPwa) {
   const extensions::Extension* app = InstallBookmarkApp(web_app_info);
   Browser* app_browser = LaunchAppBrowser(app);
 
-  EXPECT_TRUE(static_cast<extensions::HostedAppBrowserController*>(
-                  app_browser->app_controller())
-                  ->CreatedForInstalledPwa());
+  EXPECT_TRUE(app_browser->app_controller()->CreatedForInstalledPwa());
 }
 
 // Check the 'Copy URL' menu button for Hosted App windows.

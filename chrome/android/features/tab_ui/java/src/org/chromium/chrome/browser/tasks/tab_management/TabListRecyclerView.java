@@ -24,6 +24,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -129,9 +130,8 @@ class TabListRecyclerView extends RecyclerView {
         assert mFadeOutAnimator == null;
         mListener.startedShowing(animate);
 
-        long duration = ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                ? FINAL_FADE_IN_DURATION_MS
-                : BASE_ANIMATION_DURATION_MS;
+        long duration = FeatureUtilities.isTabToGtsAnimationEnabled() ? FINAL_FADE_IN_DURATION_MS
+                                                                      : BASE_ANIMATION_DURATION_MS;
 
         setAlpha(0);
         setVisibility(View.VISIBLE);

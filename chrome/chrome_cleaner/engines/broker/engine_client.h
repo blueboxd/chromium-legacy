@@ -24,7 +24,7 @@
 #include "chrome/chrome_cleaner/engines/broker/engine_scan_results_impl.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/engines/common/engine_result_codes.h"
-#include "chrome/chrome_cleaner/interfaces/engine_sandbox.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"

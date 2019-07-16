@@ -298,6 +298,7 @@ ios_web_view_deps = [
   "//components/translate/core/browser",
   "//components/translate/core/common",
   "//components/translate/ios/browser",
+  "//components/url_formatter",
   "//components/variations/net",
   "//components/version_info",
   "//components/version_info:version_string",

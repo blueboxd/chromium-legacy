@@ -33,7 +33,8 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/directory_lister.h"
 #include "net/base/directory_listing.h"
@@ -667,12 +668,12 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnSeekComplete(new_position);
 
-    data_producer_ = std::make_unique<mojo::FileDataPipeProducer>(
+    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle), std::move(observer));
-    data_producer_->WriteFromFile(
-        std::move(file), total_bytes_to_send,
-        base::BindOnce(&FileURLLoader::OnFileWritten, base::Unretained(this),
-                       nullptr));
+    data_producer_->Write(std::make_unique<mojo::FileDataSource>(
+                              std::move(file), total_bytes_to_send),
+                          base::BindOnce(&FileURLLoader::OnFileWritten,
+                                         base::Unretained(this), nullptr));
   }
 
   void OnConnectionError() {
@@ -718,7 +719,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     MaybeDeleteSelf();
   }
 
-  std::unique_ptr<mojo::FileDataPipeProducer> data_producer_;
+  std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
   std::unique_ptr<RedirectData> redirect_data_;

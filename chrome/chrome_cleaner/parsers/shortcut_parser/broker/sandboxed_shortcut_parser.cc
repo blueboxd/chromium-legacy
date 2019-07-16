@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
+#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/parsers/parser_utils/parse_tasks_remaining_counter.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 

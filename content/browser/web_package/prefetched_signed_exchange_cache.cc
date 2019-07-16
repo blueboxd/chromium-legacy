@@ -4,10 +4,12 @@
 
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 
+#include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/navigation_subresource_loader_params.h"
@@ -501,6 +503,57 @@ bool CanUseEntry(const PrefetchedSignedExchangeCache::Entry& entry,
   return true;
 }
 
+// Deserializes a SHA256HashValue from a string. On error, returns false.
+// This method support the form of "sha256-<base64-hash-value>".
+bool ExtractSHA256HashValueFromString(const base::StringPiece value,
+                                      net::SHA256HashValue* out) {
+  if (!value.starts_with("sha256-"))
+    return false;
+  const base::StringPiece base64_str = value.substr(7);
+  std::string decoded;
+  if (!base::Base64Decode(base64_str, &decoded) ||
+      decoded.size() != sizeof(out->data)) {
+    return false;
+  }
+  memcpy(out->data, decoded.data(), sizeof(out->data));
+  return true;
+}
+
+// Returns a map of subresource URL to SHA256HashValue which are declared in the
+// rel=allowd-alt-sxg link header of |main_exchange|'s inner response.
+std::map<GURL, net::SHA256HashValue> GetAllowedAltSXG(
+    const PrefetchedSignedExchangeCache::Entry& main_exchange) {
+  std::map<GURL, net::SHA256HashValue> result;
+  std::string link_header;
+  main_exchange.inner_response()->headers->GetNormalizedHeader("link",
+                                                               &link_header);
+  if (link_header.empty())
+    return result;
+
+  for (const auto& value : link_header_util::SplitLinkHeader(link_header)) {
+    std::string link_url;
+    std::unordered_map<std::string, base::Optional<std::string>> link_params;
+    if (!link_header_util::ParseLinkHeaderValue(value.first, value.second,
+                                                &link_url, &link_params)) {
+      continue;
+    }
+
+    auto rel = link_params.find("rel");
+    auto header_integrity = link_params.find(kHeaderIntegrity);
+    net::SHA256HashValue header_integrity_value;
+    if (rel == link_params.end() || header_integrity == link_params.end() ||
+        rel->second.value_or("") != std::string(kAllowedAltSxg) ||
+        !ExtractSHA256HashValueFromString(
+            base::StringPiece(header_integrity->second.value_or("")),
+            &header_integrity_value)) {
+      continue;
+    }
+    result[main_exchange.inner_url().Resolve(link_url)] =
+        header_integrity_value;
+  }
+  return result;
+}
+
 }  // namespace
 
 PrefetchedSignedExchangeCache::Entry::Entry() = default;
@@ -604,8 +657,7 @@ PrefetchedSignedExchangeCache::MaybeCreateInterceptor(const GURL& outer_url) {
     return nullptr;
   }
   return std::make_unique<PrefetchedNavigationLoaderInterceptor>(
-      exchange->Clone(),
-      GetInfoListForNavigation(outer_url, exchange->inner_url(), now));
+      exchange->Clone(), GetInfoListForNavigation(*exchange, now));
 }
 
 const PrefetchedSignedExchangeCache::EntryMap&
@@ -647,20 +699,29 @@ void PrefetchedSignedExchangeCache::RecordHistograms() {
 }
 
 std::vector<PrefetchedSignedExchangeInfo>
-PrefetchedSignedExchangeCache::GetInfoListForNavigation(const GURL& outer_url,
-                                                        const GURL& inner_url,
-                                                        const base::Time& now) {
+PrefetchedSignedExchangeCache::GetInfoListForNavigation(
+    const Entry& main_exchange,
+    const base::Time& now) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<PrefetchedSignedExchangeInfo> info_list;
-  const url::Origin outer_url_origin = url::Origin::Create(outer_url);
-  const url::Origin inner_url_origin = url::Origin::Create(inner_url);
+  const url::Origin outer_url_origin =
+      url::Origin::Create(main_exchange.outer_url());
+  const url::Origin request_initiator_site_lock =
+      url::Origin::Create(main_exchange.inner_url());
+  const auto inner_url_header_integrity_map = GetAllowedAltSXG(main_exchange);
 
+  std::vector<PrefetchedSignedExchangeInfo> info_list;
   EntryMap::iterator exchanges_it = exchanges_.begin();
   while (exchanges_it != exchanges_.end()) {
     const std::unique_ptr<const Entry>& exchange = exchanges_it->second;
     if (!CanUseEntry(*exchange.get(), now)) {
       exchanges_.erase(exchanges_it++);
+      continue;
+    }
+    auto it = inner_url_header_integrity_map.find(exchange->inner_url());
+    if (it == inner_url_header_integrity_map.end() ||
+        it->second != *exchange->header_integrity()) {
+      ++exchanges_it;
       continue;
     }
 
@@ -671,7 +732,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(const GURL& outer_url,
       network::mojom::URLLoaderFactoryPtrInfo loader_factory_info;
       new SubresourceSignedExchangeURLLoaderFactory(
           mojo::MakeRequest(&loader_factory_info), exchange->Clone(),
-          inner_url_origin);
+          request_initiator_site_lock);
       info_list.emplace_back(
           exchange->outer_url(), *exchange->header_integrity(),
           exchange->inner_url(), *exchange->inner_response(),

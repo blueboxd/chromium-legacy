@@ -118,11 +118,12 @@ class CONTENT_EXPORT PrefetchedSignedExchangeCache
   ~PrefetchedSignedExchangeCache();
 
   // Returns PrefetchedSignedExchangeInfo of entries in |exchanges_| which are
-  // not expired and which outer URL's origin is same as the origin of
-  // |outer_url|. Note that this method erases expired entries in |exchanges_|.
+  // not expired and which are declared in the "allowed-alt-sxg" link header of
+  // |main_exchange|'s inner response and which outer URL's origin is same as
+  // the origin of |main_exchange|'s outer URL. Note that this method erases
+  // expired entries in |exchanges_|.
   std::vector<PrefetchedSignedExchangeInfo> GetInfoListForNavigation(
-      const GURL& outer_url,
-      const GURL& inner_url,
+      const Entry& main_exchange,
       const base::Time& now);
 
   EntryMap exchanges_;

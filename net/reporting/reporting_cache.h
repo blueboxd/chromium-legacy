@@ -48,10 +48,7 @@ class NET_EXPORT ReportingCache {
  public:
   class PersistentReportingStore;
 
-  // |store| should outlive the ReportingCache.
-  static std::unique_ptr<ReportingCache> Create(
-      ReportingContext* context,
-      PersistentReportingStore* store);
+  static std::unique_ptr<ReportingCache> Create(ReportingContext* context);
 
   virtual ~ReportingCache();
 

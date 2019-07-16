@@ -91,6 +91,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'Alias /webaudio-resources "%s"' % webaudio_resources_dir,
             '-c', 'Alias /inspector-sources "%s"' % inspector_sources_dir,
             '-c', 'Alias /gen "%s"' % generated_sources_dir,
+            '-c', 'Alias /wpt_internal "%s/wpt_internal"' % test_dir,
             '-c', 'TypesConfig "%s"' % mime_types_path,
             '-c', 'CustomLog "%s" common' % self._access_log_path,
             '-c', 'ErrorLog "%s"' % self._error_log_path,

@@ -539,7 +539,8 @@ void TestRenderFrameHost::SendCommitNavigation(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
   if (!navigation_request)
     return;

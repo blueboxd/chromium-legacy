@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 
@@ -21,7 +22,7 @@ namespace content {
 
 // Holds the internal state of a ChildURLLoaderFactoryBundle in a form that is
 // safe to pass across sequences.
-// |prefetch_loader_factory_info| is used only by the frames who may send
+// |pending_prefetch_loader_factory| is used only by the frames who may send
 // prefetch requests by <link rel="prefetch"> tags. The loader factory allows
 // prefetch loading to be done by the browser process (therefore less memory
 // pressure), and also adds special handling for Signed Exchanges (SXG) when the
@@ -42,15 +43,17 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
-      network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_prefetch_loader_factory,
       bool bypass_redirect_checks);
   ~ChildURLLoaderFactoryBundleInfo() override;
 
   PossiblyAssociatedURLLoaderFactoryPtrInfo& direct_network_factory_info() {
     return direct_network_factory_info_;
   }
-  network::mojom::URLLoaderFactoryPtrInfo& prefetch_loader_factory_info() {
-    return prefetch_loader_factory_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>&
+  pending_prefetch_loader_factory() {
+    return pending_prefetch_loader_factory_;
   }
 
  protected:
@@ -58,7 +61,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
   scoped_refptr<network::SharedURLLoaderFactory> CreateFactory() override;
 
   PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info_;
-  network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info_;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      pending_prefetch_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildURLLoaderFactoryBundleInfo);
 };
@@ -110,7 +114,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   void UpdateSubresourceOverrides(
       std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides);
   void SetPrefetchLoaderFactory(
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory);
 
   virtual bool IsHostChildURLLoaderFactoryBundle() const;
 
@@ -128,7 +133,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter_;
   PossiblyAssociatedURLLoaderFactoryPtr direct_network_factory_;
-  network::mojom::URLLoaderFactoryPtr prefetch_loader_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> prefetch_loader_factory_;
 
   std::map<GURL, mojom::TransferrableURLLoaderPtr> subresource_overrides_;
 };

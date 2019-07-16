@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "chrome/chrome_cleaner/interfaces/engine_sandbox.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 
 namespace chrome_cleaner {

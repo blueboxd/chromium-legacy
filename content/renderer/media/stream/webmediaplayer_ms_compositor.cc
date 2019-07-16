@@ -136,9 +136,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     std::unique_ptr<blink::WebVideoFrameSubmitter> submitter,
     blink::WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
     const base::WeakPtr<WebMediaPlayerMS>& player)
-    : RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor>(
-          video_frame_compositor_task_runner),
-      video_frame_compositor_task_runner_(video_frame_compositor_task_runner),
+    : video_frame_compositor_task_runner_(video_frame_compositor_task_runner),
       io_task_runner_(io_task_runner),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       player_(player),
@@ -186,6 +184,9 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
 }
 
 WebMediaPlayerMSCompositor::~WebMediaPlayerMSCompositor() {
+  // Ensured by destructor traits.
+  DCHECK(video_frame_compositor_task_runner_->BelongsToCurrentThread());
+
   if (submitter_) {
     video_frame_compositor_task_runner_->DeleteSoon(FROM_HERE,
                                                     std::move(submitter_));
@@ -193,6 +194,19 @@ WebMediaPlayerMSCompositor::~WebMediaPlayerMSCompositor() {
     DCHECK(!video_frame_provider_client_)
         << "Must call StopUsingProvider() before dtor!";
   }
+}
+
+// static
+void WebMediaPlayerMSCompositorTraits::Destruct(
+    const WebMediaPlayerMSCompositor* compositor) {
+  if (!compositor->video_frame_compositor_task_runner_
+           ->BelongsToCurrentThread()) {
+    compositor->video_frame_compositor_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerMSCompositorTraits::Destruct,
+                                  base::Unretained(compositor)));
+    return;
+  }
+  delete compositor;
 }
 
 void WebMediaPlayerMSCompositor::InitializeSubmitter() {

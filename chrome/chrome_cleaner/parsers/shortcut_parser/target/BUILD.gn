@@ -11,7 +11,7 @@ static_library("lnk_parser") {
 
   deps = [
     "//base",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
   ]
 }
 

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/vr/vr_display.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 
 namespace blink {
 
@@ -72,6 +73,9 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
   HeapDeque<Member<ScriptPromiseResolver>> pending_promise_resolvers_;
   device::mojom::blink::VRServicePtr service_;
   mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
+
+  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(VRController);
 };

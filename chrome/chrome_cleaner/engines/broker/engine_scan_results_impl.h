@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/interfaces/engine_sandbox.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/pup_data/pup_data.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 

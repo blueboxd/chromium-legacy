@@ -68,7 +68,8 @@ import java.util.List;
 public class GridTabSwitcherLayoutTest {
     private static final String TAG = "GTSLayoutTest";
     private static final String BASE_PARAMS = "force-fieldtrial-params="
-            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false";
+            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
+            + "/zooming-min-sdk-version/19/zooming-min-memory-mb/512";
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -122,10 +123,12 @@ public class GridTabSwitcherLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         // clang-format on
+        assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
+
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
         assertThumbnailsAreReleased();
@@ -147,7 +150,7 @@ public class GridTabSwitcherLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
@@ -166,7 +169,7 @@ public class GridTabSwitcherLayoutTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
@@ -257,7 +260,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisabledTest(message = "crbug.com/981409")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
         prepareTabs(1, mUrl);
@@ -273,7 +276,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @DisabledTest(message = "crbug.com/981341")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
         prepareTabs(2, mUrl);

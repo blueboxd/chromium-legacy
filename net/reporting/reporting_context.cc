@@ -77,8 +77,18 @@ void ReportingContext::NotifyCachedClientsUpdated() {
     observer.OnClientsUpdated();
 }
 
+bool ReportingContext::IsReportDataPersisted() const {
+  return store_ && policy_.persist_reports_across_restarts;
+}
+
+bool ReportingContext::IsClientDataPersisted() const {
+  return store_ && policy_.persist_clients_across_restarts;
+}
+
 void ReportingContext::OnShutdown() {
   uploader_->OnShutdown();
+  if (store_)
+    store_->Flush();
 }
 
 ReportingContext::ReportingContext(
@@ -94,7 +104,8 @@ ReportingContext::ReportingContext(
       tick_clock_(tick_clock),
       uploader_(std::move(uploader)),
       delegate_(std::move(delegate)),
-      cache_(ReportingCache::Create(this, store)),
+      cache_(ReportingCache::Create(this)),
+      store_(store),
       endpoint_manager_(ReportingEndpointManager::Create(this, rand_callback)),
       delivery_agent_(ReportingDeliveryAgent::Create(this)),
       garbage_collector_(ReportingGarbageCollector::Create(this)),

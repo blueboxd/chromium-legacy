@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
@@ -45,6 +45,7 @@ class SurfaceId;
 
 namespace content {
 class WebMediaPlayerMS;
+struct WebMediaPlayerMSCompositorTraits;
 
 // This class is designed to handle the work load on compositor thread for
 // WebMediaPlayerMS. It will be instantiated on the main thread, but destroyed
@@ -57,7 +58,8 @@ class WebMediaPlayerMS;
 // frame, and submit it whenever asked by the compositor.
 class CONTENT_EXPORT WebMediaPlayerMSCompositor
     : public cc::VideoFrameProvider,
-      public base::RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor> {
+      public base::RefCountedThreadSafe<WebMediaPlayerMSCompositor,
+                                        WebMediaPlayerMSCompositorTraits> {
  public:
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -113,9 +115,11 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   void StopUsingProvider();
 
  private:
-  friend class base::RefCountedDeleteOnSequence<WebMediaPlayerMSCompositor>;
+  friend class base::RefCountedThreadSafe<WebMediaPlayerMSCompositor,
+                                          WebMediaPlayerMSCompositorTraits>;
   friend class base::DeleteHelper<WebMediaPlayerMSCompositor>;
   friend class WebMediaPlayerMSTest;
+  friend struct WebMediaPlayerMSCompositorTraits;
 
   ~WebMediaPlayerMSCompositor() override;
 
@@ -228,6 +232,17 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMSCompositor);
 };
+
+struct WebMediaPlayerMSCompositorTraits {
+ private:
+  friend class base::RefCountedThreadSafe<WebMediaPlayerMSCompositor,
+                                          WebMediaPlayerMSCompositorTraits>;
+
+  // Ensure destruction occurs on main thread so that "Web" and other resources
+  // are destroyed on the correct thread.
+  static void Destruct(const WebMediaPlayerMSCompositor* player);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_STREAM_WEBMEDIAPLAYER_MS_COMPOSITOR_H_

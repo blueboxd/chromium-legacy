@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/sync_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
+#include "chrome/browser/ui/ash/ambient/photo_controller_impl.h"
 #include "chrome/browser/ui/ash/arc_chrome_actions_client.h"
 #include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/session_manager/core/session_manager.h"
@@ -213,6 +215,9 @@ void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   night_light_client_ = std::make_unique<NightLightClient>(
       g_browser_process->shared_url_loader_factory());
   night_light_client_->Start();
+
+  if (chromeos::switches::IsAmbientModeEnabled())
+    photo_controller_ = std::make_unique<PhotoControllerImpl>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
@@ -221,6 +226,9 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // uninstall correctly.
   exo_parts_.reset();
 #endif
+
+  if (chromeos::switches::IsAmbientModeEnabled())
+    photo_controller_.reset();
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();

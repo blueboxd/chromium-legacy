@@ -70,6 +70,21 @@ CWV_EXPORT
 //   page URL.
 @property(nonatomic, readonly) NSURL* visibleURL;
 
+// A human-friendly string which represents the location of the document
+// currently being loaded. KVO compliant.
+//
+// You can display this string instead of |visibleURL| in the URL bar. This is
+// usually the scheme followed by the host name, without the path e.g.,
+// @"https://example.com". Precisely speaking:
+//
+// - Internationalized domain names (IDN) are presented in Unicode if they're
+//   regarded safe. See
+//   https://dev.chromium.org/developers/design-documents/idn-in-google-chrome
+//   for details.
+// - Omits the path for standard schemes, excepting file and filesystem.
+// - Omits the port if it is the default for the scheme.
+@property(nonatomic, readonly) NSString* visibleLocationString;
+
 // The URL of the current document. KVO Compliant.
 //
 // See the comment of |visibleURL| above for the difference between |visibleURL|

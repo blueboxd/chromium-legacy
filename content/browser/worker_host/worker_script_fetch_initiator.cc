@@ -44,6 +44,7 @@
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -113,6 +114,17 @@ void WorkerScriptFetchInitiator::Start(
   resource_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
       outside_fetch_client_settings_object->referrer_policy);
   resource_request->resource_type = static_cast<int>(resource_type);
+
+  // For a classic worker script request:
+  // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
+  // Step 1: "Let request be a new request whose ..., mode is "same-origin",
+  // ..."
+  //
+  // For a module worker script request:
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
+  // Step 6: "If destination is "worker" or "sharedworker" and the top-level
+  // module fetch flag is set, then set request's mode to "same-origin"."
+  resource_request->mode = network::mojom::RequestMode::kSameOrigin;
 
   // When the credentials mode is "omit", clear |allow_credentials| and set
   // load flags to disable sending credentials according to the comments in

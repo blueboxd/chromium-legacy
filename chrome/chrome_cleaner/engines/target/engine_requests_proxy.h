@@ -15,7 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/chrome_cleaner/engines/target/sandbox_request_helper.h"
-#include "chrome/chrome_cleaner/interfaces/engine_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
 
 namespace chrome_cleaner {

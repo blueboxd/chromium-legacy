@@ -12,7 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/chrome_cleaner/interfaces/test_mojo_sandbox_hooks.mojom.h"
+#include "chrome/chrome_cleaner/mojom/test_mojo_sandbox_hooks.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/os/early_exit.h"

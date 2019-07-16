@@ -11,7 +11,7 @@ static_library("common") {
 
   deps = [
     "//chrome/chrome_cleaner/constants:quarantine_constants",
-    "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
+    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/os:common_os",
@@ -45,7 +45,7 @@ source_set("unittest_sources") {
   deps = [
     "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
-    "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
+    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/zip_archiver:common",

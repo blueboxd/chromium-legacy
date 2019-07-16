@@ -9,7 +9,7 @@ static_library("shortcut_parser_api") {
   ]
   deps = [
     "//base",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/os:common_os",
   ]
 }
@@ -23,7 +23,7 @@ static_library("sandboxed_shortcut_parser") {
   deps = [
     ":shortcut_parser_api",
     "//base",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/parsers/parser_utils:parse_tasks_remaining_counter",
@@ -40,7 +40,7 @@ static_library("fake_shortcut_parser") {
   deps = [
     ":shortcut_parser_api",
     "//base",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//testing/gmock",
   ]
 }
@@ -55,7 +55,7 @@ source_set("unittest_sources") {
     ":sandboxed_shortcut_parser",
     "//base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/parsers/broker:parser_sandbox_broker",

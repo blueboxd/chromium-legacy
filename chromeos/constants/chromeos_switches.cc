@@ -49,6 +49,10 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to enable Ambient mode feature.
+const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kShowLanguageToggleInDemoMode{
     "ShowLanguageToggleInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -585,6 +589,10 @@ bool IsAssistantFlagsEnabled() {
 
 bool IsAssistantEnabled() {
   return IsAssistantFlagsEnabled();
+}
+
+bool IsAmbientModeEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeFeature);
 }
 
 bool IsSigninFrameClientCertsEnabled() {

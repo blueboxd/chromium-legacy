@@ -6,5 +6,6 @@
 * [Compositor](/docs/ui/compositor/index.md)
 * [Views](/docs/ui/views/overview.md)
 * [Product Excellence](/docs/ui/product_excellence/index.md)
+* [UI Devtools](/docs/ui/ui_devtools/index.md)
 
 [home]: /docs/ui/index.md

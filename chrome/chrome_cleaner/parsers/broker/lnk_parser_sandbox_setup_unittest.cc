@@ -10,7 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/shortcut.h"
-#include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
+#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/parsers/broker/sandbox_setup_hooks.h"
 #include "chrome/chrome_cleaner/parsers/shortcut_parser/broker/sandboxed_shortcut_parser.h"

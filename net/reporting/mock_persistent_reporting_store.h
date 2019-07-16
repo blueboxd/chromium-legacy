@@ -20,6 +20,8 @@ namespace net {
 // received commands in order in a vector, to be checked by tests. Simulates
 // loading pre-existing stored endpoints and endpoint groups, which can be
 // provided using SetPrestoredClients().
+//
+// TODO(sburnett): Replace this with a fake store to reduce awkwardness.
 class MockPersistentReportingStore
     : public ReportingCache::PersistentReportingStore {
  public:
@@ -103,7 +105,11 @@ class MockPersistentReportingStore
   void FinishLoading(bool load_success);
 
   // Verify that |command_list_| matches |expected_commands|.
+  // TODO(sburnett): Replace this with a set of gmock matchers.
   bool VerifyCommands(const CommandList& expected_commands) const;
+
+  // Count the number of commands with type |t|.
+  int CountCommands(Command::Type t);
 
   CommandList GetAllCommands() const;
 

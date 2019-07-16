@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/chrome_cleaner/interfaces/zip_archiver.mojom.h"
+#include "chrome/chrome_cleaner/mojom/zip_archiver.mojom.h"
 #include "chrome/chrome_cleaner/logging/proto/removal_status.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"

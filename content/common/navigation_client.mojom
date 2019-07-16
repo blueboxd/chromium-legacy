@@ -69,7 +69,7 @@ interface NavigationClient {
       array<TransferrableURLLoader>? subresource_overrides,
       blink.mojom.ControllerServiceWorkerInfo? controller_service_worker_info,
       blink.mojom.ServiceWorkerProviderInfoForWindow? provider_info,
-      network.mojom.URLLoaderFactory? prefetch_loader_factory,
+      pending_remote<network.mojom.URLLoaderFactory>? prefetch_loader_factory,
       mojo_base.mojom.UnguessableToken devtools_navigation_token)
       => (DidCommitProvisionalLoadParams params,
           DidCommitProvisionalLoadInterfaceParams? interface_params);

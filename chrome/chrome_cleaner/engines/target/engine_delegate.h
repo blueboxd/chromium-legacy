@@ -15,7 +15,7 @@
 #include "chrome/chrome_cleaner/engines/target/engine_file_requests_proxy.h"
 #include "chrome/chrome_cleaner/engines/target/engine_requests_proxy.h"
 #include "chrome/chrome_cleaner/engines/target/engine_scan_results_proxy.h"
-#include "chrome/chrome_cleaner/interfaces/engine_sandbox.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "chrome/chrome_cleaner/logging/proto/shared_data.pb.h"
 
 namespace chrome_cleaner {

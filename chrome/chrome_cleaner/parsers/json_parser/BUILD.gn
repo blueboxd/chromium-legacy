@@ -25,7 +25,7 @@ static_library("json_parser") {
   deps = [
     "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/os:common_os",
@@ -49,7 +49,7 @@ source_set("unittest_sources") {
     ":json_splicer",
     "//base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/parsers/broker:parser_sandbox_broker",
     "//chrome/chrome_cleaner/parsers/target:parser_sandbox_target",

@@ -56,13 +56,15 @@ import java.util.List;
 /** Tests for the {@link GridTabSwitcherLayout}, mainly for animation performance. */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=" + ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
+        "enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study,"
+                + ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study",
         "force-fieldtrials=Study/Group"})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutPerfTest {
     private static final String TAG = "GTSLayoutPerfTest";
     private static final String BASE_PARAMS = "force-fieldtrial-params="
-            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false";
+            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
+            + "/zooming-min-sdk-version/19/zooming-min-memory-mb/512";
 
     /** Flip this to {@code true} to run performance tests locally. */
     private static final boolean PERF_RUN = false;
@@ -100,6 +102,7 @@ public class GridTabSwitcherLayoutPerfTest {
             mWaitingTime = 1000;
             mTabNumCap = 0;
         }
+        assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
     }
 
     @Test
@@ -246,6 +249,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testGridToTabToCurrentNTP() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current NTP");
@@ -253,6 +257,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testGridToTabToOtherNTP() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other NTP");
@@ -260,6 +265,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testGridToTabToCurrentLive() throws InterruptedException {
         prepareTabs(1, mUrl);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current live tab");
@@ -267,6 +273,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testGridToTabToOtherLive() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other live tab");
@@ -274,6 +281,7 @@ public class GridTabSwitcherLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, true, "Grid-to-Tab to other frozen tab");

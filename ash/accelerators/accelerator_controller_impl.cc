@@ -13,6 +13,7 @@
 #include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -799,6 +800,14 @@ bool CanHandleShowStylusTools() {
   return GetPaletteTray()->ShouldShowPalette();
 }
 
+bool CanHandleStartAmbientMode() {
+  return chromeos::switches::IsAmbientModeEnabled();
+}
+
+void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
+  Shell::Get()->ambient_controller()->Toggle();
+}
+
 bool CanHandleStartVoiceInteraction() {
   return chromeos::switches::IsAssistantEnabled();
 }
@@ -1568,6 +1577,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return true;
     case SHOW_STYLUS_TOOLS:
       return CanHandleShowStylusTools();
+    case START_AMBIENT_MODE:
+      return CanHandleStartAmbientMode();
     case START_VOICE_INTERACTION:
       return CanHandleStartVoiceInteraction();
     case SWAP_PRIMARY_DISPLAY:
@@ -1899,6 +1910,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case SHOW_TASK_MANAGER:
       HandleShowTaskManager();
+      break;
+    case START_AMBIENT_MODE:
+      HandleToggleAmbientMode(accelerator);
       break;
     case START_VOICE_INTERACTION:
       HandleToggleVoiceInteraction(accelerator);

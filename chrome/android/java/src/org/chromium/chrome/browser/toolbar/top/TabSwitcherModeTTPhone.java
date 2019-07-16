@@ -156,7 +156,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         setAlpha(inTabSwitcherMode ? 0.0f : 1.0f);
 
         boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+                && FeatureUtilities.isTabToGtsAnimationEnabled();
         long duration = showZoomingAnimation
                 ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
                 : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;

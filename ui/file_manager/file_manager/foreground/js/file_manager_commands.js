@@ -564,10 +564,9 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     // Find volumes to unmount.
     let volumes = [];
     let label = '';
-    const element = event.target;
-    if (element instanceof EntryListItem) {
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
+    if (entry instanceof EntryList) {
       // The element is a group of removable partitions.
-      const entry = element.entry;
       if (!entry) {
         errorCallback();
         return;
@@ -577,13 +576,14 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
       label = entry.label || '';
     } else {
       // The element is a removable volume with no partitions.
-      const volumeInfo = CommandUtil.getElementVolumeInfo(element, fileManager);
+      const volumeInfo =
+          CommandUtil.getElementVolumeInfo(event.target, fileManager);
       if (!volumeInfo) {
         errorCallback();
         return;
       }
       volumes.push(volumeInfo);
-      label = element.label || '';
+      label = volumeInfo.label || '';
     }
 
     // Eject volumes of which there may be multiple.
@@ -598,16 +598,15 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
   canExecute(event, fileManager) {
     const volumeInfo =
         CommandUtil.getElementVolumeInfo(event.target, fileManager);
-    const entry = event.target.entry;
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
     if (!volumeInfo && !entry) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
     }
 
-    const volumeType = (event.target instanceof EntryListItem) ?
-        entry.rootType :
-        volumeInfo.volumeType;
+    const volumeType =
+        (entry instanceof EntryList) ? entry.rootType : volumeInfo.volumeType;
     event.canExecute =
         (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
          volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||

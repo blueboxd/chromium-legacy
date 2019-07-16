@@ -1418,6 +1418,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/launcher_search/launcher_search_result.h",
       "ash/accessibility/accessibility_controller_client.cc",
       "ash/accessibility/accessibility_controller_client.h",
+      "ash/ambient/photo_controller_impl.cc",
+      "ash/ambient/photo_controller_impl.h",
       "ash/arc_chrome_actions_client.cc",
       "ash/arc_chrome_actions_client.h",
       "ash/ash_shell_init.cc",

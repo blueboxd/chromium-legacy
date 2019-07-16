@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 _FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS = [
   {
     'comment': 'top left video, yellow',
@@ -130,13 +132,13 @@ class PixelTestPages(object):
   def DefaultPages(base_name):
     sw_compositing_args = ['--disable-gpu-compositing']
 
-    # Tolerance of 10% is required for all the formats to match gold/pixel
-    # expectations on all the platforms for pixel video tests. Hence setting it
-    # to 20.
-    # Bug filed on MacOSX to investigate the tolerance -
-    # https://crbug.com/911895.
-    tolerance = 20
-    tolerance_vp9 = 20
+    tolerance = 3
+    tolerance_vp9 = 5 # VP9 video requires larger tolerance
+    if sys.platform == 'darwin':
+      # On MacOSX, pixels are slightly off.
+      # https://crbug.com/911895
+      tolerance = 10
+      tolerance_vp9 = 20
 
     return [
       PixelTestPage(

@@ -11,7 +11,7 @@ static_library("common") {
   deps = [
     "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
+    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//components/chrome_cleaner/public/constants:constants",
@@ -31,7 +31,7 @@ source_set("unittest_sources") {
     ":common",
     "//base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
+    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/zip_archiver:test_support",
     "//chrome/chrome_cleaner/zip_archiver/target:common",
     "//mojo/public/cpp/system:system",

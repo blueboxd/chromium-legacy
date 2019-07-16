@@ -59,7 +59,7 @@ class ReportingServiceImpl : public ReportingService {
 
     context_->cache()->AddReport(sanitized_url, user_agent, group, type,
                                  std::move(body), depth,
-                                 context_->tick_clock()->NowTicks(), 0);
+                                 context_->tick_clock().NowTicks(), 0);
   }
 
   void ProcessHeader(const GURL& url,

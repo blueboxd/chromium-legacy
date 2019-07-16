@@ -5059,7 +5059,8 @@ void RenderFrameHostImpl::CommitNavigation(
 
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         factory_bundle_for_prefetch;
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory;
     if (subresource_loader_factories) {
       // Clone the factory bundle for prefetch.
       auto bundle = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
@@ -5094,12 +5095,13 @@ void RenderFrameHostImpl::CommitNavigation(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&PrefetchURLLoaderService::GetFactory,
-                         storage_partition->GetPrefetchURLLoaderService(),
-                         mojo::MakeRequest(&prefetch_loader_factory),
-                         frame_tree_node_->frame_tree_node_id(),
-                         std::move(factory_bundle_for_prefetch),
-                         EnsurePrefetchedSignedExchangeCache()));
+          base::BindOnce(
+              &PrefetchURLLoaderService::GetFactory,
+              storage_partition->GetPrefetchURLLoaderService(),
+              prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
+              frame_tree_node_->frame_tree_node_id(),
+              std::move(factory_bundle_for_prefetch),
+              EnsurePrefetchedSignedExchangeCache()));
     }
 
     mojom::NavigationClient* navigation_client = nullptr;
@@ -6958,7 +6960,8 @@ void RenderFrameHostImpl::SendCommitNavigation(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
   if (navigation_client) {
     navigation_client->CommitNavigation(

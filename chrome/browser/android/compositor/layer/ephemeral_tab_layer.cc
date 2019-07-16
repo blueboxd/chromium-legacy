@@ -253,6 +253,7 @@ void EphemeralTabLayer::OnFaviconUpdated(
 void EphemeralTabLayer::OnHide() {
   favicon_layer_->SetIsDrawable(false);
   favicon_url_host_.clear();
+  web_contents_ = nullptr;
 }
 
 EphemeralTabLayer::EphemeralTabLayer(

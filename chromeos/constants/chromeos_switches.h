@@ -200,6 +200,10 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAssistantFeature;
 
+// Controls whether to enable Ambient mode feature.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kAmbientModeFeature;
+
 // Controls whether to enable Parental Controls options in settings.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kParentalControlsSettings;
@@ -250,6 +254,9 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantFlagsEnabled();
 
 // Returns true if Google Assistant is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
+
+// Returns true if Ambient mode is enabled.
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 
 // Returns true if client certificate authentication for the sign-in frame on
 // the Chrome OS sign-in screen is enabled.

@@ -6,7 +6,7 @@
 #define CHROME_CHROME_CLEANER_ENGINES_BROKER_ENGINE_CLEANUP_RESULTS_IMPL_H_
 
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/interfaces/engine_sandbox.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_sandbox.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace chrome_cleaner {

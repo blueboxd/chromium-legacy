@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/chrome_cleaner/interfaces/zip_archiver.mojom.h"
+#include "chrome/chrome_cleaner/mojom/zip_archiver.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace chrome_cleaner {

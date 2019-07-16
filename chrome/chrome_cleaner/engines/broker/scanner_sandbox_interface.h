@@ -16,7 +16,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/chrome_cleaner/interfaces/engine_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 

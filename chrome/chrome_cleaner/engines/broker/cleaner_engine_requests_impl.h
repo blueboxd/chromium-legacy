@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/chrome_cleaner/engines/broker/cleaner_sandbox_interface.h"
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
-#include "chrome/chrome_cleaner/interfaces/cleaner_engine_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/cleaner_engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/os/file_remover_api.h"
 #include "chrome/chrome_cleaner/zip_archiver/zip_archiver.h"

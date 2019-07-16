@@ -11,7 +11,7 @@ static_library("parser_sandbox_broker") {
   deps = [
     "//base",
     "//chrome/chrome_cleaner/constants:common_strings",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/ipc:sandbox",
     "//chrome/chrome_cleaner/settings:settings_types",
@@ -31,7 +31,7 @@ source_set("unittest_sources") {
     ":parser_sandbox_broker",
     "//base",
     "//base/test:test_support",
-    "//chrome/chrome_cleaner/interfaces:parser_interface",
+    "//chrome/chrome_cleaner/mojom:parser_interface",
     "//chrome/chrome_cleaner/ipc:mojo_task_runner",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/parsers/json_parser",

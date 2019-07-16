@@ -147,6 +147,11 @@ NetworkingPrivateLinux::NetworkingPrivateLinux()
 }
 
 NetworkingPrivateLinux::~NetworkingPrivateLinux() {
+  if (dbus_) {
+    // dbus_thread_.Stop() below will wait for this task.
+    dbus_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&dbus::Bus::ShutdownAndBlock, dbus_));
+  }
   dbus_thread_.Stop();
 }
 

@@ -4,6 +4,8 @@
 
 #include "net/reporting/mock_persistent_reporting_store.h"
 
+#include <algorithm>
+
 namespace net {
 
 MockPersistentReportingStore::Command::Command(
@@ -185,6 +187,15 @@ void MockPersistentReportingStore::FinishLoading(bool load_success) {
 bool MockPersistentReportingStore::VerifyCommands(
     const CommandList& expected_commands) const {
   return command_list_ == expected_commands;
+}
+
+int MockPersistentReportingStore::CountCommands(Command::Type t) {
+  int c = 0;
+  for (const auto& cmd : command_list_) {
+    if (cmd.type == t)
+      ++c;
+  }
+  return c;
 }
 
 MockPersistentReportingStore::CommandList

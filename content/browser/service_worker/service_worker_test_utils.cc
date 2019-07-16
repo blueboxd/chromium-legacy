@@ -110,7 +110,8 @@ class FakeNavigationClient : public mojom::NavigationClient {
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       CommitNavigationCallback callback) override {
     std::move(on_received_callback_).Run(std::move(provider_info));
@@ -218,8 +219,8 @@ void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
   navigation_client_->CommitNavigation(
       CommonNavigationParams(), CommitNavigationParams(),
       network::ResourceResponseHead(), mojo::ScopedDataPipeConsumerHandle(),
-      nullptr, nullptr, base::nullopt, nullptr, std::move(info), nullptr,
-      base::UnguessableToken::Create(),
+      nullptr, nullptr, base::nullopt, nullptr, std::move(info),
+      mojo::NullRemote(), base::UnguessableToken::Create(),
       base::BindOnce(
           [](std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
                  validated_params,

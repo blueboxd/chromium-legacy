@@ -5,7 +5,7 @@
 #ifndef CHROME_CHROME_CLEANER_PARSERS_TARGET_PARSER_IMPL_H_
 #define CHROME_CHROME_CLEANER_PARSERS_TARGET_PARSER_IMPL_H_
 
-#include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
+#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace chrome_cleaner {

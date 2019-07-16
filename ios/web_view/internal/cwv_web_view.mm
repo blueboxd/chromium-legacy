@@ -15,6 +15,7 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
+#include "components/url_formatter/elide_url.h"
 #include "google_apis/google_api_keys.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/favicon/favicon_url.h"
@@ -111,6 +112,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
       _javaScriptDialogPresenter;
   std::map<std::string, web::WebState::ScriptCommandCallback>
       _scriptCommandCallbacks;
+  CRWSessionStorage* _cachedSessionStorage;
 }
 
 // Redefine these properties as readwrite to define setters, which send KVO
@@ -122,6 +124,7 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 @property(nonatomic, readwrite) BOOL loading;
 @property(nonatomic, readwrite, copy) NSString* title;
 @property(nonatomic, readwrite) NSURL* visibleURL;
+@property(nonatomic, readwrite) NSString* visibleLocationString;
 @property(nonatomic, readwrite) CWVSSLStatus* visibleSSLStatus;
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @property(nonatomic, readonly) CWVAutofillController* autofillController;
@@ -565,8 +568,18 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)encodeRestorableStateWithCoder:(NSCoder*)coder {
   [super encodeRestorableStateWithCoder:coder];
-  [coder encodeObject:_webState->BuildSessionStorage()
-               forKey:kSessionStorageKey];
+
+  // It is possible for this instance to be encoded when the |_webState| is a
+  // nullptr, i.e. when this method is called after |shutDown| has occurred.
+  CRWSessionStorage* sessionStorage;
+  if (_webState) {
+    sessionStorage = _webState->BuildSessionStorage();
+  } else if (_cachedSessionStorage) {
+    sessionStorage = _cachedSessionStorage;
+  } else {
+    return;
+  }
+  [coder encodeObject:sessionStorage forKey:kSessionStorageKey];
 }
 
 - (void)decodeRestorableStateWithCoder:(NSCoder*)coder {
@@ -702,6 +715,8 @@ static NSString* gUserAgentProduct = nil;
 - (void)updateCurrentURLs {
   self.lastCommittedURL = net::NSURLWithGURL(_webState->GetLastCommittedURL());
   self.visibleURL = net::NSURLWithGURL(_webState->GetVisibleURL());
+  self.visibleLocationString = base::SysUTF16ToNSString(
+      url_formatter::FormatUrlForSecurityDisplay(_webState->GetVisibleURL()));
 }
 
 - (void)updateTitle {
@@ -722,6 +737,10 @@ static NSString* gUserAgentProduct = nil;
 #pragma mark - Internal Methods
 
 - (void)shutDown {
+  // To handle the case where -[CWVWebView encodeRestorableStateWithCoder:] is
+  // called after this method, precompute the session storage so it may be used
+  // during encoding later.
+  _cachedSessionStorage = _webState->BuildSessionStorage();
   _webState.reset();
 }
 

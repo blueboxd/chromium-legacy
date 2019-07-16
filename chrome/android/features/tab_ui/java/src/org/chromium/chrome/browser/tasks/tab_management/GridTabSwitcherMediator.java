@@ -370,7 +370,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         mHandler.removeCallbacks(mSoftClearTabListRunnable);
         mHandler.removeCallbacks(mClearTabListRunnable);
         boolean quick = false;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+        if (FeatureUtilities.isTabToGtsAnimationEnabled()) {
             quick = mResetHandler.resetWithTabList(
                     mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
                     false);
@@ -387,7 +387,7 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
     public void showOverview(boolean animate) {
         mResetHandler.resetWithTabList(
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter(),
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+                FeatureUtilities.isTabToGtsAnimationEnabled());
         if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
         setVisibility(true);
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();

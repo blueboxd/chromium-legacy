@@ -187,7 +187,10 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
       ukm_source_id_(ukm_source_id),
       binding_(this),
       navigation_start_(
-          frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()) {
+          frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()),
+      feature_handle_for_scheduler_(frame.GetFrameScheduler()->RegisterFeature(
+          SchedulingPolicy::Feature::kWebXR,
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   // See https://bit.ly/2S0zRAS for task types.
   DCHECK(frame.IsAttached());
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(

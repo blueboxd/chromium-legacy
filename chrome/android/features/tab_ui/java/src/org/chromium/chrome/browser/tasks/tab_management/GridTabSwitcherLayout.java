@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.widget.Toast;
 
@@ -122,7 +123,7 @@ public class GridTabSwitcherLayout
         // The Android View version of GTS overview is hidden.
         // If not doing GTS-to-Tab transition animation, we show the fade-out instead, which was
         // already done.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)) {
+        if (!FeatureUtilities.isTabToGtsAnimationEnabled()) {
             postHiding();
             return;
         }
@@ -148,8 +149,7 @@ public class GridTabSwitcherLayout
     public void show(long time, boolean animate) {
         super.show(time, animate);
 
-        boolean showShrinkingAnimation =
-                animate && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
+        boolean showShrinkingAnimation = animate && FeatureUtilities.isTabToGtsAnimationEnabled();
         boolean quick = mGridTabSwitcher.prepareOverview();
         Log.d(TAG, "SkipSlowZooming = " + getSkipSlowZooming());
         if (getSkipSlowZooming()) {
@@ -208,8 +208,7 @@ public class GridTabSwitcherLayout
         updateCacheVisibleIds(new LinkedList<>(Arrays.asList(sourceTabId)));
 
         mIsAnimating = true;
-        mGridController.hideOverview(
-                !ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+        mGridController.hideOverview(!FeatureUtilities.isTabToGtsAnimationEnabled());
     }
 
     @Override
@@ -434,9 +433,8 @@ public class GridTabSwitcherLayout
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-                        ? mGridTabSwitcher.getResourceId()
-                        : 0,
+                FeatureUtilities.isTabToGtsAnimationEnabled() ? mGridTabSwitcher.getResourceId()
+                                                              : 0,
                 mBackgroundAlpha);
         mFrameCount++;
         if (mLastFrameTime != 0) {

@@ -107,7 +107,7 @@ source_set("cleaner_os") {
     "//chrome/chrome_cleaner/constants:common_strings",
     "//chrome/chrome_cleaner/constants:quarantine_constants",
     "//chrome/chrome_cleaner/constants:version_header",
-    "//chrome/chrome_cleaner/interfaces:zip_archiver_interface",
+    "//chrome/chrome_cleaner/mojom:zip_archiver_interface",
     "//chrome/chrome_cleaner/logging/proto:removal_status_proto",
     "//chrome/chrome_cleaner/proto:shared_pup_enums_proto",
     "//chrome/chrome_cleaner/zip_archiver:common",

@@ -138,12 +138,12 @@ PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
       plugin_prefs_(PluginPrefs::GetForProfile(profile)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile->GetPrefs());
-  allow_outdated_plugins_.MoveToThread(
+  allow_outdated_plugins_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}));
   run_all_flash_in_allow_mode_.Init(prefs::kRunAllFlashInAllowMode,
                                     profile->GetPrefs());
-  run_all_flash_in_allow_mode_.MoveToThread(
+  run_all_flash_in_allow_mode_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits(
           {content::BrowserThread::IO}));
 }

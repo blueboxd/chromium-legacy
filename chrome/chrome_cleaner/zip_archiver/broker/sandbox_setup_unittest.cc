@@ -13,7 +13,7 @@
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_handle.h"
-#include "chrome/chrome_cleaner/interfaces/zip_archiver.mojom.h"
+#include "chrome/chrome_cleaner/mojom/zip_archiver.mojom.h"
 #include "chrome/chrome_cleaner/zip_archiver/broker/sandbox_setup.h"
 #include "chrome/chrome_cleaner/zip_archiver/target/sandbox_setup.h"
 #include "chrome/chrome_cleaner/zip_archiver/test_zip_archiver_util.h"

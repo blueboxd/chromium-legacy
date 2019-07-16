@@ -131,3 +131,41 @@ function TtsEvent() {}
 
 /** @type {number} */
 TtsEvent.prototype.length;
+
+
+
+/**
+ * @param {number|ArrayBufferView|Array.<number>|ArrayBuffer} length or array
+ *     or buffer
+ * @param {number=} opt_byteOffset
+ * @param {number=} opt_length
+ * @extends {ArrayBufferView}
+ * @constructor
+ * @noalias
+ * @throws {Error}
+ * @modifies {arguments}
+ */
+function BigInt64Array(length, opt_byteOffset, opt_length) {}
+
+/** @type {number} */
+BigInt64Array.BYTES_PER_ELEMENT;
+
+/** @type {number} */
+BigInt64Array.prototype.BYTES_PER_ELEMENT;
+
+/** @type {number} */
+BigInt64Array.prototype.length;
+
+/**
+ * @param {ArrayBufferView|Array.<number>} array
+ * @param {number=} opt_offset
+ */
+BigInt64Array.prototype.set = function(array, opt_offset) {};
+
+/**
+ * @param {number} begin
+ * @param {number=} opt_end
+ * @return {!BigInt64Array}
+ * @nosideeffects
+ */
+BigInt64Array.prototype.subarray = function(begin, opt_end) {};

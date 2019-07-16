@@ -2697,8 +2697,9 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     ReattachLayoutTree(reattach_context);
     whitespace_attacher.DidReattachElement(this,
                                            reattach_context.previous_in_flow);
-  } else {
-    DCHECK(!StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
+  } else if (!StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+    // TODO(crbug.com/972752): Make the condition above a DCHECK instead when
+    // style recalc and dirty bit propagation uses flat-tree traversal.
     // We create a local WhitespaceAttacher when rebuilding children of an
     // element with a LayoutObject since whitespace nodes do not rely on layout
     // objects further up the tree. Also, if this Element's layout object is an
@@ -2732,7 +2733,8 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!ChildNeedsStyleRecalc() ||
          StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
   DCHECK(!NeedsReattachLayoutTree());
-  DCHECK(!ChildNeedsReattachLayoutTree());
+  DCHECK(!ChildNeedsReattachLayoutTree() ||
+         StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren));
 }
 
 void Element::RebuildShadowRootLayoutTree(

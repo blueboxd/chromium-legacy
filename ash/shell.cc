@@ -19,6 +19,7 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/key_accessibility_enabler.h"
+#include "ash/ambient/ambient_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
@@ -655,6 +656,9 @@ Shell::~Shell() {
   // Accelerometer file reader stops listening to tablet mode controller.
   AccelerometerReader::GetInstance()->StopListenToTabletModeController();
 
+  // Destroy |ambient_controller_| before |assistant_controller_|.
+  ambient_controller_.reset();
+
   // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
   // that the former will destroy the Assistant view hierarchy which has a
   // dependency on the latter.
@@ -1055,6 +1059,12 @@ void Shell::Init(
   assistant_controller_ = chromeos::switches::IsAssistantEnabled()
                               ? std::make_unique<AssistantController>()
                               : nullptr;
+
+  // |assistant_controller_| is put before |ambient_controller_| as it will be
+  // used by the latter.
+  if (chromeos::switches::IsAmbientModeEnabled())
+    ambient_controller_ = std::make_unique<AmbientController>();
+
   home_screen_controller_ = std::make_unique<HomeScreenController>();
 
   // |tablet_mode_controller_| |mru_window_tracker_|,

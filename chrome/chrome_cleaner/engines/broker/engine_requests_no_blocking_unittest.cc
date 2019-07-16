@@ -29,7 +29,7 @@
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/engines/target/engine_file_requests_proxy.h"
 #include "chrome/chrome_cleaner/engines/target/sandboxed_test_helpers.h"
-#include "chrome/chrome_cleaner/interfaces/engine_file_requests.mojom.h"
+#include "chrome/chrome_cleaner/mojom/engine_file_requests.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/os/inheritable_event.h"
 #include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"

@@ -21,7 +21,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -38,6 +37,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -795,9 +795,7 @@ class TabListMediator {
                 && (mModel.get(index).get(TabProperties.THUMBNAIL_FETCHER) == null || forceUpdate
                         || isUpdatingId)) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, forceUpdate,
-                    forceUpdate
-                            && !ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+                    forceUpdate && !FeatureUtilities.isTabToGtsAnimationEnabled());
             mModel.get(index).set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
     }
@@ -910,9 +908,7 @@ class TabListMediator {
 
         if (mThumbnailProvider != null && mVisible) {
             ThumbnailFetcher callback = new ThumbnailFetcher(mThumbnailProvider, tab, isSelected,
-                    isSelected
-                            && !ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.TAB_TO_GTS_ANIMATION));
+                    isSelected && !FeatureUtilities.isTabToGtsAnimationEnabled());
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);

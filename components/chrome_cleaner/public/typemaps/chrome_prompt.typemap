@@ -2,16 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/chrome_cleaner/public/interfaces/chrome_prompt.mojom"
+mojom = "//components/chrome_cleaner/public/mojom/chrome_prompt.mojom"
 public_headers = [
   "//base/files/file_path.h",
   "//base/strings/string16.h",
 ]
 traits_headers = [
-  "//components/chrome_cleaner/public/typemaps/chrome_prompt_struct_traits.h",
+  "//components/chrome_cleaner/public/typemaps/chrome_prompt_mojom_traits.h",
 ]
 sources = [
-  "//components/chrome_cleaner/public/typemaps/chrome_prompt_struct_traits.cc",
+  "//components/chrome_cleaner/public/typemaps/chrome_prompt_mojom_traits.cc",
 ]
 
 type_mappings = [

@@ -831,10 +831,6 @@ IPC_MESSAGE_ROUTED3(FrameMsg_AddMessageToConsole,
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
                     bool /* bypass_cache */)
 
-// Requests the corresponding RenderFrameProxy to be deleted and removed from
-// the frame tree.
-IPC_MESSAGE_ROUTED0(FrameMsg_DeleteProxy)
-
 // Request the text surrounding the selection with a |max_length|. The response
 // will be sent via FrameHostMsg_TextSurroundingSelectionResponse.
 IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,

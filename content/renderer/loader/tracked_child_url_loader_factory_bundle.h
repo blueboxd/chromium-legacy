@@ -33,7 +33,8 @@ class CONTENT_EXPORT TrackedChildURLLoaderFactoryBundleInfo
       SchemeMap scheme_specific_factory_infos,
       OriginMap initiator_specific_factory_infos,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
-      network::mojom::URLLoaderFactoryPtrInfo prefetch_loader_factory_info,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_prefetch_loader_factory,
       std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
       bool bypass_redirect_checks);
   ~TrackedChildURLLoaderFactoryBundleInfo() override;

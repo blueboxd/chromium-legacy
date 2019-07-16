@@ -3357,7 +3357,8 @@ void RenderFrameImpl::CommitNavigation(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     CommitNavigationCallback commit_callback) {
   DCHECK(!navigation_client_impl_);
@@ -3386,7 +3387,8 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     mojom::NavigationClient::CommitNavigationCallback
         per_navigation_mojo_interface_callback) {
@@ -3414,7 +3416,8 @@ void RenderFrameImpl::CommitNavigationInternal(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
     mojom::FrameNavigationControl::CommitNavigationCallback callback,
     mojom::NavigationClient::CommitNavigationCallback
@@ -3567,7 +3570,8 @@ void RenderFrameImpl::CommitNavigationWithParams(
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory,
     std::unique_ptr<DocumentState> document_state,
     std::unique_ptr<WebNavigationParams> navigation_params) {
   if (ShouldIgnoreCommitNavigation(commit_params)) {
@@ -3721,7 +3725,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
 
   SetupLoaderFactoryBundle(std::move(subresource_loader_factories),
                            base::nullopt /* subresource_overrides */,
-                           nullptr /* prefetch_loader_factory */);
+                           mojo::NullRemote() /* prefetch_loader_factory */);
 
   // Send the provisional load failure.
   WebURLError error(
@@ -6910,9 +6914,9 @@ ChildURLLoaderFactoryBundle* RenderFrameImpl::GetLoaderFactoryBundle() {
           base::MakeRefCounted<TrackedChildURLLoaderFactoryBundle>(
               std::move(bundle_info));
     } else {
-      SetupLoaderFactoryBundle(nullptr,
-                               base::nullopt /* subresource_overrides */,
-                               nullptr /* prefetch_loader_factory */);
+      SetupLoaderFactoryBundle(
+          nullptr, base::nullopt /* subresource_overrides */,
+          mojo::NullRemote() /* prefetch_loader_factory */);
     }
   }
   return loader_factories_.get();
@@ -6922,7 +6926,8 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
-    network::mojom::URLLoaderFactoryPtr prefetch_loader_factory) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        prefetch_loader_factory) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
   loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(

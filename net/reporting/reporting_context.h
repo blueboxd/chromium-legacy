@@ -43,14 +43,14 @@ class NET_EXPORT ReportingContext {
 
   ~ReportingContext();
 
-  const ReportingPolicy& policy() { return policy_; }
+  const ReportingPolicy& policy() const { return policy_; }
 
-  base::Clock* clock() { return clock_; }
-  const base::TickClock* tick_clock() { return tick_clock_; }
+  const base::Clock& clock() const { return *clock_; }
+  const base::TickClock& tick_clock() const { return *tick_clock_; }
   ReportingUploader* uploader() { return uploader_.get(); }
-
   ReportingDelegate* delegate() { return delegate_.get(); }
   ReportingCache* cache() { return cache_.get(); }
+  ReportingCache::PersistentReportingStore* store() { return store_; }
   ReportingEndpointManager* endpoint_manager() {
     return endpoint_manager_.get();
   }
@@ -64,6 +64,11 @@ class NET_EXPORT ReportingContext {
 
   void NotifyCachedReportsUpdated();
   void NotifyCachedClientsUpdated();
+
+  // Returns whether the data in the cache is persisted across restarts in the
+  // PersistentReportingStore.
+  bool IsReportDataPersisted() const;
+  bool IsClientDataPersisted() const;
 
   void OnShutdown();
 
@@ -89,6 +94,8 @@ class NET_EXPORT ReportingContext {
   std::unique_ptr<ReportingDelegate> delegate_;
 
   std::unique_ptr<ReportingCache> cache_;
+
+  ReportingCache::PersistentReportingStore* const store_;
 
   // |endpoint_manager_| must come after |tick_clock_| and |cache_|.
   std::unique_ptr<ReportingEndpointManager> endpoint_manager_;

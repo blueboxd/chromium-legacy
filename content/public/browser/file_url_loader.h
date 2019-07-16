@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -24,7 +24,7 @@ namespace content {
 class SharedCorsOriginAccessList;
 
 class CONTENT_EXPORT FileURLLoaderObserver
-    : public mojo::FileDataPipeProducer::Observer {
+    : public mojo::DataPipeProducer::Observer {
  public:
   FileURLLoaderObserver() {}
   ~FileURLLoaderObserver() override {}

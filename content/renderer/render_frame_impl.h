@@ -563,7 +563,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback commit_callback)
       override;
@@ -584,7 +585,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       mojom::NavigationClient::CommitNavigationCallback
           per_navigation_mojo_interface_callback);
@@ -1191,7 +1193,8 @@ class CONTENT_EXPORT RenderFrameImpl
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
@@ -1256,7 +1259,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory,
       std::unique_ptr<DocumentState> document_state,
       std::unique_ptr<blink::WebNavigationParams> navigation_params);
 
@@ -1434,7 +1438,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback

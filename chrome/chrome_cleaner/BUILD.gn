@@ -91,7 +91,7 @@ test("chrome_cleaner_unittests") {
     "//chrome/chrome_cleaner/engines/controllers:unittest_sources",
     "//chrome/chrome_cleaner/engines/target:unittest_sources",
     "//chrome/chrome_cleaner/http:unittest_sources",
-    "//chrome/chrome_cleaner/interfaces/typemaps:unittest_sources",
+    "//chrome/chrome_cleaner/mojom/typemaps:unittest_sources",
     "//chrome/chrome_cleaner/ipc:unittest_sources",
     "//chrome/chrome_cleaner/logging:unittest_sources",
     "//chrome/chrome_cleaner/os:unittest_sources",

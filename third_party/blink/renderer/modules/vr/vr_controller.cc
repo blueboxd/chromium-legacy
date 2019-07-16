@@ -19,7 +19,11 @@ VRController::VRController(NavigatorVR* navigator_vr)
     : ContextLifecycleObserver(navigator_vr->GetDocument()),
       navigator_vr_(navigator_vr),
       display_synced_(false),
-      binding_(this) {
+      binding_(this),
+      feature_handle_for_scheduler_(
+          navigator_vr->GetDocument()->GetScheduler()->RegisterFeature(
+              SchedulingPolicy::Feature::kWebVR,
+              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       navigator_vr->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI);

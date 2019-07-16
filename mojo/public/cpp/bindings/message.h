@@ -19,7 +19,6 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/lib/unserialized_message_context.h"
@@ -188,17 +187,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
     return &associated_endpoint_handles_;
   }
 
-  // Sets the ConnectionGroup to which this Message's local receiver belongs, if
-  // any. This is called immediately after a Message is read from a message pipe
-  // but before it's deserialized. If non-null, |ref| must point to a Ref that
-  // outlives this Message object.
-  void set_receiver_connection_group(const ConnectionGroup::Ref* ref) {
-    receiver_connection_group_ = ref;
-  }
-  const ConnectionGroup::Ref* receiver_connection_group() const {
-    return receiver_connection_group_;
-  }
-
   // Takes ownership of any handles within |*context| and attaches them to this
   // Message.
   void AttachHandlesFromSerializationContext(
@@ -288,11 +276,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   const char* interface_name_ = nullptr;
   const char* method_name_ = nullptr;
 #endif
-
-  // A reference to the ConnectionGroup to which the receiver of this Message
-  // belongs, if any. Only set if this Message was just read off of a message
-  // pipe and is about to be deserialized.
-  const ConnectionGroup::Ref* receiver_connection_group_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Message);
 };

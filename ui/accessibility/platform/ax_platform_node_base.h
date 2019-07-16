@@ -78,6 +78,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // Helpers.
   AXPlatformNodeBase* GetPreviousSibling();
   AXPlatformNodeBase* GetNextSibling();
+  AXPlatformNodeBase* GetFirstChild();
+  AXPlatformNodeBase* GetLastChild();
   bool IsDescendant(AXPlatformNodeBase* descendant);
 
   bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;

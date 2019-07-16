@@ -42,20 +42,6 @@ class AppRegistrar {
   // considered external apps), then this will return true.
   virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
 
-  // Returns true if the app has a scope (some legacy apps don't). See
-  // GetScopeUrlForApp() for more context about scope.
-  virtual bool HasScopeUrl(const AppId& app_id) const = 0;
-
-  // Scope is the navigation scope of this WebApp. This means all URLs that the
-  // app considers part of itself.
-  //
-  // Some legacy apps don't have a scope and returning an empty GURL for them
-  // could lead to incorrecly thinking some URLs are in-scope of the app. To
-  // avoid this, this method CHECKs if the app doesn't have a scope. Callers can
-  // use HasScopeUrl() to know if the app has a scope before calling this
-  // method.
-  virtual GURL GetScopeUrlForApp(const AppId& app_id) const = 0;
-
   // Returns the AppIds and URLs of apps externally installed from
   // |install_source|.
   virtual std::map<AppId, GURL> GetExternallyInstalledApps(
@@ -87,6 +73,7 @@ class AppRegistrar {
   virtual base::Optional<SkColor> GetAppThemeColor(
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
+  virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
 
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);

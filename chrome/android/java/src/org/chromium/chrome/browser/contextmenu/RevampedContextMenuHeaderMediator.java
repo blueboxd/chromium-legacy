@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -52,6 +53,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
      * @param thumbnail The bitmap received that will be displayed as the header image.
      */
     void onImageThumbnailRetrieved(Bitmap thumbnail) {
+        RecordHistogram.recordBooleanHistogram("ContextMenu.ThumbnailFetched", thumbnail != null);
         if (thumbnail != null) {
             setHeaderImage(getImageWithCheckerBackground(mContext.getResources(), thumbnail), true);
         }
@@ -83,6 +85,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
      */
     @Override
     public void onClick(View v) {
+        RecordHistogram.recordBooleanHistogram("ContextMenu.URLClicked", true);
         if (mModel.get(RevampedContextMenuHeaderProperties.URL_MAX_LINES) == Integer.MAX_VALUE) {
             boolean isEmpty =
                     TextUtils.isEmpty(mModel.get(RevampedContextMenuHeaderProperties.TITLE));

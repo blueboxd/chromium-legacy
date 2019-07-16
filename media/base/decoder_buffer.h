@@ -228,10 +228,6 @@ class MEDIA_EXPORT DecoderBuffer
   size_t side_data_size_;
   std::unique_ptr<uint8_t, base::AlignedFreeDeleter> side_data_;
 
-  // Copy of |data_| for debugging purposes. This field is not to be used.
-  // crbug.com/794740.
-  void* data_at_initialize_;
-
   // Encoded data, if it is stored in a shared memory mapping.
   std::unique_ptr<ReadOnlyUnalignedMapping> shared_mem_mapping_;
 
@@ -249,10 +245,6 @@ class MEDIA_EXPORT DecoderBuffer
 
   // Whether the frame was marked as a keyframe in the container.
   bool is_key_frame_;
-
-  // Check for double destruction. This field is not to be used.
-  // crbug.com/794740.
-  uint32_t destruction_ = 0x55555555;
 
   // Constructor helper method for memory allocations.
   void Initialize();

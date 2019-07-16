@@ -183,6 +183,9 @@ void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
 void AppListMainView::ActiveChanged(search_box::SearchBoxViewBase* sender) {
   if (!app_list_features::IsZeroStateSuggestionsEnabled())
     return;
+  // Do not update views on closing.
+  if (app_list_view_->app_list_state() == ash::AppListViewState::kClosed)
+    return;
 
   if (search_box_view_->is_search_box_active()) {
     // Show zero state suggestions when search box is activated with an empty

@@ -40,14 +40,13 @@ class WebAppRegistrar : public AppRegistrar {
   bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  bool HasScopeUrl(const AppId& app_id) const override;
-  GURL GetScopeUrlForApp(const AppId& app_id) const override;
   AppId FindAppIdForUrl(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
+  base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
 
  private:
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);

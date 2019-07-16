@@ -89,15 +89,6 @@ class BrowserApi {
   }
 
   /**
-   * Aborts the stream.
-   */
-  abortStream() {
-    if (chrome.mimeHandlerPrivate) {
-      chrome.mimeHandlerPrivate.abortStream();
-    }
-  }
-
-  /**
    * Sets the browser zoom.
    *
    * @param {number} zoom The zoom factor to send to the browser.

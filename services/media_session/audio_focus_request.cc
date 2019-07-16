@@ -128,7 +128,7 @@ void AudioFocusRequest::Suspend(const EnforcementState& state) {
   }
 }
 
-void AudioFocusRequest::MaybeResume() {
+void AudioFocusRequest::ReleaseTransientHold() {
   DCHECK(!session_info_->force_duck);
 
   if (!was_suspended_)
@@ -136,6 +136,36 @@ void AudioFocusRequest::MaybeResume() {
 
   was_suspended_ = false;
   session_->Resume(mojom::MediaSession::SuspendType::kSystem);
+
+  if (!delayed_action_)
+    return;
+
+  PerformUIAction(*delayed_action_);
+  delayed_action_.reset();
+}
+
+void AudioFocusRequest::PerformUIAction(mojom::MediaSessionAction action) {
+  // If the session was temporarily suspended by the service then we should
+  // delay the action until the session is resumed.
+  if (was_suspended_) {
+    delayed_action_ = action;
+    return;
+  }
+
+  switch (action) {
+    case mojom::MediaSessionAction::kPause:
+      session_->Suspend(mojom::MediaSession::SuspendType::kUI);
+      break;
+    case mojom::MediaSessionAction::kPlay:
+      session_->Resume(mojom::MediaSession::SuspendType::kUI);
+      break;
+    case mojom::MediaSessionAction::kStop:
+      session_->Stop(mojom::MediaSession::SuspendType::kUI);
+      break;
+    default:
+      // Only UI transport actions are supported.
+      NOTREACHED();
+  }
 }
 
 void AudioFocusRequest::SetSessionInfo(

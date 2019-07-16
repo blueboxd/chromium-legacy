@@ -25,10 +25,10 @@ namespace test {
 // check if the tag matches |expected_tag|.
 // Returns whether the event is marked "ok".
 bool WaitForCompletion(const base::Location& from_here,
-                       grpc::CompletionQueue* completion_queue,
+                       grpc_impl::CompletionQueue* completion_queue,
                        void* expected_tag);
 void WaitForCompletionAndAssertOk(const base::Location& from_here,
-                                  grpc::CompletionQueue* completion_queue,
+                                  grpc_impl::CompletionQueue* completion_queue,
                                   void* expected_tag);
 
 base::OnceCallback<void(const grpc::Status&)>
@@ -40,7 +40,8 @@ CheckStatusThenQuitRunLoopCallback(const base::Location& from_here,
 template <typename ResponseType>
 class GrpcServerResponder {
  public:
-  explicit GrpcServerResponder(grpc::ServerCompletionQueue* completion_queue) {
+  explicit GrpcServerResponder(
+      grpc_impl::ServerCompletionQueue* completion_queue) {
     completion_queue_ = completion_queue;
   }
 
@@ -51,14 +52,16 @@ class GrpcServerResponder {
     return WaitForCompletion(FROM_HERE, completion_queue_, this);
   }
 
-  grpc::ServerContext* context() { return &context_; }
+  grpc_impl::ServerContext* context() { return &context_; }
 
-  grpc::ServerAsyncResponseWriter<ResponseType>* writer() { return &writer_; }
+  grpc_impl::ServerAsyncResponseWriter<ResponseType>* writer() {
+    return &writer_;
+  }
 
  private:
-  grpc::ServerContext context_;
-  grpc::ServerCompletionQueue* completion_queue_ = nullptr;
-  grpc::ServerAsyncResponseWriter<ResponseType> writer_{&context_};
+  grpc_impl::ServerContext context_;
+  grpc_impl::ServerCompletionQueue* completion_queue_ = nullptr;
+  grpc_impl::ServerAsyncResponseWriter<ResponseType> writer_{&context_};
 
   DISALLOW_COPY_AND_ASSIGN(GrpcServerResponder);
 };
@@ -68,7 +71,7 @@ template <typename ResponseType>
 class GrpcServerStreamResponder {
  public:
   explicit GrpcServerStreamResponder(
-      grpc::ServerCompletionQueue* completion_queue) {
+      grpc_impl::ServerCompletionQueue* completion_queue) {
     completion_queue_ = completion_queue;
   }
 
@@ -98,14 +101,14 @@ class GrpcServerStreamResponder {
     closed_ = true;
   }
 
-  grpc::ServerContext* context() { return &context_; }
+  grpc_impl::ServerContext* context() { return &context_; }
 
-  grpc::ServerAsyncWriter<ResponseType>* writer() { return &writer_; }
+  grpc_impl::ServerAsyncWriter<ResponseType>* writer() { return &writer_; }
 
  private:
-  grpc::ServerContext context_;
-  grpc::ServerCompletionQueue* completion_queue_ = nullptr;
-  grpc::ServerAsyncWriter<ResponseType> writer_{&context_};
+  grpc_impl::ServerContext context_;
+  grpc_impl::ServerCompletionQueue* completion_queue_ = nullptr;
+  grpc_impl::ServerAsyncWriter<ResponseType> writer_{&context_};
   bool closed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcServerStreamResponder);

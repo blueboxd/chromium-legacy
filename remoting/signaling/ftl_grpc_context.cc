@@ -82,7 +82,7 @@ GrpcChannelSharedPtr FtlGrpcContext::CreateChannel() {
 }
 
 // static
-void FtlGrpcContext::FillClientContext(grpc::ClientContext* context) {
+void FtlGrpcContext::FillClientContext(grpc_impl::ClientContext* context) {
 #if defined(OS_CHROMEOS)
   // Use the default Chrome API key for ChromeOS as the only host instance
   // which runs there is used for the ChromeOS Enterprise Kiosk mode

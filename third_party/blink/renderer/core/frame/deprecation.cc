@@ -61,6 +61,9 @@ enum Milestone {
   kM75,
   kM76,
   kM77,
+  kM78,
+  kM79,
+  kM80,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -107,6 +110,12 @@ const char* MilestoneString(Milestone milestone) {
       return "M76, around July 2019";
     case kM77:
       return "M77, around September 2019";
+    case kM78:
+      return "M78, around October 2019";
+    case kM79:
+      return "M79, around December 2019";
+    case kM80:
+      return "M80, around February 2020";
   }
 
   NOTREACHED();
@@ -157,7 +166,13 @@ double MilestoneDate(Milestone milestone) {
     case kM76:
       return 1564459200000;  // Jul 30, 2019.
     case kM77:
-      return 1568088000000;  // Sep 10, 2019.
+      return 1568088000000;  // September 10, 2019.
+    case kM78:
+      return 1571716800000;  // October 22, 2019.
+    case kM79:
+      return 1575950400000;  // December 10, 2019.
+    case kM80:
+      return 1580529600000;  // February 1, 2020. (This is a guess!)
   }
 
   NOTREACHED();
@@ -427,27 +442,35 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "https://www.chromestatus.com/feature/5735596811091968 for more "
           "details."};
 
+#define kWebComponentsV0DeprecationPost                \
+  "https://developers.google.com/web/updates/2019/07/" \
+  "web-components-time-to-upgrade"
+
     case WebFeature::kHTMLImports:
-      return {"DeprecatedHTMLImports", kM73,
-              ReplacedWillBeRemoved("HTML Imports", "ES modules", kM73,
-                                    "5144752345317376")};
+      return {"HTMLImports", kM80,
+              ReplacedWillBeRemoved(
+                  "HTML Imports", "ES modules", kM80,
+                  "5144752345317376 and " kWebComponentsV0DeprecationPost)};
 
     case WebFeature::kElementCreateShadowRoot:
-      return {"ElementCreateShadowRoot", kM73,
-              ReplacedWillBeRemoved("Element.createShadowRoot",
-                                    "Element.attachShadow", kM73,
-                                    "4507242028072960")};
+      return {"ElementCreateShadowRoot", kM80,
+              ReplacedWillBeRemoved(
+                  "Element.createShadowRoot", "Element.attachShadow", kM80,
+                  "4507242028072960 and " kWebComponentsV0DeprecationPost)};
 
     case WebFeature::kDocumentRegisterElement:
-      return {"DocumentRegisterElement", kM73,
-              ReplacedWillBeRemoved("document.registerElement",
-                                    "window.customElements.define", kM73,
-                                    "4642138092470272")};
-    case WebFeature::kCSSSelectorPseudoUnresolved:
       return {
-          "CSSSelectorPseudoUnresolved", kM73,
-          ReplacedWillBeRemoved(":unresolved pseudo selector", ":not(:defined)",
-                                kM73, "4642138092470272")};
+          "DocumentRegisterElement", kM80,
+          ReplacedWillBeRemoved(
+              "document.registerElement", "window.customElements.define", kM80,
+              "4642138092470272 and " kWebComponentsV0DeprecationPost)};
+    case WebFeature::kCSSSelectorPseudoUnresolved:
+      return {"CSSSelectorPseudoUnresolved", kM80,
+              ReplacedWillBeRemoved(
+                  ":unresolved pseudo selector", ":not(:defined)", kM80,
+                  "4642138092470272 and " kWebComponentsV0DeprecationPost)};
+
+#undef kWebComponentsV0DeprecationPost
 
     case WebFeature::kPresentationRequestStartInsecureOrigin:
     case WebFeature::kPresentationReceiverInsecureOrigin:

@@ -377,7 +377,7 @@ void AudioFocusManager::EnforceSingleSession(AudioFocusRequest* session,
   if (ShouldSessionBeSuspended(session, state)) {
     session->Suspend(state);
   } else {
-    session->MaybeResume();
+    session->ReleaseTransientHold();
   }
 }
 

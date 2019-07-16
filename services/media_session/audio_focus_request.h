@@ -57,8 +57,12 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   void Suspend(const EnforcementState& state);
 
   // If the underlying media session previously suspended this session then this
-  // will resume it.
-  void MaybeResume();
+  // will resume it and apply any delayed action.
+  void ReleaseTransientHold();
+
+  // Perform a UI action (play/pause/stop). This may be delayed if the service
+  // has transiently suspended the session.
+  void PerformUIAction(mojom::MediaSessionAction action);
 
   mojom::MediaSession* ipc() { return session_.get(); }
   const mojom::MediaSessionInfoPtr& info() const { return session_info_; }
@@ -81,6 +85,9 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   mojom::AudioFocusType audio_focus_type_;
 
   mojo::Binding<mojom::AudioFocusRequestClient> binding_;
+
+  // The action to apply when the transient hold is released.
+  base::Optional<mojom::MediaSessionAction> delayed_action_;
 
   // The ID of the audio focus request.
   base::UnguessableToken const id_;

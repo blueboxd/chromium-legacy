@@ -56,6 +56,35 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
 
+  gfx::NativeViewAccessible GetFirstChild() override;
+  gfx::NativeViewAccessible GetLastChild() override;
+  gfx::NativeViewAccessible GetNextSibling() override;
+  gfx::NativeViewAccessible GetPreviousSibling() override;
+
+  class ChildIteratorBase : public ChildIterator {
+   public:
+    ChildIteratorBase(AXPlatformNodeDelegateBase* parent, int index);
+    ChildIteratorBase(const ChildIteratorBase& it);
+    ~ChildIteratorBase() override {}
+    bool operator==(const ChildIterator& rhs) const override;
+    bool operator!=(const ChildIterator& rhs) const override;
+    void operator++() override;
+    void operator++(int) override;
+    void operator--() override;
+    void operator--(int) override;
+    gfx::NativeViewAccessible GetNativeViewAccessible() const override;
+
+   protected:
+    int GetIndexInParent() const override;
+
+   private:
+    int index_;
+    AXPlatformNodeDelegateBase* parent_;
+  };
+  std::unique_ptr<AXPlatformNodeDelegate::ChildIterator> ChildrenBegin()
+      override;
+  std::unique_ptr<AXPlatformNodeDelegate::ChildIterator> ChildrenEnd() override;
+
   base::string16 GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
 

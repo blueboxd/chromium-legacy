@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/assistant/assistant_state_proxy.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -682,6 +683,25 @@ class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
  private:
   ~AutotestPrivateShowVirtualKeyboardIfEnabledFunction() override;
   ResponseAction Run() override;
+};
+
+class AutotestPrivateSetArcAppWindowStateFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutotestPrivateSetArcAppWindowStateFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcAppWindowState",
+                             AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE)
+
+ private:
+  class WindowStateChangeObserver;
+
+  ~AutotestPrivateSetArcAppWindowStateFunction() override;
+  ResponseAction Run() override;
+
+  // Callback function to be called after window state is changed.
+  void WindowStateChanged(ash::WindowStateType expected_type, bool success);
+
+  std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
 };
 
 template <>

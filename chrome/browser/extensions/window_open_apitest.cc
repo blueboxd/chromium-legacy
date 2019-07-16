@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -316,7 +315,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 // URL on a new tab cannot access non-web-accessible resources.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                        WindowOpenInaccessibleResourceFromDataURL) {
-  base::HistogramTester uma;
   const extensions::Extension* extension = LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open"));
   ASSERT_TRUE(extension);
@@ -341,15 +339,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   EXPECT_NE(extension_url, newtab->GetMainFrame()->GetLastCommittedURL());
   EXPECT_FALSE(newtab->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
       extensions::kExtensionScheme));
-
-  // Verify that the blocking was recorded correctly in UMA. ShouldAllowOpenURL
-  // is called twice by the content layer, once when creating the window, and
-  // again when attempting to navigate the newly-created window.
-  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure",
-                         2, /* FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION */
-                         2);
-  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure.Scheme",
-                         6 /* SCHEME_DATA */, 2);
 }
 
 // Test that navigating to an extension URL is allowed on chrome:// and

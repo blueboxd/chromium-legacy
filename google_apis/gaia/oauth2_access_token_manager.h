@@ -287,9 +287,9 @@ class OAuth2AccessTokenManager {
   GetDiagnosticsObserversForTesting();
 
  private:
-  // TODO(https://crbug.com/967598): Remove this once |token_cache_| management
-  // is moved to OAuth2AccessTokenManager.
-  friend class OAuth2TokenService;
+  // TODO(https://crbug.com/967598): Determine whether ProfileOAuth2TokenService
+  // needs to have API to access to token_cache().
+  friend class ProfileOAuth2TokenService;
 
   class Fetcher;
   friend class Fetcher;

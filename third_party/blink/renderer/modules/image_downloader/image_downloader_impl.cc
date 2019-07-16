@@ -95,8 +95,7 @@ ImageDownloaderImpl::ImageDownloaderImpl(
     : ImageDownloaderBase(GetExecutionContext(), frame),
       binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
-      WTF::Bind(&ImageDownloaderImpl::Dispose,
-                WrapWeakPersistent(this)));
+      WTF::Bind(&ImageDownloaderImpl::Dispose, WrapWeakPersistent(this)));
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {}

@@ -253,6 +253,12 @@ bool IsNTPOrRelatedURL(const GURL& url, Profile* profile) {
                      url_no_params == chrome::kChromeSearchLocalNtpUrl);
 }
 
+bool IsNTPURL(const GURL& url) {
+  return url.SchemeIs(chrome::kChromeSearchScheme) &&
+         (url.host_piece() == chrome::kChromeSearchRemoteNtpHost ||
+          url.host_piece() == chrome::kChromeSearchLocalNtpHost);
+}
+
 bool IsInstantNTP(content::WebContents* contents) {
   if (!contents)
     return false;

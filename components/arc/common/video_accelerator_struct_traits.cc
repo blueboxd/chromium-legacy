@@ -118,6 +118,7 @@ bool EnumTraits<arc::mojom::VideoCodecProfile, media::VideoCodecProfile>::
       static_cast<int>(arc::mojom::VideoPixelFormat::value) == media::value, \
       "enum ##value mismatch")
 
+CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_UNKNOWN);
 CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_I420);
 CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_YV12);
 CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_NV12);
@@ -132,8 +133,21 @@ CHECK_PIXEL_FORMAT_ENUM(PIXEL_FORMAT_XBGR);
 arc::mojom::VideoPixelFormat
 EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat>::ToMojom(
     media::VideoPixelFormat input) {
-  NOTIMPLEMENTED();
-  return arc::mojom::VideoPixelFormat::PIXEL_FORMAT_I420;
+  switch (input) {
+    case media::PIXEL_FORMAT_UNKNOWN:
+    case media::PIXEL_FORMAT_I420:
+    case media::PIXEL_FORMAT_YV12:
+    case media::PIXEL_FORMAT_NV12:
+    case media::PIXEL_FORMAT_NV21:
+    case media::PIXEL_FORMAT_ARGB:
+    case media::PIXEL_FORMAT_ABGR:
+    case media::PIXEL_FORMAT_XBGR:
+      return static_cast<arc::mojom::VideoPixelFormat>(input);
+
+    default:
+      NOTIMPLEMENTED();
+      return arc::mojom::VideoPixelFormat::PIXEL_FORMAT_UNKNOWN;
+  }
 }
 
 // static

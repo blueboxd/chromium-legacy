@@ -81,9 +81,9 @@ Polymer({
       const platformVersion = loadTimeData.getString('platformVersion');
 
       const url = new URL(webviewUrl);
-      url.searchParams.set('flowType', flowType);
-      url.searchParams.set('platformVersion', platformVersion);
-      url.searchParams.set('accessToken', accessToken);
+      url.searchParams.set('flow_type', flowType);
+      url.searchParams.set('platform_version', platformVersion);
+      url.searchParams.set('access_token', accessToken);
 
       // Allow guest webview content to open links in new windows.
       webview.addEventListener('newwindow', function(e) {

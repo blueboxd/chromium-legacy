@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+PASS page-created Error (worker)
+PASS page-created Error (cross-site iframe)
+PASS page-created DOMException (worker)
+PASS page-created DOMException (cross-site iframe)
+PASS JS-engine-created TypeError (worker)
+PASS JS-engine-created TypeError (cross-site iframe)
+PASS web API-created TypeError (worker)
+PASS web API-created TypeError (cross-site iframe)
+FAIL web API-created DOMException (worker) Failed to execute 'postMessage' on 'Worker': DOMException object could not be cloned.
+FAIL web API-created DOMException (cross-site iframe) Failed to execute 'postMessage' on 'Window': DOMException object could not be cloned.
+Harness: the test ran to completion.
+

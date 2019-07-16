@@ -36,9 +36,6 @@ class StreamContainer {
       const GURL& original_url);
   ~StreamContainer();
 
-  // Aborts the stream.
-  void Abort(const base::Closure& callback);
-
   base::WeakPtr<StreamContainer> GetWeakPtr();
 
   content::mojom::TransferrableURLLoaderPtr TakeTransferrableURLLoader();

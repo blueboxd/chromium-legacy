@@ -216,7 +216,6 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_UNITY_INTEGRATION =
             "ContextualSearchUnityIntegration";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
-    public static final String DELEGATE_OVERSCROLL_SWIPES = "DelegateOverscrollSwipes";
     public static final String DIRECT_ACTIONS = "DirectActions";
     public static final String DOWNLOAD_FILE_PROVIDER = "DownloadFileProvider";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";

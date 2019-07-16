@@ -120,7 +120,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     views::View* anchor_view,
     content::WebContents* web_contents,
     std::vector<AppInfo> app_info,
-    bool show_stay_in_chrome,
+    bool enable_stay_in_chrome,
     bool show_remember_selection,
     IntentPickerResponse intent_picker_cb) {
   if (intent_picker_bubble_) {
@@ -140,7 +140,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   intent_picker_bubble_ = new IntentPickerBubbleView(
       std::move(app_info), std::move(intent_picker_cb), web_contents,
-      show_stay_in_chrome);
+      enable_stay_in_chrome);
   intent_picker_bubble_->set_margins(gfx::Insets());
 
   if (anchor_view) {
@@ -184,13 +184,13 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
 // static
 std::unique_ptr<IntentPickerBubbleView>
 IntentPickerBubbleView::CreateBubbleView(std::vector<AppInfo> app_info,
-                                         bool show_stay_in_chrome,
+                                         bool enable_stay_in_chrome,
                                          bool show_remember_selection,
                                          IntentPickerResponse intent_picker_cb,
                                          content::WebContents* web_contents) {
   std::unique_ptr<IntentPickerBubbleView> bubble(new IntentPickerBubbleView(
       std::move(app_info), std::move(intent_picker_cb), web_contents,
-      show_stay_in_chrome));
+      enable_stay_in_chrome));
   bubble->Initialize(show_remember_selection);
   return bubble;
 }
@@ -247,7 +247,7 @@ base::string16 IntentPickerBubbleView::GetWindowTitle() const {
 
 bool IntentPickerBubbleView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
-  if (!show_stay_in_chrome_ && button == ui::DIALOG_BUTTON_CANCEL)
+  if (!enable_stay_in_chrome_ && button == ui::DIALOG_BUTTON_CANCEL)
     return false;
   return true;
 }
@@ -256,7 +256,7 @@ base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(
       button == ui::DIALOG_BUTTON_OK
-          ? IDS_INTENT_PICKER_BUBBLE_VIEW_USE_APP
+          ? IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN
           : IDS_INTENT_PICKER_BUBBLE_VIEW_STAY_IN_CHROME);
 }
 
@@ -264,14 +264,14 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     std::vector<AppInfo> app_info,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
-    bool show_stay_in_chrome)
+    bool enable_stay_in_chrome)
     : LocationBarBubbleDelegateView(nullptr /* anchor_view */,
                                     gfx::Point(),
                                     web_contents),
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),
       app_info_(std::move(app_info)),
-      show_stay_in_chrome_(show_stay_in_chrome) {
+      enable_stay_in_chrome_(enable_stay_in_chrome) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 

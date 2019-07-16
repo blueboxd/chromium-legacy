@@ -13,8 +13,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -66,6 +64,7 @@
 #include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
@@ -101,40 +100,6 @@ enum RenderProcessHostPrivilege {
   PRIV_HOSTED,
   PRIV_ISOLATED,
   PRIV_EXTENSION,
-};
-
-// Specifies the scheme of the SiteInstance responsible for a failed
-// web-accessible resource check in ShouldAllowOpenURL.
-//
-// This enum backs an UMA histogram.  The order of existing values
-// should not be changed.  Add any new values before SCHEME_LAST, and also run
-// update_should_allow_open_url_histograms.py to update the corresponding enum
-// in histograms.xml.  This enum must also be synchronized to kSchemeNames in
-// RecordShouldAllowOpenURLFailure.
-enum ShouldAllowOpenURLFailureScheme {
-  SCHEME_UNKNOWN,
-  SCHEME_EMPTY,
-  SCHEME_HTTP,
-  SCHEME_HTTPS,
-  SCHEME_FILE,
-  SCHEME_FTP,
-  SCHEME_DATA,
-  SCHEME_JAVASCRIPT,
-  SCHEME_ABOUT,
-  SCHEME_CHROME,
-  SCHEME_DEVTOOLS,
-  SCHEME_GUEST,
-  SCHEME_VIEWSOURCE,
-  SCHEME_CHROME_SEARCH,
-  SCHEME_CHROME_NATIVE,
-  SCHEME_DOM_DISTILLER,
-  SCHEME_CHROME_EXTENSION,
-  SCHEME_CONTENT,
-  SCHEME_BLOB,
-  SCHEME_FILESYSTEM,
-  // Add new entries above and make sure to update histograms.xml by running
-  // update_should_allow_open_url_histograms.py.
-  SCHEME_LAST,
 };
 
 RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
@@ -653,6 +618,18 @@ void ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
 }
 
 // static
+std::vector<url::Origin> ChromeContentBrowserClientExtensionsPart::
+    GetOriginsRequiringDedicatedProcess() {
+  std::vector<url::Origin> list;
+
+  // Require a dedicated process for the webstore origin.  See
+  // https://crbug.com/939108.
+  list.push_back(url::Origin::Create(extension_urls::GetWebstoreLaunchURL()));
+
+  return list;
+}
+
+// static
 bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     content::SiteInstance* site_instance,
     const GURL& to_url,
@@ -693,18 +670,6 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
   // Blob and filesystem URLs are never considered web-accessible.  See
   // https://crbug.com/656752.
   if (to_url.SchemeIsFileSystem() || to_url.SchemeIsBlob()) {
-    if (to_url.SchemeIsFileSystem())
-      RecordShouldAllowOpenURLFailure(FAILURE_FILE_SYSTEM_URL, site_url);
-    else
-      RecordShouldAllowOpenURLFailure(FAILURE_BLOB_URL, site_url);
-
-    // TODO(alexmos): Temporary instrumentation to find any regressions for
-    // this blocking.  Remove after verifying that this is not breaking any
-    // legitimate use cases.
-    DEBUG_ALIAS_FOR_GURL(site_url_copy, site_url);
-    DEBUG_ALIAS_FOR_ORIGIN(to_origin_copy, to_origin);
-    base::debug::DumpWithoutCrashing();
-
     *result = false;
     return true;
   }
@@ -737,17 +702,6 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
                                                           to_url.path())) {
     *result = true;
     return true;
-  }
-
-  if (!site_url.SchemeIsHTTPOrHTTPS() && !site_url.SchemeIs(kExtensionScheme)) {
-    // This function used to incorrectly skip the web-accessible resource
-    // checks in this case. Measure how often this happens.  See also
-    // https://crbug.com/696034.
-    RecordShouldAllowOpenURLFailure(
-        FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION, site_url);
-  } else {
-    RecordShouldAllowOpenURLFailure(FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE,
-                                    site_url);
   }
 
   *result = false;
@@ -793,53 +747,6 @@ bool ChromeContentBrowserClientExtensionsPart::IsBuiltinComponent(
       ->extension_service()
       ->component_loader()
       ->Exists(extension_id);
-}
-
-// static
-void ChromeContentBrowserClientExtensionsPart::RecordShouldAllowOpenURLFailure(
-    ShouldAllowOpenURLFailureReason reason,
-    const GURL& site_url) {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.ShouldAllowOpenURL.Failure", reason,
-                            FAILURE_LAST);
-
-  // Must be kept in sync with the ShouldAllowOpenURLFailureScheme enum.
-  static const char* const kSchemeNames[] = {
-      "unknown",
-      "",
-      url::kHttpScheme,
-      url::kHttpsScheme,
-      url::kFileScheme,
-      url::kFtpScheme,
-      url::kDataScheme,
-      url::kJavaScriptScheme,
-      url::kAboutScheme,
-      content::kChromeUIScheme,
-      content::kChromeDevToolsScheme,
-      content::kGuestScheme,
-      content::kViewSourceScheme,
-      chrome::kChromeSearchScheme,
-      chrome::kChromeNativeScheme,
-      dom_distiller::kDomDistillerScheme,
-      extensions::kExtensionScheme,
-      url::kContentScheme,
-      url::kBlobScheme,
-      url::kFileSystemScheme,
-      "last",
-  };
-
-  static_assert(base::size(kSchemeNames) == SCHEME_LAST + 1,
-                "kSchemeNames should have SCHEME_LAST + 1 elements");
-
-  ShouldAllowOpenURLFailureScheme scheme = SCHEME_UNKNOWN;
-  for (int i = 1; i < SCHEME_LAST; i++) {
-    if (site_url.SchemeIs(kSchemeNames[i])) {
-      scheme = static_cast<ShouldAllowOpenURLFailureScheme>(i);
-      break;
-    }
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.ShouldAllowOpenURL.Failure.Scheme",
-                            scheme, SCHEME_LAST);
 }
 
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(

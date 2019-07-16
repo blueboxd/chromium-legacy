@@ -102,11 +102,6 @@ const char kAutomaticPasswordGenerationDescription[] =
     "Allow Chrome to offer to generate passwords when it detects account "
     "creation pages.";
 
-const char kDelegateOverscrollSwipesName[] =
-    "Delegate overscroll swipes to websites";
-const char kDelegateOverscrollSwipesDescription[] =
-    "Delegate overscroll swipes to websites first";
-
 const char kDrawVerticallyEdgeToEdgeName[] =
     "Draw contents vertically from edge to edge.";
 const char kDrawVerticallyEdgeToEdgeDescription[] =

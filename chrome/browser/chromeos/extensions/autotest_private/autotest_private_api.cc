@@ -13,8 +13,10 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
+#include "ash/wm/wm_event.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -23,6 +25,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -82,6 +85,8 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -212,6 +217,87 @@ std::string SetWhitelistedPref(Profile* profile,
   profile->GetPrefs()->Set(pref_name, value);
 
   return std::string();
+}
+
+// Returns the ARC app window that associates with |package_name|. Note there
+// might be more than 1 windows that have the same package name. This function
+// just returns the first window it finds.
+aura::Window* GetArcAppWindow(const std::string& package_name) {
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
+    if (pkg_name && *pkg_name == package_name)
+      return window;
+  }
+  return nullptr;
+}
+
+// Gets expected window state type according to |event_type|.
+ash::WindowStateType GetExpectedWindowState(
+    api::autotest_private::WMEventType event_type) {
+  switch (event_type) {
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
+      return ash::WindowStateType::kNormal;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
+      return ash::WindowStateType::kMaximized;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
+      return ash::WindowStateType::kMinimized;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
+      return ash::WindowStateType::kFullscreen;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
+      return ash::WindowStateType::kLeftSnapped;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
+      return ash::WindowStateType::kRightSnapped;
+    default:
+      NOTREACHED();
+      return ash::WindowStateType::kNormal;
+  }
+}
+
+ash::wm::WMEventType ToWMEventType(
+    api::autotest_private::WMEventType event_type) {
+  switch (event_type) {
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
+      return ash::wm::WMEventType::WM_EVENT_NORMAL;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
+      return ash::wm::WMEventType::WM_EVENT_MAXIMIZE;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
+      return ash::wm::WMEventType::WM_EVENT_MINIMIZE;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
+      return ash::wm::WMEventType::WM_EVENT_FULLSCREEN;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
+      return ash::wm::WMEventType::WM_EVENT_SNAP_LEFT;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
+      return ash::wm::WMEventType::WM_EVENT_SNAP_RIGHT;
+    default:
+      NOTREACHED();
+      return ash::wm::WMEventType::WM_EVENT_NORMAL;
+  }
+}
+
+api::autotest_private::WindowStateType ToWindowStateType(
+    ash::WindowStateType state_type) {
+  switch (state_type) {
+    case ash::WindowStateType::kNormal:
+      return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NORMAL;
+    case ash::WindowStateType::kMinimized:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_MINIMIZED;
+    case ash::WindowStateType::kMaximized:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_MAXIMIZED;
+    case ash::WindowStateType::kFullscreen:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_FULLSCREEN;
+    case ash::WindowStateType::kLeftSnapped:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_LEFTSNAPPED;
+    case ash::WindowStateType::kRightSnapped:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_RIGHTSNAPPED;
+    default:
+      NOTREACHED();
+      return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NONE;
+  }
 }
 
 }  // namespace
@@ -1818,6 +1904,103 @@ AutotestPrivateShowVirtualKeyboardIfEnabledFunction::Run() {
       ->GetInputMethod()
       ->ShowVirtualKeyboardIfEnabled();
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetArcAppWindowStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetArcAppWindowStateFunction::
+    AutotestPrivateSetArcAppWindowStateFunction() = default;
+AutotestPrivateSetArcAppWindowStateFunction::
+    ~AutotestPrivateSetArcAppWindowStateFunction() = default;
+
+class AutotestPrivateSetArcAppWindowStateFunction::WindowStateChangeObserver
+    : public aura::WindowObserver {
+ public:
+  WindowStateChangeObserver(aura::Window* window,
+                            ash::WindowStateType expected_type,
+                            base::OnceCallback<void(bool)> callback)
+      : expected_type_(expected_type), callback_(std::move(callback)) {
+    DCHECK_NE(window->GetProperty(ash::kWindowStateTypeKey), expected_type_);
+    scoped_observer_.Add(window);
+  }
+  ~WindowStateChangeObserver() override {}
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK(scoped_observer_.IsObserving(window));
+    if (key == ash::kWindowStateTypeKey &&
+        window->GetProperty(ash::kWindowStateTypeKey) == expected_type_) {
+      scoped_observer_.RemoveAll();
+      std::move(callback_).Run(/*success=*/true);
+    }
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK(scoped_observer_.IsObserving(window));
+    scoped_observer_.RemoveAll();
+    std::move(callback_).Run(/*success=*/false);
+  }
+
+ private:
+  ash::WindowStateType expected_type_;
+  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
+  base::OnceCallback<void(bool)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
+};
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetArcAppWindowStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetArcAppWindowState::Params> params(
+      api::autotest_private::SetArcAppWindowState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetArcAppWindowStateFunction "
+           << params->package_name;
+
+  aura::Window* arc_window = GetArcAppWindow(params->package_name);
+  if (!arc_window) {
+    return RespondNow(Error(base::StrCat(
+        {"No ARC app window is found for ", params->package_name})));
+  }
+
+  ash::WindowStateType expected_state =
+      GetExpectedWindowState(params->change.event_type);
+  if (arc_window->GetProperty(ash::kWindowStateTypeKey) == expected_state) {
+    if (params->change.fail_if_no_change &&
+        *(params->change.fail_if_no_change)) {
+      return RespondNow(Error(
+          "The ARC app window is already in the expected window state! "));
+    } else {
+      return RespondNow(OneArgument(std::make_unique<base::Value>(
+          api::autotest_private::ToString(ToWindowStateType(expected_state)))));
+    }
+  }
+
+  window_state_observer_ = std::make_unique<WindowStateChangeObserver>(
+      arc_window, expected_state,
+      base::BindOnce(
+          &AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged,
+          this, expected_state));
+  const ash::wm::WMEvent event(ToWMEventType(params->change.event_type));
+  ash::wm::GetWindowState(arc_window)->OnWMEvent(&event);
+
+  return RespondLater();
+}
+
+void AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged(
+    ash::WindowStateType expected_type,
+    bool success) {
+  if (!success) {
+    Respond(Error(
+        "ARC app window is destroyed while waiting for its state change! "));
+  } else {
+    Respond(OneArgument(std::make_unique<base::Value>(
+        api::autotest_private::ToString(ToWindowStateType(expected_type)))));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

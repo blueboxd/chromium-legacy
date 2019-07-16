@@ -53,7 +53,14 @@ HTMLPortalElement::HTMLPortalElement(
     : HTMLFrameOwnerElement(html_names::kPortalTag, document),
       portal_token_(portal_token),
       remote_portal_(std::move(remote_portal)),
-      portal_client_receiver_(this, std::move(portal_client_receiver)) {}
+      portal_client_receiver_(this, std::move(portal_client_receiver)) {
+  if (remote_portal_) {
+    // If the portal element hosts a predecessor from activation, it can be
+    // activated before being inserted into the DOM, and we need to keep track
+    // of it from creation.
+    DocumentPortals::From(GetDocument()).OnPortalInserted(this);
+  }
+}
 
 HTMLPortalElement::~HTMLPortalElement() {}
 
@@ -316,7 +323,6 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     portal_frame_ = GetDocument().GetFrame()->Client()->AdoptPortal(this);
     remote_portal_.set_disconnect_handler(
         WTF::Bind(&HTMLPortalElement::ConsumePortal, WrapWeakPersistent(this)));
-    DocumentPortals::From(GetDocument()).OnPortalInserted(this);
   } else {
     mojo::PendingAssociatedRemote<mojom::blink::PortalClient> client;
     portal_client_receiver_.Bind(client.InitWithNewEndpointAndPassReceiver());

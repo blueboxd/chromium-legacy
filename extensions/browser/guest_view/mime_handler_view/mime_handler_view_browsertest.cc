@@ -42,7 +42,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
@@ -413,21 +412,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Iframe) {
   RunTest("test_iframe.html");
-}
-
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Abort) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // With the network service, abortStream isn't needed since we pass a Mojo
-    // pipe to the renderer. If the plugin chooses to cancel the main request
-    // (e.g. to make range requests instead), we are always guaranteed that the
-    // Mojo pipe will be broken which will cancel the request. This is different
-    // than without the network service, since stream URLs need to be explicitly
-    // closed if they weren't yet opened to avoid leaks.
-    // TODO(jam): once the network service is the only path, delete the
-    // abortStream mimeHandlerPrivate method and supporting code.
-    return;
-  }
-  RunTest("testAbort.csv");
 }
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, NonAsciiHeaders) {

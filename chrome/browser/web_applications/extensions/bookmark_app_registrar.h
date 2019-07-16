@@ -29,8 +29,6 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
-  bool HasScopeUrl(const web_app::AppId& app_id) const override;
-  GURL GetScopeUrlForApp(const web_app::AppId& app_id) const override;
   web_app::AppId FindAppIdForUrl(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
@@ -38,6 +36,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   base::Optional<SkColor> GetAppThemeColor(
       const web_app::AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const web_app::AppId& app_id) const override;
+  base::Optional<GURL> GetAppScope(const web_app::AppId& app_id) const override;
 
   // ExtensionRegistryObserver:
   void OnExtensionInstalled(content::BrowserContext* browser_context,

@@ -50,6 +50,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     private float mTopContentOffsetPx;
     private ContextMenuDialog mDialog;
     private Runnable mOnShareImageDirectly;
+    private Callback<Boolean> mOnMenuClosed;
 
     /**
      * Constructor that also sets the content offset.
@@ -65,7 +66,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     @Override
     public void displayMenu(final Activity activity, ContextMenuParams params,
             List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
-            final Runnable onMenuShown, final Runnable onMenuClosed) {
+            final Runnable onMenuShown, final Callback<Boolean> onMenuClosed) {
+        mOnMenuClosed = onMenuClosed;
         final float density = activity.getResources().getDisplayMetrics().density;
         final float touchPointXPx = params.getTriggeringTouchXDp() * density;
         final float touchPointYPx = params.getTriggeringTouchYDp() * density;
@@ -74,7 +76,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
                 LayoutInflater.from(activity).inflate(R.layout.revamped_context_menu, null);
         mDialog = createContextMenuDialog(activity, view, touchPointXPx, touchPointYPx);
         mDialog.setOnShowListener(dialogInterface -> onMenuShown.run());
-        mDialog.setOnDismissListener(dialogInterface -> onMenuClosed.run());
+        mDialog.setOnDismissListener(dialogInterface -> mOnMenuClosed.onResult(false));
 
         mHeaderCoordinator = new RevampedContextMenuHeaderCoordinator(activity, params);
 
@@ -134,8 +136,8 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         mListView.setOnItemClickListener((p, v, pos, id) -> {
             assert id != INVALID_ITEM_ID;
 
-            mDialog.dismiss();
             onItemClicked.onResult((int) id);
+            mDialog.dismiss();
         });
 
         mDialog.show();
@@ -215,6 +217,11 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
     private View.OnClickListener getShareItemClickListener(
             Activity activity, ShareContextMenuItem item, ContextMenuParams params) {
         return (v) -> {
+            ChromeContextMenuPopulator.ContextMenuUma.record(params,
+                    item.isShareLink()
+                            ? ChromeContextMenuPopulator.ContextMenuUma.Action.DIRECT_SHARE_LINK
+                            : ChromeContextMenuPopulator.ContextMenuUma.Action.DIRECT_SHARE_IMAGE);
+            mDialog.setOnDismissListener(dialogInterface -> mOnMenuClosed.onResult(true));
             mDialog.dismiss();
             if (item.isShareLink()) {
                 final ShareParams shareParams =

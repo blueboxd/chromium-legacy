@@ -21,6 +21,12 @@ namespace storage {
 class QuotaTaskObserver;
 
 // A base class for quota tasks.
+//
+// Instances of this class own themselves and schedule themselves for deletion
+// when async tasks are either aborted or completed.
+// This class is not thread-safe and it's subclasses need not be either.
+// CallCompleted(), Abort(), and DeleteSoon() must be called on the same thread
+// that is the constructor is called on.
 // TODO(kinuko): Revise this using base::Callback.
 class QuotaTask {
  public:

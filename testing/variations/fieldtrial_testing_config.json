@@ -2370,6 +2370,48 @@
             ]
         }
     ],
+    "GwpAsanMallocMacOSLaunch": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "AllocationSamplingRange": "16",
+                        "MaxAllocations": "70",
+                        "MaxMetadata": "255",
+                        "ProcessSamplingProbability": "0.1"
+                    },
+                    "enable_features": [
+                        "GwpAsanMalloc"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GwpAsanMallocWindowsM75Launch": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "AllocationSamplingRange": "16",
+                        "MaxAllocations": "70",
+                        "MaxMetadata": "255",
+                        "ProcessSamplingProbability": "0.1"
+                    },
+                    "enable_features": [
+                        "GwpAsanMalloc"
+                    ]
+                }
+            ]
+        }
+    ],
     "GwpAsanPartitionAllocLaunch": [
         {
             "platforms": [
@@ -4326,6 +4368,21 @@
                     "name": "Enabled2",
                     "enable_features": [
                         "ResourceLoadingHints"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RevampedContextMenu": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RevampedContextMenu"
                     ]
                 }
             ]

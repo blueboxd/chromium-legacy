@@ -132,8 +132,7 @@ class OutOfProcessInstance : public pp::Instance,
                                                const base::char16* term,
                                                bool case_sensitive) override;
   void DocumentLoadComplete(
-      const PDFEngine::DocumentFeatures& document_features,
-      uint32_t file_size) override;
+      const PDFEngine::DocumentFeatures& document_features) override;
   void DocumentLoadFailed() override;
   pp::Instance* GetPluginInstance() override;
   void DocumentHasUnsupportedFeature(const std::string& feature) override;
@@ -141,7 +140,6 @@ class OutOfProcessInstance : public pp::Instance,
   void FormTextFieldFocusChange(bool in_focus) override;
   bool IsPrintPreview() override;
   uint32_t GetBackgroundColor() override;
-  void CancelBrowserDownload() override;
   void IsSelectingChanged(bool is_selecting) override;
   void SelectionChanged(const pp::Rect& left, const pp::Rect& right) override;
   void IsEditModeChanged(bool is_edit_mode) override;

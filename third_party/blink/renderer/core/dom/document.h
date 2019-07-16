@@ -467,6 +467,12 @@ class CORE_EXPORT Document : public ContainerNode,
     return HaveImportsLoaded() && HaveScriptBlockingStylesheetsLoaded();
   }
 
+  bool IsForExternalHandler() const { return is_for_external_handler_; }
+  void SetIsForExternalHandler() {
+    DCHECK(!is_for_external_handler_);
+    is_for_external_handler_ = true;
+  }
+
   // This is a DOM function.
   StyleSheetList& StyleSheets();
 
@@ -2029,6 +2035,12 @@ class CORE_EXPORT Document : public ContainerNode,
   int locked_display_lock_count_ = 0;
 
   bool deferred_compositor_commit_is_allowed_ = false;
+
+  // True when the document was created (in DomImplementation) for specific MIME
+  // types that are handled externally. The document in this case is the
+  // counterpart to a PluginDocument except that it contains a FrameView as
+  // opposed to a PluginView.
+  bool is_for_external_handler_ = false;
 
   // A list of all the navigation_initiator bindings owned by this document.
   // Used to report CSP violations that result from CSP blocking

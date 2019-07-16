@@ -31,7 +31,25 @@ SessionStorageNamespaceImplMojo::SessionStorageNamespaceImplMojo(
       delegate_(delegate) {}
 
 SessionStorageNamespaceImplMojo::~SessionStorageNamespaceImplMojo() {
-  DCHECK(namespaces_waiting_for_clone_call_.empty());
+  DCHECK(child_namespaces_waiting_for_clone_call_.empty());
+}
+
+void SessionStorageNamespaceImplMojo::SetPendingPopulationFromParentNamespace(
+    const std::string& from_namespace) {
+  pending_population_from_parent_namespace_ = from_namespace;
+  state_ = State::kNotPopulatedAndPendingClone;
+}
+
+void SessionStorageNamespaceImplMojo::AddChildNamespaceWaitingForClone(
+    const std::string& namespace_id) {
+  child_namespaces_waiting_for_clone_call_.insert(namespace_id);
+}
+bool SessionStorageNamespaceImplMojo::HasChildNamespacesWaitingForClone()
+    const {
+  return !child_namespaces_waiting_for_clone_call_.empty();
+}
+void SessionStorageNamespaceImplMojo::ClearChildNamespacesWaitingForClone() {
+  child_namespaces_waiting_for_clone_call_.clear();
 }
 
 bool SessionStorageNamespaceImplMojo::HasAreaForOrigin(
@@ -43,9 +61,9 @@ void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
     leveldb::mojom::LevelDBDatabase* database,
     SessionStorageMetadata::NamespaceEntry namespace_metadata) {
   DCHECK(!IsPopulated());
-  DCHECK(!waiting_on_clone_population());
   database_ = database;
-  populated_ = true;
+  state_ = State::kPopulated;
+  pending_population_from_parent_namespace_.clear();
   namespace_entry_ = namespace_metadata;
   for (const auto& pair : namespace_entry_->second) {
     scoped_refptr<SessionStorageDataMap> data_map =
@@ -59,6 +77,11 @@ void SessionStorageNamespaceImplMojo::PopulateFromMetadata(
         namespace_entry_, pair.first, std::move(data_map),
         register_new_map_callback_);
   }
+  if (!run_after_population_.empty()) {
+    for (base::OnceClosure& callback : run_after_population_)
+      std::move(callback).Run();
+    run_after_population_.clear();
+  }
 }
 
 void SessionStorageNamespaceImplMojo::PopulateAsClone(
@@ -67,8 +90,8 @@ void SessionStorageNamespaceImplMojo::PopulateAsClone(
     const OriginAreas& areas_to_clone) {
   DCHECK(!IsPopulated());
   database_ = database;
-  populated_ = true;
-  waiting_on_clone_population_ = false;
+  state_ = State::kPopulated;
+  pending_population_from_parent_namespace_.clear();
   namespace_entry_ = namespace_metadata;
   std::transform(areas_to_clone.begin(), areas_to_clone.end(),
                  std::inserter(origin_areas_, origin_areas_.begin()),
@@ -76,38 +99,38 @@ void SessionStorageNamespaceImplMojo::PopulateAsClone(
                    return std::make_pair(
                        source.first, source.second->Clone(namespace_metadata));
                  });
-  if (!run_after_clone_population_.empty()) {
-    for (base::OnceClosure& callback : run_after_clone_population_)
+  if (!run_after_population_.empty()) {
+    for (base::OnceClosure& callback : run_after_population_)
       std::move(callback).Run();
-    run_after_clone_population_.clear();
+    run_after_population_.clear();
   }
 }
 
 void SessionStorageNamespaceImplMojo::Reset() {
   namespace_entry_ = SessionStorageMetadata::NamespaceEntry();
   database_ = nullptr;
-  waiting_on_clone_population_ = false;
-  bind_waiting_on_clone_population_ = false;
-  run_after_clone_population_.clear();
-  populated_ = false;
+  pending_population_from_parent_namespace_.clear();
+  bind_waiting_on_population_ = false;
+  run_after_population_.clear();
+  state_ = State::kNotPopulated;
+  child_namespaces_waiting_for_clone_call_.clear();
   origin_areas_.clear();
   bindings_.CloseAllBindings();
-  namespaces_waiting_for_clone_call_.clear();
 }
 
 void SessionStorageNamespaceImplMojo::Bind(
     blink::mojom::SessionStorageNamespaceRequest request,
     int process_id) {
-  if (waiting_on_clone_population_) {
-    bind_waiting_on_clone_population_ = true;
-    run_after_clone_population_.push_back(
+  if (!IsPopulated()) {
+    bind_waiting_on_population_ = true;
+    run_after_population_.push_back(
         base::BindOnce(&SessionStorageNamespaceImplMojo::Bind,
                        base::Unretained(this), std::move(request), process_id));
     return;
   }
   DCHECK(IsPopulated());
   bindings_.AddBinding(this, std::move(request), process_id);
-  bind_waiting_on_clone_population_ = false;
+  bind_waiting_on_population_ = false;
 }
 
 void SessionStorageNamespaceImplMojo::PurgeUnboundAreas() {
@@ -123,8 +146,9 @@ void SessionStorageNamespaceImplMojo::PurgeUnboundAreas() {
 void SessionStorageNamespaceImplMojo::RemoveOriginData(
     const url::Origin& origin,
     base::OnceClosure callback) {
-  if (waiting_on_clone_population_) {
-    run_after_clone_population_.push_back(
+  DCHECK_NE(state_, State::kNotPopulated);
+  if (!IsPopulated()) {
+    run_after_population_.push_back(
         base::BindOnce(&SessionStorageNamespaceImplMojo::RemoveOriginData,
                        base::Unretained(this), origin, std::move(callback)));
     return;
@@ -196,9 +220,62 @@ void SessionStorageNamespaceImplMojo::OpenArea(
 
 void SessionStorageNamespaceImplMojo::Clone(
     const std::string& clone_to_namespace) {
-  namespaces_waiting_for_clone_call_.erase(clone_to_namespace);
+  DCHECK(IsPopulated());
+  child_namespaces_waiting_for_clone_call_.erase(clone_to_namespace);
   delegate_->RegisterShallowClonedNamespace(namespace_entry_,
                                             clone_to_namespace, origin_areas_);
+}
+
+void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone(
+    leveldb::mojom::LevelDBDatabase* database,
+    SessionStorageMetadata* metadata,
+    const std::map<std::string,
+                   std::unique_ptr<SessionStorageNamespaceImplMojo>>&
+        namespaces_map) {
+  SessionStorageNamespaceImplMojo* parent = this;
+  // If the current state is kNotPopulatedAndPendingClone, then the children can
+  // all be cloned from our parent instead of us.
+  if (state() ==
+      SessionStorageNamespaceImplMojo::State::kNotPopulatedAndPendingClone) {
+    auto parent_it =
+        namespaces_map.find(pending_population_from_parent_namespace_);
+    // The parent must be in the map, because the only way to remove something
+    // from the map is to call DeleteSessionNamespace, which would have called
+    // this method on the parent if there were children, and resolved our clone
+    // dependency.
+    DCHECK(parent_it != namespaces_map.end());
+    parent = parent_it->second.get();
+  }
+
+  if (parent->state() ==
+      SessionStorageNamespaceImplMojo::State::kNotPopulated) {
+    // Populate the namespace to prepare for copy.
+    parent->PopulateFromMetadata(
+        database, metadata->GetOrCreateNamespaceEntry(parent->namespace_id_));
+  }
+
+  auto* delegate = parent->delegate_;
+  for (const std::string& destination_namespace :
+       child_namespaces_waiting_for_clone_call_) {
+    if (parent->IsPopulated()) {
+      delegate->RegisterShallowClonedNamespace(parent->namespace_entry(),
+                                               destination_namespace,
+                                               parent->origin_areas_);
+    } else {
+      parent->AddChildNamespaceWaitingForClone(destination_namespace);
+      parent->run_after_population_.push_back(
+          base::BindOnce(&SessionStorageNamespaceImplMojo::Clone,
+                         base::Unretained(parent), destination_namespace));
+      auto child_it = namespaces_map.find(destination_namespace);
+      // The child must be in the map, as the only way to add it to
+      // |child_namespaces_waiting_for_clone_call_| is to call
+      // CloneSessionNamespace, which always adds it to the map.
+      DCHECK(child_it != namespaces_map.end());
+      child_it->second->SetPendingPopulationFromParentNamespace(
+          parent->namespace_id_);
+    }
+  }
+  child_namespaces_waiting_for_clone_call_.clear();
 }
 
 void SessionStorageNamespaceImplMojo::FlushOriginForTesting(
@@ -209,15 +286,6 @@ void SessionStorageNamespaceImplMojo::FlushOriginForTesting(
   if (it == origin_areas_.end())
     return;
   it->second->data_map()->storage_area()->ScheduleImmediateCommit();
-}
-
-void SessionStorageNamespaceImplMojo::CloneAllNamespacesWaitingForClone() {
-  for (const std::string& waiting_namespace_id :
-       namespaces_waiting_for_clone_call_) {
-    delegate_->RegisterShallowClonedNamespace(
-        namespace_entry_, waiting_namespace_id, origin_areas_);
-  }
-  namespaces_waiting_for_clone_call_.clear();
 }
 
 }  // namespace content

@@ -118,8 +118,7 @@ PreviewModeClient::SearchString(const base::char16* string,
 }
 
 void PreviewModeClient::DocumentLoadComplete(
-    const PDFEngine::DocumentFeatures& document_features,
-    uint32_t file_size) {
+    const PDFEngine::DocumentFeatures& document_features) {
   client_->PreviewDocumentLoadComplete();
 }
 

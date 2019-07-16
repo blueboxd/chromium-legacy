@@ -74,7 +74,7 @@ TEST_F(GrpcAuthenticatedExecutorTest, VerifyExecuteRpcCallIsForwarded) {
   base::RunLoop run_loop;
   auto request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce([](grpc::ClientContext*, const EchoRequest&,
-                        grpc::CompletionQueue*) {
+                        grpc_impl::CompletionQueue*) {
         return std::unique_ptr<grpc::ClientAsyncResponseReader<EchoResponse>>();
       }),
       EchoRequest(),
@@ -95,7 +95,7 @@ TEST_F(GrpcAuthenticatedExecutorTest, CancelAuthenticatingRpcAndSendNewOne) {
   base::RunLoop run_loop_1;
   auto request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce([](grpc::ClientContext*, const EchoRequest&,
-                        grpc::CompletionQueue*) {
+                        grpc_impl::CompletionQueue*) {
         return std::unique_ptr<grpc::ClientAsyncResponseReader<EchoResponse>>();
       }),
       EchoRequest(),
@@ -122,7 +122,7 @@ TEST_F(GrpcAuthenticatedExecutorTest, CancelAuthenticatingRpcAndSendNewOne) {
 
   request = CreateGrpcAsyncUnaryRequest(
       base::BindOnce([](grpc::ClientContext*, const EchoRequest&,
-                        grpc::CompletionQueue*) {
+                        grpc_impl::CompletionQueue*) {
         return std::unique_ptr<grpc::ClientAsyncResponseReader<EchoResponse>>();
       }),
       EchoRequest(),

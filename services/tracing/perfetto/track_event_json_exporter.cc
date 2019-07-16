@@ -241,9 +241,9 @@ void TrackEventJSONExporter::HandleInternedData(
   }
   for (const auto& frame : data.frames()) {
     auto iter = current_state_->interned_frames_.emplace(
-        frame.iid(),
-        ProducerWriterState::Frame{frame.function_name_id(), frame.mapping_id(),
-                                   frame.rel_pc()});
+        frame.iid(), ProducerWriterState::Frame{
+                         frame.has_rel_pc(), frame.rel_pc(),
+                         frame.function_name_id(), frame.mapping_id()});
     DCHECK(iter.second || iter.first->second.rel_pc == frame.rel_pc());
   }
   for (const auto& module_name : data.mapping_paths()) {
@@ -551,7 +551,7 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
     const auto& frame_names =
         unordered_state_data_[current_state_->trusted_packet_sequence_id]
             .interned_frame_names_;
-    if (rel_pc) {
+    if (frame->second.has_rel_pc) {
       const auto& profiled_frames =
           unordered_state_data_[current_state_->trusted_packet_sequence_id]
               .interned_profiled_frame_;

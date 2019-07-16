@@ -105,17 +105,6 @@ var tests = [
         .then(chrome.test.succeed);
   },
 
-  function testAbort() {
-    checkStreamDetails('testAbort.csv', false);
-    chrome.mimeHandlerPrivate.abortStream(function() {
-      fetchUrl(streamDetails.streamUrl).then(function(response) {
-        chrome.test.assertEq(0, response.status);
-        chrome.test.assertEq('error', response.data);
-        chrome.test.succeed();
-      });
-    });
-  },
-
   function testNonAsciiHeaders() {
     checkStreamDetails('testNonAsciiHeaders.csv', false);
     chrome.test.assertEq(undefined,

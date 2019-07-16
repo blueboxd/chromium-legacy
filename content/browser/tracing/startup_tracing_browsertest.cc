@@ -177,7 +177,12 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BackgroundStartupTracingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BackgroundStartupTracingTest, TestStartupTracing) {
+#if !defined(OS_ANDROID)
+#define MAYBE_TestStartupTracing DISABLED_TestStartupTracing
+#else
+#define MAYBE_TestStartupTracing TestStartupTracing
+#endif
+IN_PROC_BROWSER_TEST_F(BackgroundStartupTracingTest, MAYBE_TestStartupTracing) {
   NavigateToURL(shell(), GetTestUrl("", "title1.html"));
 
   EXPECT_FALSE(tracing::TraceStartupConfig::GetInstance()->IsEnabled());

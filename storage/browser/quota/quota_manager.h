@@ -60,7 +60,9 @@ class UsageTracker;
 
 struct QuotaManagerDeleter;
 
-// An interface called by QuotaTemporaryStorageEvictor.
+// An interface called by QuotaTemporaryStorageEvictor. This is a grab bag of
+// methods called by QuotaTemporaryStorageEvictor that need to be stubbed for
+// testing.
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaEvictionHandler {
  public:
   using EvictionRoundInfoCallback =
@@ -98,10 +100,19 @@ struct UsageInfo {
   const int64_t usage;
 };
 
-// Each StoragePartition owns exactly one QuotaManager.
+// Entry point into the Quota System
 //
-// Methods must be called on the IO thread, except for the constructor and
-// proxy().
+// Each StoragePartition has exactly one QuotaManager instance, which
+// coordinates quota across the Web platform features subject to quota.
+// Each storage system interacts with quota via their own implementations of
+// the QuotaClient interface.
+//
+// The class sets limits and defines the parameters of the systems heuristics.
+// QuotaManager coordinates clients to orchestrate the collection of usage
+// information, enforce quota limits, and evict stale data.
+//
+// The constructor and proxy() methods can be called on any thread. All other
+// methods must be called on the IO thread.
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
     : public QuotaTaskObserver,
       public QuotaEvictionHandler,

@@ -327,11 +327,6 @@ bool ContentsView::IsShowingEmbeddedAssistantUI() const {
 }
 
 void ContentsView::UpdatePageBounds() {
-  // No need to do anything while closed. To layout while closed may result in
-  // the search-box going offscreen.
-  if (app_list_view_->app_list_state() == ash::AppListViewState::kClosed)
-    return;
-
   // The bounds calculations will potentially be mid-transition (depending on
   // the state of the PaginationModel).
   int current_page = std::max(0, pagination_model_.selected_page());

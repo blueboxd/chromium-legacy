@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/image_downloader/fetcher/multi_resolution_image_resource_fetcher.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -68,10 +69,12 @@ void ImageDownloaderBase::FetchImage(const KURL& image_url,
                                      bool is_favicon,
                                      bool bypass_cache,
                                      DownloadCallback callback) {
+  DCHECK(frame_->GetDocument());
+
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(
-      std::make_unique<MultiResolutionImageResourceFetcher>(
-          image_url, frame_, 0,
+      MakeGarbageCollected<MultiResolutionImageResourceFetcher>(
+          frame_->GetDocument()->GetExecutionContext(), image_url, frame_, 0,
           is_favicon ? blink::mojom::RequestContextType::FAVICON
                      : blink::mojom::RequestContextType::IMAGE,
           bypass_cache ? blink::mojom::FetchCacheMode::kBypassCache
@@ -90,11 +93,9 @@ void ImageDownloaderBase::DidFetchImage(
   // MultiResolutionImageResourceFetcher, best to delay deletion.
   for (auto* iter = image_fetchers_.begin(); iter != image_fetchers_.end();
        ++iter) {
-    if (iter->get() == fetcher) {
-      iter->release();
+    if (iter->Get() == fetcher) {
+      iter->Release();
       image_fetchers_.erase(iter);
-      frame_->GetTaskRunner(TaskType::kInternalLoading)
-          ->DeleteSoon(FROM_HERE, fetcher);
       break;
     }
   }
@@ -104,15 +105,18 @@ void ImageDownloaderBase::DidFetchImage(
 }
 
 void ImageDownloaderBase::Trace(blink::Visitor* visitor) {
+  visitor->Trace(image_fetchers_);
   visitor->Trace(frame_);
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void ImageDownloaderBase::ContextDestroyed(ExecutionContext*) {
+void ImageDownloaderBase::ContextDestroyed(ExecutionContext* context) {
   for (const auto& fetchers : image_fetchers_) {
     // Will run callbacks with an empty image vector.
-    fetchers->OnRenderFrameDestruct();
+    fetchers->ContextDestroyed(context);
   }
+
+  image_fetchers_.clear();
 }
 
 }  // namespace blink

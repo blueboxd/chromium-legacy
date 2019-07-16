@@ -29,9 +29,10 @@ public interface ContextMenuUi {
      * @param onMenuShown After the menu is displayed this method should be called to present a
      *                    full menu.
      * @param onMenuClosed When the menu is closed, this method is called to do any possible final
-     *                     clean up.
+     *                     clean up. Boolean here should be true if the menu is closed as a result
+     *                     of clicking an item and false if the menu is abandoned by the user.
      */
     void displayMenu(Activity activity, ContextMenuParams params,
             List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
-            Runnable onMenuShown, Runnable onMenuClosed);
+            Runnable onMenuShown, Callback<Boolean> onMenuClosed);
 }

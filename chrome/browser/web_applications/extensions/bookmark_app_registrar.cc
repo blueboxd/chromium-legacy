@@ -63,29 +63,6 @@ bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
   return ExtensionPrefs::Get(profile())->IsExternalExtensionUninstalled(app_id);
 }
 
-bool BookmarkAppRegistrar::HasScopeUrl(const web_app::AppId& app_id) const {
-  const auto* extension = GetExtension(app_id);
-  DCHECK(extension);
-
-  if (!extension->from_bookmark())
-    return false;
-
-  return UrlHandlers::GetUrlHandlers(extension) != nullptr;
-}
-
-GURL BookmarkAppRegistrar::GetScopeUrlForApp(
-    const web_app::AppId& app_id) const {
-  // Returning an empty GURL for a Bookmark App that doesn't have a scope, could
-  // lead to incorrecly thinking some URLs are in-scope of the app. To avoid
-  // this, CHECK that the Bookmark App has a scope. Callers can use
-  // HasScopeUrl() to know if they can call this method.
-  CHECK(HasScopeUrl(app_id));
-
-  GURL scope_url = GetScopeURLFromBookmarkApp(GetExtension(app_id));
-  CHECK(scope_url.is_valid());
-  return scope_url;
-}
-
 web_app::AppId BookmarkAppRegistrar::FindAppIdForUrl(const GURL& url) const {
   const Extension* extension = util::GetInstalledPwaForUrl(profile(), url);
 
@@ -159,6 +136,19 @@ const GURL& BookmarkAppRegistrar::GetAppLaunchURL(
   const Extension* extension = GetExtension(app_id);
   return extension ? AppLaunchInfo::GetLaunchWebURL(extension)
                    : GURL::EmptyGURL();
+}
+
+base::Optional<GURL> BookmarkAppRegistrar::GetAppScope(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return base::nullopt;
+
+  GURL scope_url = GetScopeURLFromBookmarkApp(GetExtension(app_id));
+  if (scope_url.is_valid())
+    return scope_url;
+
+  return base::nullopt;
 }
 
 }  // namespace extensions

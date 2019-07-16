@@ -218,11 +218,10 @@ Message::Message(Message&& other)
       associated_endpoint_handles_(
           std::move(other.associated_endpoint_handles_)),
       transferable_(other.transferable_),
-      serialized_(other.serialized_),
-      heap_profiler_tag_(other.heap_profiler_tag_),
-      receiver_connection_group_(other.receiver_connection_group_) {
+      serialized_(other.serialized_) {
   other.transferable_ = false;
   other.serialized_ = false;
+  heap_profiler_tag_ = other.heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -333,8 +332,7 @@ Message& Message::operator=(Message&& other) {
   other.transferable_ = false;
   serialized_ = other.serialized_;
   other.serialized_ = false;
-  heap_profiler_tag_ = other.heap_profiler_tag_;
-  receiver_connection_group_ = other.receiver_connection_group_;
+  other.heap_profiler_tag_ = heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -350,7 +348,6 @@ void Message::Reset() {
   transferable_ = false;
   serialized_ = false;
   heap_profiler_tag_ = nullptr;
-  receiver_connection_group_ = nullptr;
 }
 
 const uint8_t* Message::payload() const {

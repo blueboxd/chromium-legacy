@@ -80,6 +80,15 @@ class ToolbarController {
         cr.ui.Command);
 
     /**
+     * @private {!cr.ui.Command}
+     * @const
+     */
+    this.newFolderCommand_ = assertInstanceof(
+        queryRequiredElement(
+            '#new-folder', assert(this.toolbar_.ownerDocument)),
+        cr.ui.Command);
+
+    /**
      * @private {!HTMLElement}
      * @const
      */
@@ -155,6 +164,8 @@ class ToolbarController {
    */
   updateCurrentDirectoryButtons_() {
     this.updateRefreshCommand_();
+
+    this.newFolderCommand_.canExecuteChange(this.listContainer_.currentList);
 
     const currentDirectory = this.directoryModel_.getCurrentDirEntry();
     const locationInfo = currentDirectory &&

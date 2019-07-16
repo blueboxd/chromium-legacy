@@ -1639,9 +1639,13 @@ void ShelfView::ScrollForUserDrag(int offset) {
   const int new_primary_coordinate =
       shelf_->IsHorizontalAlignment()
           ? position.x() +
-                owner_overflow_bubble_->bubble_view()->ScrollByXOffset(offset)
+                owner_overflow_bubble_->bubble_view()->ScrollByXOffset(
+                    offset,
+                    /*animate=*/false)
           : position.y() +
-                owner_overflow_bubble_->bubble_view()->ScrollByYOffset(offset);
+                owner_overflow_bubble_->bubble_view()->ScrollByYOffset(
+                    offset,
+                    /*animate=*/false);
   bounds_animator_->StopAnimatingView(drag_view_);
   MoveDragViewTo(new_primary_coordinate);
 }

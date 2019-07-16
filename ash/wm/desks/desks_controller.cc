@@ -285,6 +285,10 @@ void DesksController::MoveWindowFromActiveDeskTo(aura::Window* window,
     item->RestoreWindow(/*reset_transform=*/true);
     // The item no longer needs to be in the overview grid.
     overview_session->RemoveItem(item);
+    // When in overview, we should return immediately and not change the window
+    // activation as we do below, since the dummy "OverviewModeFocusedWidget"
+    // should remain active while overview mode is active..
+    return;
   }
 
   // A window moving out of the active desk cannot be active.

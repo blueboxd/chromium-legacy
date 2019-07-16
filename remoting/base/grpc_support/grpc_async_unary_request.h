@@ -19,10 +19,11 @@
 namespace remoting {
 
 template <typename RequestType, typename ResponseType>
-using GrpcAsyncUnaryRpcFunction = base::OnceCallback<std::unique_ptr<
-    grpc::ClientAsyncResponseReader<ResponseType>>(grpc::ClientContext*,
-                                                   const RequestType&,
-                                                   grpc::CompletionQueue*)>;
+using GrpcAsyncUnaryRpcFunction = base::OnceCallback<
+    std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>(
+        grpc::ClientContext*,
+        const RequestType&,
+        grpc_impl::CompletionQueue*)>;
 
 template <typename ResponseType>
 using GrpcAsyncUnaryRpcCallback =
@@ -33,8 +34,9 @@ using GrpcAsyncUnaryRpcCallback =
 template <typename ResponseType>
 class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
  public:
-  using StartAndCreateReaderCallback = base::OnceCallback<std::unique_ptr<
-      grpc::ClientAsyncResponseReader<ResponseType>>(grpc::CompletionQueue*)>;
+  using StartAndCreateReaderCallback = base::OnceCallback<
+      std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>(
+          grpc_impl::CompletionQueue*)>;
 
   ~GrpcAsyncUnaryRequest() override = default;
 
@@ -60,7 +62,7 @@ class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
 
   // GrpcAsyncRequest implementations
   void Start(const RunTaskCallback& run_task_cb,
-             grpc::CompletionQueue* cq,
+             grpc_impl::CompletionQueue* cq,
              void* event_tag) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

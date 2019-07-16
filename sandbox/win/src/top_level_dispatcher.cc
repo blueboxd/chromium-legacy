@@ -18,7 +18,6 @@
 #include "sandbox/win/src/process_thread_dispatcher.h"
 #include "sandbox/win/src/registry_dispatcher.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
-#include "sandbox/win/src/signed_dispatcher.h"
 #include "sandbox/win/src/sync_dispatcher.h"
 
 namespace sandbox {
@@ -77,10 +76,6 @@ TopLevelDispatcher::TopLevelDispatcher(PolicyBase* policy) : policy_(policy) {
       dispatcher;
   ipc_targets_[IPC_GDI_SETOPMSIGNINGKEYANDSEQUENCENUMBERS_TAG] = dispatcher;
   process_mitigations_win32k_dispatcher_.reset(dispatcher);
-
-  dispatcher = new SignedDispatcher(policy_);
-  ipc_targets_[IPC_NTCREATESECTION_TAG] = dispatcher;
-  signed_dispatcher_.reset(dispatcher);
 }
 
 TopLevelDispatcher::~TopLevelDispatcher() {}

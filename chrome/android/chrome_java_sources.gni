@@ -1510,7 +1510,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tab/TabAttributes.java",
   "java/src/org/chromium/chrome/browser/tab/TabBrowserControlsState.java",
   "java/src/org/chromium/chrome/browser/tab/TabBuilder.java",
-  "java/src/org/chromium/chrome/browser/tab/TabContentViewDelegate.java",
   "java/src/org/chromium/chrome/browser/tab/TabContextMenuItemDelegate.java",
   "java/src/org/chromium/chrome/browser/tab/TabContextMenuPopulator.java",
   "java/src/org/chromium/chrome/browser/tab/TabDelegateFactory.java",

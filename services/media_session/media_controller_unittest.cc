@@ -217,7 +217,7 @@ TEST_F(MediaControllerTest, ActiveController_Multiple_NonControllable) {
     test::MockMediaSessionMojoObserver observer_1(media_session_1);
     test::MockMediaSessionMojoObserver observer_2(media_session_2);
 
-    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGainTransient);
+    RequestAudioFocus(media_session_2, mojom::AudioFocusType::kGain);
 
     observer_1.WaitForPlaybackState(mojom::MediaPlaybackState::kPaused);
     observer_2.WaitForPlaybackState(mojom::MediaPlaybackState::kPlaying);

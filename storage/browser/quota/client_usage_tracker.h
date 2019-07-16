@@ -28,8 +28,12 @@ namespace storage {
 
 class UsageTracker;
 
-// This class holds per-client usage tracking information and caches per-host
-// usage data.  An instance of this class is created per client.
+// Holds per-client usage tracking information and caches
+// per-host usage data.
+//
+// A UsageTracker object will own one ClientUsageTracker instance per client.
+// This class is not thread-safe. All methods other than the constructor must be
+// called on the same sequence.
 class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                            public base::SupportsWeakPtr<ClientUsageTracker> {
  public:

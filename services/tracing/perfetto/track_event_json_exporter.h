@@ -80,9 +80,10 @@ class TrackEventJSONExporter : public JSONTraceExporter {
     std::unordered_map<uint32_t, std::string> interned_debug_annotation_names_;
 
     struct Frame {
+      bool has_rel_pc;
+      uint64_t rel_pc;
       uint32_t function_name_id;
       uint32_t mapping_id;
-      uint64_t rel_pc;
     };
     std::unordered_map<uint32_t, Frame> interned_frames_;
     std::unordered_map<uint32_t, std::string> interned_module_names_;

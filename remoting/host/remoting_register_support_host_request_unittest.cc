@@ -12,7 +12,6 @@
 #include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/proto/remoting/v1/remote_support_host_service.grpc.pb.h"
 #include "remoting/signaling/fake_signal_strategy.h"
-#include "remoting/signaling/muxing_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,24 +27,13 @@ using RegisterSupportHostResponseCallback =
 
 constexpr char kSupportId[] = "123321456654";
 constexpr base::TimeDelta kSupportIdLifetime = base::TimeDelta::FromMinutes(5);
-constexpr base::TimeDelta kWaitForAllStrategiesConnectedTimeout =
-    base::TimeDelta::FromSecondsD(5.5);
 constexpr char kFtlId[] = "fake_user@domain.com/chromoting_ftl_abc123";
-constexpr char kJabberId[] = "fake_user@domain.com/chromotingABC123";
 
-void ValidateRegisterHost(const apis::v1::RegisterSupportHostRequest& request,
-                          bool expects_ftl_id,
-                          bool expects_jabber_id) {
+void ValidateRegisterHost(const apis::v1::RegisterSupportHostRequest& request) {
   ASSERT_TRUE(request.has_host_version());
   ASSERT_TRUE(request.has_host_os_name());
   ASSERT_TRUE(request.has_host_os_version());
-
-  if (expects_ftl_id) {
-    ASSERT_EQ(kFtlId, request.tachyon_id());
-  }
-  if (expects_jabber_id) {
-    ASSERT_EQ(kJabberId, request.jabber_id());
-  }
+  ASSERT_EQ(kFtlId, request.tachyon_id());
 
   auto key_pair = RsaKeyPair::FromString(kTestRsaKeyPair);
   EXPECT_EQ(key_pair->GetPublicKey(), request.public_key());
@@ -58,11 +46,10 @@ void RespondOk(RegisterSupportHostResponseCallback callback) {
   std::move(callback).Run(grpc::Status::OK, response);
 }
 
-decltype(auto) DoValidateRegisterHostAndRespondOk(bool expects_ftl_id,
-                                                  bool expects_jabber_id) {
+decltype(auto) DoValidateRegisterHostAndRespondOk() {
   return [=](const apis::v1::RegisterSupportHostRequest& request,
              RegisterSupportHostResponseCallback callback) {
-    ValidateRegisterHost(request, expects_ftl_id, expects_jabber_id);
+    ValidateRegisterHost(request);
     RespondOk(std::move(callback));
   };
 }
@@ -84,26 +71,18 @@ class RemotingRegisterSupportHostTest : public testing::Test {
     register_host_request_->register_host_client_ =
         std::move(register_host_client);
 
-    auto ftl_signal_strategy =
+    signal_strategy_ =
         std::make_unique<FakeSignalStrategy>(SignalingAddress(kFtlId));
-    auto xmpp_signal_strategy =
-        std::make_unique<FakeSignalStrategy>(SignalingAddress(kJabberId));
-    ftl_signal_strategy_ = ftl_signal_strategy.get();
-    xmpp_signal_strategy_ = xmpp_signal_strategy.get();
 
     // Start in disconnected state.
-    ftl_signal_strategy_->Disconnect();
-    xmpp_signal_strategy_->Disconnect();
-
-    muxing_signal_strategy_ = std::make_unique<MuxingSignalStrategy>(
-        std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
+    signal_strategy_->Disconnect();
 
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
   }
 
   ~RemotingRegisterSupportHostTest() override {
     register_host_request_.reset();
-    muxing_signal_strategy_.reset();
+    signal_strategy_.reset();
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
 
@@ -123,18 +102,13 @@ class RemotingRegisterSupportHostTest : public testing::Test {
   std::unique_ptr<RemotingRegisterSupportHostRequest> register_host_request_;
   MockRegisterSupportHostClient* register_host_client_ = nullptr;
 
-  std::unique_ptr<MuxingSignalStrategy> muxing_signal_strategy_;
-  FakeSignalStrategy* ftl_signal_strategy_;
-  FakeSignalStrategy* xmpp_signal_strategy_;
-
+  std::unique_ptr<SignalStrategy> signal_strategy_;
   scoped_refptr<RsaKeyPair> key_pair_;
 };
 
-TEST_F(RemotingRegisterSupportHostTest, RegisterOnlyFtl) {
+TEST_F(RemotingRegisterSupportHostTest, RegisterFtl) {
   EXPECT_CALL(*register_host_client_, RegisterSupportHost(_, _))
-      .WillOnce(
-          DoValidateRegisterHostAndRespondOk(/* expects_ftl_id */ true,
-                                             /* expects_jabber_id */ false));
+      .WillOnce(DoValidateRegisterHostAndRespondOk());
   EXPECT_CALL(*register_host_client_, CancelPendingRequests()).Times(1);
 
   base::MockCallback<RegisterSupportHostRequest::RegisterCallback>
@@ -143,78 +117,16 @@ TEST_F(RemotingRegisterSupportHostTest, RegisterOnlyFtl) {
               Run(kSupportId, kSupportIdLifetime, protocol::ErrorCode::OK))
       .Times(1);
 
-  register_host_request_->StartRequest(muxing_signal_strategy_.get(), key_pair_,
+  register_host_request_->StartRequest(signal_strategy_.get(), key_pair_,
                                        register_callback.Get());
-  ftl_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
-}
-
-TEST_F(RemotingRegisterSupportHostTest, RegisterOnlyXmpp) {
-  EXPECT_CALL(*register_host_client_, RegisterSupportHost(_, _))
-      .WillOnce(
-          DoValidateRegisterHostAndRespondOk(/* expects_ftl_id */ false,
-                                             /* expects_jabber_id */ true));
-  EXPECT_CALL(*register_host_client_, CancelPendingRequests()).Times(1);
-
-  base::MockCallback<RegisterSupportHostRequest::RegisterCallback>
-      register_callback;
-  EXPECT_CALL(register_callback,
-              Run(kSupportId, kSupportIdLifetime, protocol::ErrorCode::OK))
-      .Times(1);
-
-  register_host_request_->StartRequest(muxing_signal_strategy_.get(), key_pair_,
-                                       register_callback.Get());
-  xmpp_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
-}
-
-TEST_F(RemotingRegisterSupportHostTest, RegisterBoth) {
-  EXPECT_CALL(*register_host_client_, RegisterSupportHost(_, _))
-      .WillOnce(
-          DoValidateRegisterHostAndRespondOk(/* expects_ftl_id */ true,
-                                             /* expects_jabber_id */ true));
-  EXPECT_CALL(*register_host_client_, CancelPendingRequests()).Times(1);
-
-  base::MockCallback<RegisterSupportHostRequest::RegisterCallback>
-      register_callback;
-  EXPECT_CALL(register_callback,
-              Run(kSupportId, kSupportIdLifetime, protocol::ErrorCode::OK))
-      .Times(1);
-
-  register_host_request_->StartRequest(muxing_signal_strategy_.get(), key_pair_,
-                                       register_callback.Get());
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-}
-
-TEST_F(RemotingRegisterSupportHostTest,
-       XmppConnectedAfterTimeout_OnlyRegistersFtl) {
-  EXPECT_CALL(*register_host_client_, RegisterSupportHost(_, _))
-      .WillOnce(
-          DoValidateRegisterHostAndRespondOk(/* expects_ftl_id */ true,
-                                             /* expects_jabber_id */ false));
-  EXPECT_CALL(*register_host_client_, CancelPendingRequests()).Times(1);
-
-  base::MockCallback<RegisterSupportHostRequest::RegisterCallback>
-      register_callback;
-  EXPECT_CALL(register_callback,
-              Run(kSupportId, kSupportIdLifetime, protocol::ErrorCode::OK))
-      .Times(1);
-
-  register_host_request_->StartRequest(muxing_signal_strategy_.get(), key_pair_,
-                                       register_callback.Get());
-  ftl_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
-  xmpp_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  signal_strategy_->Connect();
 }
 
 TEST_F(RemotingRegisterSupportHostTest, FailedWithDeadlineExceeded) {
   EXPECT_CALL(*register_host_client_, RegisterSupportHost(_, _))
       .WillOnce([](const apis::v1::RegisterSupportHostRequest& request,
                    RegisterSupportHostResponseCallback callback) {
-        ValidateRegisterHost(request, true, true);
+        ValidateRegisterHost(request);
         std::move(callback).Run(
             grpc::Status(grpc::StatusCode::DEADLINE_EXCEEDED,
                          "deadline exceeded"),
@@ -228,11 +140,9 @@ TEST_F(RemotingRegisterSupportHostTest, FailedWithDeadlineExceeded) {
               Run(_, _, protocol::ErrorCode::SIGNALING_TIMEOUT))
       .Times(1);
 
-  register_host_request_->StartRequest(muxing_signal_strategy_.get(), key_pair_,
+  register_host_request_->StartRequest(signal_strategy_.get(), key_pair_,
                                        register_callback.Get());
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  signal_strategy_->Connect();
 }
 
 TEST_F(RemotingRegisterSupportHostTest,
@@ -241,7 +151,7 @@ TEST_F(RemotingRegisterSupportHostTest,
   EXPECT_CALL(*register_host_client_, RegisterSupportHost(_, _))
       .WillOnce([&](const apis::v1::RegisterSupportHostRequest& request,
                     RegisterSupportHostResponseCallback callback) {
-        ValidateRegisterHost(request, true, true);
+        ValidateRegisterHost(request);
         register_support_host_callback = std::move(callback);
       });
   EXPECT_CALL(*register_host_client_, CancelPendingRequests()).Times(1);
@@ -252,15 +162,10 @@ TEST_F(RemotingRegisterSupportHostTest,
               Run(_, _, protocol::ErrorCode::SIGNALING_ERROR))
       .Times(1);
 
-  register_host_request_->StartRequest(muxing_signal_strategy_.get(), key_pair_,
+  register_host_request_->StartRequest(signal_strategy_.get(), key_pair_,
                                        register_callback.Get());
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  ftl_signal_strategy_->Disconnect();
-  xmpp_signal_strategy_->Disconnect();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
-
+  signal_strategy_->Connect();
+  signal_strategy_->Disconnect();
   RespondOk(std::move(register_support_host_callback));
 }
 

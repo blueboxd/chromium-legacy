@@ -90,16 +90,6 @@ bool WebAppRegistrar::WasExternalAppUninstalledByUser(
   return false;
 }
 
-bool WebAppRegistrar::HasScopeUrl(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-GURL WebAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return GURL();
-}
-
 AppId WebAppRegistrar::FindAppIdForUrl(const GURL& url) const {
   NOTIMPLEMENTED();
   return AppId();
@@ -129,6 +119,11 @@ base::Optional<SkColor> WebAppRegistrar::GetAppThemeColor(
 const GURL& WebAppRegistrar::GetAppLaunchURL(const AppId& app_id) const {
   WebApp* web_app = GetAppById(app_id);
   return web_app ? web_app->launch_url() : GURL::EmptyGURL();
+}
+
+base::Optional<GURL> WebAppRegistrar::GetAppScope(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return base::nullopt;
 }
 
 }  // namespace web_app

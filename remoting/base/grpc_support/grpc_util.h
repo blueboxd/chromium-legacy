@@ -7,18 +7,18 @@
 
 #include "base/time/time.h"
 
-namespace grpc {
+namespace grpc_impl {
 class ClientContext;
-}  // namespace grpc
+}  // namespace grpc_impl
 
 namespace remoting {
 
 // Sets the deadline on |context|.
-void SetDeadline(grpc::ClientContext* context, base::Time deadline);
+void SetDeadline(grpc_impl::ClientContext* context, base::Time deadline);
 
 // Gets the deadline in base::Time. Returns base::Time::Max if the deadline is
 // not set.
-base::Time GetDeadline(const grpc::ClientContext& context);
+base::Time GetDeadline(const grpc_impl::ClientContext& context);
 
 }  // namespace remoting
 

@@ -238,7 +238,7 @@ bool LayoutView::CanHaveChildren() const {
   // the PluginDocument's <embed> element to have an EmbeddedContentView, which
   // it acquires during LocalFrameView::UpdatePlugins, which operates on the
   // <embed> element's layout object (LayoutEmbeddedObject).
-  if (GetDocument().IsPluginDocument())
+  if (GetDocument().IsPluginDocument() || GetDocument().IsForExternalHandler())
     return true;
   return !owner->IsDisplayNone();
 }

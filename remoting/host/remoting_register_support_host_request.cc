@@ -12,9 +12,7 @@
 #include "remoting/base/service_urls.h"
 #include "remoting/host/host_details.h"
 #include "remoting/proto/remoting/v1/remote_support_host_service.grpc.pb.h"
-#include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 
@@ -102,7 +100,7 @@ void RemotingRegisterSupportHostRequest::StartRequest(
   DCHECK(signal_strategy);
   DCHECK(key_pair);
   DCHECK(callback);
-  signal_strategy_ = static_cast<MuxingSignalStrategy*>(signal_strategy);
+  signal_strategy_ = signal_strategy;
   key_pair_ = key_pair;
   callback_ = std::move(callback);
 
@@ -130,6 +128,7 @@ bool RemotingRegisterSupportHostRequest::OnSignalStrategyIncomingStanza(
 }
 
 void RemotingRegisterSupportHostRequest::RegisterHost() {
+  DCHECK_EQ(SignalStrategy::CONNECTED, signal_strategy_->GetState());
   if (state_ != State::NOT_STARTED) {
     return;
   }
@@ -137,16 +136,7 @@ void RemotingRegisterSupportHostRequest::RegisterHost() {
 
   apis::v1::RegisterSupportHostRequest request;
   request.set_public_key(key_pair_->GetPublicKey());
-  if (signal_strategy_->ftl_signal_strategy()->GetState() ==
-      SignalStrategy::State::CONNECTED) {
-    request.set_tachyon_id(
-        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid());
-  }
-  if (signal_strategy_->xmpp_signal_strategy()->GetState() ==
-      SignalStrategy::State::CONNECTED) {
-    request.set_jabber_id(
-        signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid());
-  }
+  request.set_tachyon_id(signal_strategy_->GetLocalAddress().jid());
   request.set_host_version(STRINGIZE(VERSION));
   request.set_host_os_name(GetHostOperatingSystemName());
   request.set_host_os_version(GetHostOperatingSystemVersion());

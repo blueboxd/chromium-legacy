@@ -687,6 +687,18 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   devtools_agent_host->DetachClient(&devtools_agent_host_client);
 }
 
+// This test verifies that a display:none frame loading a MimeHandlerView type
+// will end up creating a MimeHandlerview. NOTE: this is an exception to support
+// printing in Google docs (see https://crbug.com/978240).
+IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
+                       MimeHandlerViewInDisplayNoneFrameForGoogleApps) {
+  GURL data_url(
+      "data:text/html, <iframe src='data:application/pdf,foo' "
+      "style='display:none'></iframe>,foo");
+  ui_test_utils::NavigateToURL(browser(), data_url);
+  ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
+}
+
 INSTANTIATE_TEST_SUITE_P(,
                          ChromeMimeHandlerViewCrossProcessTest,
                          testing::Bool());

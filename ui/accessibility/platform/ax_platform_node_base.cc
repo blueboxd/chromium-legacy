@@ -149,31 +149,25 @@ bool AXPlatformNodeBase::IsDescendantOf(AXPlatformNode* ancestor) const {
 AXPlatformNodeBase* AXPlatformNodeBase::GetPreviousSibling() {
   if (!delegate_)
     return nullptr;
-  gfx::NativeViewAccessible parent_accessible = GetParent();
-  AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
-  if (!parent)
-    return nullptr;
-
-  int previous_index = GetIndexInParent() - 1;
-  if (previous_index >= 0 &&
-      previous_index < parent->GetChildCount()) {
-    return FromNativeViewAccessible(parent->ChildAtIndex(previous_index));
-  }
-  return nullptr;
+  return FromNativeViewAccessible(delegate_->GetPreviousSibling());
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::GetNextSibling() {
   if (!delegate_)
     return nullptr;
-  gfx::NativeViewAccessible parent_accessible = GetParent();
-  AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
-  if (!parent)
-    return nullptr;
+  return FromNativeViewAccessible(delegate_->GetNextSibling());
+}
 
-  int next_index = GetIndexInParent() + 1;
-  if (next_index >= 0 && next_index < parent->GetChildCount())
-    return FromNativeViewAccessible(parent->ChildAtIndex(next_index));
-  return nullptr;
+AXPlatformNodeBase* AXPlatformNodeBase::GetFirstChild() {
+  if (!delegate_)
+    return nullptr;
+  return FromNativeViewAccessible(delegate_->GetFirstChild());
+}
+
+AXPlatformNodeBase* AXPlatformNodeBase::GetLastChild() {
+  if (!delegate_)
+    return nullptr;
+  return FromNativeViewAccessible(delegate_->GetLastChild());
 }
 
 bool AXPlatformNodeBase::IsDescendant(AXPlatformNodeBase* node) {

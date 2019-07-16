@@ -55,14 +55,30 @@ void BadgeManager::SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate) {
 
 void BadgeManager::BindRequest(blink::mojom::BadgeServiceRequest request,
                                content::RenderFrameHost* frame) {
-  Profile* profile = Profile::FromBrowserContext(
-      content::WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
+  // TODO(crbug.com/983929): Remove these CHECKs once the cause of the bug has
+  // been determined.
+  CHECK(request);
+  CHECK(frame);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  CHECK(web_contents);
+
+  CHECK(web_contents->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  CHECK(profile);
 
   badging::BadgeManager* badge_manager =
       badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile);
-  badge_manager->bindings_.AddBinding(
-      badge_manager, std::move(request),
-      {frame->GetProcess()->GetID(), frame->GetRoutingID()});
+  CHECK(badge_manager);
+
+  CHECK(frame->GetProcess());
+  CHECK(frame->GetProcess()->GetID());
+  CHECK(frame->GetRoutingID());
+  BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
+
+  badge_manager->bindings_.AddBinding(badge_manager, std::move(request),
+                                      std::move(context));
 }
 
 void BadgeManager::UpdateAppBadge(const std::string& app_id,

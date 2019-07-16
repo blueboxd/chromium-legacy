@@ -9763,6 +9763,8 @@ Called by update_net_error_codes.py.-->
   <int value="23" label="Share link"/>
   <int value="24" label="Preview page (Ephemeral tab)"/>
   <int value="25" label="Preview image (Ephemeral tab)"/>
+  <int value="26" label="Share Link (DirectShare)"/>
+  <int value="27" label="Share Image (DirectShare)"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -19917,6 +19919,7 @@ Called by update_net_error_codes.py.-->
   <int value="1358" label="ACTION_SETBADGETEXT"/>
   <int value="1359" label="ACTION_GETBADGEBACKGROUNDCOLOR"/>
   <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
+  <int value="1361" label="AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -60147,6 +60150,10 @@ Full version information for the fingerprint enum values:
   <int value="7005" label="HIDDEN_to_WILL_HIDE"/>
   <int value="7006" label="HIDDEN_to_HIDING"/>
   <int value="7007" label="HIDDEN_to_HIDDEN"/>
+</enum>
+
+<enum name="VirtualKeyboardErrorTypeHashes">
+  <int value="30998784" label="Generic Error"/>
 </enum>
 
 <enum name="VisibleTab">

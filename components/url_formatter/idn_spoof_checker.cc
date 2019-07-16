@@ -199,8 +199,8 @@ IDNSpoofChecker::IDNSpoofChecker() {
   //   - {U+0493 (ғ), U+04FB (ӻ)} => f
   //   - {U+04AB (ҫ), U+1004 (င)} => c
   //   - U+04B1 (ұ) => y
-  //   - U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ) => x
-  //   - U+0503 (ԃ) => d
+  //   - {U+03C7 (χ), U+04B3 (ҳ), U+04FD (ӽ), U+04FF (ӿ)} => x
+  //   - {U+0503 (ԃ), U+10EB (ძ)} => d
   //   - {U+050D (ԍ), U+100c (ဌ)} => g
   //   - {U+0D1F (ട), U+0E23 (ร), U+0EA3 (ຣ), U+0EAE (ຮ)} => s
   //   - U+1042 (၂) => j
@@ -224,7 +224,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
           "[ŧтҭԏ] > t; [ƅьҍв] > b;  [ωшщพฟພຟ] > w;"
           "[мӎ] > m; [єҽҿၔ] > e; ґ > r; [ғӻ] > f;"
           "[ҫင] > c; ұ > y; [χҳӽӿ] > x;"
-          "ԃ  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
+          "[ԃძ]  > d; [ԍဌ] > g; [ടรຣຮ] > s; ၂ > j;"
           "[०০੦૦ଠ୦೦] > o;"
           "[৭੧૧] > q;"
           "[บບ] > u;"
@@ -232,8 +232,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
           "[зҙӡउওਤ੩૩౩ဒვპ] > 3;"
           "[੫] > 4;"
           "[৪੪୫] > 8;"
-          "[૭୨౨] > 9;"
-      ),
+          "[૭୨౨] > 9;"),
       UTRANS_FORWARD, parse_error, status));
   DCHECK(U_SUCCESS(status))
       << "Spoofchecker initalization failed due to an error: "

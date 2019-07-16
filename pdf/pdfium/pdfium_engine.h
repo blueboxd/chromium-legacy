@@ -137,7 +137,6 @@ class PDFiumEngine : public PDFEngine,
   void OnNewDataReceived() override;
   void OnDocumentComplete() override;
   void OnDocumentCanceled() override;
-  void CancelBrowserDownload() override;
   void KillFormFocus() override;
   uint32_t GetLoadedByteSize() override;
   bool ReadLoadedBytes(uint32_t length, void* buffer) override;

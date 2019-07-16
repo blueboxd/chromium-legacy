@@ -224,7 +224,7 @@ class CopyHelper<InOutCountedBuffer> {
     // We are touching user memory, this has to be done from inside a try
     // except.
     __try {
-      memcpy_wrapper(t_.Buffer(), buffer, t_.Size());
+      memcpy(t_.Buffer(), buffer, t_.Size());
     } __except (EXCEPTION_EXECUTE_HANDLER) {
       return false;
     }

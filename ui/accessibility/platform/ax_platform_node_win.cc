@@ -797,13 +797,12 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
   switch (nav_dir) {
     case NAVDIR_FIRSTCHILD:
       if (GetDelegate()->GetChildCount() > 0)
-        result = GetDelegate()->ChildAtIndex(0);
+        result = GetDelegate()->GetFirstChild();
       break;
 
     case NAVDIR_LASTCHILD:
       if (GetDelegate()->GetChildCount() > 0)
-        result =
-            GetDelegate()->ChildAtIndex(GetDelegate()->GetChildCount() - 1);
+        result = GetDelegate()->GetLastChild();
       break;
 
     case NAVDIR_NEXT: {
@@ -3531,7 +3530,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
 
     case NavigateDirection_FirstChild:
       if (GetChildCount() > 0) {
-        neighbor = FromNativeViewAccessible(ChildAtIndex(0));
+        neighbor = GetFirstChild();
         DCHECK(neighbor);
         DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
       }
@@ -3539,7 +3538,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
 
     case NavigateDirection_LastChild:
       if (GetChildCount() > 0) {
-        neighbor = FromNativeViewAccessible(ChildAtIndex(GetChildCount() - 1));
+        neighbor = GetLastChild();
         DCHECK(neighbor);
         DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
       }

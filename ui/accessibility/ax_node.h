@@ -56,7 +56,7 @@ class AX_EXPORT AXNode final {
     bool operator!=(const ChildIteratorBase& rhs) const;
     ChildIteratorBase& operator++();
     ChildIteratorBase& operator--();
-    NodeType* get();
+    NodeType* get() const;
     NodeType& operator*() const;
     NodeType* operator->() const;
 
@@ -436,9 +436,9 @@ template <typename NodeType,
           NodeType* (NodeType::*NextSibling)() const,
           NodeType* (NodeType::*PreviousSibling)() const,
           NodeType* (NodeType::*LastChild)() const>
-NodeType*
-AXNode::ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::
-    get() {
+NodeType* AXNode::
+    ChildIteratorBase<NodeType, NextSibling, PreviousSibling, LastChild>::get()
+        const {
   DCHECK(child_);
   return child_;
 }

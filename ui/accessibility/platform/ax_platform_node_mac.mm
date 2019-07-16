@@ -635,8 +635,11 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
   int count = node_->GetChildCount();
   NSMutableArray* children = [NSMutableArray arrayWithCapacity:count];
-  for (int i = 0; i < count; ++i)
-    [children addObject:node_->ChildAtIndex(i)];
+  for (auto child_iterator_ptr = node_->GetDelegate()->ChildrenBegin();
+       *child_iterator_ptr != *node_->GetDelegate()->ChildrenEnd();
+       ++(*child_iterator_ptr)) {
+    [children addObject:child_iterator_ptr->GetNativeViewAccessible()];
+  }
   return NSAccessibilityUnignoredChildren(children);
 }
 

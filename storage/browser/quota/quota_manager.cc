@@ -197,9 +197,6 @@ void DidGetUsageAndQuotaForWebApps(
 
 }  // namespace
 
-// Helper to asynchronously gather usage and quota information.
-// This class is not thread-safe. Each instance can only be used on the sequence
-// where it was constructed. Instances of this class own and delete themselves.
 class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
  public:
   UsageAndQuotaInfoGatherer(QuotaManager* manager,
@@ -365,8 +362,6 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(UsageAndQuotaInfoGatherer);
 };
 
-// Helper to asynchronously gather information needed at the start of an
-// eviction round.
 class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
  public:
   EvictionRoundInfoHelper(QuotaManager* manager,
@@ -771,6 +766,14 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
   DISALLOW_COPY_AND_ASSIGN(StorageCleanupHelper);
 };
 
+// Fetch origins that have been modified since the specified time. This is used
+// to clear data for origins that have been modified within the user specified
+// time frame.
+//
+// This class is granted ownership of itself when it is passed to
+// DidGetModifiedSince() via base::Owned(). When the closure for said function
+// goes out of scope, the object is deleted.
+// This is a thread-safe class.
 class QuotaManager::GetModifiedSinceHelper {
  public:
   bool GetModifiedSinceOnDBThread(StorageType type,
@@ -797,6 +800,13 @@ class QuotaManager::GetModifiedSinceHelper {
   std::set<url::Origin> origins_;
 };
 
+// Gather origin info table for quota-internals page.
+//
+// This class is granted ownership of itself when it is passed to
+// DidDumpQuotaTable() via base::Owned(). When the closure for said function
+// goes out of scope, the object is deleted.
+// This class is not thread-safe because there can be a race when entries_ is
+// modified.
 class QuotaManager::DumpQuotaTableHelper {
  public:
   bool DumpQuotaTableOnDBThread(QuotaDatabase* database) {
@@ -826,6 +836,13 @@ class QuotaManager::DumpQuotaTableHelper {
   QuotaTableEntries entries_;
 };
 
+// Gather origin info table for quota-internals page.
+//
+// This class is granted ownership of itself when it is passed to
+// DidDumpQuotaTable() via base::Owned(). When the closure for said function
+// goes out of scope, the object is deleted.
+// This class is not thread-safe because there can be races when entries_ is
+// modified.
 class QuotaManager::DumpOriginInfoTableHelper {
  public:
   bool DumpOriginInfoTableOnDBThread(QuotaDatabase* database) {

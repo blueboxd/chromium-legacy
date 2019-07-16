@@ -13,6 +13,38 @@ namespace autotestPrivate {
     Bottom, Left, Right
   };
 
+  // A subset of Window State types in ash::WindowStateType. We may add more
+  // into the set in the future.
+  enum WindowStateType {
+    Normal,
+    Minimized,
+    Maximized,
+    Fullscreen,
+    LeftSnapped,
+    RightSnapped
+  };
+
+  // A subset of WM event types in ash::wm::WMEventType. We may add more in the
+  // set in the future.
+  enum WMEventType {
+    WMEventNormal,
+    WMEventMaxmize,
+    WMEventMinimize,
+    WMEventFullscreen,
+    WMEventSnapLeft,
+    WMEventSnapRight
+  };
+
+  // A paramter used in setArcAppWindowState() function.
+  dictionary WindowStateChangeDict {
+    // The WM event to change the ARC window state.
+    WMEventType eventType;
+
+    // If the initial state is already same as the expected state, should we
+    // treat this case as a failure? Default value is false.
+    boolean? failIfNoChange;
+  };
+
   dictionary LoginStatusDict {
     // Are we logged in?
     boolean isLoggedIn;
@@ -173,6 +205,8 @@ namespace autotestPrivate {
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
 
   callback GetShelfAlignmentCallback = void (ShelfAlignmentType alignment);
+
+  callback WindowStateChangedCallback = void (WindowStateType currentType);
 
   callback VoidCallback = void ();
 
@@ -393,5 +427,13 @@ namespace autotestPrivate {
 
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();
+
+    // Sends WM event to change the ARC app window's window state.
+    // |packageName|: the package name of the ARC app window.
+    // |eventType|: WM event type to send to the ARC app window.
+    // |callback|: called when the window state is changed.
+    static void setArcAppWindowState(DOMString packageName,
+                                     WindowStateChangeDict change,
+                                     WindowStateChangedCallback callback);
   };
 };

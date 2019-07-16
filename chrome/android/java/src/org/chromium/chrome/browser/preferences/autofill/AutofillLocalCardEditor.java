@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -44,6 +45,9 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
 
     private int mInitialExpirationMonthPos;
     private int mInitialExpirationYearPos;
+
+    @UsedByReflection("AutofillPaymentMethodsFragment.java")
+    public AutofillLocalCardEditor() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

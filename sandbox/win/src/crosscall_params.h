@@ -20,10 +20,14 @@
 
 #include "base/macros.h"
 #include "sandbox/win/src/internal_types.h"
-#if !defined(SANDBOX_FUZZ_TARGET)
-#include "sandbox/win/src/sandbox_nt_types.h"
-#endif
 #include "sandbox/win/src/sandbox_types.h"
+
+// Increases |value| until there is no need for padding given an int64_t
+// alignment. Returns the increased value.
+inline uint32_t Align(uint32_t value) {
+  uint32_t alignment = sizeof(int64_t);
+  return ((value + alignment - 1) / alignment) * alignment;
+}
 
 // This header is part of CrossCall: the sandbox inter-process communication.
 // This header defines the basic types used both in the client IPC and in the
@@ -44,26 +48,6 @@
 // strings is not supported.
 
 namespace sandbox {
-
-// This is the list of all imported symbols from ntdll.dll.
-SANDBOX_INTERCEPT NtExports g_nt;
-
-namespace {
-
-// Increases |value| until there is no need for padding given an int64_t
-// alignment. Returns the increased value.
-inline uint32_t Align(uint32_t value) {
-  uint32_t alignment = sizeof(int64_t);
-  return ((value + alignment - 1) / alignment) * alignment;
-}
-
-inline void* memcpy_wrapper(void* dest, const void* src, size_t count) {
-  if (g_nt.memcpy)
-    return g_nt.memcpy(dest, src, count);
-  return memcpy(dest, src, count);
-}
-
-}  // namespace
 
 // max number of extended return parameters. See CrossCallReturn
 const size_t kExtendedReturnCount = 8;
@@ -259,7 +243,7 @@ class ActualCallParams : public CrossCallParams {
     // We might be touching user memory, this has to be done from inside a try
     // except.
     __try {
-      memcpy_wrapper(dest, parameter_address, size);
+      memcpy(dest, parameter_address, size);
     } __except (EXCEPTION_EXECUTE_HANDLER) {
       return false;
     }

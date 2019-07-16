@@ -68,12 +68,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   utils.handleRequestWithPromiseDoNotUse(
-      apiFunctions, 'mimeHandlerPrivate', 'abortStream',
-      function() {
-    return servicePtr.abortStream().then(function() {});
-  });
-
-  utils.handleRequestWithPromiseDoNotUse(
       apiFunctions, 'mimeHandlerPrivate', 'setShowBeforeUnloadDialog',
       function(showDialog) {
     return beforeUnloadControlPtr.setShowBeforeUnloadDialog(showDialog);

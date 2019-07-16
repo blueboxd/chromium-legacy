@@ -99,13 +99,13 @@ Polymer({
   /** @private The current update timer if any. */
   updateTimer_: 0,
 
-  /** @private {(mojom.DiscardsDetailsProviderProxy|null)} */
-  uiHandler_: null,
+  /** @private {(mojom.DiscardsDetailsProviderRemote|null)} */
+  discardsDetailsProvider_: null,
 
   /** @override */
   ready: function() {
     this.setSortKey('utilityRank');
-    this.uiHandler_ = discards.getOrCreateUiHandler();
+    this.discardsDetailsProvider_ = discards.getOrCreateDetailsProvider();
 
     this.updateTable_();
   },
@@ -248,7 +248,7 @@ Polymer({
    * @private
    */
   updateTableImpl_: function() {
-    this.uiHandler_.getTabDiscardsInfo().then(response => {
+    this.discardsDetailsProvider_.getTabDiscardsInfo().then(response => {
       this.tabInfos_ = response.infos;
     });
   },
@@ -414,7 +414,8 @@ Polymer({
    */
   toggleAutoDiscardable_: function(e) {
     const item = e.model.item;
-    this.uiHandler_.setAutoDiscardable(item.id, !item.isAutoDiscardable)
+    this.discardsDetailsProvider_
+        .setAutoDiscardable(item.id, !item.isAutoDiscardable)
         .then(this.updateTable_.bind(this));
   },
 
@@ -424,7 +425,7 @@ Polymer({
    * @private
    */
   loadTab_: function(e) {
-    this.uiHandler_.loadById(e.model.item.id);
+    this.discardsDetailsProvider_.loadById(e.model.item.id);
   },
 
   /**
@@ -433,7 +434,7 @@ Polymer({
    * @private
    */
   freezeTab_: function(e) {
-    this.uiHandler_.freezeById(e.model.item.id);
+    this.discardsDetailsProvider_.freezeById(e.model.item.id);
   },
 
   /**
@@ -443,7 +444,7 @@ Polymer({
    * @private
    */
   discardTabImpl_: function(e, urgent) {
-    this.uiHandler_.discardById(e.model.item.id, urgent)
+    this.discardsDetailsProvider_.discardById(e.model.item.id, urgent)
         .then(this.updateTable_.bind(this));
   },
 
@@ -471,7 +472,7 @@ Polymer({
    * @private
    */
   discardImpl_: function(urgent) {
-    this.uiHandler_.discard(urgent).then(() => {
+    this.discardsDetailsProvider_.discard(urgent).then(() => {
       this.updateTable_();
     });
   },

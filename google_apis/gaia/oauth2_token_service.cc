@@ -48,16 +48,6 @@ OAuth2AccessTokenManager* OAuth2TokenService::GetAccessTokenManager() {
   return token_manager_.get();
 }
 
-const base::ObserverList<OAuth2AccessTokenManager::DiagnosticsObserver,
-                         true>::Unchecked&
-OAuth2TokenService::GetAccessTokenDiagnosticsObservers() {
-  return token_manager_->diagnostics_observer_list_;
-}
-
-int OAuth2TokenService::GetTokenCacheCount() {
-  return token_manager_->token_cache().size();
-}
-
 std::unique_ptr<OAuth2AccessTokenFetcher>
 OAuth2TokenService::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
@@ -96,33 +86,4 @@ void OAuth2TokenService::OnAccessTokenFetched(
 bool OAuth2TokenService::HasRefreshToken(
     const CoreAccountId& account_id) const {
   return delegate_->RefreshTokenIsAvailable(account_id);
-}
-
-void OAuth2TokenService::AddAccessTokenDiagnosticsObserver(
-    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
-  token_manager_->AddDiagnosticsObserver(observer);
-}
-
-void OAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
-    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
-  token_manager_->RemoveDiagnosticsObserver(observer);
-}
-
-void OAuth2TokenService::set_max_authorization_token_fetch_retries_for_testing(
-    int max_retries) {
-  token_manager_->set_max_authorization_token_fetch_retries_for_testing(
-      max_retries);
-}
-
-size_t OAuth2TokenService::GetNumPendingRequestsForTesting(
-    const std::string& client_id,
-    const CoreAccountId& account_id,
-    const OAuth2AccessTokenManager::ScopeSet& scopes) const {
-  return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
-                                                         scopes);
-}
-
-void OAuth2TokenService::OverrideAccessTokenManagerForTesting(
-    std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
-  token_manager_ = std::move(token_manager);
 }

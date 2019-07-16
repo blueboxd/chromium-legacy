@@ -202,7 +202,8 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static bool Deserialize(Handle_Data* input,
                           InterfaceRequest<T>* output,
                           SerializationContext* context) {
-    context->TakeHandleAsReceiver(*input, output->internal_state());
+    *output =
+        InterfaceRequest<T>(context->TakeHandleAs<MessagePipeHandle>(*input));
     return true;
   }
 };
@@ -220,7 +221,8 @@ struct Serializer<InterfaceRequestDataView<Base>, PendingReceiver<T>> {
   static bool Deserialize(Handle_Data* input,
                           PendingReceiver<T>* output,
                           SerializationContext* context) {
-    context->TakeHandleAsReceiver(*input, output->internal_state());
+    *output =
+        PendingReceiver<T>(context->TakeHandleAs<MessagePipeHandle>(*input));
     return true;
   }
 };

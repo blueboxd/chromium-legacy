@@ -260,7 +260,9 @@ Document* DOMImplementation::createDocument(const String& type,
     // Plugins handled by MimeHandlerView do not create a PluginDocument. They
     // are rendered inside cross-process frames and the notion of a PluginView
     // (which is associated with PluginDocument) is irrelevant here.
-    return MakeGarbageCollected<HTMLDocument>(init);
+    auto* html_document = MakeGarbageCollected<HTMLDocument>(init);
+    html_document->SetIsForExternalHandler();
+    return html_document;
   }
 
   // PDF is one image type for which a plugin can override built-in support.

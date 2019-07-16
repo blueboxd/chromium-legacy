@@ -6,17 +6,17 @@ cr.define('discards', function() {
   'use strict';
 
   // The following variables are initialized by 'initialize'.
-  // Points to the Mojo WebUI handler.
-  let uiHandler;
+  // Points to the DiscardsDetailsProviderRemote.
+  let discardsDetailsProvider;
 
   /**
-   * @return {!mojom.DiscardsDetailsProviderProxy} The UI handler.
+   * @return {!mojom.DiscardsDetailsProviderRemote} Provides discards details.
    */
-  function getOrCreateUiHandler() {
-    if (!uiHandler) {
-      uiHandler = mojom.DiscardsDetailsProvider.getProxy();
+  function getOrCreateDetailsProvider() {
+    if (!discardsDetailsProvider) {
+      discardsDetailsProvider = mojom.DiscardsDetailsProvider.getRemote();
     }
-    return uiHandler;
+    return discardsDetailsProvider;
   }
 
   /**
@@ -122,7 +122,7 @@ cr.define('discards', function() {
   return {
     boolToString: boolToString,
     durationToString: durationToString,
-    getOrCreateUiHandler: getOrCreateUiHandler,
+    getOrCreateDetailsProvider: getOrCreateDetailsProvider,
     maybeMakePlural: maybeMakePlural,
     secondsToString: secondsToString
   };

@@ -11,11 +11,10 @@
 
 namespace storage {
 
-// A thread-safe wrapper class used to get total disk space. The class is
-// subclassed in testing to mock the total disk space, thus allowing us to test
-// experimental behavior in QuotaSettings. It is expected that
-// QuotaDiskInfoHelper is instantiated in calls into QuotaSettings and owned
-// by QuotaSettings.
+// Interface used by the quota system to gather disk space information.
+// Can be overridden in tests.
+// Subclasses must be thread-safe.
+// QuotaSettings instances own a singleton instance of QuotaDiskInfoHelper.
 class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDiskInfoHelper {
  public:
   QuotaDiskInfoHelper() = default;

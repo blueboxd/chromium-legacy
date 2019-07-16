@@ -417,6 +417,12 @@ function testVolumeEntryCreateReaderUnresolved(testReportCallback) {
   const crostini = fakeVolumeEntry(VolumeManagerCommon.VolumeType.CROSTINI);
   const android = fakeVolumeEntry(VolumeManagerCommon.VolumeType.ANDROID_FILES);
 
+  assertEquals(null, volumeEntry.filesystem);
+  assertEquals('', volumeEntry.fullPath);
+  assertEquals('', volumeEntry.toURL());
+  assertTrue(volumeEntry.isDirectory);
+  assertFalse(volumeEntry.isFile);
+
   volumeEntry.addEntry(crostini);
   volumeEntry.addEntry(android);
   const reader = volumeEntry.createReader();

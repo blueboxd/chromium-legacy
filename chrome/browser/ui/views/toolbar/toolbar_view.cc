@@ -401,7 +401,7 @@ bool ToolbarView::IsAppMenuFocused() {
 
 void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
-    bool show_stay_in_chrome,
+    bool enable_stay_in_chrome,
     bool show_remember_selection,
     IntentPickerResponse callback) {
   PageActionIconView* intent_picker_view =
@@ -413,7 +413,7 @@ void ToolbarView::ShowIntentPickerBubble(
       IntentPickerTabHelper::SetShouldShowIcon(GetWebContents(), true);
     IntentPickerBubbleView::ShowBubble(
         intent_picker_view, GetWebContents(), std::move(app_info),
-        show_stay_in_chrome, show_remember_selection, std::move(callback));
+        enable_stay_in_chrome, show_remember_selection, std::move(callback));
   }
 }
 

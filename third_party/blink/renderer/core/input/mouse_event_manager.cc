@@ -83,23 +83,16 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
                                   .device_scale_factor;
       }
     }
-    if (RuntimeEnabledFeatures::FractionalMouseEventEnabled()) {
-      initializer->setMovementX(
-          (mouse_event.PositionInScreen().x - last_position->X()) *
-          device_scale_factor);
-      initializer->setMovementY(
-          (mouse_event.PositionInScreen().y - last_position->Y()) *
-          device_scale_factor);
-    } else {
-      initializer->setMovementX(
-          static_cast<int>(mouse_event.PositionInScreen().x *
-                           device_scale_factor) -
-          static_cast<int>(last_position->X() * device_scale_factor));
-      initializer->setMovementY(
-          static_cast<int>(mouse_event.PositionInScreen().y *
-                           device_scale_factor) -
-          static_cast<int>(last_position->Y() * device_scale_factor));
-    }
+    // movementX/Y is type int for now, so we need to truncated the coordinates
+    // before calculate movement.
+    initializer->setMovementX(
+        base::saturated_cast<int>(mouse_event.PositionInScreen().x *
+                                  device_scale_factor) -
+        base::saturated_cast<int>(last_position->X() * device_scale_factor));
+    initializer->setMovementY(
+        base::saturated_cast<int>(mouse_event.PositionInScreen().y *
+                                  device_scale_factor) -
+        base::saturated_cast<int>(last_position->Y() * device_scale_factor));
   }
 }
 

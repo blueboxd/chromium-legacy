@@ -168,7 +168,7 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 # See crbug.com/522326
 external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
 # We don't allow to access external hosts in layout tests.
-external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/xhtml-mathml-dtd-entity-support.htm [ WontFix ]
+external/wpt/html/the-xhtml-syntax/parsing-xhtml-documents/support/xhtml-mathml-dtd-entity.htm [ WontFix ]
 
 # CSS3 attribute / attr references have not been implemented (except for content)
 crbug.com/246571 external/wpt/css/css-values/attr-color-invalid-cast.html [ WontFix ]

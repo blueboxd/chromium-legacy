@@ -206,7 +206,7 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   if (!browser)
     return;
   browser->window()->ShowIntentPickerBubble(std::move(apps),
-                                            /*show_stay_in_chrome=*/true,
+                                            /*enable_stay_in_chrome=*/true,
                                             show_remember_selection,
                                             std::move(callback));
 }

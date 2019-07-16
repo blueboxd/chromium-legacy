@@ -2179,6 +2179,10 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 # ====== OOPIF-mode failures until here ======
 
 
+### sheriff 2019-07-16
+crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
+crbug.com/983799 [ Win ] virtual/blink-cors/http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
+
 ### sheriff 2018-05-28
 
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
@@ -6296,5 +6300,3 @@ crbug.com/970079 fast/events/message-port-multi.html [ Pass Failure ]
 crbug.com/970079 storage/indexeddb/structured-clone.html [ Pass Failure ]
 crbug.com/970079 virtual/mouseevent_fractional/fast/events/message-port-multi.html [ Pass Failure ]
 crbug.com/970079 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
-crbug.com/970079 external/wpt/html/infrastructure/safe-passing-of-structured-data/structuredclone_0.html [ Pass Failure ]
-crbug.com/970079 external/wpt/html/infrastructure/safe-passing-of-structured-data/structured-cloning-error-stack-optional.sub.window.html [ Pass Failure ]

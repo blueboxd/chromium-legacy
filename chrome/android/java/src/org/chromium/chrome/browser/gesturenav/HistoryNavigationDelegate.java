@@ -15,12 +15,10 @@ import org.chromium.chrome.browser.tab.Tab;
  */
 public abstract class HistoryNavigationDelegate {
     private final boolean mIsEnabled;
-    private final boolean mDelegateSwipes;
 
     private HistoryNavigationDelegate(Context context) {
         mIsEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
                 && (context instanceof ChromeActivity);
-        mDelegateSwipes = ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES);
     }
 
     /**
@@ -28,13 +26,6 @@ public abstract class HistoryNavigationDelegate {
      */
     public boolean isEnabled() {
         return mIsEnabled;
-    }
-
-    /**
-     * @return {@code true} if swipe events are delegated to websites first.
-     */
-    public boolean delegateSwipes() {
-        return mDelegateSwipes;
     }
 
     /**

@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -21,13 +22,14 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
-
-// Padding at the two ends of the shelf in overflow mode.
-constexpr int kEndPadding = 4;
 
 // Padding between the end of the shelf in overview mode and the arrow button
 // (if any).
@@ -35,12 +37,6 @@ constexpr int kDistanceToArrowButton = kShelfButtonSpacing;
 
 // Distance between overflow bubble and the main shelf.
 constexpr int kDistanceToMainShelf = 4;
-
-// Minimum margin around the bubble so that it doesn't hug the screen edges.
-constexpr int kMinimumMargin = 8;
-
-// Size of the arrow button.
-constexpr int kArrowButtonSize = kShelfControlSize;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 constexpr int kUnit = kShelfButtonSize + kShelfButtonSpacing;
@@ -50,15 +46,44 @@ constexpr int kUnit = kShelfButtonSize + kShelfButtonSpacing;
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollArrowView
 
+class OverflowBubbleView::ScrollArrowView : public views::Button {
+ public:
+  enum ArrowType { LEFT, RIGHT };
+  ScrollArrowView(ArrowType arrow_type,
+                  bool is_horizontal_alignment,
+                  OverflowBubbleView* bubble_view);
+  ~ScrollArrowView() override = default;
+
+  // views::View:
+  void PaintButtonContents(gfx::Canvas* canvas) override;
+  const char* GetClassName() const override;
+
+  // views::InkDropHost:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+
+ private:
+  ArrowType arrow_type_;
+  bool is_horizontal_alignment_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollArrowView);
+};
+
 OverflowBubbleView::ScrollArrowView::ScrollArrowView(
     ArrowType arrow_type,
-    bool is_horizontal_alignment)
-    : arrow_type_(arrow_type),
+    bool is_horizontal_alignment,
+    OverflowBubbleView* bubble_view)
+    : Button(bubble_view),
+      arrow_type_(arrow_type),
       is_horizontal_alignment_(is_horizontal_alignment) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  set_has_ink_drop_action_on_click(true);
+  SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 }
 
-void OverflowBubbleView::ScrollArrowView::OnPaint(gfx::Canvas* canvas) {
+void OverflowBubbleView::ScrollArrowView::PaintButtonContents(
+    gfx::Canvas* canvas) {
   gfx::ImageSkia img = CreateVectorIcon(
       arrow_type_ == LEFT ? kOverflowShelfLeftIcon : kOverflowShelfRightIcon,
       SK_ColorWHITE);
@@ -72,7 +97,7 @@ void OverflowBubbleView::ScrollArrowView::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawImageInt(img, center_point.x() - img.width() / 2,
                        center_point.y() - img.height() / 2);
 
-  float ring_radius_dp = kArrowButtonSize / 2;
+  float ring_radius_dp = OverflowBubbleView::kArrowButtonSize / 2;
   {
     gfx::PointF circle_center(center_point);
     gfx::ScopedCanvas scoped_canvas(canvas);
@@ -91,8 +116,55 @@ const char* OverflowBubbleView::ScrollArrowView::GetClassName() const {
   return "ScrollArrowView";
 }
 
+std::unique_ptr<views::InkDrop>
+OverflowBubbleView::ScrollArrowView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropMask>
+OverflowBubbleView::ScrollArrowView::CreateInkDropMask() const {
+  gfx::Point center_point = gfx::Rect(size()).CenterPoint();
+  return std::make_unique<views::CircleInkDropMask>(size(), center_point, 20);
+}
+
+std::unique_ptr<views::InkDropRipple>
+OverflowBubbleView::ScrollArrowView::CreateInkDropRipple() const {
+  const int button_radius = 20;
+  gfx::Rect bounds = gfx::Rect(size());
+  bounds.ClampToCenteredSize(gfx::Size(2 * button_radius, 2 * button_radius));
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      size(), GetLocalBounds().InsetsFrom(bounds),
+      GetInkDropCenterBasedOnLastEvent(), kShelfInkDropBaseColor,
+      kShelfInkDropVisibleOpacity);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OverflowShelfContainerView impl
+
+class OverflowBubbleView::OverflowShelfContainerView : public views::View {
+ public:
+  explicit OverflowShelfContainerView(ShelfView* shelf_view);
+  ~OverflowShelfContainerView() override = default;
+
+  void Initialize();
+
+  // Translate |shelf_view_| by |offset|.
+  void TranslateShelfView(const gfx::Vector2d& offset);
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+  void Layout() override;
+  const char* GetClassName() const override;
+
+ private:
+  // Owned by views hierarchy.
+  ShelfView* shelf_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverflowShelfContainerView);
+};
 
 OverflowBubbleView::OverflowShelfContainerView::OverflowShelfContainerView(
     ShelfView* shelf_view)
@@ -138,11 +210,14 @@ void OverflowBubbleView::OverflowShelfContainerView::TranslateShelfView(
 ////////////////////////////////////////////////////////////////////////////////
 // OverflowBubbleView
 
+const int OverflowBubbleView::kArrowButtonSize = kShelfControlSize;
+
 OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
                                        views::View* anchor,
                                        SkColor background_color)
     : ShelfBubble(anchor, shelf_view->shelf()->alignment(), background_color),
-      shelf_(shelf_view->shelf()) {
+      shelf_(shelf_view->shelf()),
+      shelf_view_(shelf_view) {
   DCHECK(shelf_);
 
   set_border_radius(ShelfConstants::shelf_size() / 2);
@@ -160,12 +235,12 @@ OverflowBubbleView::OverflowBubbleView(ShelfView* shelf_view,
 
   // Initialize the left arrow button.
   left_arrow_ = new ScrollArrowView(ScrollArrowView::LEFT,
-                                    shelf_->IsHorizontalAlignment());
+                                    shelf_->IsHorizontalAlignment(), this);
   AddChildView(left_arrow_);
 
   // Initialize the right arrow button.
   right_arrow_ = new ScrollArrowView(ScrollArrowView::RIGHT,
-                                     shelf_->IsHorizontalAlignment());
+                                     shelf_->IsHorizontalAlignment(), this);
   AddChildView(right_arrow_);
 
   // Initialize the shelf container view.
@@ -188,27 +263,36 @@ bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return false;
 
-  if (shelf_->IsHorizontalAlignment())
-    ScrollByXOffset(static_cast<int>(-event.details().scroll_x()));
-  else
-    ScrollByYOffset(static_cast<int>(-event.details().scroll_y()));
+  if (shelf_->IsHorizontalAlignment()) {
+    ScrollByXOffset(static_cast<int>(-event.details().scroll_x()),
+                    /*animate=*/false);
+  } else {
+    ScrollByYOffset(static_cast<int>(-event.details().scroll_y()),
+                    /*animate=*/false);
+  }
   return true;
 }
 
-int OverflowBubbleView::ScrollByXOffset(int x_offset) {
+int OverflowBubbleView::ScrollByXOffset(int x_offset, bool animating) {
   const int old_x = scroll_offset_.x();
   const int x = CalculateLayoutStrategyAfterScroll(x_offset);
   scroll_offset_.set_x(x);
   Layout();
-  return x - old_x;
+  const int diff = x - old_x;
+  if (animating)
+    StartShelfScrollAnimation(diff);
+  return diff;
 }
 
-int OverflowBubbleView::ScrollByYOffset(int y_offset) {
+int OverflowBubbleView::ScrollByYOffset(int y_offset, bool animating) {
   const int old_y = scroll_offset_.y();
   const int y = CalculateLayoutStrategyAfterScroll(y_offset);
   scroll_offset_.set_y(y);
   Layout();
-  return y - old_y;
+  const int diff = y - old_y;
+  if (animating)
+    StartShelfScrollAnimation(diff);
+  return diff;
 }
 
 int OverflowBubbleView::CalculateScrollUpperBound() const {
@@ -265,6 +349,22 @@ void OverflowBubbleView::AdjustToEnsureIconsFullyVisible(
     bubble_bounds->set_height(width);
     bubble_bounds->Offset(0, rd / 2);
   }
+}
+
+void OverflowBubbleView::StartShelfScrollAnimation(int scroll_distance) {
+  const gfx::Transform current_transform = shelf_view()->GetTransform();
+  gfx::Transform reverse_transform = current_transform;
+  if (shelf_->IsHorizontalAlignment())
+    reverse_transform.Translate(gfx::Vector2d(scroll_distance, 0));
+  else
+    reverse_transform.Translate(gfx::Vector2d(0, scroll_distance));
+  shelf_view()->layer()->SetTransform(reverse_transform);
+  ui::ScopedLayerAnimationSettings animation_settings(
+      shelf_view()->layer()->GetAnimator());
+  animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
+  animation_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+  shelf_view()->layer()->SetTransform(current_transform);
 }
 
 gfx::Size OverflowBubbleView::CalculatePreferredSize() const {
@@ -368,9 +468,10 @@ void OverflowBubbleView::Layout() {
   // So translate |shelf_container_view| to show the shelf view correctly.
   gfx::Vector2d translate_vector;
   if (!left_arrow_bounds.IsEmpty()) {
-    translate_vector = shelf_->IsHorizontalAlignment()
-                           ? gfx::Vector2d(shelf_container_bounds.x(), 0)
-                           : gfx::Vector2d(0, shelf_container_bounds.y());
+    translate_vector =
+        shelf_->IsHorizontalAlignment()
+            ? gfx::Vector2d(shelf_container_bounds.x() - kEndPadding, 0)
+            : gfx::Vector2d(0, shelf_container_bounds.y() - kEndPadding);
   }
 
   shelf_container_view_->TranslateShelfView(scroll_offset_ + translate_vector);
@@ -383,9 +484,9 @@ void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {
 
   // Ensures |shelf_view_| is still visible.
   if (shelf_->IsHorizontalAlignment())
-    ScrollByXOffset(0);
+    ScrollByXOffset(0, /*animate=*/false);
   else
-    ScrollByYOffset(0);
+    ScrollByYOffset(0, /*animate=*/false);
 }
 
 bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -394,9 +495,9 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   // using Y offsets only. Might be good to simply scroll in both
   // directions as in OverflowBubbleView::OnScrollEvent.
   if (shelf_->IsHorizontalAlignment())
-    ScrollByXOffset(-event.y_offset());
+    ScrollByXOffset(-event.y_offset(), /*animate=*/false);
   else
-    ScrollByYOffset(-event.y_offset());
+    ScrollByYOffset(-event.y_offset(), /*animate=*/false);
 
   return true;
 }
@@ -405,11 +506,35 @@ const char* OverflowBubbleView::GetClassName() const {
   return "OverflowBubbleView";
 }
 
+void OverflowBubbleView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  // Verfies that |sender| is either |left_arrow_| or |right_arrow_|.
+  views::View* sender_view = sender;
+  DCHECK((sender_view == left_arrow_) || (sender_view == right_arrow_));
+
+  // Implement the arrow button handler in the same way with scrolling the
+  // bubble view. The key is to calculate the suitable scroll distance.
+  int offset =
+      (shelf_->IsHorizontalAlignment() ? bounds().width() : bounds().height()) -
+      2 * kUnit;
+  DCHECK_GT(offset, 0);
+
+  // If |forward| is true, scroll the overflow bubble view rightward.
+  bool forward = sender_view == right_arrow_;
+  if (!forward)
+    offset = -offset;
+
+  if (shelf_->IsHorizontalAlignment())
+    ScrollByXOffset(offset, true);
+  else
+    ScrollByYOffset(offset, true);
+}
+
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {
   if (shelf_->IsHorizontalAlignment())
-    ScrollByXOffset(static_cast<int>(-event->x_offset()));
+    ScrollByXOffset(static_cast<int>(-event->x_offset()), /*animate=*/false);
   else
-    ScrollByYOffset(static_cast<int>(-event->y_offset()));
+    ScrollByYOffset(static_cast<int>(-event->y_offset()), /*animate=*/false);
   event->SetHandled();
 }
 

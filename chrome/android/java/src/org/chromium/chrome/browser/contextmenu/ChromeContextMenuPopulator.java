@@ -71,8 +71,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     static class ContextMenuUma {
         // Note: these values must match the ContextMenuOptionAndroid enum in enums.xml.
         // Only add values to the end, right before NUM_ENTRIES!
-        @IntDef({
-                Action.OPEN_IN_NEW_TAB, Action.OPEN_IN_INCOGNITO_TAB, Action.COPY_LINK_ADDRESS,
+        @IntDef({Action.OPEN_IN_NEW_TAB, Action.OPEN_IN_INCOGNITO_TAB, Action.COPY_LINK_ADDRESS,
                 Action.COPY_EMAIL_ADDRESS, Action.COPY_LINK_TEXT, Action.SAVE_LINK,
                 Action.SAVE_IMAGE, Action.OPEN_IMAGE, Action.OPEN_IMAGE_IN_NEW_TAB,
                 Action.SEARCH_BY_IMAGE, Action.LOAD_ORIGINAL_IMAGE, Action.SAVE_VIDEO,
@@ -81,7 +80,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 Action.COPY_PHONE_NUMBER, Action.OPEN_IN_NEW_CHROME_TAB,
                 Action.OPEN_IN_CHROME_INCOGNITO_TAB, Action.OPEN_IN_BROWSER, Action.OPEN_IN_CHROME,
                 Action.SHARE_LINK, Action.OPEN_IN_EPHEMERAL_TAB, Action.OPEN_IMAGE_IN_EPHEMERAL_TAB,
-        })
+                Action.DIRECT_SHARE_LINK, Action.DIRECT_SHARE_IMAGE})
         @Retention(RetentionPolicy.SOURCE)
         public @interface Action {
             int OPEN_IN_NEW_TAB = 0;
@@ -110,7 +109,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int SHARE_LINK = 23;
             int OPEN_IN_EPHEMERAL_TAB = 24;
             int OPEN_IMAGE_IN_EPHEMERAL_TAB = 25;
-            int NUM_ENTRIES = 26;
+
+            // These are used to record DirectShare histograms in RevampedContextMenuCoordinator and
+            // aren't used in onItemSelected.
+            int DIRECT_SHARE_LINK = 26;
+            int DIRECT_SHARE_IMAGE = 27;
+
+            int NUM_ENTRIES = 28;
         }
 
         // Note: these values must match the ContextMenuSaveLinkType enum in enums.xml.

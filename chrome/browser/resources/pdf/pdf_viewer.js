@@ -1619,9 +1619,6 @@ class PluginController extends ContentController {
       case 'scrollBy':
         this.viewport_.scrollBy(/** @type {!Point} */ (message.data));
         break;
-      case 'cancelStreamUrl':
-        chrome.mimeHandlerPrivate.abortStream();
-        break;
       case 'metadata':
         this.viewer_.setDocumentMetadata(
             message.data.title, message.data.bookmarks,

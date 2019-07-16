@@ -62,10 +62,6 @@ StreamContainer::StreamContainer(
 StreamContainer::~StreamContainer() {
 }
 
-void StreamContainer::Abort(const base::Closure& callback) {
-  callback.Run();
-}
-
 base::WeakPtr<StreamContainer> StreamContainer::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

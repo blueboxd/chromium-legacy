@@ -55,6 +55,8 @@ class AudioFocusManagerTest
                                                             &audio_focus_ptr_);
     connector_factory_.GetDefaultConnector()->BindInterface(
         mojom::kServiceName, &audio_focus_debug_ptr_);
+    connector_factory_.GetDefaultConnector()->BindInterface(
+        mojom::kServiceName, &controller_manager_ptr_);
 
     audio_focus_ptr_->SetEnforcementMode(GetParam());
     audio_focus_ptr_.FlushForTesting();
@@ -210,6 +212,10 @@ class AudioFocusManagerTest
 
   base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
 
+  mojom::MediaControllerManagerPtr& controller_manager() {
+    return controller_manager_ptr_;
+  }
+
  private:
   int GetCountForType(mojom::AudioFocusType type) {
     const auto audio_focus_requests = GetRequests();
@@ -258,6 +264,7 @@ class AudioFocusManagerTest
 
   mojom::AudioFocusManagerPtr audio_focus_ptr_;
   mojom::AudioFocusManagerDebugPtr audio_focus_debug_ptr_;
+  mojom::MediaControllerManagerPtr controller_manager_ptr_;
 
   base::PowerMonitorTestSource* power_source_;
 
@@ -1518,6 +1525,156 @@ TEST_P(AudioFocusManagerTest, SuspendAllSessionOnPowerSuspend) {
 
   observer_1.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
   observer_2.WaitForState(mojom::MediaSessionInfo::SessionState::kSuspended);
+}
+
+TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayControllerPause) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  mojom::MediaControllerPtr controller;
+  controller_manager()->CreateMediaControllerForSession(
+      mojo::MakeRequest(&controller), media_session_1.request_id());
+  controller_manager().FlushForTesting();
+
+  controller->Suspend();
+  controller.FlushForTesting();
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
+
+  // When we abandon the transient session then we will apply the last
+  // controller action.
+  media_session_2.AbandonAudioFocusFromClient();
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
+}
+
+TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayControllerStop) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  mojom::MediaControllerPtr controller;
+  controller_manager()->CreateMediaControllerForSession(
+      mojo::MakeRequest(&controller), media_session_1.request_id());
+  controller_manager().FlushForTesting();
+
+  controller->Stop();
+  controller.FlushForTesting();
+
+  // If enforcement is enabled then the session was previously suspended by the
+  // transient session and therefore we should be suspended. Otherwise, we
+  // should be inactive because the stop command would not have been delayed.
+  EXPECT_EQ(IsEnforcementEnabled()
+                ? mojom::MediaSessionInfo::SessionState::kSuspended
+                : mojom::MediaSessionInfo::SessionState::kInactive,
+            GetState(&media_session_1));
+
+  {
+    // When we abandon the transient session then we will apply the last
+    // controller action.
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    media_session_2.AbandonAudioFocusFromClient();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kInactive);
+  }
+}
+
+TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayControllerResume) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  mojom::MediaControllerPtr controller;
+  controller_manager()->CreateMediaControllerForSession(
+      mojo::MakeRequest(&controller), media_session_1.request_id());
+  controller_manager().FlushForTesting();
+
+  controller->Suspend();
+  controller.FlushForTesting();
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
+
+  controller->Resume();
+  controller.FlushForTesting();
+
+  // If enforcement is enabled then the session was previously suspended by the
+  // transient session and therefore we should be suspended. Otherwise, we
+  // should be active because the resume command would not have been delayed.
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  {
+    // When we abandon the transient session then we will apply the last
+    // controller action.
+    test::MockMediaSessionMojoObserver observer(media_session_1);
+    media_session_2.AbandonAudioFocusFromClient();
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+}
+
+TEST_P(AudioFocusManagerTest, TransientPauseShouldDelayLastActionOnly) {
+  test::MockMediaSession media_session_1;
+  test::MockMediaSession media_session_2;
+
+  RequestAudioFocus(&media_session_1, mojom::AudioFocusType::kGain);
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
+            GetState(&media_session_1));
+
+  RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  mojom::MediaControllerPtr controller;
+  controller_manager()->CreateMediaControllerForSession(
+      mojo::MakeRequest(&controller), media_session_1.request_id());
+  controller_manager().FlushForTesting();
+
+  controller->Resume();
+  controller.FlushForTesting();
+
+  // The resume action should be delayed because we were suspended by the
+  // transient session.
+  EXPECT_EQ(
+      GetStateFromParam(mojom::MediaSessionInfo::SessionState::kSuspended),
+      GetState(&media_session_1));
+
+  // Calling suspend while we are still suspended should cancel the delayed
+  // resume action so we will never resume.
+  controller->Suspend();
+  controller.FlushForTesting();
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
+
+  // When we abandon the transient session then we will apply the last
+  // controller action.
+  media_session_2.AbandonAudioFocusFromClient();
+  EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kSuspended,
+            GetState(&media_session_1));
 }
 
 }  // namespace media_session

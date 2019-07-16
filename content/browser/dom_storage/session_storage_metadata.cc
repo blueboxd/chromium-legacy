@@ -297,6 +297,7 @@ void SessionStorageMetadata::RegisterShallowClonedNamespace(
     NamespaceEntry source_namespace,
     NamespaceEntry destination_namespace,
     std::vector<leveldb::mojom::BatchedOperationPtr>* save_operations) {
+  DCHECK(save_operations);
   std::map<url::Origin, scoped_refptr<MapData>>& source_origins =
       source_namespace->second;
   std::map<url::Origin, scoped_refptr<MapData>>& destination_origins =

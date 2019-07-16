@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 class SkBitmap;
 
@@ -24,14 +26,17 @@ class AssociatedResourceFetcher;
 
 // A resource fetcher that returns all (differently-sized) frames in
 // an image. Useful for favicons.
-class MultiResolutionImageResourceFetcher {
-  USING_FAST_MALLOC(MultiResolutionImageResourceFetcher);
+class MultiResolutionImageResourceFetcher
+    : public GarbageCollectedFinalized<MultiResolutionImageResourceFetcher>,
+      public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(MultiResolutionImageResourceFetcher);
 
  public:
   using Callback = base::OnceCallback<void(MultiResolutionImageResourceFetcher*,
                                            const WTF::Vector<SkBitmap>&)>;
 
   MultiResolutionImageResourceFetcher(
+      ExecutionContext*,
       const KURL& image_url,
       LocalFrame* frame,
       int id,
@@ -50,8 +55,8 @@ class MultiResolutionImageResourceFetcher {
   // HTTP status code upon fetch completion.
   int http_status_code() const { return http_status_code_; }
 
-  // Called when associated LocalFrame is destructed.
-  void OnRenderFrameDestruct();
+  // ContextLifecycleObserver overrides.
+  void ContextDestroyed(ExecutionContext*) override;
 
  private:
   // ResourceFetcher::Callback. Decodes the image and invokes callback_.

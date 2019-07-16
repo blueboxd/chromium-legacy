@@ -62,6 +62,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_urls.h"
 #include "url/url_constants.h"
 #endif
 
@@ -230,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNTPBrowserTest,
       contents->GetMainFrame()->GetProcess()->GetID()));
 }
 
-// Helper class to mark "https://ntp.com/" as an isolated origin.
+// Helper class to run tests on a simulated 512MB low-end device.
 class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
  public:
   SitePerProcessMemoryThresholdBrowserTest() = default;
@@ -259,15 +260,27 @@ class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
     return false;
   }
 
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // Initializing the expected embedder origins at runtime is required for
+    // GetWebstoreLaunchURL(), which needs to have a proper ExtensionsClient
+    // initialized.
+#if !defined(OS_ANDROID)
+    expected_embedder_origins_.push_back(
+        url::Origin::Create(GaiaUrls::GetInstance()->gaia_url()));
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    expected_embedder_origins_.push_back(
+        url::Origin::Create(extension_urls::GetWebstoreLaunchURL()));
+#endif
+  }
+
  protected:
   // These are the origins we expect to be returned by
   // content::ChildProcessSecurityPolicy::GetIsolatedOrigins() even if
   // ContentBrowserClient::ShouldDisableSiteIsolation() returns true.
-  const std::vector<url::Origin> kExpectedEmbedderOrigins = {
-#if !defined(OS_ANDROID)
-    url::Origin::Create(GaiaUrls::GetInstance()->gaia_url())
-#endif
-  };
+  std::vector<url::Origin> expected_embedder_origins_;
 
 #if defined(OS_ANDROID)
   // On Android we don't expect any trial origins because the 512MB
@@ -421,11 +434,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
 
   auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
   std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
-  EXPECT_EQ(kExpectedTrialOrigins, isolated_origins.size());
+  EXPECT_EQ(expected_embedder_origins_.size(), isolated_origins.size());
 
   // Verify that the expected embedder origins are present even though site
   // isolation has been disabled and the trial origins should not be present.
-  EXPECT_THAT(kExpectedEmbedderOrigins,
+  EXPECT_THAT(expected_embedder_origins_,
               ::testing::IsSubsetOf(isolated_origins));
 
   // Verify that the trial origin is not present.
@@ -454,8 +467,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
 
   auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
   std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
-  EXPECT_EQ(1u + kExpectedEmbedderOrigins.size(), isolated_origins.size());
-  EXPECT_THAT(kExpectedEmbedderOrigins,
+  EXPECT_EQ(1u + expected_embedder_origins_.size(), isolated_origins.size());
+  EXPECT_THAT(expected_embedder_origins_,
               ::testing::IsSubsetOf(isolated_origins));
 
   // Verify that the trial origin is present.
@@ -476,9 +489,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
 
   auto* cpsp = content::ChildProcessSecurityPolicy::GetInstance();
   std::vector<url::Origin> isolated_origins = cpsp->GetIsolatedOrigins();
-  EXPECT_EQ(kExpectedTrialOrigins + kExpectedEmbedderOrigins.size(),
+  EXPECT_EQ(kExpectedTrialOrigins + expected_embedder_origins_.size(),
             isolated_origins.size());
-  EXPECT_THAT(kExpectedEmbedderOrigins,
+  EXPECT_THAT(expected_embedder_origins_,
               ::testing::IsSubsetOf(isolated_origins));
 
   if (kExpectedTrialOrigins > 0) {

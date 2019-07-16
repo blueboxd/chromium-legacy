@@ -10,12 +10,12 @@
 
 namespace remoting {
 
-void SetDeadline(grpc::ClientContext* context, base::Time deadline) {
+void SetDeadline(grpc_impl::ClientContext* context, base::Time deadline) {
   context->set_deadline(
       std::chrono::system_clock::from_time_t(deadline.ToTimeT()));
 }
 
-base::Time GetDeadline(const grpc::ClientContext& context) {
+base::Time GetDeadline(const grpc_impl::ClientContext& context) {
   auto deadline_tp = context.deadline();
   if (deadline_tp == std::chrono::system_clock::time_point::max()) {
     return base::Time::Max();

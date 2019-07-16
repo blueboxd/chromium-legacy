@@ -324,7 +324,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, CloneAfterBind) {
                         kTestProcessIdOrigin1);
 
   // Set that we are waiting for clone, so binding is possible.
-  namespace_impl2->SetWaitingForClonePopulation();
+  namespace_impl2->SetPendingPopulationFromParentNamespace(test_namespace_id1_);
 
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))

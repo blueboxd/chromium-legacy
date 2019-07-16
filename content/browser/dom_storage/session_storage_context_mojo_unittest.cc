@@ -1132,6 +1132,126 @@ TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
   EXPECT_EQ(0ul, data.size());
 }
 
+TEST_F(SessionStorageContextMojoTest, InterruptedCloneWithDelete) {
+  std::string namespace_id1 = base::GenerateGUID();
+  std::string namespace_id2 = base::GenerateGUID();
+  std::string namespace_id3 = base::GenerateGUID();
+  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
+  context()->CreateSessionNamespace(namespace_id1);
+
+  context()->CloneSessionNamespace(
+      namespace_id1, namespace_id2,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->DeleteSessionNamespace(namespace_id1, false);
+
+  // Open the second namespace which should be initialized and empty.
+  blink::mojom::SessionStorageNamespacePtr ss_namespace2;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id2,
+                                GetBadMessageCallback(),
+                                mojo::MakeRequest(&ss_namespace2));
+  blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
+  ss_namespace2->OpenArea(origin1, mojo::MakeRequest(&leveldb_n2_o1));
+
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(leveldb_n2_o1.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+}
+
+TEST_F(SessionStorageContextMojoTest, InterruptedCloneChainWithDelete) {
+  std::string namespace_id1 = base::GenerateGUID();
+  std::string namespace_id2 = base::GenerateGUID();
+  std::string namespace_id3 = base::GenerateGUID();
+  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
+  context()->CreateSessionNamespace(namespace_id1);
+
+  context()->CloneSessionNamespace(
+      namespace_id1, namespace_id2,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->CloneSessionNamespace(
+      namespace_id2, namespace_id3,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->DeleteSessionNamespace(namespace_id2, false);
+
+  // Open the second namespace.
+  blink::mojom::SessionStorageNamespacePtr ss_namespace3;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id3,
+                                GetBadMessageCallback(),
+                                mojo::MakeRequest(&ss_namespace3));
+  blink::mojom::StorageAreaAssociatedPtr leveldb_n3_o1;
+  ss_namespace3->OpenArea(origin1, mojo::MakeRequest(&leveldb_n3_o1));
+
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(leveldb_n3_o1.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+}
+
+TEST_F(SessionStorageContextMojoTest, InterruptedTripleCloneChain) {
+  std::string namespace_id1 = base::GenerateGUID();
+  std::string namespace_id2 = base::GenerateGUID();
+  std::string namespace_id3 = base::GenerateGUID();
+  std::string namespace_id4 = base::GenerateGUID();
+  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
+  context()->CreateSessionNamespace(namespace_id1);
+
+  context()->CloneSessionNamespace(
+      namespace_id1, namespace_id2,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->CloneSessionNamespace(
+      namespace_id2, namespace_id3,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->CloneSessionNamespace(
+      namespace_id3, namespace_id4,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->DeleteSessionNamespace(namespace_id3, false);
+
+  // Open the second namespace.
+  blink::mojom::SessionStorageNamespacePtr ss_namespace4;
+  context()->OpenSessionStorage(kTestProcessId, namespace_id4,
+                                GetBadMessageCallback(),
+                                mojo::MakeRequest(&ss_namespace4));
+  blink::mojom::StorageAreaAssociatedPtr leveldb_n4_o1;
+  ss_namespace4->OpenArea(origin1, mojo::MakeRequest(&leveldb_n4_o1));
+
+  // Trigger the populated of namespace 2 by deleting namespace 1.
+  context()->DeleteSessionNamespace(namespace_id1, false);
+
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(leveldb_n4_o1.get(), &data));
+  EXPECT_EQ(0ul, data.size());
+}
+
+TEST_F(SessionStorageContextMojoTest, TotalCloneChainDeletion) {
+  std::string namespace_id1 = base::GenerateGUID();
+  std::string namespace_id2 = base::GenerateGUID();
+  std::string namespace_id3 = base::GenerateGUID();
+  std::string namespace_id4 = base::GenerateGUID();
+  url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
+  context()->CreateSessionNamespace(namespace_id1);
+
+  context()->CloneSessionNamespace(
+      namespace_id1, namespace_id2,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->CloneSessionNamespace(
+      namespace_id2, namespace_id3,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->CloneSessionNamespace(
+      namespace_id3, namespace_id4,
+      SessionStorageContextMojo::CloneType::kWaitForCloneOnNamespace);
+
+  context()->DeleteSessionNamespace(namespace_id2, false);
+  context()->DeleteSessionNamespace(namespace_id3, false);
+  context()->DeleteSessionNamespace(namespace_id1, false);
+  context()->DeleteSessionNamespace(namespace_id4, false);
+}
+
 }  // namespace
 
 TEST_F(SessionStorageContextMojoTest, PurgeMemoryDoesNotCrashOrHang) {

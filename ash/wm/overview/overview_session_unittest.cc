@@ -2979,13 +2979,14 @@ TEST_F(OverviewSessionTest, GridBounds) {
 
   // Test that with the bottom shelf, the grid should take up the entire display
   // minus the shelf area on the bottom regardless of auto hide behavior.
+  const int shelf_size = ShelfConstants::shelf_size();
   ToggleOverview();
-  EXPECT_EQ(gfx::Rect(0, 0, 600, 544), GetGridBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 600 - shelf_size), GetGridBounds());
   ToggleOverview();
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   ToggleOverview();
-  EXPECT_EQ(gfx::Rect(0, 0, 600, 544), GetGridBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 600, 600 - shelf_size), GetGridBounds());
   ToggleOverview();
 
   // Test that with the right shelf, the grid should take up the entire display
@@ -2993,12 +2994,12 @@ TEST_F(OverviewSessionTest, GridBounds) {
   shelf->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   ToggleOverview();
-  EXPECT_EQ(gfx::Rect(0, 0, 544, 600), GetGridBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 600 - shelf_size, 600), GetGridBounds());
   ToggleOverview();
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   ToggleOverview();
-  EXPECT_EQ(gfx::Rect(0, 0, 544, 600), GetGridBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 600 - shelf_size, 600), GetGridBounds());
   ToggleOverview();
 }
 

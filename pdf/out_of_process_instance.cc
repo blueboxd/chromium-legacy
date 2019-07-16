@@ -132,8 +132,6 @@ constexpr char kJSPositionX[] = "x";
 constexpr char kJSPositionY[] = "y";
 // Scroll by (Plugin -> Page)
 constexpr char kJSScrollByType[] = "scrollBy";
-// Cancel the stream URL request (Plugin -> Page)
-constexpr char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
 constexpr char kJSNavigateType[] = "navigate";
 constexpr char kJSNavigateUrl[] = "url";
@@ -1627,8 +1625,7 @@ OutOfProcessInstance::SearchString(const base::char16* string,
 }
 
 void OutOfProcessInstance::DocumentLoadComplete(
-    const PDFEngine::DocumentFeatures& document_features,
-    uint32_t file_size) {
+    const PDFEngine::DocumentFeatures& document_features) {
   // Clear focus state for OSK.
   FormTextFieldFocusChange(false);
 
@@ -1694,15 +1691,10 @@ void OutOfProcessInstance::DocumentLoadComplete(
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  static constexpr int32_t kMaxFileSizeInKB = 12 * 1024 * 1024;
-  HistogramCustomCounts("PDF.FileSizeInKB", file_size / 1024, 0,
-                        kMaxFileSizeInKB, 50);
   HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
                         1000000, 50);
   HistogramEnumeration("PDF.HasAttachment",
                        document_features.has_attachments ? 1 : 0, 2);
-  HistogramEnumeration("PDF.IsLinearized",
-                       document_features.is_linearized ? 1 : 0, 2);
   HistogramEnumeration("PDF.IsTagged", document_features.is_tagged ? 1 : 0, 2);
   HistogramEnumeration("PDF.FormType",
                        static_cast<int32_t>(document_features.form_type),
@@ -1923,12 +1915,6 @@ bool OutOfProcessInstance::IsPrintPreview() {
 
 uint32_t OutOfProcessInstance::GetBackgroundColor() {
   return background_color_;
-}
-
-void OutOfProcessInstance::CancelBrowserDownload() {
-  pp::VarDictionary message;
-  message.Set(kType, kJSCancelStreamUrlType);
-  PostMessage(message);
 }
 
 void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {

@@ -56,6 +56,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
@@ -85,6 +87,20 @@ void CheckView(views::View* subview) {
   EXPECT_TRUE(subview->GetVisible());
   EXPECT_TRUE(subview->IsDrawn());
   EXPECT_FALSE(subview->bounds().IsEmpty());
+}
+
+bool IsViewVisibleOnScreen(views::View* view) {
+  if (!view->IsDrawn())
+    return false;
+  if (view->layer() && !view->layer()->IsDrawn())
+    return false;
+  if (view->layer() && view->layer()->opacity() == 0.0f)
+    return false;
+
+  return display::Screen::GetScreen()
+      ->GetPrimaryDisplay()
+      .work_area()
+      .Intersects(view->GetBoundsInScreen());
 }
 
 class TestStartPageSearchResult : public TestSearchResult {
@@ -1911,6 +1927,23 @@ TEST_F(AppListViewTest, SetStateFailsWhenClosing) {
   view_->SetState(ash::AppListViewState::kFullscreenAllApps);
 
   ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
+}
+
+TEST_F(AppListViewTest, AppsGridViewVisibilityOnReopening) {
+  Initialize(false /*is_tablet_mode*/);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+  EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
+
+  view_->SetState(ash::AppListViewState::kFullscreenSearch);
+  SetAppListState(ash::AppListState::kStateSearchResults);
+  EXPECT_FALSE(IsViewVisibleOnScreen(apps_grid_view()));
+
+  // Close the app-list and re-show to fullscreen all apps.
+  view_->SetState(ash::AppListViewState::kClosed);
+  Show();
+  view_->SetState(ash::AppListViewState::kFullscreenAllApps);
+  EXPECT_TRUE(IsViewVisibleOnScreen(apps_grid_view()));
 }
 
 // Tests that going into a folder view, then setting the AppListState to PEEKING

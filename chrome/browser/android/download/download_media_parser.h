@@ -114,9 +114,6 @@ class DownloadMediaParser : public MediaParserProvider, public media::MediaLog {
   // and the parser will fail gracefully after timeout.
   base::OneShotTimer timer_;
 
-  // The time that we start to parse media file.
-  base::Time start_time_;
-
   // Cached video frame data, which contains either encoded frame or decoded
   // video frame. Encoded frame is extracted with ffmpeg, the data can be large
   // for high resolution video.

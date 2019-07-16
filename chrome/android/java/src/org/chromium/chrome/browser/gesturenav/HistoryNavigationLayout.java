@@ -19,7 +19,6 @@ import android.widget.FrameLayout;
  * TODO(jinsukkim): Write a test verifying UI logic.
  */
 public class HistoryNavigationLayout extends FrameLayout {
-    private boolean mDelegateSwipes;
     private boolean mNavigationEnabled;
     private GestureDetector mDetector;
     private NavigationHandler mNavigationHandler;
@@ -39,7 +38,6 @@ public class HistoryNavigationLayout extends FrameLayout {
     public void setNavigationDelegate(HistoryNavigationDelegate delegate) {
         mNavigationEnabled = delegate.isEnabled();
         if (!mNavigationEnabled) return;
-        mDelegateSwipes = delegate.delegateSwipes();
         mDetector = new GestureDetector(getContext(), new SideNavGestureListener());
         mNavigationHandler = new NavigationHandler(
                 this, delegate.createActionDelegate(), NavigationGlowFactory.forJavaLayer(this));
@@ -66,7 +64,7 @@ public class HistoryNavigationLayout extends FrameLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent e) {
         // Do not propagate touch events down to children if navigation UI was triggered.
-        if (mDetector != null && !mDelegateSwipes && mNavigationHandler.isActive()) return true;
+        if (mDetector != null && mNavigationHandler.isActive()) return true;
         return super.onInterceptTouchEvent(e);
     }
 
@@ -82,7 +80,7 @@ public class HistoryNavigationLayout extends FrameLayout {
             // invoke |wasLastSideSwipeGestureConsumed| which may be expensive less often.
             if (mNavigationHandler.isStopped()) return true;
 
-            if (mDelegateSwipes && wasLastSideSwipeGestureConsumed()) {
+            if (wasLastSideSwipeGestureConsumed()) {
                 mNavigationHandler.reset();
                 return true;
             }

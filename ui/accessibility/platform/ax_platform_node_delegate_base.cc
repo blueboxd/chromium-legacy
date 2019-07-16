@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_data.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 
 namespace ui {
 
@@ -50,6 +51,110 @@ int AXPlatformNodeDelegateBase::GetChildCount() {
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::ChildAtIndex(int index) {
   return nullptr;
+}
+
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetFirstChild() {
+  if (GetChildCount() > 0)
+    return ChildAtIndex(0);
+  return nullptr;
+}
+
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetLastChild() {
+  if (GetChildCount() > 0)
+    return ChildAtIndex(GetChildCount() - 1);
+  return nullptr;
+}
+
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetNextSibling() {
+  AXPlatformNode* parent_node =
+      ui::AXPlatformNode::FromNativeViewAccessible(GetParent());
+  if (parent_node) {
+    AXPlatformNodeDelegate* parent = parent_node->GetDelegate();
+    if (parent && GetIndexInParent() >= 0) {
+      int next_index = GetIndexInParent() + 1;
+      if (next_index >= 0 && next_index < parent->GetChildCount())
+        return parent->ChildAtIndex(next_index);
+    }
+  }
+  return nullptr;
+}
+
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetPreviousSibling() {
+  AXPlatformNode* parent_node =
+      ui::AXPlatformNode::FromNativeViewAccessible(GetParent());
+  if (parent_node) {
+    AXPlatformNodeDelegate* parent = parent_node->GetDelegate();
+    if (parent && GetIndexInParent() >= 0) {
+      int next_index = GetIndexInParent() - 1;
+      if (next_index >= 0 && next_index < parent->GetChildCount())
+        return parent->ChildAtIndex(next_index);
+    }
+  }
+  return nullptr;
+}
+
+AXPlatformNodeDelegateBase::ChildIteratorBase::ChildIteratorBase(
+    AXPlatformNodeDelegateBase* parent,
+    int index)
+    : index_(index), parent_(parent) {
+  DCHECK(parent);
+  DCHECK(0 <= index && index <= parent->GetChildCount());
+}
+
+AXPlatformNodeDelegateBase::ChildIteratorBase::ChildIteratorBase(
+    const AXPlatformNodeDelegateBase::ChildIteratorBase& it)
+    : index_(it.index_), parent_(it.parent_) {
+  DCHECK(parent_);
+}
+
+bool AXPlatformNodeDelegateBase::ChildIteratorBase::operator==(
+    const AXPlatformNodeDelegate::ChildIterator& rhs) const {
+  return rhs.GetIndexInParent() == index_;
+}
+
+bool AXPlatformNodeDelegateBase::ChildIteratorBase::operator!=(
+    const AXPlatformNodeDelegate::ChildIterator& rhs) const {
+  return rhs.GetIndexInParent() != index_;
+}
+
+void AXPlatformNodeDelegateBase::ChildIteratorBase::operator++() {
+  index_++;
+}
+
+void AXPlatformNodeDelegateBase::ChildIteratorBase::operator++(int) {
+  index_++;
+}
+
+void AXPlatformNodeDelegateBase::ChildIteratorBase::operator--() {
+  DCHECK_GT(index_, 0);
+  index_--;
+}
+
+void AXPlatformNodeDelegateBase::ChildIteratorBase::operator--(int) {
+  DCHECK_GT(index_, 0);
+  index_--;
+}
+
+gfx::NativeViewAccessible
+AXPlatformNodeDelegateBase::ChildIteratorBase::GetNativeViewAccessible() const {
+  if (index_ < parent_->GetChildCount())
+    return parent_->ChildAtIndex(index_);
+
+  return nullptr;
+}
+
+int AXPlatformNodeDelegateBase::ChildIteratorBase::GetIndexInParent() const {
+  return index_;
+}
+
+std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
+AXPlatformNodeDelegateBase::ChildrenBegin() {
+  return std::make_unique<ChildIteratorBase>(this, 0);
+}
+
+std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
+AXPlatformNodeDelegateBase::ChildrenEnd() {
+  return std::make_unique<ChildIteratorBase>(this, GetChildCount());
 }
 
 base::string16 AXPlatformNodeDelegateBase::GetHypertext() const {

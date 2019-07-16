@@ -54,7 +54,7 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
     @Override
     public void displayMenu(final Activity activity, ContextMenuParams params,
             List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
-            final Runnable onMenuShown, final Runnable onMenuClosed) {
+            final Runnable onMenuShown, final Callback<Boolean> onMenuClosed) {
         mCallback = onItemClicked;
 
         float density = Resources.getSystem().getDisplayMetrics().density;
@@ -66,7 +66,8 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
 
         mContextMenuDialog.setOnShowListener(dialogInterface -> { onMenuShown.run(); });
 
-        mContextMenuDialog.setOnDismissListener(dialogInterface -> { onMenuClosed.run(); });
+        mContextMenuDialog.setOnDismissListener(
+                dialogInterface -> { onMenuClosed.onResult(false); });
 
         mContextMenuDialog.show();
     }

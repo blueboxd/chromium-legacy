@@ -144,11 +144,35 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual BrowserAccessibility* PlatformGetLastChild() const;
   virtual BrowserAccessibility* PlatformGetNextSibling() const;
   virtual BrowserAccessibility* PlatformGetPreviousSibling() const;
-  using PlatformChildIterator = ui::AXNode::ChildIteratorBase<
-      BrowserAccessibility,
-      &BrowserAccessibility::PlatformGetNextSibling,
-      &BrowserAccessibility::PlatformGetPreviousSibling,
-      &BrowserAccessibility::PlatformGetLastChild>;
+
+  class CONTENT_EXPORT PlatformChildIterator : public ChildIterator {
+   public:
+    PlatformChildIterator(const BrowserAccessibility* parent,
+                          BrowserAccessibility* child);
+    PlatformChildIterator(const PlatformChildIterator& it);
+    ~PlatformChildIterator() override;
+    bool operator==(const ChildIterator& rhs) const override;
+    bool operator!=(const ChildIterator& rhs) const override;
+    void operator++() override;
+    void operator++(int) override;
+    void operator--() override;
+    void operator--(int) override;
+    gfx::NativeViewAccessible GetNativeViewAccessible() const override;
+    BrowserAccessibility* get() const;
+    int GetIndexInParent() const override;
+
+    BrowserAccessibility& operator*() const;
+    BrowserAccessibility* operator->() const;
+
+   private:
+    const BrowserAccessibility* parent_;
+    ui::AXNode::ChildIteratorBase<
+        BrowserAccessibility,
+        &BrowserAccessibility::PlatformGetNextSibling,
+        &BrowserAccessibility::PlatformGetPreviousSibling,
+        &BrowserAccessibility::PlatformGetLastChild>
+        platform_iterator;
+  };
 
   PlatformChildIterator PlatformChildrenBegin() const;
   PlatformChildIterator PlatformChildrenEnd() const;
@@ -417,6 +441,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
+  gfx::NativeViewAccessible GetFirstChild() override;
+  gfx::NativeViewAccessible GetLastChild() override;
+  gfx::NativeViewAccessible GetNextSibling() override;
+  gfx::NativeViewAccessible GetPreviousSibling() override;
+
+  std::unique_ptr<ChildIterator> ChildrenBegin() override;
+  std::unique_ptr<ChildIterator> ChildrenEnd() override;
+
   base::string16 GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
   base::string16 GetInnerText() const override;

@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 #include "remoting/host/register_support_host_request.h"
-#include "remoting/signaling/muxing_signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace grpc {
 class Status;
@@ -31,8 +31,6 @@ class OAuthTokenGetter;
 
 // A RegisterSupportHostRequest implementation that uses Remoting API to
 // register the host.
-//
-// Note that IT ONLY WORKS WITH MuxingSignalStrategy.
 class RemotingRegisterSupportHostRequest final
     : public RegisterSupportHostRequest,
       public SignalStrategy::Listener {
@@ -64,9 +62,6 @@ class RemotingRegisterSupportHostRequest final
 
   class RegisterSupportHostClientImpl;
 
-  // MuxingSignalStrategy might notify a CONNECTED state for more than once, so
-  // this is necessary to prevent trying to register twice when a strategy is
-  // connected after the timeout.
   enum class State {
     NOT_STARTED,
     REGISTERING,
@@ -87,7 +82,7 @@ class RemotingRegisterSupportHostRequest final
                    base::TimeDelta lifetime,
                    protocol::ErrorCode error_code);
 
-  MuxingSignalStrategy* signal_strategy_ = nullptr;
+  SignalStrategy* signal_strategy_ = nullptr;
   scoped_refptr<RsaKeyPair> key_pair_;
   RegisterCallback callback_;
   std::unique_ptr<OAuthTokenGetter> token_getter_;

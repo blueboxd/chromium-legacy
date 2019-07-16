@@ -24,7 +24,7 @@ using GrpcAsyncServerStreamingRpcFunction =
     base::OnceCallback<std::unique_ptr<grpc::ClientAsyncReader<ResponseType>>(
         grpc::ClientContext*,
         const RequestType&,
-        grpc::CompletionQueue*,
+        grpc_impl::CompletionQueue*,
         void*)>;
 
 // GrpcAsyncRequest implementation for server streaming call. The object is
@@ -93,7 +93,7 @@ class GrpcAsyncServerStreamingRequest
       base::RepeatingCallback<void(const ResponseType&)>;
   using StartAndCreateReaderCallback =
       base::OnceCallback<std::unique_ptr<grpc::ClientAsyncReader<ResponseType>>(
-          grpc::CompletionQueue* cq,
+          grpc_impl::CompletionQueue* cq,
           void* event_tag)>;
 
   ~GrpcAsyncServerStreamingRequest() override = default;
@@ -128,7 +128,7 @@ class GrpcAsyncServerStreamingRequest
 
   // GrpcAsyncRequest implementations
   void Start(const RunTaskCallback& run_task_cb,
-             grpc::CompletionQueue* cq,
+             grpc_impl::CompletionQueue* cq,
              void* event_tag) override {
     reader_ = std::move(create_reader_callback_).Run(cq, event_tag);
     set_run_task_callback(run_task_cb);

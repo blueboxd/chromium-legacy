@@ -825,8 +825,6 @@ Status ExecuteSetTimeoutsW3C(Session* session,
       session->page_load_timeout = timeout;
     } else if (type == "implicit") {
       session->implicit_wait = timeout;
-    } else {
-      return Status(kInvalidArgument, "unknown type of timeout: " + type);
     }
   }
   return Status(kOk);

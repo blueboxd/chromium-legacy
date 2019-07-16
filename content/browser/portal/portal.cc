@@ -210,16 +210,30 @@ void Portal::Activate(blink::TransferableMessage data,
 
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
   bool is_loading = portal_contents_impl_->IsLoading();
-  FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
-      portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
-  outer_frame_tree_node->RemoveObserver(this);
-  std::unique_ptr<WebContents> portal_contents =
-      portal_contents_impl_->DetachFromOuterWebContents();
-  owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
+  std::unique_ptr<WebContents> portal_contents;
+
+  if (portal_contents_impl_->GetOuterWebContents()) {
+    FrameTreeNode* outer_frame_tree_node = FrameTreeNode::GloballyFindByID(
+        portal_contents_impl_->GetOuterDelegateFrameTreeNodeId());
+    outer_frame_tree_node->RemoveObserver(this);
+    portal_contents = portal_contents_impl_->DetachFromOuterWebContents();
+    owner_render_frame_host_->RemoveChild(outer_frame_tree_node);
+  } else {
+    // Portals created for predecessor pages during activation may not be
+    // attached to an outer WebContents, and may not have an outer frame tree
+    // node created (i.e. CreateProxyAndAttachPortal isn't called). In this
+    // case, we can skip a few of the detachment steps above.
+    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+            portal_contents_impl_->GetMainFrame()->GetView())) {
+      view->Destroy();
+    }
+    portal_contents_impl_->CreateRenderWidgetHostViewForRenderManager(
+        portal_contents_impl_->GetRenderViewHost());
+    portal_contents = std::move(portal_contents_);
+  }
 
   auto* outer_contents_main_frame_view = static_cast<RenderWidgetHostViewBase*>(
       outer_contents->GetMainFrame()->GetView());
-
   if (outer_contents_main_frame_view) {
     // Take fallback contents from previous WebContents so that the activation
     // is smooth without flashes.

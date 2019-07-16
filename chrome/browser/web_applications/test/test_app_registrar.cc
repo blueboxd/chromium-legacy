@@ -52,16 +52,6 @@ bool TestAppRegistrar::WasExternalAppUninstalledByUser(
   return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
-bool TestAppRegistrar::HasScopeUrl(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-GURL TestAppRegistrar::GetScopeUrlForApp(const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return GURL();
-}
-
 std::map<AppId, GURL> TestAppRegistrar::GetExternallyInstalledApps(
     InstallSource install_source) const {
   std::map<AppId, GURL> apps;
@@ -122,6 +112,11 @@ base::Optional<SkColor> TestAppRegistrar::GetAppThemeColor(
 const GURL& TestAppRegistrar::GetAppLaunchURL(const AppId&) const {
   NOTIMPLEMENTED();
   return GURL::EmptyGURL();
+}
+
+base::Optional<GURL> TestAppRegistrar::GetAppScope(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return base::nullopt;
 }
 
 }  // namespace web_app

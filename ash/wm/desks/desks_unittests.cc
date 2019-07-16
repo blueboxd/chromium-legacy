@@ -1013,11 +1013,12 @@ TEST_P(DesksTest, DragWindowToDesk) {
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
 
-  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
-  wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win2 = CreateTestWindow(gfx::Rect(0, 0, 200, 150));
+  wm::ActivateWindow(win1.get());
+  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
 
-  ui::Shadow* shadow = ::wm::ShadowController::GetShadowForWindow(window.get());
+  ui::Shadow* shadow = ::wm::ShadowController::GetShadowForWindow(win1.get());
   ASSERT_TRUE(shadow);
   ASSERT_TRUE(shadow->layer());
   EXPECT_TRUE(shadow->layer()->GetTargetVisibility());
@@ -1026,14 +1027,13 @@ TEST_P(DesksTest, DragWindowToDesk) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   auto* overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(2u, overview_grid->size());
 
   // While in overview mode, the window's shadow is hidden.
   EXPECT_FALSE(shadow->layer()->GetTargetVisibility());
 
   auto* overview_session = overview_controller->overview_session();
-  auto* overview_item =
-      overview_session->GetOverviewItemForWindow(window.get());
+  auto* overview_item = overview_session->GetOverviewItemForWindow(win1.get());
   ASSERT_TRUE(overview_item);
   const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
 
@@ -1044,14 +1044,15 @@ TEST_P(DesksTest, DragWindowToDesk) {
   EXPECT_EQ(desk_1, desk_1_mini_view->desk());
   // Drag it and drop it on its same desk's mini_view. Nothing happens, it
   // should be returned back to its original target bounds.
+  auto* event_generator = GetEventGenerator();
   DragItemToPoint(overview_item,
                   desk_1_mini_view->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator(),
+                  event_generator,
                   /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_EQ(2u, overview_grid->size());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
-  EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
 
   // Now drag it to desk_2's mini_view. The overview grid should now show the
   // "no-windows" widget, and the window should move to desk_2.
@@ -1059,14 +1060,33 @@ TEST_P(DesksTest, DragWindowToDesk) {
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,
                   desk_2_mini_view->GetBoundsInScreen().CenterPoint(),
-                  GetEventGenerator(),
+                  event_generator,
                   /*by_touch_gestures=*/GetParam());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_TRUE(overview_grid->empty());
-  EXPECT_FALSE(DoesActiveDeskContainWindow(window.get()));
-  EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
-  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
+  EXPECT_EQ(1u, overview_grid->size());
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
+  EXPECT_TRUE(base::Contains(desk_2->windows(), win1.get()));
   EXPECT_FALSE(overview_grid->drop_target_widget());
+
+  // After dragging an item outside of overview to another desk, the focus
+  // should not be given to another window in overview, and should remain on the
+  // OverviewModeFocusedWidget.
+  EXPECT_EQ(overview_session->GetOverviewFocusWindow(), wm::GetActiveWindow());
+
+  // It is possible to select the remaining window which will activate it and
+  // exit overview.
+  overview_item = overview_session->GetOverviewItemForWindow(win2.get());
+  ASSERT_TRUE(overview_item);
+  const auto window_center =
+      gfx::ToFlooredPoint(overview_item->target_bounds().CenterPoint());
+  if (GetParam() /* uses gestures */) {
+    event_generator->GestureTapAt(window_center);
+  } else {
+    event_generator->MoveMouseTo(window_center);
+    event_generator->ClickLeftButton();
+  }
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
 
   // After the window is dropped onto another desk, its shadow should be
   // restored properly.

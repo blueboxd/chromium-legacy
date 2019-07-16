@@ -229,16 +229,7 @@ class DirectoryTreeNamingController {
   detach_() {
     assert(!!this.currentDirectoryItem_);
 
-    const renameInputElementPlaceholder =
-        this.currentDirectoryItem_.firstElementChild.getElementsByClassName(
-            'rename-placeholder');
-
-    if (this.isRemovableRoot_ && renameInputElementPlaceholder.length === 1) {
-      renameInputElementPlaceholder[0].removeChild(this.inputElement_);
-    } else {
-      this.currentDirectoryItem_.firstElementChild.removeChild(
-          this.inputElement_);
-    }
+    this.inputElement_.remove();
 
     this.currentDirectoryItem_.removeAttribute('renaming');
     this.currentDirectoryItem_ = null;

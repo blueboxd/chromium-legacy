@@ -27,6 +27,9 @@ bool DefaultSearchProviderIsGoogle(
 // Returns true if |url| corresponds to a New Tab page or its service worker.
 bool IsNTPOrRelatedURL(const GURL& url, Profile* profile);
 
+// Returns whether a |url| corresponds to a New Tab page.
+bool IsNTPURL(const GURL& url);
+
 // Returns true if the active navigation entry of |contents| is a New Tab page
 // rendered in an Instant process. This is the last committed entry if it
 // exists, and otherwise the visible entry.

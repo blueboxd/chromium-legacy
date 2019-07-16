@@ -27,7 +27,10 @@ TabletMode::~TabletMode() {
 }
 
 TabletMode::Waiter::Waiter(bool enable) : enable_(enable) {
-  TabletMode::Get()->AddObserver(this);
+  if (TabletMode::Get()->InTabletMode() == enable_)
+    run_loop_.Quit();
+  else
+    TabletMode::Get()->AddObserver(this);
 }
 
 TabletMode::Waiter::~Waiter() {

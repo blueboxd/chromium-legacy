@@ -278,29 +278,40 @@ TEST_F(BrowserAccessibilityTest, PlatformChildIterator) {
   // PlatformChildren(root_obj) = {4, 5, 13, 14, 11, 2, 3}
   BrowserAccessibility::PlatformChildIterator platform_iterator =
       root_obj->PlatformChildrenBegin();
-  EXPECT_EQ(4, (*platform_iterator).GetId());
+  EXPECT_EQ(4, platform_iterator->GetId());
 
-  EXPECT_EQ(5, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(5, platform_iterator->GetId());
 
-  EXPECT_EQ(13, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(13, platform_iterator->GetId());
 
-  EXPECT_EQ(14, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(14, platform_iterator->GetId());
 
-  EXPECT_EQ(13, (*--platform_iterator).GetId());
+  --platform_iterator;
+  EXPECT_EQ(13, platform_iterator->GetId());
 
-  EXPECT_EQ(5, (*--platform_iterator).GetId());
+  --platform_iterator;
+  EXPECT_EQ(5, platform_iterator->GetId());
 
-  EXPECT_EQ(13, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(13, platform_iterator->GetId());
 
-  EXPECT_EQ(14, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(14, platform_iterator->GetId());
 
-  EXPECT_EQ(11, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(11, platform_iterator->GetId());
 
-  EXPECT_EQ(2, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(2, platform_iterator->GetId());
 
-  EXPECT_EQ(3, (*++platform_iterator).GetId());
+  ++platform_iterator;
+  EXPECT_EQ(3, platform_iterator->GetId());
 
-  EXPECT_EQ(root_obj->PlatformChildrenEnd(), ++platform_iterator);
+  ++platform_iterator;
+  EXPECT_EQ(root_obj->PlatformChildrenEnd(), platform_iterator);
 
   // test empty list
   // PlatformChildren(2) = {}

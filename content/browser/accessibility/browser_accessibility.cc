@@ -1469,6 +1469,118 @@ gfx::NativeViewAccessible BrowserAccessibility::ChildAtIndex(int index) {
   return child->GetNativeViewAccessible();
 }
 
+gfx::NativeViewAccessible BrowserAccessibility::GetFirstChild() {
+  auto* child = PlatformGetFirstChild();
+  if (!child)
+    return nullptr;
+
+  return child->GetNativeViewAccessible();
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::GetLastChild() {
+  auto* child = PlatformGetLastChild();
+  if (!child)
+    return nullptr;
+
+  return child->GetNativeViewAccessible();
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::GetNextSibling() {
+  auto* sibling = PlatformGetNextSibling();
+  if (!sibling)
+    return nullptr;
+
+  return sibling->GetNativeViewAccessible();
+}
+
+gfx::NativeViewAccessible BrowserAccessibility::GetPreviousSibling() {
+  auto* sibling = PlatformGetPreviousSibling();
+  if (!sibling)
+    return nullptr;
+
+  return sibling->GetNativeViewAccessible();
+}
+
+BrowserAccessibility::PlatformChildIterator::PlatformChildIterator(
+    const PlatformChildIterator& it)
+    : parent_(it.parent_), platform_iterator(it.platform_iterator) {}
+
+BrowserAccessibility::PlatformChildIterator::PlatformChildIterator(
+    const BrowserAccessibility* parent,
+    BrowserAccessibility* child)
+    : parent_(parent), platform_iterator(parent, child) {
+  DCHECK(parent && parent->instance_active());
+}
+
+BrowserAccessibility::PlatformChildIterator::~PlatformChildIterator() {}
+
+bool BrowserAccessibility::PlatformChildIterator::operator==(
+    const ChildIterator& rhs) const {
+  return GetIndexInParent() == rhs.GetIndexInParent();
+}
+
+bool BrowserAccessibility::PlatformChildIterator::operator!=(
+    const ChildIterator& rhs) const {
+  return GetIndexInParent() != rhs.GetIndexInParent();
+}
+
+void BrowserAccessibility::PlatformChildIterator::operator++() {
+  DCHECK(parent_->instance_active());
+  ++platform_iterator;
+}
+
+void BrowserAccessibility::PlatformChildIterator::operator++(int) {
+  DCHECK(parent_->instance_active());
+  ++platform_iterator;
+}
+
+void BrowserAccessibility::PlatformChildIterator::operator--() {
+  DCHECK(parent_->instance_active());
+  --platform_iterator;
+}
+
+void BrowserAccessibility::PlatformChildIterator::operator--(int) {
+  DCHECK(parent_->instance_active());
+  --platform_iterator;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::get() const {
+  DCHECK(parent_->instance_active());
+  return platform_iterator.get();
+}
+
+gfx::NativeViewAccessible
+BrowserAccessibility::PlatformChildIterator::GetNativeViewAccessible() const {
+  return platform_iterator->GetNativeViewAccessible();
+}
+
+int BrowserAccessibility::PlatformChildIterator::GetIndexInParent() const {
+  DCHECK(parent_->instance_active());
+  if (platform_iterator == parent_->PlatformChildrenEnd().platform_iterator)
+    return parent_->PlatformChildCount();
+
+  return platform_iterator->GetIndexInParent();
+}
+BrowserAccessibility& BrowserAccessibility::PlatformChildIterator::operator*()
+    const {
+  return *platform_iterator;
+}
+
+BrowserAccessibility* BrowserAccessibility::PlatformChildIterator::operator->()
+    const {
+  return platform_iterator.get();
+}
+
+std::unique_ptr<ui::AXPlatformNodeDelegate::ChildIterator>
+BrowserAccessibility::ChildrenBegin() {
+  return std::make_unique<PlatformChildIterator>(PlatformChildrenBegin());
+}
+
+std::unique_ptr<ui::AXPlatformNodeDelegate::ChildIterator>
+BrowserAccessibility::ChildrenEnd() {
+  return std::make_unique<PlatformChildIterator>(PlatformChildrenEnd());
+}
+
 gfx::NativeViewAccessible BrowserAccessibility::HitTestSync(int x, int y) {
   auto* accessible = manager_->CachingAsyncHitTest(gfx::Point(x, y));
   if (!accessible)

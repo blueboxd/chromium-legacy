@@ -242,6 +242,27 @@ testcase.saveFileDialogDownloads = () => {
 };
 
 /**
+ * Tests opening save file dialog on Downloads and using New Folder button.
+ */
+testcase.saveFileDialogDownloadsNewFolderButton = async () => {
+  // Open Save as dialog.
+  chrome.fileSystem.chooseEntry({type: 'saveFile'}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Check: New Folder button should be enabled and click on it.
+  const query = '#new-folder-button:not([disabled])';
+  const newFolderButton = await remoteCall.waitAndClickElement(appId, query);
+
+  // Wait for the new folder with input to appear, assume the rest of the
+  // process works (covered by other tests).
+  const textInput = '#file-list .table-row[renaming] input.rename';
+  await remoteCall.waitForElement(appId, textInput);
+};
+
+/**
  * Tests opening file dialog on Downloads and closing it with Cancel button.
  */
 testcase.openFileDialogCancelDownloads = () => {

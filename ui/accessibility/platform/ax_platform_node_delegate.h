@@ -87,6 +87,36 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get the child of a node given a 0-based index.
   virtual gfx::NativeViewAccessible ChildAtIndex(int index) = 0;
 
+  // Gets the first child of a node, or nullptr if no children exist.
+  virtual gfx::NativeViewAccessible GetFirstChild() = 0;
+
+  // Gets the last child of a node, or nullptr if no children exist.
+  virtual gfx::NativeViewAccessible GetLastChild() = 0;
+
+  // Gets the next sibling of a given node, or nullptr if no such node exists.
+  virtual gfx::NativeViewAccessible GetNextSibling() = 0;
+
+  // Gets the previous sibling of a given node, or nullptr if no such node
+  // exists.
+  virtual gfx::NativeViewAccessible GetPreviousSibling() = 0;
+
+  class ChildIterator {
+   public:
+    virtual ~ChildIterator() {}
+    virtual bool operator==(const ChildIterator& rhs) const = 0;
+    virtual bool operator!=(const ChildIterator& rhs) const = 0;
+    virtual void operator++() = 0;
+    virtual void operator++(int) = 0;
+    virtual void operator--() = 0;
+    virtual void operator--(int) = 0;
+    virtual gfx::NativeViewAccessible GetNativeViewAccessible() const = 0;
+    virtual int GetIndexInParent() const = 0;
+  };
+  virtual std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
+  ChildrenBegin() = 0;
+  virtual std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
+  ChildrenEnd() = 0;
+
   // Returns the text of this node and represent the text of descendant nodes
   // with a special character in place of every embedded object. This represents
   // the concept of text in ATK and IA2 APIs.

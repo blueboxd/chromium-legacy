@@ -869,10 +869,6 @@ void PDFiumEngine::OnDocumentCanceled() {
     OnDocumentComplete();
 }
 
-void PDFiumEngine::CancelBrowserDownload() {
-  client_->CancelBrowserDownload();
-}
-
 void PDFiumEngine::FinishLoadingDocument() {
   DCHECK(doc());
   DCHECK(doc_loader_->IsDocumentComplete());
@@ -912,13 +908,10 @@ void PDFiumEngine::FinishLoadingDocument() {
     DocumentFeatures document_features;
     document_features.page_count = pages_.size();
     document_features.has_attachments = (FPDFDoc_GetAttachmentCount(doc()) > 0);
-    document_features.is_linearized =
-        (FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED);
     document_features.is_tagged = FPDFCatalog_IsTagged(doc());
     document_features.form_type =
         static_cast<FormType>(FPDF_GetFormType(doc()));
-    client_->DocumentLoadComplete(document_features,
-                                  doc_loader_->BytesReceived());
+    client_->DocumentLoadComplete(document_features);
   }
 }
 

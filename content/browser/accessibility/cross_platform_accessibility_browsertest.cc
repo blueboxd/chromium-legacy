@@ -461,9 +461,10 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_STREQ(
       "Button 1",
       GetAttr((*it).node(), ax::mojom::StringAttribute::kName).c_str());
+  ++it;
   EXPECT_STREQ(
       "iframe",
-      GetAttr((*++it).node(), ax::mojom::StringAttribute::kHtmlTag).c_str());
+      GetAttr((*it).node(), ax::mojom::StringAttribute::kHtmlTag).c_str());
   EXPECT_EQ(1U, (*it).PlatformChildCount());
   auto iframe_iterator = (*it).PlatformChildrenBegin();
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, (*iframe_iterator).GetData().role);
@@ -474,13 +475,14 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_STREQ("Button 2", GetAttr((*iframe_iterator).node(),
                                    ax::mojom::StringAttribute::kName)
                                .c_str());
-  EXPECT_STREQ("Button 3", GetAttr((*++iframe_iterator).node(),
+  ++iframe_iterator;
+  EXPECT_STREQ("Button 3", GetAttr((*iframe_iterator).node(),
                                    ax::mojom::StringAttribute::kName)
                                .c_str());
-
+  ++it;
   EXPECT_STREQ(
       "Button 4",
-      GetAttr((*++it).node(), ax::mojom::StringAttribute::kName).c_str());
+      GetAttr((*it).node(), ax::mojom::StringAttribute::kName).c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,

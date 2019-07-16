@@ -1643,7 +1643,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
   // Add more buttons until OverflowBubble is scrollable and it has 3 invisible
   // items.
-  while (bubble_view_api.GetContentsSize().width() <
+  while (bubble_view->shelf_view()->GetPreferredSize().width() <
          (bubble_view->GetContentsBounds().width() + 3 * item_width)) {
     AddAppShortcut();
   }
@@ -1675,14 +1675,16 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
 
   // Scroll the overflow shelf view a little bit. Then verifies that both arrow
   // buttons show.
-  bubble_view_api.ScrollByXOffset(item_width);
+  bubble_view->ScrollByXOffset(item_width, /*animate=*/false);
   EXPECT_EQ(OverflowBubbleView::SHOW_BUTTONS, bubble_view->layout_strategy());
   EXPECT_TRUE(left_arrow_button->GetVisible());
   EXPECT_TRUE(right_arrow_button->GetVisible());
 
   // Scroll sufficiently to completely show last item.
-  bubble_view_api.ScrollByXOffset(bubble_view_api.GetContentsSize().width() -
-                                  bubble_view->GetContentsBounds().width());
+  bubble_view->ScrollByXOffset(
+      bubble_view->shelf_view()->GetPreferredSize().width() -
+          bubble_view->GetContentsBounds().width(),
+      /*animate=*/false);
   drag_reinsert_bounds =
       test_for_overflow_view.GetBoundsForDragInsertInScreen();
   first_point = first_button->GetBoundsInScreen().CenterPoint();
@@ -1762,6 +1764,130 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Checks that a point of overflow bubble in primary shelf should not be
   // contained by insert bounds of secondary shelf.
   EXPECT_FALSE(drag_reinsert_bounds_in_secondary.Contains(point_in_shelf_view));
+}
+
+// Verifies that the arrow buttons of OverflowBubbleView work as expected.
+TEST_F(ShelfViewTest, CheckOverflowBubbleViewArrowButton) {
+  UpdateDisplay("300x600");
+  AddButtonsUntilOverflow();
+
+  // Add enough shelf items to test the arrow button.
+  for (int i = 0; i < 5; i++)
+    AddAppShortcut();
+
+  // Show overflow bubble.
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
+
+  OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
+  int item_count = bubble_view->shelf_view()->last_visible_index() -
+                   bubble_view->shelf_view()->first_visible_index() + 1;
+  ASSERT_EQ(7, item_count);
+  OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
+  views::View* left_arrow_button = bubble_view->left_arrow();
+  views::View* right_arrow_button = bubble_view->right_arrow();
+  ShelfViewTestAPI test_for_overflow_view(
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
+  const gfx::Rect overflow_bubble_bounds = bubble_view->GetBoundsInScreen();
+  const gfx::Size shelf_icon_size(kShelfButtonSize, kShelfButtonSize);
+  const int arrow_button_size = OverflowBubbleView::kArrowButtonSize;
+  const int bubble_view_min_margin = OverflowBubbleView::kMinimumMargin;
+  const int end_padding = OverflowBubbleView::kEndPadding;
+  const int unit = kShelfButtonSize + kShelfButtonSpacing;
+
+  // Verifies that the overflow bubble has the correct bounds. In detail:
+  // (1) The width of the overflow bubble should be the multiple of |unit|.
+  // (2) The overflow bubble's gap between left and right display edge should
+  // be the same.
+  EXPECT_EQ(
+      overflow_bubble_bounds.origin().x(),
+      GetPrimaryDisplay().bounds().right() - overflow_bubble_bounds.right());
+  const int available_width =
+      GetPrimaryDisplay().bounds().width() - 2 * bubble_view_min_margin;
+  const int rd = available_width % unit;
+  EXPECT_EQ(rd / 2 + bubble_view_min_margin,
+            overflow_bubble_bounds.origin().x());
+  EXPECT_EQ(0, overflow_bubble_bounds.width() % unit);
+
+  // Verifies the following things right after showing the overflow bubble view:
+  // (1) The layout strategy is SHOW_RIGHT_ARROW_BUTTON.
+  // (2) The right button is visible.
+  // (3) The left button is invisible.
+  // (4) The first visible shelf button has the correct origin.
+  EXPECT_EQ(OverflowBubbleView::SHOW_RIGHT_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+  EXPECT_TRUE(right_arrow_button->GetVisible());
+  EXPECT_FALSE(left_arrow_button->GetVisible());
+  gfx::Rect expected_first_icon_bounds(overflow_bubble_bounds.origin(),
+                                       shelf_icon_size);
+  expected_first_icon_bounds.Offset(end_padding, 0);
+  EXPECT_EQ(expected_first_icon_bounds,
+            test_for_overflow_view
+                .GetButton(bubble_view->shelf_view()->first_visible_index())
+                ->GetBoundsInScreen());
+
+  // Taps at the right arrow button.
+  const gfx::Point right_button_center =
+      right_arrow_button->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureTapAt(right_button_center);
+  base::RunLoop().RunUntilIdle();
+
+  // Verifies that the layout strategy is SHOW_BUTTONS.
+  EXPECT_EQ(OverflowBubbleView::SHOW_BUTTONS, bubble_view->layout_strategy());
+
+  // Verifies that the right button shows in the expected bounds.
+  EXPECT_TRUE(right_arrow_button->GetVisible());
+  gfx::Rect expected_right_arrow_bounds =
+      gfx::Rect(overflow_bubble_bounds.width() - kShelfButtonSize, 0,
+                kShelfButtonSize, kShelfButtonSize);
+  expected_right_arrow_bounds.ClampToCenteredSize(
+      gfx::Size(arrow_button_size, arrow_button_size));
+  EXPECT_EQ(expected_right_arrow_bounds, right_arrow_button->bounds());
+
+  // Verifies that the left button shows in the expected bounds.
+  EXPECT_TRUE(left_arrow_button->GetVisible());
+  gfx::Rect expected_left_arrow_bounds =
+      gfx::Rect(0, 0, kShelfButtonSize, kShelfButtonSize);
+  expected_left_arrow_bounds.ClampToCenteredSize(
+      gfx::Size(arrow_button_size, arrow_button_size));
+  EXPECT_EQ(expected_left_arrow_bounds, left_arrow_button->bounds());
+
+  // Verifies that the scroll offset of the overflow bubble should be expected.
+  const int expected_scroll_distance =
+      overflow_bubble_bounds.width() - 2 * unit;
+  EXPECT_EQ(expected_scroll_distance, bubble_view->scroll_offset().x());
+
+  // Tap at the right arrow button. Then check the following things:
+  // (1) The layout strategy is SHOW_LEFT_ARROW_BUTTON.
+  // (2) The left button is visible.
+  // (3) The right button is invisible.
+  // (4) The last visible shelf button has the expected bounds in screen.
+  GetEventGenerator()->GestureTapAt(right_button_center);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(OverflowBubbleView::SHOW_LEFT_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+  EXPECT_FALSE(right_arrow_button->GetVisible());
+  EXPECT_TRUE(left_arrow_button->GetVisible());
+  gfx::Rect expected_last_icon_bounds(overflow_bubble_bounds.top_right(),
+                                      shelf_icon_size);
+  expected_last_icon_bounds.Offset(-kShelfButtonSize - end_padding, 0);
+  EXPECT_EQ(expected_last_icon_bounds,
+            test_for_overflow_view
+                .GetButton(bubble_view->shelf_view()->last_visible_index())
+                ->GetBoundsInScreen());
+
+  // Tap at the left arrow button twice. Check the following things:
+  // (1) The layout strategy is SHOW_RIGHT_ARROW_BUTTON.
+  // (2) The right button is visible.
+  // (3) The left button is invisible.
+  const gfx::Point left_button_center =
+      left_arrow_button->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->GestureTapAt(left_button_center);
+  GetEventGenerator()->GestureTapAt(left_button_center);
+  EXPECT_EQ(OverflowBubbleView::SHOW_RIGHT_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+  EXPECT_TRUE(right_arrow_button->GetVisible());
+  EXPECT_FALSE(left_arrow_button->GetVisible());
 }
 
 // Checks the rip an item off from left aligned shelf in secondary monitor.

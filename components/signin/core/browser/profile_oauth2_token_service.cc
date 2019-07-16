@@ -100,6 +100,16 @@ void ProfileOAuth2TokenService::RemoveObserver(
   delegate_->RemoveObserver(observer);
 }
 
+void ProfileOAuth2TokenService::AddAccessTokenDiagnosticsObserver(
+    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
+  token_manager_->AddDiagnosticsObserver(observer);
+}
+
+void ProfileOAuth2TokenService::RemoveAccessTokenDiagnosticsObserver(
+    OAuth2AccessTokenManager::DiagnosticsObserver* observer) {
+  token_manager_->RemoveDiagnosticsObserver(observer);
+}
+
 std::unique_ptr<OAuth2AccessTokenManager::Request>
 ProfileOAuth2TokenService::StartRequest(
     const CoreAccountId& account_id,
@@ -275,6 +285,29 @@ void ProfileOAuth2TokenService::UpdateAuthErrorForTesting(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   GetDelegate()->UpdateAuthError(account_id, error);
+}
+
+int ProfileOAuth2TokenService::GetTokenCacheCountForTesting() {
+  return token_manager_->token_cache().size();
+}
+
+void ProfileOAuth2TokenService::
+    set_max_authorization_token_fetch_retries_for_testing(int max_retries) {
+  token_manager_->set_max_authorization_token_fetch_retries_for_testing(
+      max_retries);
+}
+
+size_t ProfileOAuth2TokenService::GetNumPendingRequestsForTesting(
+    const std::string& client_id,
+    const CoreAccountId& account_id,
+    const OAuth2AccessTokenManager::ScopeSet& scopes) const {
+  return token_manager_->GetNumPendingRequestsForTesting(client_id, account_id,
+                                                         scopes);
+}
+
+void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
+    std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
+  token_manager_ = std::move(token_manager);
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(

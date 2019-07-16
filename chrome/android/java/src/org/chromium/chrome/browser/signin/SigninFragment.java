@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -88,6 +89,7 @@ public class SigninFragment extends SigninFragmentBase {
     }
 
     // Every fragment must have a public default constructor.
+    @UsedByReflection("SigninActivity.java")
     public SigninFragment() {}
 
     @Override

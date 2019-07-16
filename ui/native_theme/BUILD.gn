@@ -14,8 +14,6 @@ jumbo_component("native_theme") {
     "caption_style_win.cc",
     "common_theme.cc",
     "common_theme.h",
-    "dark_mode_observer.cc",
-    "dark_mode_observer.h",
     "native_theme.cc",
     "native_theme.h",
     "native_theme_android.cc",

@@ -292,16 +292,20 @@ class TrackEventJsonExporterTest : public testing::Test {
   }
 
   void AddInternedFrame(uint32_t iid,
+                        bool set_rel_pc,
+                        uint64_t rel_pc,
                         uint32_t function_name_iid,
                         uint32_t mapping_iid,
-                        uint64_t rel_pc,
                         std::vector<perfetto::protos::TracePacket>* output) {
     output->emplace_back();
     auto* mapping = output->back().mutable_interned_data()->add_frames();
     mapping->set_iid(iid);
-    mapping->set_function_name_id(function_name_iid);
     mapping->set_mapping_id(mapping_iid);
-    mapping->set_rel_pc(rel_pc);
+    if (set_rel_pc) {
+      mapping->set_rel_pc(rel_pc);
+    } else {
+      mapping->set_function_name_id(function_name_iid);
+    }
   }
 
   void AddInternedCallstack(
@@ -1961,16 +1965,23 @@ TEST_F(TrackEventJsonExporterTest, SamplingProfilePacket) {
   AddInternedFunctionName(1, "strlen", &trace_packet_protos);
   AddInternedFunctionName(2, "RunMainLoop", &trace_packet_protos);
 
-  AddInternedFrame(1, /*function_name_iid=*/1, /*mapping_iid=*/1, /*rel_pc=*/0,
+  AddInternedFrame(1, /*set_rel_pc=*/false, /*rel_pc=*/0,
+                   /*function_name_iid=*/1, /*mapping_iid=*/1,
                    &trace_packet_protos);
-  AddInternedFrame(2, /*function_name_iid=*/0, /*mapping_iid=*/1, /*rel_pc=*/42,
+  AddInternedFrame(2, /*set_rel_pc=*/true, /*rel_pc=*/42,
+                   /*function_name_iid=*/0, /*mapping_iid=*/1,
                    &trace_packet_protos);
-  AddInternedFrame(3, /*function_name_iid=*/0, /*mapping_iid=*/2,
-                   /*rel_pc=*/424242, &trace_packet_protos);
-  AddInternedFrame(4, /*function_name_iid=*/2, /*mapping_iid=*/2, /*rel_pc=*/0,
+  AddInternedFrame(3, /*set_rel_pc=*/true, /*rel_pc=*/424242,
+                   /*function_name_iid=*/0, /*mapping_iid=*/2,
+                   &trace_packet_protos);
+  AddInternedFrame(4, /*set_rel_pc=*/false, /*rel_pc=*/0,
+                   /*function_name_iid=*/2, /*mapping_iid=*/2,
+                   &trace_packet_protos);
+  AddInternedFrame(5, /*set_rel_pc=*/true, /*rel_pc=*/0,
+                   /*function_name_iid=*/0, /*mapping_iid=*/2,
                    &trace_packet_protos);
 
-  AddInternedCallstack(1, {1, 2, 3, 4}, &trace_packet_protos);
+  AddInternedCallstack(1, {1, 2, 3, 4, 5}, &trace_packet_protos);
 
   trace_packet_protos.emplace_back();
   auto* profile_packet =
@@ -1991,7 +2002,8 @@ TEST_F(TrackEventJsonExporterTest, SamplingProfilePacket) {
       "strlen - my_module_1 [AAAAAAAAA]\n"
       "off:0x2a - my_module_1 [AAAAAAAAA]\n"
       "off:0x67932 - my_module_2 [BBBBBBB]\n"
-      "RunMainLoop - my_module_2 [BBBBBBB]\n",
+      "RunMainLoop - my_module_2 [BBBBBBB]\n"
+      "off:0x0 - my_module_2 [BBBBBBB]\n",
       value->GetString());
 }
 

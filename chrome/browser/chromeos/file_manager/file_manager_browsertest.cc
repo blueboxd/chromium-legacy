@@ -840,6 +840,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .WithBrowser()
             .InIncognito()
             .EnableMyFilesVolume(),
+        TestCase("saveFileDialogDownloadsNewFolderButton")
+            .WithBrowser()
+            .EnableMyFilesVolume(),
         TestCase("openFileDialogCancelDownloads").WithBrowser(),
         TestCase("openFileDialogCancelDownloads")
             .WithBrowser()

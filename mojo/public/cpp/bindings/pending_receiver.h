@@ -8,11 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-#include "mojo/public/cpp/bindings/lib/pending_receiver_state.h"
-#include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
@@ -53,7 +49,7 @@ class PendingReceiver {
 
   // Constructs a valid PendingReceiver from a valid raw message pipe handle.
   explicit PendingReceiver(ScopedMessagePipeHandle pipe)
-      : state_(std::move(pipe)) {}
+      : pipe_(std::move(pipe)) {}
 
   ~PendingReceiver() = default;
 
@@ -68,14 +64,14 @@ class PendingReceiver {
   // Indicates whether the PendingReceiver is valid, meaning it can ne used to
   // bind a Receiver that wants to begin dispatching method calls made by the
   // entangled Remote.
-  bool is_valid() const { return state_.pipe.is_valid(); }
+  bool is_valid() const { return pipe_.is_valid(); }
   explicit operator bool() const { return is_valid(); }
 
   // Resets this PendingReceiver to an invalid state. If it was entangled with a
   // Remote or PendingRemote, that object remains in a valid state and will
   // eventually detect that its receiver is gone. Any calls it makes will
   // effectively be dropped.
-  void reset() { state_.reset(); }
+  void reset() { pipe_.reset(); }
 
   // Like above but provides a reason for the disconnection.
   void ResetWithReason(uint32_t reason, const std::string& description) {
@@ -87,30 +83,11 @@ class PendingReceiver {
   // call, the PendingReceiver is no longer in a valid state and can no longer
   // be used to bind a Receiver.
   ScopedMessagePipeHandle PassPipe() WARN_UNUSED_RESULT {
-    return std::move(state_.pipe);
+    return std::move(pipe_);
   }
-
-  // Assigns this PendingReceiver to the ConnectionGroup referenced by |ref|.
-  // Any Receiver which binds this PendingReceiver will inherit the Ref.
-  void set_connection_group(ConnectionGroup::Ref ref) {
-    state_.connection_group = std::move(ref);
-  }
-
-  const ConnectionGroup::Ref& connection_group() const {
-    return state_.connection_group;
-  }
-
-  // Passes ownership of this PendingReceiver's ConnectionGroup Ref, removing it
-  // from its group.
-  ConnectionGroup::Ref PassConnectionGroupRef() {
-    return std::move(state_.connection_group);
-  }
-
-  // For internal Mojo use only.
-  internal::PendingReceiverState* internal_state() { return &state_; }
 
  private:
-  internal::PendingReceiverState state_;
+  ScopedMessagePipeHandle pipe_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingReceiver);
 };

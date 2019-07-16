@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.Callback;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
@@ -32,6 +33,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A helper class that handles generating context menus for {@link WebContents}s.
@@ -49,7 +51,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private Activity mActivity;
     private Callback<Integer> mCallback;
     private Runnable mOnMenuShown;
-    private Runnable mOnMenuClosed;
+    private Callback<Boolean> mOnMenuClosed;
+    private long mMenuShownTimeMs;
+    private boolean mSelectedItemBeforeDismiss;
 
     private ContextMenuHelper(long nativeContextMenuHelper, WebContents webContents) {
         mNativeContextMenuHelper = nativeContextMenuHelper;
@@ -104,25 +108,19 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
         mCurrentContextMenuParams = params;
         mActivity = windowAndroid.getActivity().get();
-        mCallback = new Callback<Integer>() {
-            @Override
-            public void onResult(Integer result) {
-                mPopulator.onItemSelected(
-                        ContextMenuHelper.this, mCurrentContextMenuParams, result);
-            }
+        mCallback = (result) -> {
+            mSelectedItemBeforeDismiss = true;
+            mPopulator.onItemSelected(ContextMenuHelper.this, mCurrentContextMenuParams, result);
         };
-        mOnMenuShown = new Runnable() {
-            @Override
-            public void run() {
-                RecordHistogram.recordBooleanHistogram("ContextMenu.Shown", mWebContents != null);
-            }
+        mOnMenuShown = () -> {
+            mSelectedItemBeforeDismiss = false;
+            mMenuShownTimeMs = TimeUnit.MICROSECONDS.toMillis(TimeUtils.nativeGetTimeTicksNowUs());
+            RecordHistogram.recordBooleanHistogram("ContextMenu.Shown", mWebContents != null);
         };
-        mOnMenuClosed = new Runnable() {
-            @Override
-            public void run() {
-                if (mNativeContextMenuHelper == 0) return;
-                nativeOnContextMenuClosed(mNativeContextMenuHelper);
-            }
+        mOnMenuClosed = (notAbandoned) -> {
+            recordTimeToTakeActionHistogram(mSelectedItemBeforeDismiss || notAbandoned);
+            if (mNativeContextMenuHelper == 0) return;
+            nativeOnContextMenuClosed(mNativeContextMenuHelper);
         };
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.REVAMPED_CONTEXT_MENU)
@@ -130,7 +128,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             List<Pair<Integer, List<ContextMenuItem>>> items =
                     mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
             if (items.isEmpty()) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> mOnMenuClosed.onResult(false));
                 return;
             }
 
@@ -155,7 +153,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             List<Pair<Integer, List<ContextMenuItem>>> items =
                     mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
             if (items.isEmpty()) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> mOnMenuClosed.onResult(false));
                 return;
             }
 
@@ -207,7 +205,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             windowAndroid.addContextMenuCloseListener(new OnCloseContextMenuListener() {
                 @Override
                 public void onContextMenuClosed() {
-                    mOnMenuClosed.run();
+                    mOnMenuClosed.onResult(false);
                     windowAndroid.removeContextMenuCloseListener(this);
                 }
             });
@@ -305,12 +303,19 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
 
         if (items.isEmpty()) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mOnMenuClosed);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> mOnMenuClosed.onResult(false));
             return;
         }
         ContextMenuUi menuUi = new PlatformContextMenuUi(menu);
         menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
                 mOnMenuClosed);
+    }
+
+    private void recordTimeToTakeActionHistogram(boolean selectedItem) {
+        final String action = selectedItem ? "SelectedItem" : "Abandoned";
+        RecordHistogram.recordTimesHistogram("ContextMenu.TimeToTakeAction." + action,
+                TimeUnit.MICROSECONDS.toMillis(TimeUtils.nativeGetTimeTicksNowUs())
+                        - mMenuShownTimeMs);
     }
 
     /**

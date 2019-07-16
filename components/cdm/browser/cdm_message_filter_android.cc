@@ -34,37 +34,43 @@ template <typename CodecType>
 struct CodecInfo {
   SupportedCodecs eme_codec;
   CodecType codec;
-  const char* container_mime_type;
 };
 
-const CodecInfo<media::VideoCodec> kVideoCodecsToQuery[] = {
-    {media::EME_CODEC_VP8, media::kCodecVP8, "video/webm"},
-    // TODO(crbug.com/707127): Support query for VP9 profile 1/2/3 on Android.
-    {media::EME_CODEC_VP9_PROFILE0, media::kCodecVP9, "video/webm"},
-    {media::EME_CODEC_VP9_PROFILE0, media::kCodecVP9, "video/mp4"},
+const CodecInfo<media::VideoCodec> kWebMVideoCodecsToQuery[] = {
+    {media::EME_CODEC_VP8, media::kCodecVP8},
+    {media::EME_CODEC_VP9_PROFILE0, media::kCodecVP9},
+    // Checking for EME_CODEC_VP9_PROFILE2 is handled in code below.
+};
+
+const CodecInfo<media::VideoCodec> kMP4VideoCodecsToQuery[] = {
+    {media::EME_CODEC_VP9_PROFILE0, media::kCodecVP9},
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    {media::EME_CODEC_AVC1, media::kCodecH264, "video/mp4"},
+    {media::EME_CODEC_AVC1, media::kCodecH264},
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    {media::EME_CODEC_HEVC, media::kCodecHEVC, "video/mp4"},
+    {media::EME_CODEC_HEVC, media::kCodecHEVC},
 #endif
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-    {media::EME_CODEC_DOLBY_VISION_AVC, media::kCodecDolbyVision, "video/mp4"},
+    {media::EME_CODEC_DOLBY_VISION_AVC, media::kCodecDolbyVision},
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-    {media::EME_CODEC_DOLBY_VISION_HEVC, media::kCodecDolbyVision, "video/mp4"},
+    {media::EME_CODEC_DOLBY_VISION_HEVC, media::kCodecDolbyVision},
 #endif
 #endif
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
 
-const CodecInfo<media::AudioCodec> kAudioCodecsToQuery[] = {
-    // FLAC is not supported. See https://crbug.com/747050 for details.
-    // Vorbis is not supported. See http://crbug.com/710924 for details.
-    {media::EME_CODEC_OPUS, media::kCodecOpus, "video/webm"},
+// FLAC is not supported. See https://crbug.com/747050 for details.
+// Vorbis is not supported. See http://crbug.com/710924 for details.
+
+const CodecInfo<media::AudioCodec> kWebMAudioCodecsToQuery[] = {
+    {media::EME_CODEC_OPUS, media::kCodecOpus},
+};
+
+const CodecInfo<media::AudioCodec> kMP4AudioCodecsToQuery[] = {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-    {media::EME_CODEC_AAC, media::kCodecAAC, "video/mp4"},
+    {media::EME_CODEC_AAC, media::kCodecAAC},
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-    {media::EME_CODEC_AC3, media::kCodecAC3, "video/mp4"},
-    {media::EME_CODEC_EAC3, media::kCodecEAC3, "video/mp4"},
+    {media::EME_CODEC_AC3, media::kCodecAC3},
+    {media::EME_CODEC_EAC3, media::kCodecEAC3},
 #endif
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 };
@@ -75,21 +81,55 @@ static SupportedCodecs GetSupportedCodecs(
   const std::string& key_system = request.key_system;
   SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
 
-  for (const auto& info : kVideoCodecsToQuery) {
-    if ((request.codecs & info.eme_codec) &&
-        MediaDrmBridge::IsKeySystemSupportedWithType(
-            key_system, info.container_mime_type) &&
-        media::MediaCodecUtil::CanDecode(info.codec, is_secure)) {
-      supported_codecs |= info.eme_codec;
+  if (MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "video/webm")) {
+    for (const auto& info : kWebMVideoCodecsToQuery) {
+      if ((request.codecs & info.eme_codec) &&
+          media::MediaCodecUtil::CanDecode(info.codec, is_secure)) {
+        supported_codecs |= info.eme_codec;
+      }
+    }
+
+    for (const auto& info : kWebMAudioCodecsToQuery) {
+      if ((request.codecs & info.eme_codec) &&
+          media::MediaCodecUtil::CanDecode(info.codec)) {
+        supported_codecs |= info.eme_codec;
+      }
     }
   }
 
-  for (const auto& info : kAudioCodecsToQuery) {
-    if ((request.codecs & info.eme_codec) &&
-        MediaDrmBridge::IsKeySystemSupportedWithType(
-            key_system, info.container_mime_type) &&
-        media::MediaCodecUtil::CanDecode(info.codec)) {
-      supported_codecs |= info.eme_codec;
+  if (MediaDrmBridge::IsKeySystemSupportedWithType(key_system, "video/mp4")) {
+    for (const auto& info : kMP4VideoCodecsToQuery) {
+      if ((request.codecs & info.eme_codec) &&
+          media::MediaCodecUtil::CanDecode(info.codec, is_secure)) {
+        supported_codecs |= info.eme_codec;
+      }
+    }
+
+    for (const auto& info : kMP4AudioCodecsToQuery) {
+      if ((request.codecs & info.eme_codec) &&
+          media::MediaCodecUtil::CanDecode(info.codec)) {
+        supported_codecs |= info.eme_codec;
+      }
+    }
+  }
+
+  // As VP9 profile 2 can not be detected as a MIME type, check for it
+  // differently. If it is requested, and VP9 profile 0 is supported, check for
+  // profile 2 in the list of supported profiles. This assumes the same decoder
+  // is used (so if secure decoding of profile 0 is supported, secure decoding
+  // of profile 2 is supported as long as profile 2 is found).
+  if ((request.codecs & media::EME_CODEC_VP9_PROFILE2) &&
+      (supported_codecs & media::EME_CODEC_VP9_PROFILE0)) {
+    std::vector<media::CodecProfileLevel> profiles;
+    media::MediaCodecUtil::AddSupportedCodecProfileLevels(&profiles);
+    auto iter =
+        std::find_if(profiles.begin(), profiles.end(),
+                     [](const media::CodecProfileLevel& profile) {
+                       return profile.codec == media::kCodecVP9 &&
+                              profile.profile == media::VP9PROFILE_PROFILE2;
+                     });
+    if (iter != profiles.end()) {
+      supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
     }
   }
 

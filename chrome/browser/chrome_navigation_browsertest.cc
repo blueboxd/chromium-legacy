@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -741,6 +742,96 @@ IN_PROC_BROWSER_TEST_F(SignInIsolationBrowserTest, NavigateToSignInPage) {
       ExecuteScript(web_contents, "location = '" + signin_url.spec() + "';"));
   manager.WaitForNavigationFinished();
   EXPECT_NE(web_contents->GetMainFrame()->GetSiteInstance(), first_instance);
+}
+
+class WebstoreIsolationBrowserTest : public ChromeNavigationBrowserTest {
+ public:
+  WebstoreIsolationBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~WebstoreIsolationBrowserTest() override {}
+
+  void SetUp() override {
+    https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    ChromeNavigationBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Override the webstore URL.
+    command_line->AppendSwitchASCII(
+        ::switches::kAppsGalleryURL,
+        https_server()->GetURL("chrome.foo.com", "/frame_tree").spec());
+
+    // Ignore cert errors so that the webstore URL can be loaded from a site
+    // other than localhost (the EmbeddedTestServer serves a certificate that
+    // is valid for localhost).
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+
+    ChromeNavigationBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpOnMainThread() override {
+    https_server_.StartAcceptingConnections();
+    ChromeNavigationBrowserTest::SetUpOnMainThread();
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebstoreIsolationBrowserTest);
+};
+
+// Make sure that Chrome Web Store origins are isolated from the rest of their
+// foo.com site.  See https://crbug.com/939108.
+IN_PROC_BROWSER_TEST_F(WebstoreIsolationBrowserTest, WebstorePopupIsIsolated) {
+  const GURL first_url = https_server()->GetURL("foo.com", "/title1.html");
+  ui_test_utils::NavigateToURL(browser(), first_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Open a popup for chrome.foo.com and ensure that it's isolated in a
+  // different SiteInstance and process from the rest of foo.com.  Note that
+  // we're opening a URL that does *not* match the web store URL due to a
+  // different path, so there will be no BrowsingInstance swap, and window.open
+  // is still expected to return a valid window reference.
+  content::TestNavigationObserver popup_waiter(nullptr, 1);
+  popup_waiter.StartWatchingNewWebContents();
+  const GURL webstore_origin_url =
+      https_server()->GetURL("chrome.foo.com", "/title1.html");
+  EXPECT_TRUE(content::EvalJs(
+                  web_contents,
+                  content::JsReplace("!!window.open($1);", webstore_origin_url))
+                  .ExtractBool());
+  popup_waiter.Wait();
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  content::WebContents* popup =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(popup, web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(popup));
+
+  scoped_refptr<content::SiteInstance> popup_instance(
+      popup->GetMainFrame()->GetSiteInstance());
+  EXPECT_NE(web_contents->GetMainFrame()->GetSiteInstance(), popup_instance);
+  EXPECT_NE(web_contents->GetMainFrame()->GetSiteInstance()->GetProcess(),
+            popup_instance->GetProcess());
+
+  // Also navigate the popup to the full web store URL and confirm that this
+  // causes a BrowsingInstance swap.
+  const GURL webstore_url =
+      https_server()->GetURL("chrome.foo.com", "/frame_tree/simple.htm");
+  content::TestNavigationManager manager(popup, webstore_url);
+  EXPECT_TRUE(
+      ExecuteScript(popup, "location = '" + webstore_url.spec() + "';"));
+  manager.WaitForNavigationFinished();
+  EXPECT_NE(popup->GetMainFrame()->GetSiteInstance(), popup_instance);
+  EXPECT_NE(popup->GetMainFrame()->GetSiteInstance(),
+            web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(popup->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+      popup_instance.get()));
+  EXPECT_FALSE(popup->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+      web_contents->GetMainFrame()->GetSiteInstance()));
 }
 
 // Helper class. Track one navigation and tell whether a response from the

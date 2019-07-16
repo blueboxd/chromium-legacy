@@ -14,11 +14,12 @@
 #include "third_party/grpc/src/include/grpcpp/server.h"
 
 namespace grpc {
-
-class ServerCompletionQueue;
 class Service;
-
 }  // namespace grpc
+
+namespace grpc_impl {
+class ServerCompletionQueue;
+}  // namespace grpc_impl
 
 namespace remoting {
 namespace test {
@@ -30,20 +31,20 @@ class GrpcAsyncTestServer {
   template <typename AsyncServiceType,
             typename RequestType,
             typename ResponseType>
-  using AsyncRequestFuncPtr =
-      void (AsyncServiceType::*)(grpc::ServerContext*,
-                                 RequestType*,
-                                 grpc::ServerAsyncResponseWriter<ResponseType>*,
-                                 grpc::CompletionQueue*,
-                                 grpc::ServerCompletionQueue*,
-                                 void*);
+  using AsyncRequestFuncPtr = void (AsyncServiceType::*)(
+      grpc::ServerContext*,
+      RequestType*,
+      grpc_impl::ServerAsyncResponseWriter<ResponseType>*,
+      grpc::CompletionQueue*,
+      grpc::ServerCompletionQueue*,
+      void*);
   template <typename AsyncServiceType,
             typename RequestType,
             typename ResponseType>
   using AsyncServerStreamingRequestFuncPtr =
       void (AsyncServiceType::*)(grpc::ServerContext*,
                                  RequestType*,
-                                 grpc::ServerAsyncWriter<ResponseType>*,
+                                 grpc_impl::ServerAsyncWriter<ResponseType>*,
                                  grpc::CompletionQueue*,
                                  grpc::ServerCompletionQueue*,
                                  void*);
@@ -98,7 +99,7 @@ class GrpcAsyncTestServer {
  private:
   std::unique_ptr<grpc::Service> async_service_;
   std::unique_ptr<grpc::Server> server_;
-  std::unique_ptr<grpc::ServerCompletionQueue> completion_queue_;
+  std::unique_ptr<grpc_impl::ServerCompletionQueue> completion_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncTestServer);
 };

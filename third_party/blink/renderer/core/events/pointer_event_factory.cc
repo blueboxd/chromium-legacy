@@ -114,12 +114,19 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
                                   .device_scale_factor;
       }
     }
+
+    // movementX/Y is type int for pointerevent, so we still need to truncated
+    // the coordinates before calculate movement.
     pointer_event_init->setMovementX(
-        (web_pointer_event.PositionInScreen().x - last_global_position.X()) *
-        device_scale_factor);
+        base::saturated_cast<int>(web_pointer_event.PositionInScreen().x *
+                                  device_scale_factor) -
+        base::saturated_cast<int>(last_global_position.X() *
+                                  device_scale_factor));
     pointer_event_init->setMovementY(
-        (web_pointer_event.PositionInScreen().y - last_global_position.Y()) *
-        device_scale_factor);
+        base::saturated_cast<int>(web_pointer_event.PositionInScreen().y *
+                                  device_scale_factor) -
+        base::saturated_cast<int>(last_global_position.Y() *
+                                  device_scale_factor));
   }
 
   // If width/height is unknown we let PointerEventInit set it to 1.

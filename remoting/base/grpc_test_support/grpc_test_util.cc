@@ -11,7 +11,7 @@ namespace remoting {
 namespace test {
 
 bool WaitForCompletion(const base::Location& from_here,
-                       grpc::CompletionQueue* completion_queue,
+                       grpc_impl::CompletionQueue* completion_queue,
                        void* expected_tag) {
   void* tag;
   bool ok;
@@ -23,7 +23,7 @@ bool WaitForCompletion(const base::Location& from_here,
 }
 
 void WaitForCompletionAndAssertOk(const base::Location& from_here,
-                                  grpc::CompletionQueue* completion_queue,
+                                  grpc_impl::CompletionQueue* completion_queue,
                                   void* expected_tag) {
   bool ok = WaitForCompletion(from_here, completion_queue, expected_tag);
   DCHECK(ok) << "Event is not ok. Location: " << from_here.ToString();

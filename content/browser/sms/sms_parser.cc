@@ -14,7 +14,7 @@
 
 namespace content {
 
-constexpr base::StringPiece kToken = "To: ";
+constexpr base::StringPiece kToken = "For: ";
 
 // static
 base::Optional<url::Origin> SmsParser::Parse(base::StringPiece sms) {

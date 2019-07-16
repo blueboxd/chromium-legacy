@@ -16,9 +16,9 @@
 #include "third_party/grpc/src/include/grpcpp/client_context.h"
 #include "third_party/grpc/src/include/grpcpp/support/status.h"
 
-namespace grpc {
+namespace grpc_impl {
 class CompletionQueue;
-}  // namespace grpc
+}  // namespace grpc_impl
 
 namespace remoting {
 
@@ -53,7 +53,7 @@ class GrpcAsyncRequest {
   // Subclass shall only run callbacks using |run_task_cb|. Directly running
   // task in OnDequeue() might result in concurrency issue.
   virtual void Start(const RunTaskCallback& run_task_cb,
-                     grpc::CompletionQueue* cq,
+                     grpc_impl::CompletionQueue* cq,
                      void* event_tag) = 0;
 
   // Called when the request has been dequeued from the completion queue.
@@ -78,7 +78,7 @@ class GrpcAsyncRequest {
   grpc::Status status_{grpc::StatusCode::UNKNOWN, "Uninitialized"};
 
  private:
-  grpc::ClientContext context_;
+  grpc_impl::ClientContext context_;
 
   base::WeakPtrFactory<GrpcAsyncRequest> grpc_async_request_weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncRequest);

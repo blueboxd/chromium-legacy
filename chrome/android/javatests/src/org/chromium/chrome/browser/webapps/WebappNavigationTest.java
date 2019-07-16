@@ -29,6 +29,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -42,8 +43,11 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
+import org.chromium.chrome.test.util.browser.contextmenu.RevampedContextMenuUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -253,6 +257,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
+    @DisableFeatures({ChromeFeatureList.REVAMPED_CONTEXT_MENU})
     @RetryOnFailure
     public void testOpenInChromeFromContextMenuTabbedChrome() throws Exception {
         // Needed to get full context menu.
@@ -262,6 +267,27 @@ public class WebappNavigationTest {
         addAnchor("myTestAnchorId", offOriginUrl(), "_self");
 
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
+                null /* activity to check for focus after click */,
+                mActivityTestRule.getActivity().getActivityTab(), "myTestAnchorId",
+                R.id.contextmenu_open_in_chrome);
+
+        ChromeTabbedActivity tabbedChrome =
+                ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
+        ChromeTabUtils.waitForTabPageLoaded(tabbedChrome.getActivityTab(), offOriginUrl());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    @EnableFeatures({ChromeFeatureList.REVAMPED_CONTEXT_MENU})
+    public void testOpenInChromeFromRevampedContextMenuTabbedChrome() throws Exception {
+        // Needed to get full context menu.
+        FirstRunStatus.setFirstRunFlowComplete(true);
+        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
+
+        addAnchor("myTestAnchorId", offOriginUrl(), "_self");
+
+        RevampedContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 null /* activity to check for focus after click */,
                 mActivityTestRule.getActivity().getActivityTab(), "myTestAnchorId",
                 R.id.contextmenu_open_in_chrome);

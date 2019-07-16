@@ -135,6 +135,13 @@ const IDNTestCase kIdnCases[] = {
     {"xn---123-kbjl2j0bl2k.in", L"\x0939\x093f\x0928\x094d\x0926\x0940-123.in",
      true},
 
+    // URL test with mostly numbers and one confusable character
+    // Georgian 'd' 4000.com
+    {"xn--4000-pfr.com",
+     L"\x10eb"
+     L"4000.com",
+     false},
+
     // What used to be 5 Aspirational scripts in the earlier versions of UAX 31.
     // UAX 31 does not define aspirational scripts any more.
     // See http://www.unicode.org/reports/tr31/#Aspirational_Use_Scripts .
@@ -170,6 +177,11 @@ const IDNTestCase kIdnCases[] = {
     {"xn--hllo-bpa7979ih5m.cn", L"h\x00e9llo\x4e2d\x56fd.cn", false},
     // <Greek rho><Cyrillic a><Cyrillic u>.ru
     {"xn--2xa6t2b.ru", L"\x03c1\x0430\x0443.ru", false},
+    // Georgian + Latin
+    {"xn--abcef-vuu.test",
+     L"abc\x10eb"
+     L"ef.test",
+     false},
     // Hangul + Latin
     {"xn--han-eb9ll88m.kr", L"\xd55c\xae00han.kr", true},
     // Hangul + Latin + Han with IDN ccTLD

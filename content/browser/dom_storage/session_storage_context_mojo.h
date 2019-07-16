@@ -92,6 +92,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
                              const std::string& clone_namespace_id,
                              CloneType clone_type);
 
+  // This function is called when the SessionStorageNamespaceImpl is destructed.
+  // These generally map 1:1 to each open chrome tab/window, although they are
+  // kept alive after the window is closed for restoring purposes.
   void DeleteSessionNamespace(const std::string& namespace_id,
                               bool should_persist);
 
@@ -254,7 +257,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // SessionStorageDataMap.
   // Populated after the database is connected.
   std::map<std::vector<uint8_t>, SessionStorageDataMap*> data_maps_;
-  // Populated on OpenSessionStorage calls.
+  // Populated in CreateSessionNamespace, CloneSessionNamespace, and sometimes
+  // RegisterShallowClonedNamespace. Items are removed in
+  // DeleteSessionNamespace.
   std::map<std::string, std::unique_ptr<SessionStorageNamespaceImplMojo>>
       namespaces_;
 

@@ -12102,34 +12102,6 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleGetProgramResourceiv(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  // Unimplemented for WebGL 2.0 Compute context.
-  return error::kUnknownCommand;
-}
-
-error::Error GLES2DecoderImpl::HandleGetProgramResourceIndex(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  // Unimplemented for WebGL 2.0 Compute context.
-  return error::kUnknownCommand;
-}
-
-error::Error GLES2DecoderImpl::HandleGetProgramResourceLocation(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  // Unimplemented for WebGL 2.0 Compute context.
-  return error::kUnknownCommand;
-}
-
-error::Error GLES2DecoderImpl::HandleGetProgramResourceName(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  // Unimplemented for WebGL 2.0 Compute context.
-  return error::kUnknownCommand;
-}
-
 error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

@@ -19,8 +19,11 @@ source_set("chromeos") {
     "//media/gpu:buildflags",
     "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
-    "//media/gpu/linux:common",
   ]
+
+  if (use_vaapi || use_v4l2_codec) {
+    deps += [ "//media/gpu/linux:common" ]
+  }
 
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi" ]

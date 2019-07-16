@@ -65,10 +65,6 @@ public final class TabHelpers {
         TabFavicon.from(tab);
         TrustedCdn.from(tab);
         TabAssociatedApp.from(tab);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES)) {
-            TabContentViewDelegate.from(tab);
-        }
 
         WebContents webContents = tab.getWebContents();
 

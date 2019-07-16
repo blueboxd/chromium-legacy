@@ -124,7 +124,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
 #if !defined(OS_ANDROID)
   void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
-                              bool show_stay_in_chrome,
+                              bool enable_stay_in_chrome,
                               bool show_remember_selection,
                               IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)

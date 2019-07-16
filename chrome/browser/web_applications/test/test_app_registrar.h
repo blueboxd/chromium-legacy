@@ -42,8 +42,6 @@ class TestAppRegistrar : public AppRegistrar {
   bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  bool HasScopeUrl(const AppId& app_id) const override;
-  GURL GetScopeUrlForApp(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
       InstallSource install_source) const override;
   base::Optional<AppId> LookupExternalAppId(
@@ -57,6 +55,7 @@ class TestAppRegistrar : public AppRegistrar {
   std::string GetAppDescription(const AppId& app_id) const override;
   base::Optional<SkColor> GetAppThemeColor(const AppId& app_id) const override;
   const GURL& GetAppLaunchURL(const AppId& app_id) const override;
+  base::Optional<GURL> GetAppScope(const AppId& app_id) const override;
 
  private:
   std::map<AppId, AppInfo> installed_apps_;

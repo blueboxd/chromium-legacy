@@ -117,7 +117,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
-      bool show_stay_in_chrome,
+      bool enable_stay_in_chrome,
       bool show_remember_selection,
       IntentPickerResponse callback);
 

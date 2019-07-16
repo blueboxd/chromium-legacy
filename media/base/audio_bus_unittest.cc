@@ -535,9 +535,7 @@ TEST_F(AudioBusTest, ToInterleaved) {
   }
 }
 
-// TODO(dalecurtis): This is not passing on Windows 7 somehow. Probably because
-// it's compiled as 32-bit. Investigate.
-TEST_F(AudioBusTest, DISABLED_ToInterleavedSanitized) {
+TEST_F(AudioBusTest, ToInterleavedSanitized) {
   std::unique_ptr<AudioBus> bus =
       AudioBus::Create(kTestVectorChannelCount, kTestVectorFrameCount);
   bus->FromInterleaved<Float32SampleTypeTraits>(kTestVectorFloat32Invalid,
@@ -549,12 +547,16 @@ TEST_F(AudioBusTest, DISABLED_ToInterleavedSanitized) {
   for (size_t i = 0; i < base::size(kTestVectorFloat32Sanitized); ++i)
     ASSERT_EQ(kTestVectorFloat32Sanitized[i], test_array[i]);
 
-  // Verify that Float32SampleTypeTraitsNoClip applied no sanity.
+  // Verify that Float32SampleTypeTraitsNoClip applied no sanity. Note: We don't
+  // use memcmp() here since the NaN type may change on x86 platforms in certain
+  // circumstances, see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57484
   bus->ToInterleaved<Float32SampleTypeTraitsNoClip>(bus->frames(), test_array);
-  ASSERT_EQ(0,
-            memcmp(test_array, kTestVectorFloat32Invalid,
-                   kTestVectorFrameCount * sizeof(*kTestVectorFloat32Invalid) *
-                       kTestVectorChannelCount));
+  for (int i = 0; i < kTestVectorSize; ++i) {
+    if (std::isnan(test_array[i]))
+      EXPECT_TRUE(std::isnan(kTestVectorFloat32Invalid[i]));
+    else
+      EXPECT_FLOAT_EQ(test_array[i], kTestVectorFloat32Invalid[i]);
+  }
 }
 
 TEST_F(AudioBusTest, CopyAndClipTo) {

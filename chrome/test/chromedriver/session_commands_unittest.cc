@@ -68,7 +68,7 @@ TEST(SessionCommandsTest, ExecuteSetTimeouts) {
   params.Clear();
   params.SetInteger("unknown", 5000);
   status = ExecuteSetTimeouts(&session, params, &value);
-  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_EQ(kOk, status.code());
 
   // Old pre-W3C format.
   params.Clear();

@@ -284,7 +284,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
     ASSERT_FLOAT_EQ(callback->last_screen_x_, 113.8);
     ASSERT_FLOAT_EQ(callback->last_screen_y_, 32.7);
     // TODO(eirage): These should be float value once mouse_event.idl change.
-    ASSERT_FLOAT_EQ(callback->last_movement_x_, -18);
+    ASSERT_FLOAT_EQ(callback->last_movement_x_, -19);
     ASSERT_FLOAT_EQ(callback->last_movement_y_, 3);
   }
 
@@ -303,6 +303,49 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
     ASSERT_EQ(callback->last_movement_x_, 1024);
     ASSERT_EQ(callback->last_movement_y_, -8765);
   }
+}
+
+// Test that we are not losing fractions when truncating movements.
+TEST_F(PointerEventManagerTest, PointerEventSmallFractionMovements) {
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<body style='padding: 0px; width: 400px; height: 400px;'>"
+      "</body>");
+  PointerEventCoordinateListenerCallback* callback =
+      PointerEventCoordinateListenerCallback::Create();
+  GetDocument().body()->addEventListener(event_type_names::kPointermove,
+                                         callback);
+
+  // Turn on the flag for test.
+  ScopedConsolidatedMovementXYForTest scoped_feature(true);
+
+  WebPointerEvent pointer_event = CreateTestPointerEvent(
+      WebInputEvent::kPointerMove, WebPointerProperties::PointerType::kMouse,
+      WebFloatPoint(150, 210), WebFloatPoint(113.8, 32.7), 0, 0);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_event));
+  ASSERT_FLOAT_EQ(callback->last_movement_x_, 0);
+  ASSERT_FLOAT_EQ(callback->last_movement_y_, 0);
+
+  pointer_event.SetPositionInScreen(113.4, 32.9);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_event));
+  ASSERT_FLOAT_EQ(callback->last_movement_x_, 0);
+  ASSERT_FLOAT_EQ(callback->last_movement_y_, 0);
+
+  pointer_event.SetPositionInScreen(113.0, 33.1);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_event));
+  ASSERT_FLOAT_EQ(callback->last_movement_x_, 0);
+  ASSERT_FLOAT_EQ(callback->last_movement_y_, 1);
+
+  pointer_event.SetPositionInScreen(112.6, 33.3);
+  WebView().MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_event));
+  ASSERT_FLOAT_EQ(callback->last_movement_x_, -1);
+  ASSERT_FLOAT_EQ(callback->last_movement_y_, 0);
 }
 
 }  // namespace blink

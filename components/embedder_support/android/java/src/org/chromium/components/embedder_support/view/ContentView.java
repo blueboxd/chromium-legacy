@@ -46,19 +46,6 @@ public class ContentView extends FrameLayout
     public static final int DEFAULT_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
-    /** Delegates touch events for extending functionalities. */
-    public interface TouchEventDelegate {
-        /**
-         * @see View#dispatchTouchEvent(MotionEvent)
-         */
-        boolean dispatchTouchEvent(MotionEvent e);
-
-        /**
-         * @see View#onInterceptTouchEvent(MotionEvent)
-         */
-        boolean onInterceptTouchEvent(MotionEvent e);
-    }
-
     private final WebContents mWebContents;
     private final ObserverList<OnHierarchyChangeListener> mHierarchyChangeListeners =
             new ObserverList<>();
@@ -66,8 +53,6 @@ public class ContentView extends FrameLayout
             new ObserverList<>();
     private ViewEventSink mViewEventSink;
     private EventForwarder mEventForwarder;
-
-    private TouchEventDelegate mDelegate;
 
     /**
      * The desired size of this view in {@link MeasureSpec}. Set by the host
@@ -138,14 +123,6 @@ public class ContentView extends FrameLayout
     public void setDesiredMeasureSpec(int width, int height) {
         mDesiredWidthMeasureSpec = width;
         mDesiredHeightMeasureSpec = height;
-    }
-
-    /**
-     * Sets {@link #TouchEventDelegate} used to do additional work.
-     * @param delegate Delegate object.
-     */
-    public void setTouchEventDelegate(TouchEventDelegate delegate) {
-        mDelegate = delegate;
     }
 
     @Override
@@ -288,18 +265,6 @@ public class ContentView extends FrameLayout
     @Override
     public boolean onDragEvent(DragEvent event) {
         return getEventForwarder().onDragEvent(event, this);
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent e) {
-        if (mDelegate != null && mDelegate.dispatchTouchEvent(e)) return true;
-        return super.dispatchTouchEvent(e);
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent e) {
-        if (mDelegate != null && mDelegate.onInterceptTouchEvent(e)) return true;
-        return super.onInterceptTouchEvent(e);
     }
 
     @Override

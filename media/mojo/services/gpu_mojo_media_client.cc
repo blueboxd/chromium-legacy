@@ -48,8 +48,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
 #include "media/gpu/linux/mailbox_video_frame_converter.h"
 #include "media/gpu/linux/platform_video_frame_pool.h"
+#endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
@@ -219,6 +221,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 #elif defined(OS_CHROMEOS)
       std::unique_ptr<VideoDecoder> cros_video_decoder;
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         auto frame_pool = std::make_unique<PlatformVideoFramePool>();
         auto frame_converter = std::make_unique<MailboxVideoFrameConverter>(
             base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
@@ -229,6 +232,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                            command_buffer_id->route_id));
         cros_video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, std::move(frame_pool), std::move(frame_converter));
+#endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
       }
 
       if (cros_video_decoder) {

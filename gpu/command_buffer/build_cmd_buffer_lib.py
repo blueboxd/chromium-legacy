@@ -1894,15 +1894,18 @@ class CustomHandler(TypeHandler):
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    pass
+    if func.IsES31():
+      TypeHandler.WriteServiceImplementation(self, func, f)
 
   def WriteImmediateServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    pass
+    if func.IsES31():
+      TypeHandler.WriteImmediateServiceImplementation(self, func, f)
 
   def WriteBucketServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    pass
+    if func.IsES31():
+      TypeHandler.WriteBucketServiceImplementation(self, func, f)
 
   def WritePassthroughServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -2616,7 +2619,7 @@ class DeleteHandler(TypeHandler):
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    if func.IsES3():
+    if func.IsES3() or func.IsES31():
       TypeHandler.WriteServiceImplementation(self, func, f)
     # HandleDeleteShader and HandleDeleteProgram are manually written.
 
@@ -4735,7 +4738,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    pass
+    if func.IsES31():
+      TypeHandler.WriteServiceImplementation(self, func, f)
 
   def WritePassthroughServiceImplementation(self, func, f):
     """Overrriden from TypeHandler."""

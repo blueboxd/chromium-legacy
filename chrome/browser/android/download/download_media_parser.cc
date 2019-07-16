@@ -74,7 +74,6 @@ void DownloadMediaParser::Start(ParseCompleteCB parse_complete_cb) {
       FROM_HERE, kTimeOut,
       base::BindOnce(&DownloadMediaParser::OnError, weak_factory_.GetWeakPtr(),
                      MediaParserEvent::kTimeout));
-  start_time_ = base::Time::Now();
 
   // Only process media mime types.
   if (!IsSupportedMediaMimeType(mime_type_)) {
@@ -296,7 +295,6 @@ void DownloadMediaParser::NotifyComplete(SkBitmap bitmap) {
   DCHECK(metadata_);
   DCHECK(parse_complete_cb_);
   RecordMediaParserEvent(MediaParserEvent::kSuccess);
-  RecordMediaParserCompletionTime(base::Time::Now() - start_time_);
   std::move(parse_complete_cb_)
       .Run(true, std::move(metadata_), std::move(bitmap));
 }

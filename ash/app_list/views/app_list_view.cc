@@ -1007,8 +1007,11 @@ void AppListView::SetChildViewsForStateTransition(
   if (GetAppsContainerView()->IsInFolderView())
     GetAppsContainerView()->ResetForShowApps();
 
-  app_list_main_view_->contents_view()->SetActiveState(
-      ash::AppListState::kStateApps, !is_side_shelf_);
+  // Do not update the contents view state on closing.
+  if (target_state != ash::AppListViewState::kClosed) {
+    app_list_main_view_->contents_view()->SetActiveState(
+        ash::AppListState::kStateApps, !is_side_shelf_);
+  }
 
   if (target_state == ash::AppListViewState::kPeeking) {
     // Set the apps to the initial page when PEEKING.

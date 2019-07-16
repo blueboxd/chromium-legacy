@@ -71,20 +71,6 @@ void MimeHandlerServiceImpl::GetStreamInfo(GetStreamInfoCallback callback) {
       mojo::ConvertTo<mime_handler::StreamInfoPtr>(*stream_));
 }
 
-void MimeHandlerServiceImpl::AbortStream(AbortStreamCallback callback) {
-  if (!stream_) {
-    std::move(callback).Run();
-    return;
-  }
-  stream_->Abort(base::Bind(&MimeHandlerServiceImpl::OnStreamClosed,
-                            weak_factory_.GetWeakPtr(),
-                            base::Passed(&callback)));
-}
-
-void MimeHandlerServiceImpl::OnStreamClosed(AbortStreamCallback callback) {
-  std::move(callback).Run();
-}
-
 }  // namespace extensions
 
 namespace mojo {

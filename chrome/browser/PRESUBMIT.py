@@ -19,10 +19,6 @@ def _RunHistogramChecks(input_api, output_api, histogram_name):
     results.extend(presubmit_bad_message_reasons.PrecheckBadMessage(input_api,
         output_api, histogram_name))
 
-    import presubmit_scheme_histograms
-    results.extend(presubmit_scheme_histograms.
-                   PrecheckShouldAllowOpenURLEnums(input_api, output_api))
-
     return results
   except:
     return [output_api.PresubmitError('Could not verify histogram!')]

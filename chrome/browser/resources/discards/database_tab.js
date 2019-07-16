@@ -227,14 +227,14 @@ Polymer({
   /** @private {!Object} */
   requestedOrigins_: {},
 
-  /** @private {?mojom.DiscardsDetailsProviderProxy} */
-  uiHandler_: null,
+  /** @private {?mojom.DiscardsDetailsProviderRemote} */
+  discardsDetailsProvider_: null,
 
   /** @override */
   ready: function() {
     this.setSortKey('origin');
     this.requestedOrigins_ = {};
-    this.uiHandler_ = discards.getOrCreateUiHandler();
+    this.discardsDetailsProvider_ = discards.getOrCreateDetailsProvider();
 
     // Specifies the update interval of the table, in ms.
     const UPDATE_INTERVAL_MS = 1000;
@@ -267,7 +267,7 @@ Polymer({
    * @private
    */
   updateDbRows_: function() {
-    this.uiHandler_
+    this.discardsDetailsProvider_
         .getSiteCharacteristicsDatabase(Object.keys(this.requestedOrigins_))
         .then(response => {
           // Bail if the SiteCharacteristicsDatabase is turned off.
@@ -322,13 +322,14 @@ Polymer({
    * @private
    */
   updateDbSizes_: function() {
-    this.uiHandler_.getSiteCharacteristicsDatabaseSize().then(response => {
-      // Bail if the SiteCharacteristicsDatabase is turned off.
-      if (!response.dbSize) {
-        return;
-      }
-      this.size_ = response.dbSize;
-    });
+    this.discardsDetailsProvider_.getSiteCharacteristicsDatabaseSize().then(
+        response => {
+          // Bail if the SiteCharacteristicsDatabase is turned off.
+          if (!response.dbSize) {
+            return;
+          }
+          this.size_ = response.dbSize;
+        });
   },
 
   /**

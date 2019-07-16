@@ -61,6 +61,12 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   void AddObserver(OAuth2TokenServiceObserver* observer);
   void RemoveObserver(OAuth2TokenServiceObserver* observer);
 
+  // Add or remove observers of access token manager.
+  void AddAccessTokenDiagnosticsObserver(
+      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
+  void RemoveAccessTokenDiagnosticsObserver(
+      OAuth2AccessTokenManager::DiagnosticsObserver* observer);
+
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
   // using the OAuth2 refresh token maintained by this instance for that
@@ -203,6 +209,20 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   // Exposes the ability to update auth errors to tests.
   void UpdateAuthErrorForTesting(const CoreAccountId& account_id,
                                  const GoogleServiceAuthError& error);
+
+  int GetTokenCacheCountForTesting();
+
+  void set_max_authorization_token_fetch_retries_for_testing(int max_retries);
+
+  // Returns the current number of pending fetchers matching given params.
+  size_t GetNumPendingRequestsForTesting(
+      const std::string& client_id,
+      const CoreAccountId& account_id,
+      const OAuth2AccessTokenManager::ScopeSet& scopes) const;
+
+  // Override |token_manager_| for testing.
+  void OverrideAccessTokenManagerForTesting(
+      std::unique_ptr<OAuth2AccessTokenManager> token_manager);
 
  private:
   friend class identity::IdentityManager;

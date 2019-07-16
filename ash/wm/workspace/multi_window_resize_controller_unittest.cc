@@ -645,7 +645,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
 
   // Dragging should call the WindowStateDelegate.
   EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
-  EXPECT_EQ(gfx::Point(300, bottom_inset - 75),
+  EXPECT_EQ(gfx::Point(300, resize_widget_center.y()),
             window_state_delegate1->GetLocationAndReset());
 }
 

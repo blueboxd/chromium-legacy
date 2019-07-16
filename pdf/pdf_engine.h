@@ -105,9 +105,6 @@ class PDFEngine {
     // Whether any files are attached to document (see "File Attachment
     // Annotations" on page 637 of PDF Reference 1.7).
     bool has_attachments = false;
-    // Whether the document is linearized (see Appendix F "Linearized PDF" of
-    // PDF Reference 1.7).
-    bool is_linearized = false;
     // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
     bool is_tagged = false;
     // What type of form the document contains.
@@ -236,8 +233,8 @@ class PDFEngine {
         bool case_sensitive) = 0;
 
     // Notifies the client that the document has finished loading.
-    virtual void DocumentLoadComplete(const DocumentFeatures& document_features,
-                                      uint32_t file_size) {}
+    virtual void DocumentLoadComplete(
+        const DocumentFeatures& document_features) {}
 
     // Notifies the client that the document has failed to load.
     virtual void DocumentLoadFailed() {}
@@ -258,9 +255,6 @@ class PDFEngine {
 
     // Get the background color of the PDF.
     virtual uint32_t GetBackgroundColor() = 0;
-
-    // Cancel browser initiated document download.
-    virtual void CancelBrowserDownload() {}
 
     // Sets selection status.
     virtual void IsSelectingChanged(bool is_selecting) {}

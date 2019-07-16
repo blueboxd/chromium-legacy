@@ -97,21 +97,21 @@ void MediaController::Suspend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->ipc()->Suspend(mojom::MediaSession::SuspendType::kUI);
+    session_->PerformUIAction(mojom::MediaSessionAction::kPause);
 }
 
 void MediaController::Resume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->ipc()->Resume(mojom::MediaSession::SuspendType::kUI);
+    session_->PerformUIAction(mojom::MediaSessionAction::kPlay);
 }
 
 void MediaController::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->ipc()->Stop(mojom::MediaSession::SuspendType::kUI);
+    session_->PerformUIAction(mojom::MediaSessionAction::kStop);
 }
 
 void MediaController::ToggleSuspendResume() {

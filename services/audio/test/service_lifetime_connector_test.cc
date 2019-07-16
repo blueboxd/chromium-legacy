@@ -54,7 +54,7 @@ class AudioServiceLifetimeConnectorTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   StrictMock<base::MockCallback<base::RepeatingClosure>> quit_request_;
   std::unique_ptr<media::MockAudioManager> audio_manager_;

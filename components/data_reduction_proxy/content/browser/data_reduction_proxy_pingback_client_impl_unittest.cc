@@ -110,7 +110,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
  public:
   DataReductionProxyPingbackClientImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC) {
   }
 

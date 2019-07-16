@@ -17,6 +17,10 @@ struct UsbProduct {
   const char* name;
 };
 
+// This structure is used in an array so the cumulative size is significant.
+// Order fields to minimize/eliminate alignment padding.
+// Chose field size based on contained data to further reduce structure size.
+// For example, uint16_t instead of size_t.
 struct UsbVendor {
   const char* name;
   const UsbProduct* products;

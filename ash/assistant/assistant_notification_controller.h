@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
+#include "ash/assistant/assistant_notification_expiry_monitor.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
@@ -97,6 +98,7 @@ class ASH_EXPORT AssistantNotificationController
   mojo::Binding<mojom::AssistantNotificationController> binding_;
 
   AssistantNotificationModel model_;
+  AssistantNotificationExpiryMonitor expiry_monitor_;
 
   // Owned by AssistantController.
   chromeos::assistant::mojom::Assistant* assistant_ = nullptr;

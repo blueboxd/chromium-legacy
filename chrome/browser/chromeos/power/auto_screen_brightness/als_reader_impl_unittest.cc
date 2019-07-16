@@ -56,7 +56,7 @@ class AlsReaderImplTest : public testing::Test {
   AlsReaderImplTest()
       : scoped_task_environment_(
             std::make_unique<base::test::ScopedTaskEnvironment>(
-                base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME)) {
+                base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME)) {
     CHECK(temp_dir_.CreateUniqueTempDir());
     ambient_light_path_ = temp_dir_.GetPath().Append("test_als");
     als_reader_.SetTaskRunnerForTesting(base::SequencedTaskRunnerHandle::Get());

@@ -4697,9 +4697,8 @@ if (enable_java_templates) {
         ]
       }
 
-      foreach(_module, _all_modules) {
-        _rebased_build_config =
-            rebase_path(_module.build_config, root_build_dir)
+      foreach(build_config, _all_module_build_configs) {
+        _rebased_build_config = rebase_path(build_config, root_build_dir)
         args += [
           "--uncompressed-assets=@FileArg(" +
               "$_rebased_build_config:uncompressed_assets)",
@@ -4707,7 +4706,6 @@ if (enable_java_templates) {
               "$_rebased_build_config:deps_info:r_text_path)",
           "--pathmap-in-paths=@FileArg(" +
               "$_rebased_build_config:deps_info:module_pathmap_path)",
-          "--module-names=" + _module.name,
         ]
       }
     }

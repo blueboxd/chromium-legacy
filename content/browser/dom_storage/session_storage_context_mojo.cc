@@ -111,7 +111,6 @@ SessionStorageContextMojo::SessionStorageContextMojo(
       memory_dump_id_(base::StringPrintf("SessionStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kOnionSoupDOMStorage));
   base::trace_event::MemoryDumpManager::GetInstance()
       ->RegisterDumpProviderWithSequencedTaskRunner(
           this, "SessionStorage", std::move(memory_dump_task_runner),
@@ -769,7 +768,6 @@ void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
 
 void SessionStorageContextMojo::OnMojoConnectionDestroyed() {
   UMA_HISTOGRAM_BOOLEAN("SessionStorageContext.OnConnectionDestroyed", true);
-  LOG(ERROR) << "Lost connection to database";
   for (const auto& it : data_maps_)
     it.second->storage_area()->CancelAllPendingRequests();
 
@@ -1029,7 +1027,6 @@ void SessionStorageContextMojo::GetStatistics(size_t* total_cache_size,
 
 void SessionStorageContextMojo::LogDatabaseOpenResult(OpenResult result) {
   if (result != OpenResult::kSuccess) {
-    LOG(ERROR) << "Got error when opening: " << static_cast<int>(result);
     UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.OpenError", result);
   }
   if (open_result_histogram_) {

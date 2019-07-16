@@ -2683,7 +2683,7 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during drags.
-TEST_F(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
+TEST_F(OverviewSessionRoundedCornerTest, ShadowVisibilityDragging) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2697,8 +2697,8 @@ TEST_F(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-  // Drag the first window. Verify that the mask was removed for the first
-  // window but still exists for the second window as we do not apply mask
+  // Drag the first window. Verify that the shadow was removed for the first
+  // window but still exists for the second window as we do not make shadow
   // for a dragged window.
   const gfx::Point start_drag =
       gfx::ToRoundedPoint(item1->target_bounds().CenterPoint());
@@ -2708,25 +2708,31 @@ TEST_F(OverviewSessionRoundedCornerTest, RoundedEdgeMaskVisibilityDragging) {
   EXPECT_FALSE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
 
-  EXPECT_FALSE(HasRoundedCorner(item1));
-  EXPECT_TRUE(HasRoundedCorner(item2));
+  EXPECT_TRUE(item1->GetShadowBoundsForTesting().IsEmpty());
+  EXPECT_FALSE(item2->GetShadowBoundsForTesting().IsEmpty());
 
   // Drag to horizontally and then back to the start to avoid activating the
-  // window, drag to close or entering splitview. Verify that the mask is
+  // window, drag to close or entering splitview. Verify that the shadow is
   // invisible on both items during animation.
   generator->MoveMouseTo(gfx::Point(0, start_drag.y()));
+
+  // The drop target window should be created with no shadow.
+  OverviewItem* drop_target_item = GetDropTarget(0);
+  ASSERT_TRUE(drop_target_item);
+  EXPECT_TRUE(drop_target_item->GetShadowBoundsForTesting().IsEmpty());
+
   generator->MoveMouseTo(start_drag);
   generator->ReleaseLeftButton();
   EXPECT_TRUE(window1->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
-  EXPECT_FALSE(HasRoundedCorner(item1));
-  EXPECT_FALSE(HasRoundedCorner(item2));
+  EXPECT_TRUE(item1->GetShadowBoundsForTesting().IsEmpty());
+  EXPECT_TRUE(item2->GetShadowBoundsForTesting().IsEmpty());
 
-  // Verify that the mask is visble again after animation is finished.
+  // Verify that the shadow is visble again after animation is finished.
   window1->layer()->GetAnimator()->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
-  EXPECT_TRUE(HasRoundedCorner(item1));
-  EXPECT_TRUE(HasRoundedCorner(item2));
+  EXPECT_FALSE(item1->GetShadowBoundsForTesting().IsEmpty());
+  EXPECT_FALSE(item2->GetShadowBoundsForTesting().IsEmpty());
 }
 
 // Tests that the shadows in overview mode are placed correctly.

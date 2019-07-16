@@ -355,13 +355,13 @@ To use `base::WeakPtr` with `base::Bind()`, `MyClass` will typically look like:
 ```cpp
 class MyClass {
 public:
-  MyClass() : weak_factory_(this) {
+  MyClass() {
     weak_this_ = weak_factory_.GetWeakPtr();
   }
 private:
   base::WeakPtr<MyClass> weak_this_;
   // MyClass member variables go here.
-  base::WeakPtrFactory<MyClass> weak_factory_;
+  base::WeakPtrFactory<MyClass> weak_factory_{this};
 };
 ```
 

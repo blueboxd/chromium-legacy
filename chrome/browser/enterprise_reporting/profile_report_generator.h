@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -51,8 +52,8 @@ class ProfileReportGenerator {
 
   void GetExtensionInfo();
   void GetPluginInfo();
-  // TODO(zmin): void GetChromePolicyInfo();
-  // TODO(zmin): void GetExtensionPolicyInfo();
+  void GetChromePolicyInfo();
+  void GetExtensionPolicyInfo();
   // TODO(zmin): void GetPolicyFetchTimestampInfo();
 
  private:
@@ -62,6 +63,7 @@ class ProfileReportGenerator {
   void CheckReportStatusAsync();
 
   Profile* profile_;
+  base::Value policies_;
 
   bool extensions_and_plugins_enabled_ = true;
   bool policies_enabled_ = true;

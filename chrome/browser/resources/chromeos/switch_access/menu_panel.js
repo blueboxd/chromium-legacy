@@ -13,6 +13,12 @@ class Panel {
      * @private {MenuManager}
      */
     this.menuManager_;
+
+    /**
+     * Reference to switch access.
+     * @private {SwitchAccess}
+     */
+    this.switchAccess_;
   }
 
   /**
@@ -37,8 +43,8 @@ class Panel {
    * reference to this object for communication.
    */
   connectToBackground() {
-    const switchAccess = chrome.extension.getBackgroundPage().switchAccess;
-    this.menuManager_ = switchAccess.connectMenuPanel(this);
+    this.switchAccess_ = chrome.extension.getBackgroundPage().switchAccess;
+    this.menuManager_ = this.switchAccess_.connectMenuPanel(this);
   }
 
   /**
@@ -105,7 +111,20 @@ class Panel {
     // TODO(anastasi): This should be a preference that the user can change.
     const maxCols = 3;
     const numRows = Math.ceil(numActions / maxCols);
-    const height = 60 * numRows;
+
+    let rowHeight;
+
+    if (this.switchAccess_.textEditingEnabled()) {
+      rowHeight = 85;
+      const actions = document.getElementsByClassName('action');
+      for (let action of actions) {
+        action.classList.add('textEditingEnabled');
+      }
+    } else {
+      rowHeight = 60;
+    }
+
+    const height = rowHeight * numRows;
     document.getElementById(SAConstants.MENU_ID).style.height = height + 'px';
   }
 

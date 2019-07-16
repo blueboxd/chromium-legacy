@@ -54,6 +54,12 @@ class SwitchAccess {
      */
     this.navReadyCallback_ = null;
 
+    /**
+     * Feature flag controlling improvement of text input capabilities.
+     * @private {boolean}
+     */
+    this.enableTextEditing_ = false;
+
     this.init_();
   }
 
@@ -73,6 +79,11 @@ class SwitchAccess {
       if (this.navReadyCallback_)
         this.navReadyCallback_();
     }.bind(this));
+
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-switch-access-text', (result) => {
+          this.enableTextEditing_ = result;
+        });
   }
 
   /**
@@ -119,6 +130,16 @@ class SwitchAccess {
   showOptionsPage() {
     const optionsPage = {url: 'options.html'};
     chrome.tabs.create(optionsPage);
+  }
+
+  /**
+   * Returns whether or not the feature flag
+   * for text editing is enabled.
+   * @return {boolean}
+   * @public
+   */
+  textEditingEnabled() {
+    return this.enableTextEditing_;
   }
 
   /**

@@ -29,6 +29,19 @@ import java.util.concurrent.TimeUnit;
 class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedulerDelegate {
     private static final String TAG = "BkgrdTaskSchedGcmNM";
 
+    /** Delta time for expiration checks, after the end time. */
+    static final long DEADLINE_DELTA_MS = 1000;
+
+    /** Clock to use so we can mock time in tests. */
+    public interface Clock { long currentTimeMillis(); }
+
+    private static Clock sClock = System::currentTimeMillis;
+
+    @VisibleForTesting
+    static void setClockForTesting(Clock clock) {
+        sClock = clock;
+    }
+
     static BackgroundTask getBackgroundTaskFromTaskParams(@NonNull TaskParams taskParams) {
         String backgroundTaskClassName = getBackgroundTaskClassFromTaskParams(taskParams);
         return BackgroundTaskReflection.getBackgroundTaskFromClassName(backgroundTaskClassName);
@@ -38,6 +51,19 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         Bundle extras = taskParams.getExtras();
         if (extras == null) return null;
         return extras.getString(BACKGROUND_TASK_CLASS_KEY);
+    }
+
+    static Long getDeadlineTimeFromTaskParams(@NonNull TaskParams taskParams) {
+        Bundle extras = taskParams.getExtras();
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
+            return null;
+        }
+        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
+    }
+
+    private static long getDeadlineTime(TaskInfo taskInfo) {
+        long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
+        return sClock.currentTimeMillis() + windowEndTimeMs;
     }
 
     /**
@@ -71,6 +97,9 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         Bundle taskExtras = new Bundle();
         taskExtras.putString(
                 BACKGROUND_TASK_CLASS_KEY, taskInfo.getBackgroundTaskClass().getName());
+        if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
+            taskExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
+        }
         taskExtras.putBundle(BACKGROUND_TASK_EXTRAS_KEY, taskInfo.getExtras());
 
         Task.Builder builder;
@@ -106,8 +135,12 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         long windowStartSeconds = oneOffInfo.hasWindowStartTimeConstraint()
                 ? TimeUnit.MILLISECONDS.toSeconds(oneOffInfo.getWindowStartTimeMs())
                 : 0;
-        builder.setExecutionWindow(windowStartSeconds,
-                TimeUnit.MILLISECONDS.toSeconds(oneOffInfo.getWindowEndTimeMs()));
+        long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
+        if (oneOffInfo.expiresAfterWindowEndTime()) {
+            windowEndTimeMs += DEADLINE_DELTA_MS;
+        }
+        builder.setExecutionWindow(
+                windowStartSeconds, TimeUnit.MILLISECONDS.toSeconds(windowEndTimeMs));
         return builder;
     }
 

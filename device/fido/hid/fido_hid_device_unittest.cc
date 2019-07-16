@@ -191,7 +191,7 @@ class FidoHidDeviceTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   device::mojom::HidManagerPtr hid_manager_;
   std::unique_ptr<FakeFidoHidManager> fake_hid_manager_;
 };

@@ -9,12 +9,13 @@
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
+class Shelf;
 class ShelfButtonDelegate;
 
 // Button used for items on the shelf.
 class ASH_EXPORT ShelfButton : public views::Button {
  public:
-  explicit ShelfButton(ShelfButtonDelegate* shelf_button_delegate);
+  ShelfButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate);
   ~ShelfButton() override;
 
   // views::Button:
@@ -30,6 +31,9 @@ class ASH_EXPORT ShelfButton : public views::Button {
   }
 
  private:
+  // The shelf instance that this button belongs to. Unowned.
+  Shelf* const shelf_;
+
   // A class to which this button delegates handling some of its events.
   ShelfButtonDelegate* const shelf_button_delegate_;
 

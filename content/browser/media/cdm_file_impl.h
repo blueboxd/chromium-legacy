@@ -50,6 +50,8 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   void Write(const std::vector<uint8_t>& data, WriteCallback callback) final;
 
  private:
+  class FileReader;
+
   using CreateOrOpenCallback = storage::AsyncFileUtil::CreateOrOpenCallback;
 
   // Open the file |file_name| using the flags provided in |file_flags|.
@@ -58,12 +60,9 @@ class CdmFileImpl final : public media::mojom::CdmFile {
                 uint32_t file_flags,
                 CreateOrOpenCallback callback);
 
-  // Called when the file has been opened for reading, so it reads the contents
-  // of |file| and passes them to |callback|. |file| is closed after reading.
-  void OnFileOpenedForReading(ReadCallback callback,
-                              base::File file,
-                              base::OnceClosure on_close_callback);
-  void OnFileRead(ReadCallback callback, Status status);
+  // Called when the file is read. If |success| is true, |data| is the contents
+  // of the file read.
+  void ReadDone(bool success, std::vector<uint8_t> data);
 
   // Called when |temp_file_name_| has been opened for writing. Writes
   // |data| to |file|, closes |file|, and then kicks off a rename of
@@ -106,8 +105,9 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   // |temp_file_name| is not required.
   bool file_locked_ = false;
 
-  // Buffer used when reading the file.
-  std::vector<uint8_t> data_;
+  // Used when reading the file. |file_reader_| lives on the IO thread.
+  ReadCallback read_callback_;
+  std::unique_ptr<FileReader> file_reader_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<CdmFileImpl> weak_factory_{this};

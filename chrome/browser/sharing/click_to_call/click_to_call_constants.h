@@ -12,4 +12,14 @@
 constexpr base::TimeDelta kSharingClickToCallMessageTTL =
     base::TimeDelta::FromMinutes(10);
 
+// Maximum number of devices to be shown in dialog and context menu.
+constexpr int kMaxDevicesShown = 10;
+
+// Command id for first device shown in submenu.
+constexpr int kSubMenuFirstDeviceCommandId = 2150;
+
+// Command id for last device shown in submenu.
+constexpr int kSubMenuLastDeviceCommandId =
+    kSubMenuFirstDeviceCommandId + kMaxDevicesShown - 1;
+
 #endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_CONSTANTS_H_

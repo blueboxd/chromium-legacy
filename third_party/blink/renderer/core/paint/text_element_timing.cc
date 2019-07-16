@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/element_timing_utils.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -48,13 +50,8 @@ FloatRect TextElementTiming::ComputeIntersectionRect(
   if (!NeededForElementTiming(*node))
     return FloatRect();
 
-  FloatClipRect float_clip_visual_rect =
-      FloatClipRect(FloatRect(aggregated_visual_rect));
-  GeometryMapper::LocalToAncestorVisualRect(
-      property_tree_state,
-      frame_view->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
-      float_clip_visual_rect);
-  return float_clip_visual_rect.Rect();
+  return ElementTimingUtils::ComputeIntersectionRect(
+      &frame_view->GetFrame(), aggregated_visual_rect, property_tree_state);
 }
 
 void TextElementTiming::OnTextObjectsPainted(

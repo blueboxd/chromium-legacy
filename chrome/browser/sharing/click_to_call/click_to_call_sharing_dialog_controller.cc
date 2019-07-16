@@ -48,7 +48,7 @@ std::vector<App> ClickToCallSharingDialogController::GetApps() {
   std::vector<App> apps;
   if (!app_name.empty()) {
     // TODO: Get the icon and ID and test
-    apps.emplace_back(nullptr, std::move(app_name), nullptr);
+    apps.emplace_back(std::string(), std::move(app_name), std::string());
   }
   return apps;
 }
@@ -64,7 +64,7 @@ void ClickToCallSharingDialogController::OnDeviceChosen(
       std::move(callback));
 }
 
-void ClickToCallSharingDialogController::OnAppChosen(App app) {
+void ClickToCallSharingDialogController::OnAppChosen(const App& app) {
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(phone_url_,
                                                          web_contents_);
 }

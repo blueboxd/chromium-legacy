@@ -6415,6 +6415,25 @@ the Bookmarks menu.">
         </message>
       </if>
 
+      <!-- Sharing features. -->
+      <if expr="not use_titlecase">
+        <message name="IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES" desc="The label of item for click to call in context menu when multiple devices are available.">
+          Call from your devices
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE" desc="The label of item for click to call in context menu for showing device name when multiple devices are available.">
+          Call from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
+        </message>
+      </if>
+
+      <if expr="use_titlecase">
+        <message name="IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES" desc="In Title Case: The label of item for click to call in context menu when multiple devices are available.">
+          Call from Your Devices
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE" desc="In Title Case: The label of item for click to call in context menu when single device is available.">
+          Call from <ph name="DEVICE_NAME">$1<ex>Jimmy's Pixel</ex></ph>
+        </message>
+      </if>
+
 
       <!-- Collected cookies window -->
       <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">

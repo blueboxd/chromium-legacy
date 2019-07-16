@@ -18,8 +18,14 @@ D3D11BufferMock::~D3D11BufferMock() = default;
 D3D11DeviceMock::D3D11DeviceMock() = default;
 D3D11DeviceMock::~D3D11DeviceMock() = default;
 
+DXGIDeviceMock::DXGIDeviceMock() = default;
+DXGIDeviceMock::~DXGIDeviceMock() = default;
+
 DXGIDevice2Mock::DXGIDevice2Mock() = default;
 DXGIDevice2Mock::~DXGIDevice2Mock() = default;
+
+DXGIAdapterMock::DXGIAdapterMock() = default;
+DXGIAdapterMock::~DXGIAdapterMock() = default;
 
 DXGIAdapter3Mock::DXGIAdapter3Mock() = default;
 DXGIAdapter3Mock::~DXGIAdapter3Mock() = default;

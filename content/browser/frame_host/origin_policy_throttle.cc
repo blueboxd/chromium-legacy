@@ -5,36 +5,21 @@
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/public/browser/origin_policy_commands.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/no_destructor.h"
-#include "base/strings/strcat.h"
-#include "build/buildflag.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/origin_policy_error_reason.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
-#include "net/http/http_util.h"
-#include "services/network/network_context.h"
-#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "url/origin.h"
-
-namespace {
-// Constants derived from the spec, https://github.com/WICG/origin-policy
-static constexpr const char* kDeletePolicy = "0";
-static constexpr const char* kReportTo = "report-to";
-static constexpr const char* kPolicy = "policy";
-}  // namespace
 
 namespace content {
 
@@ -119,7 +104,7 @@ OriginPolicyThrottle::WillProcessResponse() {
   navigation_handle()->GetResponseHeaders()->GetNormalizedHeader(
       net::HttpRequestHeaders::kSecOriginPolicy, &header);
 
-  network::OriginPolicyManager::RetrieveOriginPolicyCallback
+  network::mojom::OriginPolicyManager::RetrieveOriginPolicyCallback
       origin_policy_manager_done = base::BindOnce(
           &OriginPolicyThrottle::OnOriginPolicyManagerRetrieveDone,
           weak_factory_.GetWeakPtr());
@@ -144,123 +129,25 @@ const char* OriginPolicyThrottle::GetNameForLogging() {
 OriginPolicyThrottle::OriginPolicyThrottle(NavigationHandle* handle)
     : NavigationThrottle(handle) {}
 
-// TODO(andypaicu): Remove when we have moved reporting logic to the network
-// service.
-OriginPolicyThrottle::PolicyVersionAndReportTo
-OriginPolicyThrottle::GetRequestedPolicyAndReportGroupFromHeader() const {
-  std::string header;
-  navigation_handle()->GetResponseHeaders()->GetNormalizedHeader(
-      net::HttpRequestHeaders::kSecOriginPolicy, &header);
-  return GetRequestedPolicyAndReportGroupFromHeaderString(header);
-}
-
-OriginPolicyThrottle::PolicyVersionAndReportTo
-OriginPolicyThrottle::GetRequestedPolicyAndReportGroupFromHeaderString(
-    const std::string& header) {
-  // Compatibility with early spec drafts, for safety reasons:
-  // A lonely "0" will be recognized, so that deletion of a policy always works.
-  if (net::HttpUtil::TrimLWS(header) == kDeletePolicy)
-    return PolicyVersionAndReportTo({kDeletePolicy, ""});
-
-  std::string policy;
-  std::string report_to;
-  bool valid = true;
-  net::HttpUtil::NameValuePairsIterator iter(header.cbegin(), header.cend(),
-                                             ',');
-  while (iter.GetNext()) {
-    std::string token_value =
-        net::HttpUtil::TrimLWS(iter.value_piece()).as_string();
-    bool is_token = net::HttpUtil::IsToken(token_value);
-    if (iter.name_piece() == kPolicy) {
-      valid &= is_token && policy.empty();
-      policy = token_value;
-    } else if (iter.name_piece() == kReportTo) {
-      valid &= is_token && report_to.empty();
-      report_to = token_value;
-    }
-  }
-  valid &= iter.valid();
-
-  if (!valid)
-    return PolicyVersionAndReportTo();
-  return PolicyVersionAndReportTo({policy, report_to});
-}
-
 const url::Origin OriginPolicyThrottle::GetRequestOrigin() const {
   return url::Origin::Create(navigation_handle()->GetURL());
 }
 
-void OriginPolicyThrottle::CancelNavigation(OriginPolicyErrorReason reason,
+void OriginPolicyThrottle::CancelNavigation(network::OriginPolicyState state,
                                             const GURL& policy_url) {
   base::Optional<std::string> error_page =
       GetContentClient()->browser()->GetOriginPolicyErrorPage(
-          reason, navigation_handle());
+          state, navigation_handle());
   CancelDeferredNavigation(NavigationThrottle::ThrottleCheckResult(
       NavigationThrottle::CANCEL, net::ERR_BLOCKED_BY_CLIENT, error_page));
-  Report(reason, policy_url);
 }
-
-#if BUILDFLAG(ENABLE_REPORTING)
-void OriginPolicyThrottle::Report(OriginPolicyErrorReason reason,
-                                  const GURL& policy_url) {
-  const PolicyVersionAndReportTo header_values =
-      GetRequestedPolicyAndReportGroupFromHeader();
-  if (header_values.report_to.empty())
-    return;
-
-  std::string user_agent;
-  navigation_handle()->GetRequestHeaders().GetHeader(
-      net::HttpRequestHeaders::kUserAgent, &user_agent);
-
-  std::string origin_policy_header;
-  navigation_handle()->GetResponseHeaders()->GetNormalizedHeader(
-      net::HttpRequestHeaders::kSecOriginPolicy, &origin_policy_header);
-  const char* reason_str = nullptr;
-  switch (reason) {
-    case OriginPolicyErrorReason::kCannotLoadPolicy:
-      reason_str = "CANNOT_LOAD";
-      break;
-    case OriginPolicyErrorReason::kPolicyShouldNotRedirect:
-      reason_str = "REDIRECT";
-      break;
-    case OriginPolicyErrorReason::kOther:
-      reason_str = "OTHER";
-      break;
-  }
-
-  base::DictionaryValue report_body;
-  report_body.SetKey("origin_policy_url", base::Value(policy_url.spec()));
-  report_body.SetKey("policy", base::Value(origin_policy_header));
-  report_body.SetKey("policy_error_reason", base::Value(reason_str));
-
-  SiteInstance* site_instance = navigation_handle()->GetStartingSiteInstance();
-  BrowserContext::GetStoragePartition(site_instance->GetBrowserContext(),
-                                      site_instance)
-      ->GetNetworkContext()
-      ->QueueReport("origin-policy", header_values.report_to,
-                    navigation_handle()->GetURL(), user_agent,
-                    std::move(report_body));
-}
-#else
-void OriginPolicyThrottle::Report(OriginPolicyErrorReason reason,
-                                  const GURL& policy_url) {}
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void OriginPolicyThrottle::OnOriginPolicyManagerRetrieveDone(
     const network::OriginPolicy& origin_policy) {
   switch (origin_policy.state) {
     case network::OriginPolicyState::kCannotLoadPolicy:
-      // TODO(andypaicu): OriginPolicyErrorReason is obsolete and we should use
-      // network::OriginPolicyState instead.
-      CancelNavigation(OriginPolicyErrorReason::kCannotLoadPolicy,
-                       origin_policy.policy_url);
-      return;
-
     case network::OriginPolicyState::kInvalidRedirect:
-      // TODO(andypaicu): OriginPolicyErrorReason is obsolete and we should use
-      // network::OriginPolicyState instead.
-      CancelNavigation(OriginPolicyErrorReason::kPolicyShouldNotRedirect,
-                       origin_policy.policy_url);
+      CancelNavigation(origin_policy.state, origin_policy.policy_url);
       return;
 
     case network::OriginPolicyState::kNoPolicyApplies:

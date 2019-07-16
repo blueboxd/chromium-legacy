@@ -113,6 +113,16 @@ class VIEWS_EXPORT InkDropHostView : public View {
     return ink_drop_large_corner_radius_;
   }
 
+  // Allows InstallableInkDrop to override our InkDropEventHandler
+  // instance.
+  //
+  // TODO(crbug.com/931964): Remove this, either by finishing refactor or by
+  // giving up.
+  void set_ink_drop_event_handler_override(
+      InkDropEventHandler* ink_drop_event_handler_override) {
+    ink_drop_event_handler_override_ = ink_drop_event_handler_override;
+  }
+
   // Animates |ink_drop_| to the desired |ink_drop_state|. Caches |event| as the
   // last_ripple_triggering_event().
   //
@@ -206,6 +216,9 @@ class VIEWS_EXPORT InkDropHostView : public View {
     InkDropHostView* const host_view_;
   };
 
+  const InkDropEventHandler* GetEventHandler() const;
+  InkDropEventHandler* GetEventHandler();
+
   // Defines what type of |ink_drop_| to create.
   InkDropMode ink_drop_mode_ = InkDropMode::OFF;
 
@@ -216,6 +229,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // destroyed |ink_drop_| during destruction.
   InkDropHostViewEventHandlerDelegate ink_drop_event_handler_delegate_;
   InkDropEventHandler ink_drop_event_handler_;
+
+  InkDropEventHandler* ink_drop_event_handler_override_ = nullptr;
 
   float ink_drop_visible_opacity_ = 0.175f;
 

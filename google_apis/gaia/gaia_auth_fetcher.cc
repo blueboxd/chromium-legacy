@@ -47,6 +47,11 @@ const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
 
 const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
+constexpr char kBadAuthenticationError[] = "BadAuthentication";
+constexpr char kBadAuthenticationShortError[] = "badauth";
+constexpr char kServiceUnavailableError[] = "ServiceUnavailable";
+constexpr char kServiceUnavailableShortError[] = "ire";
+
 std::unique_ptr<const GaiaAuthConsumer::ClientOAuthResult>
 ExtractOAuth2TokenPairResponse(const std::string& data) {
   std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(data);
@@ -175,10 +180,6 @@ const char GaiaAuthFetcher::kUberAuthTokenURLFormat[] =
 
 const char GaiaAuthFetcher::kOAuthLoginFormat[] = "service=%s&source=%s";
 
-const char GaiaAuthFetcher::kBadAuthenticationError[] = "BadAuthentication";
-// static
-const char GaiaAuthFetcher::kServiceUnavailableError[] =
-    "ServiceUnavailable";
 // static
 const char GaiaAuthFetcher::kErrorParam[] = "Error";
 // static
@@ -871,13 +872,15 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   ParseClientLoginFailure(data, &error, &url);
   DLOG(WARNING) << "ClientLogin failed with " << error;
 
-  if (error == kBadAuthenticationError) {
+  if (error == kBadAuthenticationShortError ||
+      error == kBadAuthenticationError) {
     return GoogleServiceAuthError(
         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
             GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                 CREDENTIALS_REJECTED_BY_SERVER));
   }
-  if (error == kServiceUnavailableError) {
+  if (error == kServiceUnavailableShortError ||
+      error == kServiceUnavailableError) {
     return GoogleServiceAuthError(
         GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   }

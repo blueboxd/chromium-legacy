@@ -59,7 +59,7 @@ class FrameSchedulerImplTest : public testing::Test {
  public:
   FrameSchedulerImplTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
                 QUEUED) {}
 

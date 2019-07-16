@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 #include "third_party/blink/renderer/platform/blob/testing/fake_blob_registry.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -264,7 +264,7 @@ TEST_F(BlobDataHandleTest, CreateFromEmptyData) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromUUID) {
-  String kUuid = CreateCanonicalUUIDString();
+  String kUuid = WTF::CreateCanonicalUUIDString();
   String kType = "content/type";
   uint64_t kSize = 1234;
 

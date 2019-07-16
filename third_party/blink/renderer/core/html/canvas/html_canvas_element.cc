@@ -127,6 +127,8 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(kCanvasTag, document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
+      CanvasRenderingContextHost(
+          CanvasRenderingContextHost::HostType::kCanvasHost),
       size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
       context_creation_was_blocked_(false),
       ignore_reset_(false),
@@ -137,7 +139,6 @@ HTMLCanvasElement::HTMLCanvasElement(Document& document)
       gpu_readback_invoked_in_current_frame_(false),
       gpu_readback_successive_frames_(0) {
   UseCounter::Count(document, WebFeature::kHTMLCanvasElement);
-
   GetDocument().IncrementNumberOfCanvases();
 }
 
@@ -413,8 +414,7 @@ void HTMLCanvasElement::DidDraw() {
 
 void HTMLCanvasElement::FinalizeFrame() {
   TRACE_EVENT0("blink", "HTMLCanvasElement::FinalizeFrame");
-  RecordCanvasSizeToUMA(size_,
-                        CanvasRenderingContextHost::HostType::kCanvasHost);
+  RecordCanvasSizeToUMA(size_);
 
   // FinalizeFrame indicates the end of a script task that may have rendered
   // into the canvas, now is a good time to unlock cache entries.

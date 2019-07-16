@@ -79,21 +79,12 @@ void KeyboardControllerImpl::SendOnKeyboardVisibleBoundsChanged(
     observer.OnKeyboardVisibleBoundsChanged(screen_bounds);
 }
 
-void KeyboardControllerImpl::SendOnLoadKeyboardContentsRequested() {
-  for (auto& observer : observers_)
-    observer.OnLoadKeyboardContentsRequested();
-}
-
 void KeyboardControllerImpl::SendOnKeyboardUIDestroyed() {
   for (auto& observer : observers_)
     observer.OnKeyboardUIDestroyed();
 }
 
 // ash::KeyboardController
-
-void KeyboardControllerImpl::KeyboardContentsLoaded(const gfx::Size& size) {
-  keyboard_ui_controller()->KeyboardContentsLoaded(size);
-}
 
 keyboard::KeyboardConfig KeyboardControllerImpl::GetKeyboardConfig() {
   return keyboard_ui_controller_->keyboard_config();

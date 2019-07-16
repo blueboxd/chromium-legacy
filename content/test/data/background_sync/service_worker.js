@@ -15,61 +15,101 @@
 let resolveCallback = null;
 let rejectCallback = null;
 
-this.onmessage = function(event) {
-  if (event.data['action'] === 'completeDelayedSyncEvent') {
-    if (resolveCallback === null) {
-      sendMessageToClients('sync', 'error - resolveCallback is null');
+this.onmessage = (event) => {
+  switch(event.data.action) {
+    case 'completeDelayedSyncEvent': {
+      if (resolveCallback === null) {
+        sendMessageToClients('sync', 'error - resolveCallback is null');
+        return;
+      }
+
+      resolveCallback();
+      sendMessageToClients('sync', 'ok - delay completed');
       return;
     }
+    case 'rejectDelayedSyncEvent': {
+      if (rejectCallback === null) {
+        sendMessageToClients('sync', 'error - rejectCallback is null');
+        return;
+      }
 
-    resolveCallback();
-    sendMessageToClients('sync', 'ok - delay completed');
-    return;
-  }
-
-  if (event.data['action'] === 'rejectDelayedSyncEvent') {
-    if (rejectCallback === null) {
-      sendMessageToClients('sync', 'error - rejectCallback is null');
+      rejectCallback();
+      sendMessageToClients('sync', 'ok - delay rejected');
+    }
+    case 'registerOneShotSync': {
+      const tag = event.data.tag;
+      registration.sync.register(tag)
+        .then(() => {
+          sendMessageToClients('register', 'ok - ' + tag + ' registered in SW');
+        })
+        .catch(sendSyncErrorToClients);
       return;
     }
-
-    rejectCallback();
-    sendMessageToClients('sync', 'ok - delay rejected');
-  }
-
-  if (event.data['action'] === 'register') {
-    const tag = event.data['tag'];
-    registration.sync.register(tag)
-      .then(function () {
-        sendMessageToClients('register', 'ok - ' + tag + ' registered in SW');
-      })
-      .catch(sendSyncErrorToClients);
-  }
-
-  if (event.data['action'] === 'hasTag') {
-    const tag = event.data['tag'];
-    registration.sync.getTags()
-      .then(function(tags) {
-        if (tags.indexOf(tag) >= 0) {
-          sendMessageToClients('register', 'ok - ' + tag + ' found');
-        } else {
-          sendMessageToClients('register', 'error - ' + tag + ' not found');
-          return;
-        }
-      })
-      .catch(sendSyncErrorToClients);
-  }
-
-  if (event.data['action'] === 'getTags') {
-    registration.sync.getTags()
-      .then(function(tags) {
-        sendMessageToClients('register', 'ok - ' + tags.toString());
-      })
-      .catch(sendSyncErrorToClients);
+    case 'registerPeriodicSync': {
+      const tag = event.data.tag;
+      const minInterval = event.data.minInterval;
+      registration.periodicSync.register(tag, { minInterval: minInterval })
+        .then(() =>
+          sendMessageToClients('register', 'ok - ' + tag + ' registered in SW'))
+        .catch(sendSyncErrorToClients);
+      return;
+    }
+    case 'unregister': {
+      const tag = event.data.tag;
+      registration.periodicSync.unregister(tag)
+        .then(() =>
+          sendMessageToClients(
+            'unregister', 'ok - ' + tag + ' unregistered in SW'))
+        .catch(sendSyncErrorToClients);
+      return;
+    }
+    case 'hasOneShotSyncTag': {
+      const tag = event.data.tag;
+      registration.sync.getTags()
+        .then((tags) => {
+          if (tags.indexOf(tag) >= 0) {
+            sendMessageToClients('register', 'ok - ' + tag + ' found');
+          } else {
+            sendMessageToClients('register', 'error - ' + tag + ' not found');
+            return;
+          }
+        })
+        .catch(sendSyncErrorToClients);
+        return;
+      }
+    case 'hasPeriodicSyncTag': {
+      const tag = event.data.tag;
+      registration.periodicSync.getTags()
+        .then((tags) => {
+          if (tags.indexOf(tag) >= 0) {
+            sendMessageToClients('register', 'ok - ' + tag + ' found in SW');
+          } else {
+            sendMessageToClients('register', 'error - ' + tag + ' not found');
+            return;
+          }
+        })
+        .catch(sendSyncErrorToClients);
+      return;
+    }
+    case 'getOneShotSyncTags': {
+      registration.sync.getTags()
+        .then((tags) => {
+          sendMessageToClients('register', 'ok - ' + tags.toString());
+        })
+        .catch(sendSyncErrorToClients);
+      return;
+    }
+    case 'getPeriodicSyncTags': {
+      registration.periodicSync.getTags()
+        .then((tags) => {
+          sendMessageToClients('register', 'ok - ' + tags.toString());
+        })
+        .catch(sendSyncErrorToClients);
+      return;
+    }
   }
 }
-
-this.onsync = function(event) {
+this.onsync = (event) => {
   const eventProperties = [
     // Extract name from toString result: "[object <Class>]"
     Object.prototype.toString.call(event).match(/\s([a-zA-Z]+)/)[1],
@@ -93,7 +133,7 @@ this.onsync = function(event) {
   const tag = event.tag;
 
   if (tag === 'delay') {
-    const syncPromise = new Promise(function(resolve, reject) {
+    const syncPromise = new Promise((resolve, reject) => {
       resolveCallback = resolve;
       rejectCallback = reject;
     });
@@ -105,11 +145,11 @@ this.onsync = function(event) {
 };
 
 function sendMessageToClients(type, data) {
-  clients.matchAll({ includeUncontrolled: true }).then(function(clients) {
-    clients.forEach(function(client) {
+  clients.matchAll({ includeUncontrolled: true }).then((clients) => {
+    clients.forEach((client) => {
       client.postMessage({type, data});
     });
-  }, function(error) {
+  }, (error) => {
     console.log(error);
   });
 }

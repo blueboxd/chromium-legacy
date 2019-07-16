@@ -115,10 +115,6 @@ const base::Feature kOffMainThreadServiceWorkerScriptFetch{
 const base::Feature kOffMainThreadSharedWorkerScriptFetch{
     "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Onion souping for all DOMStorage. https://crbug.com/781870
-const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",

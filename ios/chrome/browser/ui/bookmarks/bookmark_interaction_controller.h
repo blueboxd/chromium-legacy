@@ -8,7 +8,6 @@
 
 @protocol ApplicationCommands;
 @protocol BookmarkInteractionControllerDelegate;
-@class Tab;
 
 namespace bookmarks {
 class BookmarkNode;

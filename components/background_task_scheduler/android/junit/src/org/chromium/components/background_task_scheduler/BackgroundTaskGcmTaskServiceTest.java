@@ -6,6 +6,7 @@ package org.chromium.components.background_task_scheduler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,6 +38,8 @@ public class BackgroundTaskGcmTaskServiceTest {
     static TestBackgroundTaskWithParams sLastTask;
     static boolean sReturnThroughCallback;
     static boolean sNeedsRescheduling;
+    private static BackgroundTaskSchedulerGcmNetworkManager.Clock sClock = () -> 1415926535000L;
+    private static BackgroundTaskSchedulerGcmNetworkManager.Clock sZeroClock = () -> 0L;
     @Mock
     private BackgroundTaskSchedulerDelegate mDelegate;
     @Mock
@@ -77,10 +80,11 @@ public class BackgroundTaskGcmTaskServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
-    public void testOnRunTask() {
+    public void testStartsAnytimeWithoutDeadline() {
         Bundle taskExtras = new Bundle();
         taskExtras.putString("foo", "bar");
-        TaskParams taskParams = buildTaskParams(TestBackgroundTaskWithParams.class, taskExtras);
+        TaskParams taskParams =
+                buildTaskParams(TestBackgroundTaskWithParams.class, taskExtras, null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_SUCCESS);
@@ -96,9 +100,57 @@ public class BackgroundTaskGcmTaskServiceTest {
 
     @Test
     @Feature({"BackgroundTaskScheduler"})
+    public void testDoesNotStartExactlyAtDeadline() {
+        TaskParams taskParams = buildTaskParams(
+                TestBackgroundTaskWithParams.class, new Bundle(), sClock.currentTimeMillis());
+
+        BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
+        taskService.setClockForTesting(sClock);
+        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_FAILURE);
+
+        assertNull(sLastTask);
+
+        verify(mBackgroundTaskSchedulerUma, times(0)).reportTaskStarted(eq(TaskIds.TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testDoesNotStartAfterDeadline() {
+        TaskParams taskParams = buildTaskParams(
+                TestBackgroundTaskWithParams.class, new Bundle(), sZeroClock.currentTimeMillis());
+
+        BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
+        taskService.setClockForTesting(sClock);
+        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_FAILURE);
+
+        assertNull(sLastTask);
+
+        verify(mBackgroundTaskSchedulerUma, times(0)).reportTaskStarted(eq(TaskIds.TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
+    public void testStartsBeforeDeadline() {
+        TaskParams taskParams = buildTaskParams(
+                TestBackgroundTaskWithParams.class, new Bundle(), sClock.currentTimeMillis());
+
+        BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
+        taskService.setClockForTesting(sZeroClock);
+        assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_SUCCESS);
+
+        assertNotNull(sLastTask);
+        TaskParameters parameters = sLastTask.getTaskParameters();
+
+        assertEquals(parameters.getTaskId(), TaskIds.TEST);
+
+        verify(mBackgroundTaskSchedulerUma, times(1)).reportTaskStarted(eq(TaskIds.TEST));
+    }
+
+    @Test
+    @Feature({"BackgroundTaskScheduler"})
     public void testOnRunTaskMissingConstructor() {
         TaskParams taskParams =
-                buildTaskParams(TestBackgroundTaskNoPublicConstructor.class, new Bundle());
+                buildTaskParams(TestBackgroundTaskNoPublicConstructor.class, new Bundle(), null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_FAILURE);
@@ -109,7 +161,8 @@ public class BackgroundTaskGcmTaskServiceTest {
     public void testOnRuntaskNeedsReschedulingFromCallback() {
         sReturnThroughCallback = true;
         sNeedsRescheduling = true;
-        TaskParams taskParams = buildTaskParams(TestBackgroundTaskWithParams.class, new Bundle());
+        TaskParams taskParams =
+                buildTaskParams(TestBackgroundTaskWithParams.class, new Bundle(), null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_RESCHEDULE);
@@ -120,7 +173,8 @@ public class BackgroundTaskGcmTaskServiceTest {
     public void testOnRuntaskDontRescheduleFromCallback() {
         sReturnThroughCallback = true;
         sNeedsRescheduling = false;
-        TaskParams taskParams = buildTaskParams(TestBackgroundTaskWithParams.class, new Bundle());
+        TaskParams taskParams =
+                buildTaskParams(TestBackgroundTaskWithParams.class, new Bundle(), null);
 
         BackgroundTaskGcmTaskService taskService = new BackgroundTaskGcmTaskService();
         assertEquals(taskService.onRunTask(taskParams), GcmNetworkManager.RESULT_SUCCESS);
@@ -155,12 +209,16 @@ public class BackgroundTaskGcmTaskServiceTest {
         assertEquals(0, TestBackgroundTask.getRescheduleCalls());
     }
 
-    private TaskParams buildTaskParams(Class clazz, Bundle taskExtras) {
+    private static TaskParams buildTaskParams(Class clazz, Bundle taskExtras, Long deadlineTimeMs) {
         Bundle extras = new Bundle();
         extras.putBundle(
                 BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_EXTRAS_KEY, taskExtras);
         extras.putString(BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_CLASS_KEY,
                 clazz.getName());
+        if (deadlineTimeMs != null) {
+            extras.putLong(BackgroundTaskSchedulerGcmNetworkManager.BACKGROUND_TASK_DEADLINE_KEY,
+                    deadlineTimeMs);
+        }
 
         return new TaskParams(Integer.toString(TaskIds.TEST), extras);
     }

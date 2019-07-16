@@ -309,4 +309,9 @@ bool ExecutionContext::FeaturePolicyFeatureObserved(
   return false;
 }
 
+bool ExecutionContext::RequireTrustedTypes() const {
+  return GetSecurityContext().TrustedTypesRequiredByPolicy() &&
+         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
+}
+
 }  // namespace blink

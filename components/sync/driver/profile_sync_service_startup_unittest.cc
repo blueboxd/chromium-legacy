@@ -60,7 +60,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         sync_prefs_(profile_sync_service_bundle_.pref_service()) {
     profile_sync_service_bundle_.identity_test_env()
         ->SetAutomaticIssueOfAccessTokens(true);

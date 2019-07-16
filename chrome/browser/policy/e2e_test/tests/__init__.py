@@ -5,6 +5,7 @@
 from force_google_safe_search.force_google_safe_search import *
 from homepage.homepage import *
 from restore_on_startup.restore_on_startup import *
+from password_manager_enabled.password_manager_enabled import *
 from popups_allowed.popups_allowed import *
 from url_blacklist.url_blacklist import *
 from url_whitelist.url_whitelist import *

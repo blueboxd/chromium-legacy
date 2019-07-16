@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -225,20 +224,10 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
   bool alert_reopen_tab_items =
       promo_feature_ == InProductHelpFeature::kReopenTab;
 
-  base::TimeTicks menu_open_time = base::TimeTicks::Now();
-
   RunMenu(
       std::make_unique<AppMenuModel>(toolbar_view_, browser,
                                      toolbar_view_->app_menu_icon_controller()),
       browser, run_types, alert_reopen_tab_items);
-
-  if (!(run_types & views::MenuRunner::FOR_DROP)) {
-    // Record the time-to-action for the menu. We don't record in the case of a
-    // drag-and-drop command because menus opened for drag-and-drop don't block
-    // the message loop.
-    UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
-                        base::TimeTicks::Now() - menu_open_time);
-  }
 }
 
 void BrowserAppMenuButton::OnThemeChanged() {

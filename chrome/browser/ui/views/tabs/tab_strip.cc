@@ -1638,6 +1638,14 @@ void TabStrip::UpdateHoverCard(Tab* tab) {
     hover_card_->FadeOutToHide();
 }
 
+bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
+  if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
+    return false;
+
+  return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
+         !hover_card_->IsFadingOut() && hover_card_->GetAnchorView() == tab;
+}
+
 bool TabStrip::ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) {
   if (!MaySetClip())
     return true;
@@ -2916,14 +2924,6 @@ void TabStrip::UpdateNewTabButtonBorder() {
   constexpr int kHorizontalInset = 8;
   new_tab_button_->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       extra_vertical_space / 2, kHorizontalInset, 0, kHorizontalInset)));
-}
-
-bool TabStrip::HoverCardIsShowingForTab(Tab* tab) {
-  if (!base::FeatureList::IsEnabled(features::kTabHoverCards))
-    return false;
-
-  return hover_card_ && hover_card_->GetWidget()->IsVisible() &&
-         !hover_card_->IsFadingOut() && hover_card_->GetAnchorView() == tab;
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {

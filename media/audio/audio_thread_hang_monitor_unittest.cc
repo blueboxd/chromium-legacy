@@ -38,7 +38,7 @@ constexpr base::TimeDelta kLongHangDeadline = base::TimeDelta::FromMinutes(30);
 class AudioThreadHangMonitorTest : public Test {
  public:
   AudioThreadHangMonitorTest()
-      : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+      : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         histograms_(),
         audio_thread_("Audio thread"),
         hang_monitor_({nullptr, base::OnTaskRunnerDeleter(nullptr)}) {

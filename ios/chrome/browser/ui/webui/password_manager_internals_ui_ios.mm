@@ -59,16 +59,10 @@ PasswordManagerInternalsUIIOS::~PasswordManagerInternalsUIIOS() {
   web_ui()->GetWebState()->RemoveObserver(this);
 }
 
-void PasswordManagerInternalsUIIOS::LogSavePasswordProgress(
-    const std::string& text) {
-  if (!registered_with_logging_service_ || text.empty())
+void PasswordManagerInternalsUIIOS::LogEntry(const base::Value& entry) {
+  if (!registered_with_logging_service_ || entry.is_none())
     return;
-  std::string no_quotes(text);
-  std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
-  base::Value text_string_value(net::EscapeForHTML(no_quotes));
-
-  std::vector<const base::Value*> args{&text_string_value};
-  web_ui()->CallJavascriptFunction("addLog", args);
+  web_ui()->CallJavascriptFunction("addRawLog", {&entry});
 }
 
 void PasswordManagerInternalsUIIOS::PageLoaded(
@@ -92,8 +86,9 @@ void PasswordManagerInternalsUIIOS::PageLoaded(
   if (service) {
     registered_with_logging_service_ = true;
 
-    std::string past_logs(service->RegisterReceiver(this));
-    LogSavePasswordProgress(past_logs);
+    const auto& past_logs = service->RegisterReceiver(this);
+    for (const auto& entry : past_logs)
+      LogEntry(entry);
   }
 }
 

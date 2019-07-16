@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
@@ -2542,18 +2543,28 @@ bool PlaceContent::ParseShorthand(
   DCHECK_EQ(shorthandForProperty(CSSPropertyID::kPlaceContent).length(), 2u);
 
   CSSParserTokenRange range_copy = range;
+  bool is_baseline = css_parsing_utils::IsBaselineKeyword(range.Peek().Id());
   const CSSValue* align_content_value =
       To<Longhand>(GetCSSPropertyAlignContent())
           .ParseSingleValue(range, context, local_context);
   if (!align_content_value)
     return false;
 
-  if (range.AtEnd())
-    range = range_copy;
+  const CSSValue* justify_content_value = nullptr;
+  if (range.AtEnd()) {
+    if (is_baseline) {
+      justify_content_value = MakeGarbageCollected<CSSContentDistributionValue>(
+          CSSValueID::kInvalid, CSSValueID::kStart, CSSValueID::kInvalid);
+    } else {
+      range = range_copy;
+    }
+  }
+  if (!justify_content_value) {
+    justify_content_value =
+        To<Longhand>(GetCSSPropertyJustifyContent())
+            .ParseSingleValue(range, context, local_context);
+  }
 
-  const CSSValue* justify_content_value =
-      To<Longhand>(GetCSSPropertyJustifyContent())
-          .ParseSingleValue(range, context, local_context);
   if (!justify_content_value || !range.AtEnd())
     return false;
 

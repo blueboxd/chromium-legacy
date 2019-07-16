@@ -51,6 +51,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/services/cups_proxy/public/cpp/manifest.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
@@ -254,6 +255,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::device_sync::GetManifest())
         .PackageService(chromeos::multidevice_setup::GetManifest())
+        .PackageService(chromeos::printing::GetCupsProxyManifest())
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
         .PackageService(chromeos::assistant::GetManifest())
 #endif

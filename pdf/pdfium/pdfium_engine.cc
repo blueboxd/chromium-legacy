@@ -2639,10 +2639,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     pp::Rect rect(pp::Point(0, document_size_.height()), size);
     page_rects.push_back(rect);
 
-    if (size.width() > document_size_.width())
-      document_size_.set_width(size.width());
-
-    document_size_.Enlarge(0, size.height());
+    draw_utils::ExpandDocumentSize(size, &document_size_);
   }
 
   for (size_t i = 0; i < new_page_count; ++i) {

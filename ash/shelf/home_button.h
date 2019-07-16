@@ -30,7 +30,7 @@ class ASH_EXPORT HomeButton : public ShelfControlButton,
  public:
   static const char kViewClassName[];
 
-  explicit HomeButton(ShelfButtonDelegate* shelf_button_delegate);
+  HomeButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate);
   ~HomeButton() override;
 
   // views::Button:

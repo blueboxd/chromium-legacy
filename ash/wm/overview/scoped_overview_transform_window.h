@@ -146,9 +146,9 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // change. Must be called before PositionWindows in OverviewGrid.
   void UpdateWindowDimensionsType();
 
-  // Updates the mask which gives rounded corners on the windows. Shows the mask
-  // if |show| is true, otherwise removes it.
-  void UpdateMask(bool show);
+  // Updates the rounded corners on the window. Makes the rounded corners if
+  // |show| is true, otherwise removes it.
+  void UpdateRoundedCorners(bool show);
 
   // Stop listening to any animations to finish.
   void CancelAnimationsListener();

@@ -69,7 +69,7 @@ class ElementAreaTest : public testing::Test {
  protected:
   ElementAreaTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         element_area_(&delegate_) {
     delegate_.SetWebController(&mock_web_controller_);
     delegate_.GetMutableSettings()->element_position_update_interval =

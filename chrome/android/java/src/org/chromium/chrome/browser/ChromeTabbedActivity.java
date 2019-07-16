@@ -135,7 +135,6 @@ import org.chromium.chrome.browser.tasks.EngagementTimeUtil;
 import org.chromium.chrome.browser.tasks.JourneyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.TasksUma;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
@@ -149,6 +148,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
+import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -676,18 +676,17 @@ public class ChromeTabbedActivity
             if (isTablet()) {
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
-                GridTabSwitcher gridTabSwitcher = null;
+                StartSurface startSurface = null;
 
                 if (FeatureUtilities.isGridTabSwitcherEnabled()) {
                     TabManagementDelegate tabManagementDelegate =
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
-                        gridTabSwitcher = tabManagementDelegate.createGridTabSwitcher(this);
+                        startSurface = tabManagementDelegate.createStartSurface(this);
                     }
                 }
 
-                mLayoutManager =
-                        new LayoutManagerChromePhone(compositorViewHolder, gridTabSwitcher);
+                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, startSurface);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
 

@@ -770,6 +770,7 @@ void WebMediaPlayerImpl::Play() {
   if (video_decode_stats_reporter_)
     video_decode_stats_reporter_->OnPlaying();
 
+  media_metrics_provider_->SetHasPlayed();
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
 
   MaybeUpdateBufferSizesForPlayback();
@@ -1808,11 +1809,13 @@ void WebMediaPlayerImpl::OnMetadata(const PipelineMetadata& metadata) {
       VIDEO_ROTATION_MAX + 1);
 
   if (HasAudio()) {
+    media_metrics_provider_->SetHasAudio(metadata.audio_decoder_config.codec());
     RecordEncryptionScheme("Audio",
                            metadata.audio_decoder_config.encryption_scheme());
   }
 
   if (HasVideo()) {
+    media_metrics_provider_->SetHasVideo(metadata.video_decoder_config.codec());
     RecordEncryptionScheme("Video",
                            metadata.video_decoder_config.encryption_scheme());
 
@@ -2009,6 +2012,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
       "pipeline_buffering_state", state);
   log_event->params.SetBoolean("for_suspended_start", for_suspended_start);
   media_log_->AddEvent(std::move(log_event));
+
+  if (state == BUFFERING_HAVE_ENOUGH && !for_suspended_start)
+    media_metrics_provider_->SetHaveEnough();
 
   if (state == BUFFERING_HAVE_ENOUGH) {
     TRACE_EVENT1("media", "WebMediaPlayerImpl::BufferingHaveEnough", "id",
@@ -2237,11 +2243,12 @@ void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
   UpdateBackgroundVideoOptimizationState();
 }
 
-void WebMediaPlayerImpl::OnAudioDecoderChange(const std::string& name) {
-  if (name == audio_decoder_name_)
+void WebMediaPlayerImpl::OnAudioDecoderChange(const PipelineDecoderInfo& info) {
+  media_metrics_provider_->SetAudioPipelineInfo(info);
+  if (info.decoder_name == audio_decoder_name_)
     return;
 
-  audio_decoder_name_ = name;
+  audio_decoder_name_ = info.decoder_name;
 
   // If there's no current reporter, there's nothing to be done.
   if (!watch_time_reporter_)
@@ -2250,11 +2257,12 @@ void WebMediaPlayerImpl::OnAudioDecoderChange(const std::string& name) {
   UpdateSecondaryProperties();
 }
 
-void WebMediaPlayerImpl::OnVideoDecoderChange(const std::string& name) {
-  if (name == video_decoder_name_)
+void WebMediaPlayerImpl::OnVideoDecoderChange(const PipelineDecoderInfo& info) {
+  media_metrics_provider_->SetVideoPipelineInfo(info);
+  if (info.decoder_name == video_decoder_name_)
     return;
 
-  video_decoder_name_ = name;
+  video_decoder_name_ = info.decoder_name;
 
   // If there's no current reporter, there's nothing to be done.
   if (!watch_time_reporter_)

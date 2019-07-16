@@ -28,6 +28,11 @@ body {
   padding: 4px;
   width: 80px;
 }
+
+.action.textEditingEnabled {
+  height: 75px;
+}
+
 button.action {
   background: none;
   border: none;

@@ -10,7 +10,9 @@ void StubLogManager::OnLogRouterAvailabilityChanged(bool router_can_be_used) {}
 
 void StubLogManager::SetSuspended(bool suspended) {}
 
-void StubLogManager::LogSavePasswordProgress(const std::string& text) const {}
+void StubLogManager::LogTextMessage(const std::string& text) const {}
+
+void StubLogManager::LogEntry(base::Value&& entry) const {}
 
 bool StubLogManager::IsLoggingActive() const {
   return false;

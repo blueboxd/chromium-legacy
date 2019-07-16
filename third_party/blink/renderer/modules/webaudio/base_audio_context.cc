@@ -74,9 +74,9 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 #include <algorithm>
 
@@ -96,7 +96,7 @@ BaseAudioContext::BaseAudioContext(Document* document,
       destination_node_(nullptr),
       is_resolving_resume_promises_(false),
       task_runner_(document->GetTaskRunner(TaskType::kInternalMedia)),
-      uuid_(CreateCanonicalUUIDString()),
+      uuid_(WTF::CreateCanonicalUUIDString()),
       is_cleared_(false),
       has_posted_cleanup_task_(false),
       deferred_task_handler_(DeferredTaskHandler::Create(

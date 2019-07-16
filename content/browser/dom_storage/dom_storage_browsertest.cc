@@ -6,12 +6,10 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
-#include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
@@ -192,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, FileUrlWithHost) {
 
 IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
   base::FilePath db_path = legacy_localstorage_path().Append(
-      DOMStorageArea::DatabaseFileNameFromOrigin(
+      LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(
           url::Origin::Create(GetTestUrl("dom_storage", "store_data.html"))));
   {
     base::ScopedAllowBlockingForTesting allow_blocking;

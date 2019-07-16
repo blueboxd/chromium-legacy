@@ -1725,6 +1725,8 @@ void NavigationRequest::OnStartChecksComplete(
   // If this is a top-frame navigation, then use the origin of the url (and
   // update it as redirects happen). If this is a sub-frame navigation, get the
   // URL from the top frame.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
   GURL top_frame_url =
       frame_tree_node_->IsMainFrame()
           ? common_params_.url
@@ -1741,8 +1743,9 @@ void NavigationRequest::OnStartChecksComplete(
       browser_context, browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_, begin_params_.Clone(), site_for_cookies,
-          top_frame_origin, frame_tree_node_->IsMainFrame(),
-          parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
+          net::NetworkIsolationKey(top_frame_origin),
+          frame_tree_node_->IsMainFrame(), parent_is_main_frame,
+          IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==

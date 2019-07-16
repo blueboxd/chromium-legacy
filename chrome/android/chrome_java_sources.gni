@@ -1355,7 +1355,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/website/SiteSettingsPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/website/SiteSettingsPreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/website/StorageInfo.java",
-  "java/src/org/chromium/chrome/browser/preferences/website/TranslatePreferences.java",
   "java/src/org/chromium/chrome/browser/preferences/website/TriStateSiteSettingsPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/website/Website.java",
   "java/src/org/chromium/chrome/browser/preferences/website/WebsiteAddress.java",

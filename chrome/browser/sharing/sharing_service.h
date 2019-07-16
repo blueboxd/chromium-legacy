@@ -88,7 +88,7 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
       SharingMessageHandler* handler);
 
   // Returns the current state of SharingService.
-  State GetState() const;
+  virtual State GetState() const;
 
  private:
   // Overrides for syncer::SyncServiceObserver.

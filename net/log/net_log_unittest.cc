@@ -65,7 +65,7 @@ TEST(NetLogTest, CaptureModes) {
   TestNetLog net_log;
 
   for (NetLogCaptureMode mode : kModes) {
-    net_log.SetCaptureMode(mode);
+    net_log.SetObserverCaptureMode(mode);
     EXPECT_EQ(mode, net_log.GetObserver()->capture_mode());
 
     net_log.AddGlobalEntry(NetLogEventType::SOCKET_ALIVE,
@@ -208,11 +208,6 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
       ASSERT_EQ(net_log_, observer_.net_log());
       ASSERT_EQ(NetLogCaptureMode::kIncludeSensitive, observer_.capture_mode());
 
-      net_log_->SetObserverCaptureMode(&observer_,
-                                       NetLogCaptureMode::kEverything);
-      ASSERT_EQ(net_log_, observer_.net_log());
-      ASSERT_EQ(NetLogCaptureMode::kEverything, observer_.capture_mode());
-
       net_log_->RemoveObserver(&observer_);
       ASSERT_TRUE(!observer_.net_log());
     }
@@ -284,12 +279,6 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   AddEvent(&net_log);
   EXPECT_EQ(1, observer.count());
 
-  // Change the observer's logging level and add an event.
-  net_log.SetObserverCaptureMode(&observer, NetLogCaptureMode::kEverything);
-  EXPECT_EQ(&net_log, observer.net_log());
-  EXPECT_EQ(NetLogCaptureMode::kEverything, observer.capture_mode());
-  EXPECT_TRUE(net_log.IsCapturing());
-
   AddEvent(&net_log);
   EXPECT_EQ(2, observer.count());
 
@@ -301,7 +290,8 @@ TEST(NetLogTest, NetLogAddRemoveObserver) {
   AddEvent(&net_log);
   EXPECT_EQ(2, observer.count());
 
-  // Add the observer a final time, and add an event.
+  // Add the observer a final time, this time with a different capture mdoe, and
+  // add an event.
   net_log.AddObserver(&observer, NetLogCaptureMode::kEverything);
   EXPECT_EQ(&net_log, observer.net_log());
   EXPECT_EQ(NetLogCaptureMode::kEverything, observer.capture_mode());

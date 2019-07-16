@@ -96,7 +96,6 @@
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
@@ -119,6 +118,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chrome/common/channel_info.h"
@@ -712,8 +712,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   lock_to_single_user_manager_ =
       std::make_unique<policy::LockToSingleUserManager>();
 
-  cups_proxy_service_manager_ = std::make_unique<CupsProxyServiceManager>();
-
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -970,6 +968,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   bool is_running_test = parameters().ui_task != nullptr;
   g_browser_process->platform_part()->session_manager()->Initialize(
       parsed_command_line(), profile(), is_running_test);
+
+  // This step requires the session manager to have been initialized.
+  WallpaperControllerClient::Get()->SetInitialWallpaper();
 
   // Guest user profile is never initialized with locale settings,
   // so we need special handling for Guest session.

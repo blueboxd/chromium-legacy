@@ -33,8 +33,8 @@ constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
 // static
 const char HomeButton::kViewClassName[] = "ash/HomeButton";
 
-HomeButton::HomeButton(ShelfButtonDelegate* shelf_button_delegate)
-    : ShelfControlButton(shelf_button_delegate),
+HomeButton::HomeButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfControlButton(shelf, shelf_button_delegate),
       controller_(this, shelf_button_delegate) {
   DCHECK(shelf_button_delegate);
   SetAccessibleName(

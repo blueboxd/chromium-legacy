@@ -84,7 +84,8 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     begin_params->request_context_type =
         blink::mojom::RequestContextType::HYPERLINK;
     NavigationRequestInfo request_info(
-        common_params, std::move(begin_params), gurl, url::Origin::Create(gurl),
+        common_params, std::move(begin_params), gurl,
+        net::NetworkIsolationKey(url::Origin::Create(gurl)),
         true /* is_main_frame */, false /* parent_is_main_frame */,
         true /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
         false /* is_for_guests_only */, false /* report_raw_headers */,

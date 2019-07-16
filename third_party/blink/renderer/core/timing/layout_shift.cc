@@ -26,7 +26,7 @@ AtomicString LayoutShift::entryType() const {
 }
 
 PerformanceEntryType LayoutShift::EntryTypeEnum() const {
-  return PerformanceEntry::EntryType::kLayoutJank;
+  return PerformanceEntry::EntryType::kLayoutShift;
 }
 
 void LayoutShift::BuildJSONValue(V8ObjectBuilder& builder) const {

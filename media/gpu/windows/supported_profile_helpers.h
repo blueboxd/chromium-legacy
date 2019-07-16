@@ -15,6 +15,8 @@
 #include "media/gpu/windows/d3d11_com_defs.h"
 #include "ui/gfx/geometry/rect.h"
 
+#include "ui/gfx/geometry/rect.h"
+
 namespace media {
 
 using ResolutionPair = std::pair<gfx::Size, gfx::Size>;

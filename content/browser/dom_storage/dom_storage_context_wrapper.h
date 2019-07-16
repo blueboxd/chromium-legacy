@@ -15,7 +15,6 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
-#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -36,17 +35,31 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-class DOMStorageContextImpl;
 class LocalStorageContextMojo;
 class SessionStorageContextMojo;
 class SessionStorageNamespaceImpl;
 
 // This is owned by Storage Partition and encapsulates all its dom storage
 // state.
+// Can only be accessed on the UI thread, except for the AddNamespace and
+// RemoveNamespace methods.
 class CONTENT_EXPORT DOMStorageContextWrapper
     : public DOMStorageContext,
       public base::RefCountedThreadSafe<DOMStorageContextWrapper> {
  public:
+  // Option for PurgeMemory.
+  enum PurgeOption {
+    // Determines if purging is required based on the usage and the platform.
+    PURGE_IF_NEEDED,
+
+    // Purge unopened areas only.
+    PURGE_UNOPENED,
+
+    // Purge aggressively, i.e. discard cache even for areas that have
+    // non-zero open count.
+    PURGE_AGGRESSIVE,
+  };
+
   // If |profile_path| is empty, nothing will be saved to disk.
   static scoped_refptr<DOMStorageContextWrapper> Create(
       service_manager::Connector* connector,
@@ -56,7 +69,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   DOMStorageContextWrapper(
       base::FilePath legacy_local_storage_path,
-      scoped_refptr<DOMStorageContextImpl> context_impl,
       scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
       LocalStorageContextMojo* mojo_local_storage_context,
       SessionStorageContextMojo* mojo_session_storage_context);
@@ -70,7 +82,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info,
                             base::OnceClosure callback) override;
   void PerformSessionStorageCleanup(base::OnceClosure callback) override;
-  void SetSaveSessionStorageOnDisk() override;
   scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(
       const std::string& namespace_id) override;
   void StartScavengingUnusedSessionStorage() override;
@@ -108,7 +119,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   friend class DOMStorageBrowserTest;
 
   ~DOMStorageContextWrapper() override;
-  DOMStorageContextImpl* context() const { return context_.get(); }
 
   base::SequencedTaskRunner* mojo_task_runner() {
     return mojo_task_runner_.get();
@@ -128,7 +138,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
-  void PurgeMemory(DOMStorageContextImpl::PurgeOption purge_option);
+  void PurgeMemory(PurgeOption purge_option);
 
   // Keep all mojo-ish details together and not bleed them through the public
   // interface. The |mojo_state_| object is owned by this object, but destroyed
@@ -155,8 +165,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   // To receive memory pressure signals.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
-
-  scoped_refptr<DOMStorageContextImpl> context_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageContextWrapper);
 };

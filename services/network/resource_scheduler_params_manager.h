@@ -35,6 +35,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
 
     ParamsForNetworkQuality(const ParamsForNetworkQuality& other);
 
+    ParamsForNetworkQuality& operator=(const ParamsForNetworkQuality& other);
+
     // The maximum number of delayable requests allowed.
     size_t max_delayable_requests;
 
@@ -49,6 +51,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceSchedulerParamsManager {
     // The maximum duration for which a request is queued after after which the
     // request is dispatched to the network.
     base::Optional<base::TimeDelta> max_queuing_time;
+
+    // If a non-delayable request is in-flight, then delayable requests are
+    // proactively throttled for duration =
+    // http_rtt_multiplier_for_proactive_throttling multiplied by current HTTP
+    // RTT estimate. The throttling duration is computed since the start of the
+    // most recent non-delayable request.
+    base::Optional<double> http_rtt_multiplier_for_proactive_throttling;
   };
 
   ResourceSchedulerParamsManager();

@@ -187,7 +187,7 @@ class BlinkTestRunner : public RenderViewObserver,
       base::OnceCallback<void(const std::vector<std::string>&)>>
       get_bluetooth_events_callbacks_;
 
-  bool is_main_window_;
+  bool is_main_window_ = false;
 
   bool waiting_for_reset_ = false;
 

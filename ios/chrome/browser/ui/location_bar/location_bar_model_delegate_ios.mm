@@ -56,7 +56,7 @@ bool LocationBarModelDelegateIOS::GetURL(GURL* url) const {
   web::NavigationItem* item = GetNavigationItem();
   if (!item)
     return false;
-  *url = ShouldDisplayURL() ? item->GetVirtualURL() : GURL::EmptyGURL();
+  *url = item->GetVirtualURL();
   return true;
 }
 

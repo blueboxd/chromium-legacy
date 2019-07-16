@@ -228,7 +228,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   CastAudioOutputStreamTest()
       : audio_thread_("CastAudioThread"),
         scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         format_(::media::AudioParameters::AUDIO_PCM_LINEAR),
         channel_layout_(::media::CHANNEL_LAYOUT_MONO),
         sample_rate_(::media::AudioParameters::kAudioCDSampleRate),

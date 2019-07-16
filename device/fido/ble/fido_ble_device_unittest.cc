@@ -102,7 +102,7 @@ class FidoBleDeviceTest : public Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   scoped_refptr<MockBluetoothAdapter> adapter_ =

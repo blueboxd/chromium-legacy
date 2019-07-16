@@ -252,7 +252,7 @@ class LoopbackStreamTest : public testing::Test {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   LoopbackCoordinator coordinator_;
   const base::UnguessableToken group_id_;
   std::vector<std::unique_ptr<FakeLoopbackGroupMember>> sources_;

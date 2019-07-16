@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -53,7 +53,7 @@ int MediaStreamComponent::GenerateUniqueId() {
 }
 
 MediaStreamComponent::MediaStreamComponent(MediaStreamSource* source)
-    : MediaStreamComponent(CreateCanonicalUUIDString(), source) {}
+    : MediaStreamComponent(WTF::CreateCanonicalUUIDString(), source) {}
 MediaStreamComponent::MediaStreamComponent(const String& id,
                                            MediaStreamSource* source)
     : source_(source), id_(id), unique_id_(GenerateUniqueId()) {

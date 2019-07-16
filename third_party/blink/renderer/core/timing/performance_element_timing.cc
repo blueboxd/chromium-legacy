@@ -14,7 +14,7 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
     const AtomicString& name,
     const String& url,
     const FloatRect& intersection_rect,
-    DOMHighResTimeStamp start_time,
+    DOMHighResTimeStamp render_time,
     DOMHighResTimeStamp response_end,
     const AtomicString& identifier,
     int naturalWidth,
@@ -27,7 +27,7 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
   DCHECK_GE(naturalHeight, 0);
   DCHECK(element);
   return MakeGarbageCollected<PerformanceElementTiming>(
-      name, url, intersection_rect, start_time, response_end, identifier,
+      name, url, intersection_rect, render_time, response_end, identifier,
       naturalWidth, naturalHeight, id, element);
 }
 
@@ -35,16 +35,17 @@ PerformanceElementTiming::PerformanceElementTiming(
     const AtomicString& name,
     const String& url,
     const FloatRect& intersection_rect,
-    DOMHighResTimeStamp start_time,
+    DOMHighResTimeStamp render_time,
     DOMHighResTimeStamp response_end,
     const AtomicString& identifier,
     int naturalWidth,
     int naturalHeight,
     const AtomicString& id,
     Element* element)
-    : PerformanceEntry(name, start_time, start_time),
+    : PerformanceEntry(name, 0, 0),
       element_(element),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
+      render_time_(render_time),
       response_end_(response_end),
       identifier_(identifier),
       naturalWidth_(naturalWidth),

@@ -50,7 +50,7 @@ class PasswordManagerInternalsUIHandler : public content::WebUIMessageHandler,
   void OnJavascriptDisallowed() override;
 
   // LogReceiver implementation.
-  void LogSavePasswordProgress(const std::string& text) override;
+  void LogEntry(const base::Value& entry) override;
 
   void StartSubscription();
   void EndSubscription();
@@ -101,8 +101,9 @@ void PasswordManagerInternalsUIHandler::StartSubscription() {
 
   registered_with_logging_service_ = true;
 
-  std::string past_logs(service->RegisterReceiver(this));
-  LogSavePasswordProgress(past_logs);
+  const auto& past_logs = service->RegisterReceiver(this);
+  for (const auto& entry : past_logs)
+    LogEntry(entry);
 }
 
 void PasswordManagerInternalsUIHandler::EndSubscription() {
@@ -116,14 +117,10 @@ void PasswordManagerInternalsUIHandler::EndSubscription() {
     service->UnregisterReceiver(this);
 }
 
-void PasswordManagerInternalsUIHandler::LogSavePasswordProgress(
-    const std::string& text) {
-  if (!registered_with_logging_service_ || text.empty())
+void PasswordManagerInternalsUIHandler::LogEntry(const base::Value& entry) {
+  if (!registered_with_logging_service_ || entry.is_none())
     return;
-  std::string no_quotes(text);
-  std::replace(no_quotes.begin(), no_quotes.end(), '"', ' ');
-  base::Value text_string_value(net::EscapeForHTML(no_quotes));
-  CallJavascriptFunction("addLog", text_string_value);
+  CallJavascriptFunction("addRawLog", entry);
 }
 
 }  // namespace

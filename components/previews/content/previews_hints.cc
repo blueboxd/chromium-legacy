@@ -12,11 +12,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_processing_util.h"
-#include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_features.h"
 #include "url/gurl.h"
 
@@ -366,11 +366,13 @@ void PreviewsHints::ParseOptimizationFilters(
             PreviewsOptimizationFilterStatus::kFailedServerBlacklistTooBig);
         continue;
       }
-      std::unique_ptr<BloomFilter> bloom_filter = std::make_unique<BloomFilter>(
-          bloom_filter_proto.num_hash_functions(),
-          bloom_filter_proto.num_bits(), bloom_filter_proto.data());
+      std::unique_ptr<optimization_guide::BloomFilter> bloom_filter =
+          std::make_unique<optimization_guide::BloomFilter>(
+              bloom_filter_proto.num_hash_functions(),
+              bloom_filter_proto.num_bits(), bloom_filter_proto.data());
       lite_page_redirect_blacklist_ =
-          std::make_unique<HostFilter>(std::move(bloom_filter));
+          std::make_unique<optimization_guide::HostFilter>(
+              std::move(bloom_filter));
       RecordOptimizationFilterStatus(
           previews_type.value(),
           PreviewsOptimizationFilterStatus::kCreatedServerBlacklist);

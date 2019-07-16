@@ -385,7 +385,7 @@ void ReportResult(base::Optional<mojom::AnnotateImageError>* const error,
 // Test that annotation works for one client, and that the cache is populated.
 TEST(AnnotatorTest, OcrSuccessAndCache) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -491,7 +491,7 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
 // Test that description annotations are successfully returned.
 TEST(AnnotatorTest, DescriptionSuccess) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -598,7 +598,7 @@ TEST(AnnotatorTest, DescriptionSuccess) {
 // Test that the specialized OCR result takes precedence.
 TEST(AnnotatorTest, DoubleOcrResult) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -713,7 +713,7 @@ TEST(AnnotatorTest, DoubleOcrResult) {
 // Test that HTTP failure is gracefully handled.
 TEST(AnnotatorTest, HttpError) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -768,7 +768,7 @@ TEST(AnnotatorTest, HttpError) {
 // Test that backend failure is gracefully handled.
 TEST(AnnotatorTest, BackendError) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -851,7 +851,7 @@ TEST(AnnotatorTest, BackendError) {
 // Test that partial results are returned if the OCR backend fails.
 TEST(AnnotatorTest, OcrBackendError) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -945,7 +945,7 @@ TEST(AnnotatorTest, OcrBackendError) {
 // Test that partial results are returned if the description backend fails.
 TEST(AnnotatorTest, DescriptionBackendError) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1035,7 +1035,7 @@ TEST(AnnotatorTest, DescriptionBackendError) {
 // Test that server failure (i.e. nonsense response) is gracefully handled.
 TEST(AnnotatorTest, ServerError) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1093,7 +1093,7 @@ TEST(AnnotatorTest, ServerError) {
 // Test that adult content returns an error.
 TEST(AnnotatorTest, AdultError) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1168,7 +1168,7 @@ TEST(AnnotatorTest, AdultError) {
 // Test that work is reassigned if a processor fails.
 TEST(AnnotatorTest, ProcessorFails) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1248,7 +1248,7 @@ TEST(AnnotatorTest, ProcessorFails) {
 // then fails local processing, then another client makes the same request.
 TEST(AnnotatorTest, ProcessorFailedPreviously) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1317,7 +1317,7 @@ TEST(AnnotatorTest, ProcessorFailedPreviously) {
 // Test that work is reassigned if processor dies.
 TEST(AnnotatorTest, ProcessorDies) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1392,7 +1392,7 @@ TEST(AnnotatorTest, ProcessorDies) {
 // Test that multiple concurrent requests are handled in the same batch.
 TEST(AnnotatorTest, ConcurrentSameBatch) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1479,7 +1479,7 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
 // Test that multiple concurrent requests are handled in separate batches.
 TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1623,7 +1623,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 // Test that work is not duplicated if it is already ongoing.
 TEST(AnnotatorTest, DuplicateWork) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1731,7 +1731,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 // model policy (i.e. are too small or have too-high an aspect ratio).
 TEST(AnnotatorTest, DescPolicy) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -1933,7 +1933,7 @@ TEST(AnnotatorTest, DescPolicy) {
 // Test that description language preferences are sent to the server.
 TEST(AnnotatorTest, DescLanguage) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   TestServerURLLoaderFactory test_url_factory(
       "https://ia-pa.googleapis.com/v1/");
   data_decoder::TestDataDecoderService test_dd_service;
@@ -2127,7 +2127,7 @@ TEST(AnnotatorTest, DescLanguage) {
 // domains.
 TEST(AnnotatorTest, ApiKey) {
   base::test::ScopedTaskEnvironment test_task_env(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   data_decoder::TestDataDecoderService test_dd_service;
 
   // A call to a secure Google-owner server URL should include the specified API

@@ -83,11 +83,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   void Resume() override;
 
 #if defined(OS_ANDROID)
-  void CreateIntermediateUriForPublish(
+  void RenameToIntermediateUri(
       const GURL& original_url,
       const GURL& referrer_url,
       const base::FilePath& file_name,
       const std::string& mime_type,
+      const base::FilePath& current_path,
       const RenameCompletionCallback& callback) override;
   void PublishDownload(const RenameCompletionCallback& callback) override;
   base::FilePath GetDisplayName() override;

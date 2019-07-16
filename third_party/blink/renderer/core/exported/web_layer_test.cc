@@ -880,6 +880,52 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
 }
 
+// This test is similar to |LayerSubtreeClipPropertyChanged| but for cases when
+// the clip node itself does not change but the clip node associated with a
+// layer changes.
+TEST_P(WebLayerListSimTest, LayerClipPropertyChanged) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #outer {
+          width: 100px;
+          height: 100px;
+        }
+        #inner {
+          width: 50px;
+          height: 200px;
+          backface-visibility: hidden;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer' style='overflow: hidden;'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_FALSE(inner_element_layer->double_sided());
+
+  // Initially, no layer should have |subtree_property_changed| set.
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+
+  // Removing overflow: hidden on the outer div should set
+  // |subtree_property_changed| on the inner div's cc::Layer.
+  auto* outer_element = GetElementById("outer");
+  outer_element->setAttribute(html_names::kStyleAttr, "");
+  UpdateAllLifecyclePhases();
+
+  inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_FALSE(inner_element_layer->double_sided());
+  EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+
+  // After a frame the |subtree_property_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
 TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When

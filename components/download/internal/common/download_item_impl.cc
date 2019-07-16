@@ -1640,15 +1640,17 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
       base::Bind(&DownloadItemImpl::OnDownloadRenamedToIntermediateName,
                  weak_ptr_factory_.GetWeakPtr());
 #if defined(OS_ANDROID)
-  if (download_type_ == TYPE_ACTIVE_DOWNLOAD &&
-      DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) {
+  if ((download_type_ == TYPE_ACTIVE_DOWNLOAD &&
+       DownloadCollectionBridge::ShouldPublishDownload(GetTargetFilePath())) ||
+      GetTargetFilePath().IsContentUri()) {
     GetDownloadTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&DownloadFile::CreateIntermediateUriForPublish,
+        base::BindOnce(&DownloadFile::RenameToIntermediateUri,
                        // Safe because we control download file lifetime.
                        base::Unretained(download_file_.get()), GetOriginalUrl(),
-                       GetReferrerUrl(), GetTargetFilePath().BaseName(),
-                       GetMimeType(), std::move(callback)));
+                       GetReferrerUrl(), GetFileNameToReportUser(),
+                       GetMimeType(), GetTargetFilePath(),
+                       std::move(callback)));
     return;
   }
 #endif  // defined(OS_ANDROID)

@@ -22,7 +22,7 @@ class ASH_EXPORT BackButton : public ShelfControlButton {
  public:
   static const char kViewClassName[];
 
-  explicit BackButton(ShelfButtonDelegate* shelf_button_delegate);
+  BackButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate);
   ~BackButton() override;
 
   // views::Button:

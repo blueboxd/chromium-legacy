@@ -30,7 +30,6 @@ constexpr char kIppColor[] = CUPS_PRINT_COLOR_MODE;
 constexpr char kIppMedia[] = CUPS_MEDIA;
 constexpr char kIppDuplex[] = CUPS_SIDES;
 constexpr char kIppResolution[] = "printer-resolution";            // RFC 2911
-constexpr char kIppDocumentName[] = "document-name";               // RFC 8011
 constexpr char kIppRequestingUserName[] = "requesting-user-name";  // RFC 8011
 constexpr char kIppPin[] = "job-password";                       // PWG 5100.11
 constexpr char kIppPinEncryption[] = "job-password-encryption";  // PWG 5100.11

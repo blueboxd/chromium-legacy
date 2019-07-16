@@ -140,7 +140,7 @@ class WorkerThreadSchedulerTest : public testing::Test {
  public:
   WorkerThreadSchedulerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         sequence_manager_(
             base::sequence_manager::SequenceManagerForTest::Create(
@@ -474,7 +474,7 @@ class WorkerThreadSchedulerWithProxyTest : public testing::Test {
  public:
   WorkerThreadSchedulerWithProxyTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         sequence_manager_(
             base::sequence_manager::SequenceManagerForTest::Create(

@@ -32,6 +32,7 @@ class PaintContext;
 
 namespace views {
 
+class InkDropHostView;
 class View;
 
 extern const VIEWS_EXPORT base::Feature kInstallableInkDropFeature;
@@ -47,6 +48,12 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
  public:
   // Create ink drop for |view|. Note that |view| must live longer than us.
   explicit InstallableInkDrop(View* view);
+
+  // Overload for working within the InkDropHostView hierarchy. Similar to
+  // above, |ink_drop_host_view| must outlive us.
+  //
+  // TODO(crbug.com/931964): Remove this.
+  explicit InstallableInkDrop(InkDropHostView* ink_drop_host_view);
 
   InstallableInkDrop(const InstallableInkDrop&) = delete;
   InstallableInkDrop(InstallableInkDrop&&) = delete;
@@ -95,6 +102,10 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   // hierarchy that |view_| belongs to. We track events on |view_| to update our
   // visual state.
   View* const view_;
+
+  // If we were installed on an InkDropHostView, this will be non-null. We store
+  // this to to remove our InkDropEventHandler override.
+  InkDropHostView* ink_drop_host_view_ = nullptr;
 
   // The layer we paint to.
   std::unique_ptr<ui::Layer> layer_;

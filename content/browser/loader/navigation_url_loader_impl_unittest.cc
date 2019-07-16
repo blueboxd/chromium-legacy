@@ -186,7 +186,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(
             common_params, std::move(begin_params), url,
-            url::Origin::Create(url), is_main_frame,
+            net::NetworkIsolationKey(url::Origin::Create(url)), is_main_frame,
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
             false /* report_raw_headers */, false /* is_prerenering */,
@@ -314,7 +314,7 @@ TEST_F(NavigationURLLoaderImplTest, RequestPriority) {
             NavigateAndReturnRequestPriority(url, false /* is_main_frame */));
 }
 
-TEST_F(NavigationURLLoaderImplTest, TopFrameOriginOfMainFrameNavigation) {
+TEST_F(NavigationURLLoaderImplTest, NetworkIsolationKeyOfMainFrameNavigation) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/foo");
@@ -329,12 +329,12 @@ TEST_F(NavigationURLLoaderImplTest, TopFrameOriginOfMainFrameNavigation) {
   delegate.WaitForRequestStarted();
 
   ASSERT_TRUE(most_recent_resource_request_);
-  EXPECT_EQ(url::Origin::Create(url),
-            *most_recent_resource_request_->top_frame_origin);
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+            most_recent_resource_request_->trusted_network_isolation_key);
 }
 
 TEST_F(NavigationURLLoaderImplTest,
-       TopFrameOriginOfRedirectedMainFrameNavigation) {
+       NetworkIsolationKeyOfRedirectedMainFrameNavigation) {
   ASSERT_TRUE(http_test_server_.Start());
 
   const GURL url = http_test_server_.GetURL("/redirect301-to-echo");
@@ -342,8 +342,8 @@ TEST_F(NavigationURLLoaderImplTest,
 
   HTTPRedirectOriginHeaderTest(url, "GET", "GET", url.GetOrigin().spec());
 
-  EXPECT_EQ(url::Origin::Create(final_url),
-            *most_recent_resource_request_->top_frame_origin);
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(final_url)),
+            most_recent_resource_request_->trusted_network_isolation_key);
 }
 
 TEST_F(NavigationURLLoaderImplTest, Redirect301Tests) {

@@ -43,7 +43,6 @@ class HatsWebDialog : public ui::WebDialogDelegate {
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
 
-  const std::string html_data_;
   const std::string site_id_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsWebDialog);

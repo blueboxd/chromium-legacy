@@ -1514,6 +1514,9 @@ extern const char kStrictSiteIsolationDescription[];
 extern const char kTranslateAndroidManualTriggerName[];
 extern const char kTranslateAndroidManualTriggerDescription[];
 
+extern const char kTwoPanesStartSurfaceAndroidName[];
+extern const char kTwoPanesStartSurfaceAndroidDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -1871,9 +1874,6 @@ extern const char kEnableAssistantLauncherIntegrationDescription[];
 
 extern const char kEnableAssistantMediaSessionIntegrationName[];
 extern const char kEnableAssistantMediaSessionIntegrationDescription[];
-
-extern const char kEnableAssistantVoiceMatchName[];
-extern const char kEnableAssistantVoiceMatchDescription[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];

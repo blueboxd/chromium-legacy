@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chromeos/printing/cups_proxy_service_manager.h"
 
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/browser_context.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -29,9 +30,12 @@ void CupsProxyServiceManager::OnDaemonAvailable(bool daemon_available) {
   // Note: The service does not support BindInterface calls, so we
   // intentionally leave out a connection_error_handler, since it would
   // called immediately.
-  content::GetSystemConnector()->Connect(
-      printing::mojom::kCupsProxyServiceName,
-      service_handle_.BindNewPipeAndPassReceiver());
+  // TODO(crbug.com/945409): Manage our own service instance when ServiceManager
+  // goes away.
+  content::BrowserContext::GetConnectorFor(
+      ProfileManager::GetPrimaryUserProfile())
+      ->Connect(printing::mojom::kCupsProxyServiceName,
+                service_handle_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace chromeos

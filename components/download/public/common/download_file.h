@@ -119,13 +119,16 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   virtual void Resume() = 0;
 
 #if defined(OS_ANDROID)
-  // Create an intermediate URI to write the download file. Once completes,
-  // |callback| is called with a content URI to be written into.
-  virtual void CreateIntermediateUriForPublish(
+  // Renames the download file to an intermediate URI. If current_path is a
+  // content URI, it will be used for the renaming. Otherwise, A new
+  // intermediate URI will be created to write the download file. Once
+  // completes, |callback| is called with a content URI to be written into.
+  virtual void RenameToIntermediateUri(
       const GURL& original_url,
       const GURL& referrer_url,
       const base::FilePath& file_name,
       const std::string& mime_type,
+      const base::FilePath& current_path,
       const RenameCompletionCallback& callback) = 0;
 
   // Publishes the download to public. Once completes, |callback| is called with

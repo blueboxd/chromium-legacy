@@ -1252,9 +1252,19 @@ void LockContentsView::CreateLowDensityLayout(
 
   main_view_->AddChildView(primary_big_view_);
 
-  // Build media controls view.
+  // Build media controls view. Using base::Unretained(this) is safe here
+  // because these callbacks are used by |media_controls_view_|, which is
+  // owned by |this|.
+  LockScreenMediaControlsView::Callbacks media_controls_callbacks;
+  media_controls_callbacks.media_controls_enabled = base::BindRepeating(
+      &LockContentsView::AreMediaControlsEnabled, base::Unretained(this));
+  media_controls_callbacks.hide_media_controls = base::BindRepeating(
+      &LockContentsView::HideMediaControlsLayout, base::Unretained(this));
+  media_controls_callbacks.show_media_controls = base::BindRepeating(
+      &LockContentsView::CreateMediaControlsLayout, base::Unretained(this));
+
   media_controls_view_ = std::make_unique<LockScreenMediaControlsView>(
-      Shell::Get()->connector(), this);
+      Shell::Get()->connector(), media_controls_callbacks);
   media_controls_view_->set_owned_by_client();
 
   if (users.size() > 1) {

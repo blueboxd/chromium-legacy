@@ -5,8 +5,9 @@
 // https://github.com/WICG/LargestContentfulPaint
 [Exposed=Window, RuntimeEnabled=LargestContentfulPaint]
 interface LargestContentfulPaint : PerformanceEntry {
-    readonly attribute unsigned long long size;
+    readonly attribute DOMHighResTimeStamp renderTime;
     readonly attribute DOMHighResTimeStamp responseEnd;
+    readonly attribute unsigned long long size;
     readonly attribute DOMString id;
     readonly attribute DOMString url;
     readonly attribute Element? element;

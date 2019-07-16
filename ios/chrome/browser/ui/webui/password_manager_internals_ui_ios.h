@@ -20,7 +20,7 @@ class PasswordManagerInternalsUIIOS : public web::WebUIIOSController,
   ~PasswordManagerInternalsUIIOS() override;
 
   // LogReceiver implementation.
-  void LogSavePasswordProgress(const std::string& text) override;
+  void LogEntry(const base::Value& entry) override;
 
   // web::WebStateObserver implementation.
   void PageLoaded(

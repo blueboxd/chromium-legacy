@@ -188,7 +188,6 @@ class URLLoaderThrottle;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
-enum class OriginPolicyErrorReason;
 struct MainFunctionParams;
 struct OpenURLParams;
 struct Referrer;
@@ -1550,7 +1549,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the HTML content of the error page for Origin Policy related
   // errors.
   virtual base::Optional<std::string> GetOriginPolicyErrorPage(
-      OriginPolicyErrorReason error_reason,
+      network::OriginPolicyState error_reason,
       content::NavigationHandle* navigation_handle);
 
   // Returns true if it is OK to ignore errors for certificates specified by the

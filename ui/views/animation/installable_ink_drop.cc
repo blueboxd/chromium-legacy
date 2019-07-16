@@ -21,6 +21,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/animation/compositor_animation_runner.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
@@ -63,8 +64,17 @@ InstallableInkDrop::InstallableInkDrop(View* view)
   }
 }
 
+InstallableInkDrop::InstallableInkDrop(InkDropHostView* ink_drop_host_view)
+    : InstallableInkDrop(static_cast<View*>(ink_drop_host_view)) {
+  // To get all events, we must override InkDropHostView's event handler.
+  ink_drop_host_view->set_ink_drop_event_handler_override(&event_handler_);
+  ink_drop_host_view_ = ink_drop_host_view;
+}
+
 InstallableInkDrop::~InstallableInkDrop() {
   view_->RemoveLayerBeneathView(layer_.get());
+  if (ink_drop_host_view_)
+    ink_drop_host_view_->set_ink_drop_event_handler_override(nullptr);
   if (DCHECK_IS_ON())
     view_->RemoveObserver(this);
 }

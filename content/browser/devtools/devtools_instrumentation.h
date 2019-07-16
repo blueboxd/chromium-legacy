@@ -111,6 +111,20 @@ void OnSignedExchangeCertificateRequestCompleted(
     const base::UnguessableToken& request_id,
     const network::URLLoaderCompletionStatus& status);
 
+void OnRequestWillBeSentExtraInfo(
+    int process_id,
+    int routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& request_cookie_list,
+    const std::vector<std::pair<std::string, std::string>>& request_headers);
+void OnResponseReceivedExtraInfo(
+    int process_id,
+    int routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& response_cookie_list,
+    const std::vector<std::pair<std::string, std::string>>& response_headers,
+    const base::Optional<std::string>& response_headers_text);
+
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
     NavigationHandleImpl* navigation_handle);
 

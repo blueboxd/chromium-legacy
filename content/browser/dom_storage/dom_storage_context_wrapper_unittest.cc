@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -24,16 +23,13 @@ namespace content {
 
 class DOMStorageContextWrapperTest : public testing::Test {
  public:
-  DOMStorageContextWrapperTest() {
-    feature_list_.InitAndEnableFeature(blink::features::kOnionSoupDOMStorage);
-  }
+  DOMStorageContextWrapperTest() = default;
 
   void SetUp() override {
     storage_policy_ = new MockSpecialStoragePolicy();
     fake_mojo_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     context_ = new DOMStorageContextWrapper(
-        /*legacy_local_storage_path=*/base::FilePath(),
-        /*context_impl=*/nullptr, fake_mojo_task_runner_,
+        /*legacy_local_storage_path=*/base::FilePath(), fake_mojo_task_runner_,
         /*mojo_local_storage_context=*/nullptr,
         new SessionStorageContextMojo(
             fake_mojo_task_runner_, /*connector=*/nullptr,
@@ -50,7 +46,6 @@ class DOMStorageContextWrapperTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedFeatureList feature_list_;
   base::test::ScopedTaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> fake_mojo_task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;

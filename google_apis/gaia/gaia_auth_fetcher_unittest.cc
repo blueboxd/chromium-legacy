@@ -246,6 +246,13 @@ TEST_F(GaiaAuthFetcherTest, BadAuthenticationError) {
   EXPECT_EQ(error.state(), GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 }
 
+TEST_F(GaiaAuthFetcherTest, BadAuthenticationShortError) {
+  std::string data = "Error=badauth\n";
+  GoogleServiceAuthError error =
+      GaiaAuthFetcher::GenerateAuthError(data, net::OK);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+}
+
 TEST_F(GaiaAuthFetcherTest, IncomprehensibleError) {
   std::string data = "Error=Gobbledygook\n";
   GoogleServiceAuthError error =
@@ -255,6 +262,13 @@ TEST_F(GaiaAuthFetcherTest, IncomprehensibleError) {
 
 TEST_F(GaiaAuthFetcherTest, ServiceUnavailableError) {
   std::string data = "Error=ServiceUnavailable\n";
+  GoogleServiceAuthError error =
+      GaiaAuthFetcher::GenerateAuthError(data, net::OK);
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+}
+
+TEST_F(GaiaAuthFetcherTest, ServiceUnavailableShortError) {
+  std::string data = "Error=ire\n";
   GoogleServiceAuthError error =
       GaiaAuthFetcher::GenerateAuthError(data, net::OK);
   EXPECT_EQ(error.state(), GoogleServiceAuthError::SERVICE_UNAVAILABLE);

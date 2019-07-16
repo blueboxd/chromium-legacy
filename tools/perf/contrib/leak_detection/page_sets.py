@@ -8,9 +8,8 @@ from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 
 class LeakDetectionSharedState(shared_page_state.SharedDesktopPageState):
-  def ShouldStopBrowserAfterStoryRun(self, story):
-    del story # unused
-    return False  # Keep the same browser instance open across stories.
+  def ShouldReuseBrowserForAllStoryRuns(self):
+    return True
 
 
 class LeakDetectionPage(page_module.Page):

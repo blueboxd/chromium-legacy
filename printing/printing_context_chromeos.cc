@@ -126,7 +126,6 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
       ConstructOption(kIppCollate,
                       GetCollateString(settings.collate())));  // collate
   if (settings.send_user_info()) {
-    options.push_back(ConstructOption(kIppDocumentName, settings.job_title()));
     options.push_back(
         ConstructOption(kIppRequestingUserName, settings.username()));
   }
@@ -292,12 +291,13 @@ PrintingContext::Result PrintingContextChromeos::NewDocument(
   DCHECK(!in_print_job_);
   in_print_job_ = true;
 
-  std::string converted_name = base::UTF16ToUTF8(document_name);
-  std::string title = base::UTF16ToUTF8(settings_.title());
-  std::vector<ScopedCupsOption> cups_options = SettingsToCupsOptions(settings_);
+  std::string converted_name;
+  if (settings_.send_user_info())
+    converted_name = base::UTF16ToUTF8(document_name);
 
+  std::vector<ScopedCupsOption> cups_options = SettingsToCupsOptions(settings_);
   std::vector<cups_option_t> options;
-  base::StringPiece username;
+  std::string username;
   const base::StringPiece requestingUserName(kIppRequestingUserName);
   for (const ScopedCupsOption& option : cups_options) {
     if (option->name == requestingUserName) {
@@ -311,7 +311,7 @@ PrintingContext::Result PrintingContextChromeos::NewDocument(
   }
 
   ipp_status_t create_status =
-      printer_->CreateJob(&job_id_, title, username, options);
+      printer_->CreateJob(&job_id_, converted_name, username, options);
 
   if (job_id_ == 0) {
     DLOG(WARNING) << "Creating cups job failed"
@@ -362,10 +362,9 @@ PrintingContext::Result PrintingContextChromeos::DocumentDone() {
     return OnError();
   }
 
-  ipp_status_t job_status =
-      printer_->CloseJob(job_id_, settings_.send_user_info()
-                                      ? base::StringPiece(settings_.username())
-                                      : base::StringPiece());
+  ipp_status_t job_status = printer_->CloseJob(
+      job_id_,
+      settings_.send_user_info() ? settings_.username() : std::string());
   job_id_ = 0;
 
   if (job_status != IPP_STATUS_OK) {

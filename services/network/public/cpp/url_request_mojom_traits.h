@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/cpp/data_element.h"
+#include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
@@ -58,6 +59,15 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<url::Origin>& top_frame_origin(
       const network::ResourceRequest& request) {
     return request.top_frame_origin;
+  }
+  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
+  update_network_isolation_key_on_redirect(
+      const network::ResourceRequest& request) {
+    return request.update_network_isolation_key_on_redirect;
+  }
+  static const net::NetworkIsolationKey& trusted_network_isolation_key(
+      const network::ResourceRequest& request) {
+    return request.trusted_network_isolation_key;
   }
   static bool attach_same_site_cookies(
       const network::ResourceRequest& request) {

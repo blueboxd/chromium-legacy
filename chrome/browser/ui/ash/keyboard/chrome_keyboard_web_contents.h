@@ -29,7 +29,7 @@ class ChromeKeyboardBoundsObserver;
 class ChromeKeyboardWebContents : public content::WebContentsObserver,
                                   public aura::WindowObserver {
  public:
-  using LoadCallback = base::OnceCallback<void(const gfx::Size& size)>;
+  using LoadCallback = base::OnceCallback<void()>;
   using UnembedCallback = base::RepeatingClosure;
 
   // Immediately starts loading |url| in a WebContents. |load_callback| is

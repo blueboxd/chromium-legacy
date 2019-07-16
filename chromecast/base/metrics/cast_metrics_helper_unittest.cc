@@ -71,7 +71,7 @@ class CastMetricsHelperTest : public ::testing::Test {
  public:
   CastMetricsHelperTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         metrics_helper_(scoped_task_environment_.GetMainThreadTaskRunner(),
                         scoped_task_environment_.GetMockTickClock()) {
     metrics_helper_.SetMetricsSink(&metrics_sink_);

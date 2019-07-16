@@ -82,7 +82,7 @@ PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
   if (entry_type == performance_entry_names::kElement)
     return kElement;
   if (entry_type == performance_entry_names::kLayoutShift)
-    return kLayoutJank;
+    return kLayoutShift;
   if (entry_type == performance_entry_names::kLargestContentfulPaint)
     return kLargestContentfulPaint;
   return kInvalid;

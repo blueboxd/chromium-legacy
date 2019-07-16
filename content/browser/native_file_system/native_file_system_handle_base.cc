@@ -132,7 +132,15 @@ void NativeFileSystemHandleBase::DoRequestPermission(
     base::OnceCallback<void(PermissionStatus)> callback) {
   PermissionStatus current_status =
       writable ? GetWritePermissionStatus() : GetReadPermissionStatus();
-  if (current_status != PermissionStatus::ASK) {
+  // If we already have a valid permission status, just return that. Also just
+  // return the current permission status if this is called from a worker, as we
+  // don't support prompting for increased permissions from workers.
+  //
+  // Currently the worker check here is redundant because there is no way for
+  // workers to get native file system handles. While workers will never be able
+  // to call chooseEntries(), they will be able to receive existing handles from
+  // windows via postMessage() and IndexedDB.
+  if (current_status != PermissionStatus::ASK || context_.is_worker()) {
     std::move(callback).Run(current_status);
     return;
   }

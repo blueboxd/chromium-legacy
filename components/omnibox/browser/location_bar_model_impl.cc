@@ -74,6 +74,8 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
 
 base::string16 LocationBarModelImpl::GetFormattedURL(
     url_formatter::FormatUrlTypes format_types) const {
+  if (!ShouldDisplayURL())
+    return base::string16{};
   GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
@@ -95,7 +97,9 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
 
 GURL LocationBarModelImpl::GetURL() const {
   GURL url;
-  return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
+  return (ShouldDisplayURL() && delegate_->GetURL(&url))
+             ? url
+             : GURL(url::kAboutBlankURL);
 }
 
 security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel() const {

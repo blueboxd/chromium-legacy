@@ -25,9 +25,7 @@
 #include "build/build_config.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
-#include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
-#include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -36,6 +34,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "sql/database.h"
 #include "storage/browser/quota/special_storage_policy.h"
+#include "storage/common/database/database_identifier.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
@@ -357,7 +356,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     if (context_->old_localstorage_path_.empty())
       return base::FilePath();
     return context_->old_localstorage_path_.Append(
-        DOMStorageArea::DatabaseFileNameFromOrigin(origin_));
+        LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(origin_));
   }
 
   LocalStorageContextMojo* context_;
@@ -371,6 +370,30 @@ class LocalStorageContextMojo::StorageAreaHolder final
   bool deleted_old_data_ = false;
   bool has_bindings_ = false;
 };
+
+const base::FilePath::CharType
+    LocalStorageContextMojo::kLegacyDatabaseFileExtension[] =
+        FILE_PATH_LITERAL(".localstorage");
+
+// static
+base::FilePath LocalStorageContextMojo::LegacyDatabaseFileNameFromOrigin(
+    const url::Origin& origin) {
+  std::string filename = storage::GetIdentifierFromOrigin(origin);
+  // There is no base::FilePath.AppendExtension() method, so start with just the
+  // extension as the filename, and then InsertBeforeExtension the desired
+  // name.
+  return base::FilePath()
+      .Append(kLegacyDatabaseFileExtension)
+      .InsertBeforeExtensionASCII(filename);
+}
+
+// static
+url::Origin LocalStorageContextMojo::OriginFromLegacyDatabaseFileName(
+    const base::FilePath& name) {
+  DCHECK(name.MatchesExtension(kLegacyDatabaseFileExtension));
+  std::string origin_id = name.BaseName().RemoveExtension().MaybeAsASCII();
+  return storage::GetOriginFromIdentifier(origin_id);
+}
 
 LocalStorageContextMojo::LocalStorageContextMojo(
     scoped_refptr<base::SequencedTaskRunner> task_runner,

@@ -111,8 +111,12 @@ web::WebState* GetWebStateAtIndexInCurrentMode(int index) {
 }
 
 void CloseCurrentTab() {
-  TabModel* tab_model = GetCurrentTabModel();
-  [tab_model closeTab:tab_model.currentTab];
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  if (!web_state_list ||
+      web_state_list->active_index() == WebStateList::kInvalidIndex)
+    return;
+  web_state_list->CloseWebStateAt(web_state_list->active_index(),
+                                  WebStateList::CLOSE_USER_ACTION);
 }
 
 void CloseTabAtIndex(NSUInteger index) {
@@ -137,8 +141,9 @@ void CloseAllTabs() {
 
 void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   @autoreleasepool {  // Make sure that all internals are deallocated.
-    TabModel* tab_model = GetCurrentTabModel();
-    [tab_model setCurrentTab:[tab_model tabAtIndex:index]];
+
+    WebStateList* web_state_list = GetCurrentWebStateList();
+    web_state_list->ActivateWebStateAt(static_cast<int>(index));
   }
 }
 

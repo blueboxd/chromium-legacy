@@ -76,16 +76,6 @@ void NetLog::AddObserver(NetLog::ThreadSafeObserver* observer,
   UpdateObserverCaptureModes();
 }
 
-void NetLog::SetObserverCaptureMode(NetLog::ThreadSafeObserver* observer,
-                                    NetLogCaptureMode capture_mode) {
-  base::AutoLock lock(lock_);
-
-  DCHECK(HasObserver(observer));
-  DCHECK_EQ(this, observer->net_log_);
-  observer->capture_mode_ = capture_mode;
-  UpdateObserverCaptureModes();
-}
-
 void NetLog::RemoveObserver(NetLog::ThreadSafeObserver* observer) {
   base::AutoLock lock(lock_);
 

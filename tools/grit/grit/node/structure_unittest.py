@@ -19,8 +19,11 @@ import platform
 import tempfile
 import unittest
 import StringIO
+import struct
 
+from grit import constants
 from grit import util
+from grit.node import brotli_util
 from grit.node import empty
 from grit.node import misc
 from grit.node import structure
@@ -106,14 +109,44 @@ class StructureUnittest(unittest.TestCase):
           <structure name="TEST_TXT" file="test_text.txt"
                    compress="gzip" type="chrome_html" />
         </structures>''', base_dir=test_data_root)
-    struct, = root.GetChildrenOfType(structure.StructureNode)
-    struct.RunPreSubstitutionGatherer()
-    compressed = struct.GetDataPackValue(lang='en', encoding=1)
+    node, = root.GetChildrenOfType(structure.StructureNode)
+    node.RunPreSubstitutionGatherer()
+    compressed = node.GetDataPackValue(lang='en', encoding=1)
 
     decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
     self.assertEqual(util.ReadFile(
-        os.path.join(test_data_root, "test_text.txt"), util.BINARY),
+        os.path.join(test_data_root, 'test_text.txt'), util.BINARY),
                      decompressed_data)
+
+  def testCompressBrotli(self):
+    test_data_root = util.PathFromRoot('grit/testdata')
+    root = util.ParseGrdForUnittest(
+        '''
+        <structures>
+          <structure name="TEST_TXT" file="test_text.txt"
+                   compress="brotli" type="chrome_html" />
+        </structures>''',
+        base_dir=test_data_root)
+    node, = root.GetChildrenOfType(structure.StructureNode)
+    node.RunPreSubstitutionGatherer()
+
+    # Using the mock brotli decompression executable.
+    brotli_util.SetBrotliCommand([sys.executable,
+                                 os.path.join(os.path.dirname(__file__),
+                                 'mock_brotli.py')])
+    compressed = node.GetDataPackValue(lang='en', encoding=1)
+    # Assert that the first two bytes in compressed format is BROTLI_CONST.
+    self.assertEqual(constants.BROTLI_CONST, compressed[0:2])
+
+    # Compare the actual size of the uncompressed test data with
+    # the size appended during compression.
+    actual_size = len(util.ReadFile(
+        os.path.join(test_data_root, 'test_text.txt'), util.BINARY))
+    uncompress_size = struct.unpack('<i', compressed[2:6])[0]
+    uncompress_size += struct.unpack('<h', compressed[6:8])[0] << 4*8
+    self.assertEqual(actual_size, uncompress_size)
+
+    self.assertEqual('This has been mock compressed!', compressed[8:])
 
   def testNotCompressed(self):
     test_data_root = util.PathFromRoot('grit/testdata')
@@ -121,12 +154,12 @@ class StructureUnittest(unittest.TestCase):
         <structures>
           <structure name="TEST_TXT" file="test_text.txt" type="chrome_html" />
         </structures>''', base_dir=test_data_root)
-    struct, = root.GetChildrenOfType(structure.StructureNode)
-    struct.RunPreSubstitutionGatherer()
-    data = struct.GetDataPackValue(lang='en', encoding=1)
+    node, = root.GetChildrenOfType(structure.StructureNode)
+    node.RunPreSubstitutionGatherer()
+    data = node.GetDataPackValue(lang='en', encoding=1)
 
     self.assertEqual(util.ReadFile(
-        os.path.join(test_data_root, "test_text.txt"), util.BINARY), data)
+        os.path.join(test_data_root, 'test_text.txt'), util.BINARY), data)
 
 
 if __name__ == '__main__':

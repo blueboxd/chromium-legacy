@@ -411,15 +411,12 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/services/cups_proxy/cups_proxy_service.h"
-#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -1546,26 +1543,28 @@ bool ChromeContentBrowserClient::ShouldUseMobileFlingCurve() {
 
 bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     content::BrowserContext* browser_context, const GURL& effective_url) {
-  // Non-extension, non-Instant URLs should generally use
-  // process-per-site-instance.  Because we expect to use the effective URL,
-  // URLs for hosted apps (apart from bookmark apps) should have an extension
-  // scheme by now.
-
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile)
     return false;
 
+  // NTP should use process-per-site.  This is a performance optimization to
+  // reduce process count associated with NTP tabs.
+  if (effective_url == GURL(chrome::kChromeUINewTabURL))
+    return true;
 #if !defined(OS_ANDROID)
   if (search::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
     return true;
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
-      profile, effective_url);
-#else
-  return false;
+  if (ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
+          profile, effective_url))
+    return true;
 #endif
+
+  // Non-extension, non-NTP URLs should generally use process-per-site-instance
+  // (rather than process-per-site).
+  return false;
 }
 
 bool ChromeContentBrowserClient::ShouldUseSpareRenderProcessHost(
@@ -4071,14 +4070,6 @@ void ChromeContentBrowserClient::RunServiceInstance(
     return;
   }
 
-  if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<chromeos::printing::CupsProxyService>(
-            std::move(*receiver),
-            std::make_unique<chromeos::CupsProxyServiceDelegateImpl>()));
-    return;
-  }
-
   if (service_name == chromeos::network_config::mojom::kServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::network_config::NetworkConfigService>(
@@ -5522,7 +5513,7 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
 
 base::Optional<std::string>
 ChromeContentBrowserClient::GetOriginPolicyErrorPage(
-    content::OriginPolicyErrorReason error_reason,
+    network::OriginPolicyState error_reason,
     content::NavigationHandle* handle) {
   return security_interstitials::OriginPolicyUI::GetErrorPageAsHTML(
       error_reason, handle);

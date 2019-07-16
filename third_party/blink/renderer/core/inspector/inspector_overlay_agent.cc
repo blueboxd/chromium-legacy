@@ -336,7 +336,7 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       show_size_on_resize_(&agent_state_, false),
       paused_in_debugger_message_(&agent_state_, String()),
       inspect_mode_(&agent_state_, protocol::Overlay::InspectModeEnum::None),
-      inspect_mode_protocol_config_(&agent_state_, String()) {}
+      inspect_mode_protocol_config_(&agent_state_, std::vector<uint8_t>()) {}
 
 InspectorOverlayAgent::~InspectorOverlayAgent() {
   DCHECK(!overlay_page_);
@@ -397,7 +397,7 @@ Response InspectorOverlayAgent::disable() {
   setShowViewportSizeOnResize(false);
   paused_in_debugger_message_.Clear();
   inspect_mode_.Set(protocol::Overlay::InspectModeEnum::None);
-  inspect_mode_protocol_config_.Set(String());
+  inspect_mode_protocol_config_.Set(std::vector<uint8_t>());
   if (overlay_page_) {
     overlay_page_->WillBeDestroyed();
     overlay_page_.Clear();
@@ -1082,10 +1082,11 @@ Response InspectorOverlayAgent::setInspectMode(
         String("Unknown mode \"" + mode + "\" was provided."));
   }
 
-  String serialized_config =
-      highlight_inspector_object.isJust()
-          ? highlight_inspector_object.fromJust()->toJSON()
-          : String();
+  std::vector<uint8_t> serialized_config;
+  if (highlight_inspector_object.isJust()) {
+    serialized_config =
+        highlight_inspector_object.fromJust()->serializeToBinary();
+  }
   std::unique_ptr<InspectorHighlightConfig> config;
   Response response = HighlightConfigFromInspectorObject(
       std::move(highlight_inspector_object), &config);

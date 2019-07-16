@@ -38,7 +38,6 @@ class WebState;
 
 @protocol LogoVendor;
 @protocol TextFieldStyling;
-@class Tab;
 @class TabModel;
 @class UITextField;
 @class UIView;
@@ -117,10 +116,8 @@ class ChromeBrowserProvider {
   // |main_tab_model| is created.
   virtual void InitializeCastService(TabModel* main_tab_model) const;
 
-  // Attaches any embedder-specific tab helpers to the given |web_state|.  The
-  // owning |tab| is included for helpers that need access to information that
-  // is not yet available through web::WebState.
-  virtual void AttachTabHelpers(web::WebState* web_state, Tab* tab) const;
+  // Attaches any embedder-specific tab helpers to the given |web_state|.
+  virtual void AttachTabHelpers(web::WebState* web_state) const;
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;

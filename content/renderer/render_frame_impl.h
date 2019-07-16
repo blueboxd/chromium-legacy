@@ -997,6 +997,11 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetDocumentInterfaceBrokerForTesting(
       blink::mojom::DocumentInterfaceBrokerPtr test_broker);
 
+  // Used in tests to install a fake WebURLLoaderFactory via
+  // RenderViewTest::CreateFakeWebURLLoaderFactory().
+  void SetWebURLLoaderFactoryOverrideForTest(
+      std::unique_ptr<blink::WebURLLoaderFactory> factory);
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 
@@ -1772,6 +1777,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   class MHTMLBodyLoaderClient;
   std::unique_ptr<MHTMLBodyLoaderClient> mhtml_body_loader_client_;
+
+  std::unique_ptr<blink::WebURLLoaderFactory>
+      web_url_loader_factory_override_for_test_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_{this};
 

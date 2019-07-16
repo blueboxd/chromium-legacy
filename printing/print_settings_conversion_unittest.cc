@@ -42,7 +42,6 @@ const char kPrinterSettings[] = R"({
   "previewModifiable": true,
   "sendUserInfo": true,
   "username": "username@domain.net",
-  "jobTitle": "test.pdf",
   "pinValue": "0000"
 })";
 
@@ -59,7 +58,6 @@ TEST(PrintSettingsConversionTest, ConversionTest) {
 #if defined(OS_CHROMEOS)
   EXPECT_TRUE(settings.send_user_info());
   EXPECT_EQ("username@domain.net", settings.username());
-  EXPECT_EQ("test.pdf", settings.job_title());
   EXPECT_EQ("0000", settings.pin_value());
 #endif
 }
@@ -76,7 +74,6 @@ TEST(PrintSettingsConversionTest, ConversionTest_DontSendUsername) {
   ASSERT_TRUE(success);
   EXPECT_FALSE(settings.send_user_info());
   EXPECT_EQ("", settings.username());
-  EXPECT_EQ("", settings.job_title());
 }
 #endif
 

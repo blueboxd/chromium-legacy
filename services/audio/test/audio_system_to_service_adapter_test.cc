@@ -434,7 +434,7 @@ class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
   MOCK_METHOD0(ClientDisconnected, void(void));
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   const base::Optional<std::string> valid_reply_{kValidReplyId};
   base::MockCallback<media::AudioSystem::OnDeviceIdCallback> response_received_;

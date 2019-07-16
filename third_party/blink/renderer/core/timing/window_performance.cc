@@ -434,7 +434,7 @@ void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
       now(), jank_fraction, input_detected,
       input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
                      : 0.0);
-  if (HasObserverFor(PerformanceEntry::kLayoutJank))
+  if (HasObserverFor(PerformanceEntry::kLayoutShift))
     NotifyObserversOfEntry(*entry);
   AddLayoutJankBuffer(*entry);
 }

@@ -406,12 +406,6 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   if (!update_closure.is_null())
     std::move(update_closure).Run();
 
-  // Record the result of updating the hints. This is used as a signal for the
-  // hints being fully processed in testing.
-  LOCAL_HISTOGRAM_BOOLEAN(
-      kPreviewsOptimizationGuideUpdateHintsResultHistogramString,
-      hints_ != NULL);
-
   // If the client is eligible to fetch hints, currently controlled by a feature
   // flag |kOptimizationHintsFetching|, fetch hints from the remote Optimization
   // Guide Service.

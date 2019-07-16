@@ -36,7 +36,7 @@ class WallClockTimerTest : public ::testing::Test {
  protected:
   WallClockTimerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     auto mock_power_monitor_source = std::make_unique<StubPowerMonitorSource>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
     base::PowerMonitor::Initialize(std::move(mock_power_monitor_source));

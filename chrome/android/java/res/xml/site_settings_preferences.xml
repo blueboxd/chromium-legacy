@@ -76,12 +76,6 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="sound" />
-    <!-- Google Translate -->
-    <Preference
-        android:fragment="org.chromium.chrome.browser.preferences.website.TranslatePreferences"
-        android:key="translate"
-        android:title="@string/google_translate"
-        android:icon="@drawable/settings_translate" />
     <!-- Storage -->
     <!-- TODO(finnur): Move this over to the new Usage screen, once it exists. -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference

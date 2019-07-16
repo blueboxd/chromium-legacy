@@ -16,38 +16,12 @@
 
 namespace net {
 
-namespace {
-
 base::Value NetLogSocketErrorParams(int net_error, int os_error) {
   base::DictionaryValue dict;
   dict.SetInteger("net_error", net_error);
   dict.SetInteger("os_error", os_error);
   return std::move(dict);
 }
-
-base::Value NetLogHostPortPairParams(const HostPortPair* host_and_port) {
-  base::DictionaryValue dict;
-  dict.SetString("host_and_port", host_and_port->ToString());
-  return std::move(dict);
-}
-
-base::Value NetLogIPEndPointParams(const IPEndPoint* address) {
-  base::DictionaryValue dict;
-  dict.SetString("address", address->ToString());
-  return std::move(dict);
-}
-
-base::Value NetLogSourceAddressParams(const struct sockaddr* net_address,
-                                      socklen_t address_len) {
-  base::DictionaryValue dict;
-  IPEndPoint ipe;
-  bool result = ipe.FromSockAddr(net_address, address_len);
-  DCHECK(result);
-  dict.SetString("source_address", ipe.ToString());
-  return std::move(dict);
-}
-
-}  // namespace
 
 void NetLogSocketError(const NetLogWithSource& net_log,
                        NetLogEventType type,
@@ -58,16 +32,25 @@ void NetLogSocketError(const NetLogWithSource& net_log,
 }
 
 base::Value CreateNetLogHostPortPairParams(const HostPortPair* host_and_port) {
-  return NetLogHostPortPairParams(host_and_port);
+  base::DictionaryValue dict;
+  dict.SetString("host_and_port", host_and_port->ToString());
+  return std::move(dict);
 }
 
 base::Value CreateNetLogIPEndPointParams(const IPEndPoint* address) {
-  return NetLogIPEndPointParams(address);
+  base::DictionaryValue dict;
+  dict.SetString("address", address->ToString());
+  return std::move(dict);
 }
 
 base::Value CreateNetLogSourceAddressParams(const struct sockaddr* net_address,
                                             socklen_t address_len) {
-  return NetLogSourceAddressParams(net_address, address_len);
+  base::DictionaryValue dict;
+  IPEndPoint ipe;
+  bool result = ipe.FromSockAddr(net_address, address_len);
+  DCHECK(result);
+  dict.SetString("source_address", ipe.ToString());
+  return std::move(dict);
 }
 
 }  // namespace net

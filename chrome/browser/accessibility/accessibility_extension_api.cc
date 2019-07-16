@@ -32,6 +32,7 @@
 #include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -433,7 +434,13 @@ AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
 
   int padding = 40;
   int item_width = 88;
-  int item_height = 60;
+
+  int item_height;
+  if (::switches::IsExperimentalAccessibilitySwitchAccessTextEnabled()) {
+    item_height = 85;
+  } else {
+    item_height = 60;
+  }
   // TODO(anastasi): This should be a preference that the user can change.
   int max_cols = 3;
 

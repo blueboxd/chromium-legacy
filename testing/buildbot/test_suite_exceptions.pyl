@@ -16,17 +16,6 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
-  'android_browsertests': {
-    'remove_from': [
-      # TODO(crbug.com/961849): Remove these exceptions as the suite proves stable.
-      # chromium.android.json
-      'KitKat Tablet Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow Tablet Tester',
-      # chromium.fyi.json
-      'android-code-coverage',
-    ],
-  },
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.

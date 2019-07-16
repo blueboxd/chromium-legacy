@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -884,6 +886,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, GetRestoreTabType) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {
+  base::test::ScopedFeatureList feature_override;
+  feature_override.InitAndEnableFeature(features::kTabGroups);
+
   const int tab_count = AddSomeTabs(browser(), 1);
   ASSERT_LE(2, tab_count);
 
@@ -904,6 +909,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreGroupedTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
+  base::test::ScopedFeatureList feature_override;
+  feature_override.InitAndEnableFeature(features::kTabGroups);
+
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL),
       WindowOpenDisposition::NEW_WINDOW,
@@ -932,4 +940,31 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   EXPECT_EQ(
       base::make_optional(group2),
       restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 1));
+}
+
+// Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
+// Regression test for crbug.com/983962.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, GroupsNotRestoredWhenFeatureDisabled) {
+  auto feature_override = std::make_unique<base::test::ScopedFeatureList>();
+  feature_override->InitAndEnableFeature(features::kTabGroups);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+  ASSERT_EQ(2u, active_browser_list_->size());
+
+  browser()->tab_strip_model()->AddToNewGroup({0});
+  CloseBrowserSynchronously(browser());
+  ASSERT_EQ(1u, active_browser_list_->size());
+
+  feature_override = std::make_unique<base::test::ScopedFeatureList>();
+  feature_override->InitAndDisableFeature(features::kTabGroups);
+
+  chrome::RestoreTab(GetBrowser(0));
+  ASSERT_EQ(2u, active_browser_list_->size());
+
+  Browser* restored_window = GetBrowser(1);
+  ASSERT_EQ(base::nullopt,
+            restored_window->tab_strip_model()->GetTabGroupForTab(0));
 }

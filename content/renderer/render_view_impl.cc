@@ -1850,14 +1850,16 @@ blink::WebString RenderViewImpl::AcceptLanguages() {
 // RenderView implementation ---------------------------------------------------
 
 bool RenderViewImpl::Send(IPC::Message* message) {
-  // This method is an override of IPC::Sender, but RenderWidget also has an
-  // override of IPC::Sender, so this method also overrides RenderWidget. Thus
-  // we must call to the base class, not via an upcast or virtual dispatch would
-  // go back here.
-  CHECK(message->routing_id() != MSG_ROUTING_NONE);
+  // No messages sent through RenderView come without a routing id, yay. Let's
+  // keep that up.
+  CHECK_NE(message->routing_id(), MSG_ROUTING_NONE);
 
-  // TODO(ajwong): Don't delegate to render widget. Filter here.
-  return GetWidget()->Send(message);
+  // Don't send any messages after the browser has told us to close.
+  if (GetWidget()->is_closing()) {
+    delete message;
+    return false;
+  }
+  return RenderThread::Get()->Send(message);
 }
 
 RenderWidget* RenderViewImpl::GetWidget() {

@@ -16,6 +16,7 @@
 #include "services/network/network_service.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_fetcher.h"
+#include "services/network/origin_policy/origin_policy_header_values.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/origin_policy/origin_policy_parser.h"
 #include "services/network/public/cpp/origin_policy.h"
@@ -52,8 +53,7 @@ class OriginPolicyFetcherTest : public testing::Test {
     network_context_->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_), std::move(params));
 
-    manager_ = std::make_unique<OriginPolicyManager>(
-        network_context_->CreateUrlLoaderFactoryForNetworkService());
+    manager_ = std::make_unique<OriginPolicyManager>(network_context_.get());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &OriginPolicyFetcherTest::HandleResponse, base::Unretained(this)));
@@ -199,11 +199,12 @@ TEST_F(OriginPolicyFetcherTest, IsValidRedirect) {
     auto fetcher =
         test.initial_version.empty()
             ? std::make_unique<OriginPolicyFetcher>(
-                  manager(), "" /* report_to */, test_server_origin(),
-                  url_loader_factory(),
+                  manager(), test_server_origin(), url_loader_factory(),
                   base::BindOnce(&DummyRetrieveOriginPolicyCallback))
             : std::make_unique<OriginPolicyFetcher>(
-                  manager(), test.initial_version, "" /* report_to */,
+                  manager(),
+                  OriginPolicyHeaderValues(
+                      {.policy_version = test.initial_version}),
                   test_server_origin(), url_loader_factory(),
                   base::BindOnce(&DummyRetrieveOriginPolicyCallback));
 
@@ -321,10 +322,10 @@ TEST_F(OriginPolicyFetcherTest, EndToEndDefaultNotRedirecting) {
 }
 
 TEST_F(OriginPolicyFetcherTest, EmptyVersionConstructor) {
-  EXPECT_DCHECK_DEATH(OriginPolicyFetcher(
-      manager(), "" /* policy_version */, "" /* report_to */,
-      test_server_origin(), url_loader_factory(),
-      base::BindOnce(&DummyRetrieveOriginPolicyCallback)));
+  EXPECT_DCHECK_DEATH(
+      OriginPolicyFetcher(manager(), OriginPolicyHeaderValues(),
+                          test_server_origin(), url_loader_factory(),
+                          base::BindOnce(&DummyRetrieveOriginPolicyCallback)));
 }
 
 }  // namespace network

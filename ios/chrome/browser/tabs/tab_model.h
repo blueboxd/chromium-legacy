@@ -18,7 +18,6 @@
 class GURL;
 @class SessionServiceIOS;
 @class SessionWindowIOS;
-@class Tab;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
 class WebStateList;
@@ -47,9 +46,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // consistency between multiple views that need the current tab to be
 // synchronized.
 @interface TabModel : NSObject <SessionWindowRestoring>
-
-// Currently active tab.
-@property(nonatomic, weak) Tab* currentTab;
 
 // The delegate for sync.
 @property(nonatomic, readonly)
@@ -89,10 +85,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Accesses the tab at the given index.
-- (Tab*)tabAtIndex:(NSUInteger)index;
-- (NSUInteger)indexOfTab:(Tab*)tab;
-
 // Add/modify tabs.
 
 // Opens a tab at the specified URL. For certain transition types, will consult
@@ -122,17 +114,8 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 - (web::WebState*)insertOpenByDOMWebStateWithOpener:
     (web::WebState*)parentWebState;
 
-// Moves |tab| to the given |index|. |index| must be valid for this tab model
-// (must be less than the current number of tabs). |tab| must already be in this
-// tab model. If |tab| is already at |index|, this method does nothing and will
-// not notify observers.
-- (void)moveTab:(Tab*)tab toIndex:(NSUInteger)index;
-
 // Closes the tab at the given |index|. |index| must be valid.
 - (void)closeTabAtIndex:(NSUInteger)index;
-
-// Closes the given tab.
-- (void)closeTab:(Tab*)tab;
 
 // Closes ALL the tabs.
 - (void)closeAllTabs;

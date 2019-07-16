@@ -52,6 +52,9 @@ class VIEWS_EXPORT TextfieldModel {
     // Called when the current composition text is confirmed or cleared.
     virtual void OnCompositionTextConfirmedOrCleared() = 0;
 
+    // Called any time that the text property is modified in TextfieldModel
+    virtual void OnTextChanged() {}
+
    protected:
     virtual ~Delegate();
   };
@@ -283,6 +286,9 @@ class VIEWS_EXPORT TextfieldModel {
                   const base::string16& new_text,
                   size_t new_text_insert_at,
                   gfx::Range selection);
+
+  // Calls render_text->SetText() and delegate's callback.
+  void SetRenderTextText(const base::string16& text);
 
   void ClearComposition();
 

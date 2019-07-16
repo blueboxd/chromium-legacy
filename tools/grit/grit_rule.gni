@@ -95,6 +95,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/gcc_toolchain.gni")  # For enable_resource_whitelist_generation
 import("//third_party/closure_compiler/closure_args.gni")
@@ -348,6 +349,16 @@ template("grit") {
     depfile = "$depfile_dir/${grit_output_name}_stamp.d"
     outputs = [ "${depfile}.stamp" ] + grit_outputs + pak_info_outputs
 
+    brotli_target = "//third_party/brotli:brotli($host_toolchain)"
+
+    brotli_executable = get_label_info(brotli_target, "root_out_dir") + "/" +
+                        get_label_info(brotli_target, "name")
+    if (host_os == "win") {
+      brotli_executable += ".exe"
+    }
+
+    inputs += [ brotli_executable ]
+
     args = [
              "-i",
              source_path,
@@ -360,6 +371,8 @@ template("grit") {
              rebase_path(depfile, root_build_dir),
              "--write-only-new=1",
              "--depend-on-stamp",
+             "--brotli",
+             rebase_path(brotli_executable, root_build_dir),
            ] + grit_defines
 
     # Add extra defines with -D flags.
@@ -443,6 +456,11 @@ template("grit") {
     deps = [
       "//tools/grit:grit_sources",
     ]
+    if (is_mac && is_asan) {
+      deps += [ "//tools/grit:brotli_mac_asan_workaround" ]
+    } else {
+      deps += [ brotli_target ]
+    }
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }

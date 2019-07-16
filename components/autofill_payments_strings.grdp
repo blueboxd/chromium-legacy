@@ -31,6 +31,25 @@
     </message>
   </if>
 
+  <if expr="is_android or is_ios">
+    <if expr="not use_titlecase">
+      <message name="IDS_AUTOFILL_NO_THANKS_MOBILE_LOCAL_SAVE" desc="The label for cancel button used in autofill credit card local save infobar on mobile.">
+        No thanks
+      </message>
+      <message name="IDS_AUTOFILL_NO_THANKS_MOBILE_UPLOAD_SAVE" desc="The label for cancel button used in autofill credit card upload save infobar on mobile.">
+        No thanks
+      </message>
+    </if>
+    <if expr="use_titlecase">
+      <message name="IDS_AUTOFILL_NO_THANKS_MOBILE_LOCAL_SAVE" desc="In Title Case: The label for cancel button used in autofill credit card local save infobar on mobile.">
+        No Thanks
+      </message>
+      <message name="IDS_AUTOFILL_NO_THANKS_MOBILE_UPLOAD_SAVE" desc="In Title Case: The label for cancel button used in autofill credit card upload save infobar on mobile.">
+        No Thanks
+      </message>
+    </if>
+  </if>
+
   <!-- Autofill Credit Card Assisted Filling Infobar -->
   <if expr="is_android">
     <message name="IDS_AUTOFILL_CREDIT_CARD_FILLING_INFOBAR_TITLE" desc="Title text for the Autofill Credit Card Assisted Filling Infobar">

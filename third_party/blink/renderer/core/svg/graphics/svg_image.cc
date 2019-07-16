@@ -839,6 +839,10 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
   return kSizeAvailable;
 }
 
+bool SVGImage::IsSizeAvailable() {
+  return SvgRootElement(page_.Get());
+}
+
 String SVGImage::FilenameExtension() const {
   return "svg";
 }

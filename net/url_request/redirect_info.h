@@ -63,6 +63,8 @@ struct NET_EXPORT RedirectInfo {
   // The new first-party URL for cookies.
   GURL new_site_for_cookies;
 
+  // DEPRECATED TODO: Remove this as it was introduced for the cache key and can
+  // be removed now that |network_isolation_key| is set for the redirect cases.
   base::Optional<url::Origin> new_top_frame_origin;
 
   // The new HTTP referrer header.

@@ -6,7 +6,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/toast_data.h"
@@ -246,10 +245,6 @@ bool ShouldAllowSplitView() {
 
   // Don't allow split view if we're in pinned mode.
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
-    return false;
-
-  // Don't allow split view in Kiosk Next.
-  if (Shell::Get()->kiosk_next_shell_controller()->IsEnabled())
     return false;
 
   // TODO(crubg.com/853588): Disallow window dragging and split screen while

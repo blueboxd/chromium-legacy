@@ -1166,23 +1166,6 @@ Status ExecuteUploadFile(Session* session,
   return Status(kOk);
 }
 
-Status ExecuteIsAutoReporting(Session* session,
-                              const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value) {
-  value->reset(new base::Value(session->auto_reporting_enabled));
-  return Status(kOk);
-}
-
-Status ExecuteSetAutoReporting(Session* session,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
-  bool enabled;
-  if (!params.GetBoolean("enabled", &enabled))
-    return Status(kInvalidArgument, "missing parameter 'enabled'");
-  session->auto_reporting_enabled = enabled;
-  return Status(kOk);
-}
-
 Status ExecuteUnimplementedCommand(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {

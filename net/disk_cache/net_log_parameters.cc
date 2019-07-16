@@ -15,14 +15,6 @@
 
 namespace {
 
-base::Value NetLogParametersEntryCreationParams(const disk_cache::Entry* entry,
-                                                bool created) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("key", entry->GetKey());
-  dict.SetBoolKey("created", created);
-  return dict;
-}
-
 base::Value NetLogReadWriteDataParams(int index,
                                       int offset,
                                       int buf_len,
@@ -62,17 +54,6 @@ base::Value NetLogSparseReadWriteParams(const net::NetLogSource& source,
   return dict;
 }
 
-base::Value NetLogGetAvailableRangeResultParams(int64_t start, int result) {
-  base::Value dict(base::Value::Type::DICTIONARY);
-  if (result > 0) {
-    dict.SetIntKey("length", result);
-    dict.SetKey("start", net::NetLogNumberValue(start));
-  } else {
-    dict.SetIntKey("net_error", result);
-  }
-  return dict;
-}
-
 }  // namespace
 
 namespace disk_cache {
@@ -80,7 +61,10 @@ namespace disk_cache {
 base::Value CreateNetLogParametersEntryCreationParams(const Entry* entry,
                                                       bool created) {
   DCHECK(entry);
-  return NetLogParametersEntryCreationParams(entry, created);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("key", entry->GetKey());
+  dict.SetBoolKey("created", created);
+  return dict;
 }
 
 void NetLogReadWriteData(const net::NetLogWithSource& net_log,
@@ -125,7 +109,14 @@ void NetLogSparseReadWrite(const net::NetLogWithSource& net_log,
 
 base::Value CreateNetLogGetAvailableRangeResultParams(int64_t start,
                                                       int result) {
-  return NetLogGetAvailableRangeResultParams(start, result);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  if (result > 0) {
+    dict.SetIntKey("length", result);
+    dict.SetKey("start", net::NetLogNumberValue(start));
+  } else {
+    dict.SetIntKey("net_error", result);
+  }
+  return dict;
 }
 
 }  // namespace disk_cache

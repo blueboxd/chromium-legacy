@@ -482,9 +482,6 @@ void CrxInstaller::OnUnpackFailure(const CrxInstallError& error) {
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallSource",
                             install_source(), Manifest::NUM_LOCATIONS);
 
-  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallCause",
-                            install_cause(),
-                            extension_misc::NUM_INSTALL_CAUSES);
   ReportFailureFromFileThread(error);
 }
 
@@ -500,10 +497,6 @@ void CrxInstaller::OnUnpackSuccess(
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
                             install_source(), Manifest::NUM_LOCATIONS);
 
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallCause",
-                            install_cause(),
-                            extension_misc::NUM_INSTALL_CAUSES);
 
   extension_ = extension;
   temp_dir_ = temp_dir;

@@ -532,8 +532,7 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   // All pending decode operations will be completed before triggering a
   // resolution change, so we can safely destroy the context here.
   vaapi_wrapper_->DestroyContext();
-  vaapi_wrapper_->CreateContext(GetVaFormatForVideoCodecProfile(profile_),
-                                pic_size);
+  vaapi_wrapper_->CreateContext(pic_size);
 
   // Retry the current decode task.
   decoder_thread_task_runner_->PostTask(

@@ -23,7 +23,7 @@ class MockLogReceiver : public autofill::LogReceiver {
  public:
   MockLogReceiver() {}
 
-  MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
+  MOCK_METHOD1(LogEntry, void(const base::Value&));
 };
 
 }  // namespace
@@ -54,9 +54,11 @@ TEST_F(PasswordManagerInternalsServiceFactoryTest, ServiceActiveNonIncognito) {
   testing::StrictMock<MockLogReceiver> receiver;
 
   ASSERT_TRUE(service);
-  EXPECT_EQ(std::string(), service->RegisterReceiver(&receiver));
+  EXPECT_EQ(std::vector<base::Value>(), service->RegisterReceiver(&receiver));
 
-  EXPECT_CALL(receiver, LogSavePasswordProgress(kTestText)).Times(1);
+  base::Value log_entry = autofill::LogRouter::CreateEntryForText(kTestText);
+  EXPECT_CALL(receiver, LogEntry(testing::Eq(testing::ByRef(log_entry))))
+      .Times(1);
   service->ProcessLog(kTestText);
 
   service->UnregisterReceiver(&receiver);

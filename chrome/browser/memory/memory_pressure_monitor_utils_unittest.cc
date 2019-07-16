@@ -40,7 +40,7 @@ class ObservationWindowTest : public testing::Test {
  public:
   ObservationWindowTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         tick_clock_(scoped_task_environment_.GetMockTickClock()) {}
   ~ObservationWindowTest() override = default;
 

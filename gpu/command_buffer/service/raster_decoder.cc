@@ -61,6 +61,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
+#include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -69,6 +70,7 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -428,6 +430,30 @@ class RasterDecoderImpl final : public RasterDecoder,
                                 GLsizei width,
                                 GLsizei height,
                                 const volatile GLbyte* mailboxes);
+  void DoCopySubTextureINTERNALGLPassthrough(GLint xoffset,
+                                             GLint yoffset,
+                                             GLint x,
+                                             GLint y,
+                                             GLsizei width,
+                                             GLsizei height,
+                                             const Mailbox& source_mailbox,
+                                             const Mailbox& dest_mailbox);
+  void DoCopySubTextureINTERNALGL(GLint xoffset,
+                                  GLint yoffset,
+                                  GLint x,
+                                  GLint y,
+                                  GLsizei width,
+                                  GLsizei height,
+                                  const Mailbox& source_mailbox,
+                                  const Mailbox& dest_mailbox);
+  void DoCopySubTextureINTERNALSkia(GLint xoffset,
+                                    GLint yoffset,
+                                    GLint x,
+                                    GLint y,
+                                    GLsizei width,
+                                    GLsizei height,
+                                    const Mailbox& source_mailbox,
+                                    const Mailbox& dest_mailbox);
   void DoLoseContextCHROMIUM(GLenum current, GLenum other) { NOTIMPLEMENTED(); }
   void DoBeginRasterCHROMIUM(GLuint sk_color,
                              GLuint msaa_sample_count,
@@ -1671,54 +1697,87 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     return;
   }
 
-  if (use_passthrough_) {
-    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-        source_shared_image =
-            shared_image_representation_factory_.ProduceGLTexturePassthrough(
-                source_mailbox);
-    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-        dest_shared_image =
-            shared_image_representation_factory_.ProduceGLTexturePassthrough(
-                dest_mailbox);
-    if (!source_shared_image || !dest_shared_image) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "unknown mailbox");
-      return;
-    }
+  if (!shared_context_state_->GrContextIsGL()) {
+    // Use Skia to copy texture if raster's gr_context() is not using GL.
+    DoCopySubTextureINTERNALSkia(xoffset, yoffset, x, y, width, height,
+                                 source_mailbox, dest_mailbox);
+  } else if (use_passthrough_) {
+    DoCopySubTextureINTERNALGLPassthrough(xoffset, yoffset, x, y, width, height,
+                                          source_mailbox, dest_mailbox);
+  } else {
+    DoCopySubTextureINTERNALGL(xoffset, yoffset, x, y, width, height,
+                               source_mailbox, dest_mailbox);
+  }
+}
 
-    SharedImageRepresentationGLTexturePassthrough::ScopedAccess source_access(
-        source_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
-    if (!source_access.success()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "unable to access source for read");
-      return;
-    }
+void RasterDecoderImpl::DoCopySubTextureINTERNALGLPassthrough(
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    const Mailbox& source_mailbox,
+    const Mailbox& dest_mailbox) {
+  DCHECK(source_mailbox != dest_mailbox);
+  DCHECK(use_passthrough_);
 
-    SharedImageRepresentationGLTexturePassthrough::ScopedAccess dest_access(
-        dest_shared_image.get(),
-        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-    if (!dest_access.success()) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
-                         "unable to access destination for write");
-      return;
-    }
-
-    gles2::TexturePassthrough* source_texture =
-        source_shared_image->GetTexturePassthrough().get();
-    gles2::TexturePassthrough* dest_texture =
-        dest_shared_image->GetTexturePassthrough().get();
-    DCHECK(!source_texture->is_bind_pending());
-    DCHECK_NE(source_texture->service_id(), dest_texture->service_id());
-
-    api()->glCopySubTextureCHROMIUMFn(
-        source_texture->service_id(), /*source_level=*/0,
-        dest_texture->target(), dest_texture->service_id(),
-        /*dest_level=*/0, xoffset, yoffset, x, y, width, height,
-        /*unpack_flip_y=*/false, /*unpack_premultiply_alpha=*/false,
-        /*unpack_unmultiply_alpha=*/false);
-    LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+      source_shared_image =
+          shared_image_representation_factory_.ProduceGLTexturePassthrough(
+              source_mailbox);
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+      dest_shared_image =
+          shared_image_representation_factory_.ProduceGLTexturePassthrough(
+              dest_mailbox);
+  if (!source_shared_image || !dest_shared_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown mailbox");
     return;
   }
+
+  SharedImageRepresentationGLTexturePassthrough::ScopedAccess source_access(
+      source_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+  if (!source_access.success()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "unable to access source for read");
+    return;
+  }
+
+  SharedImageRepresentationGLTexturePassthrough::ScopedAccess dest_access(
+      dest_shared_image.get(), GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+  if (!dest_access.success()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "unable to access destination for write");
+    return;
+  }
+
+  gles2::TexturePassthrough* source_texture =
+      source_shared_image->GetTexturePassthrough().get();
+  gles2::TexturePassthrough* dest_texture =
+      dest_shared_image->GetTexturePassthrough().get();
+  DCHECK(!source_texture->is_bind_pending());
+  DCHECK_NE(source_texture->service_id(), dest_texture->service_id());
+
+  api()->glCopySubTextureCHROMIUMFn(
+      source_texture->service_id(), /*source_level=*/0, dest_texture->target(),
+      dest_texture->service_id(),
+      /*dest_level=*/0, xoffset, yoffset, x, y, width, height,
+      /*unpack_flip_y=*/false, /*unpack_premultiply_alpha=*/false,
+      /*unpack_unmultiply_alpha=*/false);
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glCopySubTexture");
+}
+
+void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    const Mailbox& source_mailbox,
+    const Mailbox& dest_mailbox) {
+  DCHECK(source_mailbox != dest_mailbox);
+  DCHECK(shared_context_state_->GrContextIsGL());
 
   std::unique_ptr<SharedImageRepresentationGLTexture> source_shared_image =
       shared_image_representation_factory_.ProduceGLTexture(source_mailbox);
@@ -1934,6 +1993,102 @@ void RasterDecoderImpl::DoCopySubTextureINTERNAL(
     }
     shared_context_state_->PessimisticallyResetGrContext();
   }
+}
+
+void RasterDecoderImpl::DoCopySubTextureINTERNALSkia(
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    const Mailbox& source_mailbox,
+    const Mailbox& dest_mailbox) {
+  DCHECK(source_mailbox != dest_mailbox);
+
+  // Use Skia to copy texture if raster's gr_context() is not using GL.
+  auto source_shared_image = shared_image_representation_factory_.ProduceSkia(
+      source_mailbox, shared_context_state_);
+  auto dest_shared_image = shared_image_representation_factory_.ProduceSkia(
+      dest_mailbox, shared_context_state_);
+  if (!source_shared_image || !dest_shared_image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture", "unknown mailbox");
+    return;
+  }
+
+  gfx::Size source_size = source_shared_image->size();
+  gfx::Rect source_rect(x, y, width, height);
+  if (!gfx::Rect(source_size).Contains(source_rect)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "source texture bad dimensions.");
+    return;
+  }
+
+  gfx::Size dest_size = dest_shared_image->size();
+  gfx::Rect dest_rect(xoffset, yoffset, width, height);
+  if (!gfx::Rect(dest_size).Contains(dest_rect)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "destination texture bad dimensions.");
+    return;
+  }
+
+  std::vector<GrBackendSemaphore> begin_semaphores;
+  std::vector<GrBackendSemaphore> end_semaphores;
+
+  SharedImageRepresentationSkia::ScopedWriteAccess dest_scoped_access(
+      dest_shared_image.get(), &begin_semaphores, &end_semaphores);
+  if (!dest_scoped_access.success()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "Dest shared image is not writable");
+    return;
+  }
+
+  // With OneCopyRasterBufferProvider, source_shared_image->BeginReadAccess()
+  // will copy pixels from SHM GMB to the texture in |source_shared_image|,
+  // and then use drawImageRect() to draw that texure to the target
+  // |dest_shared_image|. We can save one copy by drawing the SHM GMB to the
+  // target |dest_shared_image| directly.
+  // TODO(penghuang): get rid of the one extra copy. https://crbug.com/984045
+  SharedImageRepresentationSkia::ScopedReadAccess source_scoped_access(
+      source_shared_image.get(), &begin_semaphores, &end_semaphores);
+
+  if (!begin_semaphores.empty()) {
+    bool result = dest_scoped_access.surface()->wait(begin_semaphores.size(),
+                                                     begin_semaphores.data());
+    DCHECK(result);
+  }
+
+  if (!source_scoped_access.success()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopySubTexture",
+                       "Source shared image is not accessable");
+  } else {
+    auto color_type = viz::ResourceFormatToClosestSkColorType(
+        true /* gpu_compositing */, source_shared_image->format());
+    auto source_image = SkImage::MakeFromTexture(
+        shared_context_state_->gr_context(),
+        source_scoped_access.promise_image_texture()->backendTexture(),
+        kTopLeft_GrSurfaceOrigin, color_type, kUnpremul_SkAlphaType,
+        nullptr /* colorSpace */);
+
+    auto* canvas = dest_scoped_access.surface()->getCanvas();
+    SkPaint paint;
+    paint.setBlendMode(SkBlendMode::kSrc);
+    canvas->drawImageRect(source_image, gfx::RectToSkRect(source_rect),
+                          gfx::RectToSkRect(dest_rect), &paint);
+  }
+
+  // Always flush the surface even if source_scoped_access.success() is false,
+  // so the begin_semaphores can be released, and end_semaphores can be
+  // signalled.
+  GrFlushInfo flush_info = {
+      .fFlags = kNone_GrFlushFlags,
+      .fNumSemaphores = end_semaphores.size(),
+      .fSignalSemaphores = end_semaphores.data(),
+  };
+  gpu::AddVulkanCleanupTaskForSkiaFlush(
+      shared_context_state_->vk_context_provider(), &flush_info);
+  dest_scoped_access.surface()->flush(
+      SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
 }
 
 namespace {

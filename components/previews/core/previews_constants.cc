@@ -6,9 +6,6 @@
 
 namespace previews {
 
-const char kPreviewsOptimizationGuideUpdateHintsResultHistogramString[] =
-    "PreviewsOptimizationGuide.UpdateHints.Result";
-
 const char kPreviewsOptimizationGuideOnLoadedHintResultHistogramString[] =
     "PreviewsOptimizationGuide.OnLoadedHint.Result";
 

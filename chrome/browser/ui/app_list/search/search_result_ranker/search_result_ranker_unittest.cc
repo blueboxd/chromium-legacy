@@ -76,7 +76,7 @@ class SearchResultRankerTest : public testing::Test {
  public:
   SearchResultRankerTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~SearchResultRankerTest() override {}
 
   // testing::Test overrides:

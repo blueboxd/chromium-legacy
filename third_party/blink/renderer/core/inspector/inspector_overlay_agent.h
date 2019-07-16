@@ -240,7 +240,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::Boolean show_size_on_resize_;
   InspectorAgentState::String paused_in_debugger_message_;
   InspectorAgentState::String inspect_mode_;
-  InspectorAgentState::String inspect_mode_protocol_config_;
+  InspectorAgentState::Bytes inspect_mode_protocol_config_;
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 

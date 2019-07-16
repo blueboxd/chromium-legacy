@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class PushSubscriptionChangeInit;
+class PushSubscriptionChangeEventInit;
 
 class MODULES_EXPORT PushSubscriptionChangeEvent final
     : public ExtendableEvent {
@@ -30,7 +30,7 @@ class MODULES_EXPORT PushSubscriptionChangeEvent final
   }
   static PushSubscriptionChangeEvent* Create(
       const AtomicString& type,
-      PushSubscriptionChangeInit* initializer) {
+      PushSubscriptionChangeEventInit* initializer) {
     return MakeGarbageCollected<PushSubscriptionChangeEvent>(type, initializer);
   }
 
@@ -39,7 +39,7 @@ class MODULES_EXPORT PushSubscriptionChangeEvent final
                               PushSubscription* old_subscription,
                               WaitUntilObserver* observer);
   PushSubscriptionChangeEvent(const AtomicString& type,
-                              PushSubscriptionChangeInit* initializer);
+                              PushSubscriptionChangeEventInit* initializer);
   ~PushSubscriptionChangeEvent() override;
 
   PushSubscription* newSubscription() const;

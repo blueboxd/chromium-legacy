@@ -35,9 +35,6 @@ class CONTENT_EXPORT WebURLLoaderFactoryImpl
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~WebURLLoaderFactoryImpl() override;
 
-  // Creates a test-only factory which can be used only for data URLs.
-  static std::unique_ptr<WebURLLoaderFactoryImpl> CreateTestOnlyFactory();
-
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>

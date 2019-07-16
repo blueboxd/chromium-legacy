@@ -82,7 +82,7 @@ class GeoLanguageProviderTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   // Object under test.

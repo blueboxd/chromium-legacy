@@ -9,11 +9,11 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/paint/element_timing_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -112,8 +112,9 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   if (!layout_object.HasNonZeroEffectiveOpacity())
     return;
 
-  FloatRect intersection_rect = ComputeIntersectionRect(
-      frame, layout_object, current_paint_chunk_properties);
+  FloatRect intersection_rect = ElementTimingUtils::ComputeIntersectionRect(
+      frame, layout_object.FirstFragment().VisualRect(),
+      current_paint_chunk_properties);
   const AtomicString attr =
       element->FastGetAttribute(html_names::kElementtimingAttr);
 
@@ -187,23 +188,6 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
     NotifyImagePaintedInternal(node, *layout_object, *cached_image,
                                current_paint_chunk_properties);
   }
-}
-
-FloatRect ImageElementTiming::ComputeIntersectionRect(
-    const LocalFrame* frame,
-    const LayoutObject& layout_object,
-    const PropertyTreeState& current_paint_chunk_properties) {
-  // Compute the visible part of the image rect.
-  IntRect image_visual_rect = layout_object.FirstFragment().VisualRect();
-
-  FloatClipRect visual_rect = FloatClipRect(FloatRect(image_visual_rect));
-  GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,
-                                            frame->View()
-                                                ->GetLayoutView()
-                                                ->FirstFragment()
-                                                .LocalBorderBoxProperties(),
-                                            visual_rect);
-  return visual_rect.Rect();
 }
 
 void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,

@@ -157,6 +157,8 @@ bool StructTraits<
   if (!data.ReadMethod(&out->method) || !data.ReadUrl(&out->url) ||
       !data.ReadSiteForCookies(&out->site_for_cookies) ||
       !data.ReadTopFrameOrigin(&out->top_frame_origin) ||
+      !data.ReadTrustedNetworkIsolationKey(
+          &out->trusted_network_isolation_key) ||
       !data.ReadRequestInitiator(&out->request_initiator) ||
       !data.ReadReferrer(&out->referrer) ||
       !data.ReadReferrerPolicy(&out->referrer_policy) ||
@@ -180,6 +182,8 @@ bool StructTraits<
     return false;
   }
 
+  out->update_network_isolation_key_on_redirect =
+      data.update_network_isolation_key_on_redirect();
   out->attach_same_site_cookies = data.attach_same_site_cookies();
   out->update_first_party_url_on_redirect =
       data.update_first_party_url_on_redirect();

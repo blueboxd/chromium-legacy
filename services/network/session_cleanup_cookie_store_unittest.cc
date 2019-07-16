@@ -167,7 +167,7 @@ TEST_F(SessionCleanupCookieStoreTest, TestNetLogDoNotIncludeCookies) {
   base::Time t = base::Time::Now();
   AddCookie("A", "B", "nonpersistent.com", "/", t);
 
-  net_log_.SetCaptureMode(net::NetLogCaptureMode::kDefault);
+  net_log_.SetObserverCaptureMode(net::NetLogCaptureMode::kDefault);
   // Cookies from "nonpersistent.com" should be deleted.
   store_->DeleteSessionCookies(
       base::BindRepeating([](const std::string& domain, bool is_https) {

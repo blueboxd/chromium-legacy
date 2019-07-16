@@ -202,11 +202,7 @@ base::TimeDelta ThreadHeapStatsCollector::Event::gc_cycle_time() const {
   // Note that scopes added here also have to have a proper BlinkGCInV8Scope
   // scope if they are nested in a V8 scope.
   return incremental_marking_time() + atomic_marking_time() +
-         atomic_sweep_and_compact_time() +
-         scope_data[ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact] +
-         scope_data[ThreadHeapStatsCollector::kCompleteSweep] +
-         scope_data[ThreadHeapStatsCollector::kLazySweepInIdle] +
-         scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];
+         atomic_sweep_and_compact_time() + foreground_sweeping_time();
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::atomic_pause_time() const {

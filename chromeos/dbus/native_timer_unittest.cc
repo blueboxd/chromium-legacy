@@ -20,7 +20,8 @@ class NativeTimerTest : public testing::Test {
  public:
   NativeTimerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~NativeTimerTest() override = default;
 

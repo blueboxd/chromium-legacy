@@ -24,6 +24,7 @@
 #include "base/test/simple_test_clock.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_features.h"
@@ -37,7 +38,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/previews_hints.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -204,7 +204,8 @@ class PreviewsOptimizationGuideTest
  public:
   PreviewsOptimizationGuideTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~PreviewsOptimizationGuideTest() override {}
 
@@ -525,7 +526,7 @@ void PreviewsOptimizationGuideTest::InitializeMultipleResourceLoadingHints(
 }
 
 void PreviewsOptimizationGuideTest::InitializeWithLitePageRedirectBlacklist() {
-  previews::BloomFilter blacklist_bloom_filter(7, 511);
+  optimization_guide::BloomFilter blacklist_bloom_filter(7, 511);
   blacklist_bloom_filter.Add("blacklisteddomain.com");
   blacklist_bloom_filter.Add("blacklistedsubdomain.maindomain.co.in");
   std::string blacklist_data((char*)&blacklist_bloom_filter.bytes()[0],

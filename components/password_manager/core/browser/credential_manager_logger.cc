@@ -42,7 +42,7 @@ void CredentialManagerLogger::LogRequestCredential(
   for (const GURL& federation_provider : federations)
     s += SavePasswordProgressLogger::ScrubURL(federation_provider) + ", ";
 
-  log_manager_->LogSavePasswordProgress(s);
+  log_manager_->LogTextMessage(s);
 }
 
 void CredentialManagerLogger::LogSendCredential(const GURL& url,
@@ -50,7 +50,7 @@ void CredentialManagerLogger::LogSendCredential(const GURL& url,
   std::string s("CM API send a credential: origin=" +
                 SavePasswordProgressLogger::ScrubURL(url));
   s += ", CredentialType=" + CredentialTypeToString(type);
-  log_manager_->LogSavePasswordProgress(s);
+  log_manager_->LogTextMessage(s);
 }
 
 void CredentialManagerLogger::LogStoreCredential(const GURL& url,
@@ -58,13 +58,13 @@ void CredentialManagerLogger::LogStoreCredential(const GURL& url,
   std::string s("CM API save a credential: origin=" +
                 SavePasswordProgressLogger::ScrubURL(url));
   s += ", CredentialType=" + CredentialTypeToString(type);
-  log_manager_->LogSavePasswordProgress(s);
+  log_manager_->LogTextMessage(s);
 }
 
 void CredentialManagerLogger::LogPreventSilentAccess(const GURL& url) {
   std::string s("CM API sign out: origin=" +
                 SavePasswordProgressLogger::ScrubURL(url));
-  log_manager_->LogSavePasswordProgress(s);
+  log_manager_->LogTextMessage(s);
 }
 
 }  // namespace password_manager

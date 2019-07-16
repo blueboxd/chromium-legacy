@@ -27,6 +27,7 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
   void OnDestruct() override;
 
+  // mojom::WebTestControl implementation.
   void CaptureDump(CaptureDumpCallback callback) override;
   void CompositeWithRaster(CompositeWithRasterCallback callback) override;
   void DumpFrameLayout(DumpFrameLayoutCallback callback) override;

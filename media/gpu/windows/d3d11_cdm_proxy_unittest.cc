@@ -139,6 +139,11 @@ class D3D11CdmProxyTest : public ::testing::Test {
                             base::Unretained(&create_device_mock_)));
   }
 
+  void TearDown() override {
+    proxy_.reset();
+    base::PowerMonitor::ShutdownForTesting();
+  }
+
   // Sets up ON_CALLs for the mock objects. These can be overriden with
   // EXPECT_CALLs.
   // |content_protection_caps_| should be set.

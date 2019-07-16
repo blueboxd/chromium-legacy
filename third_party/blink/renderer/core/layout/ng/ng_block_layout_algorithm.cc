@@ -1054,8 +1054,20 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     // Deal with marker's margin. It happens only when marker needs to occupy
     // the whole line.
     DCHECK(child.ListMarkerOccupiesWholeLine());
+    // Because the marker is laid out as a normal block child, its inline size
+    // is extended to fill up the space. Compute the regular marker size from
+    // the first child.
+    const NGPhysicalContainerFragment& marker_fragment =
+        layout_result->PhysicalFragment();
+    DCHECK(!marker_fragment.Children().empty());
+    const NGPhysicalFragment& marker_child_fragment =
+        *marker_fragment.Children().front();
+    LayoutUnit marker_inline_size =
+        marker_child_fragment.Size()
+            .ConvertToLogical(ConstraintSpace().GetWritingMode())
+            .inline_size;
     auto_margins.inline_start = NGUnpositionedListMarker(To<NGBlockNode>(child))
-                                    .InlineOffset(fragment.InlineSize());
+                                    .InlineOffset(marker_inline_size);
     auto_margins.inline_end = opportunity.rect.InlineSize() -
                               fragment.InlineSize() - auto_margins.inline_start;
   } else {

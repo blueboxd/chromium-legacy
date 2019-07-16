@@ -52,7 +52,7 @@ class SchedulerHelperTest : public testing::Test {
  public:
   SchedulerHelperTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
                 QUEUED) {
     sequence_manager_ = base::sequence_manager::SequenceManagerForTest::Create(

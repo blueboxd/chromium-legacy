@@ -14,6 +14,9 @@
   <template>
     <style include="settings-shared">
       :host {
+        --menu-link-color: var(--google-blue-600);
+        --menu-text-color: var(--google-grey-refresh-700);
+        --menu-icon-color: var(--google-grey-refresh-700);
         box-sizing: border-box;
         display: block;
         padding-bottom: 2px;
@@ -24,49 +27,74 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      a[href],
-      #advancedButton {
+      /* Override --cr-selectable-focus mixin. */
+      [selectable]:not(cr-radio-group):focus,
+      [selectable]:not(cr-radio-group) > :focus {
+        background-color: transparent;
+      }
+
+      /* The <a> is the entire tap target, including the padding around the
+         visible icon and text. */
+      a {
+        background: transparent;
+        display: block;
+        padding: 3px 0;
+      }
+
+      /* The "item" draws the icon, text, and rounded background. */
+      a > .item {
         align-items: center;
-        color: var(--settings-nav-item-color);
+        border: 1px solid transparent;
+        border-radius: 0 20px 20px 0;
+        color: var(--menu-text-color);
         display: flex;
         font-weight: 500;
         margin-inline-end: 2px;  /* Margin so selected outline is visible. */
-        margin-inline-start: 1px;
-        min-height: 20px;
-        padding-bottom: 10px;
-        padding-inline-start: 23px;  /* 24px - 1px from margin for outline. */
-        padding-top: 10px;
+        min-height: 32px;
+        padding-inline-start: 24px;
+        pointer-events: none;
       }
 
-      a[href].iron-selected {
-        color: var(--cr-link-color);
+      a.iron-selected > .item {
+        background-color: var(--google-blue-50);
+        color: var(--menu-link-color);
       }
 
-      a[href]:focus {
-        background: transparent;
-        outline: auto 5px -webkit-focus-ring-color;
+      :host-context(.focus-outline-visible) a:focus > .item {
+        border-color: var(--google-blue-600);
+      }
+
+      a:hover:not(.iron-selected) > .item {
+        background-color: var(--google-grey-refresh-100);
       }
 
       iron-icon {
-        --iron-icon-fill-color: var(--settings-nav-icon-color);
+        --iron-icon-fill-color: var(--menu-icon-color);
         margin-inline-end: 24px;
         pointer-events: none;
         vertical-align: top;
       }
 
-      .iron-selected > iron-icon {
-        fill: var(--cr-link-color);
+      a.iron-selected > .item > iron-icon {
+        fill: var(--menu-link-color);
       }
 
+      /* TODO(crbug.com/950007): Finalize "Advanced" button style. */
       #advancedButton {
-        --ink-color: var(--settings-nav-item-color);
+        --ink-color: var(--menu-text-color);
+        align-items: center;
         background: none;
-        border: none;
         border-radius: initial;
+        border: none;
         box-shadow: none;
+        color: var(--menu-text-color);
+        display: flex;
+        font-weight: 500;
         height: unset;
+        margin-inline-end: 2px;
         margin-top: 8px;
         padding-inline-end: 0;
+        padding-inline-start: 24px;
         text-transform: none;
       }
 
@@ -105,94 +133,135 @@
         selectable="a"
         role="navigation" on-click="onLinkClick_">
       <a href="/internet">
-        <iron-icon icon="settings:network-wifi"></iron-icon>
-        $i18n{internetPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:network-wifi"></iron-icon>
+          $i18n{internetPageTitle}
+        </div>
       </a>
       <a href="/bluetooth">
-        <iron-icon icon="cr:bluetooth"></iron-icon>
-        $i18n{bluetoothPageTitle}
+        <div class="item">
+          <iron-icon icon="cr:bluetooth"></iron-icon>
+          $i18n{bluetoothPageTitle}
+        </div>
       </a>
       <a id="multidevice" href="/multidevice"
           hidden="[[!pageVisibility.multidevice]]">
-        <iron-icon icon="settings:multidevice-better-together-suite">
-        </iron-icon>
-        $i18n{multidevicePageTitle}
+        <div class="item">
+          <iron-icon icon="settings:multidevice-better-together-suite">
+          </iron-icon>
+          $i18n{multidevicePageTitle}
+        </div>
       </a>
       <a id="people" href="/people" hidden="[[!pageVisibility.people]]">
-        <iron-icon icon="cr:person"></iron-icon>
-        $i18n{peoplePageTitle}
+        <div class="item">
+          <iron-icon icon="cr:person"></iron-icon>
+          $i18n{peoplePageTitle}
+        </div>
       </a>
       <a id="personalization" href="/personalization">
-        <iron-icon icon="settings:palette"></iron-icon>
-        $i18n{personalizationPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:palette"></iron-icon>
+          $i18n{personalizationPageTitle}
+        </div>
       </a>
       <a href="/device">
-        <iron-icon icon="settings:laptop-chromebook"></iron-icon>
-        $i18n{devicePageTitle}
+        <div class="item">
+          <iron-icon icon="settings:laptop-chromebook"></iron-icon>
+          $i18n{devicePageTitle}
+        </div>
       </a>
       <!-- TODO(jamescook): Rename path to "/assistant". -->
       <a href="/search" hidden="[[!showAssistant]]">
-        <iron-icon icon="settings:assistant"></iron-icon>
-        $i18n{osAssistantPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:assistant"></iron-icon>
+          $i18n{osAssistantPageTitle}
+        </div>
       </a>
       <a href="/apps" hidden="[[!showApps]]">
-        <iron-icon icon="settings:apps"></iron-icon>
-        $i18n{appsPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:apps"></iron-icon>
+          $i18n{appsPageTitle}
+        </div>
       </a>
       <a href="/androidApps" hidden="[[!showAndroidApps]]">
-        <iron-icon icon="settings:play-prism"></iron-icon>
-        $i18n{androidAppsPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:play-prism"></iron-icon>
+          $i18n{androidAppsPageTitle}
+        </div>
       </a>
       <a href="/crostini" hidden="[[!showCrostini]]">
-        <iron-icon icon="settings:crostini-mascot"></iron-icon>
-        $i18n{crostiniPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:crostini-mascot"></iron-icon>
+          $i18n{crostiniPageTitle}
+        </div>
       </a>
       <a href="/pluginVm" hidden="[[!showPluginVm]]">
-        <iron-icon icon="settings:plugin-vm"></iron-icon>
-        $i18n{pluginVmPageTitle}
+        <div class="item">
+          <iron-icon icon="settings:plugin-vm"></iron-icon>
+          $i18n{pluginVmPageTitle}
+        </div>
       </a>
       <cr-button id="advancedButton" aria-active-attribute="aria-expanded"
           on-click="onAdvancedButtonToggle_"
           hidden="[[!pageVisibility.advancedSettings]]">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">
-        </iron-icon></cr-button>
+        </iron-icon>
+      </cr-button>
       <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
           hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
             role="navigation" on-click="onLinkClick_">
           <a href="/dateTime">
-            <iron-icon icon="settings:access-time"></iron-icon>
-            $i18n{dateTimePageTitle}
+            <div class="item">
+              <iron-icon icon="settings:access-time"></iron-icon>
+              $i18n{dateTimePageTitle}
+            </div>
           </a>
           <a href="/privacy">
-            <iron-icon icon="cr:security"></iron-icon>
-            $i18n{privacyPageTitle}
+            <div class="item">
+              <iron-icon icon="cr:security"></iron-icon>
+              $i18n{privacyPageTitle}
+            </div>
           </a>
           <a href="/languages">
-            <iron-icon icon="settings:language"></iron-icon>
-            $i18n{osLanguagesPageTitle}
+            <div class="item">
+              <iron-icon icon="settings:language"></iron-icon>
+              $i18n{osLanguagesPageTitle}
+            </div>
           </a>
           <a href="/downloads">
-            <iron-icon icon="cr:file-download"></iron-icon>
-            $i18n{downloadsPageTitle}
+            <div class="item">
+              <iron-icon icon="cr:file-download"></iron-icon>
+              $i18n{downloadsPageTitle}
+            </div>
           </a>
           <a href="/printing">
-            <iron-icon icon="cr:print"></iron-icon>
-            $i18n{printingPageTitle}
+            <div class="item">
+              <iron-icon icon="cr:print"></iron-icon>
+              $i18n{printingPageTitle}
+            </div>
           </a>
           <a href="/accessibility">
-            <iron-icon icon="settings:accessibility"></iron-icon>
-            $i18n{a11yPageTitle}
+            <div class="item">
+              <iron-icon icon="settings:accessibility"></iron-icon>
+              $i18n{a11yPageTitle}
+            </div>
           </a>
           <a id="reset" href="/reset" hidden="[[!pageVisibility.reset]]">
-            <iron-icon icon="settings:restore"></iron-icon>
-            $i18n{resetPageTitle}
+            <div class="item">
+              <iron-icon icon="settings:restore"></iron-icon>
+              $i18n{resetPageTitle}
+            </div>
           </a>
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
-      <a id="about-menu" href="/help">$i18n{aboutOsPageTitle}</a>
+      <a id="about-menu" href="/help">
+        <div class="item">
+          $i18n{aboutOsPageTitle}
+        </div>
+      </a>
     </iron-selector>
   </template>
   <script src="os_settings_menu.js"></script>

@@ -454,6 +454,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     deps += [
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
+      "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/cellular_setup/public/mojom",
@@ -619,7 +620,6 @@ source_set("builtin_service_manifests") {
     deps += [
       "//ash/public/cpp:manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
-      "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/network_config/public/cpp:manifest",

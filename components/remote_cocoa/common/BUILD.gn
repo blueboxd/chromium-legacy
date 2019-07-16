@@ -21,7 +21,7 @@ mojom("mojo") {
     "//mojo/public/mojom/base",
     "//ui/base/accelerators/mojo:interfaces",
     "//ui/base/mojom",
-    "//ui/display/mojo:interfaces",
+    "//ui/display/mojom",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",

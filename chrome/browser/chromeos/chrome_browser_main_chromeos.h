@@ -39,7 +39,6 @@ namespace chromeos {
 
 class ArcKioskAppManager;
 class CrosUsbDetector;
-class CupsProxyServiceManager;
 class DemoModeResourcesRemover;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
@@ -174,8 +173,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
-  std::unique_ptr<chromeos::CupsProxyServiceManager>
-      cups_proxy_service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

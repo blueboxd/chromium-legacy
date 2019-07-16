@@ -343,8 +343,8 @@ void TaskTracker::StartShutdown() {
 
 void TaskTracker::CompleteShutdown() {
   // It is safe to access |shutdown_event_| without holding |lock_| because the
-  // pointer never changes after being set by StartShutdown(), which must be
-  // called before this.
+  // pointer never changes after being set by StartShutdown(), which must
+  // happen-before before this.
   DCHECK(TS_UNCHECKED_READ(shutdown_event_));
   {
     base::ScopedAllowBaseSyncPrimitives allow_wait;
@@ -405,13 +405,7 @@ bool TaskTracker::WillPostTask(Task* task,
     // ordering bug. This aims to catch those early.
     CheckedAutoLock auto_lock(shutdown_lock_);
     DCHECK(shutdown_event_);
-    // TODO(http://crbug.com/698140): Atomically shutdown the service thread
-    // to prevent racily posting BLOCK_SHUTDOWN tasks in response to a
-    // FileDescriptorWatcher (and/or make such notifications never be
-    // BLOCK_SHUTDOWN). Then, enable this DCHECK, until then, skip the task.
-    // DCHECK(!shutdown_event_->IsSignaled());
-    if (shutdown_event_->IsSignaled())
-      return false;
+    DCHECK(!shutdown_event_->IsSignaled());
   }
 
   // TODO(scheduler-dev): Record the task traits here.
@@ -643,20 +637,11 @@ bool TaskTracker::BeforeQueueTaskSource(
     const bool shutdown_started = state_->IncrementNumItemsBlockingShutdown();
 
     if (shutdown_started) {
-
       // A BLOCK_SHUTDOWN task posted after shutdown has completed is an
       // ordering bug. This aims to catch those early.
       CheckedAutoLock auto_lock(shutdown_lock_);
       DCHECK(shutdown_event_);
-      // TODO(http://crbug.com/698140): Atomically shutdown the service thread
-      // to prevent racily posting BLOCK_SHUTDOWN tasks in response to a
-      // FileDescriptorWatcher (and/or make such notifications never be
-      // BLOCK_SHUTDOWN). Then, enable this DCHECK, until then, skip the task.
-      // DCHECK(!shutdown_event_->IsSignaled());
-      if (shutdown_event_->IsSignaled()) {
-        state_->DecrementNumItemsBlockingShutdown();
-        return false;
-      }
+      DCHECK(!shutdown_event_->IsSignaled());
     }
 
     return true;

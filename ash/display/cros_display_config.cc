@@ -22,7 +22,7 @@
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
-#include "ui/display/mojo/display_struct_traits.h"
+#include "ui/display/mojom/display_mojom_traits.h"
 #include "ui/display/screen.h"
 
 namespace ash {

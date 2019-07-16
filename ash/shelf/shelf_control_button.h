@@ -19,7 +19,7 @@ class ShelfButtonDelegate;
 // as the app list, back, and overflow buttons.
 class ASH_EXPORT ShelfControlButton : public ShelfButton {
  public:
-  explicit ShelfControlButton(ShelfButtonDelegate* shelf_button_delegate_);
+  ShelfControlButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate_);
   ~ShelfControlButton() override;
 
   // Get the center point of the button used to draw its background and ink

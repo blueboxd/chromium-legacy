@@ -131,17 +131,30 @@ def main():
   return 1 if (failed or bool(invalid_profiles)) else 0
 
 def mark_invalid_shards(bad_shards, summary_file, output_file):
+  if not bad_shards:
+    return
   shard_indices = []
-  with open(summary_file) as f:
-    summary = json.load(f)
+  try:
+    with open(summary_file) as f:
+      summary = json.load(f)
+  except (OSError, ValueError):
+    logging.warning('Could not read summary.json, not marking invalid shards')
+    return
 
   for i in range(len(summary['shards'])):
-    shard_id = summary['shards'][i]['task_id']
-    if shard_id in bad_shards:
+    shard_info = summary['shards'][i]
+    shard_id = (shard_info['task_id']
+                if shard_info and 'task_id' in shard_info
+                else 'unknown')
+    if shard_id in bad_shards or shard_id == 'unknown':
       shard_indices.append(i)
 
-  with open(output_file) as f:
-    output = json.load(f)
+  try:
+    with open(output_file) as f:
+      output = json.load(f)
+  except (OSError, ValueError):
+    logging.warning('Invalid/missing output.json, overwriting')
+    output = {}
   output.setdefault('missing_shards', [])
   output['missing_shards'].extend(shard_indices)
   with open(output_file, 'w') as f:

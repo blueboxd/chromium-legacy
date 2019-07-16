@@ -8,8 +8,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -237,60 +235,6 @@ TEST_F(LoggingTest, LogToStdErrFlag) {
   EXPECT_CALL(mock_log_source_stderr, Log()).Times(1).WillOnce(Return("foo"));
   LOG(INFO) << mock_log_source_stderr.Log();
 }
-
-// Check that when logging to file and message severity is
-// kAlwaysPrintErrorLevel or higher that the message is also written to stderr.
-// When severity is lower, make sure the message is only written to file.
-// Relies on POSIX specific APIs. Though this feature is cross-platform, testing
-// on POSIX platforms is sufficient.
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-TEST_F(LoggingTest, LogToFileAndStderr) {
-  const char kInfoLogMessage[] = "This is an INFO level message";
-  const char kErrorLogMessage[] = "Here we have a message of level ERROR";
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  // Set up logging to log to a file.
-  base::FilePath file_logs_path = temp_dir.GetPath().Append("file.log");
-  LoggingSettings settings;
-  settings.logging_dest = LOG_TO_FILE;
-  settings.log_file = file_logs_path.value().c_str();
-  InitLogging(settings);
-
-  // Create a file and change stderr to write to that file, to easily check
-  // contents.
-  base::FilePath stderr_logs_path = temp_dir.GetPath().Append("stderr.log");
-  base::File stderr_logs = base::File(
-      stderr_logs_path,
-      base::File::FLAG_CREATE | base::File::FLAG_WRITE | base::File::FLAG_READ);
-  base::ScopedFD stderr_backup = base::ScopedFD(dup(STDERR_FILENO));
-  int dup_result = dup2(stderr_logs.GetPlatformFile(), STDERR_FILENO);
-  ASSERT_GE(dup_result, 0);
-
-  LOG(INFO) << kInfoLogMessage;
-  LOG(ERROR) << kErrorLogMessage;
-
-  // Restore the original stderr logging destination.
-  dup_result = dup2(stderr_backup.get(), STDERR_FILENO);
-  ASSERT_EQ(dup_result, STDERR_FILENO);
-
-  // Check that both log messages are written to "file.log".
-  std::string written_file_logs;
-  ASSERT_TRUE(base::ReadFileToString(file_logs_path, &written_file_logs));
-  std::size_t found_info_log = written_file_logs.find(kInfoLogMessage);
-  EXPECT_FALSE(found_info_log == std::string::npos);
-  std::size_t found_error_log = written_file_logs.find(kErrorLogMessage);
-  EXPECT_FALSE(found_error_log == std::string::npos);
-
-  // Check that the kErrorLogMessage is written to |stderr.log| and
-  // kInfoLogMessage is not.
-  ASSERT_TRUE(base::ReadFileToString(stderr_logs_path, &written_file_logs));
-  found_info_log = written_file_logs.find(kInfoLogMessage);
-  EXPECT_TRUE(found_info_log == std::string::npos);
-  found_error_log = written_file_logs.find(kErrorLogMessage);
-  EXPECT_FALSE(found_error_log == std::string::npos);
-}
-#endif
 
 // Official builds have CHECKs directly call BreakDebugger.
 #if !defined(OFFICIAL_BUILD)

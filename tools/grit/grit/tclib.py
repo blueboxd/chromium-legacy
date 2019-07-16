@@ -67,7 +67,7 @@ class BaseMessage(object):
 
         for chunk in chunked_text:
           if chunk: # ignore empty chunk
-            if tag_map.has_key(chunk):
+            if chunk in tag_map:
               self.AppendPlaceholder(tag_map[chunk][0])
               tag_map[chunk][1] += 1 # increase placeholder use count
             else:

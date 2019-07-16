@@ -48,7 +48,7 @@ class ScheduledExecutorImplTest : public testing::Test {
  protected:
   ScheduledExecutorImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         scheduled_executor_(std::make_unique<ScheduledExecutorImpl>(
             scoped_task_environment_.GetMainThreadTaskRunner())) {}
 

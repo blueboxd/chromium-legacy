@@ -45,7 +45,7 @@ class SharingDialogController {
                               SharingService::SendMessageCallback callback) = 0;
 
   // Called when user chooses a local app to complete the task.
-  virtual void OnAppChosen(App app) = 0;
+  virtual void OnAppChosen(const App& app) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SharingDialogController);
 };

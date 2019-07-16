@@ -57,6 +57,7 @@
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
+#include "chrome/browser/component_updater/on_device_head_suggest_component_installer.h"
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
@@ -489,6 +490,7 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
   whitelist_installer->RegisterComponents();
 
   RegisterSubresourceFilterComponent(cus);
+  RegisterOnDeviceHeadSuggestComponent(cus);
   RegisterOptimizationHintsComponent(cus, profile_prefs);
 
   base::FilePath path;

@@ -641,7 +641,7 @@ void TextfieldModel::SetCompositionText(
 
   size_t cursor = GetCursorPosition();
   base::string16 new_text = text();
-  render_text_->SetText(new_text.insert(cursor, composition.text));
+  SetRenderTextText(new_text.insert(cursor, composition.text));
   composition_range_ = gfx::Range(cursor, cursor + composition.text.length());
   // Don't render IME spans with thickness "kNone".
   if (composition.ime_text_spans.size() > 0 &&
@@ -697,7 +697,7 @@ void TextfieldModel::CancelCompositionText() {
   gfx::Range range = composition_range_;
   ClearComposition();
   base::string16 new_text = text();
-  render_text_->SetText(new_text.erase(range.start(), range.length()));
+  SetRenderTextText(new_text.erase(range.start(), range.length()));
   render_text_->SetCursorPosition(range.start());
   if (delegate_)
     delegate_->OnCompositionTextConfirmedOrCleared();
@@ -843,14 +843,20 @@ void TextfieldModel::ModifyText(size_t delete_from,
   base::string16 old_text = text();
   ClearComposition();
   if (delete_from != delete_to)
-    render_text_->SetText(old_text.erase(delete_from, delete_to - delete_from));
+    SetRenderTextText(old_text.erase(delete_from, delete_to - delete_from));
   if (!new_text.empty())
-    render_text_->SetText(old_text.insert(new_text_insert_at, new_text));
+    SetRenderTextText(old_text.insert(new_text_insert_at, new_text));
   if (selection.start() == selection.end()) {
     render_text_->SetCursorPosition(selection.start());
   } else {
     render_text_->SelectRange(selection);
   }
+}
+
+void TextfieldModel::SetRenderTextText(const base::string16& text) {
+  render_text_->SetText(text);
+  if (delegate_)
+    delegate_->OnTextChanged();
 }
 
 // static

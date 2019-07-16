@@ -72,7 +72,7 @@ class MockVaapiWrapper : public VaapiWrapper {
   MOCK_METHOD4(
       CreateContextAndSurfaces,
       bool(unsigned int, const gfx::Size&, size_t, std::vector<VASurfaceID>*));
-  MOCK_METHOD2(CreateContext, bool(unsigned int, const gfx::Size&));
+  MOCK_METHOD1(CreateContext, bool(const gfx::Size&));
   MOCK_METHOD1(DestroyContextAndSurfaces, void(std::vector<VASurfaceID>));
 
  private:
@@ -280,7 +280,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     // |decode_using_client_picture_buffers| determines the concrete method for
     // creation of context, surfaces and VaapiPictures.
     if (GetParam().decode_using_client_picture_buffers) {
-      EXPECT_CALL(*mock_vaapi_wrapper_, CreateContext(_, picture_size))
+      EXPECT_CALL(*mock_vaapi_wrapper_, CreateContext(picture_size))
           .WillOnce(Return(true));
       EXPECT_CALL(
           *mock_vaapi_picture_factory_,

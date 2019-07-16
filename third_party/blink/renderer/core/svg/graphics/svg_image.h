@@ -126,7 +126,7 @@ class CORE_EXPORT SVGImage final : public Image {
 
  protected:
   // Whether or not size is available yet.
-  bool IsSizeAvailable() override { return !!page_; }
+  bool IsSizeAvailable() override;
 
  private:
   // Accesses m_page.
@@ -247,6 +247,7 @@ class CORE_EXPORT SVGImage final : public Image {
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SupportsSubsequenceCaching);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, LayoutShiftTrackerDisabled);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SetSizeOnVisualViewport);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, IsSizeAvailable);
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);

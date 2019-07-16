@@ -17,29 +17,26 @@ namespace network {
 
 OriginPolicyFetcher::OriginPolicyFetcher(
     OriginPolicyManager* owner_policy_manager,
-    const std::string& policy_version,
-    const std::string& report_to,
+    const OriginPolicyHeaderValues& header_info,
     const url::Origin& origin,
     mojom::URLLoaderFactory* factory,
     mojom::OriginPolicyManager::RetrieveOriginPolicyCallback callback)
     : owner_policy_manager_(owner_policy_manager),
-      report_to_(report_to),
-      fetch_url_(GetPolicyURL(policy_version, origin)),
+      fetch_url_(GetPolicyURL(header_info.policy_version, origin)),
       callback_(std::move(callback)),
-      must_redirect_(false) {
+      must_redirect_(false),
+      header_info_(header_info) {
   DCHECK(callback_);
-  DCHECK(!policy_version.empty());
+  DCHECK(!header_info.policy_version.empty());
   FetchPolicy(factory);
 }
 
 OriginPolicyFetcher::OriginPolicyFetcher(
     OriginPolicyManager* owner_policy_manager,
-    const std::string& report_to,
     const url::Origin& origin,
     mojom::URLLoaderFactory* factory,
     mojom::OriginPolicyManager::RetrieveOriginPolicyCallback callback)
     : owner_policy_manager_(owner_policy_manager),
-      report_to_(report_to),
       fetch_url_(GetDefaultPolicyURL(origin)),
       callback_(std::move(callback)),
       must_redirect_(true) {
@@ -75,7 +72,8 @@ void OriginPolicyFetcher::OnPolicyHasArrived(
     std::unique_ptr<std::string> policy_content) {
   // Fail hard if the policy could not be loaded.
   if (!policy_content || must_redirect_) {
-    Report(OriginPolicyState::kCannotLoadPolicy);
+    owner_policy_manager_->MaybeReport(OriginPolicyState::kCannotLoadPolicy,
+                                       header_info_, fetch_url_);
     WorkDone(nullptr, OriginPolicyState::kCannotLoadPolicy);
   } else {
     WorkDone(std::move(policy_content), OriginPolicyState::kLoaded);
@@ -93,7 +91,8 @@ void OriginPolicyFetcher::OnPolicyRedirect(
   }
 
   // Fail hard if the policy response follows an invalid redirect.
-  Report(OriginPolicyState::kInvalidRedirect);
+  owner_policy_manager_->MaybeReport(OriginPolicyState::kInvalidRedirect,
+                                     header_info_, fetch_url_);
 
   WorkDone(nullptr, OriginPolicyState::kInvalidRedirect);
 }
@@ -177,8 +176,5 @@ bool OriginPolicyFetcher::IsValidRedirect(
   return redirect_info.new_url ==
          GetPolicyURL(new_version, url::Origin::Create(fetch_url_));
 }
-
-// TODO(andypaicu): use report_to implement this function
-void OriginPolicyFetcher::Report(OriginPolicyState error_state) {}
 
 }  // namespace network

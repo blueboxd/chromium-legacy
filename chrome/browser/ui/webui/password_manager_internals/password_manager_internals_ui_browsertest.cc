@@ -72,8 +72,7 @@ void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPageWithBrowser(
       GetWebContents()->GetWebUI()->GetController());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       LogSavePasswordProgress) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest, LogEntry) {
   password_manager::PasswordManagerInternalsService* service =
       password_manager::PasswordManagerInternalsServiceFactory::
           GetForBrowserContext(browser()->profile());
@@ -84,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 
 // Test that a single internals page is empty on load.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       LogSavePasswordProgress_EmptyOnLoad) {
+                       LogEntry_EmptyOnLoad) {
   password_manager::PasswordManagerInternalsService* service =
       password_manager::PasswordManagerInternalsServiceFactory::
           GetForBrowserContext(browser()->profile());
@@ -94,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 
 // Test that a single internals page is flushed on reload.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       LogSavePasswordProgress_FlushedOnReload) {
+                       LogEntry_FlushedOnReload) {
   password_manager::PasswordManagerInternalsService* service =
       password_manager::PasswordManagerInternalsServiceFactory::
           GetForBrowserContext(browser()->profile());
@@ -110,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 // waits with displaying until the internals page is ready (trying to display
 // the old logs just on construction time would fail).
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       LogSavePasswordProgress_MultipleTabsIdentical) {
+                       LogEntry_MultipleTabsIdentical) {
   // First, open one tab with the internals page, and log something.
   password_manager::PasswordManagerInternalsService* service =
       password_manager::PasswordManagerInternalsServiceFactory::
@@ -127,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 // Test that in the presence of more internals pages, reload does not cause
 // flushing the logs.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       LogSavePasswordProgress_NotFlushedOnReloadIfMultiple) {
+                       LogEntry_NotFlushedOnReloadIfMultiple) {
   // Open one more tab with the internals page.
   OpenInternalsPage(WindowOpenDisposition::NEW_FOREGROUND_TAB);
   // Now log something.
@@ -144,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 
 // Test that navigation away from the internals page works OK.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       LogSavePasswordProgress_NavigateAway) {
+                       LogEntry_NavigateAway) {
   password_manager::PasswordManagerInternalsService* service =
       password_manager::PasswordManagerInternalsServiceFactory::
           GetForBrowserContext(browser()->profile());

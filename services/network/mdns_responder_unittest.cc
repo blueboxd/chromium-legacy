@@ -407,7 +407,7 @@ class MdnsResponderTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   // Overrides the current thread task runner, so we can simulate the passage
   // of time and avoid any actual sleeps.
   NiceMock<net::MockMDnsSocketFactory> socket_factory_;

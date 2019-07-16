@@ -32,7 +32,7 @@ class IssueManagerTest : public ::testing::Test {
  protected:
   IssueManagerTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     manager_.set_task_runner_for_test(thread_bundle_.GetMainThreadTaskRunner());
   }
   ~IssueManagerTest() override {}

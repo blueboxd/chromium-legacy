@@ -1166,6 +1166,10 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
     GetInputMethod()->CancelComposition(this);
 }
 
+void Textfield::OnTextChanged() {
+  OnPropertyChanged(&model_, kPropertyEffectsPaint);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, ContextMenuController overrides:
 
@@ -2028,6 +2032,11 @@ bool Textfield::IsDropCursorForInsertion() const {
 
 bool Textfield::ShouldShowPlaceholderText() const {
   return text().empty() && !GetPlaceholderText().empty();
+}
+
+views::PropertyChangedSubscription Textfield::AddModelChangedCallback(
+    views::PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&model_, std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

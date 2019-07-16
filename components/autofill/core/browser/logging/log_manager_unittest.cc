@@ -23,7 +23,7 @@ const char kTestText[] = "abcd1234";
 class MockLogReceiver : public autofill::LogReceiver {
  public:
   MockLogReceiver() = default;
-  MOCK_METHOD1(LogSavePasswordProgress, void(const std::string&));
+  MOCK_METHOD1(LogEntry, void(const base::Value&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLogReceiver);
@@ -59,49 +59,50 @@ class LogManagerTest : public testing::Test {
   std::unique_ptr<LogManager> manager_;
 };
 
-TEST_F(LogManagerTest, LogSavePasswordProgressNoReceiver) {
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(_)).Times(0);
+TEST_F(LogManagerTest, LogTextMessageNoReceiver) {
+  EXPECT_CALL(receiver_, LogEntry(_)).Times(0);
   // Before attaching the receiver, no text should be passed.
-  manager_->LogSavePasswordProgress(kTestText);
+  manager_->LogTextMessage(kTestText);
   EXPECT_FALSE(manager_->IsLoggingActive());
 }
 
-TEST_F(LogManagerTest, LogSavePasswordProgressAttachReceiver) {
+TEST_F(LogManagerTest, LogTextMessageAttachReceiver) {
   EXPECT_FALSE(manager_->IsLoggingActive());
 
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
-  EXPECT_EQ(std::string(), router_.RegisterReceiver(&receiver_));
+  EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   EXPECT_TRUE(manager_->IsLoggingActive());
   // After attaching the logger, text should be passed.
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(kTestText));
-  manager_->LogSavePasswordProgress(kTestText);
+  base::Value log_entry = LogRouter::CreateEntryForText(kTestText);
+  EXPECT_CALL(receiver_, LogEntry(testing::Eq(testing::ByRef(log_entry))));
+  manager_->LogTextMessage(kTestText);
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
   router_.UnregisterReceiver(&receiver_);
   EXPECT_FALSE(manager_->IsLoggingActive());
 }
 
-TEST_F(LogManagerTest, LogSavePasswordProgressDetachReceiver) {
+TEST_F(LogManagerTest, LogTextMessageDetachReceiver) {
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
-  EXPECT_EQ(std::string(), router_.RegisterReceiver(&receiver_));
+  EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   EXPECT_TRUE(manager_->IsLoggingActive());
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
   router_.UnregisterReceiver(&receiver_);
   EXPECT_FALSE(manager_->IsLoggingActive());
 
   // After detaching the logger, no text should be passed.
-  EXPECT_CALL(receiver_, LogSavePasswordProgress(_)).Times(0);
-  manager_->LogSavePasswordProgress(kTestText);
+  EXPECT_CALL(receiver_, LogEntry(_)).Times(0);
+  manager_->LogTextMessage(kTestText);
 }
 
 TEST_F(LogManagerTest, NullCallbackWillNotCrash) {
   manager_ = LogManager::Create(&router_, base::Closure());
-  EXPECT_EQ(std::string(), router_.RegisterReceiver(&receiver_));
+  EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   router_.UnregisterReceiver(&receiver_);
 }
 
 TEST_F(LogManagerTest, SetSuspended_WithActiveLogging) {
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
-  EXPECT_EQ(std::string(), router_.RegisterReceiver(&receiver_));
+  EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   EXPECT_TRUE(manager_->IsLoggingActive());
 
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
@@ -131,7 +132,7 @@ TEST_F(LogManagerTest, InterleaveSuspendAndLoggingActivation_SuspendFirst) {
   manager_->SetSuspended(true);
   EXPECT_FALSE(manager_->IsLoggingActive());
 
-  EXPECT_EQ(std::string(), router_.RegisterReceiver(&receiver_));
+  EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   EXPECT_FALSE(manager_->IsLoggingActive());
 
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
@@ -147,7 +148,7 @@ TEST_F(LogManagerTest, InterleaveSuspendAndLoggingActivation_ActiveFirst) {
   EXPECT_FALSE(manager_->IsLoggingActive());
 
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());
-  EXPECT_EQ(std::string(), router_.RegisterReceiver(&receiver_));
+  EXPECT_EQ(std::vector<base::Value>(), router_.RegisterReceiver(&receiver_));
   EXPECT_TRUE(manager_->IsLoggingActive());
 
   EXPECT_CALL(notified_object_, NotifyAboutLoggingActivity());

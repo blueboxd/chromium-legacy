@@ -540,9 +540,12 @@ public class PaymentRequestImpl
                 AutofillPaymentApp.merchantSupportsAutofillPaymentInstruments(mMethodData);
         mUserCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
+
+        boolean mayCrawl = !mUserCanAddCreditCard
+                || PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
         PaymentAppFactory.getInstance().create(mWebContents,
-                Collections.unmodifiableMap(mMethodData), !mUserCanAddCreditCard /* mayCrawl */,
-                this /* callback */);
+                Collections.unmodifiableMap(mMethodData), mayCrawl, this /* callback */);
 
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;

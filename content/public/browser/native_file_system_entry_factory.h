@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
+#include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-forward.h"
 #include "url/origin.h"
 
@@ -19,12 +20,17 @@ class CONTENT_EXPORT NativeFileSystemEntryFactory
     : public base::RefCountedThreadSafe<NativeFileSystemEntryFactory,
                                         BrowserThread::DeleteOnIOThread> {
  public:
+  // Context from which a created handle is going to be used. This is used for
+  // security and permission checks. Pass in MSG_ROUTING_NONE as frame_id if
+  // the context is a worker, otherwise use the routing id of the relevant
+  // RenderFrameHost.
   struct CONTENT_EXPORT BindingContext {
     BindingContext(const url::Origin& origin, int process_id, int frame_id)
         : origin(origin), process_id(process_id), frame_id(frame_id) {}
     url::Origin origin;
     int process_id;
     int frame_id;
+    bool is_worker() const { return frame_id == MSG_ROUTING_NONE; }
   };
 
   // Creates a new NativeFileSystemEntryPtr from the path to a file. Assumes the

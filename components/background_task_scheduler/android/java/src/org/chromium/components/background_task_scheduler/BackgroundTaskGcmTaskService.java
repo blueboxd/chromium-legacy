@@ -13,6 +13,7 @@ import com.google.android.gms.gcm.TaskParams;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +22,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Delegates calls out to various tasks that need to run in the background. */
 public class BackgroundTaskGcmTaskService extends GcmTaskService {
     private static final String TAG = "BkgrdTaskGcmTS";
+
+    private BackgroundTaskSchedulerGcmNetworkManager.Clock mClock = System::currentTimeMillis;
+
+    @VisibleForTesting
+    void setClockForTesting(BackgroundTaskSchedulerGcmNetworkManager.Clock clock) {
+        mClock = clock;
+    }
 
     /** Class that waits for the processing to be done. */
     private static class Waiter {
@@ -87,6 +95,12 @@ public class BackgroundTaskGcmTaskService extends GcmTaskService {
                 BackgroundTaskSchedulerGcmNetworkManager.getBackgroundTaskFromTaskParams(params);
         if (backgroundTask == null) {
             Log.w(TAG, "Failed to start task. Could not instantiate class.");
+            return GcmNetworkManager.RESULT_FAILURE;
+        }
+
+        Long deadlineTime =
+                BackgroundTaskSchedulerGcmNetworkManager.getDeadlineTimeFromTaskParams(params);
+        if (deadlineTime != null && mClock.currentTimeMillis() >= deadlineTime) {
             return GcmNetworkManager.RESULT_FAILURE;
         }
 

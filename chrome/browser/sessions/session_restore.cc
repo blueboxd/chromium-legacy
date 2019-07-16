@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -46,6 +47,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -578,16 +580,20 @@ class SessionRestoreImpl : public BrowserListObserver {
               ->RecreateSessionStorage(tab.session_storage_persistent_id);
     }
 
+    // Apply the stored group if tab groups are enabled.
+    base::Optional<base::Token> group;
+    if (base::FeatureList::IsEnabled(features::kTabGroups))
+      group = tab.group;
+
     WebContents* web_contents = chrome::AddRestoredTab(
         browser, tab.navigations, tab_index, selected_index,
-        tab.extension_app_id, tab.group, is_selected_tab, tab.pinned, true,
+        tab.extension_app_id, group, is_selected_tab, tab.pinned, true,
         last_active_time, session_storage_namespace.get(),
         tab.user_agent_override, true /* from_session_restore */);
     DCHECK(web_contents);
 
     RestoredTab restored_tab(web_contents, is_selected_tab,
-                             tab.extension_app_id.empty(), tab.pinned,
-                             tab.group);
+                             tab.extension_app_id.empty(), tab.pinned, group);
     created_contents->push_back(restored_tab);
 
     // If this isn't the selected tab, there's nothing else to do.

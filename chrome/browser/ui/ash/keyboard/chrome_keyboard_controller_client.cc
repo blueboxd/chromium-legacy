@@ -363,11 +363,9 @@ void ChromeKeyboardControllerClient::OnKeyboardUIDestroyed() {
   keyboard_contents_.reset();
 }
 
-void ChromeKeyboardControllerClient::OnKeyboardContentsLoaded(
-    const gfx::Size& size) {
-  DVLOG(1) << "OnLoadKeyboardContentsRequested: " << size.ToString();
+void ChromeKeyboardControllerClient::OnKeyboardContentsLoaded() {
+  DVLOG(1) << "OnKeyboardContentsLoaded";
   NotifyKeyboardLoaded();
-  keyboard_controller_->KeyboardContentsLoaded(size);
 }
 
 void ChromeKeyboardControllerClient::OnSessionStateChanged() {

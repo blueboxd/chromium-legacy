@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_controller.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
@@ -31,34 +30,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@interface TabStripControllerTestTab : NSObject
-
-- (instancetype)initWithWebState:(web::WebState*)webState
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-@end
-
-@implementation TabStripControllerTestTab {
-  web::WebState* _webState;
-}
-
-
-- (instancetype)initWithWebState:(web::WebState*)webState {
-  if ((self = [super init])) {
-    DCHECK(webState);
-    _webState = webState;
-  }
-  return self;
-}
-
-- (web::WebState*)webState {
-  return _webState;
-}
-
-@end
 
 @interface TabStripControllerTestTabModel : NSObject
 
@@ -87,22 +58,15 @@
   _browserState = nullptr;
 }
 
-- (TabStripControllerTestTab*)addTabForTestingWithTitle:(NSString*)title {
+- (void)addWebStateForTestingWithTitle:(NSString*)title {
   auto testWebState = std::make_unique<web::TestWebState>();
   testWebState->SetTitle(base::SysNSStringToUTF16(title));
   auto testNavigationManager = std::make_unique<web::TestNavigationManager>();
   testNavigationManager->SetVisibleItem(_visibleNavigationItem.get());
   testWebState->SetNavigationManager(std::move(testNavigationManager));
-  TabStripControllerTestTab* tab =
-      [[TabStripControllerTestTab alloc] initWithWebState:testWebState.get()];
-
-  LegacyTabHelper::CreateForWebStateForTesting(testWebState.get(),
-                                               static_cast<Tab*>(tab));
   _webStateList->InsertWebState(0, std::move(testWebState),
                                 WebStateList::INSERT_NO_FLAGS,
                                 WebStateOpener());
-
-  return tab;
 }
 
 - (BOOL)isEmpty {
@@ -143,8 +107,8 @@ class TabStripControllerTest : public PlatformTest {
     tab_model_.browserState = chrome_browser_state_.get();
 
     // Populate the TabModel.
-    tab1_ = [tab_model_ addTabForTestingWithTitle:@"Tab Title 1"];
-    tab2_ = [tab_model_ addTabForTestingWithTitle:@"Tab Title 2"];
+    [tab_model_ addWebStateForTestingWithTitle:@"Tab Title 1"];
+    [tab_model_ addWebStateForTestingWithTitle:@"Tab Title 2"];
 
     controller_ = [[TabStripController alloc]
         initWithTabModel:static_cast<TabModel*>(tab_model_)
@@ -169,8 +133,6 @@ class TabStripControllerTest : public PlatformTest {
   TabStripControllerTestTabModel* tab_model_;
   TabStripController* controller_;
   UIWindow* window_;
-  TabStripControllerTestTab* tab1_;
-  TabStripControllerTestTab* tab2_;
 };
 
 TEST_F(TabStripControllerTest, LoadAndDisplay) {

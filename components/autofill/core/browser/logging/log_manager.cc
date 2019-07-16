@@ -20,7 +20,8 @@ class LogManagerImpl : public LogManager {
   // LogManager
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void SetSuspended(bool suspended) override;
-  void LogSavePasswordProgress(const std::string& text) const override;
+  void LogTextMessage(const std::string& text) const override;
+  void LogEntry(base::Value&& entry) const override;
   bool IsLoggingActive() const override;
 
  private:
@@ -73,10 +74,16 @@ void LogManagerImpl::SetSuspended(bool suspended) {
   }
 }
 
-void LogManagerImpl::LogSavePasswordProgress(const std::string& text) const {
+void LogManagerImpl::LogTextMessage(const std::string& text) const {
   if (!IsLoggingActive())
     return;
   log_router_->ProcessLog(text);
+}
+
+void LogManagerImpl::LogEntry(base::Value&& entry) const {
+  if (!IsLoggingActive())
+    return;
+  log_router_->ProcessLog(std::move(entry));
 }
 
 bool LogManagerImpl::IsLoggingActive() const {

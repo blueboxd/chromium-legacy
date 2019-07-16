@@ -2688,13 +2688,13 @@ const char kSignedHTTPExchangeEnabled[] = "web_package.signed_exchange.enabled";
 const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";
 
 #if defined(OS_CHROMEOS)
-// Enum that specifies certificate management permissions for user. It can have
-// one of the following values.
-// 0: Users can manage all certificates.
+// Enum that specifies client certificate management permissions for user. It
+// can have one of the following values. 0: Users can manage all certificates.
 // 1: Users can manage user certificates, but not device certificates.
 // 2: Disallow users from managing certificates
-// Controlled by CertificateManagementAllowed policy.
-const char kCertificateManagementAllowed[] = "certificate_management_allowed";
+// Controlled by ClientCertificateManagementAllowed policy.
+const char kClientCertificateManagementAllowed[] =
+    "certificate_management_allowed";
 #endif
 
 const char kSharingVapidKey[] = "sharing.vapid_key";

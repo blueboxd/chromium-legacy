@@ -96,7 +96,7 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
 };
 
 ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
-    : task_env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+    : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
   builder_.SetDefaultSigningKey();
   builder_.policy_data().set_policy_type(
       dm_protocol::kChromeExtensionPolicyType);

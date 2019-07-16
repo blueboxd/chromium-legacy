@@ -18,8 +18,6 @@
 #error "This file requires ARC support."
 #endif
 
-@class Tab;
-
 using chrome_test_util::GetCurrentWebState;
 using chrome_test_util::OpenLinkInNewTabButton;
 using web::WebViewInWebState;

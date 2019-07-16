@@ -58,6 +58,20 @@ void MockRenderViewContextMenu::AddMenuItem(int command_id,
   items_.push_back(item);
 }
 
+void MockRenderViewContextMenu::AddMenuItemWithIcon(
+    int command_id,
+    const base::string16& title,
+    const gfx::ImageSkia& image) {
+  MockMenuItem item;
+  item.command_id = command_id;
+  item.enabled = observer_->IsCommandIdEnabled(command_id);
+  item.checked = false;
+  item.hidden = false;
+  item.title = title;
+  item.icon = gfx::Image(image);
+  items_.push_back(item);
+}
+
 void MockRenderViewContextMenu::AddCheckItem(int command_id,
                                              const base::string16& title) {
   MockMenuItem item;
@@ -89,6 +103,27 @@ void MockRenderViewContextMenu::AddSubMenu(int command_id,
   item.title = label;
   items_.push_back(item);
 
+  AppendSubMenuItems(model);
+}
+
+void MockRenderViewContextMenu::AddSubMenuWithStringIdAndIcon(
+    int command_id,
+    int message_id,
+    ui::MenuModel* model,
+    const gfx::ImageSkia& image) {
+  MockMenuItem item;
+  item.command_id = command_id;
+  item.enabled = observer_->IsCommandIdEnabled(command_id);
+  item.checked = observer_->IsCommandIdChecked(command_id);
+  item.hidden = false;
+  item.title = l10n_util::GetStringUTF16(message_id);
+  item.icon = gfx::Image(image);
+  items_.push_back(item);
+
+  AppendSubMenuItems(model);
+}
+
+void MockRenderViewContextMenu::AppendSubMenuItems(ui::MenuModel* model) {
   // Add items in the submenu |model| to |items_| so that the items can be
   // updated later via the RenderViewContextMenuProxy interface.
   // NOTE: this is a hack for the mock class. Ideally, RVCMProxy should neither

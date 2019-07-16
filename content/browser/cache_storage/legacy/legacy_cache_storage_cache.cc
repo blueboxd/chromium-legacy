@@ -1149,6 +1149,7 @@ void LegacyCacheStorageCache::QueryCacheDidReadMetadata(
 
   if (!match->response) {
     entry->Doom();
+    query_cache_context->matches->pop_back();
     QueryCacheOpenNextEntry(std::move(query_cache_context));
     return;
   }

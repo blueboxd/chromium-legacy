@@ -226,7 +226,6 @@ jumbo_source_set("browser_sources") {
     "notification_source.h",
     "notification_types.h",
     "origin_policy_commands.h",
-    "origin_policy_error_reason.h",
     "overlay_window.h",
     "overscroll_configuration.h",
     "page_navigator.cc",

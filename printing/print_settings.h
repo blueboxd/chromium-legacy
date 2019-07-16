@@ -199,9 +199,6 @@ class PRINTING_EXPORT PrintSettings {
   void set_username(const std::string& username) { username_ = username; }
   const std::string& username() const { return username_; }
 
-  void set_job_title(const std::string& job_title) { job_title_ = job_title; }
-  const std::string& job_title() const { return job_title_; }
-
   void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
   const std::string& pin_value() const { return pin_value_; }
 #endif

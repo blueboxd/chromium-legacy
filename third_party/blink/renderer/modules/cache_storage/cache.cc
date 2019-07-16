@@ -54,11 +54,6 @@ namespace blink {
 
 namespace {
 
-void RecordResponseTypeForAdd(const Member<Response>& response) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AddResponseType",
-                            response->GetResponse()->GetType());
-}
-
 bool VaryHeaderContainsAsterisk(const Response* response) {
   const FetchHeaderList* headers = response->headers()->HeaderList();
   String varyHeader;
@@ -178,9 +173,6 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
         return ScriptValue(GetScriptState(), rejection.V8Value());
       }
     }
-
-    for (const auto& response : responses)
-      RecordResponseTypeForAdd(response);
 
     ScriptPromise put_promise =
         cache_->PutImpl(GetScriptState(), method_name_, requests_, responses,

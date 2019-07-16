@@ -25,7 +25,8 @@ class X509Certificate;
 // background thread to avoid problems with buggy smartcards. Its underlying
 // Thread is non-joinable and as such provides
 // TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN semantics.
-scoped_refptr<base::SingleThreadTaskRunner> GetSSLPlatformKeyTaskRunner();
+NET_EXPORT_PRIVATE scoped_refptr<base::SingleThreadTaskRunner>
+GetSSLPlatformKeyTaskRunner();
 
 // Returns the public key of |certificate| as an |EVP_PKEY| or nullptr on error.
 bssl::UniquePtr<EVP_PKEY> GetClientCertPublicKey(

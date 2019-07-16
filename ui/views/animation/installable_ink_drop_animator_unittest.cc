@@ -19,7 +19,7 @@ class InstallableInkDropAnimatorTest : public ::testing::Test {
  public:
   InstallableInkDropAnimatorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   base::test::ScopedTaskEnvironment* scoped_task_environment() {
     return &scoped_task_environment_;

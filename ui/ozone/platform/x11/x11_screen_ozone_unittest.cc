@@ -152,4 +152,19 @@ TEST_F(X11ScreenOzoneTest, GetDisplayForWidgetTwoDisplays) {
             screen()->GetDisplayForAcceleratedWidget(widget));
 }
 
+// This test case exercises GetDisplayNearestPoint function simulating 2
+// side-by-side displays setup.
+TEST_F(X11ScreenOzoneTest, GetDisplayNearestPointTwoDisplays) {
+  auto display_2 =
+      CreateDisplay(gfx::Rect(kPrimaryDisplayBounds.width(), 0, 1280, 720));
+  AddDisplayForTest(*display_2);
+
+  EXPECT_EQ(primary_display(),
+            screen()->GetDisplayNearestPoint(gfx::Point(10, 10)));
+  EXPECT_EQ(primary_display(),
+            screen()->GetDisplayNearestPoint(gfx::Point(790, 100)));
+  EXPECT_EQ(*display_2, screen()->GetDisplayNearestPoint(gfx::Point(1000, 10)));
+  EXPECT_EQ(*display_2,
+            screen()->GetDisplayNearestPoint(gfx::Point(10000, 10000)));
+}
 }  // namespace ui

@@ -340,3 +340,9 @@ struct PredictionTargets {
   uint32 frames_power_efficient = 0;
 };
 
+// See media/base/pipeline/status.h for descriptions.
+struct PipelineDecoderInfo {
+  string decoder_name;
+  bool is_platform_decoder = false;
+  bool is_decrypting_demuxer_stream = false;
+};

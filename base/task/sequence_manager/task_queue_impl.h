@@ -120,6 +120,7 @@ class BASE_EXPORT TaskQueueImpl {
   void RemoveFence();
   bool HasActiveFence();
   bool BlockedByFence() const;
+  EnqueueOrder GetLastUnblockEnqueueOrder() const;
 
   // Implementation of TaskQueue::SetObserver.
   void SetObserver(TaskQueue::Observer* observer);
@@ -345,6 +346,7 @@ class BASE_EXPORT TaskQueueImpl {
     trace_event::BlameContext* blame_context = nullptr;  // Not owned.
     EnqueueOrder current_fence;
     Optional<TimeTicks> delayed_fence;
+    EnqueueOrder last_unblocked_enqueue_order;
     OnTaskStartedHandler on_task_started_handler;
     OnTaskCompletedHandler on_task_completed_handler;
     // Last reported wake up, used only in UpdateWakeUp to avoid

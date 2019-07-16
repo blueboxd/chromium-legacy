@@ -176,7 +176,7 @@ void SecurityContext::SetRequireTrustedTypesForTesting() {
   require_safe_types_ = true;
 }
 
-bool SecurityContext::RequireTrustedTypes() const {
+bool SecurityContext::TrustedTypesRequiredByPolicy() const {
   return require_safe_types_;
 }
 

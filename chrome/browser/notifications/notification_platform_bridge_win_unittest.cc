@@ -50,7 +50,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
  public:
   NotificationPlatformBridgeWinTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~NotificationPlatformBridgeWinTest() override = default;
 

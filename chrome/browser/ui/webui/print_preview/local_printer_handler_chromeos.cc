@@ -288,7 +288,6 @@ void LocalPrinterHandlerChromeos::StartPrint(
     settings.SetKey(
         kSettingUsername,
         base::Value(username.empty() ? kUsernamePlaceholder : username));
-    settings.SetKey(kSettingJobTitle, base::Value(job_title));
     settings.SetKey(kSettingSendUserInfo, base::Value(true));
   }
   StartLocalPrint(std::move(settings), std::move(print_data),

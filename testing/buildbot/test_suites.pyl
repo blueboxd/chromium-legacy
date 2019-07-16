@@ -175,6 +175,41 @@
           '--download-refimg-from-cloud-storage',
         ],
       },
+      'pixel_skia': {
+        'name': 'android_webview_pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--refimg-cloud-storage-bucket',
+          'chromium-gpu-archive/reference-images',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--use-skia-gold',
+        ],
+        'non_precommit_args': [
+          '--upload-refimg-to-cloud-storage',
+        ],
+        'precommit_args': [
+          '--download-refimg-from-cloud-storage',
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+        'experiment_percentage': 100,
+        'telemetry_test_name': 'pixel',
+      },
     },
 
     'aura_gtests': {
@@ -3630,6 +3665,42 @@
         'precommit_args': [
           '--download-refimg-from-cloud-storage',
         ],
+      },
+      'pixel_skia': {
+        'name': 'pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--refimg-cloud-storage-bucket',
+          'chromium-gpu-archive/reference-images',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--use-skia-gold',
+          '--extra-browser-args="--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer"',
+        ],
+        'non_precommit_args': [
+          '--upload-refimg-to-cloud-storage',
+        ],
+        'precommit_args': [
+          '--download-refimg-from-cloud-storage',
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+        'experiment_percentage': 100,
+        'telemetry_test_name': 'pixel',
       },
     },
 

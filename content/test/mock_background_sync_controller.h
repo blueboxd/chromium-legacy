@@ -27,8 +27,7 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   void NotifyBackgroundSyncRegistered(const url::Origin& origin,
                                       bool can_fire,
                                       bool is_reregistered) override;
-  void ScheduleBrowserWakeUp(
-      blink::mojom::BackgroundSyncType sync_type) override;
+  void RunInBackground() override;
   void GetParameterOverrides(BackgroundSyncParameters* parameters) override;
   base::TimeDelta GetNextEventDelay(
       const url::Origin& origin,
@@ -43,12 +42,7 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   const url::Origin& registration_origin() const {
     return registration_origin_;
   }
-  int run_in_background_count() const {
-    return run_in_background_for_one_shot_sync_count_;
-  }
-  int run_in_background_periodic_sync_count() const {
-    return run_in_background_for_periodic_sync_count_;
-  }
+  int run_in_background_count() const { return run_in_background_count_; }
   BackgroundSyncParameters* background_sync_parameters() {
     return &background_sync_parameters_;
   }
@@ -57,8 +51,7 @@ class MockBackgroundSyncController : public BackgroundSyncController {
   int registration_count_ = 0;
   url::Origin registration_origin_;
 
-  int run_in_background_for_one_shot_sync_count_ = 0;
-  int run_in_background_for_periodic_sync_count_ = 0;
+  int run_in_background_count_ = 0;
   BackgroundSyncParameters background_sync_parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundSyncController);

@@ -295,6 +295,10 @@ struct AssistantNotification {
 
   // Whether this notification can turn on the display if it was off.
   bool is_high_priority = false;
+
+  // When the notification should expire.
+  // Expressed as milliseconds since Unix Epoch.
+  mojo_base.mojom.Time? expiry_time;
 };
 
 // Models status of an app.

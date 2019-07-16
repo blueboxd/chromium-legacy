@@ -20,7 +20,4 @@ const base::Feature kNtpMostLikelyFaviconsFromServerFeature{
 const base::Feature kUsePopularSitesSuggestions{
     "UsePopularSitesSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDefaultSearchShortcut{"DefaultSearchShortcut",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 }  // namespace ntp_tiles

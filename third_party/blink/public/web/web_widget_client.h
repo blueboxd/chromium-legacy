@@ -218,6 +218,14 @@ class WebWidgetClient {
   // TODO(oshima): Update the comment when the migration is completed.
   virtual void ConvertViewportToWindow(WebRect* rect) {}
 
+  // Converts the |rect| from Blink's Viewport coordinates to the
+  // coordinates in the native window used to display the content, in
+  // DIP.  They're identical in tradional world, but will differ when
+  // use-zoom-for-dsf feature is eanbled, and Viewport coordinates
+  // becomes DSF times larger than window coordinates.
+  // TODO(oshima): Update the comment when the migration is completed.
+  virtual void ConvertViewportToWindow(WebFloatRect* rect) {}
+
   // Converts the |rect| from the coordinates in native window in
   // DIP to Blink's Viewport coordinates. They're identical in
   // tradional world, but will differ when use-zoom-for-dsf feature

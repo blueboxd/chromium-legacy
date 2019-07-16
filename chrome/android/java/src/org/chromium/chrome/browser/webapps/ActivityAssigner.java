@@ -6,14 +6,12 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -273,14 +271,7 @@ public class ActivityAssigner {
         SharedPreferences prefs = ContextUtils.getApplicationContext().getSharedPreferences(
                 mPrefPackage, Context.MODE_PRIVATE);
         try {
-            long time = SystemClock.elapsedRealtime();
             final int numSavedEntries = prefs.getInt(mPrefNumSavedEntries, 0);
-            try {
-                RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappSharedPrefs",
-                        SystemClock.elapsedRealtime() - time);
-            } catch (UnsatisfiedLinkError error) {
-                // Intentionally ignored - it's ok to miss recording the metric occasionally.
-            }
             if (numSavedEntries <= NUM_WEBAPP_ACTIVITIES) {
                 for (int i = 0; i < numSavedEntries; ++i) {
                     String currentActivityIndexPref = mPrefActivityIndex + i;

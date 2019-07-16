@@ -9,7 +9,6 @@
 
 #include "base/ios/block_types.h"
 #include "base/message_loop/message_loop.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "net/base/backoff_entry.h"
 #include "testing/platform_test.h"
@@ -106,21 +105,11 @@ class InstallationNotifierTest : public PlatformTest {
     application_ = OCMClassMock([UIApplication class]);
     OCMStub([application_ sharedApplication]).andReturn(application_);
     [installationNotifier_ setDispatcher:dispatcher_];
-    histogramTester_.reset(new base::HistogramTester());
   }
 
   ~InstallationNotifierTest() override {
     [installationNotifier_ resetDispatcher];
     [application_ stopMocking];
-  }
-
-  void VerifyHistogramValidity(int expectedYes, int expectedNo) {
-    histogramTester_->ExpectTotalCount("NativeAppLauncher.InstallationDetected",
-                                       expectedYes + expectedNo);
-    histogramTester_->ExpectBucketCount(
-        "NativeAppLauncher.InstallationDetected", YES, expectedYes);
-    histogramTester_->ExpectBucketCount(
-        "NativeAppLauncher.InstallationDetected", NO, expectedNo);
   }
 
   void VerifyDelay(int pollingIteration) {
@@ -143,7 +132,6 @@ class InstallationNotifierTest : public PlatformTest {
   MockNotificationReceiver* notificationReceiver1_;
   MockNotificationReceiver* notificationReceiver2_;
   id application_;
-  std::unique_ptr<base::HistogramTester> histogramTester_;
 };
 
 TEST_F(InstallationNotifierTest, RegisterWithAppAlreadyInstalled) {
@@ -158,7 +146,6 @@ TEST_F(InstallationNotifierTest, RegisterWithAppAlreadyInstalled) {
                               withSelector:@selector(receivedNotification)
                                  forScheme:@"foo-scheme"];
   EXPECT_EQ(2, [notificationReceiver1_ notificationCount]);
-  VerifyHistogramValidity(2, 0);
 }
 
 TEST_F(InstallationNotifierTest, RegisterWithAppInstalledAfterSomeTime) {
@@ -172,7 +159,6 @@ TEST_F(InstallationNotifierTest, RegisterWithAppInstalledAfterSomeTime) {
                               withSelector:@selector(receivedNotification)
                                  forScheme:@"foo-scheme"];
   EXPECT_EQ(1, [notificationReceiver1_ notificationCount]);
-  VerifyHistogramValidity(1, 0);
 }
 
 TEST_F(InstallationNotifierTest, RegisterForTwoInstallations) {
@@ -199,7 +185,6 @@ TEST_F(InstallationNotifierTest, RegisterForTwoInstallations) {
   [installationNotifier_ dispatchInstallationNotifierBlock];
   EXPECT_EQ(1, [notificationReceiver1_ notificationCount]);
   EXPECT_EQ(2, [notificationReceiver2_ notificationCount]);
-  VerifyHistogramValidity(2, 0);
 }
 
 TEST_F(InstallationNotifierTest, RegisterAndThenUnregister) {
@@ -214,7 +199,6 @@ TEST_F(InstallationNotifierTest, RegisterAndThenUnregister) {
                               withSelector:@selector(receivedNotification)
                                  forScheme:@"foo-scheme"];
   EXPECT_EQ(0, [notificationReceiver1_ notificationCount]);
-  VerifyHistogramValidity(0, 1);
 }
 
 TEST_F(InstallationNotifierTest, TestExponentialBackoff) {
@@ -258,7 +242,6 @@ TEST_F(InstallationNotifierTest, TestExponentialBackoff) {
       registerForInstallationNotifications:notificationReceiver1_
                               withSelector:@selector(receivedNotification)
                                  forScheme:@"foo-scheme"];
-  VerifyHistogramValidity(0, 2);
 }
 
 TEST_F(InstallationNotifierTest, TestThatEmptySchemeDoesntCrashChrome) {

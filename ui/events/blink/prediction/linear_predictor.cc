@@ -60,8 +60,13 @@ void LinearPredictor::Update(const InputData& new_input) {
                                events_queue_.at(events_queue_.size() - 2).pos;
 
     // Get the velocity
-    cur_velocity_.set_x(ScaleVector2d(delta_pos, 1.0 / events_dt_).x());
-    cur_velocity_.set_y(ScaleVector2d(delta_pos, 1.0 / events_dt_).y());
+    if (events_dt_ > 0) {
+      cur_velocity_.set_x(ScaleVector2d(delta_pos, 1.0 / events_dt_).x());
+      cur_velocity_.set_y(ScaleVector2d(delta_pos, 1.0 / events_dt_).y());
+    } else {
+      cur_velocity_.set_x(0);
+      cur_velocity_.set_y(0);
+    }
   }
 }
 
@@ -90,7 +95,7 @@ bool LinearPredictor::GeneratePrediction(base::TimeTicks predict_time,
   // Note : a first order prediction is computed when only 2 events are
   // available in the second order predictor
   GeneratePredictionFirstOrder(pred_dt, result);
-  if (equation_order_ == EquationOrder::kSecondOrder &&
+  if (equation_order_ == EquationOrder::kSecondOrder && events_dt_ > 0 &&
       events_queue_.size() == static_cast<size_t>(EquationOrder::kSecondOrder))
     // Add the acceleration term to the current result
     GeneratePredictionSecondOrder(pred_dt, result);
@@ -112,8 +117,7 @@ void LinearPredictor::GeneratePredictionSecondOrder(float pred_dt,
   gfx::Vector2dF acceleration =
       ScaleVector2d(cur_velocity_ - last_velocity_, 1.0 / events_dt_);
   // Update the prediction
-  result->pos =
-      result->pos + ScaleVector2d(acceleration, 0.5 * pred_dt * pred_dt);
+  result->pos += ScaleVector2d(acceleration, 0.5 * pred_dt * pred_dt);
 }
 
 }  // namespace ui

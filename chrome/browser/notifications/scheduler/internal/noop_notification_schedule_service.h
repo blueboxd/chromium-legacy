@@ -1,0 +1,49 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
+#define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
+
+#include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
+#include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
+
+namespace notifications {
+
+class NoopNotificationScheduleService
+    : public NotificationScheduleService,
+      public NotificationBackgroundTaskScheduler::Handler,
+      public UserActionHandler {
+ public:
+  NoopNotificationScheduleService();
+  ~NoopNotificationScheduleService() override;
+
+ private:
+  // NotificationScheduleService implementation.
+  void Schedule(
+      std::unique_ptr<NotificationParams> notification_params) override;
+  void DeleteNotifications(SchedulerClientType type) override;
+  void GetImpressionDetail(
+      SchedulerClientType,
+      ImpressionDetail::ImpressionDetailCallback callback) override;
+  NotificationBackgroundTaskScheduler::Handler*
+  GetBackgroundTaskSchedulerHandler() override;
+  UserActionHandler* GetUserActionHandler() override;
+
+  // NotificationBackgroundTaskScheduler::Handler implementation.
+  void OnStartTask(SchedulerTaskTime task_time,
+                   TaskFinishedCallback callback) override;
+  void OnStopTask(SchedulerTaskTime task_time) override;
+
+  // UserActionHandler implementation.
+  void OnClick(const std::string& notification_id) override;
+  void OnActionClick(const std::string& notification_id,
+                     ActionButtonType button_type) override;
+  void OnDismiss(const std::string& notification_id) override;
+
+  DISALLOW_COPY_AND_ASSIGN(NoopNotificationScheduleService);
+};
+
+}  // namespace notifications
+
+#endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_

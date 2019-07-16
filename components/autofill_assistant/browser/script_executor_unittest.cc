@@ -79,7 +79,7 @@ class ScriptExecutorTest : public testing::Test,
  protected:
   ScriptExecutorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   // Implements ScriptExecutor::Listener
   void OnServerPayloadChanged(const std::string& global_payload,

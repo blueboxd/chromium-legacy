@@ -160,7 +160,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
     vaapi_wrapper_->DestroyContext();
     va_format_ = 0;
     input_size_ = gfx::Size();
-    const bool success = vaapi_wrapper_->CreateContext(va_format, input_size);
+    const bool success = vaapi_wrapper_->CreateContext(input_size);
     if (!success) {
       VLOGF(1) << "Failed to create context";
       vaapi_wrapper_->DestroyContext();

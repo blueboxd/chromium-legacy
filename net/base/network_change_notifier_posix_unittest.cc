@@ -18,7 +18,7 @@ class NetworkChangeNotifierPosixTest : public testing::Test {
  public:
   NetworkChangeNotifierPosixTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         notifier_(new NetworkChangeNotifierPosix(
             NetworkChangeNotifier::CONNECTION_UNKNOWN,
             NetworkChangeNotifier::SUBTYPE_UNKNOWN)) {

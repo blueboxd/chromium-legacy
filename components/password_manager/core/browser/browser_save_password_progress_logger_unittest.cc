@@ -39,7 +39,7 @@ class TestLogger : public BrowserSavePasswordProgressLogger {
 
 class MockLogManager : public autofill::StubLogManager {
  public:
-  MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogTextMessage, void(const std::string& text));
 };
 
 class BrowserSavePasswordProgressLoggerTest : public testing::Test {

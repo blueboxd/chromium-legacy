@@ -23,7 +23,8 @@ class CastDialogNoSinksViewTest : public views::ViewsTestBase {
 
   void SetUp() override {
     auto thread_bundle = std::make_unique<content::TestBrowserThreadBundle>(
-        base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME);
+        base::test::ScopedTaskEnvironment::MainThreadType::UI,
+        base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
     thread_bundle_ = thread_bundle.get();
     set_scoped_task_environment(std::move(thread_bundle));
     set_views_delegate(std::make_unique<ChromeTestViewsDelegate>());

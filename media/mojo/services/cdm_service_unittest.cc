@@ -207,7 +207,7 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
 }
 
 // Same as DestroyCdmFactory test, but do not disable delayed service release.
-// TODO(xhwang): Use ScopedTaskEnvironment::MainThreadType::MOCK_TIME and
+// TODO(xhwang): Use  ScopedTaskEnvironment::TimeSource::MOCK_TIME and
 // ScopedTaskEnvironment::FastForwardBy() so we don't have to really wait for
 // the delay in the test. But currently FastForwardBy() doesn't support delayed
 // task yet.

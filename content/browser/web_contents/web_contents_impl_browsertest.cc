@@ -955,6 +955,15 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
       return http_response;
     }
 
+    // Make the document resource cacheable.
+    if (absolute_url.path() == "/title1.html") {
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_OK);
+      http_response->AddCustomHeader("Cache-Control", "max-age=100000");
+      return http_response;
+    }
+
     // A worker that loads a nested /worker.js on an origin provided as a query
     // param.
     if (absolute_url.path() == "/embedding_worker.js") {
@@ -1080,6 +1089,42 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     return (*observer.FindResource(resource))->was_cached;
   }
 
+  // Navigates to |url| and returns if the navigation resource was fetched from
+  // the cache or not.
+  bool NavigationResourceCached(const GURL& url,
+                                const GURL& sub_frame,
+                                bool subframe_navigation_resource_cached) {
+    // Do a cross-process navigation to clear the in-memory cache.
+    // We assume that we don't start this call from "chrome://gpu", as
+    // otherwise it won't be a cross-process navigation. We are relying
+    // on this navigation to discard the old process.
+    EXPECT_TRUE(NavigateToURL(shell(), GetWebUIURL("gpu")));
+
+    // Observe network requests.
+    ResourceLoadObserver observer(shell());
+
+    NavigateToURL(shell(), url);
+
+    RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+        shell()->web_contents()->GetMainFrame());
+
+    GURL main_url = main_frame->frame_tree_node()->current_url();
+    observer.WaitForResourceCompletion(main_url);
+
+    if (sub_frame.is_valid()) {
+      EXPECT_EQ(1U, main_frame->frame_tree_node()->child_count());
+      NavigateFrameToURL(main_frame->frame_tree_node()->child_at(0), sub_frame);
+      EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+      GURL sub_frame_url =
+          main_frame->frame_tree_node()->child_at(0)->current_url();
+      observer.WaitForResourceCompletion(sub_frame_url);
+      EXPECT_EQ(subframe_navigation_resource_cached,
+                (*observer.FindResource(sub_frame_url))->was_cached);
+    }
+
+    return (*observer.FindResource(main_url))->was_cached;
+  }
+
   GURL GenURL(const std::string& host, const std::string& path) {
     return embedded_test_server()->GetURL(host, path);
   }
@@ -1147,6 +1192,10 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
   // the resource shouldn't be cached because now we're on d.com.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/redirect_to_d"), GURL()));
 
+  // Navigate to d.com directly. The main resource should be cached due to the
+  // earlier navigation.
+  EXPECT_TRUE(TestResourceLoad(GenURL("d.com", "/title1.html"), GURL()));
+
   // Load the resource from a same-origin iframe on a page where it's already
   // cached. It should still be cached.
   EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"),
@@ -1204,6 +1253,39 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
   // Load it from a cross-origin iframe, and it's still cached.
   EXPECT_TRUE(TestResourceLoad(GenURL("b.com", "/title1.html"),
                                GenURL("c.com", "/title1.html")));
+}
+
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
+                       NavigationResources) {
+  // Navigate for the first time, and it's not cached.
+  EXPECT_FALSE(
+      NavigationResourceCached(GenURL("a.com", "/title1.html"), GURL(), false));
+
+  // The second time, it's cached.
+  EXPECT_TRUE(
+      NavigationResourceCached(GenURL("a.com", "/title1.html"), GURL(), false));
+
+  // Navigate to a.com/redirect_to_d which redirects to d.com/title1.html.
+  EXPECT_FALSE(NavigationResourceCached(GenURL("a.com", "/redirect_to_d"),
+                                        GURL(), false));
+
+  // Navigate to d.com directly. The main resource should be cached due to the
+  // earlier redirected navigation.
+  EXPECT_TRUE(
+      NavigationResourceCached(GenURL("d.com", "/title1.html"), GURL(), false));
+
+  // Navigate to a subframe with the same top frame origin as in an earlier
+  // navigation and same url as already navigated to earlier in a main frame
+  // navigation. It should be a cache hit for the subframe resource.
+  EXPECT_FALSE(NavigationResourceCached(
+      GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("a.com", "/title1.html"), true));
+
+  // Navigate to the same subframe document from a different top frame top frame
+  // origin. It should be a cache miss.
+  EXPECT_FALSE(NavigationResourceCached(
+      GenURL("b.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("a.com", "/title1.html"), false));
 }
 
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,

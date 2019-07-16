@@ -97,7 +97,7 @@ class AuthenticatorRequestDialogModelTest : public ::testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   base::ListValue test_paired_device_list_;
 
  private:

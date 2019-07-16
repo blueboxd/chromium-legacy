@@ -142,7 +142,7 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;

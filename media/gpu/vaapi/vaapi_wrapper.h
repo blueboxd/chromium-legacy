@@ -151,8 +151,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
 
   // Creates |num_surfaces| VASurfaceIDs of |va_format| and |size| and, if
-  // successful, creates a |va_context_id_| of the same format and size. Returns
-  // true if successful, with the created IDs in |va_surfaces|. The client is
+  // successful, creates a |va_context_id_| of the same size. Returns true if
+  // successful, with the created IDs in |va_surfaces|. The client is
   // responsible for destroying |va_surfaces| via DestroyContextAndSurfaces() to
   // free the allocated surfaces.
   virtual bool CreateContextAndSurfaces(unsigned int va_format,
@@ -160,10 +160,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                         size_t num_surfaces,
                                         std::vector<VASurfaceID>* va_surfaces);
 
-  // Creates a single VASurfaceID of |va_format| and |size| and, if
-  // successful, creates a |va_context_id_| of the same format and size. Returns
-  // a ScopedVASurface containing the created VASurfaceID, the |va_format|, and
-  // |size|, or nullptr if creation failed.
+  // Creates a single VASurfaceID of |va_format| and |size| and, if successful,
+  // creates a |va_context_id_| of the same size. Returns a ScopedVASurface
+  // containing the created VASurfaceID, the |va_format|, and |size|, or nullptr
+  // if creation failed.
   std::unique_ptr<ScopedVASurface> CreateContextAndScopedVASurface(
       unsigned int va_format,
       const gfx::Size& size);
@@ -171,12 +171,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Releases the |va_surfaces| and destroys |va_context_id_|.
   virtual void DestroyContextAndSurfaces(std::vector<VASurfaceID> va_surfaces);
 
-  // Creates a VA Context of |va_format| and |size|, and sets |va_context_id_|.
-  // The client is responsible for releasing it via DestroyContext() or
+  // Creates a VA Context of |size| and sets |va_context_id_|. The client is
+  // responsible for releasing it via DestroyContext() or
   // DestroyContextAndSurfaces(), or it will be released on dtor.
-  // TODO(crbug.com/981080): |va_format| is not used within the function
-  // definition and should be removed.
-  virtual bool CreateContext(unsigned int va_format, const gfx::Size& size);
+  virtual bool CreateContext(const gfx::Size& size);
+
   // Destroys the context identified by |va_context_id_|.
   void DestroyContext();
 

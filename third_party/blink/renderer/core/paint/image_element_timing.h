@@ -70,11 +70,6 @@ class CORE_EXPORT ImageElementTiming final
       const ImageResourceContent& cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
 
-  // Computes the intersection rect.
-  FloatRect ComputeIntersectionRect(const LocalFrame*,
-                                    const LayoutObject&,
-                                    const PropertyTreeState&);
-
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
                                 base::TimeTicks timestamp);

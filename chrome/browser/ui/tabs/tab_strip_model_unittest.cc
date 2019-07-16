@@ -1644,7 +1644,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   strip.CloseAllTabs();
 }
 
-TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsOpener) {
+TEST_F(TabStripModelTest, NewTabAtEndOfStripInheritsOpener) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());
 
@@ -3312,3 +3312,56 @@ TEST_F(TabStripModelTest, InsertWebContentsAtWithPinnedGroupPins) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, NewTabWithGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({1});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), 2, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_NONE, group);
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+  EXPECT_EQ(group, strip.GetTabGroupForTab(2));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, NewTabWithoutIndexInsertsAtEndOfGroup) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({0, 1});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), -1,
+                       ui::PAGE_TRANSITION_TYPED, TabStripModel::ADD_NONE,
+                       group);
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooHigh) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({0, 1});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), 3, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_NONE, group);
+  EXPECT_EQ("0 1 3 2", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}
+
+TEST_F(TabStripModelTest, DiscontinuousNewTabIndexTooLow) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  PrepareTabs(&strip, 3);
+  auto group = strip.AddToNewGroup({1, 2});
+
+  strip.AddWebContents(CreateWebContentsWithID(3), 0, ui::PAGE_TRANSITION_TYPED,
+                       TabStripModel::ADD_NONE, group);
+  EXPECT_EQ("0 3 1 2", GetTabStripStateString(strip));
+
+  strip.CloseAllTabs();
+}

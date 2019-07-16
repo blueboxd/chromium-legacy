@@ -41,9 +41,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
 
   bool Activate(const ui::Event* event);
 
-  // TODO(cyan): Remove this method and move into MenuButtonController.
-  virtual bool IsTriggerableEventType(const ui::Event& event);
-
  protected:
   // Button:
   void NotifyClick(const ui::Event& event) final;

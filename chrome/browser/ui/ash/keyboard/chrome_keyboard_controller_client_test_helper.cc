@@ -23,7 +23,6 @@ class ChromeKeyboardControllerClientTestHelper::FakeKeyboardController
   ~FakeKeyboardController() override = default;
 
   // ash::KeyboardController:
-  void KeyboardContentsLoaded(const gfx::Size& size) override {}
   keyboard::KeyboardConfig GetKeyboardConfig() override {
     return keyboard_config_;
   }

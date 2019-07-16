@@ -4,27 +4,25 @@
 
 #include "chrome/browser/ui/views/hats/hats_web_dialog.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/browser_resources.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/widget/widget.h"
 #include "url/url_canon.h"
 #include "url/url_util.h"
 
@@ -83,10 +81,19 @@ void HatsWebDialog::Show(const Browser* browser) {
   auto* hats_dialog = new HatsWebDialog(
       HatsServiceFactory::GetForProfile(profile, true)->en_site_id());
 
+  // Create a web dialog aligned to the bottom center of the location bar.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-
-  chrome::ShowWebDialog(browser_view->GetWidget()->GetNativeView(), profile,
-                        hats_dialog);
+  LocationBarView* location_bar = browser_view->GetLocationBarView();
+  DCHECK(location_bar);
+  gfx::Rect bounds(location_bar->bounds());
+  views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
+  views::Widget::InitParams params;
+  params.bounds = gfx::Rect(
+      bounds.x() +
+          std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),
+      bounds.bottom(), kDefaultHatsDialogWidth, kDefaultHatsDialogHeight);
+  chrome::ShowWebDialogWithParams(browser_view->GetWidget()->GetNativeView(),
+                                  profile, hats_dialog, &params);
 }
 
 HatsWebDialog::HatsWebDialog(const std::string& site_id) : site_id_(site_id) {

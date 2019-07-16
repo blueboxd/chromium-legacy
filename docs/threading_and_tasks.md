@@ -588,8 +588,6 @@ int Compute() { … }
 
 class A {
  public:
-  A() : weak_ptr_factory_(this) {}
-
   void ComputeAndStore() {
     // Schedule a call to Compute() in a thread pool followed by
     // a call to A::Store() on the current sequence. The call to
@@ -604,7 +602,7 @@ class A {
   void Store(int value) { value_ = value; }
 
   int value_;
-  base::WeakPtrFactory<A> weak_ptr_factory_;
+  base::WeakPtrFactory<A> weak_ptr_factory_{this};
 };
 ```
 

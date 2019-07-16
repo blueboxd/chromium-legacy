@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -743,8 +744,9 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
 }
 
 void WebGLRenderingContextBase::commit() {
-  if (!GetDrawingBuffer())
+  if (!GetDrawingBuffer() || (Host() && Host()->IsOffscreenCanvas()))
     return;
+
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
 

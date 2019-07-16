@@ -779,6 +779,10 @@ std::string AutofillType::ServerFieldTypeToString(ServerFieldType type) {
       return "PRICE";
     case NOT_PASSWORD:
       return "NOT_PASSWORD";
+    case SINGLE_USERNAME:
+      return "SINGLE_USERNAME";
+    case NOT_USERNAME:
+      return "NOT_USERNAME";
     case AMBIGUOUS_TYPE:
       return "AMBIGUOUS_TYPE";
     case MAX_VALID_FIELD_TYPE:

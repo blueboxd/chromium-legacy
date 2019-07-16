@@ -1831,7 +1831,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     tile.dataset.attributionLine1 = '';
     tile.dataset.attributionLine2 = '';
     tile.dataset.attributionActionUrl = '';
-    customize.richerPicker_selectBackgroundTile(tile);
+    if ($(customize.IDS.BACKGROUNDS_DEFAULT)
+            .classList.contains(customize.CLASSES.SELECTED)) {
+      customize.richerPicker_deselectBackgroundTile(tile);
+    } else {
+      customize.richerPicker_selectBackgroundTile(tile);
+    }
   };
   $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown = function(event) {
     if (event.keyCode === customize.KEYCODES.ENTER ||

@@ -20,10 +20,6 @@ extern const base::Feature kAssistantAudioEraser;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantFeedbackUi;
 
-// Enables Assistant voice match enrollment.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantVoiceMatch;
-
 // Enables Assistant warmer welcome.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantWarmerWelcomeFeature;

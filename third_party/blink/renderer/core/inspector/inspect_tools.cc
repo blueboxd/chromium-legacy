@@ -100,10 +100,9 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
 
 SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
                                            bool ua_shadow,
-                                           const String& config)
+                                           const std::vector<uint8_t>& config)
     : dom_agent_(dom_agent), ua_shadow_(ua_shadow) {
-  std::unique_ptr<protocol::Value> value =
-      protocol::StringUtil::parseJSON(config);
+  auto value = protocol::Value::parseBinary(config.data(), config.size());
   if (!value)
     return;
   protocol::ErrorSupport errors;

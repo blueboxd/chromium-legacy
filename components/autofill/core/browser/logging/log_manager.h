@@ -11,6 +11,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
+namespace base {
+class Value;
+}
+
 namespace autofill {
 
 class LogRouter;
@@ -33,10 +37,14 @@ class LogManager {
   virtual void SetSuspended(bool suspended) = 0;
 
   // Forward |text| for display to the LogRouter (if registered with one).
-  virtual void LogSavePasswordProgress(const std::string& text) const = 0;
+  virtual void LogTextMessage(const std::string& text) const = 0;
 
-  // Returns true if logs recorded via LogSavePasswordProgress will be
-  // displayed, and false otherwise.
+  // Forward a DOM structured log entry to the LogRouter (if registered with
+  // one).
+  virtual void LogEntry(base::Value&& entry) const = 0;
+
+  // Returns true if logs recorded via LogTextMessage will be displayed, and
+  // false otherwise.
   virtual bool IsLoggingActive() const = 0;
 
   // Returns the production code implementation of LogManager. If |log_router|

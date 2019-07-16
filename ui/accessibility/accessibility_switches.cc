@@ -54,6 +54,11 @@ bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 }
 
+bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalAccessibilitySwitchAccessText);
+}
+
 #if defined(OS_WIN)
 // Toggles between IAccessible and UI Automation platform API.
 const char kEnableExperimentalUIAutomation[] =

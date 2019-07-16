@@ -1861,6 +1861,8 @@ source_set("chromeos") {
     "printing/cups_proxy_service_delegate_impl.h",
     "printing/cups_proxy_service_manager.cc",
     "printing/cups_proxy_service_manager.h",
+    "printing/cups_proxy_service_manager_factory.cc",
+    "printing/cups_proxy_service_manager_factory.h",
     "printing/enterprise_printers_provider.cc",
     "printing/enterprise_printers_provider.h",
     "printing/ppd_provider_factory.cc",

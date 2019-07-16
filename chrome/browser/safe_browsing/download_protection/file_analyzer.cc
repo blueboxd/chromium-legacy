@@ -69,7 +69,7 @@ FileAnalyzer::Results ExtractFileFeatures(
 
 }  // namespace
 
-FileAnalyzer::Results::Results() : file_count(0), directory_count(0) {}
+FileAnalyzer::Results::Results() = default;
 FileAnalyzer::Results::~Results() {}
 FileAnalyzer::Results::Results(const FileAnalyzer::Results& other) = default;
 

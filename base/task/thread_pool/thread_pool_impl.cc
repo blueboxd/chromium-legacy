@@ -289,6 +289,14 @@ int ThreadPoolImpl::GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
 void ThreadPoolImpl::Shutdown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Stop() the ServiceThread before triggering shutdown. This ensures that no
+  // more delayed tasks or file descriptor watches will trigger during shutdown
+  // (preventing http://crbug.com/698140). None of these asynchronous tasks
+  // being guaranteed to happen anyways, stopping right away is valid behavior
+  // and avoids the more complex alternative of shutting down the service thread
+  // atomically during TaskTracker shutdown.
+  service_thread_->Stop();
+
   task_tracker_->StartShutdown();
 
   // Allow all tasks to run. Done after initiating shutdown to ensure that non-

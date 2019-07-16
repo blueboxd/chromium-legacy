@@ -41,6 +41,9 @@ namespace test {
 // RunLoop::Run(UntilIdle) or ScopedTaskEnvironment::RunUntilIdle is called on
 // the thread where the ScopedTaskEnvironment lives.
 //
+// The TimeSource trait can be used to request that delayed tasks be under the
+// manual control of ScopedTaskEnvironment::FastForward*() methods.
+//
 // Tasks posted through base/task/post_task.h run on dedicated threads. If
 // ThreadPoolExecutionMode is QUEUED, they run when RunUntilIdle() or
 // ~ScopedTaskEnvironment is called. If ThreadPoolExecutionMode is ASYNC, they
@@ -54,19 +57,21 @@ namespace test {
 //    public:
 //     (...)
 //
+//    // protected rather than private visibility will allow controlling the
+//    // task environment (e.g. RunUntilIdle(), FastForwardBy(), etc.). from the
+//    // test body.
 //    protected:
-//     // Must be the first member (or at least before any member that cares
-//     // about tasks) to be initialized first and destroyed last. protected
-//     // instead of private visibility will allow controlling the task
-//     // environment (e.g. clock) once such features are added (see design doc
-//     // below for details), until then it at least doesn't hurt :).
-//     base::test::ScopedTaskEnvironment scoped_task_environment_;
+//     // Must generally be the first member to be initialized first and
+//     // destroyed last (some members that require single-threaded
+//     // initialization and tear down may need to come before -- e.g.
+//     // base::test::ScopedFeatureList). Extra traits, like TimeSource, are
+//     // best provided inline when declaring the ScopedTaskEnvironment, as
+//     // such:
+//     base::test::ScopedTaskEnvironment scoped_task_environment_{
+//         base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 //
 //     // Other members go here (or further below in private section.)
 //   };
-//
-// Design and future improvements documented in
-// https://docs.google.com/document/d/1QabRo8c7D9LsYY3cEcaPQbOCLo8Tu-6VLykYXyl3Pkk/edit
 class ScopedTaskEnvironment {
  protected:
   // This enables a two-phase initialization for sub classes such as

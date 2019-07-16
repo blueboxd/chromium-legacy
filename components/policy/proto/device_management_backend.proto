@@ -1260,6 +1260,9 @@ message Policy {
 
   // The value of policy.
   optional string value = 5;
+
+  // The error message of policy.
+  optional string error = 6;
 }
 
 // Extension policy information.
@@ -1268,7 +1271,7 @@ message ExtensionPolicy {
   optional string extension_id = 1;
 
   // The list of policies that extension currently uses.
-  repeated Policy policy_reports = 2;
+  repeated Policy policies = 2;
 }
 
 // Cloud policy last fetch time.

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 
@@ -49,9 +50,13 @@ class NotificationScheduleServiceImpl
                      ActionButtonType button_type) override;
   void OnDismiss(const std::string& notification_id) override;
 
+  // Called after initialization is done.
+  void OnInitialized(bool success);
+
   // Provides the actual notification scheduling functionalities.
   std::unique_ptr<NotificationScheduler> scheduler_;
 
+  base::WeakPtrFactory<NotificationScheduleServiceImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NotificationScheduleServiceImpl);
 };
 

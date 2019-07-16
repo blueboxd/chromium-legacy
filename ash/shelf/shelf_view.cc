@@ -394,12 +394,12 @@ void ShelfView::Init() {
   const ShelfItems& items(model_->items());
 
   std::unique_ptr<BackButton> back_button_ptr =
-      std::make_unique<BackButton>(this);
+      std::make_unique<BackButton>(shelf_, this);
   ConfigureChildView(back_button_ptr.get());
   back_button_ = AddChildView(std::move(back_button_ptr));
 
   std::unique_ptr<HomeButton> home_button_ptr =
-      std::make_unique<HomeButton>(this);
+      std::make_unique<HomeButton>(shelf_, this);
   ConfigureChildView(home_button_ptr.get());
   home_button_ = AddChildView(std::move(home_button_ptr));
   home_button_->set_context_menu_controller(this);
@@ -665,12 +665,6 @@ void ShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 void ShelfView::ButtonPressed(views::Button* sender,
                               const ui::Event& event,
                               views::InkDrop* ink_drop) {
-  // Press the shelf item in the auto-hide shelf should not open the
-  // corresponding app window. The event can still be received by auto-hide
-  // shelf since we reserved portion of the auto-hide shelf within the screen
-  // bounds.
-  if (!shelf_->IsVisible())
-    return;
 
   if (sender == overflow_button_) {
     ToggleOverflowBubble();

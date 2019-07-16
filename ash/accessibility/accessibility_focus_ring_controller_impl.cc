@@ -60,6 +60,8 @@ AccessibilityFocusRingControllerImpl::~AccessibilityFocusRingControllerImpl() =
 void AccessibilityFocusRingControllerImpl::SetFocusRing(
     const std::string& focus_ring_id,
     std::unique_ptr<AccessibilityFocusRingInfo> focus_ring) {
+  // This code assumes |focus_ring| is always non-null.
+  DCHECK(focus_ring);
   AccessibilityFocusRingGroup* focus_ring_group =
       GetFocusRingGroupForId(focus_ring_id, true /* Create if missing */);
   if (focus_ring_group->UpdateFocusRing(std::move(focus_ring), this))

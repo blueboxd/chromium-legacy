@@ -338,6 +338,16 @@
     "args": ["--force-device-scale-factor=2"]
   },
   {
+    "prefix": "scalefactor200",
+    "base": "external/wpt/element-timing",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "scalefactor200withoutzoom",
+    "base": "external/wpt/element-timing",
+    "args": ["--force-device-scale-factor=2", "--enable-use-zoom-for-dsf=false"]
+  },
+  {
     "prefix": "scalefactor150",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=1.5"]

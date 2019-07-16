@@ -161,6 +161,30 @@ public class GridTabSwitcherCoordinator
         return mTabGridCoordinator.getLastDirtyTimeForTesting();
     }
 
+    @Override
+    @VisibleForTesting
+    public void setBitmapCallbackForTesting(Callback<Bitmap> callback) {
+        TabListMediator.ThumbnailFetcher.sBitmapCallbackForTesting = callback;
+    }
+
+    @Override
+    @VisibleForTesting
+    public int getBitmapFetchCountForTesting() {
+        return TabListMediator.ThumbnailFetcher.sFetchCountForTesting;
+    }
+
+    @Override
+    @VisibleForTesting
+    public int getSoftCleanupDelayForTesting() {
+        return mMediator.getCleanupDelayForTesting();
+    }
+
+    @Override
+    @VisibleForTesting
+    public int getCleanupDelayForTesting() {
+        return mMediator.getCleanupDelayForTesting();
+    }
+
     // ResetHandler implementation.
     @Override
     public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode) {
@@ -195,23 +219,5 @@ public class GridTabSwitcherCoordinator
         }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
-    }
-
-    /**
-     * Set a hook to receive all the {@link Bitmap}s returned by
-     * {@link TabListMediator.ThumbnailFetcher} for testing.
-     * @param callback The callback to send bitmaps through.
-     */
-    @VisibleForTesting
-    void setBitmapCallbackForTesting(Callback<Bitmap> callback) {
-        TabListMediator.ThumbnailFetcher.sBitmapCallbackForTesting = callback;
-    }
-
-    /**
-     * @return The number of thumbnail fetching for testing.
-     */
-    @VisibleForTesting
-    int getBitmapFetchCountForTesting() {
-        return TabListMediator.ThumbnailFetcher.sFetchCountForTesting;
     }
 }

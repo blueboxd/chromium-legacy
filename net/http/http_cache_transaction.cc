@@ -88,20 +88,9 @@ enum ExternallyConditionalizedType {
 
 }  // namespace
 
-#define CACHE_STATUS_HISTOGRAMS(type)                                        \
-  do {                                                                       \
-    UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern" type, cache_entry_status_, \
-                              CacheEntryStatus::ENTRY_MAX);                  \
-    if (validation_request) {                                                \
-      UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause" type,            \
-                                validation_cause_, VALIDATION_CAUSE_MAX);    \
-    }                                                                        \
-    if (stale_request) {                                                     \
-      UMA_HISTOGRAM_COUNTS_1M(                                               \
-          "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed" type,         \
-          freshness_periods_since_last_used);                                \
-    }                                                                        \
-  } while (0)
+#define CACHE_STATUS_HISTOGRAMS(type)                                      \
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern" type, cache_entry_status_, \
+                            CacheEntryStatus::ENTRY_MAX)
 
 struct HeaderNameAndValue {
   const char* name;
@@ -1030,7 +1019,7 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   mode_ = NONE;
 
   // Keep track of the fraction of requests that we can double-key.
-  UMA_HISTOGRAM_BOOLEAN("HttpCache.TopFrameOriginPresent",
+  UMA_HISTOGRAM_BOOLEAN("HttpCache.NetworkIsolationKeyPresent",
                         request_->network_isolation_key.IsFullyPopulated());
 
   if (!ShouldPassThrough()) {
@@ -2716,10 +2705,6 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
       validation_cause_ = VALIDATION_CAUSE_ZERO_FRESHNESS;
     } else {
       validation_cause_ = VALIDATION_CAUSE_STALE;
-      stale_entry_freshness_ = lifetimes.freshness;
-      stale_entry_age_ = response_.headers->GetCurrentAge(
-          response_.request_time, response_.response_time,
-          cache_->clock_->Now());
     }
   }
 
@@ -3378,45 +3363,6 @@ void HttpCache::Transaction::RecordHistograms() {
       cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||
       cache_entry_status_ == CacheEntryStatus::ENTRY_UPDATED;
 
-  bool stale_request =
-      validation_cause_ == VALIDATION_CAUSE_STALE &&
-      (validation_request ||
-       cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE);
-  int64_t freshness_periods_since_last_used = 0;
-
-  if (stale_request && !open_entry_last_used_.is_null()) {
-    // Note that we are not able to capture those transactions' histograms which
-    // when added to entry, the response was being written by another
-    // transaction because getting the last used timestamp might lead to a data
-    // race in that case. TODO(crbug.com/713354).
-
-    // For stale entries, record how many freshness periods have elapsed since
-    // the entry was last used.
-    DCHECK(!stale_entry_freshness_.is_zero());
-    base::TimeDelta time_since_use = base::Time::Now() - open_entry_last_used_;
-    freshness_periods_since_last_used =
-        (time_since_use * 1000) / stale_entry_freshness_;
-
-    if (validation_request) {
-      int64_t age_in_freshness_periods =
-          (stale_entry_age_ * 100) / stale_entry_freshness_;
-      if (cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED) {
-        UMA_HISTOGRAM_COUNTS_1M("HttpCache.StaleEntry.Validated.Age",
-                                stale_entry_age_.InSeconds());
-        UMA_HISTOGRAM_COUNTS_1M(
-            "HttpCache.StaleEntry.Validated.AgeInFreshnessPeriods",
-            age_in_freshness_periods);
-
-      } else {
-        UMA_HISTOGRAM_COUNTS_1M("HttpCache.StaleEntry.Updated.Age",
-                                stale_entry_age_.InSeconds());
-        UMA_HISTOGRAM_COUNTS_1M(
-            "HttpCache.StaleEntry.Updated.AgeInFreshnessPeriods",
-            age_in_freshness_periods);
-      }
-    }
-  }
-
   std::string mime_type;
   HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
   if (response_headers && response_headers->GetMimeType(&mime_type)) {
@@ -3456,6 +3402,10 @@ void HttpCache::Transaction::RecordHistograms() {
   }
 
   CACHE_STATUS_HISTOGRAMS("");
+  if (validation_request) {
+    UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause", validation_cause_,
+                              VALIDATION_CAUSE_MAX);
+  }
 
   if (cache_entry_status_ == CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE) {
     UMA_HISTOGRAM_ENUMERATION("HttpCache.CantConditionalizeCause",

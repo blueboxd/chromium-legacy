@@ -1060,12 +1060,6 @@ bool KeyboardUIController::IsKeyboardVisible() {
   return false;
 }
 
-void KeyboardUIController::KeyboardContentsLoaded(const gfx::Size& size) {
-  if (!IsEnabled())
-    return;
-  ui_->KeyboardContentsLoaded(size);
-}
-
 ui::TextInputClient* KeyboardUIController::GetTextInputClient() {
   return ui_->GetInputMethod()->GetTextInputClient();
 }

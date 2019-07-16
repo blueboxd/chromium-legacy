@@ -58,10 +58,10 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace {
 
@@ -1082,7 +1082,7 @@ PaymentRequest::PaymentRequest(
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
   validated_details->id = id_ =
-      details->hasId() ? details->id() : CreateCanonicalUUIDString();
+      details->hasId() ? details->id() : WTF::CreateCanonicalUUIDString();
 
   Vector<payments::mojom::blink::PaymentMethodDataPtr> validated_method_data;
   ValidateAndConvertPaymentMethodData(method_data, validated_method_data,

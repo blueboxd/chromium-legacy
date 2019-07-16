@@ -202,6 +202,9 @@ class RenderViewTest : public testing::Test {
 
   void TearDown() override;
 
+  // Install a fake URL loader factory for the RenderFrameImpl.
+  void CreateFakeWebURLLoaderFactory();
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<CompositorDependencies> compositor_deps_;

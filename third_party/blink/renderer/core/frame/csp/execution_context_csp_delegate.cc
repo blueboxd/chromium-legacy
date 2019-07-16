@@ -69,8 +69,7 @@ void ExecutionContextCSPDelegate::SetAddressSpace(mojom::IPAddressSpace space) {
 }
 
 void ExecutionContextCSPDelegate::SetRequireTrustedTypes() {
-  if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context_))
-    GetSecurityContext().SetRequireTrustedTypes();
+  GetSecurityContext().SetRequireTrustedTypes();
 }
 
 void ExecutionContextCSPDelegate::AddInsecureRequestPolicy(

@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/base/filename_util.h"
@@ -605,14 +606,18 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   GURL url(chrome::kChromeUIOmniboxURL);
 
   ui_test_utils::NavigateToURL(browser(), url);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WebContents* wc1 = browser()->tab_strip_model()->GetWebContentsAt(0);
+
+  content::WebContentsAddedObserver wc2_observer;
+  content::ExecuteScriptAsync(
+      wc1, content::JsReplace("window.open($1, '_blank')", url));
+  WebContents* wc2 = wc2_observer.GetWebContents();
+  content::TestNavigationObserver nav_observer(wc2, 1);
+  nav_observer.Wait();
 
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
-
-  WebContents* wc1 = browser()->tab_strip_model()->GetWebContentsAt(0);
-  WebContents* wc2 = browser()->tab_strip_model()->GetWebContentsAt(1);
+  EXPECT_EQ(wc1->GetMainFrame()->GetLastCommittedURL(),
+            wc2->GetMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(wc1->GetMainFrame()->GetProcess(),
             wc2->GetMainFrame()->GetProcess());
 

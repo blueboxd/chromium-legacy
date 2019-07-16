@@ -225,6 +225,39 @@ class MergeProfilesTest(unittest.TestCase):
     self.assertIn('missing_shards', written)
     self.assertEqual(written['missing_shards'], [0])
 
+  @mock.patch('__builtin__.open',
+              new_callable=mock.mock_open,
+              read_data='invalid data')
+  def test_mark_invalid_shards_bad_summary(self, _mo):
+    # Should not raise an exception.
+    raised_exception = False
+    try:
+      merge_results.mark_invalid_shards(['1234567890abcdeff'], 'dummy.json',
+                                        'o.json')
+    except:  # pylint: disable=bare-except
+      raised_exception = True
+    self.assertFalse(raised_exception, 'unexpected exception')
+
+  @mock.patch('__builtin__.open',
+              new_callable=mock.mock_open,
+              read_data=json.dumps(
+                  {'shards': [{'task_id': '1234567890abcdeff'}]}))
+  def test_mark_invalid_shards_bad_output(self, mo):
+    mock_result = mock.mock_open()
+    mock_write = mock.MagicMock()
+    mock_result.return_value.write = mock_write
+    mo.side_effect = (
+        mo.return_value,
+        mock.mock_open(read_data='invalid_data').return_value,
+        mock_result.return_value,
+    )
+    # Should succeed anyway.
+    merge_results.mark_invalid_shards(['1234567890abcdeff'], 'dummy.json',
+                                      'o.json')
+    written = json.loads(''.join(c[0][0] for c in mock_write.call_args_list))
+    self.assertIn('missing_shards', written)
+    self.assertEqual(written['missing_shards'], [0])
+
   def test_get_shards_to_retry(self):
     bad_profiles = [
         '/b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw',

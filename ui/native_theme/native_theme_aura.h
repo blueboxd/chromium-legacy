@@ -64,6 +64,10 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                       State state,
                       const gfx::Rect& rect,
                       const TextFieldExtraParams& text) const override;
+  void PaintButton(cc::PaintCanvas* canvas,
+                   State state,
+                   const gfx::Rect& rect,
+                   const ButtonExtraParams& button) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;

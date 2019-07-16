@@ -30,13 +30,13 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
+import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.util.List;
@@ -68,12 +68,12 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
 
     /**
      * Creates the {@link LayoutManagerChrome} instance.
-     * @param host                 A {@link LayoutManagerHost} instance.
-     * @param gridTabSwitcher An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
-     *                        should be used, otherwise GTS should be used.
+     * @param host         A {@link LayoutManagerHost} instance.
+     * @param startSurface An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
+     *                     should be used, otherwise GTS should be used.
      */
     public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout,
-            @Nullable GridTabSwitcher gridTabSwitcher) {
+            @Nullable StartSurface startSurface) {
         super(host);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
@@ -87,13 +87,13 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeCo
         mOverviewListLayout = new OverviewListLayout(context, this, renderHost);
         mToolbarSwipeLayout = new ToolbarSwipeLayout(context, this, renderHost);
         if (createOverviewLayout) {
-            if (gridTabSwitcher != null) {
+            if (startSurface != null) {
                 assert FeatureUtilities.isGridTabSwitcherEnabled();
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 assert tabManagementDelegate != null;
-                mOverviewLayout = tabManagementDelegate.createGTSLayout(
-                        context, this, renderHost, gridTabSwitcher);
+                mOverviewLayout = tabManagementDelegate.createStartSurfaceLayout(
+                        context, this, renderHost, startSurface);
             } else {
                 mOverviewLayout = new StackLayout(context, this, renderHost);
             }

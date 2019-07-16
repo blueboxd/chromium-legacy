@@ -16,14 +16,13 @@
 //
 //  class Controller {
 //   public:
-//    Controller() : weak_factory_(this) {}
 //    void SpawnWorker() { Worker::StartNew(weak_factory_.GetWeakPtr()); }
 //    void WorkComplete(const Result& result) { ... }
 //   private:
 //    // Member variables should appear before the WeakPtrFactory, to ensure
 //    // that any WeakPtrs to Controller are invalidated before its members
 //    // variable's destructors are executed, rendering them invalid.
-//    WeakPtrFactory<Controller> weak_factory_;
+//    WeakPtrFactory<Controller> weak_factory_{this};
 //  };
 //
 //  class Worker {

@@ -5,6 +5,7 @@
 <link rel="import" href="../cr_search_field/cr_search_field_behavior.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../shared_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 
 <dom-module id="cr-toolbar-search-field">
@@ -31,6 +32,15 @@
       @media (prefers-color-scheme: light) {
         cr-icon-button {
           --cr-icon-button-color: currentColor;
+          --iron-icon-fill-color:
+              var(--cr-toolbar-search-field-input-color, white);
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        cr-icon-button {
+          --iron-icon-fill-color: var(--cr-toolbar-search-field-input-color,
+              var(--google-grey-refresh-500));
         }
       }
 
@@ -51,7 +61,8 @@
 
       paper-spinner-lite {
         @apply --cr-icon-height-width;
-        --paper-spinner-color: white;
+        --paper-spinner-color:
+            var(--cr-toolbar-search-field-input-color, white);
         margin: 0 6px;
         opacity: 0;
         padding: 6px;
@@ -96,7 +107,7 @@
         -webkit-appearance: none;
         background: transparent;
         border: none;
-        color: white;
+        color: var(--cr-toolbar-search-field-input-color, white);
         font: inherit;
         outline: none;
         padding: 0;
@@ -111,8 +122,10 @@
 
       /** Wide layout. */
       :host(:not([narrow])) {
-        background: rgba(0, 0, 0, 0.22);
-        border-radius: 2px;
+        background:
+            var(--cr-toolbar-search-field-background, rgba(0, 0, 0, 0.22));
+        border-radius:
+            var(--cr-toolbar-search-field-border-radius, 2px);
         cursor: text;
         padding-inline-end: 0;
         width: var(--cr-toolbar-field-width, 680px);
@@ -166,7 +179,7 @@
           spellcheck="false">
     </div>
     <template is="dom-if" if="[[hasSearchText]]">
-      <cr-icon-button class="icon-toolbar-cancel" id="clearSearch"
+      <cr-icon-button id="clearSearch" iron-icon="cr:cancel"
           title="[[clearLabel]]" on-click="clearSearch_"></cr-icon-button>
     </template>
   </template>

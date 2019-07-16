@@ -11,7 +11,6 @@
 #include "media/gpu/buildflags.h"
 #include "media/gpu/linux/mailbox_video_frame_converter.h"
 #include "media/gpu/linux/platform_video_frame_pool.h"
-#include "media/gpu/linux/video_decoder_pipeline.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_decoder.h"
@@ -19,6 +18,10 @@
 
 #if BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_slice_video_decoder.h"
+#endif
+
+#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
+#include "media/gpu/linux/video_decoder_pipeline.h"
 #endif
 
 namespace media {
@@ -65,12 +68,13 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
       V4L2SliceVideoDecoder::Create(client_task_runner, std::move(frame_pool));
 #endif
 
-  if (!decoder)
-    return nullptr;
-
+#if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
   return std::make_unique<VideoDecoderPipeline>(std::move(client_task_runner),
                                                 std::move(decoder),
                                                 std::move(frame_converter));
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace media

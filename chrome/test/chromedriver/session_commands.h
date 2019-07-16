@@ -156,14 +156,6 @@ Status ExecuteUploadFile(Session* session,
                          const base::DictionaryValue& params,
                          std::unique_ptr<base::Value>* value);
 
-Status ExecuteIsAutoReporting(Session* session,
-                              const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value);
-
-Status ExecuteSetAutoReporting(Session* session,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value);
-
 Status ExecuteUnimplementedCommand(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value);

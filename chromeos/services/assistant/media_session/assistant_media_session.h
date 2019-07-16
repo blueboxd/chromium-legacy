@@ -114,6 +114,11 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // Holds a pointer to the MediaSessionService.
   media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
 
+  // The ducking state of this media session. The initial value is |false|, and
+  // is set to |true| after StartDucking(), and will be set to |false| after
+  // StopDucking().
+  bool is_ducking_ = false;
+
   // If the media session has acquired audio focus then this will contain a
   // pointer to that requests AudioFocusRequestClient.
   media_session::mojom::AudioFocusRequestClientPtr request_client_ptr_;

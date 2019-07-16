@@ -585,9 +585,7 @@ public class DownloadUtils {
         Uri uri = null;
 
         try {
-            File primaryDir = DownloadDirectoryProvider.getPrimaryDownloadDirectory();
-            boolean isOnSDCard = !TextUtils.isEmpty(filePath)
-                    && !filePath.contains(primaryDir.getAbsolutePath());
+            boolean isOnSDCard = DownloadDirectoryProvider.isDownloadOnSDCard(filePath);
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_FILE_PROVIDER)
                     && isOnSDCard) {
                 // Use custom file provider to generate content URI for download on SD card.

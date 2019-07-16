@@ -33,6 +33,7 @@
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
+#include "chrome/test/chromedriver/webauthn_commands.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -738,6 +739,16 @@ HttpHandler::HttpHandler(
           WrapToCommand("SetNetworkConnection",
                         base::BindRepeating(&ExecuteSetNetworkConnection))),
 
+      // Extension for WebAuthn API:
+      // TODO(nsatragno): Update the link to the official spec once it lands.
+      // https://github.com/nsatragno/webauthn/pull/1/files
+      CommandMapping(kPost, "session/:sessionId/webauthn/authenticator",
+                     WrapToCommand("AddVirtualAuthenticator",
+                                   base::BindRepeating(
+                                       &ExecuteWebAuthnCommand,
+                                       base::BindRepeating(
+                                           &ExecuteAddVirtualAuthenticator)))),
+
       //
       // Non-standard extension commands
       //
@@ -757,11 +768,10 @@ HttpHandler::HttpHandler(
           WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
       // Command is used by Ruby OSS mode
       // No W3C equivalent.
-      CommandMapping(
-          kGet, "session/:sessionId/element/:id/value",
-          WrapToCommand("GetElementValue",
-                        base::BindRepeating(&ExecuteGetElementValue),
-                        false /*w3c_standard_command*/)),
+      CommandMapping(kGet, "session/:sessionId/element/:id/value",
+                     WrapToCommand("GetElementValue",
+                                   base::BindRepeating(&ExecuteGetElementValue),
+                                   false /*w3c_standard_command*/)),
       // Command is used by Selenium Java tests
       CommandMapping(
           kGet, kShutdownPath,
@@ -849,18 +859,6 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/is_loading",
           WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
 
-      //
-      // Commands of unknown origins.
-      //
-
-      CommandMapping(
-          kGet, "session/:sessionId/autoreport",
-          WrapToCommand("IsAutoReporting",
-                        base::BindRepeating(&ExecuteIsAutoReporting))),
-      CommandMapping(
-          kPost, "session/:sessionId/autoreport",
-          WrapToCommand("SetAutoReporting",
-                        base::BindRepeating(&ExecuteSetAutoReporting))),
   };
   command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }

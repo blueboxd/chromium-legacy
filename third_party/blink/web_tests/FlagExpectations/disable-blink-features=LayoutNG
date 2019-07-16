@@ -287,3 +287,6 @@ crbug.com/591099 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-w
 crbug.com/591099 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure ]
 
 crbug.com/591099 external/wpt/css/css-tables/absolute-tables-002.html [ Failure ]
+
+crbug.com/591099 virtual/scalefactor200/external/wpt/element-timing/observe-text.html [ Failure ]
+crbug.com/591099 virtual/scalefactor200withoutzoom/external/wpt/element-timing/css-generated-text.html [ Failure ]

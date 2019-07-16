@@ -121,7 +121,7 @@ public class SignOutDialogFragment extends DialogFragment implements
                         "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
             }
             SignOutDialogListener targetFragment = (SignOutDialogListener) getTargetFragment();
-            targetFragment.onSignOutClicked(mWipeUserData.isChecked());
+            targetFragment.onSignOutClicked(mWipeUserData != null && mWipeUserData.isChecked());
         }
     }
 

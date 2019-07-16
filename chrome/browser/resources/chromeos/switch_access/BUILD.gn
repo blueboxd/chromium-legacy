@@ -40,7 +40,15 @@ run_jsbundler("switch_access_copied_files") {
     "icons/decrement.svg",
     "icons/dictation.svg",
     "icons/increment.svg",
+    "icons/jumpToBeginningOfText.svg",
+    "icons/jumpToEndOfText.svg",
     "icons/keyboard.svg",
+    "icons/moveBackwardOneCharOfText.svg",
+    "icons/moveBackwardOneWordOfText.svg",
+    "icons/moveDownOneLineOfText.svg",
+    "icons/moveForwardOneCharOfText.svg",
+    "icons/moveForwardOneWordOfText.svg",
+    "icons/moveUpOneLineOfText.svg",
     "icons/options.svg",
     "icons/scrollDownOrForward.svg",
     "icons/scrollLeft.svg",
@@ -64,6 +72,7 @@ run_jsbundler("switch_access_copied_files") {
     "switch_access_constants.js",
     "switch_access_predicate.js",
     "text_input_manager.js",
+    "text_navigation_manager.js",
   ]
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
@@ -175,6 +184,7 @@ js_type_check("closure_compile") {
     ":switch_access_interface",
     ":switch_access_predicate",
     ":text_input_manager",
+    ":text_navigation_manager",
     "../chromevox:constants",
     "../chromevox:tree_walker",
     "../select_to_speak:closure_shim",
@@ -196,6 +206,7 @@ js_library("navigation_manager") {
     ":switch_access_constants",
     ":switch_access_predicate",
     ":text_input_manager",
+    ":text_navigation_manager",
     "../chromevox:constants",
     "../chromevox:tree_walker",
   ]
@@ -282,6 +293,7 @@ js_library("switch_access") {
   externs_list = [
     "$externs_path/automation.js",
     "$externs_path/chrome_extensions.js",
+    "$externs_path/command_line_private.js",
   ]
 }
 
@@ -299,5 +311,12 @@ js_library("switch_access_predicate") {
 }
 
 js_library("text_input_manager") {
+  externs_list = [ "$externs_path/accessibility_private.js" ]
+}
+
+js_library("text_navigation_manager") {
+  deps = [
+    ":switch_access_constants",
+  ]
   externs_list = [ "$externs_path/accessibility_private.js" ]
 }

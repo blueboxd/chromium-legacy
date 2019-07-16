@@ -37,7 +37,6 @@ public class SiteSettingsPreferences
     // are defined in the SiteSettingsCategory, additional keys
     // are listed here.
     static final String MEDIA_KEY = "media";
-    static final String TRANSLATE_KEY = "translate";
 
     // Whether this class is handling showing the Media sub-menu (and not the main menu).
     boolean mMediaSubMenu;
@@ -79,7 +78,6 @@ public class SiteSettingsPreferences
                 getPreferenceScreen().removePreference(findPreference(i));
             }
             getPreferenceScreen().removePreference(findPreference(MEDIA_KEY));
-            getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
         } else {
             // These will be tucked under the Media subkey, so don't show them on the main menu.
             getPreferenceScreen().removePreference(findPreference(Type.AUTOPLAY));
@@ -90,7 +88,6 @@ public class SiteSettingsPreferences
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
                 getPreferenceScreen().removePreference(findPreference(Type.SENSORS));
             }
@@ -107,10 +104,6 @@ public class SiteSettingsPreferences
 
     private void updatePreferenceStates() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-
-        // Translate preference.
-        Preference translatePref = findPreference(TRANSLATE_KEY);
-        if (translatePref != null) setTranslateStateSummary(translatePref);
 
         // Preferences that navigate to Website Settings.
         List<Integer> websitePrefs = new ArrayList<Integer>();
@@ -223,12 +216,5 @@ public class SiteSettingsPreferences
         preference.getExtras().putString(SingleCategoryPreferences.EXTRA_TITLE,
                 preference.getTitle().toString());
         return false;
-    }
-
-    private void setTranslateStateSummary(Preference translatePref) {
-        boolean translateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
-        translatePref.setSummary(translateEnabled
-                ? R.string.website_settings_category_ask
-                : R.string.website_settings_category_blocked);
     }
 }

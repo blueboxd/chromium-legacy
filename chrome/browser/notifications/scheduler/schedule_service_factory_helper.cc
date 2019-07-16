@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_store.h"
 #include "chrome/browser/notifications/scheduler/internal/init_aware_scheduler.h"
+#include "chrome/browser/notifications/scheduler/internal/noop_notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_schedule_service_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/webui_client.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
+#include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -43,6 +45,9 @@ KeyedService* CreateNotificationScheduleService(
     std::unique_ptr<DisplayAgent> display_agent,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& storage_dir) {
+  if (!base::FeatureList::IsEnabled(features::kNotificationScheduleService))
+    return static_cast<KeyedService*>(new NoopNotificationScheduleService());
+
   auto config = SchedulerConfig::Create();
   auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});

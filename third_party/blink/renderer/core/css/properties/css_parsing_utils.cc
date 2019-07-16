@@ -91,11 +91,6 @@ CSSIdentifierValue* ConsumeOverflowPositionKeyword(CSSParserTokenRange& range) {
              : nullptr;
 }
 
-bool IsBaselineKeyword(CSSValueID id) {
-  return css_property_parser_helpers::IdentMatches<
-      CSSValueID::kFirst, CSSValueID::kLast, CSSValueID::kBaseline>(id);
-}
-
 CSSValueID GetBaselineKeyword(CSSValue& value) {
   auto* value_pair = DynamicTo<CSSValuePair>(value);
   if (!value_pair) {
@@ -428,6 +423,11 @@ bool ConsumeTranslate3d(CSSParserTokenRange& args,
 }
 
 }  // namespace
+
+bool IsBaselineKeyword(CSSValueID id) {
+  return css_property_parser_helpers::IdentMatches<
+      CSSValueID::kFirst, CSSValueID::kLast, CSSValueID::kBaseline>(id);
+}
 
 bool IsSelfPositionKeyword(CSSValueID id) {
   return css_property_parser_helpers::IdentMatches<

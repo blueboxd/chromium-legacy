@@ -48,10 +48,10 @@
 #include "third_party/blink/renderer/platform/blob/blob_registry.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/line_ending.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -321,7 +321,7 @@ scoped_refptr<BlobDataHandle> BlobDataHandle::Create(
 }
 
 BlobDataHandle::BlobDataHandle()
-    : uuid_(CreateCanonicalUUIDString()),
+    : uuid_(WTF::CreateCanonicalUUIDString()),
       size_(0),
       is_single_unknown_size_file_(false) {
   GetThreadSpecificRegistry()->Register(MakeRequest(&blob_info_), uuid_, "", "",
@@ -329,7 +329,7 @@ BlobDataHandle::BlobDataHandle()
 }
 
 BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, uint64_t size)
-    : uuid_(CreateCanonicalUUIDString()),
+    : uuid_(WTF::CreateCanonicalUUIDString()),
       type_(data->ContentType().IsolatedCopy()),
       size_(size),
       is_single_unknown_size_file_(data->IsSingleUnknownSizeFile()) {

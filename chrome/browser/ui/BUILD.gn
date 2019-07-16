@@ -2972,6 +2972,8 @@ jumbo_split_static_library("ui") {
       "views/send_tab_to_self/send_tab_to_self_icon_view.h",
       "views/session_crashed_bubble_view.cc",
       "views/session_crashed_bubble_view.h",
+      "views/sharing/click_to_call/click_to_call_dialog_view.cc",
+      "views/sharing/click_to_call/click_to_call_dialog_view.h",
       "views/simple_message_box_views.cc",
       "views/simple_message_box_views.h",
       "views/status_bubble_views.cc",

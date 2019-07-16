@@ -83,7 +83,8 @@ class AdaptiveScreenBrightnessManagerTest
  public:
   AdaptiveScreenBrightnessManagerTest()
       : ChromeRenderViewHostTestHarness(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
                 QUEUED) {}
 

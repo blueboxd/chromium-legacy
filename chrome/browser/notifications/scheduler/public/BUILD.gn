@@ -12,6 +12,8 @@ source_set("public") {
   sources = [
     "display_agent.cc",
     "display_agent.h",
+    "features.cc",
+    "features.h",
     "impression_detail.cc",
     "impression_detail.h",
     "notification_background_task_scheduler.h",

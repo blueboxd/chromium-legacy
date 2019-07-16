@@ -2569,6 +2569,11 @@ const char kTranslateAndroidManualTriggerName[] =
 const char kTranslateAndroidManualTriggerDescription[] =
     "Show a menu item in the main menu that triggers page translation.";
 
+const char kTwoPanesStartSurfaceAndroidName[] = "Two Panes Start Surface";
+const char kTwoPanesStartSurfaceAndroidDescription[] =
+    "Enable showing two panes start surface when launching Chrome via the "
+    "launcher.";
+
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
     "When enabled, a badge will be shown on the app menu button if the update "
@@ -3131,10 +3136,6 @@ const char kEnableAssistantMediaSessionIntegrationName[] =
     "Assistant Media Session integration";
 const char kEnableAssistantMediaSessionIntegrationDescription[] =
     "Enable Assistant Media Session Integration.";
-
-const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
-const char kEnableAssistantVoiceMatchDescription[] =
-    "Enable the Assistant Voice Match feature";
 
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =

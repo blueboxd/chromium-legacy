@@ -155,7 +155,6 @@ _COMMANDS = {
     "HeapSnapshot": (Method.GET, "/session/:sessionId/chromium/heap_snapshot"),
     "InitSession": (Method.POST, "/session"),
     "IsAlertOpen": (Method.GET, "/session/:sessionId/alert"),
-    "IsAutoReporting": (Method.GET, "/session/:sessionId/autoreport"),
     "IsElementDisplayed":
     (Method.GET, "/session/:sessionId/element/:id/displayed"),
     "IsElementEnabled": (Method.GET, "/session/:sessionId/element/:id/enabled"),
@@ -185,7 +184,6 @@ _COMMANDS = {
     "SendCommandAndGetResult":
     (Method.POST, "/session/:sessionId/chromium/send_command_and_get_result"),
     "SetAlertPrompt": (Method.POST, "/session/:sessionId/alert_text"),
-    "SetAutoReporting": (Method.POST, "/session/:sessionId/autoreport"),
     "SetGeolocation": (Method.POST, "/session/:sessionId/location"),
     "SetImplicitWait":
     (Method.POST, "/session/:sessionId/timeouts/implicit_wait"),

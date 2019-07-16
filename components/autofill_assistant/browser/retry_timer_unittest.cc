@@ -24,7 +24,7 @@ class RetryTimerTest : public testing::Test {
  protected:
   RetryTimerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void FastForwardOneSecond() {
     scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));

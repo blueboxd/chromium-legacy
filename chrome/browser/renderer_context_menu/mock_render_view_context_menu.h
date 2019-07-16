@@ -52,11 +52,18 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // RenderViewContextMenuProxy implementation.
   void AddMenuItem(int command_id, const base::string16& title) override;
+  void AddMenuItemWithIcon(int command_id,
+                           const base::string16& title,
+                           const gfx::ImageSkia& image) override;
   void AddCheckItem(int command_id, const base::string16& title) override;
   void AddSeparator() override;
   void AddSubMenu(int command_id,
                   const base::string16& label,
                   ui::MenuModel* model) override;
+  void AddSubMenuWithStringIdAndIcon(int command_id,
+                                     int message_id,
+                                     ui::MenuModel* model,
+                                     const gfx::ImageSkia& image) override;
   void UpdateMenuItem(int command_id,
                       bool enabled,
                       bool hidden,
@@ -83,6 +90,9 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   PrefService* GetPrefs();
 
  private:
+  // Helper function to append items in sub menu from |model|.
+  void AppendSubMenuItems(ui::MenuModel* model);
+
   // An observer used for initializing the status of menu items added in this
   // test. This is owned by our owner and the owner is responsible for its
   // lifetime.

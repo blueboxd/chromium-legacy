@@ -24,8 +24,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
  public:
   PartitionAllocMemoryReclaimerTest()
       : ::testing::Test(),
-        task_environment_(
-            test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        task_environment_(test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         allocator_() {}
 
  protected:

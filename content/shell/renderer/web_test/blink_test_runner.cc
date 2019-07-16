@@ -168,8 +168,7 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
-      test_config_(mojom::ShellTestConfiguration::New()),
-      is_main_window_(false) {}
+      test_config_(mojom::ShellTestConfiguration::New()) {}
 
 BlinkTestRunner::~BlinkTestRunner() {}
 
@@ -416,8 +415,7 @@ void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
   if (!interfaces->TestIsRunning())
     return;
 
-  RenderThread::Get()->Send(
-      new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
+  Send(new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
 }
 
 void BlinkTestRunner::TestFinished() {
@@ -432,8 +430,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
-    RenderThread::Get()->Send(
-        new WebTestHostMsg_TestFinishedInSecondaryRenderer());
+    Send(new WebTestHostMsg_TestFinishedInSecondaryRenderer());
     return;
   }
 
@@ -572,8 +569,6 @@ void BlinkTestRunner::CaptureDumpComplete() {
     return;
 
   std::move(dump_callback_).Run(std::move(dump_result_));
-  dump_callback_.Reset();
-  dump_result_.reset();
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {

@@ -109,7 +109,7 @@ class InputControllerTest : public ::testing::TestWithParam<bool> {
  public:
   InputControllerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         audio_manager_(std::make_unique<media::FakeAudioManager>(
             std::make_unique<media::TestAudioThread>(false),
             &log_factory_)),

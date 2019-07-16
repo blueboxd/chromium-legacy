@@ -113,7 +113,7 @@ class UpgradeDetectorImplTest : public ::testing::Test {
  protected:
   UpgradeDetectorImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
     // Disable the detector's check to see if autoupdates are inabled.
     // Without this, tests put the detector into an invalid state by detecting

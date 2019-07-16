@@ -926,7 +926,8 @@ base::Value PolicyUIHandler::GetPolicyValues() const {
   return policy::GetAllPolicyValuesAsArray(
       web_ui()->GetWebContents()->GetBrowserContext(),
       true /* with_user_policies */, true /* convert_values */,
-      false /* with_device_data */, true /* is_pretty_print */);
+      false /* with_device_data */, true /* is_pretty_print */,
+      true /* convert_types */);
 }
 
 void PolicyUIHandler::SendStatus() {
@@ -1033,7 +1034,7 @@ void PolicyUIHandler::WritePoliciesToJSONFile(
   base::Value dict = policy::GetAllPolicyValuesAsDictionary(
       web_ui()->GetWebContents()->GetBrowserContext(),
       true /* with_user_policies */, false /* convert_values */,
-      false /* with_device_data */, is_pretty_print);
+      false /* with_device_data */, is_pretty_print, true /* convert_types */);
 
   base::Value chrome_metadata(base::Value::Type::DICTIONARY);
 

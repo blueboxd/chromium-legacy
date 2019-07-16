@@ -245,13 +245,6 @@ class NET_EXPORT NetLog {
   void AddObserver(ThreadSafeObserver* observer,
                    NetLogCaptureMode capture_mode);
 
-  // Sets the log capture mode of |observer| to |capture_mode|.  |observer| must
-  // be watching |this|.
-  // TODO(eroman): Remove the capability to dynamically change observer's
-  //               capture mode.
-  void SetObserverCaptureMode(ThreadSafeObserver* observer,
-                              NetLogCaptureMode capture_mode);
-
   // Removes an observer.
   //
   // For thread safety reasons, it is recommended that this not be called in

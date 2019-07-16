@@ -224,7 +224,7 @@ void ChromeKeyboardWebContents::DidStopLoading() {
   // TODO(https://crbug.com/845780): Change this to a DCHECK when we change
   // ReloadKeyboardIfNeeded to also have a callback.
   if (!load_callback_.is_null())
-    std::move(load_callback_).Run(gfx::Size());
+    std::move(load_callback_).Run();
 }
 
 void ChromeKeyboardWebContents::LoadContents(const GURL& url) {

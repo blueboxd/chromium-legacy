@@ -20,6 +20,17 @@ using base::TimeTicks;
 
 namespace views {
 
+namespace {
+ui::EventType NotifyActionToMouseEventType(Button::NotifyAction notify_action) {
+  switch (notify_action) {
+    case Button::NOTIFY_ON_PRESS:
+      return ui::ET_MOUSE_PRESSED;
+    case Button::NOTIFY_ON_RELEASE:
+      return ui::ET_MOUSE_RELEASED;
+  }
+}
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MenuButtonController::PressedLock
@@ -267,13 +278,14 @@ bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
     // would also activate a context menu.
     if (!(mouse_event->button_flags() & button()->triggerable_event_flags()))
       return false;
-    // If dragging is supported activate on release, otherwise activate on
-    // pressed.
+
+    // Activate on release if dragging, otherwise activate based on
+    // notify_action.
     ui::EventType active_on =
-        delegate()->GetDragOperations(mouse_event->location()) ==
+        delegate()->GetDragOperations(mouse_event->location()) !=
                 ui::DragDropTypes::DRAG_NONE
-            ? ui::ET_MOUSE_PRESSED
-            : ui::ET_MOUSE_RELEASED;
+            ? ui::ET_MOUSE_RELEASED
+            : NotifyActionToMouseEventType(button()->notify_action());
     return event.type() == active_on;
   }
   return event.type() == ui::ET_GESTURE_TAP;

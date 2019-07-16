@@ -5,6 +5,7 @@
 // https://wicg.github.io/native-file-system/#filesystemwriter
 [
     Exposed=(Window,Worker),
+    SecureContext,
     ImplementedAs=NativeFileSystemWriter,
     RuntimeEnabled=NativeFileSystem
 ] interface FileSystemWriter {

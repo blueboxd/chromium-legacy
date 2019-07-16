@@ -68,7 +68,7 @@ bool ChromeLocationBarModelDelegate::GetURL(GURL* url) const {
   if (!entry)
     return false;
 
-  *url = ShouldDisplayURL() ? entry->GetVirtualURL() : GURL();
+  *url = entry->GetVirtualURL();
   return true;
 }
 

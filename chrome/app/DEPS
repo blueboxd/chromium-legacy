@@ -84,7 +84,6 @@ specific_include_rules = {
   ],
   "builtin_service_manifests\.cc": [
     "+chrome/services/cups_ipp_parser/public",
-    "+chrome/services/cups_proxy/public",
     "+chrome/services/file_util/public",
     "+chrome/services/isolated_xr_device/manifest.h",
     "+chrome/services/media_gallery_util/public",

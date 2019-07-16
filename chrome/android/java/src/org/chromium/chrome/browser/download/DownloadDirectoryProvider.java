@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Environment;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -255,6 +256,20 @@ public class DownloadDirectoryProvider {
             }
         }
         return downloadDir;
+    }
+
+    /**
+     * Returns whether the downloaded file path is on an external SD card.
+     * @param filePath The download file path.
+     */
+    public static boolean isDownloadOnSDCard(String filePath) {
+        File[] dirs = ContextUtils.getApplicationContext().getExternalFilesDirs(
+                Environment.DIRECTORY_DOWNLOADS);
+        if (dirs.length <= 1 || TextUtils.isEmpty(filePath)) return false;
+        for (int i = 1; i < dirs.length; ++i) {
+            if (filePath.startsWith(dirs[i].getAbsolutePath())) return true;
+        }
+        return false;
     }
 
     private void updateDirectories() {

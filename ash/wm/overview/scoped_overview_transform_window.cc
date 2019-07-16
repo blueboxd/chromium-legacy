@@ -137,7 +137,7 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
     targeting_policy_map_.erase(it);
   }
 
-  UpdateMask(/*show=*/false);
+  UpdateRoundedCorners(/*show=*/false);
   StopObservingImplicitAnimations();
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
   window_->layer()->SetClipRect(original_clip_rect_);
@@ -379,9 +379,7 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   overview_bounds_.reset();
 }
 
-// TODO(sammiequon): Investigate if waiting till the end of the animation to set
-// these properties is still required.
-void ScopedOverviewTransformWindow::UpdateMask(bool show) {
+void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
   // Minimized windows have their corners rounded in CaptionContainerView.
   if (IsMinimized())
     return;
@@ -410,9 +408,11 @@ void ScopedOverviewTransformWindow::CancelAnimationsListener() {
 
 void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
     ui::LayerAnimationSequence* sequence) {
-  // Remove the mask before animating because masks affect animation
-  // performance. The mask will be added back once the animation is completed.
-  overview_item_->UpdateRoundedCornersAndShadow();
+  // Remove the shadow before animating because it may affect animation
+  // performance. The shadow will be added back once the animation is completed.
+  // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
+  // to update the rounded corners.
+  overview_item_->SetShadowBounds(base::nullopt);
 }
 
 void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {

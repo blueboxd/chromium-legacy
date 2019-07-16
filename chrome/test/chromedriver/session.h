@@ -80,7 +80,6 @@ struct Session {
                         const std::string& chromedriver_frame_id);
   std::string GetCurrentFrameId() const;
   std::vector<WebDriverLog*> GetAllLogs() const;
-  std::string GetFirstBrowserError() const;
 
   const std::string id;
   bool w3c_compliant;
@@ -119,7 +118,6 @@ struct Session {
   std::unique_ptr<WebDriverLog> driver_log;
   ScopedTempDirWithRetry temp_dir;
   std::unique_ptr<base::DictionaryValue> capabilities;
-  bool auto_reporting_enabled;
   // |command_listeners| should be declared after |chrome|. When the |Session|
   // is destroyed, |command_listeners| should be freed first, since some
   // |CommandListener|s might be |CommandListenerProxy|s that forward to

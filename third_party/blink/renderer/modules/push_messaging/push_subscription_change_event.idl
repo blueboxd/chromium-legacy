@@ -5,7 +5,7 @@
 // https://w3c.github.io/push-api/#pushsubscriptionchangeevent-interface
 
 [
-    Constructor(DOMString type, optional PushSubscriptionChangeInit eventInitDict),
+    Constructor(DOMString type, optional PushSubscriptionChangeEventInit eventInitDict),
     Exposed=ServiceWorker,
     RuntimeEnabled=PushMessagingSubscriptionChange
 ] interface PushSubscriptionChangeEvent : ExtendableEvent {

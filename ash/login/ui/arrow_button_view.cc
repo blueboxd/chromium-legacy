@@ -47,6 +47,7 @@ void ArrowButtonView::PaintButtonContents(gfx::Canvas* canvas) {
   views::ImageButton::PaintButtonContents(canvas);
 }
 void ArrowButtonView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  LoginButton::GetAccessibleNodeData(node_data);
   // TODO(tbarzic): Fix this - https://crbug.com/961930.
   if (GetAccessibleName().empty())
     node_data->SetNameExplicitlyEmpty();

@@ -886,6 +886,13 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
       context_provider_wrapper_, owning_thread_id_, is_origin_top_left_,
       std::move(release_callback));
 
+  // The StaticBitmapImage is used for readbacks which may modify the texture
+  // params. We reset this when the image is destroyed but it is important to
+  // also do it here in case we try to send the resource to the display
+  // compositor while the |image| is still alive.
+  if (!is_cross_thread())
+    owning_thread_data().needs_gl_filter_reset = true;
+
   DCHECK(image);
   return image;
 }

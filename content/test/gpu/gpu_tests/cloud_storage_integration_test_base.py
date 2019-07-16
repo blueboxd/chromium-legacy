@@ -397,6 +397,20 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
 
+  # TODO(https://crbug.com/983600): Remove this once the truncated images are
+  # determined to be legitimate or due to upload issues.
+  @classmethod
+  def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
+    machine_name = re.sub(r'\W+', '_',
+                          cls.GetParsedCommandLineOptions().test_machine_name)
+    base_bucket = '%s/gold_failures' % (error_image_cloud_storage_bucket)
+    image_name_with_revision_and_machine = '%s_%s_%s.png' % (
+      image_name, machine_name,
+      cls.GetParsedCommandLineOptions().build_revision)
+    cls._UploadBitmapToCloudStorage(
+      base_bucket, image_name_with_revision_and_machine, screenshot,
+      public=True)
+
   def _ValidateScreenshotSamples(self, tab, url, screenshot, expectations,
                                  tolerance, device_pixel_ratio):
     """Samples the given screenshot and verifies pixel color values.
@@ -478,8 +492,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       logging.error('goldctl failed with output: %s', e.output)
       # TODO(https://crbug.com/983600): Remove this once the truncated images
       # are determined to be legitimate or due to upload issues.
-      failure_name = 'gold_%s' % image_name
-      self._UploadErrorImagesToCloudStorage(failure_name, screenshot, None)
+      self._UploadGoldErrorImageToCloudStorage(image_name, screenshot)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed')
 

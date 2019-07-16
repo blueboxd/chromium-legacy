@@ -6,19 +6,26 @@
 #include <utility>
 
 #include "base/strings/strcat.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/origin_policy/origin_policy_fetcher.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/origin_policy/origin_policy_parser.h"
 #include "services/network/public/cpp/origin_policy.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
 
 namespace network {
 
@@ -42,8 +49,7 @@ class OriginPolicyManagerTest : public testing::Test {
     network_context_ = std::make_unique<NetworkContext>(
         network_service_.get(), mojo::MakeRequest(&network_context_ptr_),
         std::move(context_params));
-    manager_ = std::make_unique<OriginPolicyManager>(
-        network_context_->CreateUrlLoaderFactoryForNetworkService());
+    manager_ = std::make_unique<OriginPolicyManager>(network_context_.get());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &OriginPolicyManagerTest::HandleResponse, base::Unretained(this)));
@@ -227,7 +233,7 @@ TEST_F(OriginPolicyManagerTest, ParseHeaders) {
   };
   for (const auto& test : kTests) {
     SCOPED_TRACE(test.header);
-    OriginPolicyManager::OriginPolicyHeaderValues result = OriginPolicyManager::
+    OriginPolicyHeaderValues result = OriginPolicyManager::
         GetRequestedPolicyAndReportGroupFromHeaderStringForTesting(test.header);
     EXPECT_EQ(test.expected_policy_version, result.policy_version);
     EXPECT_EQ(test.expected_report_to, result.report_to);
@@ -298,8 +304,7 @@ TEST_F(OriginPolicyManagerTest, EndToEndPolicyRetrieve) {
   for (const auto& test : kTests) {
     SCOPED_TRACE(test.header);
 
-    OriginPolicyManager manager(
-        network_context()->CreateUrlLoaderFactoryForNetworkService());
+    OriginPolicyManager manager(network_context());
 
     TestOriginPolicyManagerResult tester(this, &manager);
     tester.RetrieveOriginPolicy(test.header);
@@ -323,8 +328,7 @@ TEST_F(OriginPolicyManagerTest, DestroyWhileCallbackUninvoked) {
   {
     mojom::OriginPolicyManagerPtr origin_policy_ptr;
 
-    OriginPolicyManager manager(
-        network_context()->CreateUrlLoaderFactoryForNetworkService());
+    OriginPolicyManager manager(network_context());
 
     manager.AddBinding(mojo::MakeRequest(&origin_policy_ptr));
 
@@ -435,5 +439,141 @@ TEST_F(OriginPolicyManagerTest, CacheStatesAfterPolicyFetches) {
     }
   }
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+class MockReportingService : public net::ReportingService {
+ public:
+  MOCK_METHOD6(QueueReport,
+               void(const GURL&,
+                    const std::string&,
+                    const std::string&,
+                    const std::string&,
+                    std::unique_ptr<const base::Value>,
+                    int));
+  MOCK_METHOD2(ProcessHeader, void(const GURL&, const std::string&));
+  MOCK_METHOD2(RemoveBrowsingData,
+               void(int, const base::RepeatingCallback<bool(const GURL&)>&));
+  MOCK_METHOD1(RemoveAllBrowsingData, void(int));
+  MOCK_METHOD0(OnShutdown, void());
+  MOCK_CONST_METHOD0(GetPolicy, const net::ReportingPolicy&());
+  MOCK_CONST_METHOD0(StatusAsValue, base::Value());
+  MOCK_CONST_METHOD0(GetContextForTesting, net::ReportingContext*());
+};
+
+MATCHER_P(ReportBodyEquals, expected, "") {
+  if (!arg->is_dict() || !expected->is_dict() || arg->DictSize() != 3 ||
+      expected->DictSize() != 3) {
+    return false;
+  }
+
+  for (const std::string& key_name :
+       {"origin_policy_url", "policy", "policy_error_reason"}) {
+    if (!arg->FindStringKey(key_name) || !expected->FindStringKey(key_name) ||
+        *arg->FindStringKey(key_name) != *expected->FindStringKey(key_name)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+TEST_F(OriginPolicyManagerTest, TestMaybeReport) {
+  struct ReportingTest {
+    OriginPolicyState state;
+    const OriginPolicyHeaderValues& header_info;
+    const GURL& policy_url;
+    const std::string expected_origin_policy_url = "";
+    const std::string expected_policy = "";
+    const std::string expected_policy_error_reason = "";
+  };
+
+  // These tests should cause the report to be queued.
+  ReportingTest kReportingTests[] = {
+      {OriginPolicyState::kCannotLoadPolicy,
+       OriginPolicyHeaderValues({"version1", "report1", "raw1"}),
+       GURL("http://example1.com/"), "http://example1.com/", "raw1",
+       "CANNOT_LOAD"},
+      {OriginPolicyState::kInvalidRedirect,
+       OriginPolicyHeaderValues({"version2", "report2", "raw2"}),
+       GURL("http://example2.com/"), "http://example2.com/", "raw2",
+       "REDIRECT"},
+      {OriginPolicyState::kOther,
+       OriginPolicyHeaderValues({"version3", "report3", "raw3"}),
+       GURL("http://example3.com/"), "http://example3.com/", "raw3", "OTHER"},
+  };
+
+  // These tests should trigger a dcheck.
+  ReportingTest kDheckTests[] = {
+      {OriginPolicyState::kLoaded,
+       OriginPolicyHeaderValues({"version1", "report1", "raw1"}),
+       GURL("http://example1.com/")},
+      {OriginPolicyState::kNoPolicyApplies,
+       OriginPolicyHeaderValues({"version2", "report2", "raw2"}),
+       GURL("http://example2.com/")},
+  };
+
+  // These tests should return without queueing a report.
+  ReportingTest kReturningTests[] = {
+      {OriginPolicyState::kInvalidRedirect,
+       OriginPolicyHeaderValues({"", "", ""}), GURL("http://example1.com/")},
+      {OriginPolicyState::kLoaded,
+       OriginPolicyHeaderValues({"version1", "", "raw1"}),
+       GURL("http://example1.com/")},
+      {OriginPolicyState::kCannotLoadPolicy,
+       OriginPolicyHeaderValues({"version1", "", "raw1"}),
+       GURL("http://example1.com/")},
+      {OriginPolicyState::kOther,
+       OriginPolicyHeaderValues({"version1", "", "raw1"}),
+       GURL("http://example1.com/")},
+      {OriginPolicyState::kInvalidRedirect,
+       OriginPolicyHeaderValues({"version1", "", "raw1"}),
+       GURL("http://example1.com/")},
+      {OriginPolicyState::kNoPolicyApplies,
+       OriginPolicyHeaderValues({"version1", "", "raw1"}),
+       GURL("http://example1.com/")},
+  };
+
+  for (const auto& test : kReportingTests) {
+    MockReportingService mock_service;
+    network_context()->url_request_context()->set_reporting_service(
+        &mock_service);
+
+    base::DictionaryValue expected_report_body;
+    expected_report_body.SetKey("origin_policy_url",
+                                base::Value(test.expected_origin_policy_url));
+    expected_report_body.SetKey("policy", base::Value(test.expected_policy));
+    expected_report_body.SetKey("policy_error_reason",
+                                base::Value(test.expected_policy_error_reason));
+
+    EXPECT_CALL(
+        mock_service,
+        QueueReport(test.policy_url, _ /* user_agent */,
+                    test.header_info.report_to, "origin-policy",
+                    ReportBodyEquals(&expected_report_body), _ /* depth */))
+        .Times(1);
+
+    manager()->MaybeReport(test.state, test.header_info, test.policy_url);
+
+    network_context()->url_request_context()->set_reporting_service(nullptr);
+  }
+
+  for (const auto& test : kDheckTests) {
+    EXPECT_DCHECK_DEATH(
+        manager()->MaybeReport(test.state, test.header_info, test.policy_url));
+  }
+
+  for (const auto& test : kReturningTests) {
+    MockReportingService mock_service;
+    network_context()->url_request_context()->set_reporting_service(
+        &mock_service);
+
+    EXPECT_CALL(mock_service, QueueReport(_, _, _, _, _, _)).Times(0);
+
+    manager()->MaybeReport(test.state, test.header_info, test.policy_url);
+
+    network_context()->url_request_context()->set_reporting_service(nullptr);
+  }
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 }  // namespace network

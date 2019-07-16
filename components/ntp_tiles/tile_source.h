@@ -28,10 +28,8 @@ enum class TileSource {
   HOMEPAGE,
   // Tile comes from explore sites list.
   EXPLORE,
-  // Tile containing the Google Search page.
-  SEARCH_PAGE,
 
-  LAST = SEARCH_PAGE
+  LAST = EXPLORE
 };
 
 }  // namespace ntp_tiles

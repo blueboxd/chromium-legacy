@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,7 +14,12 @@ from __future__ import print_function
 
 import argparse
 import collections
+import errno
+import os
+import re
 import struct
+import sys
+import zipfile
 
 # https://source.android.com/devices/tech/dalvik/dex-format#header-item
 _DEX_HEADER_FMT = (
@@ -53,10 +59,10 @@ _MethodIdItem = collections.namedtuple('MethodIdItem',
                                        'type_idx,proto_idx,name_idx')
 _TypeItem = collections.namedtuple('TypeItem', 'type_idx')
 _StringDataItem = collections.namedtuple('StringItem', 'utf16_size,data')
-
-DexMethodFullSignature = collections.namedtuple(
-    'DexMethodFullSignature',
-    'class_type,return_type,method_name,parameter_types')
+_ClassDefItem = collections.namedtuple(
+    'ClassDefItem',
+    'class_idx,access_flags,superclass_idx,interfaces_off,source_file_idx,'
+    'annotations_off,class_data_off,static_values_off')
 
 
 class _MemoryItemList(object):
@@ -167,6 +173,18 @@ class _TypeListItemList(_MemoryItemList):
 
   def __init__(self, reader, offset, size):
     super(_TypeListItemList, self).__init__(reader, offset, size, _TypeListItem)
+
+
+class _ClassDefItemList(_MemoryItemList):
+
+  def __init__(self, reader, offset, size):
+    reader.Seek(offset)
+
+    def factory(x):
+      return _ClassDefItem(*(x.ReadUInt()
+                             for _ in xrange(len(_ClassDefItem._fields))))
+
+    super(_ClassDefItemList, self).__init__(reader, offset, size, factory)
 
 
 class _DexMapItem(object):
@@ -336,7 +354,20 @@ class DexFile(object):
       referenced by index in other sections.
     type_list_item_list: _TypeListItemList containing _TypeListItems.
       _TypeListItems are referenced by their offsets from other dex items.
+    class_def_item_list: _ClassDefItemList containing _ClassDefItems.
   """
+  _CLASS_ACCESS_FLAGS = {
+      0x1: 'public',
+      0x2: 'private',
+      0x4: 'protected',
+      0x8: 'static',
+      0x10: 'final',
+      0x200: 'interface',
+      0x400: 'abstract',
+      0x1000: 'synthetic',
+      0x2000: 'annotation',
+      0x4000: 'enum',
+  }
 
   def __init__(self, data):
     """Decodes dex file memory sections.
@@ -355,6 +386,8 @@ class DexFile(object):
         self.reader, self.header.method_ids_off, self.header.method_ids_size)
     self.string_item_list = _StringItemList(
         self.reader, self.header.string_ids_off, self.header.string_ids_size)
+    self.class_def_item_list = _ClassDefItemList(
+        self.reader, self.header.class_defs_off, self.header.class_defs_size)
 
     type_list_key = _DexMapList.TYPE_TYPE_LIST
     if type_list_key in self.map_list:
@@ -363,6 +396,10 @@ class DexFile(object):
           self.reader, map_list_item.offset, map_list_item.size)
     else:
       self.type_list_item_list = _TypeListItemList(self.reader, 0, 0)
+    self._type_lists_by_offset = {
+        type_list.offset: type_list
+        for type_list in self.type_list_item_list
+    }
 
   def GetString(self, string_item_idx):
     string_item = self.string_item_list[string_item_idx]
@@ -372,6 +409,19 @@ class DexFile(object):
     type_item = self.type_item_list[type_item_idx]
     return self.GetString(type_item.descriptor_idx)
 
+  def GetTypeListStringsByOffset(self, offset):
+    if not offset:
+      return ()
+    type_list = self._type_lists_by_offset[offset]
+    return tuple(self.GetTypeString(item.type_idx) for item in type_list)
+
+  @staticmethod
+  def ResolveClassAccessFlags(access_flags):
+    return tuple(
+        flag_string
+        for flag, flag_string in DexFile._CLASS_ACCESS_FLAGS.iteritems()
+        if flag & access_flags)
+
   def __repr__(self):
     items = [
         self.header,
@@ -380,61 +430,141 @@ class DexFile(object):
         self.proto_item_list,
         self.method_item_list,
         self.string_item_list,
+        self.type_list_item_list,
+        self.class_def_item_list,
     ]
     return '\n'.join(str(item) for item in items)
 
 
-def _MethodSignaturesFromDexFile(dexfile):
-  methods = []
-  type_lists_by_offset = {
-      type_list.offset: type_list
-      for type_list in dexfile.type_list_item_list
-  }
+def _MethodSignaturePartsFromDexFile(dexfile):
+  """Yields the string components of dex methods in a dex file.
 
+  Args:
+    dexfile: The input dex file.
+
+  Yields:
+    Tuples that look like:
+      (class name, return type, method name, (parameter type, ...)).
+  """
   for method_item in dexfile.method_item_list:
     class_name_string = dexfile.GetTypeString(method_item.type_idx)
     method_name_string = dexfile.GetString(method_item.name_idx)
-
     proto_item = dexfile.proto_item_list[method_item.proto_idx]
     return_type_string = dexfile.GetTypeString(proto_item.return_type_idx)
-    parameter_types = ()
-    if proto_item.parameters_off:
-      type_list = type_lists_by_offset[proto_item.parameters_off]
-      parameter_types = tuple(
-          dexfile.GetTypeString(item.type_idx) for item in type_list)
-
-    methods.append(
-        DexMethodFullSignature(class_name_string, return_type_string,
-                               method_name_string, parameter_types))
-
-  return methods
+    parameter_types = dexfile.GetTypeListStringsByOffset(
+        proto_item.parameters_off)
+    yield (class_name_string, return_type_string, method_name_string,
+           parameter_types)
 
 
 def CountUniqueDexMethods(dexfiles):
   """Returns the number of unique methods given an iterable of dex files.
 
-  For method counts, most tools count the total number of defined dex methods.
-  In the multi-dex case, some method items are duplicated across dex files.
-  This function dedupes method definitions by converting dex method items into
-  string representations of the full method signatures.
+  For method counts, most tools count the total number of dex methods referred
+  to by a dex file. In the multi-dex case, some method items are referred to by
+  multiple dex files, which means some methods are double counted. This method
+  returns a count of the number of unique methods referred to across all given
+  dex files.
 
   Args:
     dexfiles: Iterable of DexFile objects to count unique methods for.
   """
   unique_methods = set()
   for dexfile in dexfiles:
-    unique_methods.update(_MethodSignaturesFromDexFile(dexfile))
+    unique_methods.update(_MethodSignaturePartsFromDexFile(dexfile))
   return len(unique_methods)
+
+
+class _DumpCommand(object):
+
+  def __init__(self, dexfile):
+    self._dexfile = dexfile
+
+  def Run(self):
+    raise NotImplementedError()
+
+
+class _DumpMethods(_DumpCommand):
+
+  def Run(self):
+    for parts in _MethodSignaturePartsFromDexFile(self._dexfile):
+      class_type, return_type, method_name, parameter_types = parts
+      print('{} {} (return type={}, parameters={})'.format(
+          class_type, method_name, return_type, parameter_types))
+
+
+class _DumpStrings(_DumpCommand):
+
+  def Run(self):
+    for string_item in self._dexfile.string_item_list:
+      # Some strings are likely to be non-ascii (vs. methods/classes).
+      print(string_item.data.encode('utf-8'))
+
+
+class _DumpClasses(_DumpCommand):
+
+  def Run(self):
+    for class_item in self._dexfile.class_def_item_list:
+      class_string = self._dexfile.GetTypeString(class_item.class_idx)
+      superclass_string = self._dexfile.GetTypeString(class_item.superclass_idx)
+      interfaces = self._dexfile.GetTypeListStringsByOffset(
+          class_item.interfaces_off)
+      access_flags = DexFile.ResolveClassAccessFlags(class_item.access_flags)
+      print('{} (superclass={}, interfaces={}, access_flags={})'.format(
+          class_string, superclass_string, interfaces, access_flags))
+
+
+class _DumpSummary(_DumpCommand):
+
+  def Run(self):
+    print(self._dexfile)
+
+
+def _DumpDexItems(dexfile_data, name, item):
+  dexfile = DexFile(bytearray(dexfile_data))
+  print('dex_parser: Dumping {} for {}'.format(item, name))
+  cmds = {
+      'summary': _DumpSummary,
+      'methods': _DumpMethods,
+      'strings': _DumpStrings,
+      'classes': _DumpClasses,
+  }
+  try:
+    cmds[item](dexfile).Run()
+  except IOError as e:
+    if e.errno == errno.EPIPE:
+      # Assume we're piping to "less", do nothing.
+      pass
 
 
 def main():
   parser = argparse.ArgumentParser(description='Dump dex contents to stdout.')
-  parser.add_argument('dexfile', help='Input dex file path.')
+  parser.add_argument(
+      'input', help='Input (.dex, .jar, .zip, .aab, .apk) file path.')
+  parser.add_argument(
+      'item',
+      choices=('methods', 'strings', 'classes', 'summary'),
+      help='Item to dump',
+      nargs='?',
+      default='summary')
   args = parser.parse_args()
 
-  with open(args.dexfile) as f:
-    dexfile = DexFile(bytearray(f.read()))
-    print('{} contents:\n\n{}'.format(args.dexfile, dexfile))
+  if os.path.splitext(args.input)[1] in ('.apk', '.jar', '.zip', '.aab'):
+    with zipfile.ZipFile(args.input) as z:
+      dex_file_paths = [
+          f for f in z.namelist() if re.match(r'.*classes[0-9]*\.dex$', f)
+      ]
+      if not dex_file_paths:
+        print('Error: {} does not contain any classes.dex files'.format(
+            args.input))
+        sys.exit(1)
+
+      for path in dex_file_paths:
+        _DumpDexItems(z.read(path), path, args.item)
+
+  else:
+    with open(args.input) as f:
+      _DumpDexItems(f.read(), args.input, args.item)
 
 
 if __name__ == '__main__':

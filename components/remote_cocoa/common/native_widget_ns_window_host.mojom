@@ -8,7 +8,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/accelerators/mojo/accelerator.mojom";
 import "ui/base/mojom/ui_base_types.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
-import "ui/display/mojo/display.mojom";
+import "ui/display/mojom/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/ca_layer_params.mojom";

@@ -165,19 +165,14 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(
         [](blink::mojom::NativeFileSystemManagerRequest request,
            RenderProcessHost* host, const url::Origin& origin) {
-          auto* manager =
-              static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-                  ->GetNativeFileSystemManager();
           // This code path is only for workers, hence always pass in
           // MSG_ROUTING_NONE as frame ID. Frames themselves go through
           // RenderFrameHostImpl instead.
-          base::PostTaskWithTraits(
-              FROM_HERE, {BrowserThread::IO},
-              base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
-                             base::Unretained(manager),
-                             NativeFileSystemManagerImpl::BindingContext(
-                                 origin, host->GetID(), MSG_ROUTING_NONE),
-                             std::move(request)));
+          NativeFileSystemManagerImpl::BindRequestFromUIThread(
+              static_cast<StoragePartitionImpl*>(host->GetStoragePartition()),
+              NativeFileSystemManagerImpl::BindingContext(origin, host->GetID(),
+                                                          MSG_ROUTING_NONE),
+              std::move(request));
         }));
   }
   parameterized_binder_registry_.AddInterface(

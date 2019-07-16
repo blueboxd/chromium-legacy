@@ -283,7 +283,7 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
 
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(
     const std::string& log) {
-  client_->GetLogManager()->LogSavePasswordProgress(log);
+  client_->GetLogManager()->LogTextMessage(log);
 }
 
 void ContentPasswordManagerDriver::UserModifiedPasswordField() {

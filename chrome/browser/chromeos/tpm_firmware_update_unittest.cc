@@ -119,7 +119,7 @@ class TPMFirmwareUpdateTest : public testing::Test {
   std::unique_ptr<base::ScopedPathOverride> path_override_location_;
   std::unique_ptr<base::ScopedPathOverride> path_override_srk_vulnerable_roca_;
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
 };

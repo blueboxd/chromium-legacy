@@ -30,7 +30,6 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
-#include "content/public/browser/origin_policy_error_reason.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
@@ -424,7 +423,7 @@ CaptivePortalBlockingPage* CreateCaptivePortalBlockingPage(
 security_interstitials::SecurityInterstitialPage*
 CreateOriginPolicyInterstitialPage(content::WebContents* web_contents) {
   return security_interstitials::OriginPolicyUI::GetBlockingPage(
-      content::OriginPolicyErrorReason::kCannotLoadPolicy, web_contents,
+      network::OriginPolicyState::kCannotLoadPolicy, web_contents,
       GURL("https://example.com/broken/origin/policy"));
 }
 

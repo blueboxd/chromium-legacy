@@ -105,7 +105,8 @@ class MockPasswordManagerClient
 
 class MockLogManager : public autofill::LogManager {
  public:
-  MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogTextMessage, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogEntry, void(base::Value&&));
   MOCK_CONST_METHOD0(IsLoggingActive, bool(void));
 
   // Methods not important for testing.
@@ -1144,12 +1145,12 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   // code better to allow proper unit-testing.
   MockLogManager log_manager;
   EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      log_manager,
+      LogTextMessage("Message:  PasswordManager::OnPasswordFormsRendered \n"));
   EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(
-                  "Message: \"PasswordManager::OnPasswordFormsRendered\"\n"));
-  EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(testing::Ne(
-                  "Message: \"PasswordManager::OnPasswordFormsRendered\"\n")))
+              LogTextMessage(testing::Ne(
+                  "Message:  PasswordManager::OnPasswordFormsRendered \n")))
       .Times(testing::AnyNumber());
   EXPECT_CALL(*weak_client, GetLogManager())
       .WillRepeatedly(Return(&log_manager));
@@ -1227,10 +1228,9 @@ TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
     // code better to allow proper unit-testing.
     EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
     const char kExpectedMessage[] =
-        "Message: \"PasswordManager::ProvisionallySaveForm\"\n";
-    EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
-    EXPECT_CALL(log_manager,
-                LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+        "Message:  PasswordManager::ProvisionallySaveForm \n";
+    EXPECT_CALL(log_manager, LogTextMessage(kExpectedMessage));
+    EXPECT_CALL(log_manager, LogTextMessage(testing::Ne(kExpectedMessage)))
         .Times(testing::AnyNumber());
 
     ExecuteJavaScript(
@@ -1253,7 +1253,7 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
       .WillRepeatedly(Return(&log_manager));
   EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
   const char kExpectedMessage[] =
-      "Message: \"PasswordManager::OnSameDocumentNavigation\"\n";
+      "Message:  PasswordManager::OnSameDocumentNavigation \n";
 
   // The standard pattern is to use a __block variable WaitUntilCondition but
   // __block variable can't be captured in C++ lambda, so as workaround it's
@@ -1262,14 +1262,13 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
   bool expected_message_logged = false;
   bool* p_expected_message_logged = &expected_message_logged;
 
-  EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage))
+  EXPECT_CALL(log_manager, LogTextMessage(kExpectedMessage))
       .WillOnce(testing::Invoke(
           [&expected_message_logged](const std::string& message) {
             expected_message_logged = true;
           }));
 
-  EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+  EXPECT_CALL(log_manager, LogTextMessage(testing::Ne(kExpectedMessage)))
       .Times(testing::AnyNumber());
 
   LoadHtml(@"<iframe id='frame1' name='frame1'></iframe>");
@@ -1507,22 +1506,22 @@ TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
     ChromeWebTest::SetUp();
-    
+
     password_manager::NewPasswordFormManager::
     set_wait_for_server_predictions_for_filling(false);
-    
+
     auto client =
     std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());
     weak_client_ = client.get();
-    
+
     EXPECT_CALL(*weak_client_, GetPasswordSyncState())
     .WillRepeatedly(
                     Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
     EXPECT_CALL(*weak_client_, IsIncognito()).WillRepeatedly(Return(true));
-    
+
     passwordController_ =
     [[PasswordController alloc] initWithWebState:web_state()
                                           client:std::move(client)];
-    
+
     EXPECT_FALSE([passwordController_ passwordGenerationHelper]);
 }

@@ -206,9 +206,9 @@ test(function() {
 }, "Test setting 'start safe' as incorrect value through CSS.");
 
 test(function() {
-    checkValues(placeContentBaseline, "placeContent", "place-content", "", "normal normal");
-    checkPlaceContentValues(placeContentBaseline, "", "normal", "normal");
-}, "Test setting 'baseline' as incorrect value through CSS.");
+    checkValues(placeContentBaseline, "placeContent", "place-content", "", "baseline start");
+    checkPlaceContentValues(placeContentBaseline, "", "baseline", "start");
+}, "Test setting 'baseline' as 'baseline start'.");
 
 test(function() {
     checkValues(placeContentBaselineSafe, "placeContent", "place-content", "", "normal normal");

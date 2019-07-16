@@ -97,11 +97,16 @@ class BASE_EXPORT FileDescriptorWatcher {
   // Registers |callback| to be posted on the current sequence when |fd| is
   // readable or writable without blocking. |callback| is unregistered when the
   // returned Controller is deleted (deletion must happen on the current
-  // sequence). To call these methods, a FileDescriptorWatcher must have been
+  // sequence).
+  // Usage note: To call these methods, a FileDescriptorWatcher must have been
   // instantiated on the current thread and SequencedTaskRunnerHandle::IsSet()
   // must return true (these conditions are met at least on all ThreadPool
   // threads as well as on threads backed by a MessageLoopForIO). |fd| must
   // outlive the returned Controller.
+  // Shutdown note: notifications aren't guaranteed to be emitted once the bound
+  // (current) SequencedTaskRunner enters its shutdown phase (i.e.
+  // ThreadPool::Shutdown() or Thread::Stop()) regardless of the
+  // SequencedTaskRunner's TaskShutdownBehavior.
   static std::unique_ptr<Controller> WatchReadable(
       int fd,
       const RepeatingClosure& callback);

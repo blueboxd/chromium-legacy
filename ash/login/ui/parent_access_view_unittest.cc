@@ -156,6 +156,7 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
     generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
                         ui::EF_NONE);
   }
+  EXPECT_TRUE(test_api.submit_button()->HasFocus());
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
 
   login_client_->set_validate_parent_access_code_result(true);
@@ -253,7 +254,14 @@ TEST_F(ParentAccessViewTest, Backspace) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i)
     generator->PressKey(ui::KeyboardCode::VKEY_1, ui::EF_NONE);
+  EXPECT_TRUE(test_api.submit_button()->HasFocus());
   EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+
+  // After access code is completed, focus moves to submit button.
+  // Move focus back to access code input.
+  for (int i = 0; i < 2; ++i)
+    generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
   // Active field has content - backspace clears the content, but does not move
   // focus.
@@ -328,6 +336,7 @@ TEST_F(ParentAccessViewTest, ErrorState) {
     generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
                         ui::EF_NONE);
   }
+  EXPECT_TRUE(test_api.submit_button()->HasFocus());
 
   // Error should be shown after unsuccessful validation.
   login_client_->set_validate_parent_access_code_result(false);
@@ -338,6 +347,12 @@ TEST_F(ParentAccessViewTest, ErrorState) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ParentAccessView::State::kError, test_api.state());
   EXPECT_EQ(0, successful_validation_);
+
+  // After access code is completed, focus moves to submit button.
+  // Move focus back to access code input.
+  for (int i = 0; i < 2; ++i)
+    generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
   // Updating input code (here last digit) should clear error state.
   generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
@@ -358,15 +373,10 @@ TEST_F(ParentAccessViewTest, TabKeyTraversal) {
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
-  // Enter access code, so submit button is enabled and focusable.
+  // Enter access code, so submit button is enabled and focused.
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i)
     generator->PressKey(ui::KeyboardCode::VKEY_0, ui::EF_NONE);
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
-  EXPECT_TRUE(test_api.help_button()->HasFocus());
-
-  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
   EXPECT_TRUE(test_api.submit_button()->HasFocus());
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
@@ -380,6 +390,9 @@ TEST_F(ParentAccessViewTest, TabKeyTraversal) {
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
   EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_NONE);
+  EXPECT_TRUE(test_api.help_button()->HasFocus());
 }
 
 // Tests children views backwards traversal with tab key.
@@ -392,6 +405,13 @@ TEST_F(ParentAccessViewTest, BackwardTabKeyTraversal) {
   ui::test::EventGenerator* generator = GetEventGenerator();
   for (int i = 0; i < 6; ++i)
     generator->PressKey(ui::KeyboardCode::VKEY_0, ui::EF_NONE);
+  EXPECT_TRUE(test_api.submit_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(test_api.help_button()->HasFocus());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_TRUE(HasFocusInAnyChildView(test_api.access_code_view()));
 
   generator->PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(test_api.description_label()->HasFocus());

@@ -268,7 +268,7 @@ void BrowserSavePasswordProgressLogger::LogFormData(
 }
 
 void BrowserSavePasswordProgressLogger::SendLog(const std::string& log) {
-  log_manager_->LogSavePasswordProgress(log);
+  log_manager_->LogTextMessage(log);
 }
 
 }  // namespace password_manager

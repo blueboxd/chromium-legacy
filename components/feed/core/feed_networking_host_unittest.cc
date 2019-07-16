@@ -137,7 +137,7 @@ class FeedNetworkingHostTest : public testing::Test {
   network::TestURLLoaderFactory* test_factory() { return &test_factory_; }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   identity::IdentityTestEnvironment identity_test_env_;

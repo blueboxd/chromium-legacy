@@ -2104,6 +2104,7 @@ void Browser::OnTabClosing(WebContents* contents) {
       chrome::NOTIFICATION_TAB_CLOSING,
       content::Source<NavigationController>(&contents->GetController()),
       content::NotificationService::NoDetails());
+  SearchTabHelper::FromWebContents(contents)->OnTabClosing();
 }
 
 void Browser::OnTabDetached(WebContents* contents, bool was_active) {

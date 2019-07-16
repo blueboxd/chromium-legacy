@@ -69,6 +69,8 @@ blink_core_sources("paint") {
     "details_marker_painter.h",
     "document_marker_painter.cc",
     "document_marker_painter.h",
+    "element_timing_utils.cc",
+    "element_timing_utils.h",
     "ellipsis_box_painter.cc",
     "ellipsis_box_painter.h",
     "embedded_content_painter.cc",

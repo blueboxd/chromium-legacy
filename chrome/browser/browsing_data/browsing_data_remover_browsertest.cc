@@ -290,10 +290,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
  public:
   BrowsingDataRemoverBrowserTest() {
     std::vector<base::Feature> enabled_features = {
-        leveldb::kLevelDBRewriteFeature,
-        // Ensure that kOnionSoupDOMStorage is enabled because the old
-        // SessionStorage implementation causes flaky tests.
-        blink::features::kOnionSoupDOMStorage};
+        leveldb::kLevelDBRewriteFeature};
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     enabled_features.push_back(media::kExternalClearKeyForTesting);
 #endif

@@ -23,7 +23,7 @@
       }
     </style>
     <div class="settings-box first">
-      <div class="start">$i18n{fontSize}</div>
+      <div class="start settings-box-text">$i18n{fontSize}</div>
       <settings-slider id="sizeSlider"
           pref="{{prefs.webkit.webprefs.default_font_size}}"
           ticks="[[fontSizeRange_]]"
@@ -31,7 +31,7 @@
       </settings-slider>
     </div>
     <div class="settings-box">
-      <div class="start">$i18n{minimumFont}</div>
+      <div class="start settings-box-text">$i18n{minimumFont}</div>
       <div id="minimumSize">
         <settings-slider  pref="{{prefs.webkit.webprefs.minimum_font_size}}"
             ticks="[[minimumFontSizeRange_]]" label-min="$i18n{tiny}"
@@ -59,7 +59,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item"
+      <div class="list-item settings-box-text"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -80,7 +80,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item"
+      <div class="list-item settings-box-text"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -101,7 +101,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item"
+      <div class="list-item settings-box-text"
           style="
               font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
               font-family:
@@ -122,7 +122,7 @@
             menu-options="[[fontOptions_]]">
         </settings-dropdown-menu>
       </div>
-      <div class="list-item"
+      <div class="list-item settings-box-text"
           style="
               font-size:
                   [[prefs.webkit.webprefs.default_fixed_font_size.value]]px;

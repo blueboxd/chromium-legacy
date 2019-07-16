@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 @class FirstRunConfiguration;
-@class Tab;
 @protocol SyncPresenter;
 
 namespace base {

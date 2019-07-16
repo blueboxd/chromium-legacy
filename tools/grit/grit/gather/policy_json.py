@@ -59,9 +59,15 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
     if example_text == []:
       # In such cases the original text is okay for an example.
       example_text = text
+
+    replaced_text = self.Escape(''.join(text).strip())
+    replaced_text = replaced_text.replace('$1', self._config['app_name'])
+    replaced_text = replaced_text.replace('$2', self._config['os_name'])
+    replaced_text = replaced_text.replace('$3', self._config['frame_name'])
+
     msg.AppendPlaceholder(tclib.Placeholder(
         placeholder.attributes['name'].value,
-        self.Escape(''.join(text).strip()),
+        replaced_text,
         ''.join(example_text).strip()))
 
   def _ParseMessage(self, string, desc):
@@ -293,3 +299,24 @@ class PolicyJson(skeleton_gatherer.SkeletonGatherer):
 
   def Escape(self, text):
     return json.dumps(text, ensure_ascii=False)[1:-1]
+
+  def SetDefines(self, defines):
+    if not defines:
+      raise Exception('Must pass valid defines')
+
+    if '_chromium' in defines:
+      self._config = {
+        'build': 'chromium',
+        'app_name': 'Chromium',
+        'frame_name': 'Chromium Frame',
+        'os_name': 'Chromium OS',
+      }
+    elif '_google_chrome' in defines:
+      self._config = {
+        'build': 'chrome',
+        'app_name': 'Google Chrome',
+        'frame_name': 'Google Chrome Frame',
+        'os_name': 'Google Chrome OS',
+      }
+    else:
+      raise Exception('Unknown build')

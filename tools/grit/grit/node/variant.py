@@ -26,7 +26,7 @@ class SkeletonNode(base.Node):
     return {'encoding' : ''}
 
   def _ContentType(self):
-    if self.attrs.has_key('file'):
+    if 'file' in self.attrs:
       return self._CONTENT_TYPE_NONE
     else:
       return self._CONTENT_TYPE_CDATA

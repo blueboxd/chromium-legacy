@@ -248,9 +248,7 @@ PerformanceEntryVector Performance::getEntriesByTypeInternal(
       break;
     case PerformanceEntry::kTaskAttribution:
       break;
-    case PerformanceEntry::kLayoutJank:
-      UseCounter::Count(GetExecutionContext(),
-                        WebFeature::kLayoutJankExplicitlyRequested);
+    case PerformanceEntry::kLayoutShift:
       for (const auto& layout_jank : layout_jank_buffer_)
         entries.push_back(layout_jank);
       break;
@@ -716,46 +714,38 @@ PerformanceMeasure* Performance::MeasureInternal(
       return MeasureWithDetail(script_state, measure_name, options->start(),
                                options->end(), options->detail(),
                                exception_state);
-    } else {
-      // measure("name", "mark1", *)
-      StringOrDouble converted_start;
-      if (start_or_options.IsString()) {
-        converted_start =
-            StringOrDouble::FromString(start_or_options.GetAsString());
-      } else {
-        DCHECK(start_or_options.IsNull() ||
-               start_or_options.IsPerformanceMeasureOptions());
-        converted_start = NativeValueTraits<StringOrDouble>::NullValue();
-      }
-      // We let |end| behave the same whether it's empty, undefined or null in
-      // JS, as long as |end| is null in C++.
-      return MeasureWithDetail(
-          script_state, measure_name, converted_start,
-          end ? StringOrDouble::FromString(*end)
-              : NativeValueTraits<StringOrDouble>::NullValue(),
-          ScriptValue::CreateNull(script_state), exception_state);
     }
-  } else {
-    // For consistency with UserTimingL2: the L2 API took |start| as a string,
-    // so any object passed in became a string '[object, object]', null became
-    // string 'null'.
+    // measure("name", "mark1", *)
     StringOrDouble converted_start;
-    if (start_or_options.IsPerformanceMeasureOptions()) {
-      converted_start = NativeValueTraits<StringOrDouble>::NullValue();
-    } else {
-      // |start_or_options| is not nullable.
-      DCHECK(start_or_options.IsString());
+    if (start_or_options.IsString()) {
       converted_start =
           StringOrDouble::FromString(start_or_options.GetAsString());
     }
-
-    MeasureWithDetail(script_state, measure_name, converted_start,
-                      end ? StringOrDouble::FromString(*end)
-                          : NativeValueTraits<StringOrDouble>::NullValue(),
-                      ScriptValue::CreateNull(script_state), exception_state);
-    // Return nullptr to distinguish from L3.
-    return nullptr;
+    // We let |end| behave the same whether it's empty, undefined or null in
+    // JS, as long as |end| is null in C++.
+    return MeasureWithDetail(
+        script_state, measure_name, converted_start,
+        end ? StringOrDouble::FromString(*end)
+            : NativeValueTraits<StringOrDouble>::NullValue(),
+        ScriptValue::CreateNull(script_state), exception_state);
   }
+  // For consistency with UserTimingL2: the L2 API took |start| as a string,
+  // so any object passed in became a string '[object, object]', null became
+  // string 'null'.
+  StringOrDouble converted_start;
+  if (!start_or_options.IsPerformanceMeasureOptions()) {
+    // |start_or_options| is not nullable.
+    DCHECK(start_or_options.IsString());
+    converted_start =
+        StringOrDouble::FromString(start_or_options.GetAsString());
+  }
+
+  MeasureWithDetail(script_state, measure_name, converted_start,
+                    end ? StringOrDouble::FromString(*end)
+                        : NativeValueTraits<StringOrDouble>::NullValue(),
+                    ScriptValue::CreateNull(script_state), exception_state);
+  // Return nullptr to distinguish from L3.
+  return nullptr;
 }
 
 PerformanceMeasure* Performance::MeasureWithDetail(

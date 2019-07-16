@@ -17,7 +17,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  LargestContentfulPaint(double paint_time,
+  LargestContentfulPaint(double render_time,
                          uint64_t size,
                          double response_end,
                          const AtomicString& id,
@@ -29,6 +29,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   PerformanceEntryType EntryTypeEnum() const override;
 
   uint64_t size() const { return size_; }
+  DOMHighResTimeStamp renderTime() const { return render_time_; }
   DOMHighResTimeStamp responseEnd() const { return response_end_; }
   const AtomicString& id() const { return id_; }
   const String& url() const { return url_; }
@@ -40,6 +41,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   uint64_t size_;
+  DOMHighResTimeStamp render_time_;
   DOMHighResTimeStamp response_end_;
   AtomicString id_;
   String url_;

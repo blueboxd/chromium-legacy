@@ -90,11 +90,10 @@ class BackgroundSyncLauncherTest : public testing::Test {
 
   void TearDown() override { SetBrowserClientForTesting(original_client_); }
 
-  base::TimeDelta GetSoonestWakeupDelta(
-      blink::mojom::BackgroundSyncType sync_type) {
+  base::TimeDelta GetSoonestWakeupDelta() {
     base::TimeDelta to_return;
     BackgroundSyncLauncher::GetSoonestWakeupDelta(
-        sync_type, &test_browser_context_,
+        &test_browser_context_,
         base::BindLambdaForTesting(
             [&to_return](base::TimeDelta soonest_wakeup_delta) {
               to_return = soonest_wakeup_delta;
@@ -152,8 +151,7 @@ TEST_F(BackgroundSyncLauncherTest, CorrectSoonestWakeupDeltaIsPicked) {
   // to base::TimeDelta::Max(). This will cause cancellation of the wakeup
   // task.
   SetUpBrowserContext(urls);
-  EXPECT_TRUE(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT)
-                  .is_max());
+  EXPECT_TRUE(GetSoonestWakeupDelta().is_max());
 
   // Add two more storage partitions, this time with wakeup_deltas.
   // Verify that we pick the smaller of the two.
@@ -163,9 +161,7 @@ TEST_F(BackgroundSyncLauncherTest, CorrectSoonestWakeupDeltaIsPicked) {
     wakeup_deltas[url] = delta_ms += 1000;
   SetUpBrowserContext(urls, wakeup_deltas);
 
-  EXPECT_EQ(GetSoonestWakeupDelta(blink::mojom::BackgroundSyncType::ONE_SHOT)
-                .InMilliseconds(),
-            1000);
+  EXPECT_EQ(GetSoonestWakeupDelta().InMilliseconds(), 1000);
 }
 
 #if defined(OS_ANDROID)

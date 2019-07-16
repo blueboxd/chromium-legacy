@@ -36,9 +36,6 @@ class ASH_PUBLIC_EXPORT KeyboardController {
 
   virtual ~KeyboardController();
 
-  // Informs the controller that the keyboard contents have loaded.
-  virtual void KeyboardContentsLoaded(const gfx::Size& size) = 0;
-
   // Retrieves the current keyboard configuration.
   virtual keyboard::KeyboardConfig GetKeyboardConfig() = 0;
 

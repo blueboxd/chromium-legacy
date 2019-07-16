@@ -34,7 +34,10 @@
 
 namespace blink {
 
-OffscreenCanvas::OffscreenCanvas(const IntSize& size) : size_(size) {
+OffscreenCanvas::OffscreenCanvas(const IntSize& size)
+    : CanvasRenderingContextHost(
+          CanvasRenderingContextHost::HostType::kOffscreenCanvasHost),
+      size_(size) {
   UpdateMemoryUsage();
 }
 
@@ -53,8 +56,7 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
                              const SkIRect& damage_rect) {
   if (!HasPlaceholderCanvas() || !canvas_resource)
     return;
-  RecordCanvasSizeToUMA(
-      Size(), CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
+  RecordCanvasSizeToUMA(Size());
 
   base::TimeTicks commit_start_time = base::TimeTicks::Now();
   current_frame_damage_rect_.join(damage_rect);

@@ -222,6 +222,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # on tab creation. https://crbug.com/chromedriver/3018
         'ChromeDriverTest.testNewWindowDoesNotFocus',
         'ChromeDriverTest.testNewTabDoesNotFocus',
+        # Android does not support the virtual authenticator environment.
+        'ChromeDriverSecureContextTest.testAddVirtualAuthenticator',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -1370,16 +1372,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     except Exception as e:
       self.fail(e.message)
 
-  def testAutoReporting(self):
-    self.assertFalse(self._driver.IsAutoReporting())
-    self._driver.SetAutoReporting(True)
-    self.assertTrue(self._driver.IsAutoReporting())
-    url = self.GetHttpUrlForFile('/chromedriver/console_log.html')
-    self.assertRaisesRegexp(
-        chromedriver.UnknownError,
-        ".*Uncaught TypeError: Cannot read property 'y' of undefined.*",
-        self._driver.Load, url)
-
   def testDoesntHangOnDebugger(self):
     self._driver.Load('about:blank')
     self._driver.ExecuteScript('debugger;')
@@ -2020,6 +2012,45 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
     self.assertEquals('test', report['type']);
     self.assertEquals('test report message', report['body']['message']);
+
+# Tests that require a secure context.
+class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
+  @staticmethod
+  def GlobalSetUp():
+    cert_path = os.path.join(chrome_paths.GetTestData(),
+                             'chromedriver/invalid_ssl_cert.pem')
+    ChromeDriverSecureContextTest._https_server = webserver.WebServer(
+        chrome_paths.GetTestData(), cert_path)
+
+  @staticmethod
+  def GlobalTearDown():
+    ChromeDriverSecureContextTest._https_server.Shutdown()
+
+  @staticmethod
+  def GetHttpsUrlForFile(file_path, host=None):
+    return ChromeDriverSecureContextTest._https_server.GetUrl(
+        host) + file_path
+
+  def setUp(self):
+    self._driver = self.CreateDriver(
+        chrome_switches=['host-resolver-rules=MAP * 127.0.0.1'])
+
+  def testAddVirtualAuthenticator(self):
+    script = """
+      let done = arguments[0];
+      registerCredential().then(done);
+    """
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+    self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = False,
+        hasUserVerification = False,
+    )
+    result = self._driver.ExecuteAsyncScript(script)
+    self.assertEquals('OK', result['status'])
+    self.assertEquals(['usb'], result['credential']['transports'])
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.
@@ -3639,10 +3670,12 @@ if __name__ == '__main__':
   # multiple GlobalSetup and GlobalTearDown, and reducing the number of HTTP
   # servers used for the test.
   ChromeDriverTest.GlobalSetUp()
+  ChromeDriverSecureContextTest.GlobalSetUp()
   HeadlessInvalidCertificateTest.GlobalSetUp()
   MobileEmulationCapabilityTest.GlobalSetUp()
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
   ChromeDriverTest.GlobalTearDown()
+  ChromeDriverSecureContextTest.GlobalTearDown()
   HeadlessInvalidCertificateTest.GlobalTearDown()
   MobileEmulationCapabilityTest.GlobalTearDown()
 

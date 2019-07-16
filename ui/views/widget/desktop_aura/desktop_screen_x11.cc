@@ -166,10 +166,6 @@ display::Display DesktopScreenX11::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   if (displays_.size() <= 1)
     return GetPrimaryDisplay();
-  for (const auto& display : displays_) {
-    if (display.bounds().Contains(point))
-      return display;
-  }
   return *FindDisplayNearestPoint(displays_, point);
 }
 

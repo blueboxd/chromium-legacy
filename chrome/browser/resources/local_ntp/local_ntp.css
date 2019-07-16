@@ -919,6 +919,8 @@ html[dir=rtl] .menu-option {
 
 #backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile,
 #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   height: 144px;
   margin: 16px 16px 0 16px;
   width: 144px;
@@ -1156,6 +1158,15 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 130px;
 }
 
+.mini-header-colorful {
+  background-image: url(icons/colored_header.svg);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  height: 40px;
+  width: 130px;
+}
+
 .mini-shortcuts {
   -webkit-mask-image: url(icons/shortcut-circles.svg);
   -webkit-mask-repeat: no-repeat;
@@ -1167,11 +1178,17 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   width: 116px;
 }
 
+#backgrounds-default.selected #backgrounds-default-icon {
+  box-shadow: 0 1px 3px 0 rgba(var(--GG800-rgb), .3),
+      0 4px 8px 3px rgba(var(--GG800-rgb), .15);
+}
+
 #backgrounds-default:not(.selected) .mini-page {
   padding-top: 32px;
 }
 
-#backgrounds-default:not(.selected) .mini-header {
+#backgrounds-default:not(.selected) .mini-header,
+#backgrounds-default:not(.selected) .mini-header-colorful {
   height: 48px;
   width: 156px;
 }

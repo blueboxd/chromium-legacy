@@ -631,8 +631,6 @@ void MediaControlsImpl::PopulatePanel() {
   volume_control_container_->ParserAppendChild(mute_button_);
   button_panel->ParserAppendChild(volume_control_container_);
 
-  MaybeParserAppendChild(button_panel, picture_in_picture_button_);
-
   button_panel->ParserAppendChild(fullscreen_button_);
 
   button_panel->ParserAppendChild(overflow_menu_);
@@ -1214,9 +1212,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       std::make_pair(fullscreen_button_.Get(), true),
       std::make_pair(current_time_display_.Get(), true),
       std::make_pair(duration_display_.Get(), true),
-      picture_in_picture_button_.Get()
-          ? std::make_pair(picture_in_picture_button_.Get(), false)
-          : std::make_pair(nullptr, false),
+      std::make_pair(picture_in_picture_button_.Get(), false),
       std::make_pair(cast_button_.Get(), false),
       std::make_pair(download_button_.Get(), false),
       std::make_pair(toggle_closed_captions_button_.Get(), false),
@@ -1942,8 +1938,7 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
       mute_button_.Get(),
       volume_slider_.Get(),
       toggle_closed_captions_button_.Get(),
-      picture_in_picture_button_.Get() ? picture_in_picture_button_.Get()
-                                       : nullptr,
+      picture_in_picture_button_.Get(),
       cast_button_.Get(),
       current_time_display_.Get(),
       duration_display_.Get(),

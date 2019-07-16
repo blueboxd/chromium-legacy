@@ -172,7 +172,8 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
  protected:
   DeviceScheduledUpdateCheckerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     auto fake_update_engine_client =
         std::make_unique<chromeos::FakeUpdateEngineClient>();
     fake_update_engine_client_ = fake_update_engine_client.get();

@@ -34,7 +34,7 @@ class AudioRendererSinkCacheTest : public testing::Test {
  public:
   AudioRendererSinkCacheTest()
       : task_env_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         cache_(std::make_unique<AudioRendererSinkCacheImpl>(
             task_env_.GetMainThreadTaskRunner(),

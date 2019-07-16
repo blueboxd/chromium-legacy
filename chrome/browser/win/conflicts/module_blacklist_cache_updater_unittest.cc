@@ -101,7 +101,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
       : dll1_(kDllPath1),
         dll2_(kDllPath2),
         scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         user_data_dir_override_(chrome::DIR_USER_DATA),
         module_list_filter_(CreateModuleListFilter()),
         module_blacklist_cache_path_(

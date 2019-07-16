@@ -43,9 +43,6 @@
            compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_DARK_ICON_SEARCH"
            file="images/dark/icon_search.svg" type="BINDATA" compress="gzip" />
-  <include name="IDR_WEBUI_IMAGES_DARK_ICON_TOOLBAR_CANCEL"
-           file="images/dark/icon_toolbar_cancel.svg" type="BINDATA"
-           compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_DARK_ICON_VISIBILITY"
            file="images/dark/icon_visibility.svg" type="BINDATA"
            compress="gzip" />
@@ -80,9 +77,6 @@
            file="images/icon_search.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ICON_SETTINGS"
            file="images/icon_settings.svg" type="BINDATA" compress="gzip" />
-  <include name="IDR_WEBUI_IMAGES_ICON_TOOLBAR_CANCEL"
-           file="images/icon_toolbar_cancel.svg" type="BINDATA"
-           compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY"
            file="images/icon_visibility.svg" type="BINDATA" compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY_OFF"

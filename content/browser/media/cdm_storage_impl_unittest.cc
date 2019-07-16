@@ -44,6 +44,11 @@ void SimulateNavigation(RenderFrameHost** rfh, const GURL& url) {
 }  // namespace
 
 class CdmStorageTest : public RenderViewHostTestHarness {
+ public:
+  CdmStorageTest()
+      : RenderViewHostTestHarness(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+
  protected:
   void SetUp() final {
     RenderViewHostTestHarness::SetUp();

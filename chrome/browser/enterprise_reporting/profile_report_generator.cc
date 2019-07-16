@@ -9,6 +9,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/extension_info.h"
+#include "chrome/browser/enterprise_reporting/policy_info.h"
+#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -54,6 +56,16 @@ void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
   GetExtensionInfo();
   GetPluginInfo();
 
+  if (policies_enabled_) {
+    // TODO(crbug.com/983151): Upload policy error as their IDs.
+    policies_ = policy::GetAllPolicyValuesAsDictionary(
+        profile_, /* with_user_policies */ true, /* convert_values */ false,
+        /* with_device_data*/ false,
+        /* is_pretty_print */ false, /* convert_types */ false);
+    GetChromePolicyInfo();
+    GetExtensionPolicyInfo();
+  }
+
   CheckReportStatusAsync();
   return;
 }
@@ -83,6 +95,14 @@ void ProfileReportGenerator::GetPluginInfo() {
   content::PluginService::GetInstance()->GetPlugins(
       base::BindOnce(&ProfileReportGenerator::OnPluginsLoaded,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ProfileReportGenerator::GetChromePolicyInfo() {
+  AppendChromePolicyInfoIntoProfileReport(policies_, report_.get());
+}
+
+void ProfileReportGenerator::GetExtensionPolicyInfo() {
+  AppendExtensionPolicyInfoIntoProfileReport(policies_, report_.get());
 }
 
 void ProfileReportGenerator::OnPluginsLoaded(

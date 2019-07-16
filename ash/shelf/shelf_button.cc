@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_button.h"
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -12,8 +13,11 @@
 
 namespace ash {
 
-ShelfButton::ShelfButton(ShelfButtonDelegate* shelf_button_delegate)
-    : Button(nullptr), shelf_button_delegate_(shelf_button_delegate) {
+ShelfButton::ShelfButton(Shelf* shelf,
+                         ShelfButtonDelegate* shelf_button_delegate)
+    : Button(nullptr),
+      shelf_(shelf),
+      shelf_button_delegate_(shelf_button_delegate) {
   DCHECK(shelf_button_delegate_);
   set_hide_ink_drop_when_showing_context_menu(false);
   set_ink_drop_base_color(kShelfInkDropBaseColor);
@@ -48,6 +52,12 @@ void ShelfButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 // views::Button
 
 void ShelfButton::NotifyClick(const ui::Event& event) {
+  // Pressing a shelf button in the auto-hide shelf should not do anything.
+  // The event can still be received by the auto-hide shelf since we reserved
+  // a portion of the auto-hide shelf within the screen bounds.
+  if (!shelf_->IsVisible())
+    return;
+
   Button::NotifyClick(event);
   if (shelf_button_delegate_)
     shelf_button_delegate_->ButtonPressed(/*sender=*/this, event, GetInkDrop());

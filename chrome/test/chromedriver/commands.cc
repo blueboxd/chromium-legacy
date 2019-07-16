@@ -314,11 +314,6 @@ void ExecuteSessionCommandOnSessionThread(
         }
       }
 
-      if (status.IsOk() && session->auto_reporting_enabled) {
-        std::string message = session->GetFirstBrowserError();
-        if (!message.empty())
-          status = Status(kUnknownError, message);
-      }
     }
   }
 

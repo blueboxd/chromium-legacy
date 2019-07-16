@@ -149,9 +149,12 @@ class AccessibleInputField : public views::Textfield {
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kLabelText;
-    node_data->SetDescription(accessible_description_);
-    node_data->SetValue(text());
+    views::Textfield::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kListItem;
+    node_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                                  base::UTF16ToUTF8(accessible_description_));
+    node_data->SetDescription(text());
+    node_data->SetName(text());
   }
 
   bool IsGroupFocusTraversable() const override { return false; }
@@ -173,7 +176,8 @@ class AccessibleInputField : public views::Textfield {
 class ParentAccessView::AccessCodeInput : public views::View,
                                           public views::TextfieldController {
  public:
-  using OnInputChange = base::RepeatingCallback<void(bool complete)>;
+  using OnInputChange =
+      base::RepeatingCallback<void(bool complete, bool last_field_active)>;
   using OnEnter = base::RepeatingClosure;
 
   // Builds the view for an access code that consists out of |length| digits.
@@ -209,10 +213,8 @@ class ParentAccessView::AccessCodeInput : public views::View,
       field->SetBorder(views::CreateSolidSidedBorder(
           0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, kTextColor));
       field->SetGroup(kParentAccessInputGroup);
-      if (i < length - 1) {
-        field->set_accessible_description(l10n_util::GetStringUTF16(
-            IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT));
-      }
+      field->set_accessible_description(l10n_util::GetStringUTF16(
+          IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT));
       input_fields_.push_back(field);
       AddChildView(field);
     }
@@ -227,9 +229,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
     DCHECK_GE(9, value);
 
     ActiveField()->SetText(base::NumberToString16(value));
+    bool was_last_field = IsLastFieldActive();
     FocusNextField();
 
-    on_input_change_.Run(GetCode().has_value());
+    on_input_change_.Run(GetCode().has_value(), was_last_field);
   }
 
   // Clears input from the |active_field_|. If |active_field| is empty moves
@@ -240,7 +243,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
     }
 
     ActiveField()->SetText(base::string16());
-    on_input_change_.Run(false);
+    on_input_change_.Run(false, IsLastFieldActive());
   }
 
   // Returns access code as string if all fields contain input.
@@ -271,6 +274,11 @@ class ParentAccessView::AccessCodeInput : public views::View,
   View* GetSelectedViewForGroup(int group) override { return ActiveField(); }
 
   void RequestFocus() override { ActiveField()->RequestFocus(); }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    views::View::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kGroup;
+  }
 
   // views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,
@@ -313,6 +321,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
     for (size_t i = 0; i < input_fields_.size(); ++i) {
       if (input_fields_[i] == sender) {
         active_input_index_ = i;
+        RequestFocus();
         break;
       }
     }
@@ -329,6 +338,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
     for (size_t i = 0; i < input_fields_.size(); ++i) {
       if (input_fields_[i] == sender) {
         active_input_index_ = i;
+        RequestFocus();
         break;
       }
     }
@@ -348,11 +358,16 @@ class ParentAccessView::AccessCodeInput : public views::View,
 
   // Moves focus to the next input field if it exists.
   void FocusNextField() {
-    if (active_input_index_ == (static_cast<int>(input_fields_.size()) - 1))
+    if (IsLastFieldActive())
       return;
 
     ++active_input_index_;
     ActiveField()->RequestFocus();
+  }
+
+  // Returns whether last input field is currently active.
+  bool IsLastFieldActive() const {
+    return active_input_index_ == (static_cast<int>(input_fields_.size()) - 1);
   }
 
   // Returns pointer to the active input field.
@@ -722,11 +737,14 @@ void ParentAccessView::UpdatePreferredSize() {
   SetPreferredSize(CalculatePreferredSize());
 }
 
-void ParentAccessView::OnInputChange(bool complete) {
+void ParentAccessView::OnInputChange(bool complete, bool last_field_active) {
   if (state_ == State::kError)
     UpdateState(State::kNormal);
 
   submit_button_->SetEnabled(complete);
+
+  if (complete && last_field_active)
+    submit_button_->RequestFocus();
 }
 
 void ParentAccessView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

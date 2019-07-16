@@ -62,7 +62,7 @@ class DiscoveryNetworkMonitorMetricObserverTest : public ::testing::Test {
  public:
   DiscoveryNetworkMonitorMetricObserverTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         start_ticks_(thread_bundle_.NowTicks()),
         metrics_(std::make_unique<MockMetrics>()),
         mock_metrics_(metrics_.get()),

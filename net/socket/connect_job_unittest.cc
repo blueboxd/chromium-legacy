@@ -90,7 +90,7 @@ class ConnectJobTest : public testing::Test {
  public:
   ConnectJobTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         common_connect_job_params_(
             nullptr /* client_socket_factory */,
             nullptr /* host_resolver */,

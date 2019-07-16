@@ -51,7 +51,7 @@ class AllowlistCheckerClientTest : public testing::Test {
  public:
   AllowlistCheckerClientTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         target_url_("https://example.test") {}
 
   void SetUp() override {

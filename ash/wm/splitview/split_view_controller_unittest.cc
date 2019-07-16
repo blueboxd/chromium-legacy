@@ -13,11 +13,8 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
-#include "ash/kiosk_next/kiosk_next_shell_test_util.h"
-#include "ash/kiosk_next/mock_kiosk_next_shell_client.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
@@ -52,7 +49,6 @@
 #include "ash/wm/wm_event.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -4600,78 +4596,6 @@ TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
     backdrop_window = *(--it);
   DCHECK(backdrop_window);
   EXPECT_EQ(backdrop_window->bounds(), active_desk_container->bounds());
-}
-
-class SplitViewKioskNextAppDraggingTest : public SplitViewAppDraggingTest {
- public:
-  SplitViewKioskNextAppDraggingTest() = default;
-  ~SplitViewKioskNextAppDraggingTest() override = default;
-
-  // SplitViewAppDraggingTest:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kKioskNextShell);
-    set_start_session(false);
-
-    SplitViewAppDraggingTest::SetUp();
-
-    client_ = std::make_unique<MockKioskNextShellClient>();
-    LogInKioskNextUser(GetSessionControllerClient());
-  }
-
-  void TearDown() override {
-    client_.reset();
-    SplitViewAppDraggingTest::TearDown();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<MockKioskNextShellClient> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(SplitViewKioskNextAppDraggingTest);
-};
-
-// Tests that split view is disabled in Kiosk Next sessions.
-TEST_F(SplitViewKioskNextAppDraggingTest, SplitViewDisabled) {
-  std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 400, 400)));
-
-  EXPECT_FALSE(ShouldAllowSplitView());
-  EXPECT_FALSE(CanSnapInSplitview(window.get()));
-}
-
-// Tests that dragging a maximized window doesn't show drag indicators or allow
-// snapping in Kiosk Next sessions.
-TEST_F(SplitViewKioskNextAppDraggingTest, DragMaximizedWindow) {
-  UpdateDisplay("800x600");
-  InitializeWindow();
-  EXPECT_TRUE(wm::GetWindowState(window())->IsMaximized());
-  gfx::Rect display_bounds =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          window());
-
-  // Move the window by a small amount of distance will maximize the window
-  // again.
-  gfx::Point location(0, 10);
-  SendGestureEvents(location);
-  EXPECT_TRUE(wm::GetWindowState(window())->IsMaximized());
-
-  // Drag the window down to trigger overview mode.
-  const float long_scroll_delta = display_bounds.height() / 4 + 5;
-  location.set_y(long_scroll_delta);
-  SendScrollStartAndUpdate(location);
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(
-      overview_controller->overview_session()->IsWindowInOverview(window()));
-
-  // No drag indicators.
-  EXPECT_EQ(IndicatorState::kNone, GetIndicatorState());
-
-  // Complete the drag and verify the window is not snapped.
-  EndScrollSequence();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_EQ(IndicatorState::kNone, GetIndicatorState());
-  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
-  EXPECT_FALSE(wm::GetWindowState(window())->IsSnapped());
 }
 
 }  // namespace ash

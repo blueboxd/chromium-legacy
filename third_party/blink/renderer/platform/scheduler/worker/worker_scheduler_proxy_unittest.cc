@@ -103,7 +103,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
  public:
   WorkerSchedulerProxyTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         main_thread_scheduler_(std::make_unique<MainThreadSchedulerImpl>(
             base::sequence_manager::SequenceManagerForTest::Create(

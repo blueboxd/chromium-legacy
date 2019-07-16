@@ -128,6 +128,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::WebLocalFrame* web_frame,
       const media::AudioSourceParameters& params) override;
   viz::ContextProvider* SharedMainThreadContextProvider() override;
+  bool RTCSmoothnessAlgorithmEnabled() override;
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,

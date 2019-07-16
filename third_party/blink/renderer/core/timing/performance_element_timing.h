@@ -24,7 +24,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   static PerformanceElementTiming* Create(const AtomicString& name,
                                           const String& url,
                                           const FloatRect& intersection_rect,
-                                          DOMHighResTimeStamp start_time,
+                                          DOMHighResTimeStamp render_time,
                                           DOMHighResTimeStamp response_end,
                                           const AtomicString& identifier,
                                           int naturalWidth,
@@ -34,7 +34,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   PerformanceElementTiming(const AtomicString& name,
                            const String& url,
                            const FloatRect& intersection_rect,
-                           DOMHighResTimeStamp start_time,
+                           DOMHighResTimeStamp render_time,
                            DOMHighResTimeStamp response_end,
                            const AtomicString& identifier,
                            int naturalWidth,
@@ -48,19 +48,13 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   PerformanceEntryType EntryTypeEnum() const override;
 
   DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
-
+  DOMHighResTimeStamp renderTime() const { return render_time_; }
   DOMHighResTimeStamp responseEnd() const { return response_end_; }
-
   AtomicString identifier() const { return identifier_; }
-
   unsigned naturalWidth() const { return naturalWidth_; }
-
   unsigned naturalHeight() const { return naturalHeight_; }
-
   AtomicString id() const { return id_; }
-
   String url() const { return url_; }
-
   Element* element() const;
 
   void Trace(blink::Visitor*) override;
@@ -70,6 +64,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   WeakMember<Element> element_;
   Member<DOMRectReadOnly> intersection_rect_;
+  DOMHighResTimeStamp render_time_;
   DOMHighResTimeStamp response_end_;
   AtomicString identifier_;
   unsigned naturalWidth_;

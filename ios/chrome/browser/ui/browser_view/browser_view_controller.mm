@@ -4034,31 +4034,27 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)focusTabAtIndex:(NSUInteger)index {
   if (self.tabModel.count > index) {
-    [self.tabModel setCurrentTab:[self.tabModel tabAtIndex:index]];
+    self.tabModel.webStateList->ActivateWebStateAt(static_cast<int>(index));
   }
 }
 
 - (void)focusNextTab {
-  NSInteger currentTabIndex =
-      [self.tabModel indexOfTab:self.tabModel.currentTab];
-  NSInteger modelCount = self.tabModel.count;
-  if (currentTabIndex < modelCount - 1) {
-    Tab* nextTab = [self.tabModel tabAtIndex:currentTabIndex + 1];
-    [self.tabModel setCurrentTab:nextTab];
+  int activeIndex = self.tabModel.webStateList->active_index();
+  if (activeIndex < self.tabModel.webStateList->count()) {
+    self.tabModel.webStateList->ActivateWebStateAt(activeIndex + 1);
   } else {
-    [self.tabModel setCurrentTab:[self.tabModel tabAtIndex:0]];
+    self.tabModel.webStateList->ActivateWebStateAt(0);
   }
 }
 
 - (void)focusPreviousTab {
-  NSInteger currentTabIndex =
-      [self.tabModel indexOfTab:self.tabModel.currentTab];
-  if (currentTabIndex > 0) {
-    Tab* previousTab = [self.tabModel tabAtIndex:currentTabIndex - 1];
-    [self.tabModel setCurrentTab:previousTab];
+  int activeIndex = self.tabModel.webStateList->active_index();
+
+  if (activeIndex > 0) {
+    self.tabModel.webStateList->ActivateWebStateAt(activeIndex - 1);
   } else {
-    Tab* lastTab = [self.tabModel tabAtIndex:self.tabModel.count - 1];
-    [self.tabModel setCurrentTab:lastTab];
+    self.tabModel.webStateList->ActivateWebStateAt(
+        self.tabModel.webStateList->count() - 1);
   }
 }
 
@@ -4343,15 +4339,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)closeCurrentTab {
-  Tab* currentTab = self.tabModel.currentTab;
-  NSUInteger tabIndex = [self.tabModel indexOfTab:currentTab];
-  if (tabIndex == NSNotFound)
+  int active_index = self.tabModel.webStateList->active_index();
+  if (active_index == WebStateList::kInvalidIndex)
     return;
 
   UIView* snapshotView = [self.contentArea snapshotViewAfterScreenUpdates:NO];
   snapshotView.frame = self.contentArea.frame;
 
-  [self.tabModel closeTabAtIndex:tabIndex];
+  self.tabModel.webStateList->CloseWebStateAt(active_index,
+                                              WebStateList::CLOSE_USER_ACTION);
 
   if (![self canShowTabStrip]) {
     [self.contentArea addSubview:snapshotView];

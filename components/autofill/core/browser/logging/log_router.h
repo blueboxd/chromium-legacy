@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_ROUTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_ROUTER_H_
 
-#include <set>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 
 namespace autofill {
 
@@ -27,8 +28,12 @@ class LogRouter {
   LogRouter();
   ~LogRouter();
 
+  // Returns a JSON entry that can be fed into the logger.
+  static base::Value CreateEntryForText(const std::string& text);
+
   // Passes logs to the router. Only call when there are receivers registered.
   void ProcessLog(const std::string& text);
+  void ProcessLog(base::Value&& node);
 
   // All four (Unr|R)egister* methods below are safe to call from the
   // constructor of the registered object, because they do not call that object,
@@ -45,7 +50,8 @@ class LogRouter {
   // RegisterReceiver adds |receiver| to the right observer list, and returns
   // the logs accumulated so far. (It returns by value, not const ref, to
   // provide a snapshot as opposed to a link to |accumulated_logs_|.)
-  std::string RegisterReceiver(LogReceiver* receiver) WARN_UNUSED_RESULT;
+  const std::vector<base::Value>& RegisterReceiver(LogReceiver* receiver)
+      WARN_UNUSED_RESULT;
   // Remove |receiver| from the observers list.
   void UnregisterReceiver(LogReceiver* receiver);
 
@@ -57,7 +63,7 @@ class LogRouter {
   base::ObserverList<LogReceiver, true>::Unchecked receivers_;
 
   // Logs accumulated since the first receiver was registered.
-  std::string accumulated_logs_;
+  std::vector<base::Value> accumulated_logs_;
 
   DISALLOW_COPY_AND_ASSIGN(LogRouter);
 };

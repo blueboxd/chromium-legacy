@@ -236,7 +236,10 @@ class BASE_EXPORT TaskTracker {
   const bool has_log_best_effort_tasks_switch_;
 
   // Number of tasks blocking shutdown and boolean indicating whether shutdown
-  // has started.
+  // has started. |shutdown_lock_| should be held to access |shutdown_event_|
+  // when this indicates that shutdown has started because State doesn't provide
+  // memory barriers. It intentionally trades having to use a Lock on shutdown
+  // with not needing memory barriers at runtime.
   const std::unique_ptr<State> state_;
 
   // Number of task sources that haven't completed their execution. Is

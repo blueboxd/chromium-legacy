@@ -159,6 +159,43 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
 
 class SharedImageRepresentationSkia : public SharedImageRepresentation {
  public:
+  class ScopedWriteAccess {
+   public:
+    ScopedWriteAccess(SharedImageRepresentationSkia* representation,
+                      int final_msaa_count,
+                      const SkSurfaceProps& surface_props,
+                      std::vector<GrBackendSemaphore>* begin_semaphores,
+                      std::vector<GrBackendSemaphore>* end_semaphores);
+    ScopedWriteAccess(SharedImageRepresentationSkia* representation,
+                      std::vector<GrBackendSemaphore>* begin_semaphores,
+                      std::vector<GrBackendSemaphore>* end_semaphores);
+    ~ScopedWriteAccess();
+
+    bool success() const { return !!surface_; }
+    SkSurface* surface() const { return surface_.get(); }
+
+   private:
+    SharedImageRepresentationSkia* const representation_;
+    sk_sp<SkSurface> surface_;
+  };
+
+  class ScopedReadAccess {
+   public:
+    ScopedReadAccess(SharedImageRepresentationSkia* representation,
+                     std::vector<GrBackendSemaphore>* begin_semaphores,
+                     std::vector<GrBackendSemaphore>* end_semaphores);
+    ~ScopedReadAccess();
+
+    bool success() const { return !!promise_image_texture_; }
+    SkPromiseImageTexture* promise_image_texture() const {
+      return promise_image_texture_.get();
+    }
+
+   private:
+    SharedImageRepresentationSkia* const representation_;
+    sk_sp<SkPromiseImageTexture> promise_image_texture_;
+  };
+
   SharedImageRepresentationSkia(SharedImageManager* manager,
                                 SharedImageBacking* backing,
                                 MemoryTypeTracker* tracker)

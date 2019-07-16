@@ -315,6 +315,13 @@ bool TaskQueue::BlockedByFence() const {
   return impl_->BlockedByFence();
 }
 
+EnqueueOrder TaskQueue::GetLastUnblockEnqueueOrder() const {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (!impl_)
+    return EnqueueOrder();
+  return impl_->GetLastUnblockEnqueueOrder();
+}
+
 const char* TaskQueue::GetName() const {
   return name_;
 }

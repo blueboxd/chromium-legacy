@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/file/public/mojom/file_system.mojom.h"
@@ -47,6 +48,13 @@ class CONTENT_EXPORT LocalStorageContextMojo
  public:
   using GetStorageUsageCallback =
       base::OnceCallback<void(std::vector<StorageUsageInfo>)>;
+
+  static const base::FilePath::CharType kLegacyDatabaseFileExtension[];
+
+  static base::FilePath LegacyDatabaseFileNameFromOrigin(
+      const url::Origin& origin);
+  static url::Origin OriginFromLegacyDatabaseFileName(
+      const base::FilePath& file_name);
 
   LocalStorageContextMojo(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -95,6 +103,10 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Converts a string from the old storage format to the new storage format.
   static std::vector<uint8_t> MigrateString(const base::string16& input);
+
+  scoped_refptr<DOMStorageTaskRunner> legacy_task_runner() {
+    return task_runner_;
+  }
 
  private:
   friend class DOMStorageBrowserTest;

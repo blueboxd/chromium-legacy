@@ -57,7 +57,7 @@ class SystemMonitorTest : public testing::Test {
 
   SystemMonitorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     EXPECT_EQ(nullptr, SystemMonitor::Get());

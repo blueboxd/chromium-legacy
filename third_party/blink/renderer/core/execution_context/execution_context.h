@@ -312,6 +312,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool FeaturePolicyFeatureObserved(
       mojom::FeaturePolicyFeature feature) override;
 
+  bool RequireTrustedTypes() const;
+
  protected:
   ExecutionContext(v8::Isolate* isolate,
                    Agent* agent,

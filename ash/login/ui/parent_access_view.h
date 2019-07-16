@@ -121,8 +121,9 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   void UpdatePreferredSize();
 
   // Called when access code input changes. |complete| brings information
-  // whether current input code is complete.
-  void OnInputChange(bool complete);
+  // whether current input code is complete. |last_field_active| contains
+  // information whether last input field is currently active.
+  void OnInputChange(bool complete, bool last_field_active);
 
   // Callbacks to be called when user performs certain actions.
   const Callbacks callbacks_;

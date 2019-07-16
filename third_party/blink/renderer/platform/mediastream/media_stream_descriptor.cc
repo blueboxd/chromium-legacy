@@ -33,7 +33,7 @@
 
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -126,7 +126,7 @@ void MediaStreamDescriptor::RemoveObserver(WebMediaStreamObserver* observer) {
 MediaStreamDescriptor::MediaStreamDescriptor(
     const MediaStreamSourceVector& audio_sources,
     const MediaStreamSourceVector& video_sources)
-    : MediaStreamDescriptor(CreateCanonicalUUIDString(),
+    : MediaStreamDescriptor(WTF::CreateCanonicalUUIDString(),
                             audio_sources,
                             video_sources) {}
 
@@ -150,7 +150,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(
 MediaStreamDescriptor::MediaStreamDescriptor(
     const MediaStreamComponentVector& audio_components,
     const MediaStreamComponentVector& video_components)
-    : MediaStreamDescriptor(CreateCanonicalUUIDString(),
+    : MediaStreamDescriptor(WTF::CreateCanonicalUUIDString(),
                             audio_components,
                             video_components) {}
 

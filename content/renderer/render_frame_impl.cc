@@ -7402,8 +7402,9 @@ std::unique_ptr<blink::WebURLLoaderFactory>
 RenderFrameImpl::CreateURLLoaderFactory() {
   if (!RenderThreadImpl::current()) {
     // Some tests (e.g. RenderViewTests) do not have RenderThreadImpl,
-    // use the platform's default WebURLLoaderFactoryImpl for them.
-    return WebURLLoaderFactoryImpl::CreateTestOnlyFactory();
+    // and must create a factory override instead.
+    DCHECK(web_url_loader_factory_override_for_test_);
+    return std::move(web_url_loader_factory_override_for_test_);
   }
   return std::make_unique<FrameURLLoaderFactory>(weak_factory_.GetWeakPtr());
 }
@@ -7701,6 +7702,11 @@ void RenderFrameImpl::AddMessageToConsoleImpl(
     bool discard_duplicates) {
   blink::WebConsoleMessage wcm(level, WebString::FromUTF8(message));
   frame_->AddMessageToConsole(wcm, discard_duplicates);
+}
+
+void RenderFrameImpl::SetWebURLLoaderFactoryOverrideForTest(
+    std::unique_ptr<blink::WebURLLoaderFactory> factory) {
+  web_url_loader_factory_override_for_test_ = std::move(factory);
 }
 
 }  // namespace content

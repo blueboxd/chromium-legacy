@@ -74,7 +74,7 @@ class XmppRegisterSupportHostRequestTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   MockSignalStrategy signal_strategy_;
   base::ObserverList<SignalStrategy::Listener, true> signal_strategy_listeners_;
   scoped_refptr<RsaKeyPair> key_pair_;

@@ -73,7 +73,6 @@ std::string ZipFiles(
   if (!temp_dir.CreateUniqueTempDir())
     return compressed_logs;
 
-  std::vector<base::FilePath> file_names;
   for (const auto& syslog_entry : *system_logs) {
     base::FilePath file_path(temp_dir.GetPath().Append(syslog_entry.first));
     base::FilePath relative_path;
@@ -89,19 +88,18 @@ std::string ZipFiles(
       PLOG(ERROR) << "Can't write log file: " << file_path.value();
       continue;
     }
-    file_names.push_back(relative_path);
   }
   system_logs.reset();
 
-  base::ScopedFILE file(base::CreateAndOpenTemporaryFile(&zip_file));
-  if (!file.get()) {
+  if (!base::CreateTemporaryFile(&zip_file)) {
     PLOG(ERROR) << "Failed to create file to store zipped logs";
     return compressed_logs;
   }
-  if (!zip::ZipFiles(temp_dir.GetPath(), file_names, fileno(file.get()))) {
+  if (!zip::Zip(/*src_dir=*/temp_dir.GetPath(), /*dest_file=*/zip_file,
+                /*include_hidden_files=*/false)) {
     SYSLOG(ERROR) << "Failed to zip system logs";
     return compressed_logs;
-  };
+  }
   if (!base::ReadFileToString(zip_file, &compressed_logs)) {
     PLOG(ERROR) << "Failed to read zipped system logs";
     return compressed_logs;

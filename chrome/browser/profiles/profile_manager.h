@@ -358,7 +358,12 @@ class ProfileManager : public content::NotificationObserver,
                     Profile* profile,
                     Profile::CreateStatus status);
 
+  void SaveActiveProfiles();
+
 #if !defined(OS_ANDROID)
+  void OnBrowserOpened(Browser* browser);
+  void OnBrowserClosed(Browser* browser);
+
   // Updates the last active user of the current session.
   // On Chrome OS updating this user will have no effect since when browser is
   // restored after crash there's another preference that is taken into account.

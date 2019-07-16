@@ -177,7 +177,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
       std::make_unique<test::FakeFidoDiscoveryFactory>();
   test::FakeFidoDiscovery* discovery_;
@@ -787,7 +787,7 @@ TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
 // talk to the authenticator.
 TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
   base::test::ScopedTaskEnvironment scoped_task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   device::test::VirtualFidoDeviceFactory virtual_device_factory;
   virtual_device_factory.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   ASSERT_TRUE(virtual_device_factory.mutable_state()->InjectRegistration(

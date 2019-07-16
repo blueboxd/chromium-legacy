@@ -290,6 +290,7 @@ DownloadTargetDeterminer::Result
     }
     virtual_path_ = target_directory.Append(generated_filename);
     should_notify_extensions_ = true;
+    DCHECK(virtual_path_.IsAbsolute());
   } else {
     conflict_action_ = DownloadPathReservationTracker::OVERWRITE;
     virtual_path_ = download_->GetForcedFilePath();
@@ -299,8 +300,8 @@ DownloadTargetDeterminer::Result
     // issue with the forced path, the user is still not prompted. If the path
     // supplied to a programmatic download is invalid, then the caller needs to
     // intervene.
+    DCHECK(virtual_path_.IsAbsolute());
   }
-  DCHECK(virtual_path_.IsAbsolute());
   DVLOG(20) << "Generated virtual path: " << virtual_path_.AsUTF8Unsafe();
 
   return CONTINUE;

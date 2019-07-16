@@ -29,6 +29,12 @@ class AsyncDocumentSubresourceFilter;
 // The throttle should only be instantiated for navigations occuring in
 // subframes owned by documents which already have filtering activated, and
 // therefore an associated (Async)DocumentSubresourceFilter.
+//
+// TODO(https://crbug.com/984562): With AdTagging enabled, this throttle delays
+// almost all subframe navigations. This delay is necessary in blocking mode due
+// to logic related to BLOCK_REQUEST_AND_COLLAPSE. However, there may be room
+// for optimization during AdTagging, or migrating BLOCK_REQUEST_AND_COLLAPSE to
+// be allowed during WillProcessResponse.
 class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
  public:
   class Delegate {

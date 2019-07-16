@@ -24,7 +24,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"  // nogncheck
-#include "chrome/services/cups_proxy/public/cpp/manifest.h"
 #include "chromeos/services/cellular_setup/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
@@ -145,7 +144,6 @@ GetChromeBuiltinServiceManifests() {
       chromeos::cellular_setup::GetManifest(),
       chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),
-      chromeos::printing::GetCupsProxyManifest(),
       chromeos::secure_channel::GetManifest(),
       GetCupsIppParserManifest(),
 #endif

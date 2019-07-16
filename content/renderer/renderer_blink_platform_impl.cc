@@ -61,6 +61,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "media/audio/audio_output_device.h"
+#include "media/base/media_switches.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
@@ -544,6 +545,11 @@ RendererBlinkPlatformImpl::NewAudioCapturerSource(
 viz::ContextProvider*
 RendererBlinkPlatformImpl::SharedMainThreadContextProvider() {
   return RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+}
+
+bool RendererBlinkPlatformImpl::RTCSmoothnessAlgorithmEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableRTCSmoothnessAlgorithm);
 }
 
 //------------------------------------------------------------------------------

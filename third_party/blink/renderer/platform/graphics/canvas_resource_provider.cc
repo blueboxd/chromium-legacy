@@ -553,8 +553,14 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (!IsValid())
       return nullptr;
 
-    EndWriteAccess();
-    return resource_->Bitmap();
+    if (!cached_snapshot_) {
+      EndWriteAccess();
+      cached_snapshot_ = resource_->Bitmap();
+    }
+
+    DCHECK(cached_snapshot_);
+    DCHECK(!current_resource_has_write_access_);
+    return cached_snapshot_;
   }
 
   void WillDraw() override {
@@ -562,6 +568,11 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
     if (IsGpuContextLost())
       return;
+
+    // Since the resource will be updated, the cached snapshot is no longer
+    // valid. Note that it is important to release this reference here to not
+    // trigger copy-on-write below from the resource ref in the snapshot.
+    cached_snapshot_.reset();
 
     if (DoCopyOnWrite()) {
       DCHECK(!current_resource_has_write_access_)
@@ -692,6 +703,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   const bool is_overlay_candidate_;
   bool current_resource_has_write_access_ = false;
   scoped_refptr<CanvasResource> resource_;
+  scoped_refptr<StaticBitmapImage> cached_snapshot_;
 };
 
 // This class does nothing except answering to ProduceCanvasResource() by piping

@@ -218,6 +218,38 @@ GetParamsForNetworkQualityContainer() {
     }
   }
 
+  if (base::FeatureList::IsEnabled(
+          features::kProactivelyThrottleLowPriorityRequests)) {
+    for (net::EffectiveConnectionType effective_connection_type =
+             net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+         effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_4G;
+         effective_connection_type = static_cast<net::EffectiveConnectionType>(
+             effective_connection_type + 1)) {
+      std::string param_name = "http_rtt_multiplier_for_proactive_throttling_" +
+                               std::string(GetNameForEffectiveConnectionType(
+                                   effective_connection_type));
+
+      double http_rtt_multiplier = base::GetFieldTrialParamByFeatureAsDouble(
+          features::kProactivelyThrottleLowPriorityRequests, param_name, -1);
+
+      if (http_rtt_multiplier < 0)
+        continue;
+
+      ResourceSchedulerParamsManager::ParamsForNetworkQualityContainer::iterator
+          iter = result.find(effective_connection_type);
+
+      if (iter == result.end()) {
+        // Add a default ParamsForNetworkQuality object to |result|.
+        result.emplace(std::make_pair(
+            effective_connection_type,
+            ResourceSchedulerParamsManager::ParamsForNetworkQuality()));
+      }
+      iter = result.find(effective_connection_type);
+      iter->second.http_rtt_multiplier_for_proactive_throttling =
+          http_rtt_multiplier;
+    }
+  }
+
   return result;
 }
 
@@ -246,6 +278,10 @@ ResourceSchedulerParamsManager::ParamsForNetworkQuality::
     ParamsForNetworkQuality(
         const ResourceSchedulerParamsManager::ParamsForNetworkQuality& other) =
         default;
+
+ResourceSchedulerParamsManager::ParamsForNetworkQuality&
+ResourceSchedulerParamsManager::ParamsForNetworkQuality::operator=(
+    const ParamsForNetworkQuality& other) = default;
 
 ResourceSchedulerParamsManager::ResourceSchedulerParamsManager()
     : ResourceSchedulerParamsManager(GetParamsForNetworkQualityContainer()) {}

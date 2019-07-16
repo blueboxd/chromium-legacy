@@ -537,8 +537,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
-      CreateUrlLoaderFactoryForNetworkService());
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 
   InitializeCorsParams();
 }
@@ -568,8 +567,7 @@ NetworkContext::NetworkContext(
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
-      CreateUrlLoaderFactoryForNetworkService());
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 
   InitializeCorsParams();
 }
@@ -602,8 +600,7 @@ NetworkContext::NetworkContext(
   for (const auto& key : cors_exempt_header_list)
     cors_exempt_header_list_.insert(key);
 
-  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(
-      CreateUrlLoaderFactoryForNetworkService());
+  origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 }
 
 NetworkContext::~NetworkContext() {

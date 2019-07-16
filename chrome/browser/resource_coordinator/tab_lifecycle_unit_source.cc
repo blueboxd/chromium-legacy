@@ -9,9 +9,8 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
@@ -65,20 +64,17 @@ WEB_CONTENTS_USER_DATA_KEY_IMPL(TabLifecycleUnitSource::TabLifecycleUnitHolder)
 // TabLifecycleUnitSource on the UI thread. This is created on the UI thread
 // and ownership passed to the performance manager.
 class TabLifecycleStateObserver
-    : public performance_manager::GraphImplObserverDefaultImpl {
+    : public performance_manager::PageNode::ObserverDefaultImpl,
+      public performance_manager::GraphOwned {
  public:
-  using NodeBase = performance_manager::NodeBase;
-  using PageNodeImpl = performance_manager::PageNodeImpl;
+  using Graph = performance_manager::Graph;
+  using PageNode = performance_manager::PageNode;
   using WebContentsProxy = performance_manager::WebContentsProxy;
 
   TabLifecycleStateObserver() = default;
   ~TabLifecycleStateObserver() override = default;
 
  private:
-  bool ShouldObserve(const NodeBase* node) override {
-    return node->type() == performance_manager::PageNodeImpl::Type();
-  }
-
   static void OnLifecycleStateChangedImpl(
       const WebContentsProxy& contents_proxy,
       mojom::LifecycleState state) {
@@ -89,13 +85,22 @@ class TabLifecycleStateObserver
       TabLifecycleUnitSource::OnLifecycleStateChanged(contents, state);
   }
 
-  void OnLifecycleStateChanged(PageNodeImpl* page_node) override {
+  // performance_manager::PageNode::ObserverDefaultImpl::
+  void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
-                       page_node->contents_proxy(),
-                       page_node->lifecycle_state()));
+                       page_node->GetContentProxy(),
+                       page_node->GetLifecycleState()));
+  }
+
+  void OnPassedToGraph(Graph* graph) override {
+    graph->AddPageNodeObserver(this);
+  }
+
+  void OnTakenFromGraph(Graph* graph) override {
+    graph->RemovePageNodeObserver(this);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleStateObserver);
@@ -117,12 +122,14 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
   if (perf_man) {
     // The performance manager dies on its own sequence, so posting unretained
     // is fine.
-    perf_man->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &performance_manager::PerformanceManager::RegisterObserver,
-            base::Unretained(perf_man),
-            std::make_unique<TabLifecycleStateObserver>()));
+    perf_man->CallOnGraph(
+        FROM_HERE, base::BindOnce(
+                       [](std::unique_ptr<TabLifecycleStateObserver>
+                              tab_lifecycle_observer,
+                          performance_manager::GraphImpl* graph) {
+                         graph->PassToGraph(std::move(tab_lifecycle_observer));
+                       },
+                       std::make_unique<TabLifecycleStateObserver>()));
   }
 }
 

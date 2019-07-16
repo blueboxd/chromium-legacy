@@ -24,7 +24,7 @@ namespace ash {
 namespace {
 // Autoclick scroll menu constants.
 constexpr int kAutoclickScrollMenuSizeDips = 192;
-const int kScrollPointBufferDips = 100;
+const int kScrollPointBufferDips = 16;
 const int kScrollRectBufferDips = 8;
 
 struct Position {
@@ -59,6 +59,12 @@ void AutoclickScrollBubbleController::SetScrollPosition(
     gfx::Rect scroll_bounds_in_dips,
     const gfx::Point& scroll_point_in_dips) {
   // TODO(katie): Support multiple displays.
+
+  // Adjust the insets to be the same on all sides, so that when the bubble
+  // lays out it isn't too close on the top or bottom.
+  bubble_view_->UpdateInsets(
+      gfx::Insets(kUnifiedMenuPadding, kUnifiedMenuPadding));
+
   aura::Window* window = Shell::GetPrimaryRootWindow();
   gfx::Rect work_area =
       WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
@@ -76,22 +82,20 @@ void AutoclickScrollBubbleController::SetScrollPosition(
         gfx::Rect(scroll_point_in_dips.x(), scroll_point_in_dips.y(), 0, 0);
     // Buffer around the point so that the scroll bubble does not overlap it.
     // ScrollBubbleController will automatically layout to avoid edges.
-    anchor.Inset(-kScrollPointBufferDips, -kScrollPointBufferDips);
+    // Aims to lay out like the context menu, at 16x16 to the bottom right.
+    anchor.Inset(-kScrollPointBufferDips, 0);
     bubble_view_->UpdateAnchorRect(anchor,
-                                   views::BubbleBorder::Arrow::LEFT_CENTER);
+                                   views::BubbleBorder::Arrow::LEFT_TOP);
     return;
   }
 
   // Otherwise, the scrollable area bounds are small compared to the scroll
   // scroll bubble, so we should not overlap the scroll bubble if possible.
   // Try to show the scroll bubble on the side of the rect closest to the point.
-  scroll_bounds_in_dips.Inset(
-      -kScrollRectBufferDips, -kScrollRectBufferDips, -kScrollRectBufferDips,
-      -kScrollRectBufferDips - kCollisionWindowWorkAreaInsetsDp);
-
   // Determine whether there will be space to show the scroll bubble between the
   // scroll bounds and display bounds.
   work_area.Inset(kAutoclickScrollMenuSizeDips, kAutoclickScrollMenuSizeDips);
+  scroll_bounds_in_dips.Inset(-kScrollRectBufferDips, -kScrollRectBufferDips);
   bool fits_left = scroll_bounds_in_dips.x() > work_area.x();
   bool fits_right = scroll_bounds_in_dips.right() < work_area.right();
   bool fits_above = scroll_bounds_in_dips.y() > work_area.y();
@@ -141,8 +145,11 @@ void AutoclickScrollBubbleController::SetScrollPosition(
 
   // If the scroll bubble doesn't fit between the scroll bounds and display
   // edges, re-pin the scroll bubble to the menu bubble.
+  // This may not ever happen except on low-resolution screens.
   set_scroll_rect_ = !positions.empty();
   if (!set_scroll_rect_) {
+    bubble_view_->UpdateInsets(gfx::Insets(
+        0, kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding));
     UpdateAnchorRect(menu_bubble_rect_, menu_bubble_alignment_);
     return;
   }

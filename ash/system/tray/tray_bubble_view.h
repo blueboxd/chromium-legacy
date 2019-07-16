@@ -182,6 +182,10 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
 
+  // Changes the insets from the bubble border. These were initially set using
+  // the InitParams.insets, but may need to be reset programmatically.
+  void SetBubbleBorderInsets(gfx::Insets insets);
+
  private:
   // This reroutes receiving key events to the TrayBubbleView passed in the
   // constructor. TrayBubbleView is not activated by default. But we want to

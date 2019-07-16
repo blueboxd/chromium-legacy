@@ -470,6 +470,10 @@ void TrayBubbleView::ViewHierarchyChanged(
   }
 }
 
+void TrayBubbleView::SetBubbleBorderInsets(gfx::Insets insets) {
+  bubble_border_->set_insets(insets);
+}
+
 void TrayBubbleView::CloseBubbleView() {
   if (!delegate_)
     return;

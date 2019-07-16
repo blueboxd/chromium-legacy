@@ -71,7 +71,6 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   void FireBackgroundSyncEvents(blink::mojom::BackgroundSyncType sync_type,
                                 base::OnceClosure done_closure) override;
   void GetSoonestWakeupDelta(
-      blink::mojom::BackgroundSyncType sync_type,
       base::OnceCallback<void(base::TimeDelta)> callback) override;
 
  protected:
@@ -87,7 +86,6 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   friend class OneShotBackgroundSyncServiceImplTest;
   friend class PeriodicBackgroundSyncServiceImplTest;
   friend class BackgroundSyncLauncherTest;
-  friend class BackgroundSyncManagerTest;
 
   void FireBackgroundSyncEventsOnIOThread(
       blink::mojom::BackgroundSyncType sync_type,
@@ -106,8 +104,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
 
   void ShutdownOnIO();
 
-  base::TimeDelta GetSoonestWakeupDeltaOnIOThread(
-      blink::mojom::BackgroundSyncType sync_type);
+  base::TimeDelta GetSoonestWakeupDeltaOnIOThread();
   void DidGetSoonestWakeupDelta(
       base::OnceCallback<void(base::TimeDelta)> callback,
       base::TimeDelta soonest_wakeup_delta);

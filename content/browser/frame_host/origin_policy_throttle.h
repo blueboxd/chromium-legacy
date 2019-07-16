@@ -5,13 +5,10 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_ORIGIN_POLICY_THROTTLE_H_
 #define CONTENT_BROWSER_FRAME_HOST_ORIGIN_POLICY_THROTTLE_H_
 
-#include <map>
 #include <memory>
-#include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "services/network/public/cpp/origin_policy.h"
@@ -24,7 +21,6 @@ class Origin;
 
 namespace content {
 class NavigationHandle;
-enum class OriginPolicyErrorReason;
 
 // Constant derived from the spec, https://github.com/WICG/origin-policy
 static constexpr const char* kDefaultOriginPolicyVersion = "0";
@@ -41,11 +37,6 @@ static constexpr const char* kDefaultOriginPolicyVersion = "0";
 //   throttle or not.
 class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
  public:
-  struct PolicyVersionAndReportTo {
-    std::string policy_version;
-    std::string report_to;
-  };
-
   // Determine whether to request a policy (or advertise origin policy
   // support). Returns whether the policy header should be sent.
   static bool ShouldRequestOriginPolicy(const GURL& url);
@@ -68,23 +59,13 @@ class CONTENT_EXPORT OriginPolicyThrottle : public NavigationThrottle {
   ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
-  using KnownVersionMap = std::map<url::Origin, std::string>;
-  static KnownVersionMap& GetKnownVersionsForTesting();
-
  private:
   explicit OriginPolicyThrottle(NavigationHandle* handle);
 
-  // TODO(andypaicu): Remove when we have moved reporting logic to the network
-  // service.
-  PolicyVersionAndReportTo GetRequestedPolicyAndReportGroupFromHeader() const;
-  static PolicyVersionAndReportTo
-  GetRequestedPolicyAndReportGroupFromHeaderString(const std::string& header);
-
   const url::Origin GetRequestOrigin() const;
 
-  void CancelNavigation(OriginPolicyErrorReason reason, const GURL& policy_url);
-
-  void Report(OriginPolicyErrorReason reason, const GURL& policy_url);
+  void CancelNavigation(network::OriginPolicyState state,
+                        const GURL& policy_url);
 
   void OnOriginPolicyManagerRetrieveDone(
       const network::OriginPolicy& origin_policy);

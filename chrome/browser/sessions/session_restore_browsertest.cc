@@ -17,6 +17,7 @@
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -42,6 +43,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -947,6 +949,9 @@ std::vector<base::Optional<TabGroupId>> GetTabGroups(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
+  base::test::ScopedFeatureList feature_override;
+  feature_override.InitAndEnableFeature(features::kTabGroups);
+
   constexpr int kNumTabs = 6;
   const std::array<base::Optional<int>, kNumTabs> group_spec = {
       0, 0, base::nullopt, base::nullopt, 1, 1};
@@ -973,6 +978,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroups) {
 // Test that tab groups are restored correctly after the command set is rebuilt
 // from the browser state.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroupsCommandReset) {
+  base::test::ScopedFeatureList feature_override;
+  feature_override.InitAndEnableFeature(features::kTabGroups);
+
   constexpr int kNumTabs = 6;
   const std::array<base::Optional<int>, kNumTabs> group_spec = {
       0, 0, base::nullopt, base::nullopt, 1, 1};
@@ -1000,6 +1008,23 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabsWithGroupsCommandReset) {
   Browser* new_browser = QuitBrowserAndRestore(browser(), kNumTabs);
   ASSERT_EQ(kNumTabs, new_browser->tab_strip_model()->count());
   EXPECT_EQ(groups, GetTabGroups(new_browser->tab_strip_model()));
+}
+
+// Ensure tab groups aren't restored if |features::kTabGroups| is disabled.
+// Regression test for crbug.com/983962.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       GroupsNotRestoredWhenFeatureDisabled) {
+  auto feature_override = std::make_unique<base::test::ScopedFeatureList>();
+  feature_override->InitAndEnableFeature(features::kTabGroups);
+
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  browser()->tab_strip_model()->AddToNewGroup({0});
+
+  feature_override = std::make_unique<base::test::ScopedFeatureList>();
+  feature_override->InitAndDisableFeature(features::kTabGroups);
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
+  ASSERT_EQ(base::nullopt,
+            new_browser->tab_strip_model()->GetTabGroupForTab(0));
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAfterDelete) {

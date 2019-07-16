@@ -5,8 +5,11 @@
 #include "ash/dbus/ash_dbus_services.h"
 
 #include "ash/dbus/display_service_provider.h"
+#include "ash/dbus/gesture_properties_service_provider.h"
 #include "ash/dbus/liveness_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
+#include "base/feature_list.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -19,6 +22,14 @@ AshDBusServices::AshDBusServices(dbus::Bus* system_bus) {
       dbus::ObjectPath(chromeos::kDisplayServicePath),
       chromeos::CrosDBusService::CreateServiceProviderList(
           std::make_unique<DisplayServiceProvider>()));
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kGesturePropertiesDBusService)) {
+    gesture_properties_service_ = chromeos::CrosDBusService::Create(
+        system_bus, chromeos::kGesturePropertiesServiceName,
+        dbus::ObjectPath(chromeos::kGesturePropertiesServicePath),
+        chromeos::CrosDBusService::CreateServiceProviderList(
+            std::make_unique<GesturePropertiesServiceProvider>()));
+  }
   liveness_service_ = chromeos::CrosDBusService::Create(
       system_bus, chromeos::kLivenessServiceName,
       dbus::ObjectPath(chromeos::kLivenessServicePath),
@@ -33,6 +44,7 @@ AshDBusServices::AshDBusServices(dbus::Bus* system_bus) {
 
 AshDBusServices::~AshDBusServices() {
   display_service_.reset();
+  gesture_properties_service_.reset();
   liveness_service_.reset();
   url_handler_service_.reset();
 }

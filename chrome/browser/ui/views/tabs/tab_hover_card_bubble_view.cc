@@ -46,6 +46,8 @@
 #endif
 
 namespace {
+// Maximum number of lines that a title label occupies.
+int kTitleMaxLines = 2;
 
 // Hover card and preview image dimensions.
 int GetPreferredTabHoverCardWidth() {
@@ -298,7 +300,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetMultiLine(false);
+  title_label_->SetMultiLine(true);
+  title_label_->SetMaxLines(kTitleMaxLines);
   AddChildView(title_label_);
 
   domain_label_ =

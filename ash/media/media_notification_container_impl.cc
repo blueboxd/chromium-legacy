@@ -60,6 +60,7 @@ void MediaNotificationContainerImpl::SetExpanded(bool expanded) {
 
 void MediaNotificationContainerImpl::UpdateCornerRadius(int top_radius,
                                                         int bottom_radius) {
+  MessageView::SetCornerRadius(top_radius, bottom_radius);
   view_.UpdateCornerRadius(top_radius, bottom_radius);
 }
 

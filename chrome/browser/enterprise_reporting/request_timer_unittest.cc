@@ -13,7 +13,7 @@ class RequestTimerTest : public ::testing::Test {
  public:
   RequestTimerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void RunTask() { task_count_ += 1; }
 

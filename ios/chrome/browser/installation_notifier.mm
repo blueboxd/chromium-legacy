@@ -141,7 +141,6 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
       [observers removeObject:weakReferenceToObserver];
       if ([observers count] == 0) {
         [_installedAppObservers removeObjectForKey:scheme];
-        UMA_HISTOGRAM_BOOLEAN("NativeAppLauncher.InstallationDetected", NO);
       }
     }
   }
@@ -190,7 +189,6 @@ const net::BackoffEntry::Policy kPollingBackoffPolicy = {
       }
       if (![keysToDelete containsObject:scheme]) {
         [keysToDelete addObject:scheme];
-        UMA_HISTOGRAM_BOOLEAN("NativeAppLauncher.InstallationDetected", YES);
       }
     } else {
       keepPolling = YES;

@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .argument import Argument
+from .attribute import Attribute
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .collection import Collection
 from .common import DebugInfo
+from .constant import Constant
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
@@ -18,10 +21,16 @@ from .idl_types import ReferenceType
 from .idl_types import SequenceType
 from .idl_types import SimpleType
 from .idl_types import UnionType
+from .idl_types import VariadicType
 from .includes import Includes
 from .interface import Interface
+from .interface import Iterable
+from .interface import Maplike
+from .interface import Setlike
 from .namespace import Namespace
+from .operation import Operation
 from .typedef import Typedef
+from .values import ConstantValue
 from .values import DefaultValue
 
 
@@ -89,14 +98,50 @@ class _IRBuilder(object):
         if node.GetProperty('CALLBACK'):
             return self._build_callback_interface(node)
 
-        interface = Interface.IR(
+        child_nodes = list(node.GetChildren())
+        extended_attributes = self._take_extended_attributes(child_nodes)
+        inherited = self._take_inheritance(child_nodes)
+        iterable = self._take_iterable(child_nodes)
+        maplike = self._take_maplike(child_nodes)
+        setlike = self._take_setlike(child_nodes)
+        # TODO(peria): Implement stringifier.
+        _ = self._take_stringifier(child_nodes)
+
+        members = map(self._build_interface_or_namespace_member, child_nodes)
+        attributes = []
+        constants = []
+        operations = []
+        property_handlers = []
+        for member in members:
+            if isinstance(member, Attribute.IR):
+                attributes.append(member)
+            elif isinstance(member, Operation.IR):
+                assert member.identifier or member.is_property_handler
+                if member.identifier:
+                    operations.append(member)
+                if member.is_property_handler:
+                    property_handlers.append(member)
+            elif isinstance(member, Constant.IR):
+                constants.append(member)
+            else:
+                assert False
+        # TODO(peria): Implement indexed/named property handlers from
+        # |property_handlers|.
+
+        return Interface.IR(
             identifier=node.GetName(),
             is_partial=bool(node.GetProperty('PARTIAL')),
             is_mixin=bool(node.GetProperty('MIXIN')),
+            inherited=inherited,
+            attributes=attributes,
+            constants=constants,
+            operations=operations,
+            iterable=iterable,
+            maplike=maplike,
+            setlike=setlike,
+            extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
-        # TODO(peria): Build members and register them in |interface|
-        return interface
 
     def _build_namespace(self, node):
         namespace = Namespace.IR(
@@ -106,6 +151,63 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
         # TODO(peria): Build members and register them in |namespace|
         return namespace
+
+    def _build_interface_or_namespace_member(self, node):
+        def build_attribute(node):
+            child_nodes = list(node.GetChildren())
+            idl_type = self._take_type(child_nodes)
+            extended_attributes = self._take_extended_attributes(child_nodes)
+            assert len(child_nodes) == 0
+            return Attribute.IR(
+                identifier=node.GetName(),
+                idl_type=idl_type,
+                is_static=bool(node.GetProperty('STATIC')),
+                is_readonly=bool(node.GetProperty('READONLY')),
+                does_inherit_getter=bool(node.GetProperty('INHERIT')),
+                extended_attributes=extended_attributes,
+                component=self._component,
+                debug_info=self._build_debug_info(node))
+
+        def build_constant(node):
+            child_nodes = list(node.GetChildren())
+            value = self._take_constant_value(child_nodes)
+            extended_attributes = self._take_extended_attributes(child_nodes)
+            assert len(child_nodes) == 1, child_nodes[0].GetClass()
+            # idl_parser doesn't produce a 'Type' node for the type of a
+            # constant, hence we need to skip one level.
+            idl_type = self._build_type_internal(child_nodes)
+            return Constant.IR(
+                identifier=node.GetName(),
+                value=value,
+                idl_type=idl_type,
+                extended_attributes=extended_attributes,
+                component=self._component,
+                debug_info=self._build_debug_info(node))
+
+        def build_operation(node):
+            child_nodes = list(node.GetChildren())
+            arguments = self._take_arguments(child_nodes)
+            return_type = self._take_type(child_nodes)
+            extended_attributes = self._take_extended_attributes(child_nodes)
+            assert len(child_nodes) == 0
+            return Operation.IR(
+                identifier=node.GetName(),
+                arguments=arguments,
+                return_type=return_type,
+                is_static=bool(node.GetProperty('STATIC')),
+                is_getter=bool(node.GetProperty('GETTER')),
+                is_setter=bool(node.GetProperty('SETTER')),
+                is_deleter=bool(node.GetProperty('DELETER')),
+                extended_attributes=extended_attributes,
+                component=self._component,
+                debug_info=self._build_debug_info(node))
+
+        build_functions = {
+            'Attribute': build_attribute,
+            'Const': build_constant,
+            'Operation': build_operation,
+        }
+        return build_functions[node.GetClass()](node)
 
     def _build_dictionary(self, node):
         child_nodes = list(node.GetChildren())
@@ -186,6 +288,34 @@ class _IRBuilder(object):
 
     # Helper functions sorted alphabetically
 
+    def _build_arguments(self, node):
+        def build_argument(node, index):
+            assert node.GetClass() == 'Argument'
+            child_nodes = list(node.GetChildren())
+            is_optional = bool(node.GetProperty('OPTIONAL'))
+            is_variadic = bool(self._take_is_variadic_argument(child_nodes))
+            idl_type = self._take_type(
+                child_nodes, is_optional=is_optional, is_variadic=is_variadic)
+            default_value = self._take_default_value(child_nodes)
+            extended_attributes = self._take_extended_attributes(child_nodes)
+            assert len(child_nodes) == 0
+            return Argument.IR(
+                identifier=node.GetName(),
+                index=index,
+                idl_type=idl_type,
+                default_value=default_value,
+                extended_attributes=extended_attributes)
+
+        assert node.GetClass() == 'Arguments'
+        return [
+            build_argument(node, i)
+            for i, node in enumerate(node.GetChildren())
+        ]
+
+    def _build_constant_value(self, node):
+        assert node.GetClass() == 'Value'
+        return ConstantValue()
+
     def _build_debug_info(self, node):
         return DebugInfo(
             location=DebugInfo.Location(
@@ -205,13 +335,68 @@ class _IRBuilder(object):
         assert node.GetClass() == 'Inherit'
         return self._create_ref_to_idl_def(node.GetName())
 
-    def _build_type(self, node):
-        assert node.GetClass() == 'Type'
-        if node.GetProperty('NULLABLE'):
-            return NullableType(self._build_type_internal(node.GetChildren()))
-        return self._build_type_internal(node.GetChildren())
+    def _build_is_variadic_argument(self, node):
+        # idl_parser produces the following tree to indicate an argument is
+        # variadic.
+        #   Arguments
+        #     := [Argument, Argument, ...]
+        #   Argument
+        #     := [Type, Argument(Name='...')]  # Argument inside Argument
+        assert node.GetClass() == 'Argument'
+        assert node.GetName() == '...'
+        return True
 
-    def _build_type_internal(self, nodes):
+    def _build_iterable(self, node):
+        assert node.GetClass() == 'Iterable'
+        types = map(self._build_type, node.GetChildren())
+        if len(types) == 1:
+            types.insert(0, None)
+        assert len(types) == 2
+        return Iterable(
+            key_type=types[0],
+            value_type=types[1],
+            debug_info=self._build_debug_info(node))
+
+    def _build_maplike(self, node):
+        assert node.GetClass() == 'Maplike'
+        types = map(self._build_type, node.GetChildren())
+        assert len(types) == 2
+        return Maplike(
+            key_type=types[0],
+            value_type=types[1],
+            is_readonly=bool(node.GetProperty('READONLY')),
+            debug_info=self._build_debug_info(node))
+
+    def _build_setlike(self, node):
+        assert node.GetClass() == 'Setlike'
+        assert len(node.GetChildren()) == 1
+        return Setlike(
+            value_type=self._build_type(node.GetChildren()[0]),
+            is_readonly=bool(node.GetProperty('READONLY')),
+            debug_info=self._build_debug_info(node))
+
+    def _build_stringifier(self, node):
+        assert node.GetClass() == 'Stringifier'
+        return None
+
+    def _build_type(self, node, is_optional=False, is_variadic=False):
+        def build_maybe_nullable_type(node):
+            if node.GetProperty('NULLABLE'):
+                return NullableType(
+                    self._build_type_internal(node.GetChildren()),
+                    is_optional=is_optional)
+            return self._build_type_internal(
+                node.GetChildren(), is_optional=is_optional)
+
+        assert node.GetClass() == 'Type'
+        assert not (is_optional and is_variadic)
+        if is_variadic:
+            return VariadicType(
+                element_type=build_maybe_nullable_type(node),
+                debug_info=self._build_debug_info(node))
+        return build_maybe_nullable_type(node)
+
+    def _build_type_internal(self, nodes, is_optional=False):
         """
         Args:
             nodes: The child nodes of a 'Type' node.
@@ -221,6 +406,7 @@ class _IRBuilder(object):
             assert len(node.GetChildren()) == 1
             return FrozenArrayType(
                 element_type=self._build_type(node.GetChildren()[0]),
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
@@ -228,12 +414,14 @@ class _IRBuilder(object):
             assert len(node.GetChildren()) == 1
             return PromiseType(
                 result_type=self._build_type(node.GetChildren()[0]),
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
         def build_union_type(node, extended_attributes):
             return UnionType(
                 member_types=map(self._build_type, node.GetChildren()),
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
@@ -244,6 +432,7 @@ class _IRBuilder(object):
                 # hence we need to skip one level.
                 key_type=self._build_type_internal([key_node]),
                 value_type=self._build_type(value_node),
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
@@ -251,12 +440,14 @@ class _IRBuilder(object):
             identifier = node.GetName()
             return ReferenceType(
                 ref_to_idl_type=self._create_ref_to_idl_type(identifier),
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
         def build_sequence_type(node, extended_attributes):
             return SequenceType(
                 element_type=self._build_type(node.GetChildren()[0]),
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
@@ -269,6 +460,7 @@ class _IRBuilder(object):
                 name = 'unrestricted {}'.format(name)
             return SimpleType(
                 name=name,
+                is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
@@ -291,7 +483,7 @@ class _IRBuilder(object):
         return build_functions[body_node.GetClass()](body_node,
                                                      extended_attributes)
 
-    def _take_and_build(self, node_class, build_func, node_list):
+    def _take_and_build(self, node_class, build_func, node_list, **kwargs):
         """
         Takes a node of |node_class| from |node_list| if any, and then builds
         and returns an IR.  The processed node is removed from |node_list|.
@@ -300,8 +492,16 @@ class _IRBuilder(object):
         for node in node_list:
             if node.GetClass() == node_class:
                 node_list.remove(node)
-                return build_func(node)
+                return build_func(node, **kwargs)
         return None
+
+    def _take_arguments(self, node_list):
+        return self._take_and_build('Arguments', self._build_arguments,
+                                    node_list)
+
+    def _take_constant_value(self, node_list):
+        return self._take_and_build('Value', self._build_constant_value,
+                                    node_list)
 
     def _take_default_value(self, node_list):
         return self._take_and_build('Default', self._build_default_value,
@@ -315,5 +515,28 @@ class _IRBuilder(object):
         return self._take_and_build('Inherit', self._build_inheritance,
                                     node_list)
 
-    def _take_type(self, node_list):
-        return self._take_and_build('Type', self._build_type, node_list)
+    def _take_is_variadic_argument(self, node_list):
+        return self._take_and_build(
+            'Argument', self._build_is_variadic_argument, node_list)
+
+    def _take_iterable(self, node_list):
+        return self._take_and_build('Iterable', self._build_iterable,
+                                    node_list)
+
+    def _take_maplike(self, node_list):
+        return self._take_and_build('Maplike', self._build_maplike, node_list)
+
+    def _take_setlike(self, node_list):
+        return self._take_and_build('Setlike', self._build_setlike, node_list)
+
+    def _take_stringifier(self, node_list):
+        return self._take_and_build('Stringifier', self._build_stringifier,
+                                    node_list)
+
+    def _take_type(self, node_list, is_optional=False, is_variadic=False):
+        return self._take_and_build(
+            'Type',
+            self._build_type,
+            node_list,
+            is_optional=is_optional,
+            is_variadic=is_variadic)

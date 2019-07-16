@@ -18,15 +18,16 @@
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/omnibox/common/omnibox_features.h"
 
 namespace component_updater {
 
 namespace {
-// CRX hash. The extension id is: mokoelfideihaddlikjdmdbecmlibfaj.
+// CRX hash. The extension id is: feejiaigafnbpeeogmhmjfmkcjplcneb.
 const uint8_t kOnDeviceHeadSuggestPublicKeySHA256[32] = {
-    0xce, 0xae, 0x4b, 0x58, 0x34, 0x87, 0x03, 0x3b, 0x8a, 0x93, 0xc3,
-    0x14, 0x2c, 0xb8, 0x15, 0x09, 0x6e, 0x41, 0x6b, 0xc0, 0xb4, 0x0d,
-    0x96, 0x2b, 0xd6, 0x7e, 0xd9, 0x97, 0xc6, 0x2a, 0xb0, 0x9f};
+    0x54, 0x49, 0x80, 0x86, 0x05, 0xd1, 0xf4, 0x4e, 0x6c, 0x7c, 0x95,
+    0xca, 0x29, 0xfb, 0x2d, 0x41, 0xe5, 0x12, 0x55, 0x83, 0x59, 0x58,
+    0x50, 0x41, 0x02, 0x6b, 0xb9, 0x06, 0x2c, 0xe0, 0xf8, 0x34};
 
 void UpdateModelDirectory(const base::FilePath& file_path) {
   base::PathService::Override(DIR_ON_DEVICE_HEAD_SUGGEST, file_path);
@@ -57,14 +58,8 @@ bool OnDeviceHeadSuggestInstallerPolicy::VerifyInstallation(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) const {
   const std::string* name = manifest.FindStringPath("name");
-  const std::string* locale = manifest.FindStringPath("locale");
 
-  if (!name || !locale)
-    return false;
-
-  if (!base::StartsWith(*name, "OnDeviceHeadSuggest",
-                        base::CompareCase::SENSITIVE) ||
-      *locale != accept_locale_)
+  if (!name || *name != ("OnDeviceHeadSuggest" + accept_locale_))
     return false;
 
   return base::PathExists(install_dir);
@@ -123,9 +118,11 @@ std::vector<std::string> OnDeviceHeadSuggestInstallerPolicy::GetMimeTypes()
 }
 
 void RegisterOnDeviceHeadSuggestComponent(ComponentUpdateService* cus) {
-  auto installer = base::MakeRefCounted<ComponentInstaller>(
-      std::make_unique<OnDeviceHeadSuggestInstallerPolicy>());
-  installer->Register(cus, base::OnceClosure());
+  if (base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProvider)) {
+    auto installer = base::MakeRefCounted<ComponentInstaller>(
+        std::make_unique<OnDeviceHeadSuggestInstallerPolicy>());
+    installer->Register(cus, base::OnceClosure());
+  }
 }
 
 }  // namespace component_updater

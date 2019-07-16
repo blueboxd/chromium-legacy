@@ -16,9 +16,6 @@ const base::Feature kAssistantAudioEraser{"AssistantAudioEraser",
 const base::Feature kAssistantFeedbackUi{"AssistantFeedbackUi",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kAssistantVoiceMatch{"AssistantVoiceMatch",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAssistantWarmerWelcomeFeature{
     "AssistantWarmerWelcome", base::FEATURE_ENABLED_BY_DEFAULT};
 

@@ -19,8 +19,8 @@ namespace ash {
 // static
 const char BackButton::kViewClassName[] = "ash/BackButton";
 
-BackButton::BackButton(ShelfButtonDelegate* shelf_button_delegate)
-    : ShelfControlButton(shelf_button_delegate) {
+BackButton::BackButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate)
+    : ShelfControlButton(shelf, shelf_button_delegate) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE));
 }
 

@@ -262,7 +262,7 @@ with a newline?''',
     expected = self.GetExpectedOutput(original)
     self.failUnless(expected == json.loads(gatherer.Translate('en')))
 
-  def testPlaceholders(self):
+  def testPlaceholdersChromium(self):
     original = """{
         "policy_definitions": [
           {
@@ -274,20 +274,47 @@ with a newline?''',
         "messages": {}
 }"""
     gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer.SetDefines({'_chromium': True})
     gatherer.Parse()
     self.failUnless(len(gatherer.GetCliques()) == 1)
-    expected = json.loads(re.sub('<ph.*ph>', '$1', original))
+    expected = json.loads(re.sub('<ph.*ph>', 'Chromium', original))
     self.failUnless(expected == json.loads(gatherer.Translate('en')))
     self.failUnless(gatherer.GetCliques()[0].translateable)
     msg = gatherer.GetCliques()[0].GetMessage()
     self.failUnless(len(msg.GetPlaceholders()) == 1)
     ph = msg.GetPlaceholders()[0]
-    self.failUnless(ph.GetOriginal() == '$1')
+    self.failUnless(ph.GetOriginal() == 'Chromium')
+    self.failUnless(ph.GetPresentation() == 'PRODUCT_NAME')
+    self.failUnless(ph.GetExample() == 'Google Chrome')
+
+  def testPlaceholdersChrome(self):
+    original = """{
+        "policy_definitions": [
+          {
+            "name": "Policy1",
+            "caption": "Please install\\n<ph name=\\"PRODUCT_NAME\\">$1<ex>Google Chrome</ex></ph>."
+          }
+        ],
+        "policy_atomic_group_definitions": [],
+        "messages": {}
+}"""
+    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer.SetDefines({'_google_chrome': True})
+    gatherer.Parse()
+    self.failUnless(len(gatherer.GetCliques()) == 1)
+    expected = json.loads(re.sub('<ph.*ph>', 'Google Chrome', original))
+    self.failUnless(expected == json.loads(gatherer.Translate('en')))
+    self.failUnless(gatherer.GetCliques()[0].translateable)
+    msg = gatherer.GetCliques()[0].GetMessage()
+    self.failUnless(len(msg.GetPlaceholders()) == 1)
+    ph = msg.GetPlaceholders()[0]
+    self.failUnless(ph.GetOriginal() == 'Google Chrome')
     self.failUnless(ph.GetPresentation() == 'PRODUCT_NAME')
     self.failUnless(ph.GetExample() == 'Google Chrome')
 
   def testGetDescription(self):
     gatherer = policy_json.PolicyJson({})
+    gatherer.SetDefines({'_google_chrome': True})
     self.assertEquals(
         gatherer._GetDescription({'name': 'Policy1'}, 'policy', None, 'desc'),
         'Description of the policy named Policy1')

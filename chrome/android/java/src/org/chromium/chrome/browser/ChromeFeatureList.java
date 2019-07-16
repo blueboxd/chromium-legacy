@@ -292,8 +292,6 @@ public abstract class ChromeFeatureList {
     public static final String PER_METHOD_CAN_MAKE_PAYMENT_QUOTA =
             "WebPaymentsPerMethodCanMakePaymentQuota";
     public static final String PHOTO_PICKER_VIDEO_SUPPORT = "PhotoPickerVideoSupport";
-    public static final String WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS =
-            "WebPaymentsRedactShippingAddress";
     public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
@@ -329,17 +327,22 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
     public static final String TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT =
             "TrustedWebActivityNotificationDelegationAutoEnrolment";
+    public static final String TWO_PANES_START_SURFACE_ANDROID = "TwoPanesStartSurfaceAndroid";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String USAGE_STATS = "UsageStats";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String USER_ACTIVATION_V2 = "UserActivationV2";
     public static final String WEB_AUTH = "WebAuthentication";
     public static final String WEB_PAYMENTS = "WebPayments";
+    public static final String WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP =
+            "AlwaysAllowJustInTimePaymentApp";
     public static final String WEB_PAYMENTS_EXPERIMENTAL_FEATURES =
             "WebPaymentsExperimentalFeatures";
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
             "WebPaymentsMethodSectionOrderV2";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
+    public static final String WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS =
+            "WebPaymentsRedactShippingAddress";
     public static final String WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD =
             "ReturnGooglePayInBasicCard";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";

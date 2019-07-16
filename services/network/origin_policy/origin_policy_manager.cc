@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "net/http/http_util.h"
+#include "services/network/network_context.h"
 #include "services/network/origin_policy/origin_policy_fetcher.h"
 
 namespace {
@@ -22,9 +23,10 @@ const char kExemptedOriginPolicyVersion[] = "exception?";
 
 namespace network {
 
-OriginPolicyManager::OriginPolicyManager(
-    mojom::URLLoaderFactoryPtr url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)) {}
+OriginPolicyManager::OriginPolicyManager(NetworkContext* owner_network_context)
+    : owner_network_context_(owner_network_context),
+      url_loader_factory_(
+          owner_network_context_->CreateUrlLoaderFactoryForNetworkService()) {}
 
 OriginPolicyManager::~OriginPolicyManager() {}
 
@@ -72,6 +74,7 @@ void OriginPolicyManager::RetrieveOriginPolicy(
                                         ? OriginPolicyState::kNoPolicyApplies
                                         : OriginPolicyState::kCannotLoadPolicy,
                                     std::move(callback));
+      MaybeReport(OriginPolicyState::kCannotLoadPolicy, header_info, GURL());
       return;
     }
     header_info.policy_version = iter->second;
@@ -82,8 +85,8 @@ void OriginPolicyManager::RetrieveOriginPolicy(
   }
 
   origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
-      this, header_info.policy_version, header_info.report_to, origin,
-      url_loader_factory_.get(), std::move(callback)));
+      this, header_info, origin, url_loader_factory_.get(),
+      std::move(callback)));
 }
 
 void OriginPolicyManager::AddExceptionFor(const url::Origin& origin) {
@@ -104,9 +107,48 @@ void OriginPolicyManager::RetrieveDefaultOriginPolicy(
     const url::Origin& origin,
     RetrieveOriginPolicyCallback callback) {
   origin_policy_fetchers_.emplace(std::make_unique<OriginPolicyFetcher>(
-      this, std::string() /* report_to */, origin, url_loader_factory_.get(),
-      std::move(callback)));
+      this, origin, url_loader_factory_.get(), std::move(callback)));
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+void OriginPolicyManager::MaybeReport(
+    OriginPolicyState state,
+    const OriginPolicyHeaderValues& header_info,
+    const GURL& policy_url) {
+  if (header_info.report_to.empty())
+    return;
+
+  const char* reason_str = nullptr;
+  switch (state) {
+    case OriginPolicyState::kCannotLoadPolicy:
+      reason_str = "CANNOT_LOAD";
+      break;
+    case OriginPolicyState::kInvalidRedirect:
+      reason_str = "REDIRECT";
+      break;
+    case OriginPolicyState::kOther:
+      reason_str = "OTHER";
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  base::DictionaryValue report_body;
+  report_body.SetKey("origin_policy_url", base::Value(policy_url.spec()));
+  report_body.SetKey("policy", base::Value(header_info.raw_header));
+  report_body.SetKey("policy_error_reason", base::Value(reason_str));
+
+  owner_network_context_->QueueReport("origin-policy", header_info.report_to,
+                                      policy_url, base::nullopt,
+                                      std::move(report_body));
+}
+#else
+void OriginPolicyManager::MaybeReport(
+    OriginPolicyState state,
+    const OriginPolicyHeaderValues& header_info,
+    const GURL& policy_url) {}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 // static
 const char* OriginPolicyManager::GetExemptedVersionForTesting() {
@@ -114,11 +156,12 @@ const char* OriginPolicyManager::GetExemptedVersionForTesting() {
 }
 
 // static
-OriginPolicyManager::OriginPolicyHeaderValues
+OriginPolicyHeaderValues
 OriginPolicyManager::GetRequestedPolicyAndReportGroupFromHeaderString(
     const std::string& header_value) {
   if (net::HttpUtil::TrimLWS(header_value) == kOriginPolicyDeletePolicy)
-    return OriginPolicyHeaderValues({kOriginPolicyDeletePolicy, ""});
+    return OriginPolicyHeaderValues(
+        {kOriginPolicyDeletePolicy, "", header_value});
 
   base::Optional<std::string> policy;
   base::Optional<std::string> report_to;
@@ -140,8 +183,9 @@ OriginPolicyManager::GetRequestedPolicyAndReportGroupFromHeaderString(
   valid &= (policy.has_value() && policy->find('.') == std::string::npos);
 
   if (!valid)
-    return OriginPolicyHeaderValues();
-  return OriginPolicyHeaderValues({policy.value(), report_to.value_or("")});
+    return OriginPolicyHeaderValues({"", "", header_value});
+  return OriginPolicyHeaderValues(
+      {policy.value(), report_to.value_or(""), header_value});
 }
 
 // static

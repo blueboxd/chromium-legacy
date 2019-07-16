@@ -132,6 +132,21 @@ void URLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
+  // For navigation and worker script resources, the network isolation key may
+  // be set in the resource request and for sub-resources, it is set in params_.
+  // Fail if it is set in both as that could imply a compromised less trusted
+  // process filling up the resource request's trusted_network_isolation_key (It
+  // should only be filled up by a trusted process).
+  if (params_->network_isolation_key &&
+      !url_request.trusted_network_isolation_key.IsEmpty()) {
+    URLLoaderCompletionStatus status;
+    status.error_code = net::ERR_INVALID_ARGUMENT;
+    status.exists_in_cache = false;
+    status.completion_time = base::TimeTicks::Now();
+    client->OnComplete(status);
+    return;
+  }
+
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
       context_->client(),

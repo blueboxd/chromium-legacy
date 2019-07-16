@@ -259,14 +259,14 @@ _LANGUAGE_DIRECTIVE_PAIR = {
 # being generated.
 
 def GetLangCharsetPair(language):
-  if _LANGUAGE_CHARSET_PAIR.has_key(language):
+  if language in _LANGUAGE_CHARSET_PAIR:
     return _LANGUAGE_CHARSET_PAIR[language]
   if language != 'no-specific-language':
     print('Warning:GetLangCharsetPair() found undefined language %s' % language)
   return ''
 
 def GetLangDirectivePair(language):
-  if _LANGUAGE_DIRECTIVE_PAIR.has_key(language):
+  if language in _LANGUAGE_DIRECTIVE_PAIR:
     return _LANGUAGE_DIRECTIVE_PAIR[language]
 
   # We don't check for 'no-specific-language' here because this
@@ -277,7 +277,7 @@ def GetLangDirectivePair(language):
   return 'unknown language: see tools/grit/format/rc.py'
 
 def GetLangIdHex(language):
-  if _LANGUAGE_CHARSET_PAIR.has_key(language):
+  if language in _LANGUAGE_CHARSET_PAIR:
     langcharset = _LANGUAGE_CHARSET_PAIR[language]
     lang_id = '0x' + langcharset[0:4]
     return lang_id
@@ -287,7 +287,7 @@ def GetLangIdHex(language):
 
 
 def GetCharsetIdDecimal(language):
-  if _LANGUAGE_CHARSET_PAIR.has_key(language):
+  if language in _LANGUAGE_CHARSET_PAIR:
     langcharset = _LANGUAGE_CHARSET_PAIR[language]
     charset_decimal = int(langcharset[4:], 16)
     return str(charset_decimal)

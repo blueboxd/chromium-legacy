@@ -459,7 +459,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 // then do that same thing in another tab, that the two resulting pages have
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
-TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
+TEST_F(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
   set_should_create_webui(true);
   const GURL kChromeUrl(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
@@ -503,8 +503,8 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
   EXPECT_FALSE(dest_rfh2->GetSiteInstance()->IsRelatedSiteInstance(
                    contents()->GetMainFrame()->GetSiteInstance()));
 
-  // Navigate both to the new tab page, and verify that they share a
-  // RenderProcessHost (not a SiteInstance).
+  // Navigate both to a chrome://... URL, and verify that they have a separate
+  // RenderProcessHost and a separate SiteInstance.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
 
@@ -513,7 +513,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance(),
             contents2->GetMainFrame()->GetSiteInstance());
-  EXPECT_EQ(contents()->GetMainFrame()->GetSiteInstance()->GetProcess(),
+  EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance()->GetProcess(),
             contents2->GetMainFrame()->GetSiteInstance()->GetProcess());
 }
 

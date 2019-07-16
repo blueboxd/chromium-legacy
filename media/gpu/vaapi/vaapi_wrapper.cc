@@ -1296,7 +1296,7 @@ bool VaapiWrapper::CreateContextAndSurfaces(
   if (!CreateSurfaces(va_format, size, num_surfaces, va_surfaces))
     return false;
 
-  const bool success = CreateContext(va_format, size);
+  const bool success = CreateContext(size);
   if (!success)
     DestroyContextAndSurfaces(*va_surfaces);
   return success;
@@ -1316,7 +1316,7 @@ std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateContextAndScopedVASurface(
   if (!scoped_va_surface)
     return nullptr;
 
-  if (CreateContext(va_format, size))
+  if (CreateContext(size))
     return scoped_va_surface;
 
   DestroyContext();
@@ -1329,8 +1329,7 @@ void VaapiWrapper::DestroyContextAndSurfaces(
   DestroySurfaces(va_surfaces);
 }
 
-bool VaapiWrapper::CreateContext(unsigned int va_format,
-                                 const gfx::Size& size) {
+bool VaapiWrapper::CreateContext(const gfx::Size& size) {
   base::AutoLock auto_lock(*va_lock_);
 
   // vaCreateContext() doesn't really need an array of VASurfaceIDs (see

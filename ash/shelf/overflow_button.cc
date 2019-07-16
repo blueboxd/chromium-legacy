@@ -24,7 +24,8 @@
 namespace ash {
 
 OverflowButton::OverflowButton(ShelfView* shelf_view)
-    : ShelfControlButton(shelf_view), shelf_view_(shelf_view) {
+    : ShelfControlButton(shelf_view->shelf(), shelf_view),
+      shelf_view_(shelf_view) {
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));
 
   horizontal_dots_image_view_ = new views::ImageView();

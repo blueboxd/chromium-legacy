@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "content/shell/test_runner/mock_screen_orientation_client.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_test_runner.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
@@ -76,6 +77,14 @@ class TestRunner : public WebTestRunner {
 
   void SetTestIsRunning(bool);
   bool TestIsRunning() const { return test_is_running_; }
+
+  // Finishes the test if it is ready. This should be called before running
+  // tasks that will change state, so that the test can capture the current
+  // state. Specifically, should run before the BeginMainFrame step which does
+  // layout and animation etc.
+  // This does *not* run as part of loading finishing because that happens in
+  // the middle of blink call stacks that have inconsistent state.
+  void FinishTestIfReady();
 
   bool UseMockTheme() const { return use_mock_theme_; }
 
@@ -148,7 +157,7 @@ class TestRunner : public WebTestRunner {
   // requests in WorkQueue.
   void RemoveLoadingFrame(blink::WebFrame* frame);
 
-  blink::WebFrame* mainFrame() const;
+  blink::WebFrame* MainFrame() const;
   void policyDelegateDone();
   bool policyDelegateEnabled() const;
   bool policyDelegateIsPermissive() const;
@@ -195,13 +204,16 @@ class TestRunner : public WebTestRunner {
     void AddWork(WorkItem*);
 
     void set_frozen(bool frozen) { frozen_ = frozen; }
-    bool is_empty() { return queue_.empty(); }
+    bool is_empty() const { return queue_.empty(); }
+
+    void set_finished_loading() { finished_loading_ = true; }
 
    private:
     void ProcessWork();
 
     base::circular_deque<WorkItem*> queue_;
-    bool frozen_;
+    bool frozen_ = false;
+    bool finished_loading_ = false;
     TestRunner* controller_;
 
     base::WeakPtrFactory<WorkQueue> weak_factory_{this};
@@ -505,17 +517,12 @@ class TestRunner : public WebTestRunner {
 
   void CheckResponseMimeType();
 
-  // In the Mac code, this is called to trigger the end of a test after the
-  // page has finished loading. From here, we can generate the dump for the
-  // test.
-  void LocationChangeDone();
-
-  bool test_is_running_;
+  bool test_is_running_ = false;
 
   // When reset is called, go through and close all but the main test shell
   // window. By default, set to true but toggled to false using
   // setCloseRemainingWindowsWhenComplete().
-  bool close_remaining_windows_;
+  bool close_remaining_windows_ = false;
 
   WorkQueue work_queue_;
 
@@ -526,7 +533,7 @@ class TestRunner : public WebTestRunner {
   std::string tooltip_text_;
 
   // Bound variable counting the number of top URLs visited.
-  int web_history_item_count_;
+  int web_history_item_count_ = 0;
 
   // Flags controlling what content gets dumped as a layout text result.
   WebTestRuntimeFlags web_test_runtime_flags_;
@@ -552,22 +559,31 @@ class TestRunner : public WebTestRunner {
   std::vector<unsigned char> audio_data_;
 
   TestInterfaces* test_interfaces_;
-  WebTestDelegate* delegate_;
-  blink::WebView* main_view_;
+  WebTestDelegate* delegate_ = nullptr;
+  blink::WebView* main_view_ = nullptr;
 
   // This is non empty when a load is in progress.
   std::vector<blink::WebFrame*> loading_frames_;
+  // When a loading task is started, this bool is set until all loading_frames_
+  // are completed and removed. This bool becomes true earlier than
+  // loading_frames_ becomes non-empty. Starts as true for the initial load
+  // which does not come from the WorkQueue.
+  bool running_load_ = true;
+  // When NotifyDone() occurs, if loading is still working, it is delayed, and
+  // this bool tracks that NotifyDone() was called. This differentiates from a
+  // test that was not waiting for NotifyDone() at all.
+  bool did_notify_done_ = false;
 
   // WebContentSettingsClient mock object.
   std::unique_ptr<MockContentSettingsClient> mock_content_settings_client_;
 
-  bool use_mock_theme_;
+  bool use_mock_theme_ = false;
 
-  std::unique_ptr<MockScreenOrientationClient> mock_screen_orientation_client_;
+  MockScreenOrientationClient mock_screen_orientation_client_;
   std::unique_ptr<SpellCheckClient> spellcheck_;
 
   // Number of currently active color choosers.
-  int chooser_count_;
+  int chooser_count_ = 0;
 
   // Captured drag image.
   SkBitmap drag_image_;
@@ -575,18 +591,19 @@ class TestRunner : public WebTestRunner {
   // View that was focused by a previous call to TestRunner::SetFocus method.
   // Note - this can be a dangling pointer to an already destroyed WebView (this
   // is ok, because this is taken care of in WebTestDelegate::SetFocus).
-  blink::WebView* previously_focused_view_;
+  blink::WebView* previously_focused_view_ = nullptr;
 
   // True when running a test in web_tests/external/wpt/.
-  bool is_web_platform_tests_mode_;
+  bool is_web_platform_tests_mode_ = false;
 
   // True if rasterization should be performed during tests that examine
   // fling-style animations. This includes middle-click auto-scroll behaviors.
   // This does not include most "ordinary" animations, such as CSS animations.
-  bool animation_requires_raster_;
+  bool animation_requires_raster_ = false;
 
   // An effective connection type settable by web tests.
-  blink::WebEffectiveConnectionType effective_connection_type_;
+  blink::WebEffectiveConnectionType effective_connection_type_ =
+      blink::WebEffectiveConnectionType::kTypeUnknown;
 
   // Forces v8 compilation cache to be disabled (used for inspector tests).
   bool disable_v8_cache_ = false;

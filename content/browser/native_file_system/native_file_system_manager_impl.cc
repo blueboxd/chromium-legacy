@@ -12,11 +12,13 @@
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -125,7 +127,27 @@ void NativeFileSystemManagerImpl::BindRequest(
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  DCHECK(network::IsOriginPotentiallyTrustworthy(binding_context.origin));
   bindings_.AddBinding(this, std::move(request), binding_context);
+}
+
+// static
+void NativeFileSystemManagerImpl::BindRequestFromUIThread(
+    StoragePartitionImpl* storage_partition,
+    const BindingContext& binding_context,
+    blink::mojom::NativeFileSystemManagerRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!network::IsOriginPotentiallyTrustworthy(binding_context.origin)) {
+    mojo::ReportBadMessage("Native File System access from Unsecure Origin");
+    return;
+  }
+
+  auto* manager = storage_partition->GetNativeFileSystemManager();
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
+                     base::Unretained(manager), binding_context,
+                     std::move(request)));
 }
 
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
@@ -148,6 +170,13 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     ChooseEntriesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const BindingContext& context = bindings_.dispatch_context();
+
+  // ChooseEntries API is only available to windows, as we need a frame to
+  // anchor the picker to.
+  if (context.is_worker()) {
+    bindings_.ReportBadMessage("ChooseEntries called from a worker");
+    return;
+  }
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},

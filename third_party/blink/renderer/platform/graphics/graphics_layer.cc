@@ -1080,8 +1080,11 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    if (auto* layer = CcLayer())
+      layer->SetSubtreePropertyChanged();
     client_.GraphicsLayersDidChange();
+  }
 }
 
 void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
@@ -1099,8 +1102,10 @@ void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    ContentsLayer()->SetSubtreePropertyChanged();
     client_.GraphicsLayersDidChange();
+  }
 }
 
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(

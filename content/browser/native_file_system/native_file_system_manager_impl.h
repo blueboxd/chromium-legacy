@@ -29,6 +29,7 @@ namespace content {
 class NativeFileSystemFileHandleImpl;
 class NativeFileSystemDirectoryHandleImpl;
 class NativeFileSystemTransferTokenImpl;
+class StoragePartitionImpl;
 
 // This is the browser side implementation of the
 // NativeFileSystemManager mojom interface. This is the main entry point for
@@ -77,6 +78,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   void BindRequest(const BindingContext& binding_context,
                    blink::mojom::NativeFileSystemManagerRequest request);
+
+  static void BindRequestFromUIThread(
+      StoragePartitionImpl* storage_partition,
+      const BindingContext& binding_context,
+      blink::mojom::NativeFileSystemManagerRequest request);
 
   // blink::mojom::NativeFileSystemManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;

@@ -14,6 +14,7 @@ import "services/network/public/mojom/chunked_data_pipe_getter.mojom";
 import "services/network/public/mojom/data_pipe_getter.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
+import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -70,6 +71,21 @@ enum DataElementType {
   kBytes,
 };
 
+// Used to determine if URLRequest::trusted_network_isolation_key should be
+// updated on redirect.
+enum UpdateNetworkIsolationKeyOnRedirect {
+  kDoNotUpdate,
+
+  // The updated network isolation key will take the redirected url's origin as
+  // the top frame origin and initiating frame origin.
+  kUpdateTopFrameAndInitiatingFrameOrigin,
+
+  // The updated network isolation key will take existing
+  // |trusted_network_isolation_key|'s top frame origin and redirected url's
+  // origin as the initiating frame origin.
+  kUpdateInitiatingFrameOrigin
+};
+
 // Typemapped to network::ResourceRequest.
 struct URLRequest {
   // The request method: GET, POST, etc.
@@ -101,9 +117,21 @@ struct URLRequest {
   //
   // Note that this is experimental.
   //
-  // TODO(crbug.com/911299): This field will most likely be removed at some
-  // point.
+  // TODO(crbug.com/911299, crbug.com/978968): This field will most likely be
+  // removed at some point.
   url.mojom.Origin? top_frame_origin;
+
+  // This resource request will be keyed using |trusted_network_isolation_key|
+  // for accessing shared network resources like the http cache. This must only
+  // be populated from a trusted process. Optional since it is not filled for
+  // all requests e.g. those coming from a less trusted process. This parameter
+  // may only be set if the URLLoaderFactory was not created with a pre-bound
+  // network isolation key, and it is an error to do otherwise.
+  NetworkIsolationKey? trusted_network_isolation_key;
+
+  // Whether or not the network isolation key needs to be recomputed on
+  // redirects. Typically this is only done for navigations.
+  UpdateNetworkIsolationKeyOnRedirect update_network_isolation_key_on_redirect;
 
   // Boolean indicating whether SameSite cookies are allowed to be attached
   // to the request. It should be used as additional input to network side

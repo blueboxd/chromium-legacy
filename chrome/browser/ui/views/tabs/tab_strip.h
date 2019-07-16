@@ -252,6 +252,7 @@ class TabStrip : public views::AccessiblePaneView,
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
   void UpdateHoverCard(Tab* tab) override;
+  bool HoverCardIsShowingForTab(Tab* tab) override;
   bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
@@ -523,9 +524,6 @@ class TabStrip : public views::AccessiblePaneView,
   // Updates the border padding for |new_tab_button_|.  This should be called
   // whenever any input of the computation of the border's sizing changes.
   void UpdateNewTabButtonBorder();
-
-  // Returns true if the hover card is showing for the given tab.
-  bool HoverCardIsShowingForTab(Tab* tab);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

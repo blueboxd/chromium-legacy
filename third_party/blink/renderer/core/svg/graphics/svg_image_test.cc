@@ -197,6 +197,18 @@ TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
             GetImage().GetPageForTesting()->GetVisualViewport().Size());
 }
 
+TEST_F(SVGImageTest, IsSizeAvailable) {
+  const bool kShouldPause = false;
+  Load("<svg xmlns='http://www.w3.org/2000/svg'></svg>", kShouldPause);
+  EXPECT_TRUE(GetImage().IsSizeAvailable());
+
+  Load("<notsvg></notsvg>", kShouldPause);
+  EXPECT_FALSE(GetImage().IsSizeAvailable());
+
+  Load("<notsvg xmlns='http://www.w3.org/2000/svg'></notsvg>", kShouldPause);
+  EXPECT_FALSE(GetImage().IsSizeAvailable());
+}
+
 class SVGImageSimTest : public SimTest {};
 
 TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {

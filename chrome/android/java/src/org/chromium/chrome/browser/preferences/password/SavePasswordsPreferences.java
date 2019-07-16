@@ -14,7 +14,6 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceCategory;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceGroup;
-import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -117,7 +116,7 @@ public class SavePasswordsPreferences
             }
         });
         getActivity().setTitle(R.string.prefs_saved_passwords_title);
-        setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getActivity()));
+        setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
 
         setHasOptionsMenu(true); // Password Export might be optional but Search is always present.
@@ -247,7 +246,7 @@ public class SavePasswordsPreferences
 
         PreferenceGroup passwordParent;
         if (mSearchQuery == null) {
-            PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
+            PreferenceCategory profileCategory = new PreferenceCategory(getStyledContext());
             profileCategory.setKey(PREF_KEY_CATEGORY_SAVED_PASSWORDS);
             profileCategory.setTitle(R.string.prefs_saved_passwords_title);
             profileCategory.setOrder(ORDER_SAVED_PASSWORDS);
@@ -266,16 +265,16 @@ public class SavePasswordsPreferences
             if (shouldBeFiltered(url, name)) {
                 continue; // The current password won't show with the active filter, try the next.
             }
-            PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getActivity());
-            screen.setTitle(url);
-            screen.setOnPreferenceClickListener(this);
-            screen.setSummary(name);
-            Bundle args = screen.getExtras();
+            Preference preference = new Preference(getStyledContext());
+            preference.setTitle(url);
+            preference.setOnPreferenceClickListener(this);
+            preference.setSummary(name);
+            Bundle args = preference.getExtras();
             args.putString(PASSWORD_LIST_NAME, name);
             args.putString(PASSWORD_LIST_URL, url);
             args.putString(PASSWORD_LIST_PASSWORD, password);
             args.putInt(PASSWORD_LIST_ID, i);
-            passwordParent.addPreference(screen);
+            passwordParent.addPreference(preference);
         }
         mNoPasswords = passwordParent.getPreferenceCount() == 0;
         if (mNoPasswords) {
@@ -320,7 +319,7 @@ public class SavePasswordsPreferences
 
         displayManageAccountLink();
 
-        PreferenceCategory profileCategory = new PreferenceCategory(getActivity());
+        PreferenceCategory profileCategory = new PreferenceCategory(getStyledContext());
         profileCategory.setKey(PREF_KEY_CATEGORY_EXCEPTIONS);
         profileCategory.setTitle(R.string.section_saved_passwords_exceptions);
         profileCategory.setOrder(ORDER_EXCEPTIONS);
@@ -329,13 +328,13 @@ public class SavePasswordsPreferences
             String exception = PasswordManagerHandlerProvider.getInstance()
                                        .getPasswordManagerHandler()
                                        .getSavedPasswordException(i);
-            PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getActivity());
-            screen.setTitle(exception);
-            screen.setOnPreferenceClickListener(this);
-            Bundle args = screen.getExtras();
+            Preference preference = new Preference(getStyledContext());
+            preference.setTitle(exception);
+            preference.setOnPreferenceClickListener(this);
+            Bundle args = preference.getExtras();
             args.putString(PASSWORD_LIST_URL, exception);
             args.putInt(PASSWORD_LIST_ID, i);
-            profileCategory.addPreference(screen);
+            profileCategory.addPreference(preference);
         }
     }
 

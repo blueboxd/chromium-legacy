@@ -32,8 +32,8 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -128,7 +128,7 @@ WebMediaStream::operator MediaStreamDescriptor*() const {
 void WebMediaStream::Initialize(
     const WebVector<WebMediaStreamTrack>& audio_tracks,
     const WebVector<WebMediaStreamTrack>& video_tracks) {
-  Initialize(CreateCanonicalUUIDString(), audio_tracks, video_tracks);
+  Initialize(WTF::CreateCanonicalUUIDString(), audio_tracks, video_tracks);
 }
 
 void WebMediaStream::Initialize(

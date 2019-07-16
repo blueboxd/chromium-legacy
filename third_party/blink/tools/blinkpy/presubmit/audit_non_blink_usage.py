@@ -543,6 +543,14 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/inspector'],
+        'allowed': [
+            # Devtools binary protocol uses std::vector<uint8_t> for serialized
+            # objects.
+            'std::vector',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/inspector/inspector_performance_agent.cc'],
         'allowed': [
             'base::subtle::TimeTicksNowIgnoringOverride',

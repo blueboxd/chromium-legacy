@@ -36,6 +36,7 @@
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
+#include "mojo/public/mojom/base/time.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -608,6 +609,11 @@ void AssistantManagerServiceImpl::OnShowNotification(
   notification_ptr->opaque_token = notification.opaque_token;
   notification_ptr->grouping_key = notification.grouping_key;
   notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
+
+  if (notification.expiry_timestamp_ms) {
+    notification_ptr->expiry_time =
+        base::Time::FromJavaTime(notification.expiry_timestamp_ms);
+  }
 
   // The server sometimes sends an empty |notification_id|, but our client
   // requires a non-empty |client_id| for notifications. Known instances in

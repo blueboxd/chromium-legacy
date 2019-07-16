@@ -2,22 +2,44 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
 from .common import WithIdentifier
 from .common import WithExtendedAttributes
 from .common import WithCodeGeneratorInfo
 from .common import WithOwner
+from .idl_types import IdlType
+from .values import DefaultValue
 
 
 class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                WithOwner):
+    class IR(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo):
+        def __init__(self,
+                     identifier,
+                     index,
+                     idl_type,
+                     default_value=None,
+                     extended_attributes=None,
+                     code_generator_info=None):
+            assert isinstance(index, int)
+            assert isinstance(idl_type, IdlType)
+            assert (default_value is None
+                    or isinstance(default_value, DefaultValue))
+
+            WithIdentifier.__init__(self, identifier)
+            WithExtendedAttributes.__init__(self, extended_attributes)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+
+            self.index = index
+            self.idl_type = idl_type
+            self.default_value = default_value
+
     @property
     def idl_type(self):
         """
         Returns type of this argument.
         @return IdlType
         """
-        raise exceptions.NotImplementedError()
+        assert False, 'To be implemented'
 
     @property
     def is_optional(self):
@@ -25,7 +47,7 @@ class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         Returns True if this argument is optional.
         @return bool
         """
-        raise exceptions.NotImplementedError()
+        assert False, 'To be implemented'
 
     @property
     def is_variadic(self):
@@ -33,7 +55,7 @@ class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         Returns True if this argument is variadic.
         @return bool
         """
-        raise exceptions.NotImplementedError()
+        assert False, 'To be implemented'
 
     @property
     def default_value(self):
@@ -41,7 +63,7 @@ class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         Returns the default value if it is specified. Otherwise, None
         @return DefaultValue
         """
-        raise exceptions.NotImplementedError()
+        assert False, 'To be implemented'
 
     @property
     def index(self):
@@ -49,4 +71,4 @@ class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
         Returns its index in an operation's arguments
         @return int
         """
-        raise exceptions.NotImplementedError()
+        assert False, 'To be implemented'

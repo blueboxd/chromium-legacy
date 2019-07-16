@@ -17,18 +17,15 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.features.start_surface.StartSurface;
+import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
+import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 
 /**
  * Impl class that will resolve components for tab management.
  */
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
-    @Override
-    public Layout createGTSLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, GridTabSwitcher gridTabSwitcher) {
-        return new GridTabSwitcherLayout(context, updateHost, renderHost, gridTabSwitcher);
-    }
-
     @Override
     public GridTabSwitcher createGridTabSwitcher(ChromeActivity activity) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
@@ -46,5 +43,16 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     public TabGroupUi createTabGroupUi(
             ViewGroup parentView, ThemeColorProvider themeColorProvider) {
         return new TabGroupUiCoordinator(parentView, themeColorProvider);
+    }
+
+    @Override
+    public Layout createStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost, StartSurface startSurface) {
+        return new StartSurfaceLayout(context, updateHost, renderHost, startSurface);
+    }
+
+    @Override
+    public StartSurface createStartSurface(ChromeActivity activity) {
+        return new StartSurfaceCoordinator(activity);
     }
 }

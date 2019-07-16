@@ -55,6 +55,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_info.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
@@ -66,7 +67,6 @@
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
@@ -1980,7 +1980,7 @@ INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageAndPageHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(PreviewsServerIsInBloomFilter)) {
-  previews::BloomFilter blacklist_bloom_filter(7, 511);
+  optimization_guide::BloomFilter blacklist_bloom_filter(7, 511);
   blacklist_bloom_filter.Add(previews_server_url().host());
   blacklist_bloom_filter.Add("subdomain." + previews_server_url().host());
 

@@ -352,11 +352,6 @@ WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
 
 WebURLLoaderFactoryImpl::~WebURLLoaderFactoryImpl() = default;
 
-std::unique_ptr<WebURLLoaderFactoryImpl>
-WebURLLoaderFactoryImpl::CreateTestOnlyFactory() {
-  return std::make_unique<WebURLLoaderFactoryImpl>(nullptr, nullptr);
-}
-
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle) {

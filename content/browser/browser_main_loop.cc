@@ -64,7 +64,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/compositor/viz_process_transport_factory.h"
-#include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
@@ -767,7 +766,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
           switches::kEnableAggressiveDOMStorageFlushing)) {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:EnableAggressiveCommitDelay");
-    DOMStorageArea::EnableAggressiveCommitDelay();
     StorageAreaImpl::EnableAggressiveCommitDelay();
   }
 

@@ -873,14 +873,6 @@ static void JNI_PrefServiceBridge_SetTranslateEnabled(
   GetPrefService()->SetBoolean(prefs::kOfferTranslateEnabled, enabled);
 }
 
-static void JNI_PrefServiceBridge_ResetTranslateDefaults(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
-      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
-  translate_prefs->ResetToDefaults();
-}
-
 static void JNI_PrefServiceBridge_MigrateJavascriptPreference(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

@@ -374,7 +374,7 @@ TEST(WarmupURLFetcherTest, TestFetchTimesout) {
 
 TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
   network::TestURLLoaderFactory test_url_loader_factory;
 
   base::HistogramTester histogram_tester;

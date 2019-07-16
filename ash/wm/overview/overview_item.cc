@@ -539,7 +539,7 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
-  // Disable mask and shadow for the dragged overview item during dragging.
+  // Disable shadow for the dragged overview item during dragging.
   if (is_being_dragged_)
     UpdateRoundedCornersAndShadow();
 
@@ -555,7 +555,7 @@ void OverviewItem::OnSelectorItemDragEnded(bool snap) {
     // Do nothing further with the dragged overview item if it is being snapped.
     if (snap)
       return;
-    // Re-show mask and shadow for the dragged overview item after drag ends.
+    // Re-show shadow for the dragged overview item after drag ends.
     UpdateRoundedCornersAndShadow();
   }
 
@@ -703,33 +703,33 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
 }
 
 void OverviewItem::UpdateRoundedCornersAndShadow() {
-  // Do not show mask and shadow if:
-  // 1) overview is shutting down or
-  // 2) this overview item is in an overview grid that contains more than 10
-  //    windows. In this case don't apply rounded corner mask because it can
-  //    push the compositor memory usage to the limit. TODO(oshima): Remove
-  //    this once new rounded corner impl is available. (crbug.com/903486)
-  // 3) we're currently in entering overview animation or
-  // 4) this overview item is being dragged or
-  // 5) this overview item is the drop target window or
-  // 6) this overview item is in animation.
+  // Do not show the rounded corners and the shadow if overview is shutting down
+  // or we're currently in entering overview animation.
   bool should_show = true;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (disable_mask_ || !overview_controller ||
       !overview_controller->InOverviewSession() ||
-      overview_controller->IsInStartAnimation() || is_being_dragged_ ||
-      overview_grid_->IsDropTargetWindow(GetWindow()) ||
-      transform_window_.GetOverviewWindow()
-          ->layer()
-          ->GetAnimator()
-          ->is_animating()) {
+      overview_controller->IsInStartAnimation()) {
     should_show = false;
   }
 
-  transform_window_.UpdateMask(should_show);
-  SetShadowBounds(should_show ? base::make_optional(gfx::ToEnclosedRect(
-                                    transform_window_.GetTransformedBounds()))
-                              : base::nullopt);
+  // In addition, the shadow should be hidden if
+  // 1) this overview item is being dragged or
+  // 2) this overview item is the drop target window or
+  // 3) this overview item is in animation.
+  const bool should_show_shadow =
+      should_show && !is_being_dragged_ &&
+      !overview_grid_->IsDropTargetWindow(GetWindow()) &&
+      !transform_window_.GetOverviewWindow()
+           ->layer()
+           ->GetAnimator()
+           ->is_animating();
+
+  transform_window_.UpdateRoundedCorners(should_show);
+  SetShadowBounds(should_show_shadow
+                      ? base::make_optional(gfx::ToEnclosedRect(
+                            transform_window_.GetTransformedBounds()))
+                      : base::nullopt);
   if (transform_window_.IsMinimized()) {
     caption_container_view_->UpdatePreviewRoundedCorners(
         should_show, kOverviewWindowRoundingDp);

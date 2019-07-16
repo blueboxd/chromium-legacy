@@ -340,6 +340,10 @@ void AutoclickScrollBubbleView::UpdateAnchorRect(
   SetAnchorRect(rect);
 }
 
+void AutoclickScrollBubbleView::UpdateInsets(gfx::Insets insets) {
+  SetBubbleBorderInsets(insets);
+}
+
 bool AutoclickScrollBubbleView::IsAnchoredToStatusArea() const {
   return false;
 }

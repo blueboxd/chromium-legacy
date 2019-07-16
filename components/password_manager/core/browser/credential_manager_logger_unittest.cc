@@ -23,7 +23,7 @@ class MockLogManager : public autofill::StubLogManager {
   MockLogManager() = default;
   ~MockLogManager() override = default;
 
-  MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogTextMessage, void(const std::string& text));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLogManager);
@@ -51,7 +51,7 @@ CredentialManagerLoggerTest::~CredentialManagerLoggerTest() = default;
 
 TEST_F(CredentialManagerLoggerTest, LogRequestCredential) {
   EXPECT_CALL(log_manager(),
-              LogSavePasswordProgress(
+              LogTextMessage(
                   AllOf(HasSubstr(kSiteOrigin), HasSubstr(kFederationOrigin))));
   logger().LogRequestCredential(GURL(kSiteOrigin),
                                 CredentialMediationRequirement::kSilent,
@@ -59,19 +59,19 @@ TEST_F(CredentialManagerLoggerTest, LogRequestCredential) {
 }
 
 TEST_F(CredentialManagerLoggerTest, LogSendCredential) {
-  EXPECT_CALL(log_manager(), LogSavePasswordProgress(HasSubstr(kSiteOrigin)));
+  EXPECT_CALL(log_manager(), LogTextMessage(HasSubstr(kSiteOrigin)));
   logger().LogSendCredential(GURL(kSiteOrigin),
                              CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerLoggerTest, LogStoreCredential) {
-  EXPECT_CALL(log_manager(), LogSavePasswordProgress(HasSubstr(kSiteOrigin)));
+  EXPECT_CALL(log_manager(), LogTextMessage(HasSubstr(kSiteOrigin)));
   logger().LogStoreCredential(GURL(kSiteOrigin),
                               CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 TEST_F(CredentialManagerLoggerTest, LogPreventSilentAccess) {
-  EXPECT_CALL(log_manager(), LogSavePasswordProgress(HasSubstr(kSiteOrigin)));
+  EXPECT_CALL(log_manager(), LogTextMessage(HasSubstr(kSiteOrigin)));
   logger().LogPreventSilentAccess(GURL(kSiteOrigin));
 }
 

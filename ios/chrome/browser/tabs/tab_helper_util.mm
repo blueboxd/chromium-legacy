@@ -45,8 +45,6 @@
 #import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -66,12 +64,8 @@
 #import "ios/web/public/web_state/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
-  // TabIdHelper sets up the tab ID which is required for the creation of the
-  // Tab by LegacyTabHelper.
+  // TabIdHelper sets up the tab ID.
   TabIdTabHelper::CreateForWebState(web_state);
-  LegacyTabHelper::CreateForWebState(web_state);
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
-  DCHECK(tab);
 
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
@@ -162,5 +156,5 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   }
 
   // Allow the embedder to attach tab helpers.
-  ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);
+  ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state);
 }

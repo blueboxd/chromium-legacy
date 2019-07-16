@@ -31,6 +31,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/content_uri_utils.h"
 #include "components/download/internal/common/android/download_collection_bridge.h"
 #endif  // defined(OS_ANDROID)
 
@@ -368,16 +369,21 @@ void DownloadFileImpl::RenameAndAnnotate(
 }
 
 #if defined(OS_ANDROID)
-void DownloadFileImpl::CreateIntermediateUriForPublish(
+void DownloadFileImpl::RenameToIntermediateUri(
     const GURL& original_url,
     const GURL& referrer_url,
     const base::FilePath& file_name,
     const std::string& mime_type,
+    const base::FilePath& current_path,
     const RenameCompletionCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Create new content URI if |current_path| is not content URI
+  // or if it is already deleted.
   base::FilePath content_path =
-      DownloadCollectionBridge::CreateIntermediateUriForPublish(
-          original_url, referrer_url, file_name, mime_type);
+      current_path.IsContentUri() && base::ContentUriExists(current_path)
+          ? current_path
+          : DownloadCollectionBridge::CreateIntermediateUriForPublish(
+                original_url, referrer_url, file_name, mime_type);
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_FILE_FAILED;
   if (!content_path.empty()) {
     reason = file_.Rename(content_path);

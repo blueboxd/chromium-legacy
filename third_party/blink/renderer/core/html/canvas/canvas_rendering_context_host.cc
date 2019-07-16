@@ -17,18 +17,18 @@
 
 namespace blink {
 
-CanvasRenderingContextHost::CanvasRenderingContextHost() = default;
+CanvasRenderingContextHost::CanvasRenderingContextHost(HostType host_type)
+    : host_type_(host_type) {}
 
-void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size,
-                                                       HostType hostType) {
+void CanvasRenderingContextHost::RecordCanvasSizeToUMA(const IntSize& size) {
   if (did_record_canvas_size_to_uma_)
     return;
   did_record_canvas_size_to_uma_ = true;
 
-  if (hostType == kCanvasHost) {
+  if (host_type_ == kCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Canvas.SqrtNumberOfPixels",
                                 std::sqrt(size.Area()), 1, 5000, 100);
-  } else if (hostType == kOffscreenCanvasHost) {
+  } else if (host_type_ == kOffscreenCanvasHost) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.OffscreenCanvas.SqrtNumberOfPixels",
                                 std::sqrt(size.Area()), 1, 5000, 100);
   } else {
@@ -227,6 +227,10 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   exception_state.ThrowDOMException(DOMExceptionCode::kNotReadableError,
                                     "Readback of the source image has failed.");
   return ScriptPromise();
+}
+
+bool CanvasRenderingContextHost::IsOffscreenCanvas() const {
+  return host_type_ == kOffscreenCanvasHost;
 }
 
 }  // namespace blink

@@ -24,8 +24,6 @@
 #include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
@@ -66,38 +64,6 @@ class FakeU2FTabHelper : public U2FTabHelper {
   DISALLOW_COPY_AND_ASSIGN(FakeU2FTabHelper);
 };
 
-// Tab mock for using in UserActivity tests.
-@interface UserActivityHandlerTabMock : NSObject
-
-- (instancetype)initWithWebState:(web::WebState*)webState
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-@end
-
-@implementation UserActivityHandlerTabMock {
-  web::WebState* _webState;
-}
-
-- (instancetype)initWithWebState:(web::WebState*)webState {
-  if ((self = [super init])) {
-    DCHECK(webState);
-    _webState = webState;
-  }
-  return self;
-}
-
-- (FakeU2FTabHelper*)U2FTabHelper {
-  return static_cast<FakeU2FTabHelper*>(U2FTabHelper::FromWebState(_webState));
-}
-
-- (NSString*)tabId {
-  return TabIdTabHelper::FromWebState(_webState)->tab_id();
-}
-
-@end
-
 #pragma mark - TabModel Mock
 
 // TabModel mock for using in UserActivity tests.
@@ -117,21 +83,16 @@ class FakeU2FTabHelper : public U2FTabHelper {
   return self;
 }
 
-- (UserActivityHandlerTabMock*)addMockTab {
+- (web::WebState*)addWebState {
   auto testWebState = std::make_unique<web::TestWebState>();
   TabIdTabHelper::CreateForWebState(testWebState.get());
   FakeU2FTabHelper::CreateForWebState(testWebState.get());
-
-  UserActivityHandlerTabMock* tab =
-      [[UserActivityHandlerTabMock alloc] initWithWebState:testWebState.get()];
-  LegacyTabHelper::CreateForWebStateForTesting(testWebState.get(),
-                                               static_cast<Tab*>(tab));
-
+  web::WebState* returnWebState = testWebState.get();
   _webStateList->InsertWebState(0, std::move(testWebState),
                                 WebStateList::INSERT_NO_FLAGS,
                                 WebStateOpener());
 
-  return tab;
+  return returnWebState;
 }
 
 - (WebStateList*)webStateList {
@@ -172,6 +133,15 @@ class UserActivityHandlerTest : public PlatformTest {
 
   void resetHandleStartupParametersHasBeenCalled() {
     handle_startup_parameters_has_been_called_ = NO;
+  }
+
+  FakeU2FTabHelper* GetU2FTabHelperForWebState(web::WebState* web_state) {
+    return static_cast<FakeU2FTabHelper*>(
+        U2FTabHelper::FromWebState(web_state));
+  }
+
+  NSString* GetTabIdForWebState(web::WebState* web_state) {
+    return TabIdTabHelper::FromWebState(web_state)->tab_id();
   }
 
   conditionBlock getCompletionHandler() {
@@ -566,12 +536,12 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsU2F) {
   // Setup.
   UserActivityHandlerTabModelMock* mockTabModel =
       [[UserActivityHandlerTabModelMock alloc] init];
-  UserActivityHandlerTabMock* tabMock = [mockTabModel addMockTab];
+  web::WebState* web_state = [mockTabModel addWebState];
   id tabModel = static_cast<id>(mockTabModel);
 
-  std::string urlRepresentation =
-      base::StringPrintf("chromium://u2f-callback?isU2F=1&tabID=%s",
-                         base::SysNSStringToUTF8(tabMock.tabId).c_str());
+  std::string urlRepresentation = base::StringPrintf(
+      "chromium://u2f-callback?isU2F=1&tabID=%s",
+      base::SysNSStringToUTF8(GetTabIdForWebState(web_state)).c_str());
 
   GURL gurl(urlRepresentation);
   AppStartupParameters* startupParams =
@@ -599,7 +569,7 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsU2F) {
 
   // Tests.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
-  EXPECT_EQ(gurl, [tabMock U2FTabHelper] -> url());
+  EXPECT_EQ(gurl, GetU2FTabHelperForWebState(web_state)->url());
   EXPECT_TRUE(tabOpener.urlLoadParams.web_params.url.is_empty());
   EXPECT_TRUE(tabOpener.urlLoadParams.web_params.virtual_url.is_empty());
 }

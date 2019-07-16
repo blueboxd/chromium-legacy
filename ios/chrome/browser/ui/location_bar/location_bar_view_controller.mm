@@ -467,7 +467,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
                 action:@selector(displayModalInfobar)
       forControlEvents:UIControlEventTouchUpInside];
   // Set as hidden as it should only be shown by |displayInfobarButton:|
-  self.locationBarSteadyView.leadingButton.hidden = YES;
+  [self.locationBarSteadyView.leadingButton displayBadge:NO animated:NO];
 }
 
 - (void)displayModalInfobar {
@@ -493,20 +493,27 @@ typedef NS_ENUM(int, TrailingButtonState) {
 #pragma mark - BadgeConsumer
 
 - (void)setupWithBadges:(NSArray*)badges {
-  self.locationBarSteadyView.leadingButton.hidden = (badges.count == 0);
-  self.shouldShowLeadingButton = (badges.count > 0);
+  BOOL hasBadge = badges.count > 0;
+  if (hasBadge) {
+    id<BadgeItem> firstBadge = badges[0];
+    BOOL isAccepted = firstBadge.isAccepted;
+    self.activeBadge = isAccepted;
+    [self.locationBarSteadyView.leadingButton setActive:isAccepted animated:NO];
+  }
+  [self.locationBarSteadyView.leadingButton displayBadge:hasBadge animated:NO];
+  self.shouldShowLeadingButton = hasBadge;
 }
 
 - (void)addBadge:(id<BadgeItem>)badgeItem {
-  self.locationBarSteadyView.leadingButton.hidden = NO;
-  self.shouldShowLeadingButton = YES;
   self.activeBadge = badgeItem.isAccepted;
   [self.locationBarSteadyView.leadingButton setActive:badgeItem.isAccepted
-                                             animated:YES];
+                                             animated:NO];
+  [self.locationBarSteadyView.leadingButton displayBadge:YES animated:YES];
+  self.shouldShowLeadingButton = YES;
 }
 
 - (void)removeBadge:(id<BadgeItem>)badgeItem {
-  self.locationBarSteadyView.leadingButton.hidden = YES;
+  [self.locationBarSteadyView.leadingButton displayBadge:NO animated:NO];
   self.shouldShowLeadingButton = NO;
 }
 

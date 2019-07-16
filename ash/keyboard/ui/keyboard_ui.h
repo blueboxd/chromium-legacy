@@ -13,9 +13,6 @@
 namespace aura {
 class Window;
 }
-namespace gfx {
-class Size;
-}
 namespace ui {
 class InputMethod;
 }
@@ -69,8 +66,6 @@ class KEYBOARD_EXPORT KeyboardUI {
   // provide one.
   // TODO(https://crbug.com/845780): Change this to accept a callback.
   virtual void ReloadKeyboardIfNeeded() = 0;
-
-  virtual void KeyboardContentsLoaded(const gfx::Size& size);
 
   // |controller| may be null when KeyboardUIController is being destroyed.
   void SetController(KeyboardUIController* controller);

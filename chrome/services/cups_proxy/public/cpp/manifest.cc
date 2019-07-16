@@ -20,8 +20,7 @@ const service_manager::Manifest& GetCupsProxyManifest() {
           .WithOptions(
               service_manager::ManifestOptionsBuilder()
                   .WithExecutionMode(service_manager::Manifest::ExecutionMode::
-                                         kOutOfProcessBuiltin)
-                  .WithSandboxType("utility")
+                                         kInProcessBuiltin)
                   .WithInstanceSharingPolicy(
                       service_manager::Manifest::InstanceSharingPolicy::
                           kSingleton)

@@ -55,7 +55,7 @@ class PlatformVideoFramePoolTest
 
   PlatformVideoFramePoolTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     pool_.reset(new PlatformVideoFramePool(
         base::BindRepeating(&CreateDmabufVideoFrame), &test_clock_));
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());

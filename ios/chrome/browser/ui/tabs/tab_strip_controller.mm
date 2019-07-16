@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
@@ -1772,7 +1771,7 @@ UIColor* BackgroundColor() {
     SnapshotTabHelper::FromWebState(_tabModel.webStateList->GetActiveWebState())
         ->UpdateSnapshotWithCallback(nil);
   }
-  [_tabModel setCurrentTab:[_tabModel tabAtIndex:index]];
+  _tabModel.webStateList->ActivateWebStateAt(static_cast<int>(index));
   [self updateContentOffsetForWebStateIndex:index isNewWebState:NO];
 }
 

@@ -85,8 +85,9 @@ class DiceResponseHandlerTest : public testing::Test,
  protected:
   DiceResponseHandlerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::
-                IO_MOCK_TIME),  // URLRequestContext requires IO.
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::TimeSource::
+                MOCK_TIME),  // URLRequestContext requires IO.
         signin_client_(&pref_service_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &pref_service_,

@@ -258,6 +258,8 @@ source_set("lib") {
     "util.h",
     "version.cc",
     "version.h",
+    "webauthn_commands.cc",
+    "webauthn_commands.h",
     "window_commands.cc",
     "window_commands.h",
   ]

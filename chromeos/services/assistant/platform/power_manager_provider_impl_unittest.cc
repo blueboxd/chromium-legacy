@@ -28,7 +28,8 @@ class PowerManagerProviderImplTest : public testing::Test {
  public:
   PowerManagerProviderImplTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
   ~PowerManagerProviderImplTest() override = default;

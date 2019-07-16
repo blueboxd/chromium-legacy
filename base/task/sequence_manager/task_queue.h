@@ -323,6 +323,12 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // Returns true if the queue has a fence which is blocking execution of tasks.
   bool BlockedByFence() const;
 
+  // Returns an EnqueueOrder generated at the last transition to unblocked. A
+  // queue is unblocked when it is enabled and no fence prevents the front task
+  // from running. If the EnqueueOrder of a task is greater than this when it
+  // starts running, it means that is was never blocked.
+  EnqueueOrder GetLastUnblockEnqueueOrder() const;
+
   void SetObserver(Observer* observer);
 
   // Controls whether or not the queue will emit traces events when tasks are

@@ -26,9 +26,6 @@ extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature;
 // If this feature is enabled, we enable popular sites in the suggestions UI.
 extern const base::Feature kUsePopularSitesSuggestions;
 
-// If enabled, show a Google search shortcut on the NTP by default.
-extern const base::Feature kDefaultSearchShortcut;
-
 }  // namespace ntp_tiles
 
 #endif  // COMPONENTS_NTP_TILES_FEATURES_H_

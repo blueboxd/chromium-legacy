@@ -23,8 +23,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_holder.h"

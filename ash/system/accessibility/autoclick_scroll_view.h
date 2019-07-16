@@ -21,8 +21,16 @@ class AutoclickScrollBubbleView : public TrayBubbleView {
   explicit AutoclickScrollBubbleView(TrayBubbleView::InitParams init_params);
   ~AutoclickScrollBubbleView() override;
 
+  // Updates the scroll bubble positioning by updating the |rect| to which the
+  // bubble anchors and the |arrow| indicating which side of |rect| it should
+  // try to lay out on.
   void UpdateAnchorRect(const gfx::Rect& rect,
                         views::BubbleBorder::Arrow arrow);
+
+  // Updates the scroll bubble's insets. Insets can be set at creation time
+  // using TrayBubbleView::InitParams in the constructor and updated at runtime
+  // here.
+  void UpdateInsets(gfx::Insets insets);
 
   // TrayBubbleView:
   bool IsAnchoredToStatusArea() const override;

@@ -750,7 +750,7 @@ modules_dictionary_idl_files =
           "presentation/presentation_connection_available_event_init.idl",
           "presentation/presentation_connection_close_event_init.idl",
           "push_messaging/push_event_init.idl",
-          "push_messaging/push_subscription_change_init.idl",
+          "push_messaging/push_subscription_change_event_init.idl",
           "push_messaging/push_subscription_options_init.idl",
           "quota/storage_estimate.idl",
           "quota/storage_usage_details.idl",

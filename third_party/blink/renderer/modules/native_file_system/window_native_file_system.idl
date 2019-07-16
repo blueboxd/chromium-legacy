@@ -4,10 +4,11 @@
 
 // https://wicg.github.io/native-file-system/#api-choosefilesystementries
 [
+    SecureContext,
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=WindowNativeFileSystem
 ] partial interface Window {
-    [CallWith=ScriptState, SecureContext]
+    [CallWith=ScriptState]
     Promise<(FileSystemHandle or sequence<FileSystemHandle>)>
         chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options);
 };

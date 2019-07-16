@@ -26,7 +26,7 @@ class ReportUploaderTest : public ::testing::Test {
  public:
   ReportUploaderTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     CreateUploader(0);
   }
   ~ReportUploaderTest() override {}

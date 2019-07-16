@@ -110,7 +110,6 @@
       'linux-archive-rel': {
         'mixins': [
           'linux-archive-rel-args',
-          'linux-trusty',
         ],
         'additional_compile_targets': [
           'all',
@@ -3345,7 +3344,6 @@
       # linux-rel or ended up not being able to fold.
       'Linux Builder Code Coverage': {
         'mixins': [
-          'linux-trusty',
           'code-coverage',
         ],
         'additional_compile_targets': [

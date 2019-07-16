@@ -651,8 +651,6 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
   socket.Close();
 }
 
-#if !defined(OS_FUCHSIA)
-// TODO(https://crbug.com/900709): SO_REUSEPORT doesn't work on Fuchsia.
 #if defined(OS_IOS)
 // TODO(https://crbug.com/947115): failing on device on iOS 12.2.
 #define MAYBE_SharedMulticastAddress DISABLED_SharedMulticastAddress
@@ -711,7 +709,6 @@ TEST_F(UDPSocketTest, MAYBE_SharedMulticastAddress) {
   EXPECT_EQ(kMessage, RecvFromSocket(&socket2));
 #endif  // !defined(OS_CHROMEOS)
 }
-#endif  // !defined(OS_FUCHSIA)
 #endif  // !defined(OS_ANDROID)
 
 TEST_F(UDPSocketTest, MulticastOptions) {

@@ -6201,6 +6201,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Needs normalization"/>
 </enum>
 
+<enum name="BooleanNetworkIsolationKeyPresent">
+  <int value="0" label="Network Isolation Key Not Present"/>
+  <int value="1" label="Network Isolation Key Present"/>
+</enum>
+
 <enum name="BooleanNetworkQuietBeforeSwap">
   <int value="0" label="FMP OK, network not yet quiet"/>
   <int value="1" label="FMP not OK, network was already quiet"/>
@@ -17349,7 +17354,7 @@ Called by update_net_error_codes.py.-->
   <int value="515" label="PluginVmLicenseKey"/>
   <int value="516" label="ExtensionAllowInsecureUpdates"/>
   <int value="517" label="BrowserSwitcherEnabled"/>
-  <int value="518" label="CertificateManagementAllowed"/>
+  <int value="518" label="ClientCertificateManagementAllowed"/>
   <int value="519" label="BrowserSwitcherKeepLastChromeTab"/>
   <int value="520" label="DeviceRebootOnUserSignout"/>
   <int value="521" label="ForceNetworkInProcess"/>
@@ -23708,7 +23713,7 @@ Called by update_net_error_codes.py.-->
   <int value="2779" label="V8HTMLMediaElement_Remote_AttributeGetter"/>
   <int value="2780" label="V8RemotePlayback_WatchAvailability_Method"/>
   <int value="2781" label="V8RemotePlayback_Prompt_Method"/>
-  <int value="2782" label="LayoutJankExplicitlyRequested"/>
+  <int value="2782" label="LayoutShiftExplicitlyRequested"/>
   <int value="2783" label="MediaSessionSkipAd"/>
   <int value="2784" label="AdFrameSizeIntervention"/>
   <int value="2785" label="V8UserActivation_HasBeenActive_AttributeGetter"/>
@@ -28835,6 +28840,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              gpu_info.can_lose_context=True"/>
 </enum>
 
+<enum name="GridTabSwitcherThumbnailFetchingResult">
+  <summary>The result of thumbnail fetching in the Grid Tab Switcher.</summary>
+  <int value="0" label="Got JPEG thumbnail"/>
+  <int value="1" label="Got ETC1 thumbnail"/>
+  <int value="2" label="Got nothing"/>
+</enum>
+
 <enum name="GsaAccountChangeNotificationSource">
   <int value="0" label="Service"/>
   <int value="1" label="Broadcast"/>
@@ -33818,6 +33830,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1846471618"
       label="enable-experimental-accessibility-switch-access-text"/>
   <int value="-1844754731" label="Mash:disabled"/>
+  <int value="-1843677118" label="TwoPanesStartSurfaceAndroid:disabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
@@ -36354,6 +36367,7 @@ from previous Chrome versions.
   <int value="1835523483" label="OmniboxUIExperimentSwapTitleAndUrl:enabled"/>
   <int value="1838990777" label="V8Future:enabled"/>
   <int value="1839740266" label="LocationHardReload:disabled"/>
+  <int value="1841793150" label="TwoPanesStartSurfaceAndroid:enabled"/>
   <int value="1842219851" label="enable-incognito-window-counter"/>
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
@@ -50392,6 +50406,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="101" label="IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS"/>
   <int value="102" label="IDC_SEND_TO_MY_DEVICES"/>
   <int value="103" label="IDC_CONTENT_LINK_SEND_TAB_TO_SELF"/>
+  <int value="104" label="IDC_SEND_TAB_TO_SELF_SINGLE_TARGET"/>
+  <int value="105" label="IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET"/>
+  <int value="106"
+      label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE"/>
+  <int value="107"
+      label="IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES"/>
 </enum>
 
 <enum name="ReopenTabPromoStepAtDismissal">

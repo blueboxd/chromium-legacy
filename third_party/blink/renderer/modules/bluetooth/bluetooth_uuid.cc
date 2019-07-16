@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
 
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -333,7 +333,7 @@ String GetUUIDForGATTAttribute(GATTAttribute attribute,
   String name_str = name.GetAsString();
 
   // If name is a valid UUID, return name and abort these steps.
-  if (IsValidUUID(name_str))
+  if (WTF::IsValidUUID(name_str))
     return name_str;
 
   // If name is in the corresponding attribute map return

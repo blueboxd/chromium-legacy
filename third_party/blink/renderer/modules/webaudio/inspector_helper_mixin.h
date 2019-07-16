@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_INSPECTOR_HELPER_MIXIN_H_
 
 #include <memory>
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -16,8 +16,7 @@ namespace blink {
 class InspectorHelperMixin {
  public:
   explicit InspectorHelperMixin(const String& parent_uuid)
-      : uuid_(CreateCanonicalUUIDString()),
-        parent_uuid_(parent_uuid) {}
+      : uuid_(WTF::CreateCanonicalUUIDString()), parent_uuid_(parent_uuid) {}
   ~InspectorHelperMixin() = default;
 
   const String& Uuid() const { return uuid_; }

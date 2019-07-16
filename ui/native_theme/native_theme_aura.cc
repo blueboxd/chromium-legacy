@@ -63,6 +63,15 @@ const SkColor kInputBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
 const SkColor kInputBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
 const SkColor kInputBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
+const SkScalar kButtonBorderRadius = 2.f;
+const SkScalar kButtonBorderWidth = 1.f;
+const SkColor kButtonBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+const SkColor kButtonBackgroundHoveredColor = SkColorSetRGB(0xF3, 0xF3, 0xF3);
+const SkColor kButtonBackgroundDisabledColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
+const SkColor kButtonBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kButtonBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kButtonBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -482,6 +491,60 @@ void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
   stroke_flags.setStrokeWidth(borderWidth);
   canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
                         SkIntToScalar(kInputBorderRadius), stroke_flags);
+}
+
+void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const ButtonExtraParams& button) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintButton(canvas, state, rect, button);
+  }
+
+  cc::PaintFlags flags;
+  SkRect skrect = gfx::RectToSkRect(rect);
+
+  SkColor background_color;
+  if (state == kHovered) {
+    background_color = kButtonBackgroundHoveredColor;
+  } else if (state == kDisabled) {
+    background_color = kButtonBackgroundDisabledColor;
+  } else {
+    background_color = kButtonBackgroundColor;
+  }
+
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  flags.setColor(background_color);
+
+  // If the button is too small, fallback to drawing a single, solid color.
+  if (rect.width() < 5 || rect.height() < 5) {
+    canvas->drawRect(skrect, flags);
+    return;
+  }
+
+  // Paint the background (is not visible behind the rounded corners).
+  skrect.inset(kButtonBorderWidth / 2, kButtonBorderWidth / 2);
+  canvas->drawRoundRect(skrect, kButtonBorderRadius, kButtonBorderRadius,
+                        flags);
+
+  // Paint the border: 1px solid.
+  if (button.has_border) {
+    SkColor border_color;
+    if (state == kHovered) {
+      border_color = kButtonBorderHoveredColor;
+    } else if (state == kDisabled) {
+      border_color = kButtonBorderDisabledColor;
+    } else {
+      border_color = kButtonBorderColor;
+    }
+
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(kButtonBorderWidth);
+    flags.setColor(border_color);
+    canvas->drawRoundRect(skrect, kButtonBorderRadius, kButtonBorderRadius,
+                          flags);
+  }
 }
 
 gfx::Size NativeThemeAura::GetPartSize(Part part,

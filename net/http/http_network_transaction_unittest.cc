@@ -101,6 +101,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -358,6 +359,11 @@ class TestSSLConfigService : public SSLConfigService {
   bool CanShareConnectionWithClientCerts(
       const std::string& hostname) const override {
     return false;
+  }
+
+  void UpdateSSLConfigAndNotify(const SSLConfig& config) {
+    config_ = config;
+    NotifySSLConfigChange();
   }
 
  private:
@@ -21447,6 +21453,150 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSLProxy) {
   EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
   EXPECT_EQ("2", response_data2);
   trans2.reset();
+}
+
+// Test that SSLConfig changes from SSLConfigService are picked up even when
+// there are live sockets.
+TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
+  SSLConfig ssl_config;
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
+
+  session_deps_.ssl_config_service = std::move(ssl_config_service);
+
+  // Make three requests. Between the second and third, the SSL config will
+  // change.
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://foo.test/1");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://foo.test/2");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpRequestInfo request3;
+  request3.method = "GET";
+  request3.url = GURL("https://foo.test/3");
+  request3.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  const MockWrite kWrites1[] = {
+      MockWrite("GET /1 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /2 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  const MockRead kReads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "1"),
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "2"),
+  };
+
+  // The third request goes on a different socket because the SSL config has
+  // changed.
+  const MockWrite kWrites2[] = {
+      MockWrite("GET /3 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "3")};
+
+  StaticSocketDataProvider data1(kReads1, kWrites1);
+  StaticSocketDataProvider data2(kReads2, kWrites2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  ssl1.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  TestCompletionCallback callback;
+  auto trans1 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans1->Start(&request1, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data1;
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
+  EXPECT_EQ("1", response_data1);
+  trans1.reset();
+
+  auto trans2 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans2->Start(&request2, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data2;
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
+  EXPECT_EQ("2", response_data2);
+  trans2.reset();
+
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+
+  auto trans3 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans3->Start(&request3, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data3;
+  EXPECT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
+  EXPECT_EQ("3", response_data3);
+  trans3.reset();
+}
+
+TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
+  SSLConfig ssl_config;
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
+
+  session_deps_.ssl_config_service = std::move(ssl_config_service);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://foo.test/1");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Make a socket which never connects.
+  StaticSocketDataProvider data({}, {});
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl_data(SYNCHRONOUS, ERR_IO_PENDING);
+  ssl_data.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NETWORK_CHANGED));
 }
 
 }  // namespace net

@@ -303,28 +303,59 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
   if (!IsGeneratedResourceAvailable(
           "content/test/data/web_ui_test_mojo_bindings.mojom-lite.js"))
     return;
-
-  g_got_message = false;
-  base::RunLoop run_loop;
-  factory()->set_run_loop(&run_loop);
   GURL test_url(GetWebUIURL("mojo-web-ui/web_ui_mojo.html?ping"));
-  NavigateToURL(shell(), test_url);
-  // RunLoop is quit when message received from page.
-  run_loop.Run();
-  EXPECT_TRUE(g_got_message);
 
-  // Check that a second render frame in the same renderer process works
-  // correctly.
-  Shell* other_shell = CreateBrowser();
-  g_got_message = false;
-  base::RunLoop other_run_loop;
-  factory()->set_run_loop(&other_run_loop);
-  NavigateToURL(other_shell, test_url);
-  // RunLoop is quit when message received from page.
-  other_run_loop.Run();
-  EXPECT_TRUE(g_got_message);
-  EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess(),
-            other_shell->web_contents()->GetMainFrame()->GetProcess());
+  {
+    g_got_message = false;
+    base::RunLoop run_loop;
+    factory()->set_run_loop(&run_loop);
+    NavigateToURL(shell(), test_url);
+    // RunLoop is quit when message received from page.
+    run_loop.Run();
+    EXPECT_TRUE(g_got_message);
+  }
+
+  {
+    // Check that a second shell works correctly.
+    Shell* other_shell = CreateBrowser();
+    g_got_message = false;
+    base::RunLoop other_run_loop;
+    factory()->set_run_loop(&other_run_loop);
+    NavigateToURL(other_shell, test_url);
+    // RunLoop is quit when message received from page.
+    other_run_loop.Run();
+    EXPECT_TRUE(g_got_message);
+
+    // We expect two independent chrome://foo tabs/shells to use a separate
+    // process.
+    EXPECT_NE(shell()->web_contents()->GetMainFrame()->GetProcess(),
+              other_shell->web_contents()->GetMainFrame()->GetProcess());
+
+    // Close the second shell and wait until its process exits.
+    RenderProcessHostWatcher process_watcher(
+        other_shell->web_contents()->GetMainFrame()->GetProcess(),
+        RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+    other_shell->Close();
+    process_watcher.Wait();
+  }
+
+  {
+    // Check that a third shell works correctly, even if we force it to share a
+    // process with the first shell, by forcing an artificially low process
+    // limit.
+    RenderProcessHost::SetMaxRendererProcessCount(1);
+
+    Shell* other_shell = CreateBrowser();
+    g_got_message = false;
+    base::RunLoop other_run_loop;
+    factory()->set_run_loop(&other_run_loop);
+    NavigateToURL(other_shell, test_url);
+    // RunLoop is quit when message received from page.
+    other_run_loop.Run();
+    EXPECT_TRUE(g_got_message);
+    EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess(),
+              other_shell->web_contents()->GetMainFrame()->GetProcess());
+  }
 }
 
 // Disabled due to flakiness: crbug.com/860385.

@@ -756,7 +756,9 @@ class URLLoaderNetworkIsolationTest : public URLLoaderTest {
 
   void LoadAndVerifyCached(const GURL& url,
                            const net::NetworkIsolationKey& key,
-                           bool was_cached) {
+                           bool was_cached,
+                           bool is_navigation,
+                           bool expect_redirect = false) {
     ResourceRequest request = CreateResourceRequest("GET", url);
     request.load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
 
@@ -764,10 +766,18 @@ class URLLoaderNetworkIsolationTest : public URLLoaderTest {
     base::RunLoop delete_run_loop;
     mojom::URLLoaderPtr loader;
     std::unique_ptr<URLLoader> url_loader;
-    static mojom::URLLoaderFactoryParams params;
+    mojom::URLLoaderFactoryParams params;
     params.process_id = mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
-    params.network_isolation_key = key;
+
+    if (is_navigation) {
+      request.trusted_network_isolation_key = key;
+      request.update_network_isolation_key_on_redirect =
+          mojom::UpdateNetworkIsolationKeyOnRedirect::
+              kUpdateTopFrameAndInitiatingFrameOrigin;
+    } else {
+      params.network_isolation_key = key;
+    }
     url_loader = std::make_unique<URLLoader>(
         context(), nullptr /* network_service_client */,
         nullptr /* network_context_client */,
@@ -776,6 +786,11 @@ class URLLoaderNetworkIsolationTest : public URLLoaderTest {
         TRAFFIC_ANNOTATION_FOR_TESTS, &params, 0 /* request_id */,
         resource_scheduler_client(), nullptr,
         nullptr /* network_usage_accumulator */, nullptr /* header_client */);
+
+    if (expect_redirect) {
+      client.RunUntilRedirectReceived();
+      loader->FollowRedirect({}, {}, base::nullopt);
+    }
 
     client.RunUntilComplete();
     delete_run_loop.Run();
@@ -3055,16 +3070,63 @@ TEST_F(URLLoaderNetworkIsolationTest, CachedUsingNetworkIsolationKey) {
   GURL url = test_server()->GetURL("/resource");
   url::Origin origin_a = url::Origin::Create(GURL("http://a.test/"));
   net::NetworkIsolationKey key_a(origin_a);
-  LoadAndVerifyCached(url, key_a, false /* was_cached */);
+  LoadAndVerifyCached(url, key_a, false /* was_cached */,
+                      false /* is_navigation */);
 
   // Load again with a different isolation key. The cached entry should not be
   // loaded.
   url::Origin origin_b = url::Origin::Create(GURL("http://b.test/"));
   net::NetworkIsolationKey key_b(origin_b);
-  LoadAndVerifyCached(url, key_b, false /* was_cached */);
+  LoadAndVerifyCached(url, key_b, false /* was_cached */,
+                      false /* is_navigation */);
 
   // Load again with the same isolation key. The cached entry should be loaded.
-  LoadAndVerifyCached(url, key_b, true /* was_cached */);
+  LoadAndVerifyCached(url, key_b, true /* was_cached */,
+                      false /* is_navigation */);
+}
+
+TEST_F(URLLoaderNetworkIsolationTest,
+       NavigationResourceCachedUsingNetworkIsolationKey) {
+  GURL url = test_server()->GetURL("othersite.test", "/main.html");
+  net::NetworkIsolationKey key_a(url::Origin::Create(url));
+  LoadAndVerifyCached(url, key_a, false /* was_cached */,
+                      true /* is_navigation */);
+
+  // Load again with a different isolation key. The cached entry should not be
+  // loaded.
+  GURL url_b = test_server()->GetURL("/main.html");
+  net::NetworkIsolationKey key_b(url::Origin::Create(url_b));
+  LoadAndVerifyCached(url_b, key_b, false /* was_cached */,
+                      true /* is_navigation */);
+
+  // Load again with the same isolation key. The cached entry should be loaded.
+  LoadAndVerifyCached(url_b, key_b, true /* was_cached */,
+                      true /* is_navigation */);
+}
+
+TEST_F(URLLoaderNetworkIsolationTest,
+       NavigationResourceRedirectNetworkIsolationKey) {
+  // Create a request that redirects to d.com/title1.html.
+  GURL url = test_server()->GetURL(
+      "/server-redirect-301?" +
+      test_server()->GetURL("othersite.test", "/title1.html").spec());
+  net::NetworkIsolationKey key(url::Origin::Create(url));
+  LoadAndVerifyCached(url, key, false /* was_cached */,
+                      true /* is_navigation */, true /* expect_redirect */);
+
+  // Now directly load now with the key using the redirected URL. This should be
+  // a cache hit.
+  GURL redirected_url = test_server()->GetURL("othersite.test", "/title1.html");
+  LoadAndVerifyCached(
+      redirected_url,
+      net::NetworkIsolationKey(url::Origin::Create(redirected_url)),
+      true /* was_cached */, true /* is_navigation */);
+
+  // A non-navigation resource with the same key and url should also be cached.
+  LoadAndVerifyCached(
+      redirected_url,
+      net::NetworkIsolationKey(url::Origin::Create(redirected_url)),
+      true /* was_cached */, false /* is_navigation */);
 }
 
 class TestSSLPrivateKey : public net::SSLPrivateKey {

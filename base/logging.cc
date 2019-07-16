@@ -482,19 +482,11 @@ bool ShouldCreateLogMessage(int severity) {
   if (severity < g_min_log_level)
     return false;
 
-  // Return true here unless we know ~LogMessage won't do anything.
+  // Return true here unless we know ~LogMessage won't do anything. Note that
+  // ~LogMessage writes to stderr if severity_ >= kAlwaysPrintErrorLevel, even
+  // when g_logging_destination is LOG_NONE.
   return g_logging_destination != LOG_NONE || log_message_handler ||
          severity >= kAlwaysPrintErrorLevel;
-}
-
-// Returns true when logging destination LOG_TO_STDERR flag is set. Also when
-// configured to only LOG_TO_FILE, continue to log higher-severity messages to
-// stderr as well to better detect and diagnose problems with unit tests,
-// especially on the buildbots.
-bool ShouldLogToStderr(int severity) {
-  return ((g_logging_destination & LOG_TO_STDERR) != 0) ||
-         (severity >= kAlwaysPrintErrorLevel &&
-          g_logging_destination == LOG_TO_FILE);
 }
 
 int GetVlogVerbosity() {
@@ -858,7 +850,11 @@ LogMessage::~LogMessage() {
 #endif  // OS_FUCHSIA
   }
 
-  if (ShouldLogToStderr(severity_)) {
+  if ((g_logging_destination & LOG_TO_STDERR) != 0 ||
+      severity_ >= kAlwaysPrintErrorLevel) {
+    // Write logs with destination LOG_TO_STDERR to stderr. Also output to
+    // stderr for logs above a certain log level to better detect and diagnose
+    // problems with unit tests, especially on the buildbots.
     ignore_result(fwrite(str_newline.data(), str_newline.size(), 1, stderr));
     fflush(stderr);
   }

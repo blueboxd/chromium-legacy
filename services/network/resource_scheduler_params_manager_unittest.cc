@@ -99,6 +99,10 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
             resource_scheduler_params_manager
                 .GetParamsForEffectiveConnectionType(effective_connection_type)
                 .max_queuing_time.has_value());
+        EXPECT_FALSE(
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(effective_connection_type)
+                .http_rtt_multiplier_for_proactive_throttling);
         return;
 
       case net::EFFECTIVE_CONNECTION_TYPE_3G:
@@ -118,6 +122,10 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
             resource_scheduler_params_manager
                 .GetParamsForEffectiveConnectionType(effective_connection_type)
                 .max_queuing_time.has_value());
+        EXPECT_FALSE(
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(effective_connection_type)
+                .http_rtt_multiplier_for_proactive_throttling);
         return;
 
       case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
@@ -138,6 +146,10 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
             resource_scheduler_params_manager
                 .GetParamsForEffectiveConnectionType(effective_connection_type)
                 .max_queuing_time.has_value());
+        EXPECT_FALSE(
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(effective_connection_type)
+                .http_rtt_multiplier_for_proactive_throttling);
         return;
 
       case net::EFFECTIVE_CONNECTION_TYPE_LAST:
@@ -519,6 +531,46 @@ TEST_F(ResourceSchedulerParamsManagerTest,
 
   VerifyDefaultParams(resource_scheduler_params_manager,
                       net::EFFECTIVE_CONNECTION_TYPE_4G);
+}
+
+TEST_F(ResourceSchedulerParamsManagerTest,
+       ProactivelyThrottleLowPriorityRequests) {
+  const double kDelaySlow2G = 1.5;
+  const double kDelay2G = 1.6;
+  const double kDelay4G = 0.5;
+
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  base::FieldTrialParams params;
+  params["http_rtt_multiplier_for_proactive_throttling_Slow-2G"] =
+      base::NumberToString(kDelaySlow2G);
+  params["http_rtt_multiplier_for_proactive_throttling_2G"] =
+      base::NumberToString(kDelay2G);
+  params["http_rtt_multiplier_for_proactive_throttling_4G"] =
+      base::NumberToString(kDelay4G);
+
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kProactivelyThrottleLowPriorityRequests, params);
+
+  ResourceSchedulerParamsManager resource_scheduler_params_manager;
+
+  EXPECT_EQ(kDelaySlow2G, resource_scheduler_params_manager
+                              .GetParamsForEffectiveConnectionType(
+                                  net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G)
+                              .http_rtt_multiplier_for_proactive_throttling);
+  EXPECT_EQ(kDelay2G, resource_scheduler_params_manager
+                          .GetParamsForEffectiveConnectionType(
+                              net::EFFECTIVE_CONNECTION_TYPE_2G)
+                          .http_rtt_multiplier_for_proactive_throttling);
+  EXPECT_FALSE(resource_scheduler_params_manager
+                   .GetParamsForEffectiveConnectionType(
+                       net::EFFECTIVE_CONNECTION_TYPE_3G)
+                   .http_rtt_multiplier_for_proactive_throttling.has_value());
+  EXPECT_EQ(kDelay4G,
+            resource_scheduler_params_manager
+                .GetParamsForEffectiveConnectionType(
+                    net::EFFECTIVE_CONNECTION_TYPE_4G)
+                .http_rtt_multiplier_for_proactive_throttling.value());
 }
 
 }  // unnamed namespace

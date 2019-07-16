@@ -29,7 +29,6 @@ class TestKeyboardControllerObserver : public KeyboardControllerObserver {
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
   void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override;
-  void OnLoadKeyboardContentsRequested() override;
   void OnKeyboardUIDestroyed() override;
 
   const keyboard::KeyboardConfig& config() const { return config_; }

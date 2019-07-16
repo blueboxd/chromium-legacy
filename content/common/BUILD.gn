@@ -543,7 +543,7 @@ mojom("mojo_bindings") {
       "sandbox_support_mac.mojom",
       "web_contents_ns_view_bridge.mojom",
     ]
-    public_deps += [ "//ui/display/mojo:interfaces" ]
+    public_deps += [ "//ui/display/mojom" ]
   }
 
   overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]

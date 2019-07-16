@@ -39,8 +39,6 @@
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model_closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_model_selected_tab_observer.h"
@@ -269,17 +267,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 #pragma mark - Public methods
 
-- (Tab*)currentTab {
-  web::WebState* webState = _webStateList->GetActiveWebState();
-  return webState ? LegacyTabHelper::GetTabForWebState(webState) : nil;
-}
-
-- (void)setCurrentTab:(Tab*)newTab {
-  int indexOfTab = _webStateList->GetIndexOfWebState(newTab.webState);
-  DCHECK_NE(indexOfTab, WebStateList::kInvalidIndex);
-  _webStateList->ActivateWebStateAt(indexOfTab);
-}
-
 - (TabModelSyncedWindowDelegate*)syncedWindowDelegate {
   return _syncedWindowDelegate.get();
 }
@@ -387,21 +374,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   return self;
 }
 
-- (Tab*)tabAtIndex:(NSUInteger)index {
-  DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
-  return LegacyTabHelper::GetTabForWebState(
-      _webStateList->GetWebStateAt(static_cast<int>(index)));
-}
-
-- (NSUInteger)indexOfTab:(Tab*)tab {
-  int index = _webStateList->GetIndexOfWebState(tab.webState);
-  if (index == WebStateList::kInvalidIndex)
-    return NSNotFound;
-
-  DCHECK_GE(index, 0);
-  return static_cast<NSUInteger>(index);
-}
-
 - (web::WebState*)insertWebStateWithURL:(const GURL&)URL
                                referrer:(const web::Referrer&)referrer
                              transition:(ui::PageTransition)transition
@@ -474,20 +446,10 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   return _webStateList->GetWebStateAt(insertionIndex);
 }
 
-- (void)moveTab:(Tab*)tab toIndex:(NSUInteger)toIndex {
-  DCHECK_LE(toIndex, static_cast<NSUInteger>(INT_MAX));
-  int fromIndex = _webStateList->GetIndexOfWebState(tab.webState);
-  _webStateList->MoveWebStateAt(fromIndex, static_cast<int>(toIndex));
-}
-
 - (void)closeTabAtIndex:(NSUInteger)index {
   DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
   _webStateList->CloseWebStateAt(static_cast<int>(index),
                                  WebStateList::CLOSE_USER_ACTION);
-}
-
-- (void)closeTab:(Tab*)tab {
-  [self closeTabAtIndex:[self indexOfTab:tab]];
 }
 
 - (void)closeAllTabs {
@@ -506,8 +468,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 - (void)setPrimary:(BOOL)primary {
   if (_tabUsageRecorder) {
-    _tabUsageRecorder->RecordPrimaryTabModelChange(primary,
-                                                   self.currentTab.webState);
+    _tabUsageRecorder->RecordPrimaryTabModelChange(
+        primary, self.webStateList->GetActiveWebState());
   }
 }
 
@@ -549,7 +511,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 - (void)saveSessionImmediately:(BOOL)immediately {
   // Do nothing if there are tabs in the model but no selected tab. This is
   // a transitional state.
-  if ((!self.currentTab && _webStateList->count()) || !_browserState)
+  if (!_webStateList->GetActiveWebState() || !_browserState)
     return;
   NSString* statePath =
       base::SysUTF8ToNSString(_browserState->GetStatePath().AsUTF8Unsafe());
@@ -644,18 +606,19 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // If there was only one tab and it was the new tab page, clobber it.
   BOOL closedNTPTab = NO;
   if (oldCount == 1) {
-    Tab* tab = [self tabAtIndex:0];
+    web::WebState* webState = _webStateList->GetWebStateAt(0);
     BOOL hasPendingLoad =
-        tab.webState->GetNavigationManager()->GetPendingItem() != nullptr;
+        webState->GetNavigationManager()->GetPendingItem() != nullptr;
     if (!hasPendingLoad &&
-        tab.webState->GetLastCommittedURL() == kChromeUINewTabURL) {
-      [self closeTab:tab];
+        webState->GetLastCommittedURL() == kChromeUINewTabURL) {
+      _webStateList->CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
+
       closedNTPTab = YES;
       oldCount = 0;
     }
   }
   if (_tabUsageRecorder) {
-    _tabUsageRecorder->InitialRestoredTabs(self.currentTab.webState,
+    _tabUsageRecorder->InitialRestoredTabs(_webStateList->GetActiveWebState(),
                                            restoredWebStates);
   }
 
@@ -672,9 +635,10 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
 // Called when UIApplicationWillResignActiveNotification is received.
 - (void)willResignActive:(NSNotification*)notify {
-  if (self.webUsageEnabled && self.currentTab) {
+  if (self.webUsageEnabled && _webStateList->GetActiveWebState()) {
     NSString* tabId =
-        TabIdTabHelper::FromWebState(self.currentTab.webState)->tab_id();
+        TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
+            ->tab_id();
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
         willBeSavedGreyWhenBackgrounding:tabId];
   }
@@ -698,9 +662,10 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [self saveSessionImmediately:YES];
 
   // Write out a grey version of the current website to disk.
-  if (self.webUsageEnabled && self.currentTab) {
+  if (self.webUsageEnabled && _webStateList->GetActiveWebState()) {
     NSString* tabId =
-        TabIdTabHelper::FromWebState(self.currentTab.webState)->tab_id();
+        TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
+            ->tab_id();
 
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
         saveGreyInBackgroundForSessionID:tabId];

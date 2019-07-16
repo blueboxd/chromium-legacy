@@ -223,7 +223,7 @@ class KEYBOARD_EXPORT KeyboardUIController
 
   bool IsKeyboardVisible();
 
-  void KeyboardContentsLoaded(const gfx::Size& size);
+  void KeyboardContentsLoaded();
 
   aura::Window* parent_container() { return parent_container_; }
 

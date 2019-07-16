@@ -106,9 +106,10 @@ gfx::AcceleratedWidget X11ScreenOzone::GetAcceleratedWidgetAtScreenPoint(
 
 display::Display X11ScreenOzone::GetDisplayNearestPoint(
     const gfx::Point& point) const {
-  // TODO(crbug.com/891175): Implement PlatformScreen for X11
-  NOTIMPLEMENTED_LOG_ONCE();
-  return GetPrimaryDisplay();
+  auto displays = GetAllDisplays();
+  if (displays.size() <= 1)
+    return GetPrimaryDisplay();
+  return *display::FindDisplayNearestPoint(displays, point);
 }
 
 display::Display X11ScreenOzone::GetDisplayMatching(

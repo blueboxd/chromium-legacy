@@ -51,6 +51,28 @@ void DispatchToAgents(int frame_tree_node_id,
     DispatchToAgents(ftn, method, std::forward<Args>(args)...);
 }
 
+FrameTreeNode* GetFtnForNetworkRequest(int process_id, int routing_id) {
+  // Navigation requests start in the browser, before process_id is assigned, so
+  // the id is set to 0. In these situations, the routing_id is the frame tree
+  // node id, and can be used directly.
+  int frame_tree_node_id =
+      process_id == 0 ? routing_id
+                      : RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
+                            process_id, routing_id);
+  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+
+  // If this is a navigation request (process_id == 0) of a child frame
+  // (ftn->parent()), then requestWillBeSent and responseReceived are delivered
+  // to the parent frame instead of the child because we don't know if the child
+  // will become an OOPIF with a separate target yet or not. Do the same for
+  // requestWillBeSentExtraInfo and responseReceivedExtraInfo.
+  if (ftn && process_id == 0 && ftn->parent()) {
+    ftn = ftn->parent();
+  }
+
+  return ftn;
+}
+
 }  // namespace
 
 void OnResetNavigationRequest(NavigationRequest* navigation_request) {
@@ -400,6 +422,36 @@ void PortalDetached(RenderFrameHostImpl* render_frame_host_impl) {
 void PortalActivated(RenderFrameHostImpl* render_frame_host_impl) {
   DispatchToAgents(render_frame_host_impl->frame_tree_node(),
                    &protocol::TargetHandler::UpdatePortals);
+}
+
+void OnRequestWillBeSentExtraInfo(
+    int process_id,
+    int routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& request_cookie_list,
+    const std::vector<std::pair<std::string, std::string>>& request_headers) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
+  if (!ftn)
+    return;
+
+  DispatchToAgents(ftn, &protocol::NetworkHandler::OnRequestWillBeSentExtraInfo,
+                   devtools_request_id, request_cookie_list, request_headers);
+}
+
+void OnResponseReceivedExtraInfo(
+    int process_id,
+    int routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& response_cookie_list,
+    const std::vector<std::pair<std::string, std::string>>& response_headers,
+    const base::Optional<std::string>& response_headers_text) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
+  if (!ftn)
+    return;
+
+  DispatchToAgents(ftn, &protocol::NetworkHandler::OnResponseReceivedExtraInfo,
+                   devtools_request_id, response_cookie_list, response_headers,
+                   response_headers_text);
 }
 
 }  // namespace devtools_instrumentation

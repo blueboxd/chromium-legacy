@@ -25,8 +25,8 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
  */
 public class BackgroundSyncBackgroundTaskScheduler {
     /**
-     * Denotes the one-off Background Sync Background Tasks scheduled through
-     * this class.
+     * Denotes the types of one-off Background Tasks scheduled through this
+     * class.
      * ONE_SHOT_SYNC_CHROME_WAKE_UP is the task that processes one-shot
      * Background Sync registrations.
      * PERIODIC_SYNC_CHROME_WAKE_UP processes Periodic Background Sync
@@ -35,8 +35,8 @@ public class BackgroundSyncBackgroundTaskScheduler {
     @IntDef({BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
             BackgroundSyncTask.PERIODIC_SYNC_CHROME_WAKE_UP})
     public @interface BackgroundSyncTask {
-        int PERIODIC_SYNC_CHROME_WAKE_UP = 0;
-        int ONE_SHOT_SYNC_CHROME_WAKE_UP = 1;
+        int ONE_SHOT_SYNC_CHROME_WAKE_UP = 0;
+        int PERIODIC_SYNC_CHROME_WAKE_UP = 1;
     };
 
     // Keep in sync with the default min_sync_recovery_time of
@@ -58,10 +58,10 @@ public class BackgroundSyncBackgroundTaskScheduler {
     }
 
     /**
-     * Returns the appropriate TaskID to use based on the class of the Background
+     * Returns the appropriate TaskID to use based on the type of the Background
      * Sync task we're working with.
      *
-     * @param taskType The Background Sync task to get the TaskID for.
+     * @param taskType Type of the Background Sync task to get the TaskID for.
      */
     @VisibleForTesting
     public static int getAppropriateTaskId(@BackgroundSyncTask int taskType) {
@@ -77,10 +77,10 @@ public class BackgroundSyncBackgroundTaskScheduler {
     }
 
     /**
-     * Returns the appropriate task class to use based on the Background
+     * Returns the appropriate task class to use based on the type of the Background
      * Sync task we're working with.
      *
-     * @param taskType The Background Sync task to get the task class for.
+     * @param taskType Type of the Background Sync task to get the task class for.
      */
     @VisibleForTesting
     public static Class<? extends NativeBackgroundTask> getAppropriateTaskClass(
@@ -99,7 +99,7 @@ public class BackgroundSyncBackgroundTaskScheduler {
     /**
      * Cancels a Background Sync one-off task, if there's one scheduled.
      *
-     * @param taskType The Background Sync task to cancel.
+     * @param taskType The type of BackgroundSync task to cancel.
      */
     @VisibleForTesting
     protected void cancelOneOffTask(@BackgroundSyncTask int taskType) {
@@ -113,7 +113,7 @@ public class BackgroundSyncBackgroundTaskScheduler {
      * events.
      *
      * @param minDelayMs The minimum time to wait before waking the browser.
-     * @param taskType   The Background Sync task to schedule.
+     * @param taskType   The type of BackgroundSync task to schedule.
      */
     protected boolean scheduleOneOffTask(long minDelayMs, @BackgroundSyncTask int taskType) {
         // Pack SOONEST_EXPECTED_WAKETIME in extras.
@@ -134,23 +134,21 @@ public class BackgroundSyncBackgroundTaskScheduler {
     }
 
     /**
-     * Based on shouldLaunch, either creates or cancels a one-off background
-     * task to wake up Chrome upon network connectivity.
+     * Based on shouldLaunch, either creates or cancels a one-off background task to
+     * wake up Chrome upon network connectivity.
      *
-     * @param taskType The one-off background task to create.
      * @param shouldLaunch Whether to launch the browser in the background.
      * @param minDelayMs   The minimum time to wait before waking the browser.
      */
     @VisibleForTesting
     @CalledByNative
-    protected void launchBrowserIfStopped(
-            @BackgroundSyncTask int taskType, boolean shouldLaunch, long minDelayMs) {
+    protected void launchBrowserIfStopped(boolean shouldLaunch, long minDelayMs) {
         if (!shouldLaunch) {
-            cancelOneOffTask(taskType);
+            cancelOneOffTask(BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP);
             return;
         }
 
-        scheduleOneOffTask(minDelayMs, taskType);
+        scheduleOneOffTask(minDelayMs, BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP);
     }
 
     /**
@@ -158,7 +156,7 @@ public class BackgroundSyncBackgroundTaskScheduler {
      * Background Sync events in the event of an OS upgrade or Google Play Services
      * upgrade.
      *
-     * @param taskType The Background Sync task to reschedule.
+     * @param taskType The type of BackgroundSync task to reschedule.
      */
     public void reschedule(@BackgroundSyncTask int taskType) {
         scheduleOneOffTask(MIN_SYNC_RECOVERY_TIME, taskType);

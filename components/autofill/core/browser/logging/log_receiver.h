@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_RECEIVER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_LOGGING_LOG_RECEIVER_H_
 
-#include <string>
 #include "base/macros.h"
+#include "base/values.h"
 
 namespace autofill {
 
@@ -17,7 +17,7 @@ class LogReceiver {
   LogReceiver() {}
   virtual ~LogReceiver() {}
 
-  virtual void LogSavePasswordProgress(const std::string& text) = 0;
+  virtual void LogEntry(const base::Value& entry) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LogReceiver);

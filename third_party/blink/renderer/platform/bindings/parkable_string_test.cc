@@ -45,7 +45,7 @@ class ParkableStringTest : public ::testing::Test {
                          ThreadPoolExecutionMode::DEFAULT)
       : ::testing::Test(),
         scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             thread_pool_execution_mode) {}
 
  protected:

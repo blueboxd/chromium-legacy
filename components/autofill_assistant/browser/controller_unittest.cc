@@ -83,7 +83,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
  public:
   ControllerTest()
       : RenderViewHostTestHarness(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         fake_client_(&mock_ui_controller_) {}
   ~ControllerTest() override {}
 

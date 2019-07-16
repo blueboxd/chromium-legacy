@@ -1102,6 +1102,11 @@ void BrowserProcessImpl::PreCreateThreads(
       std::make_unique<SecureOriginPrefsObserver>(local_state());
   site_isolation_prefs_observer_ =
       std::make_unique<SiteIsolationPrefsObserver>(local_state());
+
+  // Create SystemNetworkContextManager without a NetworkService if it has not
+  // been requested yet.
+  if (!SystemNetworkContextManager::HasInstance())
+    SystemNetworkContextManager::CreateInstance(local_state());
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

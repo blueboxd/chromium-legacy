@@ -3752,4 +3752,28 @@ TEST_F(TextfieldTest, ChangeTextDirectionAndLayoutAlignmentTest) {
             gfx::HorizontalAlignment::ALIGN_LEFT);
 }
 
+TEST_F(TextfieldTest, ModelChangedCallbackTest) {
+  InitTextfield();
+
+  bool model_changed = false;
+  auto subscription = textfield_->AddModelChangedCallback(base::BindRepeating(
+      [](bool* model_changed) { *model_changed = true; }, &model_changed));
+
+  textfield_->SetText(ASCIIToUTF16("abc"));
+  EXPECT_TRUE(model_changed);
+
+  model_changed = false;
+  textfield_->AppendText(ASCIIToUTF16("def"));
+  EXPECT_TRUE(model_changed);
+
+  // Undo should still cause callback.
+  model_changed = false;
+  SendKeyEvent(ui::VKEY_Z, false, true);
+  EXPECT_TRUE(model_changed);
+
+  model_changed = false;
+  SendKeyEvent(ui::VKEY_BACK);
+  EXPECT_TRUE(model_changed);
+}
+
 }  // namespace views

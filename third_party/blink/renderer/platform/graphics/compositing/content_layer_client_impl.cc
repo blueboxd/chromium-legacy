@@ -187,6 +187,11 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   }
 #endif
 
+  // The raster invalidator will only handle invalidations within a cc::Layer so
+  // we need this invalidation if the layer's properties have changed.
+  if (layer_state != layer_state_)
+    cc_picture_layer_->SetSubtreePropertyChanged();
+
   raster_invalidator_.Generate(paint_artifact, paint_chunks, layer_bounds,
                                layer_state);
   layer_state_ = layer_state;

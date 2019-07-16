@@ -7,6 +7,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -48,7 +49,6 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyNTPBrowserTest, EmbeddedMostVisitedIframe) {
   GURL ntp_url =
       https_test_server().GetURL("ntp.com", "/instant_extended_ntp.html");
   InstantTestBase::Init(base_url, ntp_url, false);
-
   SetupInstant(browser());
 
   // Navigate to the NTP URL and verify that the resulting process is marked as
@@ -80,4 +80,54 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyNTPBrowserTest, EmbeddedMostVisitedIframe) {
       subframe, "domAutomationController.send(window.origin)",
       &subframe_origin));
   EXPECT_EQ("chrome-search://most-visited", subframe_origin);
+}
+
+// Verifies that Chrome won't spawn a separate renderer process for
+// every single NTP tab.  This behavior goes all the way back to
+// the initial commit [1] which achieved that behavior by forcing
+// process-per-site mode for NTP tabs.  It seems desirable to preserve this
+// behavior going forward.
+//
+// [1] https://chromium.googlesource.com/chromium/src/+/09911bf300f1a419907a9412154760efd0b7abc3/chrome/browser/browsing_instance.cc#55
+IN_PROC_BROWSER_TEST_F(ThirdPartyNTPBrowserTest, ProcessPerSite) {
+  GURL base_url =
+      https_test_server().GetURL("ntp.com", "/instant_extended.html");
+  GURL ntp_url =
+      https_test_server().GetURL("ntp.com", "/instant_extended_ntp.html");
+  InstantTestBase::Init(base_url, ntp_url, false);
+  SetupInstant(browser());
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(browser());
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://local-ntp [1st-party NTP] or chrome://ntp [incognito]).
+    EXPECT_EQ(ntp_url, content::EvalJs(tab1, "window.location.href"));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(browser());
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    EXPECT_EQ(ntp_url, content::EvalJs(tab2, "window.location.href"));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
 }

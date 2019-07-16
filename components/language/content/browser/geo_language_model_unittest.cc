@@ -59,7 +59,7 @@ class GeoLanguageModelTest : public testing::Test {
   GeoLanguageModel* language_model() { return &geo_language_model_; }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   GeoLanguageProvider geo_language_provider_;

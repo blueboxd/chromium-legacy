@@ -69,11 +69,11 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
-#include "third_party/blink/renderer/platform/uuid.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace {
 
@@ -219,7 +219,7 @@ void SerializerMarkupAccumulator::AppendStylesheets(Document* document,
 
     StringBuilder pseudo_sheet_url_builder;
     pseudo_sheet_url_builder.Append("cid:css-");
-    pseudo_sheet_url_builder.Append(CreateCanonicalUUIDString());
+    pseudo_sheet_url_builder.Append(WTF::CreateCanonicalUUIDString());
     pseudo_sheet_url_builder.Append("@mhtml.blink");
     KURL pseudo_sheet_url = KURL(pseudo_sheet_url_builder.ToString());
 

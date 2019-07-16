@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
-#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #include "ios/chrome/browser/ui/activity_services/share_to_data.h"

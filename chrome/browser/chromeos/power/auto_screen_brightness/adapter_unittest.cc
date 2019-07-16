@@ -131,7 +131,7 @@ class AdapterTest : public testing::Test {
  public:
   AdapterTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~AdapterTest() override = default;
 

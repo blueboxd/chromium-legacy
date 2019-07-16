@@ -359,13 +359,6 @@ public class PrefServiceBridge {
     }
 
     /**
-     * Resets translate defaults if needed
-     */
-    public void resetTranslateDefaults() {
-        nativeResetTranslateDefaults();
-    }
-
-    /**
      * @return the last account id associated with sync.
      */
     public String getSyncLastAccountId() {
@@ -1108,7 +1101,6 @@ public class PrefServiceBridge {
     private native boolean nativeGetSoundEnabled();
     private native boolean nativeGetSupervisedUserSafeSitesEnabled();
     private native void nativeSetTranslateEnabled(boolean enabled);
-    private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();
     private native boolean nativeGetBrowsingDataDeletionPreference(
             int dataType, int clearBrowsingDataTab);

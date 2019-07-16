@@ -175,9 +175,8 @@ crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryO
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
 
-# Failing on Nexus 5
-crbug.com/957714 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_Canvas2DRedBox [ Failure ]
-crbug.com/900706 [ android qualcomm-adreno-(tm)-330 ] Pixel_CanvasLowLatency2D [ Failure ]
+# Producing black images on Nexus 5Xs in Android Webview.
+crbug.com/984352 [ android android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_CanvasLowLatency2D [ Failure ]
 
 # Failing on Pixel 2 FYI.
 crbug.com/966069 [ android qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatency2D [ Failure ]

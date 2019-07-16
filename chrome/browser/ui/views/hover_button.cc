@@ -77,6 +77,8 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
   SetInkDropMode(InkDropMode::ON);
+
+  set_notify_action(Button::NOTIFY_ON_RELEASE);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
@@ -234,20 +236,6 @@ void HoverButton::SetBorder(std::unique_ptr<views::Border> b) {
 
 void HoverButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
-}
-
-bool HoverButton::IsTriggerableEventType(const ui::Event& event) {
-  // Override MenuButton::IsTriggerableEventType so the HoverButton only
-  // triggers on mouse-button release, like normal buttons.
-  if (event.IsMouseEvent()) {
-    // The button listener must only be notified when the mouse was released.
-    // The event type must be explicitly checked here, since
-    // Button::IsTriggerableEvent() returns true on the mouse-down event.
-    return Button::IsTriggerableEvent(event) &&
-           event.type() == ui::ET_MOUSE_RELEASED;
-  }
-
-  return MenuButton::IsTriggerableEventType(event);
 }
 
 gfx::Insets HoverButton::GetInsets() const {

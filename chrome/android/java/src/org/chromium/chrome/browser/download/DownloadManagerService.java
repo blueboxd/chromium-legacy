@@ -818,7 +818,7 @@ public class DownloadManagerService
 
         Uri contentUri = filePath == null ? queryResult.contentUri
                                           : DownloadUtils.getUriForOtherApps(filePath);
-        if (contentUri == null) return null;
+        if (contentUri == null || Uri.EMPTY.equals(contentUri)) return null;
 
         Uri fileUri = filePath == null ? contentUri : Uri.fromFile(new File(filePath));
         return createLaunchIntent(

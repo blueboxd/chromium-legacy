@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -14,7 +15,11 @@ namespace notifications {
 
 NotificationScheduleServiceImpl::NotificationScheduleServiceImpl(
     std::unique_ptr<NotificationScheduler> scheduler)
-    : scheduler_(std::move(scheduler)) {}
+    : scheduler_(std::move(scheduler)) {
+  scheduler_->Init(
+      base::BindOnce(&NotificationScheduleServiceImpl::OnInitialized,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
 NotificationScheduleServiceImpl::~NotificationScheduleServiceImpl() = default;
 
@@ -67,6 +72,11 @@ void NotificationScheduleServiceImpl::OnActionClick(
 void NotificationScheduleServiceImpl::OnDismiss(
     const std::string& notification_id) {
   scheduler_->OnDismiss(notification_id);
+}
+
+void NotificationScheduleServiceImpl::OnInitialized(bool success) {
+  // TODO(xingliu): Track metric here.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace notifications

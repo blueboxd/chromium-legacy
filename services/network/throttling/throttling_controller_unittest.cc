@@ -148,7 +148,7 @@ class ThrottlingControllerTestHelper {
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   MockNetworkLayer network_layer_;
   TestCallback callback_;
   net::CompletionRepeatingCallback completion_callback_;

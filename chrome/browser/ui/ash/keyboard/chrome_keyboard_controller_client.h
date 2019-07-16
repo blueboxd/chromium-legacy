@@ -153,7 +153,8 @@ class ChromeKeyboardControllerClient
   void OnLoadKeyboardContentsRequested() override;
   void OnKeyboardUIDestroyed() override;
 
-  void OnKeyboardContentsLoaded(const gfx::Size& size);
+  // Called when the keyboard contents have loaded. Notifies observers.
+  void OnKeyboardContentsLoaded();
 
   // session_manager::SessionManagerObserver:
   void OnSessionStateChanged() override;

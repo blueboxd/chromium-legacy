@@ -42,6 +42,8 @@ interface MediaMetricsProvider {
   OnError(PipelineStatus status);
 
   // Setters for various one-time lazily generated metrics or properties.
+  SetHasPlayed();
+  SetHaveEnough();
   SetIsAdMedia();
   SetIsEME();
   SetTimeToMetadata(mojo_base.mojom.TimeDelta elapsed);
@@ -61,4 +63,10 @@ interface MediaMetricsProvider {
 
   // Reports that bytes have been received by the media player.
   AddBytesReceived(uint64 bytes_received);
+
+  // Can be called multiple times to set properties about a playback.
+  SetHasAudio(AudioCodec codec);
+  SetHasVideo(VideoCodec codec);
+  SetVideoPipelineInfo(PipelineDecoderInfo info);
+  SetAudioPipelineInfo(PipelineDecoderInfo info);
 };

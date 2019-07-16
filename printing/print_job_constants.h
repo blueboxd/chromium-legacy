@@ -34,7 +34,6 @@ PRINTING_EXPORT extern const float kSettingHeaderFooterInterstice;
 PRINTING_EXPORT extern const char kSettingHeaderFooterDate[];
 PRINTING_EXPORT extern const char kSettingHeaderFooterTitle[];
 PRINTING_EXPORT extern const char kSettingHeaderFooterURL[];
-PRINTING_EXPORT extern const char kSettingJobTitle[];
 PRINTING_EXPORT extern const char kSettingLandscape[];
 PRINTING_EXPORT extern const char kSettingMediaSize[];
 PRINTING_EXPORT extern const char kSettingMediaSizeHeightMicrons[];

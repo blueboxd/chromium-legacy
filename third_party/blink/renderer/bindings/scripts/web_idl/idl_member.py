@@ -15,4 +15,3 @@ class IdlMember(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
                 WithExposure, WithOwner, WithComponent, WithDebugInfo):
     """IdlMember provides common APIs for IDL members; attributes, operations,
     constants, dictionary members, etc."""
-    pass

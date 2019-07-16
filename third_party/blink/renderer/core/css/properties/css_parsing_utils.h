@@ -41,6 +41,7 @@ using IsPositionKeyword = bool (*)(CSSValueID);
 
 constexpr size_t kMaxNumAnimationLonghands = 8;
 
+bool IsBaselineKeyword(CSSValueID id);
 bool IsSelfPositionKeyword(CSSValueID);
 bool IsSelfPositionOrLeftOrRightKeyword(CSSValueID);
 bool IsContentPositionKeyword(CSSValueID);

@@ -86,6 +86,7 @@ jumbo_component("network_service") {
     "origin_policy/origin_policy_constants.h",
     "origin_policy/origin_policy_fetcher.cc",
     "origin_policy/origin_policy_fetcher.h",
+    "origin_policy/origin_policy_header_values.h",
     "origin_policy/origin_policy_manager.cc",
     "origin_policy/origin_policy_manager.h",
     "origin_policy/origin_policy_parser.cc",

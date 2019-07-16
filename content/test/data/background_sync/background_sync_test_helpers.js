@@ -22,41 +22,128 @@ function sendErrorToTest(error) {
 
 function registerServiceWorker() {
   navigator.serviceWorker.register('service_worker.js', {scope: './'})
-    .then(function() {
+    .then(() => {
       return navigator.serviceWorker.ready;
     })
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
       sendResultToTest('ok - service worker registered');
     })
     .catch(sendErrorToTest);
 }
 
-function register(tag) {
+function registerOneShotSync(tag) {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
       return swRegistration.sync.register(tag);
     })
-    .then(function() {
+    .then(() => {
       sendResultToTest('ok - ' + tag + ' registered');
     })
     .catch(sendErrorToTest);
 }
 
-function registerFromServiceWorker(tag) {
+function registerOneShotSyncFromLocalFrame(frame_url) {
+  let frameWindow;
+  return createFrame(frame_url)
+    .then((frame) => {
+      frameWindow = frame.contentWindow;
+      return frameWindow.navigator.serviceWorker.register('service_worker.js');
+    })
+    .then(() => {
+      return frameWindow.navigator.serviceWorker.ready;
+    })
+    .then((frame_registration) => {
+      return frame_registration.sync.register('foo');
+    })
+    .then(() => {
+      sendResultToTest('ok - iframe registered sync');
+    })
+    .catch(sendErrorToTest);
+}
+
+function registerOneShotSyncFromCrossOriginFrame(cross_frame_url) {
+  return createFrame(cross_frame_url)
+    .then((frame) => {
+      return receiveMessage();
+    })
+    .then((message) => {
+      console.log(message);
+      if (message !== 'registration failed') {
+        sendResultToTest('failed - ' + message);
+        return;
+      }
+      sendResultToTest('ok - frame failed to register sync');
+    });
+}
+
+function registerOneShotSyncFromServiceWorker(tag) {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
-      swRegistration.active.postMessage({action: 'register', tag: tag});
+    .then((swRegistration) => {
+      swRegistration.active.postMessage(
+          {action: 'registerOneShotSync', tag: tag});
       sendResultToTest('ok - ' + tag + ' register sent to SW');
     })
     .catch(sendErrorToTest);
 }
 
-function hasTag(tag) {
+function registerPeriodicSync(tag, minInterval) {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
+      if (minInterval !== undefined) {
+        return swRegistration.periodicSync.register(
+            tag, {minInterval: minInterval});
+      } else {
+        return swRegistration.periodicSync.register(tag);
+      }
+    })
+    .then(() => {
+      sendResultToTest('ok - ' + tag + ' registered');
+    })
+    .catch(sendErrorToTest);
+}
+
+function registerPeriodicSyncFromLocalFrame(frame_url, minInterval) {
+  let frameWindow;
+  return createFrame(frame_url)
+    .then((frame) => {
+      frameWindow = frame.contentWindow;
+      return frameWindow.navigator.serviceWorker.register('service_worker.js');
+    })
+    .then(() => {
+      return frameWindow.navigator.serviceWorker.ready;
+    })
+    .then((frame_registration) => {
+      return frame_registration.periodicSync.register(
+          'foo', {minInterval: minInterval});
+    })
+    .then(() => {
+      sendResultToTest('ok - iframe registered periodic sync');
+    })
+    .catch(sendErrorToTest);
+}
+
+function registerPeriodicSyncFromServiceWorker(tag, minInterval) {
+  navigator.serviceWorker.ready
+    .then((swRegistration) => {
+      if (minInterval !== undefined) {
+        swRegistration.active.postMessage(
+          {action: 'registerPeriodicSync', tag: tag, minInterval: minInterval});
+      } else {
+        swRegistration.active.postMessage(
+          {action: 'registerPeriodicSync', tag: tag});
+      }
+
+      sendResultToTest('ok - ' + tag + ' register sent to SW');
+    })
+    .catch(sendErrorToTest);
+}
+
+function hasOneShotSyncTag(tag) {
+  navigator.serviceWorker.ready
+    .then((swRegistration) => {
       return swRegistration.sync.getTags();
     })
-    .then(function(tags) {
+    .then((tags) => {
       if (tags.indexOf(tag) >= 0) {
         sendResultToTest('ok - ' + tag + ' found');
       } else {
@@ -67,39 +154,85 @@ function hasTag(tag) {
     .catch(sendErrorToTest);
 }
 
-function hasTagFromServiceWorker(tag) {
+function hasPeriodicSyncTag(tag) {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
+      return swRegistration.periodicSync.getTags();
+    })
+    .then((tags) => {
+      if (tags.indexOf(tag) >= 0) {
+        sendResultToTest('ok - ' + tag + ' found');
+      } else {
+        sendResultToTest('error - ' + tag + ' not found');
+        return;
+      }
+    })
+    .catch(sendErrorToTest);
+}
+
+function hasOneShotSyncTagFromServiceWorker(tag) {
+  navigator.serviceWorker.ready
+    .then((swRegistration) => {
       swRegistration.active.postMessage(
-          {action: 'hasTag', tag: tag});
+          {action: 'hasOneShotSyncTag', tag: tag});
       sendResultToTest('ok - hasTag sent to SW');
     })
     .catch(sendErrorToTest);
 }
 
-function getTags() {
+function hasPeriodicSyncTagFromServiceWorker(tag) {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
+      swRegistration.active.postMessage(
+          {action: 'hasPeriodicSyncTag', tag: tag});
+      sendResultToTest('ok - hasTag sent to SW');
+    })
+    .catch(sendErrorToTest);
+}
+
+function getOneShotSyncTags() {
+  navigator.serviceWorker.ready
+    .then((swRegistration) => {
       return swRegistration.sync.getTags();
     })
-    .then(function(tags) {
+    .then((tags) => {
       sendResultToTest('ok - ' + tags.toString());
     })
     .catch(sendErrorToTest);
 }
 
-function getTagsFromServiceWorker() {
+function getOneShotSyncTagsFromServiceWorker() {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
-      swRegistration.active.postMessage({action: 'getTags'});
+    .then((swRegistration) => {
+      swRegistration.active.postMessage({action: 'getOneShotSyncTags'});
       sendResultToTest('ok - getTags sent to SW');
+    })
+    .catch(sendErrorToTest);
+}
+
+function unregister(tag) {
+  navigator.serviceWorker.ready
+    .then(swRegistration => {
+        return swRegistration.periodicSync.unregister(tag);
+    })
+    .then(() => {
+      sendResultToTest('ok - ' + tag + ' unregistered');
+    })
+    .catch(sendErrorToTest);
+}
+
+function unregisterFromServiceWorker(tag) {
+  navigator.serviceWorker.ready
+    .then(swRegistration => {
+      swRegistration.active.postMessage({action: 'unregister', tag: tag});
+      sendResultToTest('ok - ' + tag + ' unregister sent to SW');
     })
     .catch(sendErrorToTest);
 }
 
 function completeDelayedSyncEvent() {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
       swRegistration.active.postMessage({
           action: 'completeDelayedSyncEvent'
         });
@@ -110,7 +243,7 @@ function completeDelayedSyncEvent() {
 
 function rejectDelayedSyncEvent() {
   navigator.serviceWorker.ready
-    .then(function(swRegistration) {
+    .then((swRegistration) => {
       swRegistration.active.postMessage({action: 'rejectDelayedSyncEvent'});
       sendResultToTest('ok - delay rejecting');
     })
@@ -118,58 +251,25 @@ function rejectDelayedSyncEvent() {
 }
 
 function createFrame(url) {
-  return new Promise(function(resolve) {
+  return new Promise((resolve) => {
     const frame = document.createElement('iframe');
     frame.src = url;
-    frame.onload = function() { resolve(frame); };
+    frame.onload = () => { resolve(frame); };
     document.body.appendChild(frame);
   });
 }
 
-function registerFromLocalFrame(frame_url) {
-  let frameWindow;
-  return createFrame(frame_url)
-    .then(function(frame) {
-      frameWindow = frame.contentWindow;
-      return frameWindow.navigator.serviceWorker.register('service_worker.js');
-    })
-    .then(function() {
-      return frameWindow.navigator.serviceWorker.ready;
-    })
-    .then(function(frame_registration) {
-      return frame_registration.sync.register('foo');
-    })
-    .then(function() {
-      sendResultToTest('ok - iframe registered sync');
-    })
-    .catch(sendErrorToTest);
-}
-
 function receiveMessage() {
-  return new Promise(function(resolve) {
-    window.addEventListener('message', function(message) {
+  return new Promise((resolve) => {
+    window.addEventListener('message', (message) => {
       resolve(message.data);
     });
   });
 }
 
-function registerFromCrossOriginFrame(cross_frame_url) {
-  return createFrame(cross_frame_url)
-    .then(function(frame) {
-      return receiveMessage();
-    })
-    .then(function(message) {
-      console.log(message);
-      if (message !== 'registration failed') {
-        sendResultToTest('failed - ' + message);
-        return;
-      }
-      sendResultToTest('ok - frame failed to register sync');
-    });
-}
-
-navigator.serviceWorker.addEventListener('message', function(event) {
+navigator.serviceWorker.addEventListener('message', (event) => {
   const message = event.data;
-  if (message.type == 'sync' || message.type === 'register')
+  if (message.type == 'sync' || message.type === 'register' ||
+        message.type === 'unregister')
     resultQueue.push(message.data);
 }, false);

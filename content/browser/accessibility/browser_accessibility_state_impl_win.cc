@@ -149,7 +149,7 @@ void BrowserAccessibilityStateImpl::
     if (base::LowerCaseEqualsASCII(module_name, "fsdomsrv.dll"))
       jaws = true;
     if (base::LowerCaseEqualsASCII(module_name, "vbufbackend_gecko_ia2.dll") ||
-        base::LowerCaseEqualsASCII(module_name, "nvdaHelperRemote.dll"))
+        base::LowerCaseEqualsASCII(module_name, "nvdahelperremote.dll"))
       nvda = true;
     if (base::LowerCaseEqualsASCII(module_name, "stsaw32.dll"))
       satogo = true;

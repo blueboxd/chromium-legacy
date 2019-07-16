@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/modules/mediacapturefromelement/html_video_element_capturer_source.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ bool AddVideoTrackToMediaStream(
       new MediaStreamVideoCapturerSource(
           WebPlatformMediaStreamSource::SourceStoppedCallback(),
           std::move(video_source));
-  const WebString track_id(CreateCanonicalUUIDString());
+  const WebString track_id(WTF::CreateCanonicalUUIDString());
   WebMediaStreamSource web_media_stream_source;
   web_media_stream_source.Initialize(track_id, WebMediaStreamSource::kTypeVideo,
                                      track_id, is_remote);
@@ -96,7 +96,7 @@ void CreateHTMLAudioElementCapturer(
 
   blink::WebMediaStreamSource web_media_stream_source;
   blink::WebMediaStreamTrack web_media_stream_track;
-  const WebString track_id(CreateCanonicalUUIDString());
+  const WebString track_id(WTF::CreateCanonicalUUIDString());
 
   web_media_stream_source.Initialize(track_id,
                                      blink::WebMediaStreamSource::kTypeAudio,

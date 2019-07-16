@@ -3,17 +3,60 @@
 # found in the LICENSE file.
 
 import exceptions
+from .argument import Argument
 from .common import WithCodeGeneratorInfo
 from .common import WithComponent
 from .common import WithDebugInfo
+from .common import WithExposure
+from .common import WithExtendedAttributes
 from .common import WithIdentifier
 from .common import WithOwner
 from .idl_member import IdlMember
+from .idl_types import IdlType
 
 
 class Operation(IdlMember):
     """https://heycam.github.io/webidl/#idl-operations
     https://www.w3.org/TR/WebIDL-1/#idl-special-operations"""
+
+    class IR(WithIdentifier, WithExtendedAttributes, WithExposure,
+             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+        def __init__(self,
+                     identifier,
+                     arguments,
+                     return_type,
+                     is_static=False,
+                     is_getter=False,
+                     is_setter=False,
+                     is_deleter=False,
+                     extended_attributes=None,
+                     exposures=None,
+                     code_generator_info=None,
+                     component=None,
+                     debug_info=None):
+            assert isinstance(arguments, (list, tuple)) and all(
+                isinstance(arg, Argument.IR) for arg in arguments)
+            assert isinstance(return_type, IdlType)
+            assert isinstance(is_static, bool)
+            assert isinstance(is_getter, bool)
+            assert isinstance(is_setter, bool)
+            assert isinstance(is_deleter, bool)
+            assert int(is_getter) + int(is_setter) + int(is_deleter) <= 1
+
+            WithIdentifier.__init__(self, identifier)
+            WithExtendedAttributes.__init__(self, extended_attributes)
+            WithExposure.__init__(self, exposures)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithComponent.__init__(self, component)
+            WithDebugInfo.__init__(self, debug_info)
+
+            self.arguments = list(arguments)
+            self.return_type = return_type
+            self.is_static = is_static
+            self.is_getter = is_getter
+            self.is_setter = is_setter
+            self.is_deleter = is_deleter
+            self.is_property_handler = is_getter or is_setter or is_deleter
 
     @property
     def is_static(self):

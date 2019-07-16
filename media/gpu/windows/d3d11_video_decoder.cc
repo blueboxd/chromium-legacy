@@ -25,6 +25,7 @@
 #include "media/gpu/windows/d3d11_picture_buffer.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_impl.h"
+#include "media/gpu/windows/supported_profile_helpers.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_switches.h"
 
@@ -752,40 +753,74 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
       base::FeatureList::IsEnabled(kHardwareSecureDecryption);
 
   std::vector<SupportedVideoDecoderConfig> configs;
-
-  // Now check specific configs.
-  // For now, just return something that matches everything, since that's
-  // effectively what the workaround in mojo_video_decoder does.  Eventually, we
-  // should check resolutions and guids from the device we just created for both
-  // portrait and landscape orientations.
+  // VP9 has no default resolutions since it may not even be supported.
+  ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
+  ResolutionPair max_vp9_profile0_resolutions;
+  ResolutionPair max_vp9_profile2_resolutions;
   const gfx::Size min_resolution(64, 64);
-  const gfx::Size max_resolution(8192, 8192);  // Profile or landscape 8k
 
-  // Push H264 configs, except HIGH10.
-  configs.push_back(SupportedVideoDecoderConfig(
-      H264PROFILE_MIN,  // profile_min
-      static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
-                                     1),  // profile_max
-      min_resolution,                     // coded_size_min
-      max_resolution,                     // coded_size_max
-      allow_encrypted,                    // allow_encrypted
-      false));                            // require_encrypted
-  configs.push_back(SupportedVideoDecoderConfig(
-      static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
-                                     1),  // profile_min
-      H264PROFILE_MAX,                    // profile_max
-      min_resolution,                     // coded_size_min
-      max_resolution,                     // coded_size_max
-      allow_encrypted,                    // allow_encrypted
-      false));                            // require_encrypted
+  GetResolutionsForDecoders(
+      {D3D11_DECODER_PROFILE_H264_VLD_NOFGT}, d3d11_device, gpu_workarounds,
+      &max_h264_resolutions, &max_vp9_profile0_resolutions,
+      &max_vp9_profile2_resolutions);
 
-  configs.push_back(
-      SupportedVideoDecoderConfig(VP9PROFILE_PROFILE0,  // profile_min
-                                  VP9PROFILE_PROFILE0,  // profile_max
-                                  min_resolution,       // coded_size_min
-                                  max_resolution,       // coded_size_max
-                                  allow_encrypted,      // allow_encrypted
-                                  false));              // require_encrypted
+  if (max_h264_resolutions.first.width() > 0) {
+    // Push H264 configs, except HIGH10.
+    // landscape
+    configs.push_back(SupportedVideoDecoderConfig(
+        H264PROFILE_MIN,  // profile_min
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
+                                       1),  // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.first,         // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+    configs.push_back(SupportedVideoDecoderConfig(
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
+                                       1),  // profile_min
+        H264PROFILE_MAX,                    // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.first,         // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+
+    // portrait
+    configs.push_back(SupportedVideoDecoderConfig(
+        H264PROFILE_MIN,  // profile_min
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
+                                       1),  // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.second,        // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+    configs.push_back(SupportedVideoDecoderConfig(
+        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
+                                       1),  // profile_min
+        H264PROFILE_MAX,                    // profile_max
+        min_resolution,                     // coded_size_min
+        max_h264_resolutions.second,        // coded_size_max
+        allow_encrypted,                    // allow_encrypted
+        false));                            // require_encrypted
+  }
+
+  if (max_vp9_profile0_resolutions.first.width()) {
+    // landscape
+    configs.push_back(SupportedVideoDecoderConfig(
+        VP9PROFILE_PROFILE0,                 // profile_min
+        VP9PROFILE_PROFILE0,                 // profile_max
+        min_resolution,                      // coded_size_min
+        max_vp9_profile0_resolutions.first,  // coded_size_max
+        allow_encrypted,                     // allow_encrypted
+        false));                             // require_encrypted
+    // portrait
+    configs.push_back(SupportedVideoDecoderConfig(
+        VP9PROFILE_PROFILE0,                  // profile_min
+        VP9PROFILE_PROFILE0,                  // profile_max
+        min_resolution,                       // coded_size_min
+        max_vp9_profile0_resolutions.second,  // coded_size_max
+        allow_encrypted,                      // allow_encrypted
+        false));                              // require_encrypted
+  }
 
   // TODO(liberato): Should we separate out h264, vp9, and encrypted?
   UMA_HISTOGRAM_ENUMERATION(uma_name, NotSupportedReason::kVideoIsSupported);

@@ -15,11 +15,13 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
+#include "services/network/origin_policy/origin_policy_header_values.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
 
+class NetworkContext;
 class OriginPolicyFetcher;
 
 // The OriginPolicyManager is the entry point for all Origin Policy related
@@ -30,21 +32,13 @@ class OriginPolicyFetcher;
 class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
     : public mojom::OriginPolicyManager {
  public:
-  // Represents a parsed `Sec-Origin-Policy` header.
-  // Spec: https://wicg.github.io/origin-policy/#origin-policy-header
-  struct OriginPolicyHeaderValues {
-    // The policy version that is parsed from the `policy=` parameter.
-    std::string policy_version;
-    // The report group to send reports to if an error occurs. Uses the
-    // reporting API. Parsed from the `report-to=` parameter.
-    std::string report_to;
-  };
-
-  explicit OriginPolicyManager(mojom::URLLoaderFactoryPtr url_loader_factory);
+  // The |owner_network_context| is the owner of this object and it needs to
+  // always outlive this object.
+  explicit OriginPolicyManager(NetworkContext* owner_network_context);
   ~OriginPolicyManager() override;
 
-  // Bind a request to this object.  Mojo messages
-  // coming through the associated pipe will be served by this object.
+  // Bind a request to this object.  Mojo messages coming through the associated
+  // pipe will be served by this object.
   void AddBinding(mojom::OriginPolicyManagerRequest request);
 
   // mojom::OriginPolicyManager
@@ -63,6 +57,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
   // from "<origin>/.well-known/origin-policy".
   void RetrieveDefaultOriginPolicy(const url::Origin& origin,
                                    RetrieveOriginPolicyCallback callback);
+
+  // Attempts to report a policy retrieval failure. Does nothing if
+  // `header_info` has an empty `report_to` member.
+  void MaybeReport(OriginPolicyState state,
+                   const OriginPolicyHeaderValues& header_info,
+                   const GURL& policy_url);
 
   // ForTesting methods
   mojo::BindingSet<mojom::OriginPolicyManager>& GetBindingsForTesting() {
@@ -93,6 +93,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
       const url::Origin& origin,
       OriginPolicyState state,
       RetrieveOriginPolicyCallback callback);
+
+  // Owner of this object. It needs to always outlive this object.
+  // Used for queueing reports and creating a URLLoaderFactory.
+  NetworkContext* const owner_network_context_;
 
   // In memory cache of current policy version per origin.
   // TODO(andypaicu): clear this when the disk cache is cleaned.

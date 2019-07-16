@@ -56,6 +56,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_context_menu_observer.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -350,13 +352,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_LINK_SEND_TAB_TO_SELF, 103},
        {IDC_SEND_TAB_TO_SELF_SINGLE_TARGET, 104},
        {IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET, 105},
+       {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE, 106},
+       {IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES, 107},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 106}});
+       {0, 108}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -1143,6 +1147,8 @@ void RenderViewContextMenu::AppendLinkItems() {
   if (!params_.link_url.is_empty()) {
     const Browser* browser = GetBrowser();
     const bool in_app = browser && browser->is_app();
+    WebContents* active_web_contents =
+        browser ? browser->tab_strip_model()->GetActiveWebContents() : nullptr;
 
     menu_model_.AddItemWithStringId(
         IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
@@ -1244,8 +1250,7 @@ void RenderViewContextMenu::AppendLinkItems() {
     }
 #endif  // !defined(OS_CHROMEOS)
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
-                       browser->tab_strip_model()->GetActiveWebContents(),
-                       params_.link_url)) {
+                       active_web_contents, params_.link_url)) {
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
@@ -1274,7 +1279,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       } else {
         send_tab_to_self_sub_menu_model_ =
             std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
-                browser->tab_strip_model()->GetActiveWebContents(),
+                active_web_contents,
                 send_tab_to_self::SendTabToSelfMenuType::kLink,
                 params_.link_url);
 #if defined(OS_MACOSX)
@@ -1288,6 +1293,18 @@ void RenderViewContextMenu::AppendLinkItems() {
             *send_tab_to_self::GetImageSkia());
 #endif
       }
+    }
+
+    // Context menu item for click to call.
+    if (active_web_contents &&
+        ShouldOfferClickToCall(active_web_contents->GetBrowserContext(),
+                               params_.link_url)) {
+      if (!click_to_call_context_menu_observer_) {
+        click_to_call_context_menu_observer_ =
+            std::make_unique<ClickToCallContextMenuObserver>(this);
+        observers_.AddObserver(click_to_call_context_menu_observer_.get());
+      }
+      click_to_call_context_menu_observer_->InitMenu(params_);
     }
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);

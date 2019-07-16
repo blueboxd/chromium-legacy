@@ -48,7 +48,6 @@
     <string name="help_context_bookmarks">mobile_bookmarks</string>
     <string name="help_context_history">mobile_history</string>
     <string name="help_context_privacy">mobile_privacy</string>
-    <string name="help_context_translate">mobile_translate</string>
     <string name="help_context_general">mobile_general</string>
     <string name="help_context_protected_content">protected_content</string>
     <string name="help_context_data_reduction">reduce_data_usage</string>

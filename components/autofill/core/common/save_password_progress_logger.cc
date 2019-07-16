@@ -154,6 +154,7 @@ void SavePasswordProgressLogger::LogValue(StringID label, const Value& log) {
   bool conversion_to_string_successful = base::JSONWriter::WriteWithOptions(
       log, base::JSONWriter::OPTIONS_PRETTY_PRINT, &log_string);
   DCHECK(conversion_to_string_successful);
+  std::replace(log_string.begin(), log_string.end(), '"', ' ');
   SendLog(GetStringFromID(label) + ": " + log_string);
 }
 

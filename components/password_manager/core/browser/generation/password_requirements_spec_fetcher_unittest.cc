@@ -208,7 +208,7 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchData) {
     base::HistogramTester histogram_tester;
 
     base::test::ScopedTaskEnvironment environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+        base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
     network::TestURLLoaderFactory loader_factory;
     loader_factory.AddResponse(test.requested_url, test.response_content,
                                test.response_status);
@@ -263,7 +263,7 @@ TEST(PasswordRequirementsSpecFetcherTest, FetchDataInterleaved) {
     shard.SerializeToString(&serialized_shard);
 
     base::test::ScopedTaskEnvironment environment(
-        base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+        base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
     network::TestURLLoaderFactory loader_factory;
 
     // Target into which data will be written by the callback.

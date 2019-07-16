@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECT_TOOLS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECT_TOOLS_H_
 
+#include <vector>
 #include <v8-inspector.h>
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_agent.h"
@@ -20,7 +21,7 @@ class SearchingForNodeTool : public InspectTool {
  public:
   SearchingForNodeTool(InspectorDOMAgent* dom_agent,
                        bool ua_shadow,
-                       const String& highlight_config);
+                       const std::vector<uint8_t>& highlight_config);
 
  private:
   bool HandleInputEvent(LocalFrameView* frame_view,

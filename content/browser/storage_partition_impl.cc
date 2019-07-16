@@ -1680,18 +1680,6 @@ void StoragePartitionImpl::OverrideSpecialStoragePolicyForTesting(
   special_storage_policy_ = special_storage_policy;
 }
 
-void StoragePartitionImpl::ShutdownBackgroundSyncContextForTesting() {
-  if (GetBackgroundSyncContext())
-    GetBackgroundSyncContext()->Shutdown();
-}
-
-void StoragePartitionImpl::OverrideBackgroundSyncContextForTesting(
-    BackgroundSyncContextImpl* background_sync_context) {
-  DCHECK(!GetBackgroundSyncContext() ||
-         !GetBackgroundSyncContext()->background_sync_manager());
-  background_sync_context_ = background_sync_context;
-}
-
 void StoragePartitionImpl::SetURLRequestContext(
     net::URLRequestContextGetter* url_request_context) {
   url_request_context_ = url_request_context;

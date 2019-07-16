@@ -54,11 +54,9 @@ class ASH_EXPORT KeyboardControllerImpl
 
   // Forwards events to observers.
   void SendOnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds);
-  void SendOnLoadKeyboardContentsRequested();
   void SendOnKeyboardUIDestroyed();
 
   // ash::KeyboardController:
-  void KeyboardContentsLoaded(const gfx::Size& size) override;
   keyboard::KeyboardConfig GetKeyboardConfig() override;
   void SetKeyboardConfig(
       const keyboard::KeyboardConfig& keyboard_config) override;

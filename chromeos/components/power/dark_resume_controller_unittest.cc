@@ -30,7 +30,7 @@ class DarkResumeControllerTest : public testing::Test {
  public:
   DarkResumeControllerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
 

@@ -13,6 +13,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+#include "media/base/bind_to_current_loop.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -109,55 +115,6 @@ FileLockMap* GetFileLockMap() {
   return file_lock_map;
 }
 
-// Read the contents of |file| and return it. On success, returns kSuccess and
-// |data| is updated with the contents of the file. On failure kFailure is
-// returned. This method owns |file| and it will be closed at the end.
-CdmFileImpl::Status ReadFile(base::File file, std::vector<uint8_t>* data) {
-  DCHECK(data->empty());
-
-  // Determine the size of the file (so we know how many bytes to read).
-  // Negative bytes mean failure, so problem with the file.
-  int64_t num_bytes = file.GetLength();
-  if (num_bytes < 0) {
-    DLOG(WARNING) << __func__
-                  << " Unable to get file length. result = " << num_bytes;
-    return CdmFileImpl::Status::kFailure;
-  }
-
-  // Files are limited in size, so fail if file too big.
-  if (num_bytes > kMaxFileSizeBytes) {
-    DLOG(WARNING) << __func__
-                  << " Too much data to read. #bytes = " << num_bytes;
-    return CdmFileImpl::Status::kFailure;
-  }
-
-  // If the file has 0 bytes, no need to read anything.
-  if (num_bytes == 0) {
-    return CdmFileImpl::Status::kSuccess;
-  }
-
-  // Read the contents of the file. Read() sizes (provided and returned) are
-  // type int, so cast appropriately.
-  int bytes_to_read = base::checked_cast<int>(num_bytes);
-  data->resize(num_bytes);
-
-  TRACE_EVENT0("media", "CdmFileReadFile");
-  base::TimeTicks start = base::TimeTicks::Now();
-  int bytes_read =
-      file.Read(0, reinterpret_cast<char*>(data->data()), bytes_to_read);
-  base::TimeDelta read_time = base::TimeTicks::Now() - start;
-  if (bytes_to_read != bytes_read) {
-    // Unable to read the contents of the file.
-    DLOG(WARNING) << "Failed to read file. Requested " << bytes_to_read
-                  << " bytes, got " << bytes_read;
-    return CdmFileImpl::Status::kFailure;
-  }
-
-  // Only report reading time for successful reads.
-  UMA_HISTOGRAM_TIMES("Media.EME.CdmFileIO.ReadTime", read_time);
-  return CdmFileImpl::Status::kSuccess;
-}
-
 // Write |data| to |file|. Returns kSuccess if everything works, kFailure
 // otherwise.  This method owns |file| and it will be closed at the end.
 CdmFileImpl::Status WriteFile(base::File file, std::vector<uint8_t> data) {
@@ -182,7 +139,151 @@ CdmFileImpl::Status WriteFile(base::File file, std::vector<uint8_t> data) {
   return CdmFileImpl::Status::kSuccess;
 }
 
+// File stream operations need an IOBuffer to hold the data. This class stores
+// the data in a std::vector<uint8_t> to match what is used in the
+// mojom::CdmFile API.
+class CdmFileIOBuffer : public net::IOBuffer {
+ public:
+  // Create an empty buffer of size |size|.
+  explicit CdmFileIOBuffer(size_t size) : buffer_(size) {
+    data_ = reinterpret_cast<char*>(buffer_.data());
+  }
+
+  // Returns ownership of |buffer_| to the caller.
+  std::vector<uint8_t>&& TakeData() { return std::move(buffer_); }
+
+ protected:
+  ~CdmFileIOBuffer() override { data_ = nullptr; }
+
+ private:
+  std::vector<uint8_t> buffer_;
+};
+
 }  // namespace
+
+// Read a file using FileStreamReader. Implemented as a separate class so that
+// it can be run on the IO thread.
+class CdmFileImpl::FileReader {
+ public:
+  // Returns whether the read operation succeeded or not. If |result| = true,
+  // then |data| is the contents of the file.
+  using ReadDoneCB =
+      base::OnceCallback<void(bool result, std::vector<uint8_t> data)>;
+
+  FileReader() = default;
+
+  // Reads the contents of |file_url| and calls |callback| with the result
+  // (file contents on success, empty data on error).
+  void Read(scoped_refptr<storage::FileSystemContext> file_system_context,
+            const storage::FileSystemURL& file_url,
+            ReadDoneCB callback) {
+    DVLOG(3) << __func__ << " url: " << file_url.DebugString();
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(!callback_);
+    DCHECK(!file_stream_reader_);
+
+    callback_ = std::move(callback);
+
+    file_stream_reader_ = file_system_context->CreateFileStreamReader(
+        file_url, 0, kMaxFileSizeBytes, base::Time());
+    auto result = file_stream_reader_->GetLength(
+        base::BindOnce(&FileReader::OnGetLength, weak_factory_.GetWeakPtr()));
+    DVLOG(3) << __func__ << " GetLength(): " << result;
+
+    // If GetLength() is running asynchronously, simply return.
+    if (result == net::ERR_IO_PENDING)
+      return;
+
+    // GetLength() was synchronous, so pass the result on.
+    OnGetLength(result);
+  }
+
+ private:
+  // Called when the size of the file to be read is known. Allocates a buffer
+  // large enough to hold the contents, then attempts to read the contents into
+  // the buffer. |result| will be the length of the file (if >= 0) or a net::
+  // error on failure (if < 0).
+  void OnGetLength(int64_t result) {
+    DVLOG(3) << __func__ << " result: " << result;
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(callback_);
+    DCHECK(file_stream_reader_);
+
+    // If the file doesn't exist, then pretend it is empty.
+    if (result == net::ERR_FILE_NOT_FOUND) {
+      std::move(callback_).Run(true, {});
+      return;
+    }
+
+    // Any other failure is an error.
+    if (result < 0) {
+      DLOG(WARNING) << __func__
+                    << " Unable to get file length. result = " << result;
+      std::move(callback_).Run(false, {});
+      return;
+    }
+
+    // Files are limited in size, so fail if file too big.
+    if (result > kMaxFileSizeBytes) {
+      DLOG(WARNING) << __func__
+                    << " Too much data to read. #bytes = " << result;
+      std::move(callback_).Run(false, {});
+      return;
+    }
+
+    // Read() sizes (provided and returned) are type int, so cast appropriately.
+    int bytes_to_read = base::checked_cast<int>(result);
+    auto buffer = base::MakeRefCounted<CdmFileIOBuffer>(
+        base::checked_cast<size_t>(bytes_to_read));
+
+    // Read the contents of the file into |buffer|.
+    result = file_stream_reader_->Read(
+        buffer.get(), bytes_to_read,
+        base::BindOnce(&FileReader::OnRead, weak_factory_.GetWeakPtr(), buffer,
+                       bytes_to_read));
+    DVLOG(3) << __func__ << " Read(): " << result;
+
+    // If Read() is running asynchronously, simply return.
+    if (result == net::ERR_IO_PENDING)
+      return;
+
+    // Read() was synchronous, so pass the result on.
+    OnRead(std::move(buffer), bytes_to_read, result);
+  }
+
+  // Called when the file has been read and returns the result to the callback
+  // provided to Read(). |result| will be the number of bytes read (if >= 0) or
+  // a net:: error on failure (if < 0).
+  void OnRead(scoped_refptr<CdmFileIOBuffer> buffer,
+              int bytes_to_read,
+              int result) {
+    DVLOG(3) << __func__ << " Requested " << bytes_to_read << " bytes, got "
+             << result;
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK(callback_);
+    DCHECK(file_stream_reader_);
+
+    if (result != bytes_to_read) {
+      // Unable to read the contents of the file completely.
+      DLOG(WARNING) << "Failed to read file. Requested " << bytes_to_read
+                    << " bytes, got " << result;
+      std::move(callback_).Run(false, {});
+      return;
+    }
+
+    // Successful read. Return the bytes read.
+    std::move(callback_).Run(true, std::move(buffer->TakeData()));
+  }
+
+  // Called when the read operation is done.
+  ReadDoneCB callback_;
+
+  // Used to read the stream.
+  std::unique_ptr<storage::FileStreamReader> file_stream_reader_;
+
+  base::WeakPtrFactory<FileReader> weak_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(FileReader);
+};
 
 // static
 bool CdmFileImpl::IsValidName(const std::string& name) {
@@ -224,6 +325,15 @@ CdmFileImpl::~CdmFileImpl() {
   DVLOG(3) << __func__ << " " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  if (read_callback_)
+    std::move(read_callback_).Run(Status::kFailure, {});
+
+  if (file_reader_) {
+    // |file_reader_| must be deleted on the IO thread.
+    base::CreateSequencedTaskRunner({BrowserThread::IO})
+        ->DeleteSoon(FROM_HERE, std::move(file_reader_));
+  }
+
   if (file_locked_)
     ReleaseFileLock(file_name_);
 }
@@ -250,13 +360,45 @@ void CdmFileImpl::Read(ReadCallback callback) {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
-  DCHECK(data_.empty());
 
-  // Open the file for reading. This may fail if the file does not currently
-  // exist, which needs to be handled.
-  OpenFile(file_name_, base::File::FLAG_OPEN | base::File::FLAG_READ,
-           base::BindOnce(&CdmFileImpl::OnFileOpenedForReading,
-                          weak_factory_.GetWeakPtr(), std::move(callback)));
+  // Save |callback| for later use.
+  read_callback_ = std::move(callback);
+
+  // As reading is done on the IO thread, when it's done ReadDone() needs to be
+  // called back on this thread.
+  auto read_done_cb = media::BindToCurrentLoop(
+      base::BindOnce(&CdmFileImpl::ReadDone, weak_factory_.GetWeakPtr()));
+
+  // Create the file reader that runs on the IO thread, and then call Read() on
+  // the IO thread. Use of base::Unretained() is OK as the reader is owned by
+  // |this|, and if |this| is destructed it will destroy the file reader on the
+  // IO thread.
+  file_reader_ = std::make_unique<FileReader>();
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&FileReader::Read, base::Unretained(file_reader_.get()),
+                     file_system_context_, CreateFileSystemURL(file_name_),
+                     std::move(read_done_cb)));
+}
+
+void CdmFileImpl::ReadDone(bool success, std::vector<uint8_t> data) {
+  DVLOG(3) << __func__ << " file: " << file_name_
+           << ", success: " << (success ? "yes" : "no");
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
+  DCHECK(file_reader_);
+  DCHECK(read_callback_);
+
+  // We are done with the reader, so destroy it.
+  file_reader_.reset();
+
+  if (!success) {
+    // Unable to read the contents of the file.
+    std::move(read_callback_).Run(Status::kFailure, {});
+    return;
+  }
+
+  std::move(read_callback_).Run(Status::kSuccess, std::move(data));
 }
 
 void CdmFileImpl::OpenFile(const std::string& file_name,
@@ -279,52 +421,11 @@ void CdmFileImpl::OpenFile(const std::string& file_name,
                           std::move(callback));
 }
 
-void CdmFileImpl::OnFileOpenedForReading(ReadCallback callback,
-                                         base::File file,
-                                         base::OnceClosure on_close_callback) {
-  DVLOG(3) << __func__ << " file: " << file_name_;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(file_locked_);
-
-  if (!file.IsValid()) {
-    // File is invalid, so assume that it is empty.
-    DVLOG(2) << "Unable to open file " << file_name_
-             << ", error: " << base::File::ErrorToString(file.error_details());
-    std::move(callback).Run(
-        file.error_details() == base::File::FILE_ERROR_NOT_FOUND
-            ? Status::kSuccess
-            : Status::kFailure,
-        std::vector<uint8_t>());
-    return;
-  }
-
-  // Reading |file| must be done on a thread that allows blocking, so post a
-  // task to do the read on a separate thread. When that completes simply call
-  // |callback| with the results.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&ReadFile, std::move(file), &data_),
-      base::BindOnce(&CdmFileImpl::OnFileRead, weak_factory_.GetWeakPtr(),
-                     std::move(callback)));
-}
-
-void CdmFileImpl::OnFileRead(ReadCallback callback, Status status) {
-  DVLOG(3) << __func__ << " file: " << file_name_;
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(file_locked_);
-
-  std::vector<uint8_t> data;
-  data.swap(data_);
-  std::move(callback).Run(status, std::move(data));
-}
-
 void CdmFileImpl::Write(const std::vector<uint8_t>& data,
                         WriteCallback callback) {
   DVLOG(3) << __func__ << " file: " << file_name_ << ", size: " << data.size();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
-  DCHECK(data_.empty());
 
   // If there is no data to write, delete the file to save space.
   if (data.empty()) {

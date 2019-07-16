@@ -17,7 +17,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_database.h"
@@ -63,7 +62,6 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
   }
 
   void SetUp() override {
-    features_.InitAndEnableFeature(blink::features::kOnionSoupDOMStorage);
     mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
         &SessionStorageContextMojoTest::OnBadMessage, base::Unretained(this)));
 
@@ -167,7 +165,6 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
   TestBrowserContext browser_context_;
   SessionStorageContextMojo::BackingMode backing_mode_ =
       SessionStorageContextMojo::BackingMode::kRestoreDiskState;
-  base::test::ScopedFeatureList features_;
   SessionStorageContextMojo* context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageContextMojoTest);

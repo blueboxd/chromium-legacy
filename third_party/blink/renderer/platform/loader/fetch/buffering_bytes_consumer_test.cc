@@ -21,7 +21,7 @@ class BufferingBytesConsumerTest : public testing::Test {
  public:
   BufferingBytesConsumerTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   using Command = ReplayingBytesConsumer::Command;
   using Result = BytesConsumer::Result;

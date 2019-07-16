@@ -75,7 +75,6 @@ bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
     case ntp_tiles::TileSource::CUSTOM_LINKS:
     case ntp_tiles::TileSource::WHITELIST:
     case ntp_tiles::TileSource::EXPLORE:
-    case ntp_tiles::TileSource::SEARCH_PAGE:
       return false;
   }
   NOTREACHED();

@@ -59,7 +59,7 @@ jumbo_component("manager") {
   deps = [
     "//base",
     "//ui/base",
-    "//ui/display/mojo:interfaces",
+    "//ui/display/mojom:mojom",
     "//ui/display/util",
     "//ui/events:platform_event",
     "//ui/events/devices",

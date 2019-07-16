@@ -70,11 +70,12 @@ class MockDownloadFile : public DownloadFile {
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Resume, void());
 #if defined(OS_ANDROID)
-  MOCK_METHOD5(CreateIntermediateUriForPublish,
+  MOCK_METHOD6(RenameToIntermediateUri,
                void(const GURL& original_url,
                     const GURL& referrer_url,
                     const base::FilePath& file_name,
                     const std::string& mime_type,
+                    const base::FilePath& current_path,
                     const RenameCompletionCallback& callback));
   MOCK_METHOD1(PublishDownload, void(const RenameCompletionCallback& callback));
   MOCK_METHOD0(GetDisplayName, base::FilePath());

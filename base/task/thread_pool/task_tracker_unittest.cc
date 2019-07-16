@@ -487,7 +487,11 @@ TEST_P(ThreadPoolTaskTrackerTest, WillPostAfterShutdown) {
   Task task(CreateTask());
 
   // |task_tracker_| shouldn't allow a task to be posted after shutdown.
-  EXPECT_FALSE(tracker_.WillPostTask(&task, GetParam()));
+  if (GetParam() == TaskShutdownBehavior::BLOCK_SHUTDOWN) {
+    EXPECT_DCHECK_DEATH(tracker_.WillPostTask(&task, GetParam()));
+  } else {
+    EXPECT_FALSE(tracker_.WillPostTask(&task, GetParam()));
+  }
 }
 
 // Verify that BLOCK_SHUTDOWN and SKIP_ON_SHUTDOWN tasks can

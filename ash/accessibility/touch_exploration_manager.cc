@@ -220,7 +220,8 @@ void TouchExplorationManager::UpdateTouchExplorationState() {
       SilenceSpokenFeedback();
       // Clear the focus highlight.
       Shell::Get()->accessibility_focus_ring_controller()->SetFocusRing(
-          extension_misc::kChromeVoxExtensionId, nullptr);
+          extension_misc::kChromeVoxExtensionId,
+          std::make_unique<AccessibilityFocusRingInfo>());
     } else {
       touch_exploration_controller_->SetExcludeBounds(gfx::Rect());
     }

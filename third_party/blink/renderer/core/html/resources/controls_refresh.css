@@ -8,16 +8,38 @@
  * using the refreshed controls UI.
  */
 
-input, textarea {
+input,
+textarea {
   background-color: #ffffff;
   border-color: #cecece;
 }
 
-input:hover, textarea:hover {
+input:hover,
+textarea:hover {
   border-color: #9d9d9d;
 }
 
-input:disabled, textarea:disabled {
+input:disabled,
+textarea:disabled {
   background-color: #ffffff;
+  border-color: #c5c5c5;
+}
+
+input[type="button" i],
+input[type="submit" i],
+input[type="reset" i],
+input[type="color" i],
+input[type="file" i]::-webkit-file-upload-button,
+button {
+  background-color: #efefef;
+  border-color: #cecece;
+}
+
+input[type="button" i]:disabled,
+input[type="submit" i]:disabled,
+input[type="reset" i]:disabled,
+input[type="color" i]:disabled,
+input[type="file" i]:disabled::-webkit-file-upload-button,
+button:disabled {
   border-color: #c5c5c5;
 }

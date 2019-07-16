@@ -680,7 +680,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   if (buffer_allocation_mode_ == BufferAllocationMode::kNone) {
     DCHECK(!va_surface_ids.empty());
     RETURN_AND_NOTIFY_ON_FAILURE(
-        vaapi_wrapper_->CreateContext(va_surface_format_, requested_pic_size_),
+        vaapi_wrapper_->CreateContext(requested_pic_size_),
         "Failed creating VA Context", PLATFORM_FAILURE, );
     DCHECK_EQ(va_surface_ids.size(), buffers.size());
   } else {

@@ -131,7 +131,7 @@ class DummyLogReceiver : public autofill::LogReceiver {
  public:
   DummyLogReceiver() = default;
 
-  void LogSavePasswordProgress(const std::string& text) override {}
+  void LogEntry(const base::Value& entry) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyLogReceiver);
@@ -277,7 +277,7 @@ bool ChromePasswordManagerClientTest::WasLoggingActivationMessageSent(
   return true;
 }
 
-TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNotifyRenderer) {
+TEST_F(ChromePasswordManagerClientTest, LogEntryNotifyRenderer) {
   bool logging_active = true;
   // Ensure the existence of a driver, which will send the IPCs we listen for
   // below.
@@ -291,7 +291,8 @@ TEST_F(ChromePasswordManagerClientTest, LogSavePasswordProgressNotifyRenderer) {
   DummyLogReceiver log_receiver;
   autofill::LogRouter* log_router = password_manager::
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile());
-  EXPECT_EQ(std::string(), log_router->RegisterReceiver(&log_receiver));
+  EXPECT_EQ(std::vector<base::Value>(),
+            log_router->RegisterReceiver(&log_receiver));
   EXPECT_TRUE(WasLoggingActivationMessageSent(&logging_active));
   EXPECT_TRUE(logging_active);
 
@@ -523,7 +524,8 @@ TEST_F(ChromePasswordManagerClientTest, WebUINoLogging) {
   autofill::LogRouter* log_router = password_manager::
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile());
   DummyLogReceiver log_receiver;
-  EXPECT_EQ(std::string(), log_router->RegisterReceiver(&log_receiver));
+  EXPECT_EQ(std::vector<base::Value>(),
+            log_router->RegisterReceiver(&log_receiver));
 
   // But then navigate to a WebUI, there the logging should not be active.
   NavigateAndCommit(GURL("about:password-manager-internals"));

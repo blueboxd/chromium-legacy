@@ -2357,10 +2357,10 @@ void Document::PropagateStyleToViewport() {
 #define PROPAGATE_FROM(source, getter, setter) \
   PROPAGATE_VALUE(source->getter(), getter, setter);
 
-#define PROPAGATE_VALUE(value, getter, setter) \
-  if ((viewport_style.getter()) != (value)) {  \
-    new_viewport_style->setter(value);         \
-    changed = true;                            \
+#define PROPAGATE_VALUE(value, getter, setter)     \
+  if ((new_viewport_style->getter()) != (value)) { \
+    new_viewport_style->setter(value);             \
+    changed = true;                                \
   }
 
   // Writing mode and direction
@@ -2473,7 +2473,6 @@ void Document::PropagateStyleToViewport() {
     PROPAGATE_VALUE(overflow_y, OverflowY, SetOverflowY)
     PROPAGATE_VALUE(overflow_anchor, OverflowAnchor, SetOverflowAnchor);
 
-    // TODO: Should this even be here?
     if (IsInMainFrame()) {
       using OverscrollBehaviorType =
           cc::OverscrollBehavior::OverscrollBehaviorType;
@@ -4328,8 +4327,7 @@ void Document::writeln(v8::Isolate* isolate,
 }
 
 bool Document::IsTrustedTypesEnabledForDoc() const {
-  return SecurityContext::RequireTrustedTypes() &&
-         RuntimeEnabledFeatures::TrustedDOMTypesEnabled(this);
+  return ExecutionContext::RequireTrustedTypes();
 }
 
 void Document::write(v8::Isolate* isolate,

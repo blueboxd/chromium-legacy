@@ -14,7 +14,6 @@
 
 struct UrlLoadParams;
 
-@class Tab;
 @class TabModel;
 
 namespace ios {
@@ -38,7 +37,7 @@ class ChromeBrowserState;
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
 // |completion| is executed after the tab is opened. After Tab is open the
 // virtual URL is set to the pending navigation item.
-- (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
+- (void)openSelectedTabInMode:(ApplicationMode)targetMode
             withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion;
 

@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 
+import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -92,7 +95,7 @@ public interface GridTabSwitcher {
         void showOverview(boolean animate);
 
         /**
-         * Called by the GridTabSwitcherLayout when the system back button is pressed.
+         * Called by the StartSurfaceLayout when the system back button is pressed.
          * @return Whether or not the GridTabSwitcher consumed the event.
          */
         boolean onBackPressed();
@@ -138,4 +141,30 @@ public interface GridTabSwitcher {
      */
     @NonNull
     Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate);
+
+    /**
+     * Set a hook to receive all the {@link Bitmap}s returned by
+     * {@link TabListMediator.ThumbnailFetcher} for testing.
+     * @param callback The callback to send bitmaps through.
+     */
+    @VisibleForTesting
+    void setBitmapCallbackForTesting(Callback<Bitmap> callback);
+
+    /**
+     * @return The number of thumbnail fetching for testing.
+     */
+    @VisibleForTesting
+    int getBitmapFetchCountForTesting();
+
+    /**
+     * @return The soft cleanup delay for testing.
+     */
+    @VisibleForTesting
+    int getSoftCleanupDelayForTesting();
+
+    /**
+     * @return The cleanup delay for testing.
+     */
+    @VisibleForTesting
+    int getCleanupDelayForTesting();
 }

@@ -24,8 +24,10 @@ namespace {
 const int kMenuViewBoundsBuffer = 100;
 
 // The buffers in dips around a scroll point where the scroll menu is shown.
-const int kScrollViewBoundsXBuffer = 110;
-const int kScrollViewBoundsYBuffer = 10;
+// This should be slightly larger than kScrollPointBufferDips and
+// kScrollRectBufferDips respectively from AutoclickScrollBubbleController to
+// allow for some wiggle room.
+const int kScrollViewBoundsBuffer = 26;
 const int kScrollViewBoundsRectBuffer = 18;
 
 ui::GestureEvent CreateTapEvent() {
@@ -336,17 +338,17 @@ TEST_F(AutoclickMenuBubbleControllerTest,
     gfx::Point point = gfx::Point(400, 400);
     GetBubbleController()->SetScrollPosition(scroll_bounds, point);
 
-    // In-line with the point in the Y axis.
-    EXPECT_LT(abs(GetScrollViewBounds().right_center().y() - point.y()),
-              kScrollViewBoundsYBuffer);
+    // Just below the point in the Y axis.
+    EXPECT_LT(abs(GetScrollViewBounds().y() - point.y()),
+              kScrollViewBoundsBuffer);
 
-    // Off to the side, but relatively close, in the X axis.
+    // Just off to the side in the X axis.
     if (test.is_RTL) {
       EXPECT_LT(abs(GetScrollViewBounds().right() - point.x()),
-                kScrollViewBoundsXBuffer);
+                kScrollViewBoundsBuffer);
     } else {
       EXPECT_LT(abs(GetScrollViewBounds().x() - point.x()),
-                kScrollViewBoundsXBuffer);
+                kScrollViewBoundsBuffer);
     }
 
     // Moving the autoclick bubble doesn't impact the scroll bubble once it
@@ -360,16 +362,22 @@ TEST_F(AutoclickMenuBubbleControllerTest,
     point = gfx::Point(0, 0);
     GetBubbleController()->SetScrollPosition(scroll_bounds, point);
     EXPECT_LT(abs(GetScrollViewBounds().x() - point.x()),
-              kScrollViewBoundsXBuffer);
+              kScrollViewBoundsBuffer);
     EXPECT_LT(abs(GetScrollViewBounds().y() - point.y()),
-              kScrollViewBoundsYBuffer);
+              kScrollViewBoundsBuffer);
 
     point = gfx::Point(1000, 400);
     GetBubbleController()->SetScrollPosition(scroll_bounds, point);
     EXPECT_LT(abs(GetScrollViewBounds().right() - point.x()),
-              kScrollViewBoundsXBuffer);
-    EXPECT_LT(abs(GetScrollViewBounds().left_center().y() - point.y()),
-              kScrollViewBoundsYBuffer);
+              kScrollViewBoundsBuffer);
+    EXPECT_LT(abs(GetScrollViewBounds().y() - point.y()),
+              kScrollViewBoundsBuffer);
+
+    // If it's too close to the bottom, it will be shown above the point.
+    point = gfx::Point(500, 700);
+    GetBubbleController()->SetScrollPosition(scroll_bounds, point);
+    EXPECT_LT(abs(GetScrollViewBounds().bottom() - point.y()),
+              kScrollViewBoundsBuffer);
   }
 }
 
@@ -466,7 +474,7 @@ TEST_F(AutoclickMenuBubbleControllerTest,
       // vertically on the scroll point.
       EXPECT_LT(abs(GetScrollViewBounds().y() +
                     GetScrollViewBounds().height() / 2 - scroll_point.y()),
-                kScrollViewBoundsYBuffer);
+                kScrollViewBoundsRectBuffer);
       EXPECT_LT(GetScrollViewBounds().x() - scroll_bounds.right(),
                 kScrollViewBoundsRectBuffer);
       EXPECT_GT(GetScrollViewBounds().x() - scroll_bounds.right(), 0);
@@ -475,7 +483,7 @@ TEST_F(AutoclickMenuBubbleControllerTest,
       // vertically on the scroll point.
       EXPECT_LT(abs(GetScrollViewBounds().y() +
                     GetScrollViewBounds().height() / 2 - scroll_point.y()),
-                kScrollViewBoundsYBuffer);
+                kScrollViewBoundsRectBuffer);
       EXPECT_LT(scroll_bounds.x() - GetScrollViewBounds().right(),
                 kScrollViewBoundsRectBuffer);
       EXPECT_GT(scroll_bounds.x() - GetScrollViewBounds().right(), 0);
@@ -484,7 +492,7 @@ TEST_F(AutoclickMenuBubbleControllerTest,
       // horizontally on the scroll point.
       EXPECT_LT(abs(GetScrollViewBounds().x() +
                     GetScrollViewBounds().width() / 2 - scroll_point.x()),
-                kScrollViewBoundsYBuffer);
+                kScrollViewBoundsRectBuffer);
       EXPECT_LT(scroll_bounds.y() - GetScrollViewBounds().bottom(),
                 kScrollViewBoundsRectBuffer);
       EXPECT_GT(scroll_bounds.y() - GetScrollViewBounds().bottom(), 0);
@@ -493,7 +501,7 @@ TEST_F(AutoclickMenuBubbleControllerTest,
       // horizontally on the scroll point.
       EXPECT_LT(abs(GetScrollViewBounds().x() +
                     GetScrollViewBounds().width() / 2 - scroll_point.x()),
-                kScrollViewBoundsYBuffer);
+                kScrollViewBoundsRectBuffer);
       EXPECT_LT(GetScrollViewBounds().y() - scroll_bounds.bottom(),
                 kScrollViewBoundsRectBuffer);
       EXPECT_GT(GetScrollViewBounds().y() - scroll_bounds.bottom(), -1);

@@ -32,8 +32,7 @@ using ::testing::SizeIs;
 class PromptActionTest : public testing::Test {
  public:
   PromptActionTest()
-      : task_env_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+      : task_env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     ON_CALL(mock_web_controller_, OnElementCheck(_, _))

@@ -126,7 +126,7 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
   // closed the menu, when this class handles via |suppress_next_release_|, so
   // it's not necessary.  Bypass it by calling IsTriggerableEventType() instead
   // of IsTriggerableEvent().
-  return views::MenuButton::IsTriggerableEventType(event);
+  return button_controller()->IsTriggerableEventType(event);
 }
 
 SkColor ToolbarActionView::GetInkDropBaseColor() const {

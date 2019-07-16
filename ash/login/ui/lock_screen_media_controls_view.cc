@@ -110,12 +110,22 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
 
 }  // namespace
 
+LockScreenMediaControlsView::Callbacks::Callbacks() = default;
+
+LockScreenMediaControlsView::Callbacks::~Callbacks() = default;
+
 LockScreenMediaControlsView::LockScreenMediaControlsView(
     service_manager::Connector* connector,
-    LockContentsView* view)
-    : view_(view),
-      connector_(connector),
-      hide_controls_timer_(new base::OneShotTimer()) {
+    const Callbacks& callbacks)
+    : connector_(connector),
+      hide_controls_timer_(new base::OneShotTimer()),
+      media_controls_enabled_(callbacks.media_controls_enabled),
+      hide_media_controls_(callbacks.hide_media_controls),
+      show_media_controls_(callbacks.show_media_controls) {
+  DCHECK(callbacks.media_controls_enabled);
+  DCHECK(callbacks.hide_media_controls);
+  DCHECK(callbacks.show_media_controls);
+
   SetBackground(views::CreateRoundedRectBackground(kMediaControlsBackground,
                                                    kMediaControlsCornerRadius));
   middle_spacing_ = std::make_unique<NonAccessibleView>();
@@ -253,20 +263,22 @@ void LockScreenMediaControlsView::MediaSessionInfoChanged(
 
   // If controls aren't enabled or there is no session to show, don't show the
   // controls.
-  if (!view_->AreMediaControlsEnabled() || !session_info) {
-    view_->HideMediaControlsLayout();
+  if (!media_controls_enabled_.Run() || !session_info) {
+    hide_media_controls_.Run();
   } else if (!IsDrawn() &&
              session_info->playback_state ==
                  media_session::mojom::MediaPlaybackState::kPaused) {
     // If the screen is locked while media is paused, don't show the controls.
-    view_->HideMediaControlsLayout();
+    hide_media_controls_.Run();
   } else if (!IsDrawn()) {
-    view_->CreateMediaControlsLayout();
+    show_media_controls_.Run();
   }
 
-  SetIsPlaying(session_info &&
-               session_info->playback_state ==
-                   media_session::mojom::MediaPlaybackState::kPlaying);
+  if (IsDrawn()) {
+    SetIsPlaying(session_info &&
+                 session_info->playback_state ==
+                     media_session::mojom::MediaPlaybackState::kPlaying);
+  }
 }
 
 void LockScreenMediaControlsView::MediaSessionMetadataChanged(
@@ -308,10 +320,8 @@ void LockScreenMediaControlsView::MediaSessionChanged(
   // If there is no current session but there was a previous one, wait to see
   // if a new session starts before hiding the controls.
   if (!request_id.has_value() && media_session_id_.has_value()) {
-    hide_controls_timer_->Start(
-        FROM_HERE, kNextMediaDelay,
-        base::BindOnce(&LockContentsView::HideMediaControlsLayout,
-                       base::Unretained(view_)));
+    hide_controls_timer_->Start(FROM_HERE, kNextMediaDelay,
+                                hide_media_controls_);
   }
 
   media_session_id_ = request_id;

@@ -37,7 +37,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -109,8 +108,7 @@ class LocalNTPTest : public InProcessBrowserTest {
   LocalNTPTest()
       : LocalNTPTest(
             /*enabled_features=*/{},
-            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut,
-                                   ntp_tiles::kDefaultSearchShortcut}) {}
+            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
@@ -1168,9 +1166,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
 class LocalNTPNoSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPNoSearchShortcutTest()
-      : LocalNTPTest({},
-                     {features::kFirstRunDefaultSearchShortcut,
-                      ntp_tiles::kDefaultSearchShortcut}) {}
+      : LocalNTPTest({}, {features::kFirstRunDefaultSearchShortcut}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
@@ -1183,32 +1179,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
   content::RenderFrameHost* iframe = GetIframe(active_tab, "mv-single");
 
   EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-}
-
-class LocalNTPNonFRESearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPNonFRESearchShortcutTest()
-      : LocalNTPTest({ntp_tiles::kDefaultSearchShortcut}, {}) {}
-
-  void SetUpOnMainThread() override {
-    // Make sure TopSites are available before running the tests.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(browser()->profile());
-    TestInstantServiceObserver mv_observer(instant_service);
-    instant_service->UpdateMostVisitedInfo();
-    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPNonFRESearchShortcutTest, SearchShortcutAdded) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -1254,39 +1224,6 @@ class LocalNTPExistingProfileSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPExistingProfileSearchShortcutTest() : LocalNTPTest({}, {}) {}
 };
-
-IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
-                       SearchShortcutAdded) {
-  TestInstantServiceObserver observer(
-      InstantServiceFactory::GetForProfile(browser()->profile()));
-
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-
-  // Navigate to a non-NTP URL, which should update most visited tiles.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/title2.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Enable the feature to insert the search shortcut for existing profiles.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(ntp_tiles::kDefaultSearchShortcut);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut));
-
-  // Two new tiles (the non-NTP URL and the search shortcut) should be added.
-  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 2);
-
-  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
-}
 
 IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
                        PRE_FRESearchShortcutNotAddedForExistingUsers) {
@@ -1379,6 +1316,105 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   // Verify request headers.
   EXPECT_THAT(request_headers, ::testing::HasSubstr("Sec-Fetch-Site: none"));
   EXPECT_THAT(request_headers, ::testing::HasSubstr("same-site-cookie=1"));
+}
+
+// Verifies that Chrome won't spawn a separate renderer process for
+// every single NTP tab.  This behavior goes all the way back to
+// the initial commit [1] which achieved that behavior by forcing
+// process-per-site mode for NTP tabs.  It seems desirable to preserve this
+// behavior going forward.
+//
+// [1] https://chromium.googlesource.com/chromium/src/+/09911bf300f1a419907a9412154760efd0b7abc3/chrome/browser/browsing_instance.cc#55
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite) {
+  GURL ntp_url("chrome-search://local-ntp/local-ntp.html");
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(browser());
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://remote-ntp [3rd-party NTP] or chrome://ntp [incognito]).
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab1, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(browser());
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab2, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
+}
+
+// Just like LocalNTPTest.ProcessPerSite, but for an incognito window.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite_Incognito) {
+  GURL ntp_url("chrome://newtab");
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(incognito_browser);
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://local-ntp [1st-party, non-incognito NTP] or
+    // chrome-search://remote-ntp [3rd-party NTP]).
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab1, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(incognito_browser);
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab2, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
 }
 
 }  // namespace

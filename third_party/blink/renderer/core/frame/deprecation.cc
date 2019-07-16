@@ -425,12 +425,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                              "for more details.",
                              MilestoneString(kM62))};
 
-    case WebFeature::kChildSrcAllowedWorkerThatScriptSrcBlocked:
-      return {"ChildSrcAllowedWorkerThatScriptSrcBlocked", kM60,
-              ReplacedWillBeRemoved("The 'child-src' directive",
-                                    "the 'script-src' directive for Workers",
-                                    kM60, "5922594955984896")};
-
     case WebFeature::kCanRequestURLHTTPContainingNewline:
       return {
           "CanRequestURLHTTPContainingNewline", kUnknown,

@@ -62,6 +62,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -253,13 +254,15 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
   }
 
   // Navigate to |url| and for each ResourceRequest record its
-  // top_frame_origin. Stop listening after |final_resource| has been
-  // detected. The output is recorded in |top_frame_origins|.
-  void NavigateAndRecordTopFrameOrigins(
+  // trusted_network_isolation_key. Stop listening after |final_resource| has
+  // been detected. The output is recorded in |network_isolation_keys|.
+  void NavigateAndRecordNetworkIsolationKeys(
       const GURL& url,
       const GURL& final_resource,
       bool from_renderer,
-      std::map<GURL, url::Origin>* top_frame_origins) {
+      std::map<GURL, net::NetworkIsolationKey>* network_isolation_keys,
+      std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>*
+          update_network_isolation_key_on_redirects) {
     if (from_renderer)
       EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
 
@@ -270,8 +273,11 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
     URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
         [&](URLLoaderInterceptor::RequestParams* params) -> bool {
           base::AutoLock top_frame_origins_lock(lock);
-          (*top_frame_origins)[params->url_request.url] =
-              *params->url_request.top_frame_origin;
+          (*network_isolation_keys)[params->url_request.url] =
+              params->url_request.trusted_network_isolation_key;
+          (*update_network_isolation_key_on_redirects)[params->url_request
+                                                           .url] =
+              params->url_request.update_network_isolation_key_on_redirect;
 
           if (params->url_request.url == final_resource)
             run_loop.Quit();
@@ -825,50 +831,59 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   EXPECT_EQ("\"done\"", done);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BrowserNavigationTopFrameOrigin) {
-  std::map<GURL, url::Origin> top_frame_origins;
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       BrowserNavigationNetworkIsolationKey) {
+  std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
+  std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
+      update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/title1.html"));
 
-  NavigateAndRecordTopFrameOrigins(url, url /* final_resource */,
-                                   false /* from_renderer */,
-                                   &top_frame_origins);
-  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
+  NavigateAndRecordNetworkIsolationKeys(
+      url, url /* final_resource */, false /* from_renderer */,
+      &network_isolation_keys, &update_network_isolation_key_on_redirects);
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+            network_isolation_keys[url]);
+  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
+                kUpdateTopFrameAndInitiatingFrameOrigin,
+            update_network_isolation_key_on_redirects[url]);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, RenderNavigationTopFrameOrigin) {
-  std::map<GURL, url::Origin> top_frame_origins;
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       RenderNavigationNetworkIsolationKey) {
+  std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
+  std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
+      update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/title2.html"));
 
-  NavigateAndRecordTopFrameOrigins(url, url /* final_resource */,
-                                   true /* from_renderer */,
-                                   &top_frame_origins);
-  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
+  NavigateAndRecordNetworkIsolationKeys(
+      url, url /* final_resource */, true /* from_renderer */,
+      &network_isolation_keys, &update_network_isolation_key_on_redirects);
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+            network_isolation_keys[url]);
+  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
+                kUpdateTopFrameAndInitiatingFrameOrigin,
+            update_network_isolation_key_on_redirects[url]);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubframeTopFrameOrigin) {
-  std::map<GURL, url::Origin> top_frame_origins;
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubframeNetworkIsolationKey) {
+  std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
+  std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
+      update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL iframe_document = embedded_test_server()->GetURL("/title1.html");
 
-  NavigateAndRecordTopFrameOrigins(url, iframe_document /* final_resource */,
-                                   false /* from_renderer */,
-                                   &top_frame_origins);
-  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
-  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[iframe_document]);
-}
-
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubresourceTopFrameOrigin) {
-  std::map<GURL, url::Origin> top_frame_origins;
-  GURL url(embedded_test_server()->GetURL("/page_with_iframe_and_image.html"));
-  GURL blank_image = embedded_test_server()->GetURL("/blank.jpg");
-
-  NavigateAndRecordTopFrameOrigins(url, blank_image /* final_resource */,
-                                   false /* from_renderer */,
-                                   &top_frame_origins);
-  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
-  EXPECT_EQ(url::Origin::Create(url),
-            top_frame_origins[embedded_test_server()->GetURL("/image.jpg")]);
-  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[blank_image]);
+  NavigateAndRecordNetworkIsolationKeys(
+      url, iframe_document /* final_resource */, false /* from_renderer */,
+      &network_isolation_keys, &update_network_isolation_key_on_redirects);
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+            network_isolation_keys[url]);
+  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
+                kUpdateTopFrameAndInitiatingFrameOrigin,
+            update_network_isolation_key_on_redirects[url]);
+  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+            network_isolation_keys[iframe_document]);
+  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate,
+            update_network_isolation_key_on_redirects[iframe_document]);
 }
 
 // Helper class to extract the initiator values from URLLoaderFactory calls

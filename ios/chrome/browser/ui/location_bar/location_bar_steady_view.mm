@@ -198,9 +198,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      [_locationContainerView.leadingAnchor
-          constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
-                                      constant:kLocationBarLeadingPadding],
       [_trailingButton.centerYAnchor
           constraintEqualToAnchor:self.centerYAnchor],
       [_locationContainerView.centerYAnchor
@@ -230,8 +227,19 @@ const CGFloat kButtonTrailingSpacing = 10;
         [_leadingButton.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         [_leadingButton.leadingAnchor
             constraintEqualToAnchor:self.leadingAnchor],
+        [_leadingButton.trailingAnchor
+            constraintLessThanOrEqualToAnchor:_locationContainerView
+                                                  .leadingAnchor],
         [_leadingButton.centerYAnchor
             constraintEqualToAnchor:self.centerYAnchor],
+      ]];
+    } else {
+      // Since there is no leading button, |locationContainerView|'s
+      // leadingAnchor will be pinned to |self|.
+      [NSLayoutConstraint activateConstraints:@[
+        [_locationContainerView.leadingAnchor
+            constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
+                                        constant:kLocationBarLeadingPadding],
       ]];
     }
   }

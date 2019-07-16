@@ -21,7 +21,7 @@ class PositionCacheImplPerfTest : public ::testing::Test {
  public:
   PositionCacheImplPerfTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         cache_(task_environment_.GetMockTickClock()) {}
 
   void SetUp() override {

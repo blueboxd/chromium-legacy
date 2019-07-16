@@ -1236,20 +1236,6 @@ Your Google account may have other forms of browsing history like searches and a
         Protected content
       </message>
 
-      <!-- Google translate preferences -->
-      <message name="IDS_GOOGLE_TRANSLATE" desc='Title for the Google Translate settings screen. [CHAR-LIMIT=32]'>
-        Google Translate
-      </message>
-      <message name="IDS_TRANSLATE_PREFS_DESCRIPTION" desc="Translate preference description">
-        When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate.
-      </message>
-      <message name="IDS_TRANSLATE_PREFS_TOAST_DESCRIPTION" desc="Translate settings reset toast when resetting defaults">
-        Your translate settings have been reset.
-      </message>
-      <message name="IDS_RESET_TRANSLATE_DEFAULTS" desc="Title for translate reset menu preference">
-        Reset translate settings
-      </message>
-
       <!-- Storage preferences -->
       <message name="IDS_WEBSITE_SETTINGS_STORAGE" desc="Title for Storage settings which show how much data websites are storing on the user's device. [CHAR-LIMIT=32]">
         Storage

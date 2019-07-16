@@ -3867,15 +3867,6 @@ bool RenderProcessHost::ShouldUseProcessPerSite(BrowserContext* browser_context,
   if (url.SchemeIs(kChromeErrorScheme))
     return true;
 
-  // We want to consolidate particular sites like WebUI even when we are using
-  // the process-per-tab or process-per-site-instance models.
-  // Note: DevTools pages have WebUI type but should not reuse the same host.
-  if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
-          browser_context, url) &&
-      !url.SchemeIs(kChromeDevToolsScheme)) {
-    return true;
-  }
-
   // Otherwise let the content client decide, defaulting to false.
   return GetContentClient()->browser()->ShouldUseProcessPerSite(browser_context,
                                                                 url);

@@ -32,14 +32,15 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
                                                public CanvasImageSource,
                                                public GarbageCollectedMixin {
  public:
-  CanvasRenderingContextHost();
-
   enum HostType {
+    kNone,
     kCanvasHost,
     kOffscreenCanvasHost,
   };
+  CanvasRenderingContextHost(HostType host_type);
 
-  void RecordCanvasSizeToUMA(const IntSize&, HostType);
+  void RecordCanvasSizeToUMA(const IntSize&);
+
   virtual void DetachContext() = 0;
 
   virtual void DidDraw(const FloatRect& rect) = 0;
@@ -98,6 +99,9 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
                               const ImageEncodeOptions*,
                               ExceptionState&) const;
 
+  // blink::CanvasImageSource
+  bool IsOffscreenCanvas() const override;
+
  protected:
   ~CanvasRenderingContextHost() override {}
 
@@ -105,6 +109,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   bool did_fail_to_create_resource_provider_ = false;
   bool did_record_canvas_size_to_uma_ = false;
+  HostType host_type_ = kNone;
 };
 
 }  // namespace blink

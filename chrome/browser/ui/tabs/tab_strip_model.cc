@@ -14,6 +14,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -902,6 +904,17 @@ void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
     // values that are too large.
     if (index < 0 || index > count())
       index = count();
+  }
+
+  // Prevent the tab from being inserted at an index that would make the group
+  // non-contiguous. Most commonly, the new-tab button always attempts to insert
+  // at the end of the tab strip. Extensions can insert at an arbitrary index,
+  // so we have to handle the general case.
+  if (group.has_value()) {
+    auto grouped_tabs = ListTabsInGroup(group.value());
+    DCHECK(base::STLIsSorted(grouped_tabs));
+    index = base::ClampToRange(index, grouped_tabs.front(),
+                               grouped_tabs.back() + 1);
   }
 
   if (ui::PageTransitionTypeIncludingQualifiersIs(transition,

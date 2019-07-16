@@ -12,7 +12,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/main/test_browser.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"

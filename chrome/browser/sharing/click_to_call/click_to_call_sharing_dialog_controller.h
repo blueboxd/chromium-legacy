@@ -33,7 +33,7 @@ class ClickToCallSharingDialogController : public SharingDialogController {
   std::vector<App> GetApps() override;
   void OnDeviceChosen(const SharingDeviceInfo& device,
                       SharingService::SendMessageCallback callback) override;
-  void OnAppChosen(App app) override;
+  void OnAppChosen(const App& app) override;
 
  private:
   content::WebContents* web_contents_;

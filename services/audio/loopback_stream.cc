@@ -68,43 +68,32 @@ LoopbackStream::LoopbackStream(
   observer_.set_disconnect_handler(
       base::BindOnce(&LoopbackStream::OnError, base::Unretained(this)));
 
-  // As of this writing, only machines older than about 10 years won't be able
-  // to produce high-resolution timestamps. In order to avoid adding extra
-  // complexity to the implementation, simply refuse to operate without that
-  // basic level of hardware support.
-  //
   // Construct the components of the AudioDataPipe, for delivering the data to
   // the consumer. If successful, create the FlowNetwork too.
-  if (base::TimeTicks::IsHighResolution()) {
-    base::CancelableSyncSocket foreign_socket;
-    std::unique_ptr<InputSyncWriter> writer = InputSyncWriter::Create(
-        base::BindRepeating(
-            [](const std::string& message) { VLOG(1) << message; }),
-        shared_memory_count, params, &foreign_socket);
-    if (writer) {
-      base::ReadOnlySharedMemoryRegion shared_memory_region =
-          writer->TakeSharedMemoryRegion();
-      mojo::ScopedHandle socket_handle;
-      if (shared_memory_region.IsValid()) {
-        socket_handle = mojo::WrapPlatformFile(foreign_socket.Release());
-        if (socket_handle.is_valid()) {
-          std::move(created_callback)
-              .Run({base::in_place, std::move(shared_memory_region),
-                    std::move(socket_handle)});
-          network_.reset(new FlowNetwork(std::move(flow_task_runner), params,
-                                         std::move(writer)));
-          return;  // Success!
-        }
+  base::CancelableSyncSocket foreign_socket;
+  std::unique_ptr<InputSyncWriter> writer = InputSyncWriter::Create(
+      base::BindRepeating(
+          [](const std::string& message) { VLOG(1) << message; }),
+      shared_memory_count, params, &foreign_socket);
+  if (writer) {
+    base::ReadOnlySharedMemoryRegion shared_memory_region =
+        writer->TakeSharedMemoryRegion();
+    mojo::ScopedHandle socket_handle;
+    if (shared_memory_region.IsValid()) {
+      socket_handle = mojo::WrapPlatformFile(foreign_socket.Release());
+      if (socket_handle.is_valid()) {
+        std::move(created_callback)
+            .Run({base::in_place, std::move(shared_memory_region),
+                  std::move(socket_handle)});
+        network_.reset(new FlowNetwork(std::move(flow_task_runner), params,
+                                       std::move(writer)));
+        return;  // Success!
       }
     }
-  } else /* if (!base::TimeTicks::IsHighResolution()) */ {
-    LOG(ERROR) << "Refusing to start loop-back because this machine cannot "
-                  "provide high-resolution timestamps.";
   }
 
-  // If this point is reached, either the TimeTicks clock is not high resolution
-  // or one or more AudioDataPipe components failed to initialize. Report the
-  // error.
+  // If this point is reached, one or more AudioDataPipe components failed to
+  // initialize. Report the error.
   std::move(created_callback).Run(nullptr);
   OnError();
 }
@@ -174,6 +163,17 @@ void LoopbackStream::OnMemberJoinedGroup(LoopbackGroupMember* member) {
     return;
   }
 
+  if (!base::TimeTicks::IsHighResolution()) {
+    // As of this writing, only machines manufactured before 2008 won't be able
+    // to produce high-resolution timestamps. Since the buffer management logic
+    // (to mitigate overruns/underruns) depends on them to function correctly,
+    // simply return early (i.e., never start snooping on the |member|).
+    TRACE_EVENT_INSTANT0("audio",
+                         "LoopbackStream::OnMemberJoinedGroup Rejected",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return;
+  }
+
   TRACE_EVENT1("audio", "LoopbackStream::OnMemberJoinedGroup", "member",
                member);
 
@@ -194,10 +194,14 @@ void LoopbackStream::OnMemberLeftGroup(LoopbackGroupMember* member) {
     return;
   }
 
+  const auto snoop_it = snoopers_.find(member);
+  if (snoop_it == snoopers_.end()) {
+    // See comments about "high-resolution timestamps" in OnMemberJoinedGroup().
+    return;
+  }
+
   TRACE_EVENT1("audio", "LoopbackStream::OnMemberLeftGroup", "member", member);
 
-  const auto snoop_it = snoopers_.find(member);
-  DCHECK(snoop_it != snoopers_.end());
   SnooperNode* const snooper = &(snoop_it->second);
   member->StopSnooping(snooper);
   network_->RemoveInput(snooper);

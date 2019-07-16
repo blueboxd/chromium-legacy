@@ -34,6 +34,7 @@
 #endif
 
 class AccessibilityLabelsMenuObserver;
+class ClickToCallContextMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;
@@ -287,6 +288,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // Send tab to self submenu.
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
       send_tab_to_self_sub_menu_model_;
+
+  // Click to call menu observer.
+  std::unique_ptr<ClickToCallContextMenuObserver>
+      click_to_call_context_menu_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenu);
 };

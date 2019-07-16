@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_event.h"
 
-#include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_init.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_event_init.h"
 
 namespace blink {
 
@@ -19,7 +19,7 @@ PushSubscriptionChangeEvent::PushSubscriptionChangeEvent(
 
 PushSubscriptionChangeEvent::PushSubscriptionChangeEvent(
     const AtomicString& type,
-    PushSubscriptionChangeInit* initializer)
+    PushSubscriptionChangeEventInit* initializer)
     : ExtendableEvent(type, initializer) {
   if (initializer->hasNewSubscription())
     new_subscription_ = initializer->newSubscription();

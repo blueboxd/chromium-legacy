@@ -30,7 +30,7 @@ mojom("interfaces") {
     "//skia/public/interfaces",
     "//ui/base/ime/chromeos/public/interfaces",
     "//ui/base/mojom",
-    "//ui/display/mojo:interfaces",
+    "//ui/display/mojom:mojom",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/range/mojo",

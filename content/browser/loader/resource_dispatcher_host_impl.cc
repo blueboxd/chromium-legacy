@@ -1439,7 +1439,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   new_request->set_method(info.common_params.method);
   new_request->set_site_for_cookies(info.site_for_cookies);
-  new_request->set_top_frame_origin(info.top_frame_origin);
+  new_request->set_network_isolation_key(info.network_isolation_key);
   new_request->set_initiator(info.common_params.initiator_origin);
   new_request->set_upgrade_if_insecure(info.upgrade_if_insecure);
   if (info.is_main_frame) {

@@ -9,4 +9,5 @@ include_rules = [
   "+content/public/test",
   "+net",
   "+net/test",
+  "+services/network/public/cpp",
 ]

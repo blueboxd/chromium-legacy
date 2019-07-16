@@ -418,6 +418,7 @@ class CONTENT_EXPORT RenderWidget
   void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
   void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
+  void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
   bool RequestPointerLock() override;
   void RequestPointerUnlock() override;

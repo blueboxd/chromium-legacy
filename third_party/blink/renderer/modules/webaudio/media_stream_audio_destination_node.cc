@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 
@@ -176,7 +176,7 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(
     uint32_t number_of_channels)
     : AudioBasicInspectorNode(context),
       source_(MakeGarbageCollected<MediaStreamSource>(
-          "WebAudio-" + CreateCanonicalUUIDString(),
+          "WebAudio-" + WTF::CreateCanonicalUUIDString(),
           MediaStreamSource::kTypeAudio,
           "MediaStreamAudioDestinationNode",
           false,

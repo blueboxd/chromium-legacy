@@ -21,7 +21,7 @@ NET_EXPORT bool IsPortValid(int port);
 
 // Returns true if the port is in the range [0, 1023]. These ports are
 // registered by IANA and typically need root access to listen on.
-bool IsWellKnownPort(int port);
+NET_EXPORT bool IsWellKnownPort(int port);
 
 // Checks if the port is allowed for the specified scheme.  Ports set as allowed
 // with SetExplicitlyAllowedPorts() or by using ScopedPortException() will be

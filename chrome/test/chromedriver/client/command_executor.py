@@ -160,8 +160,6 @@ class Command(object):
   RELEASE_ACTIONS = (_Method.DELETE, '/session/:sessionId/actions')
   GET_LOG = (_Method.POST, '/session/:sessionId/se/log')
   GET_AVAILABLE_LOG_TYPES = (_Method.GET, '/session/:sessionId/se/log/types')
-  IS_AUTO_REPORTING = (_Method.GET, '/session/:sessionId/autoreport')
-  SET_AUTO_REPORTING = (_Method.POST, '/session/:sessionId/autoreport')
   GET_SESSION_LOGS = (_Method.POST, '/logs')
   STATUS = (_Method.GET, '/status')
   SET_NETWORK_CONNECTION = (
@@ -170,6 +168,8 @@ class Command(object):
       _Method.POST, '/session/:sessionId/chromium/send_command_and_get_result')
   GENERATE_TEST_REPORT = (
       _Method.POST, '/session/:sessionId/reporting/generate_test_report')
+  ADD_VIRTUAL_AUTHENTICATOR = (
+      _Method.POST, '/session/:sessionId/webauthn/authenticator')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

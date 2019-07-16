@@ -5,6 +5,7 @@
 // https://wicg.github.io/native-file-system/#filesystemdirectoryhandle
 [
     Exposed=(Window,Worker),
+    SecureContext,
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=NativeFileSystemDirectoryHandle
 ] interface FileSystemDirectoryHandle : FileSystemHandle {

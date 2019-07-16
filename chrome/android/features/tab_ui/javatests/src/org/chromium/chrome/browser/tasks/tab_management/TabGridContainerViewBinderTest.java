@@ -272,7 +272,7 @@ public class TabGridContainerViewBinderTest extends DummyUiActivityTestCase {
     /**
      * Should be the same as {@link ValueAnimator#areAnimatorsEnabled}, which requires API level 26.
      */
-    public static boolean areAnimatorsEnabled() {
+    private static boolean areAnimatorsEnabled() {
         // We default to assuming that animations are enabled in case ANIMATOR_DURATION_SCALE is not
         // defined.
         final float defaultScale = 1f;

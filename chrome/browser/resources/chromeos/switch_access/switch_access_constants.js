@@ -136,8 +136,24 @@ SAConstants.MenuAction = {
   DICTATION: 'dictation',
   // Increment the value of an input field.
   INCREMENT: chrome.automation.ActionType.INCREMENT,
+  // Move text caret to the beginning of the text field.
+  JUMP_TO_BEGINNING_OF_TEXT: 'jumpToBeginningOfText',
+  // Move text caret to the end of the text field.
+  JUMP_TO_END_OF_TEXT: 'jumpToEndOfText',
   // Open and jump to the virtual keyboard
   KEYBOARD: 'keyboard',
+  // Move text caret one character backward.
+  MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
+  // Move text caret one word backward.
+  MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
+  // Move text caret one line down.
+  MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
+  // Move text caret one character forward.
+  MOVE_FORWARD_ONE_CHAR_OF_TEXT: 'moveForwardOneCharOfText',
+  // Move text caret one word forward.
+  MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
+  // Move text caret one line up.
+  MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
   // Open and jump to the Switch Access settings in a new Chrome tab.
   OPTIONS: 'options',
   // Scroll the current element (or its ancestor) logically backwards.
@@ -169,4 +185,19 @@ SAConstants.EMPTY_LOCATION = {
   top: 0,
   width: 0,
   height: 0
+};
+
+/**
+ * Defines the key codes of all key events to be sent.
+ * Currently used for text navigation actions.
+ * @enum {number}
+ * @const
+ */
+SAConstants.KeyCode = {
+  END: 35,
+  HOME: 36,
+  LEFT_ARROW: 37,
+  UP_ARROW: 38,
+  RIGHT_ARROW: 39,
+  DOWN_ARROW: 40
 };

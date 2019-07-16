@@ -169,7 +169,7 @@ class GaiaOAuthClientTest : public testing::Test {
  protected:
   GaiaOAuthClientTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     client_info_.client_id = "test_client_id";

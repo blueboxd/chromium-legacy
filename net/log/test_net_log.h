@@ -20,33 +20,42 @@ namespace net {
 
 struct NetLogSource;
 
-// TestNetLog is NetLog subclass which records all NetLog events that occur and
-// their parameters.  It is intended for testing only, and is part of the
-// net_test_support project.
-class TestNetLog : public NetLog {
+// NetLog subclass that attaches a single observer (this) to record NetLog
+// events and their parameters into an in-memory buffer. The NetLog is observed
+// at kSensitive level by default, however can be changed with
+// SetObserverCaptureMode().
+//
+// This class is for testing only.
+class TestNetLog : public NetLog, public NetLog::ThreadSafeObserver {
  public:
   TestNetLog();
   ~TestNetLog() override;
 
-  void SetCaptureMode(NetLogCaptureMode capture_mode);
+  void SetObserverCaptureMode(NetLogCaptureMode capture_mode);
 
-  // Below methods are forwarded to test_net_log_observer_.
+  // ThreadSafeObserver implementation:
+  void OnAddEntry(const NetLogEntry& entry) override;
+
+  // Returns the list of all observed NetLog entries.
   void GetEntries(TestNetLogEntry::List* entry_list) const;
+
+  // Fills |entry_list| with all entries in the log from the specified Source.
   void GetEntriesForSource(NetLogSource source,
                            TestNetLogEntry::List* entry_list) const;
+
+  // Returns the number of entries in the log.
   size_t GetSize() const;
+
   void Clear();
 
-  // Returns a NetLog observer that will write entries to the TestNetLog's event
-  // store. For testing code that bypasses NetLogs and adds events directly to
+  // Returns the NetLog observer responsible for recording the NetLog event
+  // stream. For testing code that bypasses NetLogs and adds events directly to
   // an observer.
-  NetLog::ThreadSafeObserver* GetObserver() const;
+  NetLog::ThreadSafeObserver* GetObserver();
 
  private:
-  // The underlying observer class that does all the work.
-  class Observer;
-
-  std::unique_ptr<Observer> observer_;
+  mutable base::Lock lock_;
+  TestNetLogEntry::List entry_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetLog);
 };
@@ -76,8 +85,8 @@ class BoundTestNetLog {
 
   void Clear();
 
-  // Sets the capture mode of the underlying TestNetLog.
-  void SetCaptureMode(NetLogCaptureMode capture_mode);
+  // Sets the observer capture mode of the underlying TestNetLog.
+  void SetObserverCaptureMode(NetLogCaptureMode capture_mode);
 
  private:
   TestNetLog test_net_log_;

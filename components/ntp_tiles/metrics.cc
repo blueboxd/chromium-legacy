@@ -28,7 +28,6 @@ const char kHistogramWhitelistName[] = "whitelist";
 const char kHistogramHomepageName[] = "homepage";
 const char kHistogramCustomLinksName[] = "custom_links";
 const char kHistogramExploreName[] = "explore";
-const char kHistogramSearchName[] = "search_page";
 
 // Suffixes for the various icon types.
 const char kTileTypeSuffixIconColor[] = "IconsColor";
@@ -61,8 +60,6 @@ std::string GetSourceHistogramName(TileSource source) {
       return kHistogramCustomLinksName;
     case TileSource::EXPLORE:
       return kHistogramExploreName;
-    case TileSource::SEARCH_PAGE:
-      return kHistogramSearchName;
   }
   NOTREACHED();
   return std::string();

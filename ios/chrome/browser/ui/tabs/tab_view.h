@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/tabs/tab_view_delegate.h"
 
 @class GTMFadeTruncatingLabel;

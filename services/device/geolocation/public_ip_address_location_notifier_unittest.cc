@@ -123,7 +123,7 @@ class PublicIpAddressLocationNotifierTest : public testing::Test {
 
   // Use a TaskRunner on which we can fast-forward time.
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   // Test NetworkConnectionTracker instance.
   std::unique_ptr<network::TestNetworkConnectionTracker>

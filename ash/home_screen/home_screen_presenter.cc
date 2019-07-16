@@ -8,8 +8,6 @@
 
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller_impl.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
@@ -54,24 +52,11 @@ class HomeScreenPresenter::OverviewAnimationMetricsReporter
 
   void Start(bool enter) {
     enter_ = enter;
-    kiosk_next_enabled_ =
-        Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
   }
 
   void Report(int value) override {
     // Emit the correct histogram. Note that we have multiple macro instances
     // since each macro instance should be called with a runtime constant.
-    if (kiosk_next_enabled_) {
-      if (enter_) {
-        UMA_HISTOGRAM_PERCENTAGE(
-            "KioskNextHome.StateTransition.AnimationSmoothness.EnterOverview",
-            value);
-      } else {
-        UMA_HISTOGRAM_PERCENTAGE(
-            "KioskNextHome.StateTransition.AnimationSmoothness.ExitOverview",
-            value);
-      }
-    } else {
       if (enter_) {
         UMA_HISTOGRAM_PERCENTAGE(
             "Apps.StateTransition.AnimationSmoothness.EnterOverview", value);
@@ -79,12 +64,10 @@ class HomeScreenPresenter::OverviewAnimationMetricsReporter
         UMA_HISTOGRAM_PERCENTAGE(
             "Apps.StateTransition.AnimationSmoothness.ExitOverview", value);
       }
-    }
   }
 
  private:
   bool enter_ = false;
-  bool kiosk_next_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewAnimationMetricsReporter);
 };

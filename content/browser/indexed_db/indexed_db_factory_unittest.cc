@@ -205,7 +205,7 @@ class IndexedDBFactoryTestWithMockTime : public IndexedDBFactoryTest {
  public:
   IndexedDBFactoryTestWithMockTime()
       : IndexedDBFactoryTest(std::make_unique<TestBrowserThreadBundle>(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME)) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME)) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBFactoryTestWithMockTime);

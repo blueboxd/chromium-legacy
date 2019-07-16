@@ -429,7 +429,7 @@ class GCMClientImplTest : public testing::Test,
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   // Must be declared first so that it is destroyed last. Injected to
   // GCM client.

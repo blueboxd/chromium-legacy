@@ -25,7 +25,6 @@ class ToggleImageButton;
 
 namespace ash {
 
-class LockContentsView;
 class MediaControlsHeaderView;
 class NonAccessibleView;
 
@@ -35,8 +34,27 @@ class ASH_EXPORT LockScreenMediaControlsView
       public media_session::mojom::MediaControllerImageObserver,
       public views::ButtonListener {
  public:
+  using MediaControlsEnabled = base::RepeatingCallback<bool()>;
+
+  struct Callbacks {
+    Callbacks();
+    ~Callbacks();
+
+    // Called in |MediaSessionInfoChanged| to determine the visibility of the
+    // media controls.
+    MediaControlsEnabled media_controls_enabled;
+
+    // Called when the controls should be hidden on the lock screen.
+    base::RepeatingClosure hide_media_controls;
+
+    // Called when the controls should be drawn on the lock screen.
+    base::RepeatingClosure show_media_controls;
+
+    DISALLOW_COPY_AND_ASSIGN(Callbacks);
+  };
+
   LockScreenMediaControlsView(service_manager::Connector* connector,
-                              LockContentsView* view);
+                              const Callbacks& callbacks);
   ~LockScreenMediaControlsView() override;
 
   // views::View:
@@ -96,9 +114,6 @@ class ASH_EXPORT LockScreenMediaControlsView
   // necessary.
   void SetIsPlaying(bool playing);
 
-  // Lock screen view which this view belongs to.
-  LockContentsView* const view_;
-
   // Used to connect to the Media Session service.
   service_manager::Connector* const connector_;
 
@@ -139,6 +154,11 @@ class ASH_EXPORT LockScreenMediaControlsView
   views::ImageView* session_artwork_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
+
+  // Callbacks.
+  const MediaControlsEnabled media_controls_enabled_;
+  const base::RepeatingClosure hide_media_controls_;
+  const base::RepeatingClosure show_media_controls_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

@@ -241,6 +241,29 @@ class ProcessPerfResults_HardenedUnittest(unittest.TestCase):
     self.assertEqual(test_results_list, [])
 
   @decorators.Disabled('chromeos')  # crbug.com/956178
+  def test_last_shard_has_no_tests(self):
+    benchmark_name = 'benchmark.example'
+    temp_parent_dir = tempfile.mkdtemp(suffix='test_results_outdir')
+    try:
+      shard1_dir = os.path.join(temp_parent_dir, 'shard1')
+      os.mkdir(shard1_dir)
+      shard2_dir = os.path.join(temp_parent_dir, 'shard2')
+      os.mkdir(shard2_dir)
+      with open(os.path.join(shard1_dir, 'test_results.json'), 'w') as fh:
+        fh.write(
+            '{"version": 3, "tests":{"v8.browsing_desktop-future": "blah"}}')
+      with open(os.path.join(shard2_dir, 'test_results.json'), 'w') as fh:
+        fh.write('{"version": 3,"tests":{}}')
+      directory_map = {
+          benchmark_name: [shard1_dir, shard2_dir]}
+      benchmark_enabled_map = ppr_module._handle_perf_json_test_results(
+          directory_map, [])
+      self.assertTrue(benchmark_enabled_map[benchmark_name],
+                      'Regression test for crbug.com/984565')
+    finally:
+      shutil.rmtree(temp_parent_dir)
+
+  @decorators.Disabled('chromeos')  # crbug.com/956178
   def test_merge_perf_results_IOError(self):
     results_filename = None
     directories = ['directory_that_does_not_exist']

@@ -29,14 +29,23 @@ using testing::DeleteArg;
 
 namespace {
 
-constexpr char kScriptHtml[] =
-    "<html>"
-    "<head>"
-    "<script src='data:foo'></script>"
-    "</head>"
-    "<body>"
-    "</body>"
-    "</html>";
+constexpr char kScriptHtml[] = R"HTML(
+  <html>
+  <head>
+    <script src='data:foo'></script>
+  </head>
+  <body></body>
+  </html>;
+)HTML";
+
+constexpr char kScriptWithSrcHtml[] = R"HTML(
+  <html>
+  <head>
+    <script src="http://www.example.com/script.js"></script>
+  </head>
+  <body></body>
+  </html>
+)HTML";
 
 class MockContentSettingsObserver : public ContentSettingsObserver {
  public:
@@ -115,6 +124,11 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
 class ContentSettingsObserverBrowserTest : public ChromeRenderViewTest {
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
+
+    // Set up a fake url loader factory to ensure that script loader can create
+    // a WebURLLoader.
+    CreateFakeWebURLLoaderFactory();
+
     // Unbind the ContentSettingsRenderer interface that would be registered by
     // the ContentSettingsObserver created when the render frame is created.
     view_->GetMainRenderFrame()
@@ -360,6 +374,29 @@ TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsAllowScripts) {
 
   // Load a page which contains a script.
   LoadHTML(kScriptHtml);
+
+  // Verify that the script was not blocked.
+  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
+      ChromeViewHostMsg_ContentBlocked::ID));
+}
+
+TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsAllowScriptsWithSrc) {
+  // Set the content settings for scripts.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& script_setting_rules =
+      content_setting_rules.script_rules;
+  script_setting_rules.push_back(ContentSettingPatternSource(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(
+          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      std::string(), false));
+
+  ContentSettingsObserver* observer =
+      ContentSettingsObserver::Get(view_->GetMainRenderFrame());
+  observer->SetContentSettingRules(&content_setting_rules);
+
+  // Load a page which contains a script.
+  LoadHTML(kScriptWithSrcHtml);
 
   // Verify that the script was not blocked.
   EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(

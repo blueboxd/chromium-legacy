@@ -374,14 +374,16 @@ URLLoader::URLLoader(
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       custom_proxy_use_alternate_proxy_list_(
           request.custom_proxy_use_alternate_proxy_list),
-      fetch_window_id_(request.fetch_window_id) {
+      fetch_window_id_(request.fetch_window_id),
+      update_network_isolation_key_on_redirect_(
+          request.update_network_isolation_key_on_redirect) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     CHECK(!url_loader_client_.internal_state()
-                    ->handle()
-                    .QuerySignalsState()
-                    .peer_remote())
+               ->handle()
+               .QuerySignalsState()
+               .peer_remote())
         << "URLLoader must not be used by the renderer when network service is "
         << "disabled, as that skips security checks in ResourceDispatcherHost. "
         << "The only acceptable usage is the browser using SimpleURLLoader.";
@@ -411,7 +413,15 @@ URLLoader::URLLoader(
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
+  // Populate network isolation key from the factory params or from the resource
+  // request for navigation resources.
+  if (!request.trusted_network_isolation_key.IsEmpty()) {
+    DCHECK(!factory_params_->network_isolation_key);
+    url_request_->set_network_isolation_key(
+        request.trusted_network_isolation_key);
+  }
   if (factory_params_->network_isolation_key) {
+    DCHECK(request.trusted_network_isolation_key.IsEmpty());
     url_request_->set_network_isolation_key(
         factory_params_->network_isolation_key.value());
   }
@@ -685,6 +695,20 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
   if (!modified_headers.IsEmpty())
     LogConcerningRequestHeaders(modified_headers,
                                 true /* added_during_redirect */);
+
+  // See if network isolation key needs to be updated.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information
+  // TODO(crbug.com/950069): Also add the case for kUpdateInitiatingFrameOrigin.
+  if ((update_network_isolation_key_on_redirect_ ==
+       mojom::UpdateNetworkIsolationKeyOnRedirect::
+           kUpdateTopFrameAndInitiatingFrameOrigin) &&
+      !url_request_->network_isolation_key().IsEmpty()) {
+    url::Origin new_origin = url::Origin::Create(*(deferred_redirect_url_));
+    url_request_->set_network_isolation_key(
+        net::NetworkIsolationKey(new_origin /* top frame origin */,
+                                 new_origin /* initiating frame origin */));
+  }
 
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;

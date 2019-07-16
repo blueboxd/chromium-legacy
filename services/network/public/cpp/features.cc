@@ -81,6 +81,13 @@ const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P{
 const base::Feature kCORBProtectionSniffing{"CORBProtectionSniffing",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When kProactivelyThrottleLowPriorityRequests is enabled,
+// resource scheduler proactively throttles low priority requests to avoid
+// network contention with high priority requests that may arrive soon.
+const base::Feature kProactivelyThrottleLowPriorityRequests{
+    "ProactivelyThrottleLowPriorityRequests",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

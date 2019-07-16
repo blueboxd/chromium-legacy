@@ -22,7 +22,8 @@ class StubLogManager : public LogManager {
   // LogManager
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override;
   void SetSuspended(bool suspended) override;
-  void LogSavePasswordProgress(const std::string& text) const override;
+  void LogTextMessage(const std::string& text) const override;
+  void LogEntry(base::Value&& entry) const override;
   bool IsLoggingActive() const override;
 
   DISALLOW_COPY_AND_ASSIGN(StubLogManager);

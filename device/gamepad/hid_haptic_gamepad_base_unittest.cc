@@ -127,7 +127,7 @@ class HidHapticGamepadBaseTest : public testing::Test {
   mojom::GamepadHapticsResult second_callback_result_;
   std::unique_ptr<FakeHidHapticGamepad> gamepad_;
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
   DISALLOW_COPY_AND_ASSIGN(HidHapticGamepadBaseTest);
 };

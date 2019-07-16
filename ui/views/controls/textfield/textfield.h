@@ -292,6 +292,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // TextfieldModel::Delegate overrides:
   void OnCompositionTextConfirmedOrCleared() override;
+  void OnTextChanged() override;
 
   // ContextMenuController overrides:
   void ShowContextMenuForViewImpl(View* source,
@@ -382,6 +383,9 @@ class VIEWS_EXPORT Textfield : public View,
       const base::string16& active_composition_text,
       bool is_composition_committed) override;
 #endif
+
+  views::PropertyChangedSubscription AddModelChangedCallback(
+      views::PropertyChangedCallback callback);
 
  protected:
   // Inserts or appends a character in response to an IME operation.

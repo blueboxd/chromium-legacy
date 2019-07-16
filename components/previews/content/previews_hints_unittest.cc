@@ -14,10 +14,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/host_filter.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
@@ -32,12 +34,13 @@ namespace {
 const int kBlackBlacklistBloomFilterNumHashFunctions = 7;
 const int kBlackBlacklistBloomFilterNumBits = 511;
 
-void PopulateBlackBlacklistBloomFilter(BloomFilter* bloom_filter) {
+void PopulateBlackBlacklistBloomFilter(
+    optimization_guide::BloomFilter* bloom_filter) {
   bloom_filter->Add("black.com");
 }
 
 void AddBlacklistBloomFilterToConfig(
-    const BloomFilter& blacklist_bloom_filter,
+    const optimization_guide::BloomFilter& blacklist_bloom_filter,
     int num_hash_functions,
     int num_bits,
     optimization_guide::proto::Configuration* config) {
@@ -57,7 +60,7 @@ void AddBlacklistBloomFilterToConfig(
 
 }  // namespace
 
-class TestHostFilter : public previews::HostFilter {
+class TestHostFilter : public optimization_guide::HostFilter {
  public:
   explicit TestHostFilter(std::string single_host_match)
       : HostFilter(nullptr), single_host_match_(single_host_match) {}
@@ -290,8 +293,9 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     kBlackBlacklistBloomFilterNumBits);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
   PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
 
   optimization_guide::proto::Configuration config;
@@ -316,8 +320,9 @@ TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     kBlackBlacklistBloomFilterNumBits);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
   PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
 
   // Set num_bits in config to one more than the size of the data.
@@ -351,8 +356,8 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
           8 +
       1;
 
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     too_many_bits);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits);
   PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
 
   optimization_guide::proto::Configuration config;

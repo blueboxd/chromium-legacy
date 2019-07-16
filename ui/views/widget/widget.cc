@@ -628,6 +628,8 @@ void Widget::Show() {
   const ui::Layer* layer = GetLayer();
   TRACE_EVENT1("views", "Widget::Show", "layer",
                layer ? layer->name() : "none");
+  ui::WindowShowState preferred_show_state =
+      CanActivate() ? ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_INACTIVE;
   if (non_client_view_) {
     // While initializing, the kiosk mode will go to full screen before the
     // widget gets shown. In that case we stay in full screen mode, regardless
@@ -644,11 +646,9 @@ void Widget::Show() {
     // |saved_show_state_| only applies the first time the window is shown.
     // If we don't reset the value the window may be shown maximized every time
     // it is subsequently shown after being hidden.
-    saved_show_state_ = ui::SHOW_STATE_NORMAL;
+    saved_show_state_ = preferred_show_state;
   } else {
-    native_widget_->Show(
-        CanActivate() ? ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_INACTIVE,
-        gfx::Rect());
+    native_widget_->Show(preferred_show_state, gfx::Rect());
   }
 }
 

@@ -54,7 +54,7 @@ class ModuleInspectorTest : public testing::Test {
  public:
   ModuleInspectorTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   // Callback for ModuleInspector.
   void OnModuleInspected(const ModuleInfoKey& module_key,

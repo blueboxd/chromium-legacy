@@ -206,6 +206,8 @@ jumbo_component("wtf") {
     "typed_arrays/uint32_array.h",
     "typed_arrays/uint8_array.h",
     "typed_arrays/uint8_clamped_array.h",
+    "uuid.cc",
+    "uuid.h",
     "vector.h",
     "vector_traits.h",
     "wtf.cc",
@@ -316,6 +318,7 @@ jumbo_source_set("wtf_unittests_sources") {
     "threading_primitives_test.cc",
     "tree_node_test.cc",
     "type_traits_test.cc",
+    "uuid_test.cc",
     "vector_test.cc",
   ]
 

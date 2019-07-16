@@ -50,10 +50,9 @@ class MainThreadMetricsHelperTest : public testing::Test {
  public:
   MainThreadMetricsHelperTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {
-  }
+                QUEUED) {}
 
   ~MainThreadMetricsHelperTest() override = default;
 

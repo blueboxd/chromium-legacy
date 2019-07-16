@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/ranges.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -57,6 +58,7 @@ void AnalyzeZipFile(base::File zip_file,
   bool advanced = true;
   results->file_count = 0;
   results->directory_count = 0;
+  base::CheckedNumeric<uint64_t> total_uncompressed_size = 0u;
   for (; reader.HasMore(); advanced = reader.AdvanceToNextEntry()) {
     if (!advanced) {
       DVLOG(1) << "Could not advance to next entry, aborting zip scan.";
@@ -82,10 +84,26 @@ void AnalyzeZipFile(base::File zip_file,
         writer.file_length(), reader.current_entry_info()->is_encrypted(),
         results);
 
+    UMA_HISTOGRAM_MEMORY_LARGE_MB("SBClientDownload.ZipEntrySize",
+                                  writer.file_length());
+    total_uncompressed_size += writer.file_length();
+
     if (reader.current_entry_info()->is_directory())
       results->directory_count++;
     else
       results->file_count++;
+  }
+
+  // We represent the size as a percent, so multiply by 100, then check for
+  // overflow.
+  total_uncompressed_size *= 100;
+  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipArchiveUncompressedSizeOverflow",
+                        !total_uncompressed_size.IsValid());
+  if (total_uncompressed_size.IsValid() && zip_file.GetLength() > 0) {
+    UMA_HISTOGRAM_COUNTS_10000(
+        "SBClientDownload.ZipCompressionRatio",
+        static_cast<uint64_t>(total_uncompressed_size.ValueOrDie()) /
+            zip_file.GetLength());
   }
 
   results->success = !timeout;

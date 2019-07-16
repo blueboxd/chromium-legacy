@@ -105,7 +105,7 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
                                      const ui::LocatedEvent* event) {
-  ink_drop_event_handler_.AnimateInkDrop(state, event);
+  GetEventHandler()->AnimateInkDrop(state, event);
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
@@ -170,9 +170,8 @@ InkDrop* InkDropHostView::GetInkDrop() {
 }
 
 gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
-  return ink_drop_event_handler_.GetLastRippleTriggeringEvent()
-             ? ink_drop_event_handler_.GetLastRippleTriggeringEvent()
-                   ->location()
+  return GetEventHandler()->GetLastRippleTriggeringEvent()
+             ? GetEventHandler()->GetLastRippleTriggeringEvent()->location()
              : GetMirroredRect(GetContentsBounds()).CenterPoint();
 }
 
@@ -193,6 +192,17 @@ gfx::Size InkDropHostView::CalculateLargeInkDropSize(
   // SquareInkDropRipple.
   constexpr float kLargeInkDropScale = 1.333f;
   return gfx::ScaleToCeiledSize(gfx::Size(small_size), kLargeInkDropScale);
+}
+
+const InkDropEventHandler* InkDropHostView::GetEventHandler() const {
+  if (ink_drop_event_handler_override_)
+    return ink_drop_event_handler_override_;
+  return &ink_drop_event_handler_;
+}
+
+InkDropEventHandler* InkDropHostView::GetEventHandler() {
+  return const_cast<InkDropEventHandler*>(
+      const_cast<const InkDropHostView*>(this)->GetEventHandler());
 }
 
 BEGIN_METADATA(InkDropHostView)

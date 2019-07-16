@@ -28,6 +28,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"

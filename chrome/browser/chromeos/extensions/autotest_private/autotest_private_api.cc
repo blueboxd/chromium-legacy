@@ -428,7 +428,7 @@ AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
   base::Value all_policies_array = policy::GetAllPolicyValuesAsDictionary(
       browser_context(), true /* with_user_policies */,
       false /* convert_values */, true /* with_device_data */,
-      false /* pretty_print */);
+      false /* pretty_print */, true /* convert_types */);
 
   return RespondNow(OneArgument(
       base::Value::ToUniquePtrValue(std::move(all_policies_array))));

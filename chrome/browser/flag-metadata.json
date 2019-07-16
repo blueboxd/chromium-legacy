@@ -851,11 +851,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-assistant-voice-match",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-async-dns",
     "owners": [ "ericorth", "net-dev" ],
     "expiry_milestone": 81
@@ -1766,6 +1761,11 @@
     // This flag is used for testing new touchscreen ChromeOS hardware, both by
     // dev and QA.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-two-panes-start-surface",
+    "owners": [ "gogerald"],
+    "expiry_milestone": 83
   },
   {
     "name": "enable-unsafe-webgpu",

@@ -26,7 +26,7 @@ class NotificationImageRetainerTest : public ::testing::Test {
  public:
   NotificationImageRetainerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
   ~NotificationImageRetainerTest() override = default;

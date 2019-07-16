@@ -4264,7 +4264,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::BindRepeating(
-      &media::MediaMetricsProvider::Create, frame_tree_node_->IsMainFrame(),
+      &media::MediaMetricsProvider::Create,
+      GetProcess()->GetBrowserContext()->IsOffTheRecord()
+          ? media::MediaMetricsProvider::BrowsingMode::kIncognito
+          : media::MediaMetricsProvider::BrowsingMode::kNormal,
+      frame_tree_node_->IsMainFrame()
+          ? media::MediaMetricsProvider::FrameStatus::kTopFrame
+          : media::MediaMetricsProvider::FrameStatus::kNotTopFrame,
       base::BindRepeating(
           &RenderFrameHostDelegate::GetUkmSourceIdForLastCommittedSource,
           // This callback is only executed when Create() is called, during
@@ -4321,18 +4327,13 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(base::BindRepeating(
         [](RenderFrameHostImpl* frame,
            blink::mojom::NativeFileSystemManagerRequest request) {
-          scoped_refptr<NativeFileSystemManagerImpl> manager =
+          NativeFileSystemManagerImpl::BindRequestFromUIThread(
               static_cast<StoragePartitionImpl*>(
-                  frame->GetProcess()->GetStoragePartition())
-                  ->GetNativeFileSystemManager();
-          base::PostTaskWithTraits(
-              FROM_HERE, {BrowserThread::IO},
-              base::BindOnce(
-                  &NativeFileSystemManagerImpl::BindRequest, std::move(manager),
-                  NativeFileSystemManagerImpl::BindingContext(
-                      frame->GetLastCommittedOrigin(),
-                      frame->GetProcess()->GetID(), frame->GetRoutingID()),
-                  std::move(request)));
+                  frame->GetProcess()->GetStoragePartition()),
+              NativeFileSystemManagerImpl::BindingContext(
+                  frame->GetLastCommittedOrigin(), frame->GetProcess()->GetID(),
+                  frame->GetRoutingID()),
+              std::move(request));
         },
         base::Unretained(this)));
   }
@@ -4881,6 +4882,8 @@ void RenderFrameHostImpl::CommitNavigation(
   // common_params.url currently leads to an opaque origin to be created. Once
   // this is fixed, the origin which these navigations eventually get committed
   // to will be available here as well.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
     base::Optional<url::Origin> top_frame_origin =
         frame_tree_node_->IsMainFrame() ? url::Origin::Create(common_params.url)

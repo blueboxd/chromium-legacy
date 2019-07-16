@@ -427,7 +427,7 @@ void DWriteFontProxyImpl::MatchUniqueFont(
   if (FAILED(hr))
     return;
 
-  DCHECK(system_font_set->GetFontCount() > 0);
+  DCHECK_GT(system_font_set->GetFontCount(), 0U);
 
   mswr::ComPtr<IDWriteFontSet> filtered_set;
 
@@ -435,8 +435,7 @@ void DWriteFontProxyImpl::MatchUniqueFont(
                      &unique_font_name](DWRITE_FONT_PROPERTY_ID property_id) {
     TRACE_EVENT0("dwrite,fonts",
                  "DWriteFontProxyImpl::MatchUniqueFont::filter_set");
-    std::wstring unique_font_name_wide =
-        base::UTF16ToWide(unique_font_name).c_str();
+    std::wstring unique_font_name_wide = base::UTF16ToWide(unique_font_name);
     DWRITE_FONT_PROPERTY search_property = {property_id,
                                             unique_font_name_wide.c_str(), L""};
     // GetMatchingFonts() matches all languages according to:

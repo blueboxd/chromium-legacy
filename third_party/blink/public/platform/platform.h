@@ -562,6 +562,8 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  virtual bool RTCSmoothnessAlgorithmEnabled() { return true; }
+
   // WebRTC ----------------------------------------------------------
 
   // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.

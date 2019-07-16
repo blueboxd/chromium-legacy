@@ -3050,6 +3050,11 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout)},
 
 #if defined(OS_ANDROID)
+    {"enable-two-panes-start-surface",
+     flag_descriptions::kTwoPanesStartSurfaceAndroidName,
+     flag_descriptions::kTwoPanesStartSurfaceAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTwoPanesStartSurfaceAndroid)},
+
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
      flag_descriptions::kHorizontalTabSwitcherAndroidDescription, kOsAndroid,
@@ -3477,11 +3482,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableGoogleAssistantName,
      flag_descriptions::kEnableGoogleAssistantDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::switches::kAssistantFeature)},
-
-    {"enable-assistant-voice-match",
-     flag_descriptions::kEnableAssistantVoiceMatchName,
-     flag_descriptions::kEnableAssistantVoiceMatchDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantVoiceMatch)},
 
     {"enable-assistant-dsp", flag_descriptions::kEnableGoogleAssistantDspName,
      flag_descriptions::kEnableGoogleAssistantDspDescription, kOsCrOS,

@@ -24,6 +24,7 @@ import static org.junit.Assert.assertThat;
 
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
+import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -329,6 +331,7 @@ public class AutofillAssistantPaymentRequestUiTest {
      */
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M, message = "https://crbug.com/984591")
     public void testPaymentMethodsLiveUpdate() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
         AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);

@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -22,6 +23,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -35,6 +37,8 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +48,20 @@ import java.util.List;
  */
 @JNINamespace("android")
 public class TabContentManager {
+    // These are used for UMA logging, so append only. Please update the
+    // GridTabSwitcherThumbnailFetchingResult enum in enums.xml if these change.
+    @IntDef({ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.GOT_ETC1,
+            ThumbnailFetchingResult.GOT_NOTHING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ThumbnailFetchingResult {
+        int GOT_JPEG = 0;
+        int GOT_ETC1 = 1;
+        int GOT_NOTHING = 2;
+        int NUM_ENTRIES = 3;
+    }
+    private static final String UMA_THUMBNAIL_FETCHING_RESULT =
+            "GridTabSwitcher.ThumbnailFetchingResult";
+
     private final float mThumbnailScale;
     private final int mFullResThumbnailsMaxSize;
     private final ContentOffsetProvider mContentOffsetProvider;
@@ -329,13 +347,26 @@ public class TabContentManager {
             }
 
             @Override
-            public void onPostExecute(Bitmap bitmap) {
-                if (bitmap != null) {
-                    callback.onResult(bitmap);
+            public void onPostExecute(Bitmap jpeg) {
+                if (jpeg != null) {
+                    RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                            ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.NUM_ENTRIES);
+                    callback.onResult(jpeg);
                     return;
                 }
                 if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
-                nativeGetEtc1TabThumbnail(mNativeTabContentManager, tab.getId(), callback);
+                nativeGetEtc1TabThumbnail(mNativeTabContentManager, tab.getId(), (etc1) -> {
+                    if (etc1 != null) {
+                        RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                                ThumbnailFetchingResult.GOT_ETC1,
+                                ThumbnailFetchingResult.NUM_ENTRIES);
+                    } else {
+                        RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                                ThumbnailFetchingResult.GOT_NOTHING,
+                                ThumbnailFetchingResult.NUM_ENTRIES);
+                    }
+                    callback.onResult(etc1);
+                });
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

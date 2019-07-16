@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_notification_expiry_monitor.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
@@ -81,6 +82,7 @@ AssistantNotificationController::AssistantNotificationController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       binding_(this),
+      expiry_monitor_(this),
       notifier_id_(GetNotifierId()) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);

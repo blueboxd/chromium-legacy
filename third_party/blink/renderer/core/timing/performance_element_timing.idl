@@ -5,8 +5,9 @@
 // https://wicg.github.io/element-timing/#sec-performance-element-timing
 [RuntimeEnabled=ElementTiming]
 interface PerformanceElementTiming : PerformanceEntry {
-    readonly attribute DOMRectReadOnly intersectionRect;
+    readonly attribute DOMHighResTimeStamp renderTime;
     readonly attribute DOMHighResTimeStamp responseEnd;
+    readonly attribute DOMRectReadOnly intersectionRect;
     readonly attribute DOMString identifier;
     readonly attribute unsigned long naturalWidth;
     readonly attribute unsigned long naturalHeight;

@@ -56,7 +56,7 @@ class ModelConfigLoaderImplTest : public testing::Test {
  public:
   ModelConfigLoaderImplTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     CHECK(temp_dir_.CreateUniqueTempDir());
     temp_params_path_ = temp_dir_.GetPath().Append("model_params.json");
   }

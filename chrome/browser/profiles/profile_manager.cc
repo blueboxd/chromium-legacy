@@ -367,14 +367,6 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
 #endif
   registrar_.Add(
       this,
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  registrar_.Add(
-      this,
       chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
       content::NotificationService::AllSources());
   registrar_.Add(
@@ -1139,87 +1131,14 @@ void ProfileManager::Observe(
       save_active_profiles = true;
       break;
     }
-    case chrome::NOTIFICATION_BROWSER_OPENED: {
-#if defined(OS_ANDROID)
-      NOTREACHED();
-      break;
-#else
-      Browser* browser = content::Source<Browser>(source).ptr();
-      DCHECK(browser);
-      Profile* profile = browser->profile();
-      DCHECK(profile);
-      bool is_ephemeral =
-          profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
-      if (!profile->IsOffTheRecord() && !is_ephemeral &&
-          ++browser_counts_[profile] == 1) {
-        active_profiles_.push_back(profile);
-        save_active_profiles = true;
-      }
-      // If browsers are opening, we can't be closing all the browsers. This
-      // can happen if the application was exited, but background mode or
-      // packaged apps prevented the process from shutting down, and then
-      // a new browser window was opened.
-      closing_all_browsers_ = false;
-      break;
-#endif
-    }
-    case chrome::NOTIFICATION_BROWSER_CLOSED: {
-#if defined(OS_ANDROID)
-      NOTREACHED();
-      break;
-#else
-      Browser* browser = content::Source<Browser>(source).ptr();
-      DCHECK(browser);
-      Profile* profile = browser->profile();
-      DCHECK(profile);
-      if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
-        active_profiles_.erase(std::find(active_profiles_.begin(),
-                                         active_profiles_.end(), profile));
-        save_active_profiles = !closing_all_browsers_;
-      }
-      break;
-#endif
-    }
     default: {
       NOTREACHED();
       break;
     }
   }
 
-  if (save_active_profiles) {
-    PrefService* local_state = g_browser_process->local_state();
-    DCHECK(local_state);
-    ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-    base::ListValue* profile_list = update.Get();
-
-    profile_list->Clear();
-
-    // crbug.com/120112 -> several non-incognito profiles might have the same
-    // GetPath().BaseName(). In that case, we cannot restore both
-    // profiles. Include each base name only once in the last active profile
-    // list.
-    std::set<std::string> profile_paths;
-    std::vector<Profile*>::const_iterator it;
-    for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
-      // crbug.com/823338 -> CHECK that the profiles aren't guest or incognito,
-      // causing a crash during session restore.
-      CHECK(!(*it)->IsGuestSession())
-          << "Guest profiles shouldn't be saved as active profiles";
-      CHECK(!(*it)->IsOffTheRecord())
-          << "OTR profiles shouldn't be saved as active profiles";
-      std::string profile_path = (*it)->GetPath().BaseName().MaybeAsASCII();
-      // Some profiles might become ephemeral after they are created.
-      // Don't persist the System Profile as one of the last actives, it should
-      // never get a browser.
-      if (!(*it)->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) &&
-          profile_paths.find(profile_path) == profile_paths.end() &&
-          profile_path !=
-              base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
-        profile_paths.insert(profile_path);
-        profile_list->AppendString(profile_path);
-      }
-    }
-  }
+  if (save_active_profiles)
+    SaveActiveProfiles();
 }
 
 void ProfileManager::OnProfileCreated(Profile* profile,
@@ -1405,6 +1324,14 @@ std::unique_ptr<Profile> ProfileManager::CreateProfileAsyncHelper(
     Delegate* delegate) {
   return Profile::CreateProfile(path, delegate,
                                 Profile::CREATE_MODE_ASYNCHRONOUS);
+}
+
+ProfileManager::ProfileInfo::ProfileInfo(std::unique_ptr<Profile> profile,
+                                         bool created)
+    : profile(std::move(profile)), created(created) {}
+
+ProfileManager::ProfileInfo::~ProfileInfo() {
+  ProfileDestroyer::DestroyProfileWhenAppropriate(profile.release());
 }
 
 Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
@@ -1762,15 +1689,86 @@ void ProfileManager::RunCallbacks(const std::vector<CreateCallback>& callbacks,
     callbacks[i].Run(profile, status);
 }
 
-ProfileManager::ProfileInfo::ProfileInfo(std::unique_ptr<Profile> profile,
-                                         bool created)
-    : profile(std::move(profile)), created(created) {}
+void ProfileManager::SaveActiveProfiles() {
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
+  base::ListValue* profile_list = update.Get();
 
-ProfileManager::ProfileInfo::~ProfileInfo() {
-  ProfileDestroyer::DestroyProfileWhenAppropriate(profile.release());
+  profile_list->Clear();
+
+  // crbug.com/120112 -> several non-incognito profiles might have the same
+  // GetPath().BaseName(). In that case, we cannot restore both
+  // profiles. Include each base name only once in the last active profile
+  // list.
+  std::set<std::string> profile_paths;
+  std::vector<Profile*>::const_iterator it;
+  for (it = active_profiles_.begin(); it != active_profiles_.end(); ++it) {
+    // crbug.com/823338 -> CHECK that the profiles aren't guest or incognito,
+    // causing a crash during session restore.
+    CHECK(!(*it)->IsGuestSession())
+        << "Guest profiles shouldn't be saved as active profiles";
+    CHECK(!(*it)->IsOffTheRecord())
+        << "OTR profiles shouldn't be saved as active profiles";
+    std::string profile_path = (*it)->GetPath().BaseName().MaybeAsASCII();
+    // Some profiles might become ephemeral after they are created.
+    // Don't persist the System Profile as one of the last actives, it should
+    // never get a browser.
+    if (!(*it)->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) &&
+        profile_paths.find(profile_path) == profile_paths.end() &&
+        profile_path !=
+            base::FilePath(chrome::kSystemProfileDir).AsUTF8Unsafe()) {
+      profile_paths.insert(profile_path);
+      profile_list->AppendString(profile_path);
+    }
+  }
 }
 
 #if !defined(OS_ANDROID)
+void ProfileManager::OnBrowserOpened(Browser* browser) {
+  DCHECK(browser);
+  Profile* profile = browser->profile();
+  DCHECK(profile);
+  bool is_ephemeral =
+      profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles);
+  if (!profile->IsOffTheRecord() && !is_ephemeral &&
+      ++browser_counts_[profile] == 1) {
+    active_profiles_.push_back(profile);
+    SaveActiveProfiles();
+  }
+  // If browsers are opening, we can't be closing all the browsers. This
+  // can happen if the application was exited, but background mode or
+  // packaged apps prevented the process from shutting down, and then
+  // a new browser window was opened.
+  closing_all_browsers_ = false;
+}
+
+void ProfileManager::OnBrowserClosed(Browser* browser) {
+  Profile* profile = browser->profile();
+  DCHECK(profile);
+  if (!profile->IsOffTheRecord() && --browser_counts_[profile] == 0) {
+    active_profiles_.erase(
+        std::find(active_profiles_.begin(), active_profiles_.end(), profile));
+    if (!closing_all_browsers_)
+      SaveActiveProfiles();
+  }
+
+  Profile* original_profile = profile->GetOriginalProfile();
+  // Do nothing if the closed window is not the last window of the same profile.
+  for (auto* browser_iter : *BrowserList::GetInstance()) {
+    if (browser_iter->profile()->GetOriginalProfile() == original_profile)
+      return;
+  }
+
+  base::FilePath path = profile->GetPath();
+  if (IsProfileDirectoryMarkedForDeletion(path)) {
+    // Do nothing if the profile is already being deleted.
+  } else if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
+    // Delete if the profile is an ephemeral profile.
+    ScheduleForcedEphemeralProfileForDeletion(path);
+  }
+}
+
 void ProfileManager::UpdateLastUser(Profile* last_active) {
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
@@ -1801,27 +1799,13 @@ ProfileManager::BrowserListObserver::~BrowserListObserver() {
   BrowserList::RemoveObserver(this);
 }
 
-void ProfileManager::BrowserListObserver::OnBrowserAdded(
-    Browser* browser) {}
+void ProfileManager::BrowserListObserver::OnBrowserAdded(Browser* browser) {
+  profile_manager_->OnBrowserOpened(browser);
+}
 
 void ProfileManager::BrowserListObserver::OnBrowserRemoved(
     Browser* browser) {
-  Profile* profile = browser->profile();
-  Profile* original_profile = profile->GetOriginalProfile();
-  // Do nothing if the closed window is not the last window of the same profile.
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->GetOriginalProfile() == original_profile)
-      return;
-  }
-
-  base::FilePath path = profile->GetPath();
-  if (IsProfileDirectoryMarkedForDeletion(path)) {
-    // Do nothing if the profile is already being deleted.
-  } else if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
-    // Delete if the profile is an ephemeral profile.
-    g_browser_process->profile_manager()
-        ->ScheduleForcedEphemeralProfileForDeletion(path);
-  }
+  profile_manager_->OnBrowserClosed(browser);
 }
 
 void ProfileManager::BrowserListObserver::OnBrowserSetLastActive(

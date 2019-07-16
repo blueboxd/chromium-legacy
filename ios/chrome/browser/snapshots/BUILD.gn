@@ -80,10 +80,13 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes:fakes",
+    "//testing/gmock",
     "//testing/gtest",
+    "//third_party/ocmock",
     "//ui/base:test_support",
     "//ui/gfx",
   ]

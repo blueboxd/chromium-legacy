@@ -13,9 +13,9 @@
 #include "base/sequence_checker.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hints_processing_util.h"
+#include "components/optimization_guide/host_filter.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/previews/content/previews_user_data.h"
-#include "components/previews/core/host_filter.h"
 #include "net/nqe/effective_connection_type.h"
 
 class GURL;
@@ -114,7 +114,7 @@ class PreviewsHints {
   std::unique_ptr<optimization_guide::HintUpdateData> component_update_data_;
 
   // Blacklist of host suffixes for LITE_PAGE_REDIRECT Previews.
-  std::unique_ptr<HostFilter> lite_page_redirect_blacklist_;
+  std::unique_ptr<optimization_guide::HostFilter> lite_page_redirect_blacklist_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

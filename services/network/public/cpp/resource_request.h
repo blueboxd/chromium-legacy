@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
@@ -40,6 +41,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   GURL url;
   GURL site_for_cookies;
   base::Optional<url::Origin> top_frame_origin;
+  net::NetworkIsolationKey trusted_network_isolation_key;
+  mojom::UpdateNetworkIsolationKeyOnRedirect
+      update_network_isolation_key_on_redirect =
+          network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;

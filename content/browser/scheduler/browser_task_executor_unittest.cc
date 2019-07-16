@@ -40,7 +40,8 @@ using QueueType = BrowserTaskQueues::QueueType;
 class BrowserTaskExecutorTest : public testing::Test {
  private:
   TestBrowserThreadBundle thread_bundle_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::MainThreadType::UI,
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 using StrictMockTask =
@@ -168,7 +169,8 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
     ScopedTaskEnvironmentWithCustomScheduler()
         : base::test::ScopedTaskEnvironment(
               SubclassCreatesDefaultTaskRunner{},
-              base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME) {
+              base::test::ScopedTaskEnvironment::MainThreadType::UI,
+              base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler =
           BrowserUIThreadScheduler::CreateForTesting(sequence_manager(),
                                                      GetTimeDomain());

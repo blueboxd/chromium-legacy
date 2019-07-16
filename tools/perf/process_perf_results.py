@@ -211,11 +211,13 @@ def _handle_perf_json_test_results(
         # we have a non-zero exit code if we error out?
         logging.error('Failed to obtain test results for %s: %s',
                       benchmark_name, e)
+        continue
       if not enabled:
         # We don't upload disabled benchmarks or tests that are run
         # as a smoke test
-        print 'Benchmark %s disabled' % benchmark_name
-      benchmark_enabled_map[benchmark_name] = enabled
+        print 'Benchmark %s ran no tests on at least one shard' % benchmark_name
+        continue
+      benchmark_enabled_map[benchmark_name] = True
 
   end_time = time.time()
   print_duration('Analyzing perf json test results', begin_time, end_time)

@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Выполняется обновление Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуска приложений Chrome</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
-<translation id="1585657529869845941">Если появится кнопка <ph name="BEGIN_BOLD" />Изменить<ph name="END_BOLD" />, нажмите ее.</translation>
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
 <translation id="1587325591171447154">Chrome заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
 <translation id="1590588151039584890">Чтобы выполнить обновление, необходимо остановить работу Chrome. В результате могут быть потеряны несохраненные изменения, внесенные другими пользователями на этом компьютере.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Браузеру Google Chrome не может выполнять операции чтения и записи в каталоге данных <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, положившись на систему защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome перезапустится через 1 час}one{Chrome перезапустится через # час}few{Chrome перезапустится через # часа}many{Chrome перезапустится через # часов}other{Chrome перезапустится через # часа}}</translation>
-<translation id="1718131156967340976">Выберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Этот пароль будет сохранен в аккаунте Google. Вам не нужно его запоминать.</translation>
 <translation id="174539241580958092">Google Chrome не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@
 <translation id="3873044882194371212">Открыть ссылку в режиме инкогнито браузера Chrome</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="3898493977366060150">Технологии Google для простого и быстрого поиска в Интернете.</translation>
-<translation id="4028693306634653894">Открывайте Chrome ещё быстрее</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
 <translation id="4143243756087420366">Имя и фото профиля Chrome</translation>
@@ -236,7 +233,6 @@
 <translation id="7808348361785373670">Удалить из Chrome</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Скачайте Google Chrome ещё раз.</translation>
 <translation id="7855730255114109580">Последняя версия Google Chrome уже установлена</translation>
-<translation id="7888186132678118370">Как добавить Chrome на панель задач</translation>
 <translation id="7890208801193284374">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
 <translation id="7896673875602241923">Ранее вход в Chrome на этом компьютере выполнялся из аккаунта <ph name="ACCOUNT_EMAIL_LAST" />. Чтобы ваши данные хранились отдельно, создайте новый профиль Chrome.</translation>
 <translation id="7908168227788431038">Чтобы завершить обновление, перезапустите Google Chrome.</translation>
@@ -285,6 +281,5 @@
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="9138603949443464873">Чтобы изменения вступили в силу, перезапустите Chrome.</translation>
 <translation id="919706545465235479">Чтобы начать синхронизацию, обновите Chrome</translation>
-<translation id="924447568950697217">Как назначить Chrome браузером по умолчанию</translation>
 <translation id="989369509083708165">Google Chrome используется как браузер по умолчанию</translation>
 </translationbundle>

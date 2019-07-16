@@ -3339,19 +3339,8 @@
 <translation id="7123160381479171745">Definierar listan över användare som får logga in på enheten. Poster har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" />, till exempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Om du vill att användare ska kunna logga in på en domän helt godtyckligt använder du poster i formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Om principen inte är konfigurerad finns inga begränsningar för vilka användare som får logga in. Observera att principen <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> fortfarande måste vara korrekt konfigurerad för att det ska gå att skapa nya användare.</translation>
-<translation id="7123266440503901785">Med <ph name="PRODUCT_NAME" /> installeras och uppdateras tillägg på ett säkert sätt. Däremot kanske vissa tillägg utanför Chrome Web Store bara skyddas av osäkra signeringsalgoritmer eller hash-tekniker som SHA1. När den här principen är inaktiverad går det inte att nyinstallera eller uppdatera sådana tillägg i Chrome (förrän utvecklaren har skrivit om tillägget så att säkrare algoritmer används). När principen är aktiverad tillåts installation och uppdateringar av sådana tillägg.
-
-          Om ingen inställning har angetts är principen aktiverad som standard.
-          Från och med <ph name="PRODUCT_NAME" /> 75 kommer principen i stället att vara inaktiverad som standard.
-
-          Från och med <ph name="PRODUCT_NAME" /> 77 kommer principen att ignoreras och ses som inaktiverad.</translation>
 <translation id="7126716959063786004">Gör det möjligt att avsluta processer i Aktivitetshanteraren</translation>
 <translation id="7127892035367404455">Återställ till målversion</translation>
-<translation id="7128918109610518786">Visar en lista med de appidentifierare som ska visas som fasta appar i startfältet i <ph name="PRODUCT_OS_NAME" />.
-
-      Om den här policyn är konfigurerad är appuppsättningen fast och kan inte ändras av användaren.
-
-      Om den här policyn inte ställs in kan användaren ändra listan med fasta appar i startfältet.</translation>
 <translation id="713121532817834879">Den här principen är en webbadress som pekar på en XML-fil med samma format som Internet Explorers princip <ph name="IEEM_SITELIST_POLICY" />. Detta läser in regler från en XML-fil utan att reglerna delas med Internet Explorer.
 
       Reglerna i XML-filen gäller på samma sätt som <ph name="GREYLIST_POLICY_NAME" />. Reglerna förhindrar alltså att <ph name="PRODUCT_NAME" /> öppnar den alternativa webbläsaren och att den alternativa webbläsaren öppnar <ph name="PRODUCT_NAME" />.
@@ -4209,12 +4198,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
           Om du inaktiverar inställningen eller inte anger den avgörs serverns kanoniska namn av en CNAME-sökning.</translation>
 <translation id="8764477907716150749">Den här principen är endast avsedd för intern användning av <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Konfigurera webbadress för lösenordsbyte (endast HTTP- och HTTPS-protokoll). Tjänsten för lösenordsskydd hänvisar användare till denna webbadress för att byta lösenord efter att en varning visats i webbläsaren.
-      För att <ph name="PRODUCT_NAME" /> ska kunna registrera fingeravtrycket för det nya lösenordet korrekt på sidan för lösenordsbyte måste sidan följa riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Om den här inställningen är aktiverad hänvisar tjänsten för lösenordsbyte användarna till den här webbadressen för att ändra sina lösenord efter att en varning visats i webbläsaren.
-      Om inställningen är inaktiverad eller inte anges, skickar tjänsten för lösenordsbyte användarna till https://myaccounts.google.com.
-      Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8800453707696044281">Ange anpassat laddningsstopp för batteriet i procent</translation>
 <translation id="8801680448782904838">Meddela användaren att webbläsaren eller enheten bör eller måste startas om</translation>
@@ -4353,9 +4336,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 
       Principens värde ska anges i sekunder.</translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
-<translation id="9038058011835642205">Anger en lista med webbplatser som installeras obemärkt utan att användaren gör något, och som inte kan avinstalleras eller inaktiveras av användaren.
-
-      Varje post i principens lista är ett objekt med en obligatorisk medlem: url och två valfria medlemmar: default_launch_container och create_desktop_shortcut. url ska vara webbadressen till webbappen som ska installeras och launch_container ska anges antingen som window eller tab för att visa hur webbappen ska öppnas när den har installerats, och create_desktop_shortcut ska vara inställt på sant om en skrivbordsgenväg ska skapas på Linux och Windows. Om default_launch_container utesluts öppnas appen på en flik som standard. Användare kan ändra vilken behållare appen öppnas i oavsett vilket värde default_launch_container har. Om create_desktop_shortcuts utesluts skapas ingen skrivbordsgenväg</translation>
 <translation id="9038839118379817310">Aktivera Wi-Fi</translation>
 <translation id="9039822628127365650">När den här principen är inställd anges den tidsrymd efter vilken användaren loggas ut automatisk och sessionen avslutas. Användaren meddelas om den återstående tiden med en nedräkningstimer som visas i systemfältet.
 

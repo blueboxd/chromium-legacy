@@ -99,8 +99,7 @@ AutoResumptionHandler::AutoResumptionHandler(
     std::unique_ptr<Config> config)
     : network_listener_(std::move(network_listener)),
       task_manager_(std::move(task_manager)),
-      config_(std::move(config)),
-      weak_factory_(this) {
+      config_(std::move(config)) {
   network_listener_->Start(this);
 }
 

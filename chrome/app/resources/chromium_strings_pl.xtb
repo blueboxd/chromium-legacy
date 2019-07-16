@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chromium</translation>
 <translation id="1396446129537741364">Chromium próbuje pokazać hasła.</translation>
 <translation id="1414495520565016063">Jesteś zalogowany w Chromium.</translation>
-<translation id="1502360822835740515">Ustawianie Chromium jako przeglądarki domyślnej</translation>
 <translation id="151962892725702025">System operacyjny Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="1524282610922162960">Udostępnij kartę Chromium</translation>
-<translation id="1585657529869845941">Kliknij przycisk <ph name="BEGIN_BOLD" />Przełącz mimo to<ph name="END_BOLD" />, jeśli jest widoczny</translation>
 <translation id="1668054258064581266">Aby po usunięciu konta z Chromium zmiany zostały zastosowane, może być konieczne ponowne załadowanie otwartych kart.</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
@@ -80,13 +78,11 @@
 <translation id="3728336900324680424">Chromium będzie mieć dostęp do Dysku, by wyświetlać podpowiedzi na pasku adresu</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Przypinanie Chromium na pasku zadań</translation>
 <translation id="388648406173476553">Dostosuj i kontroluj Chromium. Pewna kwestia wymaga Twojej uwagi – kliknij, by przejść do szczegółów.</translation>
 <translation id="3889543394854987837">Otwórz Chromium, klikając swoją nazwę i rozpocznij przeglądanie.</translation>
 <translation id="3898493977366060150">Przeglądanie stron internetowych za pomocą inteligentnych rozwiązań Google</translation>
 <translation id="4036079820698952681">Pomóż ulepszyć Chromium, zgłaszając <ph name="BEGIN_LINK" />bieżące ustawienia<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
-<translation id="407254336480250557">Wybierz <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do Chromium.</translation>
 <translation id="4216212958613226427">Ten język jest używany do wyświetlania UI Chromium</translation>
 <translation id="4222580632002216401">Jesteś zalogowany w Chromium. Administrator wyłączył synchronizację.</translation>
@@ -103,7 +99,6 @@
 <translation id="4677944499843243528">Wygląda na to, że profil jest używany przez inny proces Chromium (<ph name="PROCESS_ID" />) na innym komputerze (<ph name="HOST_NAME" />). Chromium zablokowało profil, by zapobiec jego uszkodzeniu. Jeśli masz pewność, że żadne inne procesy nie używają tego profilu, możesz go odblokować i ponownie uruchomić Chromium.</translation>
 <translation id="469338717132742108">Skorzystaj z pomocy dotyczącej systemu operacyjnego Chromium</translation>
 <translation id="4708774505295300557">Ktoś zalogował się wcześniej w Chromium na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Utwórz nowego użytkownika Chromium, by Twoje informacje były przechowywane oddzielnie.</translation>
-<translation id="4714956846925717402">Szybciej uruchamiaj Chromium</translation>
 <translation id="4746050847053251315">Zamknąć Chromium mimo to?</translation>
 <translation id="4748217263233248895">Właśnie została zastosowana specjalna aktualizacja zabezpieczeń Chromium. Uruchom ponownie Chromium teraz. Karty zostaną przywrócone.</translation>
 <translation id="479167709087336770">Będzie stosowany ten sam mechanizm sprawdzania pisowni, który jest używany w wyszukiwarce Google. Tekst wpisywany w przeglądarce jest wysyłany do Google. Zawsze możesz to zmienić w ustawieniach.</translation>

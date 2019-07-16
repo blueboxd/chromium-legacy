@@ -107,8 +107,7 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
     DCHECK(tasks_.empty() || delayed_run_time.is_null() ||
            tasks_.back().delayed_run_time < delayed_run_time);
     tasks_.push(Task(internal::PostedTask(std::move(task), posted_from),
-                     delayed_run_time,
-                     internal::EnqueueOrder::FromIntForTesting(13)));
+                     delayed_run_time, EnqueueOrder::FromIntForTesting(13)));
   }
 
   bool HasPendingHighResolutionTasks() override { return false; }

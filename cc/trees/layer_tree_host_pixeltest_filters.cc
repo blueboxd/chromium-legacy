@@ -38,8 +38,9 @@ class LayerTreeHostFiltersPixelTest
       case RENDERER_GL:
         return "gl";
       case RENDERER_SKIA_GL:
+        return "skia_gl";
       case RENDERER_SKIA_VK:
-        return "skia";
+        return "skia_vk";
       case RENDERER_SOFTWARE:
         return "sw";
     }
@@ -88,19 +89,6 @@ LayerTreeTest::RendererType const kRendererTypes[] = {
 INSTANTIATE_TEST_SUITE_P(,
                          LayerTreeHostFiltersPixelTest,
                          ::testing::ValuesIn(kRendererTypes));
-
-using LayerTreeHostFiltersPixelTestNonVulkan = LayerTreeHostFiltersPixelTest;
-
-LayerTreeTest::RendererType const kRendererTypesNonVulkan[] = {
-    LayerTreeTest::RENDERER_GL,
-    LayerTreeTest::RENDERER_SKIA_GL,
-    LayerTreeTest::RENDERER_SOFTWARE,
-};
-
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
-INSTANTIATE_TEST_SUITE_P(,
-                         LayerTreeHostFiltersPixelTestNonVulkan,
-                         ::testing::ValuesIn(kRendererTypesNonVulkan));
 
 using LayerTreeHostFiltersPixelTestGL = LayerTreeHostFiltersPixelTest;
 
@@ -583,9 +571,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, ImageFilterScaled) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
-#else
-  if (renderer_type() == RENDERER_SKIA_VK)
-    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(
@@ -831,7 +816,7 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
                    .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, RotatedDropShadowFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, RotatedDropShadowFilter) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(300, 300), SK_ColorWHITE);
 
@@ -878,7 +863,7 @@ TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, RotatedDropShadowFilter) {
           .InsertBeforeExtensionASCII(GetRendererSuffix()));
 }
 
-TEST_P(LayerTreeHostFiltersPixelTestNonVulkan, TranslatedFilter) {
+TEST_P(LayerTreeHostFiltersPixelTest, TranslatedFilter) {
   scoped_refptr<Layer> clip = Layer::Create();
   clip->SetBounds(gfx::Size(300, 300));
   clip->SetMasksToBounds(true);

@@ -431,8 +431,7 @@ DataReductionProxyCompressionStats::DataReductionProxyCompressionStats(
       pref_service_(prefs),
       delay_(delay),
       data_usage_map_is_dirty_(false),
-      current_data_usage_load_status_(NOT_LOADED),
-      weak_factory_(this) {
+      current_data_usage_load_status_(NOT_LOADED) {
   DCHECK(service);
   DCHECK(prefs);
   DCHECK_GE(delay.InMilliseconds(), 0);

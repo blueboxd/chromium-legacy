@@ -37,8 +37,7 @@ SyncInvalidationListener::SyncInvalidationListener(
       sync_system_resources_(sync_network_channel_.get(), this),
       delegate_(nullptr),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
-      push_client_state_(DEFAULT_INVALIDATION_ERROR),
-      weak_ptr_factory_(this) {
+      push_client_state_(DEFAULT_INVALIDATION_ERROR) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_network_channel_->AddObserver(this);
 }

@@ -29,6 +29,7 @@
 #include "base/task/common/task_annotator.h"
 #include "base/task/sequence_manager/associated_thread_id.h"
 #include "base/task/sequence_manager/enqueue_order.h"
+#include "base/task/sequence_manager/enqueue_order_generator.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_queue_selector.h"
@@ -335,7 +336,7 @@ class BASE_EXPORT SequenceManagerImpl
   void NotifyWillProcessTask(ExecutingTask* task, LazyNow* time_before_task);
   void NotifyDidProcessTask(ExecutingTask* task, LazyNow* time_after_task);
 
-  internal::EnqueueOrder GetNextSequenceNumber();
+  EnqueueOrder GetNextSequenceNumber();
 
   bool GetAddQueueTimeToTasks();
 
@@ -394,7 +395,7 @@ class BASE_EXPORT SequenceManagerImpl
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 
-  internal::EnqueueOrder::Generator enqueue_order_generator_;
+  EnqueueOrderGenerator enqueue_order_generator_;
 
   const std::unique_ptr<internal::ThreadController> controller_;
   const Settings settings_;

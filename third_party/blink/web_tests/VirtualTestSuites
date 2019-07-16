@@ -1146,5 +1146,10 @@
     "prefix": "cache-storage-sequence",
     "base": "external/wpt/service-workers",
     "args": ["--enable-features=CacheStorageSequence"]
+  },
+  {
+    "prefix": "conditional-appcache-delay",
+    "base": "http/tests/loading/appcache-delay",
+    "args": ["--enable-features=VerifyHTMLFetchedFromAppCacheBeforeDelay"]
   }
 ]

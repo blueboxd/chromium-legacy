@@ -40,8 +40,7 @@ GoogleURLTracker::GoogleURLTracker(
               : client_->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
       in_startup_sleep_(true),
       already_loaded_(false),
-      need_to_load_(false),
-      weak_ptr_factory_(this) {
+      need_to_load_(false) {
   network_connection_tracker_->AddNetworkConnectionObserver(this);
   client_->set_google_url_tracker(this);
 

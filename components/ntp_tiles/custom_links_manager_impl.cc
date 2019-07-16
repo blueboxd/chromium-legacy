@@ -20,10 +20,7 @@ namespace ntp_tiles {
 CustomLinksManagerImpl::CustomLinksManagerImpl(
     PrefService* prefs,
     history::HistoryService* history_service)
-    : prefs_(prefs),
-      store_(prefs),
-      history_service_observer_(this),
-      weak_ptr_factory_(this) {
+    : prefs_(prefs), store_(prefs), history_service_observer_(this) {
   DCHECK(prefs);
   if (history_service)
     history_service_observer_.Add(history_service);

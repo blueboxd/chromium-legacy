@@ -327,7 +327,7 @@ class FileMetricsProvider : public MetricsProvider,
   PrefService* pref_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<FileMetricsProvider> weak_factory_;
+  base::WeakPtrFactory<FileMetricsProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileMetricsProvider);
 };

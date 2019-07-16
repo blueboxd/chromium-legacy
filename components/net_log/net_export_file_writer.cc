@@ -87,8 +87,7 @@ NetExportFileWriter::NetExportFileWriter()
       log_exists_(false),
       log_capture_mode_known_(false),
       log_capture_mode_(net::NetLogCaptureMode::kDefault),
-      default_log_base_dir_getter_(base::Bind(&base::GetTempDir)),
-      weak_ptr_factory_(this) {}
+      default_log_base_dir_getter_(base::Bind(&base::GetTempDir)) {}
 
 NetExportFileWriter::~NetExportFileWriter() {
   if (net_log_exporter_) {

@@ -336,7 +336,7 @@ class CastMessageHandler : public CastSocket::Observer {
   const base::TickClock* const clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CastMessageHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<CastMessageHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
 };

@@ -240,7 +240,7 @@ class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
   GaiaAuthFetcher fetcher_;
   std::string refresh_token_;
   int attempt_;
-  base::WeakPtrFactory<RevokeServerRefreshToken> weak_ptr_factory_;
+  base::WeakPtrFactory<RevokeServerRefreshToken> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RevokeServerRefreshToken);
 };
@@ -256,8 +256,7 @@ MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
                gaia::GaiaSource::kChrome,
                token_service_delegate_->GetURLLoaderFactory()),
       refresh_token_(refresh_token),
-      attempt_(attempt),
-      weak_ptr_factory_(this) {
+      attempt_(attempt) {
   RecordRefreshTokenRevocationRequestEvent(
       TokenRevocationRequestProgress::kRequestCreated);
   client->DelayNetworkCall(

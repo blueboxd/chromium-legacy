@@ -41,9 +41,9 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_black_list.h"
@@ -153,10 +153,10 @@ class TestPreviewsBlackList : public PreviewsBlackList {
 };
 
 // A test class implementation to enable testing of previews_decider_impl.
-class TestPreviewsTopHostProvider : public PreviewsTopHostProvider {
+class TestTopHostProvider : public optimization_guide::TopHostProvider {
  public:
-  TestPreviewsTopHostProvider() {}
-  ~TestPreviewsTopHostProvider() override {}
+  TestTopHostProvider() {}
+  ~TestTopHostProvider() override {}
 
   std::vector<std::string> GetTopHosts(size_t max_sites) override {
     return std::vector<std::string>();
@@ -174,7 +174,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       const base::FilePath& test_path,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
-      PreviewsTopHostProvider* previews_top_host_provider,
+      optimization_guide::TopHostProvider* optimization_guide_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
@@ -182,7 +182,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
                                   test_path,
                                   pref_service,
                                   database_provider,
-                                  previews_top_host_provider,
+                                  optimization_guide_top_host_provider,
                                   url_loader_factory) {}
   ~TestPreviewsOptimizationGuide() override {}
 
@@ -442,7 +442,7 @@ class PreviewsDeciderImplTest
             base::CreateSequencedTaskRunnerWithTraits(
                 {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
             temp_dir_.GetPath(), pref_service_.get(), db_provider_.get(),
-            &previews_top_host_provider_, url_loader_factory_),
+            &optimization_guide_top_host_provider_, url_loader_factory_),
         base::BindRepeating(&IsPreviewFieldTrialEnabled),
         std::make_unique<PreviewsLogger>(), std::move(allowed_types),
         &network_quality_tracker_));
@@ -483,7 +483,7 @@ class PreviewsDeciderImplTest
   base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
-  TestPreviewsTopHostProvider previews_top_host_provider_;
+  TestTopHostProvider optimization_guide_top_host_provider_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;

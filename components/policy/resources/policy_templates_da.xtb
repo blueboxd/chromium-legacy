@@ -3229,19 +3229,8 @@ Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte 
 <translation id="7123160381479171745">Definerer listen over brugere, der har tilladelse til at logge ind på enheden. Posterne har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" />, f.eks. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Hvis du vil tillade vilkårlige brugere på et domæne, skal du bruge poster med formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Hvis denne politik ikke er konfigureret, er der ingen begrænsninger for, hvilke brugere der må logge ind. Bemærk, at politikken <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> stadig skal konfigureres, hvis du opretter nye brugere.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> giver sikker opdatering og installation af udvidelser. Indholdet i nogle udvidelser, der hostes uden for Chrome Webshop, er dog muligvis kun beskyttet af usikkert login eller hashing-algoritmer som f.eks. SHA1. Hvis politikken deaktiveres, tillader Chrome ikke nye installationer og opdateringer af sådanne udvidelser (indtil udvidelsernes udviklere har genopbygget udvidelserne med stærkere algoritmer). Hvis politikken aktiveres, tillades installation og opdateringer af sådanne udvidelser.
-
-          Hvis den ikke konfigureres, anvendes den aktiverede adfærd som standard.
-          Hvis den ikke konfigureres, anvendes den deaktiverede adfærd som standard fra og med <ph name="PRODUCT_NAME" /> 75.
-
-          Politikken ignoreres og behandles som deaktiveret fra og med <ph name="PRODUCT_NAME" /> 77.</translation>
 <translation id="7126716959063786004">Gør det muligt at afslutte processer via Jobliste</translation>
 <translation id="7127892035367404455">Gå tilbage til målversion</translation>
-<translation id="7128918109610518786">Angiver applikationsid'er på en liste, som <ph name="PRODUCT_OS_NAME" /> viser som fastgjorte apps på applisten.
-
-      Hvis denne politik er konfigureret, er applikationssættet fast og kan ikke ændres af brugeren.
-
-      Hvis politikken ikke er angivet, kan brugeren ændre listen over fastgjorte apps på applisten.</translation>
 <translation id="713121532817834879">Denne politik er en webadresse, der henviser til en XML-fil i det samme format som Internet Explorers <ph name="IEEM_SITELIST_POLICY" />-politik. Den indlæser regler fra en XML-fil uden at dele disse regler med Internet Explorer.
 
       Reglerne i denne XML-fil gælder på samme måde som <ph name="GREYLIST_POLICY_NAME" />. Det betyder, at disse regler forhindrer <ph name="PRODUCT_NAME" /> i at åbne den alternative browser og forhindrer også den alternative browser i at åbne <ph name="PRODUCT_NAME" />.
@@ -4077,12 +4066,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8759829385824155666">Tilladte Kerberos-krypteringstyper</translation>
 <translation id="8764119899999036911">Angiver, om den genererede Kerberos SPN er baseret på det kanoniske DNS-navn eller det navn, der oprindeligt blev indtastet. Hvis du aktiverer denne indstilling, springes CNAME-opslag over, og servernavnet anvendes, sådan som det er indtastet. Hvis du deaktiverer denne indstilling eller ikke angiver den, vil det kanoniske navn på den pågældende server blive fastlagt via CNAME-opslag.</translation>
 <translation id="8764477907716150749">Denne politik er til intern brug for <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Konfigurer webadressen til ændring af adgangskode (kun HTTP- og HTTPS-skemaer). Tjenesten til adgangskodebeskyttelse sender brugerne til denne webadresse, hvor de kan ændre deres adgangskode efter at have set en advarsel i browseren.
-      Før <ph name="PRODUCT_NAME" /> kan registrere fingeraftrykket for den nye adgangskode korrekt på denne side til ændring af adgangskoder, skal du sørge for, at din side til ændring af adgangskoder følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne indstilling er aktiveret, sender tjenesten til beskyttelse af adgangskoder brugerne til denne webadresse, så de kan ændre adgangskoden, når de har set en advarsel i browseren.
-      Hvis denne indstilling er deaktiveret, eller der ikke er angivet en værdi, sender tjenesten til beskyttelse af adgangskoder brugerne til https://myaccounts.google.com, så adgangskoden kan ændres der.
-      Denne politik er kun tilgængelig for Windows-forekomster, der er knyttet til et <ph name="MS_AD_NAME" />-domæne, eller Windows 10 Pro- eller Enterprise-forekomster, der er tilmeldt administration af enheder.</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8800453707696044281">Angiv et brugerdefineret niveau i procent, hvor batteriopladningen skal stoppe</translation>
 <translation id="8801680448782904838">Underret en bruger om, at genstart af browseren eller enheden anbefales eller påkræves</translation>
@@ -4207,9 +4190,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 
       Politikkens værdi skal angives i sekunder.</translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
-<translation id="9038058011835642205">Angiver en liste over websites, der installeres i baggrunden uden brugerinteraktion, og som ikke kan afinstalleres eller deaktiveres af brugeren.
-
-      Hvert listepunkt i politikken er et objekt med et obligatorisk medlem: "url" og to valgfrie medlemmer: "default_launch_container" og "create_desktop_shortcut". "url" skal være webadressen til den webapp, der skal installeres, "launch_container" skal enten være "window" eller "tab" for at indikere, hvordan webappen åbnes, når den er installeret, og "create_desktop_shortcut" skal være sand, hvis der skal oprettes en skrivebordsgenvej i Linux og Windows. Hvis "default_launch_container" er udeladt, åbnes appen som standard i en fane. Brugerne kan ændre, hvilken container appen åbnes i, uanset hvilken værdi der er angivet for "default_launch_container". Hvis "create_desktop_shortcuts" er udeladt, oprettes der ingen skrivebordsgenveje.</translation>
 <translation id="9038839118379817310">Aktivér Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne politik er konfigureret, angiver den det tidsrum, hvorefter en bruger automatisk logges ud, og sessionen afsluttes. Brugeren oplyses om den resterende tid med et nedtællingsur, der vises i systembakken.
 
@@ -4223,6 +4203,15 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Hvis værdien for politikken er angivet som et token, der er tilknyttet en Quick Fix Build, opdateres enheden til den tilsvarende Quick Fix Build, hvis opdateringen ikke blokeres af en anden politik.
 
       Hvis denne politik ikke er konfigureret, eller hvis værdien ikke er tilknyttet en Quick Fix Build, opdateres enheden ikke til en Quick Fix Build. Hvis enheden allerede kører en Quick Fix Build, og politikken ikke længere er konfigureret, eller dens værdi ikke længere er tilknyttet en Quick Fix Build, opdateres enheden til en almindelig build, hvis opdateringen ikke blokeres af en anden politik.</translation>
+<translation id="9054012305936267950">Denne politik styrer loginadfærd i browseren. Den giver dig mulighed for at angive, om brugeren kan logge ind i <ph name="PRODUCT_NAME" /> med sin konto og benytte kontorelaterede tjenester såsom Chrome-synkronisering.
+
+      Hvis "Deaktiver browserlogin" er angivet for politikken, kan brugeren ikke logge ind i browseren og benytte kontobaserede tjenester. Det betyder, at browserfunktioner såsom Chrome-synkronisering ikke kan anvendes. Hvis brugeren allerede er logget ind, og "Deaktiveret" er angivet for politikken, logges brugeren ud, næste gang vedkommende starter Chrome. Brugerens lokale profildata som f.eks. bogmærker og adgangskoder bevares dog. Brugeren kan stadig logge ind på og benytte Google-webtjenester såsom Gmail.
+
+      Hvis "Aktivér browserlogin" er angivet for politikken, har brugeren tilladelse til at logge ind i browseren, og brugeren logges automatisk ind i browseren, når vedkommende er logget ind i Google-webtjenester såsom Gmail. Når brugeren er logget ind i browseren, gemmes vedkommendes kontooplysninger i browseren. Det betyder dog ikke, at Chrome-synkronisering som standard aktiveres. Brugeren skal selv tilvælge denne funktion. Hvis denne politik aktiveres, kan brugeren ikke deaktivere den indstilling, der tillader browserlogin. Brug politikken "SyncDisabled" til at styre tilgængeligheden af Chrome-synkronisering.
+
+      Hvis "Kræv browserlogin" er angivet for politikken, får brugeren vist en dialogboks til kontovalg, hvor vedkommende skal vælge og logge ind på en konto for at benytte browseren. Dette sikrer, at politikker, der er knyttet til administrerede konti, anvendes og håndhæves. Denne indstilling aktiverer som standard Chrome-synkronisering for kontoen, undtagen i tilfælde, hvor synkronisering er deaktiveret af domæneadministratoren eller via politikken "SyncDisabled". Standardværdien for BrowserGuestModeEnabled angives som Falsk. Bemærk! Eksisterende profiler, hvor der ikke er logget ind, låses og kan ikke længere anvendes efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp: https://support.google.com/chrome/a/answer/7572556. Linux understøtter ikke denne valgmulighed, og "Aktivér browserlogin" anvendes som alternativ, hvis denne valgmulighed anvendes.
+
+      Hvis politikken ikke konfigureres, kan brugeren selv bestemme, om muligheden for browserlogin skal aktiveres, og anvende den efter eget behov.</translation>
 <translation id="9072600218500597787">Konfigurerer de påkrævede hostdomænenavne, der pålægges hosts for fjernadgang, og forhindrer brugerne i at ændre det.
 
           Hvis denne indstilling er aktiveret, kan hosts kun deles ved hjælp af konti, der er registreret på et af de angivne domænenavne.

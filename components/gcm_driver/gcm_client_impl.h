@@ -409,13 +409,13 @@ class GCMClientImpl
   std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
 
   // Factory for creating references when scheduling periodic checkin.
-  base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_;
+  base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_{this};
 
   // Factory for wiping out GCM store.
-  base::WeakPtrFactory<GCMClientImpl> destroying_gcm_store_ptr_factory_;
+  base::WeakPtrFactory<GCMClientImpl> destroying_gcm_store_ptr_factory_{this};
 
   // Factory for creating references in callbacks.
-  base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientImpl);
 };

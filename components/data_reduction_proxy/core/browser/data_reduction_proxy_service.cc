@@ -57,8 +57,7 @@ DataReductionProxyService::DataReductionProxyService(
       network_quality_tracker_(network_quality_tracker),
       network_connection_tracker_(network_connection_tracker),
       data_use_measurement_(data_use_measurement),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      weak_factory_(this) {
+      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);

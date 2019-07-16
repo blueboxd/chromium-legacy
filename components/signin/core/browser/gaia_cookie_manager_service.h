@@ -387,7 +387,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
 
   bool list_accounts_stale_;
 
-  base::WeakPtrFactory<GaiaCookieManagerService> weak_ptr_factory_;
+  base::WeakPtrFactory<GaiaCookieManagerService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GaiaCookieManagerService);
 };

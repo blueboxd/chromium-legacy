@@ -32,9 +32,10 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
     NavigateTo(KURL("https://example.com/"));
-    dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
-    proxy_client_ =
-        MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, dispatcher_);
+    // This test only needs the proxy client set to avoid calling
+    // PaintWorkletProxyClient::Create, but it doesn't need the dispatcher/etc.
+    proxy_client_ = MakeGarbageCollected<PaintWorkletProxyClient>(
+        1, nullptr, nullptr, nullptr);
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
@@ -109,7 +110,6 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   }
 
  private:
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;
   Persistent<PaintWorkletProxyClient> proxy_client_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };

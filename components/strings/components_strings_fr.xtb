@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Carte</translation>
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Émis pour : <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Capteurs de mouvement</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
 <translation id="214556005048008348">Annuler le paiement</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">Vérifiez le signal dans votre zone.</translation>
 <translation id="2523886232349826891">Enregistrée sur cet appareil uniquement</translation>
 <translation id="2524461107774643265">Ajouter des informations</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
 <translation id="2536110899380797252">Ajouter une adresse</translation>
 <translation id="2539524384386349900">Détecter</translation>
 <translation id="254947805923345898">La valeur de la règle n'est pas valide.</translation>
@@ -714,6 +716,7 @@
 <translation id="4858792381671956233">Une demande d'autorisation a été envoyée à tes parents pour la consultation de ce site</translation>
 <translation id="4876188919622883022">Vue simplifiée</translation>
 <translation id="4876305945144899064">Aucun nom d'utilisateur</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Aucun}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Recherche sur "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Automatique (par défaut)</translation>
 <translation id="4880827082731008257">Rechercher dans l'historique</translation>
@@ -1008,6 +1011,7 @@
 <translation id="650855688985305916">Oui, enregistrer</translation>
 <translation id="6508722015517270189">Relancez Chrome</translation>
 <translation id="6517596291481585650">Avertissement : Cette règle n'a pas été fusionnée en tant que liste comme indiqué, car ce n'est pas une liste.</translation>
+<translation id="6521745193039995384">Inactive</translation>
 <translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
 <translation id="6534179046333460208">Suggestions pour le Web physique</translation>
 <translation id="6545864417968258051">Recherche Bluetooth</translation>
@@ -1467,6 +1471,7 @@ Informations supplémentaires :
 <translation id="9076630408993835509">Ce navigateur n'est géré par aucune entreprise ni aucune autre organisation. Il se peut que l'activité sur cet appareil soit gérée en dehors de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Veuillez fournir d'autres informations</translation>
 <translation id="9080712759204168376">Récapitulatif de la commande</translation>
+<translation id="9089260154716455634">Règle pendant les heures de désactivation :</translation>
 <translation id="9095388113577226029">Plus de langues…</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>

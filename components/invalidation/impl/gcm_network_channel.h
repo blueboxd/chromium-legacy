@@ -133,7 +133,7 @@ class INVALIDATION_EXPORT GCMNetworkChannel
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GCMNetworkChannel> weak_factory_;
+  base::WeakPtrFactory<GCMNetworkChannel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMNetworkChannel);
 };

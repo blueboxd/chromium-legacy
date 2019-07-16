@@ -79,7 +79,7 @@ class InternalAuthenticatorImpl : public blink::mojom::InternalAuthenticator,
   // Owns pipes to this Authenticator from |render_frame_host_|.
   mojo::Receiver<blink::mojom::InternalAuthenticator> receiver_{this};
 
-  base::WeakPtrFactory<InternalAuthenticatorImpl> weak_factory_;
+  base::WeakPtrFactory<InternalAuthenticatorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InternalAuthenticatorImpl);
 };

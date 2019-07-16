@@ -101,7 +101,7 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   static UiDevToolsServer* devtools_server_;
 
   SEQUENCE_CHECKER(devtools_server_sequence_);
-  base::WeakPtrFactory<UiDevToolsServer> weak_ptr_factory_;
+  base::WeakPtrFactory<UiDevToolsServer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UiDevToolsServer);
 };

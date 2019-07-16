@@ -59,7 +59,7 @@ std::unique_ptr<InstanceID> InstanceID::CreateInternal(
 
 InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
                                gcm::GCMDriver* gcm_driver)
-    : InstanceID(app_id, gcm_driver), weak_ptr_factory_(this) {
+    : InstanceID(app_id, gcm_driver) {
   Handler()->GetInstanceIDData(
       app_id, base::Bind(&InstanceIDImpl::GetInstanceIDDataCompleted,
                          weak_ptr_factory_.GetWeakPtr()));

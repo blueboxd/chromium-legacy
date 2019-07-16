@@ -184,12 +184,6 @@ public class SnippetArticle
         return mCategory == KnownCategories.ARTICLES;
     }
 
-    /** @return whether a snippet is a contextual suggestion. */
-    // TODO(crbug.com/959307): Remove this function from the codebase.
-    public boolean isContextual() {
-        return false;
-    }
-
     @Override
     public boolean requiresExactOfflinePage() {
         return false;

@@ -92,8 +92,7 @@ class AddressNormalizerImpl::NormalizationRequest {
                        AddressNormalizer::NormalizationCallback callback)
       : profile_(profile),
         app_locale_(app_locale),
-        callback_(std::move(callback)),
-        weak_ptr_factory_(this) {
+        callback_(std::move(callback)) {
     // OnRulesLoaded will be called in |timeout_seconds| if the rules are not
     // loaded in time.
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -140,7 +139,7 @@ class AddressNormalizerImpl::NormalizationRequest {
   AddressNormalizer::NormalizationCallback callback_;
 
   bool has_responded_ = false;
-  base::WeakPtrFactory<NormalizationRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<NormalizationRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NormalizationRequest);
 };
@@ -148,7 +147,7 @@ class AddressNormalizerImpl::NormalizationRequest {
 AddressNormalizerImpl::AddressNormalizerImpl(std::unique_ptr<Source> source,
                                              std::unique_ptr<Storage> storage,
                                              const std::string& app_locale)
-    : app_locale_(app_locale), weak_ptr_factory_(this) {
+    : app_locale_(app_locale) {
   // |address_validator_| is created in the background. Once initialized, it
   // will run any pending normalization.
   //

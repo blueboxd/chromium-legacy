@@ -265,8 +265,7 @@ StartupMaintenanceTask::StartupMaintenanceTask(
     ClientPolicyController* policy_controller)
     : store_(store),
       archive_manager_(archive_manager),
-      policy_controller_(policy_controller),
-      weak_ptr_factory_(this) {
+      policy_controller_(policy_controller) {
   DCHECK(store_);
   DCHECK(archive_manager_);
   DCHECK(policy_controller_);

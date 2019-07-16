@@ -105,26 +105,9 @@ base::Version GetOSVersion() {
   return ret;
 }
 
-// Wrapper around channel checking, used to enable channel mocking for
-// testing. If a fake channel flag is provided, it will take precedence.
-// Otherwise, this will return the current browser channel (which could be
-// UNKNOWN).
-Study::Channel GetChannelForVariations(version_info::Channel product_channel) {
-  const std::string forced_channel =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kFakeVariationsChannel);
-  if (!forced_channel.empty()) {
-    if (forced_channel == "stable")
-      return Study::STABLE;
-    if (forced_channel == "beta")
-      return Study::BETA;
-    if (forced_channel == "dev")
-      return Study::DEV;
-    if (forced_channel == "canary")
-      return Study::CANARY;
-    DVLOG(1) << "Invalid channel provided: " << forced_channel;
-  }
-
+// Just maps one set of enum values to another. Nothing to see here.
+Study::Channel ConvertProductChannelToStudyChannel(
+    version_info::Channel product_channel) {
   switch (product_channel) {
     case version_info::Channel::CANARY:
       return Study::CANARY;
@@ -257,7 +240,8 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;
   state->os_version = GetOSVersion();
-  state->channel = GetChannelForVariations(client_->GetChannel());
+  state->channel =
+      ConvertProductChannelToStudyChannel(client_->GetChannelForVariations());
   state->form_factor = GetCurrentFormFactor();
   state->platform = GetPlatform();
   state->hardware_class = GetShortHardwareClass();

@@ -146,7 +146,7 @@ class RemoteSuggestionsDatabase {
 
   base::Closure error_callback_;
 
-  base::WeakPtrFactory<RemoteSuggestionsDatabase> weak_ptr_factory_;
+  base::WeakPtrFactory<RemoteSuggestionsDatabase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsDatabase);
 };

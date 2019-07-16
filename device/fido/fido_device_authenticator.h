@@ -104,6 +104,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
+  bool RequiresBlePairingPin() const override;
 #if defined(OS_WIN)
   bool IsWinNativeApiAuthenticator() const override;
 #endif  // defined(OS_WIN)

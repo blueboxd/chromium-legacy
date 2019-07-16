@@ -96,9 +96,7 @@ GetArchivesAndUpdateToImportingStateSync(sql::Database* db) {
 
 ImportArchivesTask::ImportArchivesTask(PrefetchStore* prefetch_store,
                                        PrefetchImporter* prefetch_importer)
-    : prefetch_store_(prefetch_store),
-      prefetch_importer_(prefetch_importer),
-      weak_ptr_factory_(this) {}
+    : prefetch_store_(prefetch_store), prefetch_importer_(prefetch_importer) {}
 
 ImportArchivesTask::~ImportArchivesTask() {}
 

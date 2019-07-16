@@ -170,8 +170,7 @@ ExpireHistoryBackend::ExpireHistoryBackend(
       main_db_(nullptr),
       thumb_db_(nullptr),
       backend_client_(backend_client),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   DCHECK(notifier_);
 }
 

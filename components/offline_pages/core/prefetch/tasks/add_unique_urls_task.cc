@@ -154,8 +154,7 @@ AddUniqueUrlsTask::AddUniqueUrlsTask(
     : prefetch_dispatcher_(prefetch_dispatcher),
       prefetch_store_(prefetch_store),
       name_space_(name_space),
-      prefetch_urls_(prefetch_urls),
-      weak_ptr_factory_(this) {
+      prefetch_urls_(prefetch_urls) {
   DCHECK(prefetch_dispatcher_);
   DCHECK(prefetch_store_);
 }

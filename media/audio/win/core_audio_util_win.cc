@@ -616,27 +616,38 @@ HRESULT GetPreferredAudioParametersInternal(IAudioClient* client,
     DVLOG(1) << "IAudioClient => frames_per_buffer: " << frames_per_buffer;
   }
 
+  // Retrieve the current channel configuration (e.g. CHANNEL_LAYOUT_STEREO).
   ChannelLayout channel_layout = GetChannelLayout(format);
+
   AudioParameters audio_params(
       AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout, sample_rate,
       frames_per_buffer,
       AudioParameters::HardwareCapabilities(min_frames_per_buffer,
                                             max_frames_per_buffer));
-  // Set the number of channels explicitly to two for input devices if
-  // the channel layout is discrete to ensure that the parameters are valid
-  // and that clients does not have to support multi-channel input cases.
-  // Any required down-mixing from N (N > 2) to 2 must be performed by the
-  // input stream implementation instead.
-  // See https://crbug/868026 for examples where this approach is needed.
-  if (!is_output_device &&
-      audio_params.channel_layout() == CHANNEL_LAYOUT_DISCRETE) {
-    DLOG(WARNING)
-        << "Forcing number of channels to 2 for CHANNEL_LAYOUT_DISCRETE";
-    audio_params.set_channels_for_discrete(2);
+
+  if (audio_params.channel_layout() == CHANNEL_LAYOUT_DISCRETE) {
+    if (!is_output_device) {
+      // Set the number of channels explicitly to two for input devices if
+      // the channel layout is discrete to ensure that the parameters are valid
+      // and that clients does not have to support multi-channel input cases.
+      // Any required down-mixing from N (N > 2) to 2 must be performed by the
+      // input stream implementation instead.
+      // See crbug.com/868026 for examples where this approach is needed.
+      DVLOG(1) << "Forcing number of channels to 2 for CHANNEL_LAYOUT_DISCRETE";
+      audio_params.set_channels_for_discrete(2);
+    } else {
+      // Some output devices return CHANNEL_LAYOUT_DISCRETE. Keep this channel
+      // format but update the number of channels with the correct value. The
+      // number of channels will be zero otherwise.
+      // See crbug.com/957886 for more details.
+      DVLOG(1) << "Setting number of channels to " << format->nChannels
+               << " for CHANNEL_LAYOUT_DISCRETE";
+      audio_params.set_channels_for_discrete(format->nChannels);
+    }
   }
+  DVLOG(1) << audio_params.AsHumanReadableString();
   DCHECK(audio_params.IsValid());
   *params = audio_params;
-  DVLOG(1) << params->AsHumanReadableString();
 
   return hr;
 }

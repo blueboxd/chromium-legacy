@@ -60,8 +60,7 @@ PasswordProtectionService::PasswordProtectionService(
     HistoryService* history_service)
     : database_manager_(database_manager),
       url_loader_factory_(url_loader_factory),
-      history_service_observer_(this),
-      weak_factory_(this) {
+      history_service_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service)
     history_service_observer_.Add(history_service);

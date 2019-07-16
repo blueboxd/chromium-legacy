@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">సమీప పరికరాలను కనుగొనడానికి బ్లూటూత్‌ను ఆన్ చేయండి</translation>
 <translation id="2805756323405976993">యాప్స్</translation>
 <translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
-<translation id="2912823482158781027">టిక్కెట్‌ను రిఫ్రెష్ చేయి</translation>
-<translation id="3511655281162215899">దయచేసి వెంటనే కొత్త పాస్‌వర్డ్‌ను ఎంచుకోండి</translation>
-<translation id="3562817605261346876">దయచేసి <ph name="PRINCIPAL_NAME" /> సంబంధిత టిక్కెట్‌ను వీలైనంత త్వరగా రిఫ్రెష్ చేయండి</translation>
 <translation id="3838338534323494292">కొత్త పాస్‌వర్డ్</translation>
 <translation id="445059817448385655">పాత పాస్‌వర్డ్</translation>
 <translation id="467510802200863975">పాస్‌వర్డ్‌లు సరిపోలడం లేదు</translation>
@@ -22,16 +19,12 @@
 <translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5457599981699367932">అతిథి లాగా బ్రౌజ్ చేయండి</translation>
 <translation id="54609108002486618">నిర్వహించబడింది</translation>
-<translation id="5733345267661125295">దయచేసి ఇప్పుడు ఒక కొత్త పాస్‌వర్డ్‌ను ఎంచుకోండి</translation>
-<translation id="5743581760404859096">మీ Kerberos టికెట్ గడువు ముగుస్తోంది</translation>
 <translation id="5832805196449965646">వ్యక్తిని జోడించు</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="6058625436358447366">దీనిని ముగించడానికి, మీ పాత, కొత్త పాస్‌వర్డ్‌లను నమోదు చేయండి</translation>
 <translation id="6106186594183574873">దీనిని ముగించడానికి, మీ పాత పాస్‌వర్డ్‌ను నమోదు చేయండి</translation>
 <translation id="6146993107019042706">దీనిని ముగించడానికి, మీ కొత్త పాస్‌వర్డ్‌ను నమోదు చేయండి</translation>
 <translation id="6574601967010742428">మీ కార్యకలాపాన్ని పరికర నిర్వాహకులు పర్యవేక్షించవచ్చు.</translation>
-<translation id="7280705187789120111">Kerberos టిక్కెట్ గడువు ముగుస్తోంది</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{మీ ప్రస్తుత పాస్‌వర్డ్ గడువు ముగిసింది!}=1{మీ ప్రస్తుత పాస్‌వర్డ్ గడువు ఒక రోజులోపు ముగుస్తుంది!}other{మీ ప్రస్తుత పాస్‌వర్డ్ గడువు # రోజులలో ముగుస్తుంది!}}</translation>
 <translation id="7658239707568436148">రద్దు చేయి</translation>
 <translation id="7690294790491645610">కొత్త పాస్‌వర్డ్‌ను నిర్ధారించండి</translation>
 <translation id="808894953321890993">పాస్‌వర్డ్‌ను మార్చు</translation>

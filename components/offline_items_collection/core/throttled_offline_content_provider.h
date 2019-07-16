@@ -93,7 +93,7 @@ class ThrottledOfflineContentProvider
       OfflineItemMap;
   OfflineItemMap updates_;
 
-  base::WeakPtrFactory<ThrottledOfflineContentProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ThrottledOfflineContentProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThrottledOfflineContentProvider);
 };

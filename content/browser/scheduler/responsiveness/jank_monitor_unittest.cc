@@ -91,9 +91,7 @@ class JankMonitorTest : public testing::Test {
  public:
   JankMonitorTest()
       : test_browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
   ~JankMonitorTest() override {}
 
   void SetUp() override {

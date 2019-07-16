@@ -23,8 +23,7 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
     service_manager::BinderRegistry* registry)
     : RenderFrameObserver(render_frame),
       distiller_isolated_world_id_(distiller_isolated_world_id),
-      is_distiller_page_(false),
-      weak_factory_(this) {
+      is_distiller_page_(false) {
   registry->AddInterface(base::Bind(
       &DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService,
       weak_factory_.GetWeakPtr()));

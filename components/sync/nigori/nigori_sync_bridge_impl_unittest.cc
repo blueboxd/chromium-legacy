@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -153,8 +152,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     auto processor =
         std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
     processor_ = processor.get();
-    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor),
-                                                     &encryptor_);
+    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor));
     bridge_->AddObserver(&observer_);
   }
 
@@ -180,7 +178,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
       const KeyParams& keystore_key_params) {
     sync_pb::NigoriSpecifics specifics;
 
-    Cryptographer cryptographer(&encryptor_);
+    Cryptographer cryptographer;
     cryptographer.AddKey(keystore_decryptor_params);
     for (const KeyParams& key_params : keybag_keys_params) {
       cryptographer.AddNonDefaultKey(key_params);
@@ -189,7 +187,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
 
     std::string serialized_keystore_decryptor =
         cryptographer.GetDefaultNigoriKeyData();
-    Cryptographer keystore_cryptographer(&encryptor_);
+    Cryptographer keystore_cryptographer;
     keystore_cryptographer.AddKey(keystore_key_params);
     EXPECT_TRUE(keystore_cryptographer.EncryptString(
         serialized_keystore_decryptor,
@@ -213,7 +211,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
       const base::Optional<KeyParams>& old_key_params = base::nullopt) {
     sync_pb::NigoriSpecifics specifics;
 
-    Cryptographer cryptographer(&encryptor_);
+    Cryptographer cryptographer;
     cryptographer.AddKey(passphrase_key_params);
     if (old_key_params) {
       cryptographer.AddNonDefaultKey(*old_key_params);
@@ -240,8 +238,6 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   }
 
  private:
-  // Don't change the order. |encryptor_| should outlive |bridge_|.
-  FakeEncryptor encryptor_;
   std::unique_ptr<NigoriSyncBridgeImpl> bridge_;
   // Ownership transferred to |bridge_|.
   testing::NiceMock<MockNigoriLocalChangeProcessor>* processor_;

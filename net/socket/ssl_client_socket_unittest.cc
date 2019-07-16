@@ -950,6 +950,7 @@ class SSLClientSocketTest : public PlatformTest,
     cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
   }
 
+  TestNetLog log_;
   ClientSocketFactory* socket_factory_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
@@ -958,7 +959,6 @@ class SSLClientSocketTest : public PlatformTest,
   std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
   SSLClientSocketContext context_;
   std::unique_ptr<SSLClientSocket> sock_;
-  TestNetLog log_;
 
  private:
   std::unique_ptr<SpawnedTestServer> spawned_test_server_;

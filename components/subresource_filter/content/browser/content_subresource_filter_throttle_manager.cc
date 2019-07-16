@@ -43,8 +43,7 @@ ContentSubresourceFilterThrottleManager::
       binding_(web_contents, this),
       scoped_observer_(this),
       dealer_handle_(dealer_handle),
-      client_(client),
-      weak_ptr_factory_(this) {
+      client_(client) {
   SubresourceFilterObserverManager::CreateForWebContents(web_contents);
   scoped_observer_.Add(
       SubresourceFilterObserverManager::FromWebContents(web_contents));

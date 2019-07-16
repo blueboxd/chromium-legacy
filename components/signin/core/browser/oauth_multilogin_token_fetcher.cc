@@ -37,8 +37,7 @@ OAuthMultiloginTokenFetcher::OAuthMultiloginTokenFetcher(
       token_service_(token_service),
       account_ids_(account_ids),
       success_callback_(std::move(success_callback)),
-      failure_callback_(std::move(failure_callback)),
-      weak_ptr_factory_(this) {
+      failure_callback_(std::move(failure_callback)) {
   DCHECK(signin_client_);
   DCHECK(token_service_);
   DCHECK(!account_ids_.empty());

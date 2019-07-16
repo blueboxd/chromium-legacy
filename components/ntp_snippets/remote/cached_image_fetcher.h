@@ -94,7 +94,7 @@ class CachedImageFetcher {
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;
 
-  base::WeakPtrFactory<CachedImageFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<CachedImageFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcher);
 };

@@ -58,6 +58,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
 
     private final int mSuggestionHeight;
     private final int mSuggestionAnswerHeight;
+    private final int mSuggestionMaxHeight;
     @SuggestionLayoutType
     private int mSuggestionLayoutType;
     private SuggestionViewDelegate mSuggestionDelegate;
@@ -93,6 +94,8 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
                 context.getResources().getDimensionPixelOffset(R.dimen.omnibox_suggestion_height);
         mSuggestionAnswerHeight = context.getResources().getDimensionPixelOffset(
                 R.dimen.omnibox_suggestion_answer_height);
+        mSuggestionMaxHeight = context.getResources().getDimensionPixelOffset(
+                R.dimen.omnibox_suggestion_max_height);
 
         TypedArray a =
                 getContext().obtainStyledAttributes(new int[] {R.attr.selectableItemBackground});
@@ -185,7 +188,7 @@ public class SuggestionView extends ViewGroup implements OnClickListener {
         if (mSuggestionLayoutType == SuggestionLayoutType.MULTI_LINE_ANSWER) {
             mContentsView.measure(
                     MeasureSpec.makeMeasureSpec(width - refineWidth, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(mSuggestionAnswerHeight * 2, MeasureSpec.AT_MOST));
+                    MeasureSpec.makeMeasureSpec(mSuggestionMaxHeight, MeasureSpec.AT_MOST));
             height = mContentsView.getMeasuredHeight();
         } else if (mSuggestionLayoutType == SuggestionLayoutType.ANSWER) {
             height = mSuggestionAnswerHeight;

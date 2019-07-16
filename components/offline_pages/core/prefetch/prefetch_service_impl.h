@@ -110,7 +110,7 @@ class PrefetchServiceImpl : public PrefetchService {
   // Zine/Feed: only non-null when using Feed.
   SuggestionsProvider* suggestions_provider_ = nullptr;
 
-  base::WeakPtrFactory<PrefetchServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrefetchServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);
 };

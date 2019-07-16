@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">I-on ang Bluetooth upang tuklasin ang mga kalapit na device</translation>
 <translation id="2805756323405976993">Mga App</translation>
 <translation id="2872961005593481000">Shut down</translation>
-<translation id="2912823482158781027">I-REFRESH ANG TICKET</translation>
-<translation id="3511655281162215899">Pumili kaagad ng bagong password</translation>
-<translation id="3562817605261346876">Paki-refresh ang ticket para sa <ph name="PRINCIPAL_NAME" /> sa lalong madaling panahon</translation>
 <translation id="3838338534323494292">Bagong password</translation>
 <translation id="445059817448385655">Lumang password</translation>
 <translation id="467510802200863975">Hindi nagtutugma ang mga password</translation>
@@ -23,16 +20,12 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
-<translation id="5733345267661125295">Pumili ng bagong password ngayon</translation>
-<translation id="5743581760404859096">Mag-e-expire na ang iyong ticket ng Kerberos</translation>
 <translation id="5832805196449965646">Magdagdag ng Tao</translation>
 <translation id="5895138241574237353">I-restart</translation>
 <translation id="6058625436358447366">Para tapusin, ilagay ang iyong luma at bagong password</translation>
 <translation id="6106186594183574873">Para tapusin, ilagay ang iyong lumang password</translation>
 <translation id="6146993107019042706">Para tapusin, ilagay ang bago mong password</translation>
 <translation id="6574601967010742428">Maaaring masubaybayan ng administrator ng device ang iyong aktibidad.</translation>
-<translation id="7280705187789120111">Mag-e-expire na ang ticket ng Kerberos</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Nag-expire na ang iyong kasalukuyang password!}=1{Mag-e-expire sa loob ng wala pang isang araw ang iyong kasalukuyang password!}one{Mag-e-expire sa loob ng wala pang # araw ang iyong kasalukuyang password!}other{Mag-e-expire sa loob ng wala pang # na araw ang iyong kasalukuyang password!}}</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="808894953321890993">Palitan ang password</translation>

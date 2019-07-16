@@ -249,15 +249,16 @@ DataReductionProxyPingbackClientImpl::DataReductionProxyPingbackClientImpl(
       current_loader_message_count_(0u),
       current_loader_crash_count_(0u),
       ui_task_runner_(std::move(ui_task_runner)),
-      channel_(channel),
+      channel_(channel)
 #if defined(OS_ANDROID)
+      ,
       scoped_observer_(this),
       weak_factory_(this) {
   auto* crash_manager = crash_reporter::CrashMetricsReporter::GetInstance();
   DCHECK(crash_manager);
   scoped_observer_.Add(crash_manager);
 #else
-      weak_factory_(this){
+          {
 #endif
 }
 

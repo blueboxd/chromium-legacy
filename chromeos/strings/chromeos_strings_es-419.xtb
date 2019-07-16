@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Activar Bluetooth para buscar los dispositivos cercanos</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2872961005593481000">Cerrar</translation>
-<translation id="2912823482158781027">ACTUALIZAR TICKET</translation>
-<translation id="3511655281162215899">Elige una contraseña nueva de inmediato</translation>
-<translation id="3562817605261346876">Actualiza el ticket de <ph name="PRINCIPAL_NAME" /> pronto</translation>
 <translation id="3838338534323494292">Nueva contraseña</translation>
 <translation id="445059817448385655">Contraseña anterior</translation>
 <translation id="467510802200863975">Las contraseñas no coinciden</translation>
@@ -23,16 +20,12 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5457599981699367932">Navegar como invitado</translation>
 <translation id="54609108002486618">Gestionado</translation>
-<translation id="5733345267661125295">Elige una contraseña nueva ahora</translation>
-<translation id="5743581760404859096">Tu ticket de Kerberos vencerá pronto</translation>
 <translation id="5832805196449965646">Agregar un usuario</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="6058625436358447366">Para finalizar, ingresa tu contraseña anterior y la nueva</translation>
 <translation id="6106186594183574873">Para finalizar, ingresa tu contraseña anterior</translation>
 <translation id="6146993107019042706">Para finalizar, ingresa tu nueva contraseña</translation>
 <translation id="6574601967010742428">Es posible que el administrador del dispositivo supervise tu actividad.</translation>
-<translation id="7280705187789120111">Vencimiento del ticket de Kerberos</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Caducó tu contraseña actual.}=1{Tu contraseña actual caducará en menos de un día.}other{Tu contraseña actual caducará en menos de # días.}}</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7690294790491645610">Confirmar contraseña nueva</translation>
 <translation id="808894953321890993">Cambiar contraseña</translation>

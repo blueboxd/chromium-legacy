@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/policy/core/common/fake_async_policy_loader.h"
 #include "components/policy/policy_constants.h"
-#include "remoting/host/dns_blackhole_checker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -313,8 +312,7 @@ class PolicyWatcherTest : public testing::Test {
     dict.Set(key::kRemoteAccessHostDomainList,
              std::make_unique<base::ListValue>());
     dict.SetBoolean(key::kRemoteAccessHostMatchUsername, false);
-    dict.SetString(key::kRemoteAccessHostTalkGadgetPrefix,
-                   kDefaultHostTalkGadgetPrefix);
+    dict.SetString(key::kRemoteAccessHostTalkGadgetPrefix, "");
     dict.SetBoolean(key::kRemoteAccessHostRequireCurtain, false);
     dict.SetString(key::kRemoteAccessHostTokenUrl, "");
     dict.SetString(key::kRemoteAccessHostTokenValidationUrl, "");

@@ -41,6 +41,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // U2F) device.
     bool u2f_support = false;
     bool pin_support = false;
+    bool is_platform_authenticator = false;
     bool internal_uv_support = false;
     bool resident_key_support = false;
     bool credential_management_support = false;
@@ -49,28 +50,41 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     uint8_t bio_enrollment_capacity = 10;
     uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
+
     // resident_credential_storage is the number of resident credentials that
     // the device will store before returning KEY_STORE_FULL.
     size_t resident_credential_storage = 3;
+
     // return_immediate_invalid_credential_error causes an INVALID_CREDENTIAL
     // error to be returned from GetAssertion, before getting a touch, when no
     // credentials are recognised. This behaviour is exhibited by some CTAP2
     // authenticators in the wild.
     bool return_immediate_invalid_credential_error = false;
+
     // return_attested_cred_data_in_get_assertion_response causes
     // attestedCredentialData to be included in the authenticator data of an
     // GetAssertion response.
     bool return_attested_cred_data_in_get_assertion_response = false;
+
     // reject_large_allow_and_exclude_lists causes the authenticator to respond
     // with an error if an allowList or an excludeList contains more than one
     // credential ID.
     bool reject_large_allow_and_exclude_lists = false;
+
     // reject_silent_authenticator_requests causes the authenticator to return
     // an error if a up=false assertion request is received.
     bool reject_silent_authentication_requests = false;
+
     // Whether internal user verification should succeed or not.
     bool user_verification_succeeds = true;
-    bool is_platform_authenticator = false;
+
+    // allow_invalid_utf8_in_credential_entities indicates whether
+    // InjectResidentKey() may be called with a PublicKeyCredentialRpEntity and
+    // PublicKeyCredentialUserEntity containing a trailing partial UTF-8
+    // sequence. This is used to simulate a security key that truncates strings
+    // at a pre-defined byte length without concern for UTF-8 validity of the
+    // result.
+    bool allow_invalid_utf8_in_credential_entities = true;
   };
 
   VirtualCtap2Device();

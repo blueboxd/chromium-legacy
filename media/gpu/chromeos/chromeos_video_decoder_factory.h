@@ -13,12 +13,7 @@
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }  // namespace base
-
-namespace gpu {
-class CommandBufferStub;
-}
 
 namespace media {
 

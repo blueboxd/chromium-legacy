@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">음역(vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">슬라이드 보기</translation>
 <translation id="1045157690796831147">음역(namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">일본어 입력(미국 키보드용)</translation>
 <translation id="1047956942837015229"><ph name="COUNT" />개 항목 삭제 중...</translation>
 <translation id="1049926623896334335">Word 문서</translation>
 <translation id="1062407476771304334">바꾸기</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3549797760399244642">drive.google.com 사이트로 이동...</translation>
 <translation id="357479282490346887">리투아니아어</translation>
+<translation id="3583509704582854624">영숫자 입력(일본어 키보드용)</translation>
 <translation id="3603385196401704894">프랑스어(캐나다)</translation>
 <translation id="3606220979431771195">터키어-F</translation>
 <translation id="3609785682760573515">동기화 중...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Linux 애플리케이션을 설치하는 중에 오류가 발생했습니다.</translation>
 <translation id="5912396950572065471">포맷</translation>
 <translation id="5913638992615760742">복사 작업에 실패했습니다. 예상치 않은 오류: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">일본어 입력(일본어 키보드용)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux 앱에 Google 드라이브의 파일을 수정할 수 있는 권한을 부여합니다. 변경사항이 다른 기기에 동기화됩니다.</translation>
 <translation id="5982621672636444458">정렬 옵션</translation>

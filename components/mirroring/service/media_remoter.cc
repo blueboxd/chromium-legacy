@@ -30,8 +30,7 @@ MediaRemoter::MediaRemoter(
       binding_(this),
       cast_environment_(nullptr),
       transport_(nullptr),
-      state_(MIRRORING),
-      weak_factory_(this) {
+      state_(MIRRORING) {
   DCHECK(client_);
   DCHECK(message_dispatcher_);
 

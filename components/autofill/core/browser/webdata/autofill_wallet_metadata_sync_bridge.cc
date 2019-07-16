@@ -330,8 +330,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend),
       scoped_observer_(this),
-      track_wallet_data_(false),
-      weak_ptr_factory_(this) {
+      track_wallet_data_(false) {
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 

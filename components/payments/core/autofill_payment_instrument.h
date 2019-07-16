@@ -106,7 +106,7 @@ class AutofillPaymentInstrument
   bool is_waiting_for_card_unmask_;
   bool is_waiting_for_billing_address_normalization_;
 
-  base::WeakPtrFactory<AutofillPaymentInstrument> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillPaymentInstrument> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPaymentInstrument);
 };

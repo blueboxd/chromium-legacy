@@ -89,6 +89,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -531,9 +532,12 @@ class SecurityStateTabHelperIncognitoTest : public SecurityStateTabHelperTest {
     SecurityStateTabHelperTest::SetUpCommandLine(command_line);
     // Test should run Incognito.
     command_line->AppendSwitch(switches::kIncognito);
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperIncognitoTest);
 };
 
@@ -695,7 +699,21 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1CertificateWarning) {
             explanation.neutral_explanations[0].summary);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContent) {
+class SecurityStateTabHelperTestWithAutoupgradesDisabled
+    : public SecurityStateTabHelperTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SecurityStateTabHelperTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
+                       MixedContent) {
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
   net::HostPortPair replacement_pair = embedded_test_server()->host_port_pair();
@@ -853,7 +871,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
 // Same as SecurityStateTabHelperTest.ActiveAndPassiveContentWithCertErrors but
 // with a SHA1 cert.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
+                       MixedContentWithSHA1Cert) {
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_SHA1_SIGNATURE_PRESENT,
                                       net::OK);
 
@@ -913,7 +932,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithSHA1Cert) {
 
 // Tests that the Content Security Policy block-all-mixed-content
 // directive stops mixed content from running.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentStrictBlocking) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
+                       MixedContentStrictBlocking) {
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
   // Navigate to an HTTPS page that tries to run mixed content in an
@@ -932,7 +952,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentStrictBlocking) {
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, BrokenHTTPS) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
+                       BrokenHTTPS) {
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_DATE_INVALID,
                                       net::ERR_CERT_DATE_INVALID);
 
@@ -1467,10 +1488,24 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, AddedTab) {
                              false /* expect cert status error */);
 }
 
+class DidChangeVisibleSecurityStateTestWithAutoupgradesDisabled
+    : public DidChangeVisibleSecurityStateTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DidChangeVisibleSecurityStateTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Tests that the WebContentsObserver::DidChangeVisibleSecurityState event fires
 // with the current style on HTTP, broken HTTPS, and valid HTTPS pages.
-IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
-                       DidChangeVisibleSecurityStateObserver) {
+IN_PROC_BROWSER_TEST_F(
+    DidChangeVisibleSecurityStateTestWithAutoupgradesDisabled,
+    DidChangeVisibleSecurityStateObserver) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
@@ -1948,7 +1983,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
 
 // Tests that the histogram for security level is recorded correctly for HTTP
 // pages.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HTTPSecurityLevelHistogram) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
+                       HTTPSecurityLevelHistogram) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       security_state::features::kMarkHttpAsFeature);
@@ -1968,7 +2004,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HTTPSecurityLevelHistogram) {
 
 // Tests that the histogram for security level is recorded correctly for HTTPS
 // pages.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
                        HTTPSSecurityLevelHistogram) {
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
   const char kHistogramName[] = "Security.SecurityLevel.CryptographicScheme";

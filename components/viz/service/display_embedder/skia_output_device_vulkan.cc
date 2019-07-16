@@ -64,16 +64,17 @@ void SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
   }
 }
 
-gfx::SwapResponse SkiaOutputDeviceVulkan::SwapBuffers(
-    BufferPresentedCallback feedback) {
+void SkiaOutputDeviceVulkan::SwapBuffers(
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   // Reshape should have been called first.
   DCHECK(vulkan_surface_);
   DCHECK(!scoped_write_);
 
   StartSwapBuffers(std::move(feedback));
   auto image_size = vulkan_surface_->image_size();
-  auto response = FinishSwapBuffers(vulkan_surface_->SwapBuffers(), image_size);
-  return response;
+  FinishSwapBuffers(vulkan_surface_->SwapBuffers(), image_size,
+                    std::move(latency_info));
 }
 
 SkSurface* SkiaOutputDeviceVulkan::BeginPaint() {

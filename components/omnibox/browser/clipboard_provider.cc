@@ -44,8 +44,7 @@ ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
       history_url_provider_(history_url_provider),
       current_url_suggested_times_(0),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false),
-      callback_weak_ptr_factory_(this) {
+      field_trial_triggered_in_session_(false) {
   DCHECK(clipboard_content_);
 }
 

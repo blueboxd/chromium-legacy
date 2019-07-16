@@ -327,7 +327,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // A weak pointer factory used for cancelling the results from any in-flight
   // copy output requests.
-  base::WeakPtrFactory<FrameSinkVideoCapturerImpl> capture_weak_factory_;
+  base::WeakPtrFactory<FrameSinkVideoCapturerImpl> capture_weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkVideoCapturerImpl);
 };

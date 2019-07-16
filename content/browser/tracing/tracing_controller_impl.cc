@@ -56,6 +56,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #endif
 
@@ -146,32 +147,6 @@ std::string GetClockOffsetSinceEpoch() {
                             ConvertTimespecToMicros(realtime_before) / 2 +
                                 ConvertTimespecToMicros(realtime_after) / 2 -
                                 ConvertTimespecToMicros(monotonic));
-}
-#endif
-
-#if defined(OS_WIN)
-// The following code detect whether the current session is a remote session.
-// See:
-// https://docs.microsoft.com/en-us/windows/desktop/TermServ/detecting-the-terminal-services-environment
-bool IsCurrentSessionRemote() {
-  static const wchar_t kRdpSettingsKeyName[] =
-      L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server";
-  static const wchar_t kGlassSessionIdValueName[] = L"GlassSessionId";
-
-  if (::GetSystemMetrics(SM_REMOTESESSION))
-    return true;
-
-  DWORD glass_session_id = 0;
-  DWORD current_session_id = 0;
-  base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpSettingsKeyName, KEY_READ);
-  if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id) ||
-      !key.Valid() ||
-      key.ReadValueDW(kGlassSessionIdValueName, &glass_session_id) !=
-          ERROR_SUCCESS) {
-    return false;
-  }
-
-  return current_session_id != glass_session_id;
 }
 #endif
 
@@ -299,8 +274,8 @@ TracingControllerImpl::GenerateMetadataDict() {
     }
   }
 
-  metadata_dict->SetString("os-session",
-                           IsCurrentSessionRemote() ? "remote" : "local");
+  metadata_dict->SetString(
+      "os-session", base::win::IsCurrentSessionRemote() ? "remote" : "local");
 #endif
 
   metadata_dict->SetString("os-arch",

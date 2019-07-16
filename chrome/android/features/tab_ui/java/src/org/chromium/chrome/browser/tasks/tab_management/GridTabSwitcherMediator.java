@@ -19,7 +19,9 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -57,6 +59,8 @@ import java.util.List;
 class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
                                          TabListRecyclerView.VisibilityListener,
                                          TabListMediator.GridCardOnClickListenerProvider {
+    private static final String TAG = "GTSMediator";
+
     // This should be the same as TabListCoordinator.GRID_LAYOUT_SPAN_COUNT for the selected tab
     // to be on the 2nd row.
     static final int INITIAL_SCROLL_INDEX_OFFSET = 2;
@@ -239,6 +243,11 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         mTabGridDialogResetHandler = tabGridDialogResetHandler;
     }
 
+    @VisibleForTesting
+    int getSoftCleanupDelayForTesting() {
+        return getSoftCleanupDelay();
+    }
+
     private int getSoftCleanupDelay() {
         if (mSoftCleanupDelayMsForTesting != null) return mSoftCleanupDelayMsForTesting;
 
@@ -249,6 +258,11 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         } catch (NumberFormatException e) {
             return DEFAULT_SOFT_CLEANUP_DELAY_MS;
         }
+    }
+
+    @VisibleForTesting
+    int getCleanupDelayForTesting() {
+        return getCleanupDelay();
     }
 
     private int getCleanupDelay() {
@@ -427,7 +441,9 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
      * @see GridTabSwitcher#postHiding
      */
     void postHiding() {
+        Log.d(TAG, "SoftCleanupDelay = " + getSoftCleanupDelay());
         mHandler.postDelayed(mSoftClearTabListRunnable, getSoftCleanupDelay());
+        Log.d(TAG, "CleanupDelay = " + getCleanupDelay());
         mHandler.postDelayed(mClearTabListRunnable, getCleanupDelay());
     }
 

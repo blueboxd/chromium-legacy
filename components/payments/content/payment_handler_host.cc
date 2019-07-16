@@ -14,7 +14,7 @@
 namespace payments {
 
 PaymentHandlerHost::PaymentHandlerHost(Delegate* delegate)
-    : binding_(this), delegate_(delegate), weak_ptr_factory_(this) {
+    : binding_(this), delegate_(delegate) {
   DCHECK(delegate_);
 }
 

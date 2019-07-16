@@ -36,6 +36,8 @@ class CC_EXPORT ScrollbarController {
     return currently_captured_scrollbar_->orientation();
   }
 
+  void WillBeginImplFrame();
+
  private:
   // Returns a gfx::ScrollOffset object which contains scroll deltas for the
   // synthetic Gesture events.
@@ -43,6 +45,13 @@ class CC_EXPORT ScrollbarController {
       const gfx::PointF position_in_widget);
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget);
   int GetScrollDeltaForScrollbarPart(ScrollbarPart scrollbar_part);
+
+  // Makes position_in_widget relative to the scrollbar.
+  gfx::PointF GetScrollbarRelativePosition(const gfx::PointF position_in_widget,
+                                           bool* clipped);
+
+  // Decides whether a track autoscroll should be aborted.
+  bool ShouldCancelTrackAutoscroll();
 
   LayerTreeHostImpl* layer_tree_host_impl_;
 
@@ -57,7 +66,7 @@ class CC_EXPORT ScrollbarController {
   // "Autoscroll" here means the continuous scrolling that occurs when the
   // pointer is held down on a hit-testable area of the scrollbar such as an
   // arrows of the track itself.
-  bool autoscroll_in_progress_;
+  AutoScrollState autoscroll_state_;
   const ScrollbarLayerImplBase* currently_captured_scrollbar_;
 
   // This is relative to the RenderWidget's origin.

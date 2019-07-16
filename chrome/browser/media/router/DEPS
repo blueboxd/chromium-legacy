@@ -1,6 +1,6 @@
 include_rules = [
   "+services/network",
   "+third_party/openscreen/src/osp/public",
-  "+third_party/openscreen/src/osp_base",
+  "+third_party/openscreen/src/platform/base",
   "+third_party/openscreen/src/platform/api",
 ]

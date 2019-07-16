@@ -39,7 +39,7 @@ class GetVisualsTask : public Task {
   int64_t offline_id_;
   base::OnceCallback<void(std::unique_ptr<OfflinePageVisuals>)>
       complete_callback_;
-  base::WeakPtrFactory<GetVisualsTask> weak_ptr_factory_;
+  base::WeakPtrFactory<GetVisualsTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GetVisualsTask);
 };
 

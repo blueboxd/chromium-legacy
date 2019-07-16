@@ -73,10 +73,7 @@ void RecordPerModelTypeInvalidation(int model_type, bool is_grouped) {
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
                                      const base::FilePath& sync_data_folder,
                                      const base::WeakPtr<SyncEngineImpl>& host)
-    : name_(name),
-      sync_data_folder_(sync_data_folder),
-      host_(host),
-      weak_ptr_factory_(this) {
+    : name_(name), sync_data_folder_(sync_data_folder), host_(host) {
   DCHECK(host);
   // This is constructed on the UI thread but used from the sync thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -351,8 +348,8 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
     nigori_controller_ = std::make_unique<ModelTypeController>(
         NIGORI, std::make_unique<ForwardingModelTypeControllerDelegate>(
                     nigori_processor->GetControllerDelegate().get()));
-    sync_encryption_handler_ = std::make_unique<NigoriSyncBridgeImpl>(
-        std::move(nigori_processor), &encryptor_);
+    sync_encryption_handler_ =
+        std::make_unique<NigoriSyncBridgeImpl>(std::move(nigori_processor));
   } else {
     sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
         &user_share_, &encryptor_, params.restored_key_for_bootstrapping,

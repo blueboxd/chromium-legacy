@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,9 +29,16 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/events/event_constants.h"
 
 class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     https_server_.reset(
@@ -45,6 +53,7 @@ class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  base::test::ScopedFeatureList feature_list;
 };
 
 // Tests that a MIXEDSCRIPT type ContentSettingBubbleModel sends appropriate
@@ -81,6 +90,7 @@ class ContentSettingsMixedScriptIgnoreCertErrorsTest
     : public ContentSettingBubbleModelMixedScriptTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentSettingBubbleModelMixedScriptTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 

@@ -193,7 +193,7 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // |has_token| and |next_token_request_time| get computed on demand.
   SyncTokenStatus partial_token_status_;
 
-  base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncAuthManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncAuthManager);
 };

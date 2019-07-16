@@ -438,7 +438,7 @@ class HostContentSettingsMap : public content_settings::Observer,
 
   base::ObserverList<content_settings::Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<HostContentSettingsMap> weak_ptr_factory_;
+  base::WeakPtrFactory<HostContentSettingsMap> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostContentSettingsMap);
 };

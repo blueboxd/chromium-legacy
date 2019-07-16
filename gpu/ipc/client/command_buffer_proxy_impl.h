@@ -275,7 +275,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   GetGpuFenceTaskMap get_gpu_fence_tasks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread_;
-  base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

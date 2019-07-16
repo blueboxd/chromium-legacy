@@ -236,7 +236,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
+#include "content/browser/child_process_task_port_provider_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1552,9 +1552,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
-#if defined(OS_MACOSX)
-  AddObserver(MachBroker::GetInstance());
-#endif
 
   InitializeChannelProxy();
 
@@ -3305,6 +3302,12 @@ void RenderProcessHostImpl::OnAssociatedInterfaceRequest(
 
 void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_ = true;
+
+#if defined(OS_MACOSX)
+  ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
+      peer_pid, child_control_interface_.get());
+#endif
+
   if (IsReady()) {
     DCHECK(!sent_render_process_ready_);
     sent_render_process_ready_ = true;
@@ -4422,7 +4425,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #if defined(OS_MACOSX)
     priority_.visible =
         !child_process_launcher_->GetProcess().IsProcessBackgrounded(
-            MachBroker::GetInstance());
+            ChildProcessTaskPortProvider::GetInstance());
 #elif defined(OS_ANDROID)
     // Android child process priority works differently and cannot be queried
     // directly from base::Process.

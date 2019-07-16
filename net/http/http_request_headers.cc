@@ -15,8 +15,8 @@
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_values.h"
 
 namespace net {
 

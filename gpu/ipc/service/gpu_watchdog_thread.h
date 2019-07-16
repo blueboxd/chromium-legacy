@@ -230,7 +230,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   int host_tty_;
 #endif
 
-  base::WeakPtrFactory<GpuWatchdogThreadImplV1> weak_factory_;
+  base::WeakPtrFactory<GpuWatchdogThreadImplV1> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThreadImplV1);
 };

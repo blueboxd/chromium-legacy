@@ -27,7 +27,7 @@ constexpr int kNotifyListenerTimeMs = 300;
 class MouseWatcher::Observer : public ui::EventObserver {
  public:
   Observer(MouseWatcher* mouse_watcher, gfx::NativeWindow window)
-      : mouse_watcher_(mouse_watcher), notify_listener_factory_(this) {
+      : mouse_watcher_(mouse_watcher) {
     event_monitor_ = EventMonitor::CreateApplicationMonitor(
         this, window,
         {ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_MOVED, ui::ET_MOUSE_EXITED,
@@ -92,7 +92,7 @@ class MouseWatcher::Observer : public ui::EventObserver {
   std::unique_ptr<views::EventMonitor> event_monitor_;
 
   // A factory that is used to construct a delayed callback to the listener.
-  base::WeakPtrFactory<Observer> notify_listener_factory_;
+  base::WeakPtrFactory<Observer> notify_listener_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };

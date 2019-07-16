@@ -41,7 +41,7 @@ class StubSurfaceClient : public SurfaceClient {
                           const gfx::PresentationFeedback& feedback) override {}
   bool NeedsSyncTokens() const override;
 
-  base::WeakPtrFactory<StubSurfaceClient> weak_factory;
+  base::WeakPtrFactory<StubSurfaceClient> weak_factory{this};
 };
 
 }  // namespace viz

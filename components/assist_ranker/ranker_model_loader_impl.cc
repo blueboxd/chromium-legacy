@@ -104,8 +104,7 @@ RankerModelLoaderImpl::RankerModelLoaderImpl(
       model_path_(std::move(model_path)),
       model_url_(std::move(model_url)),
       uma_prefix_(std::move(uma_prefix)),
-      url_fetcher_(std::make_unique<RankerURLFetcher>()),
-      weak_ptr_factory_(this) {}
+      url_fetcher_(std::make_unique<RankerURLFetcher>()) {}
 
 RankerModelLoaderImpl::~RankerModelLoaderImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

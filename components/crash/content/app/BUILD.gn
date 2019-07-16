@@ -67,6 +67,7 @@ static_library("app") {
     deps += [
       "//components/crash/android:jni_headers",
       "//third_party/crashpad/crashpad/handler",
+      "//third_party/crashpad/crashpad/handler:crashpad_handler_main",
       "//third_party/crashpad/crashpad/snapshot",
     ]
   }

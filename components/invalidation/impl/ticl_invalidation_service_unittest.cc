@@ -98,15 +98,12 @@ namespace internal {
 
 class FakeCallbackContainer {
   public:
-    FakeCallbackContainer() : called_(false),
-                              weak_ptr_factory_(this) {}
+   FakeCallbackContainer() : called_(false) {}
 
-    void FakeCallback(const base::DictionaryValue& value) {
-      called_ = true;
-    }
+   void FakeCallback(const base::DictionaryValue& value) { called_ = true; }
 
-    bool called_;
-    base::WeakPtrFactory<FakeCallbackContainer> weak_ptr_factory_;
+   bool called_;
+   base::WeakPtrFactory<FakeCallbackContainer> weak_ptr_factory_{this};
 };
 
 }  // namespace internal

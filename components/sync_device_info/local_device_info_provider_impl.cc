@@ -21,8 +21,7 @@ LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
       version_(version),
       signin_scoped_device_id_callback_(signin_scoped_device_id_callback),
       send_tab_to_self_receiving_enabled_callback_(
-          send_tab_to_self_receiving_enabled_callback),
-      weak_factory_(this) {
+          send_tab_to_self_receiving_enabled_callback) {
   DCHECK(signin_scoped_device_id_callback_);
   DCHECK(send_tab_to_self_receiving_enabled_callback_);
 }

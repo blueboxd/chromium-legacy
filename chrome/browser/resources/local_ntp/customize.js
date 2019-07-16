@@ -264,7 +264,7 @@ customize.preselectedShortcutOptions = {
   // Contains the selected type's DOM element, i.e. either custom links or most
   // visited.
   shortcutType: null,
-  isHidden: false,
+  shortcutsAreHidden: false,
 };
 
 /**
@@ -1290,11 +1290,10 @@ customize.networkStateChanged = function(online) {
  * Open the customization menu and set it to the default submenu (Background).
  */
 customize.richerPicker_openCustomizationMenu = function() {
-  customize.richerPicker_resetCustomizationMenu();
-
   customize.richerPicker_showSubmenu(
       $(customize.IDS.BACKGROUNDS_BUTTON), $(customize.IDS.BACKGROUNDS_MENU));
 
+  customize.richerPicker_preselectShortcutOptions();
   customize.loadChromeBackgrounds();
   customize.loadColorsMenu();
   if (!$(customize.IDS.CUSTOMIZATION_MENU).open) {
@@ -1316,18 +1315,23 @@ customize.richerPicker_resetSelectedOptions = function() {
   customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
   customize.selectedOptions.color = null;
 
-  // Preselect the shortcut options.
+  customize.richerPicker_preselectShortcutOptions();
+};
+
+/**
+ * Preselect the shortcut type and visibility to reflect the current state on
+ * the page.
+ */
+customize.richerPicker_preselectShortcutOptions = function() {
   const shortcutType = chrome.embeddedSearch.newTabPage.isUsingMostVisited ?
       $(customize.IDS.SHORTCUTS_OPTION_MOST_VISITED) :
       $(customize.IDS.SHORTCUTS_OPTION_CUSTOM_LINKS);
   const shortcutsAreHidden =
       !chrome.embeddedSearch.newTabPage.areShortcutsVisible;
+  customize.preselectedShortcutOptions.shortcutType = shortcutType;
+  customize.preselectedShortcutOptions.shortcutsAreHidden = shortcutsAreHidden;
   customize.richerPicker_selectShortcutType(shortcutType);
   customize.richerPicker_toggleShortcutHide(shortcutsAreHidden);
-  customize.selectedOptions.shortcutType = shortcutType;
-  customize.preselectedShortcutOptions.shortcutType = shortcutType;
-  customize.selectedOptions.shortcutsAreHidden = shortcutsAreHidden;
-  customize.preselectedShortcutOptions.shortcutsAreHidden = shortcutsAreHidden;
 };
 
 /**

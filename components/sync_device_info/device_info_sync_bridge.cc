@@ -129,8 +129,7 @@ DeviceInfoSyncBridge::DeviceInfoSyncBridge(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      local_device_info_provider_(std::move(local_device_info_provider)),
-      weak_ptr_factory_(this) {
+      local_device_info_provider_(std::move(local_device_info_provider)) {
   DCHECK(local_device_info_provider_);
 
   // Provider must not be initialized, the bridge takes care.

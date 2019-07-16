@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(DBUS) DbusPropertiesInterface {
   // from property name to property value.
   std::map<std::string, std::map<std::string, DbusVariant>> properties_;
 
-  base::WeakPtrFactory<DbusPropertiesInterface> weak_factory_;
+  base::WeakPtrFactory<DbusPropertiesInterface> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DbusPropertiesInterface);
 };

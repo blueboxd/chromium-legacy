@@ -172,6 +172,38 @@ void FakeLevelDBDatabase::GetPrefixed(const std::vector<uint8_t>& key_prefix,
   std::move(callback).Run(leveldb::mojom::DatabaseError::OK, std::move(data));
 }
 
+void FakeLevelDBDatabase::GetMany(
+    std::vector<leveldb::mojom::GetManyRequestPtr> keys_or_prefixes,
+    GetManyCallback callback) {
+  std::vector<leveldb::mojom::GetManyResultPtr> data;
+  for (const auto& request : keys_or_prefixes) {
+    leveldb::mojom::GetManyResultPtr result =
+        leveldb::mojom::GetManyResult::New();
+    leveldb::Status status;
+
+    if (request->is_key()) {
+      const auto& key = request->get_key();
+      if (mock_data_.find(key) != mock_data_.end())
+        result->set_key_value(mock_data_[key]);
+      else
+        result->set_status(leveldb::mojom::DatabaseError::NOT_FOUND);
+    } else {
+      const auto& key_prefix = request->get_key_prefix();
+      std::vector<leveldb::mojom::KeyValuePtr> values;
+
+      for (const auto& row : mock_data_) {
+        if (StartsWith(row.first, key_prefix))
+          values.push_back(CreateKeyValue(row.first, row.second));
+      }
+
+      result->set_key_prefix_values(std::move(values));
+    }
+
+    data.push_back(std::move(result));
+  }
+  std::move(callback).Run(std::move(data));
+}
+
 void FakeLevelDBDatabase::CopyPrefixed(
     const std::vector<uint8_t>& source_key_prefix,
     const std::vector<uint8_t>& destination_key_prefix,

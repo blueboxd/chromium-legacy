@@ -167,8 +167,7 @@ PersistentPageConsistencyCheckTask::PersistentPageConsistencyCheckTask(
       archive_manager_(archive_manager),
       policy_controller_(policy_controller),
       check_time_(check_time),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK(store_);
   DCHECK(archive_manager_);
   DCHECK(policy_controller_);

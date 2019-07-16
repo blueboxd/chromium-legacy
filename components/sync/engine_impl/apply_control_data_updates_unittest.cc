@@ -84,7 +84,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
   }
 
   // Nigori node updates should update the Cryptographer.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   other_cryptographer.AddKey(params);
 
@@ -265,7 +265,7 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
 
   // We encrypt with new keys, triggering the local cryptographer to be unready
   // and unable to decrypt data (once updated).
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
   other_cryptographer.AddKey(params);
   sync_pb::EntitySpecifics specifics;
@@ -324,7 +324,7 @@ TEST_F(ApplyControlDataUpdatesTest,
   }
 
   // Set up a temporary cryptographer to generate new keys with.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(other_params);
 
   // Create server specifics with pending keys, new encrypted types,
@@ -401,7 +401,7 @@ TEST_F(ApplyControlDataUpdatesTest,
   }
 
   // Set up a temporary cryptographer to generate new keys with.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(other_params);
 
   // Create server specifics with pending keys, new encrypted types,
@@ -545,7 +545,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedLocalCustom) {
   }
 
   // Set up the cryptographer with new keys
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(old_params);
 
   // Create server specifics with a migrated keystore passphrase type.
@@ -626,7 +626,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictBothMigratedServerCustom) {
   }
 
   // Set up the cryptographer with both new keys and old keys.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(old_params);
   other_cryptographer.AddKey(new_params);
 
@@ -708,7 +708,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictLocalMigrated) {
   }
 
   // Set up the cryptographer with both new keys and old keys.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(old_params);
 
   // Create server specifics with an unmigrated implicit passphrase type.
@@ -786,7 +786,7 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriConflictServerMigrated) {
   }
 
   // Set up the cryptographer with both new keys and old keys.
-  Cryptographer other_cryptographer(cryptographer->encryptor());
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(old_params);
 
   // Create server specifics with an migrated keystore passphrase type.

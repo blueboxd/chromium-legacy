@@ -125,6 +125,11 @@ function addWebApk(webApkInfo) {
       webApkInfo.relaxUpdates.toString());
   addWebApkField(webApkList, 'Update Status: ', webApkInfo.updateStatus);
 
+  // TODO(ckitagawa): Convert to an enum using mojom handlers.
+  if (webApkInfo.updateStatus == 'Not updatable') {
+    return;
+  }
+
   addWebApkButton(webApkList, 'Update ' + webApkInfo.name, () => {
     alert(
         'The WebAPK will check for an update the next time it launches. ' +

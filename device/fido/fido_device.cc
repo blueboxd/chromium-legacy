@@ -31,6 +31,10 @@ bool FidoDevice::IsPaired() const {
   return false;
 }
 
+bool FidoDevice::RequiresBlePairingPin() const {
+  return true;
+}
+
 void FidoDevice::DiscoverSupportedProtocolAndDeviceInfo(
     base::OnceClosure done) {
   // Set the protocol version to CTAP2 for the purpose of sending the GetInfo

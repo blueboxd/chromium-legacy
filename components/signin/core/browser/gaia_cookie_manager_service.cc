@@ -439,8 +439,7 @@ GaiaCookieManagerService::GaiaCookieManagerService(
       fetcher_retries_(0),
       cookie_listener_binding_(this),
       external_cc_result_fetched_(false),
-      list_accounts_stale_(true),
-      weak_ptr_factory_(this) {}
+      list_accounts_stale_(true) {}
 
 GaiaCookieManagerService::~GaiaCookieManagerService() {
   CancelAll();

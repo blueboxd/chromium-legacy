@@ -48,8 +48,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
-#include "media/gpu/chromeos/mailbox_video_frame_converter.h"
-#include "media/gpu/chromeos/platform_video_frame_pool.h"
+#include "media/gpu/linux/mailbox_video_frame_converter.h"
+#include "media/gpu/linux/platform_video_frame_pool.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
@@ -153,12 +153,12 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
 
 #elif defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
-    if (!chromeos_supported_configs_) {
-      chromeos_supported_configs_ =
+    if (!cros_supported_configs_) {
+      cros_supported_configs_ =
           ChromeosVideoDecoderFactory::GetSupportedConfigs();
     }
     supported_config_map[VideoDecoderImplementation::kDefault] =
-        *chromeos_supported_configs_;
+        *cros_supported_configs_;
     return supported_config_map;
   }
 #endif  // defined(OS_WIN)

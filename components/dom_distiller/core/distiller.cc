@@ -60,8 +60,7 @@ DistillerImpl::DistillerImpl(
     : distiller_url_fetcher_factory_(distiller_url_fetcher_factory),
       dom_distiller_options_(dom_distiller_options),
       max_pages_in_article_(kMaxPagesInArticle),
-      destruction_allowed_(true),
-      weak_factory_(this) {}
+      destruction_allowed_(true) {}
 
 DistillerImpl::~DistillerImpl() {
   DCHECK(destruction_allowed_);

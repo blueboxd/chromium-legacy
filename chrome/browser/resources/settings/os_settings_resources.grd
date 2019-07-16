@@ -489,10 +489,10 @@
                  file="chromeos/os_reset_page/reset_os_proxy.html"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_LANGUAGES_HTML"
-                 file="chromeos/os_languages_page/os_languages.html"
+                 file="languages_page/languages.html"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_LANGUAGES_JS"
-                 file="chromeos/os_languages_page/os_languages.js"
+                 file="languages_page/languages.js"
                  type="chrome_html"
                  preprocess="true"
                  allowexternalscript="true" />

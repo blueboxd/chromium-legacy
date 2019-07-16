@@ -30,6 +30,7 @@
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/security_capabilities.h"
+#include "sandbox/win/src/signed_policy.h"
 #include "sandbox/win/src/sync_policy.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/top_level_dispatcher.h"
@@ -742,6 +743,17 @@ ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
               pattern, semantics, policy_maker_)) {
         NOTREACHED();
         return SBOX_ERROR_BAD_PARAMS;
+      }
+      break;
+    }
+    case SUBSYS_SIGNED_BINARY: {
+      // These rules only need to be added if the
+      // MITIGATION_FORCE_MS_SIGNED_BINS pre-startup mitigation is set.
+      if (mitigations_ & MITIGATION_FORCE_MS_SIGNED_BINS) {
+        if (!SignedPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
+          NOTREACHED();
+          return SBOX_ERROR_BAD_PARAMS;
+        }
       }
       break;
     }

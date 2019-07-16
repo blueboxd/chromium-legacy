@@ -8,7 +8,7 @@
         <shape android:shape="oval">
             <stroke
                 android:width="2dp"
-                android:color="@android:color/black"/>
+                android:color="@color/default_icon_color"/>
         </shape>
     </item>
     <item android:maxLevel="@integer/list_item_level_selected">

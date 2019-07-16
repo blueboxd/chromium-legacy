@@ -74,8 +74,6 @@ _NEGATIVE_FILTER = [
     # on developer workstations.
     'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
     'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
-    # crbug.com/469947
-    'ChromeDriverTest.testTouchPinch',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=833
     'ChromeDriverTest.testAlertOnNewWindow',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
@@ -124,7 +122,6 @@ _DESKTOP_NEGATIVE_FILTER = [
     'ChromeDriverTestLegacy.testTouchDoubleTapElement',
     'ChromeDriverTestLegacy.testTouchLongPressElement',
     'ChromeDriverTest.testTouchFlickElement',
-    'ChromeDriverTest.testTouchPinch',
     'ChromeDriverAndroidTest.*',
 ]
 
@@ -221,7 +218,10 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testActionsTouchTap',
         'ChromeDriverTest.testTouchDownMoveUpElement',
         'ChromeDriverTest.testTouchFlickElement',
-
+        # Android has no concept of tab or window, and will always lose focus
+        # on tab creation. https://crbug.com/chromedriver/3018
+        'ChromeDriverTest.testNewWindowDoesNotFocus',
+        'ChromeDriverTest.testNewTabDoesNotFocus',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -683,18 +683,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEquals(2, len(brs))
     for br in brs:
       self.assertTrue(isinstance(br, webelement.WebElement))
-
-  def testHoverOverElement(self):
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
-    div = self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("mouseover", function() {'
-        '  document.body.appendChild(document.createElement("br"));'
-        '});'
-        'return div;')
-    div.HoverOver()
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testClickElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -1619,21 +1607,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'return arguments[0].value;',
         self._FindElementInShadowDom(['#innerDiv', '#parentDiv', '#textBox'])))
 
-  def testShadowDomHover(self):
-    """Checks that chromedriver can call HoverOver on an element in a
-    shadow DOM."""
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/shadow_dom_test.html'))
-    # Wait for page to stabilize. See https://crbug.com/954553#c7
-    time.sleep(1)
-    elem = self._FindElementInShadowDom(
-        ["#innerDiv", "#parentDiv", "#button"])
-    elem.HoverOver()
-    # the button's onMouseOver handler changes the text box's value
-    self.assertEqual("Button Was Hovered Over", self._driver.ExecuteScript(
-        'return arguments[0].value;',
-        self._FindElementInShadowDom(["#innerDiv", "#parentDiv", "#textBox"])))
-
   def testShadowDomStaleReference(self):
     """Checks that trying to manipulate shadow DOM elements that are detached
     from the document raises a StaleElementReference exception"""
@@ -1697,18 +1670,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
         'return div;')
     self._driver.TouchFlick(div, dx, dy, speed)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
-  def testTouchPinch(self):
-    self._driver.Load(self.GetHttpUrlForFile(
-        '/chromedriver/touch_action_tests.html'))
-    width_before_pinch = self._driver.ExecuteScript('return window.innerWidth;')
-    height_before_pinch = self._driver.ExecuteScript(
-        'return window.innerHeight;')
-    self._driver.TouchPinch(width_before_pinch / 2,
-                            height_before_pinch / 2,
-                            2.0)
-    width_after_pinch = self._driver.ExecuteScript('return window.innerWidth;')
-    self.assertAlmostEqual(2.0, float(width_before_pinch) / width_after_pinch)
 
   def testSwitchesToTopFrameAfterNavigation(self):
     self._driver.Load('about:blank')

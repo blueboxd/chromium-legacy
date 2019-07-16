@@ -146,8 +146,7 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
       viz_main_ptr_(std::move(viz_main_ptr)),
       params_(std::move(params)),
       host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      gpu_host_binding_(this),
-      weak_ptr_factory_(this) {
+      gpu_host_binding_(this) {
   DCHECK(delegate_);
   mojom::GpuHostPtr host_proxy;
   gpu_host_binding_.Bind(mojo::MakeRequest(&host_proxy));

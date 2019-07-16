@@ -126,8 +126,7 @@ ControllerImpl::ControllerImpl(
       scheduler_(std::move(scheduler)),
       task_scheduler_(std::move(task_scheduler)),
       file_monitor_(std::move(file_monitor)),
-      controller_state_(State::CREATED),
-      weak_ptr_factory_(this) {
+      controller_state_(State::CREATED) {
   DCHECK(config_);
   DCHECK(log_sink_);
 }

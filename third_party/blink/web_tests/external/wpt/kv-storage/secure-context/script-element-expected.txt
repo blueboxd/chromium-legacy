@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught TypeError: KV Storage is only available in secure contexts
+PASS Prerequisite check
+FAIL Check the events assert_unreached: load event fired Reached unreachable code
+Harness: the test ran to completion.
+

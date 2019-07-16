@@ -197,10 +197,6 @@ void CastExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
       std::make_unique<ExtensionRegistrar>(browser_context_, this);
 }
 
-void CastExtensionSystem::InitForIncognitoProfile() {
-  NOTREACHED();
-}
-
 ExtensionService* CastExtensionSystem::extension_service() {
   return nullptr;
 }

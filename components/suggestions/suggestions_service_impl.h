@@ -214,7 +214,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
   ResponseCallbackList callback_list_;
 
   // For callbacks may be run after destruction.
-  base::WeakPtrFactory<SuggestionsServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SuggestionsServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsServiceImpl);
 };

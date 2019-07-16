@@ -35,9 +35,7 @@ class TransportConnectJobTest : public WithScopedTaskEnvironment,
  public:
   TransportConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         client_socket_factory_(&net_log_),
         common_connect_job_params_(
             &client_socket_factory_,

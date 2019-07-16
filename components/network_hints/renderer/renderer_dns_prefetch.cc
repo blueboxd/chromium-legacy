@@ -21,9 +21,7 @@ using content::RenderThread;
 
 namespace network_hints {
 
-RendererDnsPrefetch::RendererDnsPrefetch()
-    : c_string_queue_(1000),
-      weak_factory_(this) {
+RendererDnsPrefetch::RendererDnsPrefetch() : c_string_queue_(1000) {
   Reset();
 }
 

@@ -68,7 +68,7 @@ class ProtoDatabaseProvider : public KeyedService {
   // so they're all invalidated/checked on the same sequence.
   scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
 
-  base::WeakPtrFactory<ProtoDatabaseProvider> weak_factory_;
+  base::WeakPtrFactory<ProtoDatabaseProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProtoDatabaseProvider);
 };

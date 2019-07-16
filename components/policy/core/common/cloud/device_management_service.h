@@ -333,7 +333,7 @@ class POLICY_EXPORT DeviceManagementService {
   base::ThreadChecker thread_checker_;
 
   // Used to create tasks which run delayed on the UI thread.
-  base::WeakPtrFactory<DeviceManagementService> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceManagementService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementService);
 };

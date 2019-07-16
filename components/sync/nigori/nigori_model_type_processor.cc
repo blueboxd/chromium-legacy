@@ -25,8 +25,7 @@ const char kNigoriClientTagHash[] = "NigoriClientTagHash";
 
 }  // namespace
 
-NigoriModelTypeProcessor::NigoriModelTypeProcessor()
-    : bridge_(nullptr), weak_ptr_factory_for_controller_(this) {}
+NigoriModelTypeProcessor::NigoriModelTypeProcessor() : bridge_(nullptr) {}
 
 NigoriModelTypeProcessor::~NigoriModelTypeProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

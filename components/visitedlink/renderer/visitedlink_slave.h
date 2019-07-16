@@ -43,7 +43,7 @@ class VisitedLinkSlave : public VisitedLinkCommon,
 
   mojo::Binding<mojom::VisitedLinkNotificationSink> binding_;
 
-  base::WeakPtrFactory<VisitedLinkSlave> weak_factory_;
+  base::WeakPtrFactory<VisitedLinkSlave> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkSlave);
 };

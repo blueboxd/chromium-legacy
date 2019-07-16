@@ -29,7 +29,7 @@ class SelectableTabGridViewHolder extends TabGridViewHolder {
         defaultLevel = itemView.getResources().getInteger(R.integer.list_item_level_default);
         selectedLevel = itemView.getResources().getInteger(R.integer.list_item_level_selected);
         mCheckDrawable = AnimatedVectorDrawableCompat.create(
-                itemView.getContext(), R.drawable.ic_check_googblue_24dp_animated);
+                itemView.getContext(), R.drawable.ic_check_googblue_20dp_animated);
         iconColorList = AppCompatResources.getColorStateList(
                 itemView.getContext(), R.color.default_icon_color_inverse);
 

@@ -162,7 +162,7 @@ class TranslateRankerImpl : public TranslateRanker {
   // Saved cache of translate event protos.
   std::vector<metrics::TranslateEventProto> event_cache_;
 
-  base::WeakPtrFactory<TranslateRankerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<TranslateRankerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TranslateRankerImpl);
 };

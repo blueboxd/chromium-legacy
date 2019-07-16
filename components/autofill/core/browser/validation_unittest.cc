@@ -497,7 +497,7 @@ INSTANTIATE_TEST_SUITE_P(UPIVirtualPaymentAddress,
                                          "vijb",
                                          "ybl"));
 
-TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress_Others) {
+TEST(AutofillValidation, IsUPIVirtualPaymentAddress_Others) {
   EXPECT_TRUE(
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("12345@HDFC0000001.ifsc.npci")));
   EXPECT_TRUE(
@@ -506,6 +506,34 @@ TEST_P(AutofillIsUPIVirtualPaymentAddress, IsUPIVirtualPaymentAddress_Others) {
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("9800011111@mobile.npci")));
   EXPECT_TRUE(
       IsUPIVirtualPaymentAddress(ASCIIToUTF16("1234123412341234@rupay.npci")));
+}
+
+class AutofillIsInternationalBankAccountNumber
+    : public testing::TestWithParam<std::string> {};
+
+INSTANTIATE_TEST_SUITE_P(InternationalBankAccountNumber,
+                         AutofillIsInternationalBankAccountNumber,
+                         testing::Values("MT84MALT011000012345MTLCAST001S",
+                                         "SC18SSCB11010000000000001497USD",
+                                         "MD24AG000225100013104168",
+                                         "BH67BMAG00001299123456",
+                                         "LI21088100002324013AA",
+                                         "NO9386011117947",
+                                         "FR1420041010050500013M02606",
+                                         "LB62099900000001001901229114"));
+
+TEST_P(AutofillIsInternationalBankAccountNumber,
+       IsInternationalBankAccountNumber) {
+  EXPECT_TRUE(IsInternationalBankAccountNumber(ASCIIToUTF16(GetParam())))
+      << GetParam();
+  EXPECT_TRUE(
+      IsInternationalBankAccountNumber(ASCIIToUTF16(" " + GetParam() + " ")));
+  EXPECT_FALSE(
+      IsInternationalBankAccountNumber(ASCIIToUTF16("DE" + GetParam())));
+  EXPECT_FALSE(
+      IsInternationalBankAccountNumber(ASCIIToUTF16(GetParam() + ".")));
+  EXPECT_FALSE(IsInternationalBankAccountNumber(
+      ASCIIToUTF16(GetParam() + "0000000000000000000000000000000000000")));
 }
 
 }  // namespace autofill

@@ -89,6 +89,10 @@ size_t GetCvcLengthForCardType(const base::StringPiece card_type);
 // https://upipayments.co.in/virtual-payment-address-vpa/
 bool IsUPIVirtualPaymentAddress(const base::string16& value);
 
+// Returns true if |value| appears to be an International Bank Account Number
+// (IBAN). See https://en.wikipedia.org/wiki/International_Bank_Account_Number
+bool IsInternationalBankAccountNumber(const base::string16& value);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_VALIDATION_H_

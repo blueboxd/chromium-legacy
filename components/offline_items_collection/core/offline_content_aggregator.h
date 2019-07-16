@@ -114,7 +114,7 @@ class OfflineContentAggregator : public OfflineContentProvider,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<OfflineContentAggregator> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflineContentAggregator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflineContentAggregator);
 };

@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">તમારી ઓળખ ચકાસી શકાઈ નથી</translation>
 <translation id="1116694919640316211">વિશે</translation>
 <translation id="1116779635164066733">આ સેટિંગ "<ph name="NAME" />" એક્સ્ટેંશન દ્વારા લાગુ કરવામાં આવી છે.</translation>
-<translation id="1117602883390928720">Kerberos એકાઉન્ટ ઉમેરો</translation>
 <translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
 <translation id="1118738876271697201">સિસ્ટમ, ડિવાઇસનું મૉડલ અથવા અનુક્રમ નંબર નિર્ધારિત કરવામાં નિષ્ફળ થઈ.</translation>
 <translation id="1119447706177454957">આંતરિક ભૂલ</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">ડેમો મોડ ડિવાઇસ લાઇસન્સમાં સમસ્યા આવી.</translation>
 <translation id="126710816202626562">અનુવાદ ભાષા:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">વિગતવાર ગોઠવણી</translation>
 <translation id="1272079795634619415">રોકો</translation>
 <translation id="1272293450992660632">પિન મૂલ્યો મેળ ખાતા નથી.</translation>
 <translation id="1272978324304772054">આ વપરાશકર્તા એકાઉન્ટ ડિવાઇસની નોંધણી થયેલા ડોમેનમાંનું નથી. જો તમે કોઈ અલગ ડોમેન પર નોંધણી કરવા માગતા હો, તો તમારે પ્રથમ ડિવાઇસની રિકવરી તપાસવી પડશે.</translation>
@@ -507,7 +505,6 @@
 <translation id="1744060673522309905">ઉપકરણ ડોમેન સાથે જોડી શકાતું નથી. તમને જેટલા ઉપકરણો ઉમેરવાની મંજૂરી હોય તે સંખ્યા વાટાવી નથી તેની ખાતરી કરો.</translation>
 <translation id="1744108098763830590">પૃષ્ઠભૂમિ પૃષ્ઠ</translation>
 <translation id="1745520510852184940">હંમેશાં આ કરો</translation>
-<translation id="174617397682753897">Kerberos એકાઉન્ટ</translation>
 <translation id="1746402432151920942">સંરક્ષિત મીડિયા ઓળખકર્તા</translation>
 <translation id="175196451752279553">બંધ કરેલું ટેબ ફરિથી ખોલો</translation>
 <translation id="1753905327828125965">સૌથી વધુ જોવાયેલ</translation>
@@ -755,7 +752,6 @@
 <translation id="2135787500304447609">&amp;ફરી શરૂ કરો</translation>
 <translation id="2136372518715274136">નવો પાસવર્ડ દાખલ કરો</translation>
 <translation id="2136476978468204130">તમે દાખલ કરેલો પાસફ્રેઝ ખોટો છે</translation>
-<translation id="2137068468602026500">વેબ બ્રાઉઝર હેઠળ <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> ક્લિક કરો</translation>
 <translation id="2138398485845393913">"<ph name="DEVICE_NAME" />" પર કનેક્શન હજી પણ પ્રક્રિયામાં છે</translation>
 <translation id="214169863967063661">દેખાવ સેટિંગ્સ ખોલો</translation>
 <translation id="2142328300403846845">આ રીતે લિંક ખોલો</translation>
@@ -843,7 +839,6 @@
 <translation id="2241634353105152135">માત્ર એક વખત</translation>
 <translation id="2242687258748107519">ફાઇલ માહિતી</translation>
 <translation id="2246549592927364792">Google તરફથી છબીનાં વર્ણનો મેળવીએ?</translation>
-<translation id="2249269794707377949">કેટલીક ઍપમાં, વેબસાઇટમાં અને ફાઇલ શેર કરવામાં એક જ વાર સાઇન ઑન કરવા માટેના બધા Kerberos એકાઉન્ટને અહીં મેનેજ કરી શકાય છે.</translation>
 <translation id="2249605167705922988">ઉદા. ત. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">સિસ્ટમ દર્શક સાથે ખોલો</translation>
 <translation id="225163402930830576">નેટવર્ક રિફ્રેશ કરો</translation>
@@ -1076,7 +1071,6 @@
 <translation id="2587922270115112871">નિરીક્ષણ કરેલા વપરાશકર્તા બનાવવાથી Google એકાઉન્ટ બનતું નથી અને તેની સેટિંગ 
     અને ડેટા Chrome સિંક સાથેના બીજા ડિવાઇસ પર તેમને ફૉલો કરશે નહિ. હાલમાં, નિરીક્ષણ કરેલ વપરાશકર્તા માત્ર આ ડિવાઇસ પર જ લાગુ થાય છે.</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> પાસે ઉપલબ્ધ ડિવાઇસની શ્રેણી</translation>
-<translation id="258932246702879617"><ph name="BEGIN_BOLD" />ટાસ્કબારમાં પિન કરો<ph name="END_BOLD" /> પસંદ કરો</translation>
 <translation id="2594999711683503743">Googleમાં શોધો અથવા URL ટાઇપ કરો</translation>
 <translation id="2597521610396315071">નિરીક્ષણ ઉમેરો</translation>
 <translation id="2603115962224169880">કમ્પ્યુટર સાફ કરો</translation>
@@ -1143,7 +1137,6 @@
 <translation id="2683638487103917598">ફોલ્ડર સૉર્ટ કર્યુ</translation>
 <translation id="2684004000387153598">ચાલુ રાખવા માટે, ઓકે ક્લિક કરો, પછી તમારા ઇમેઇલ ઍડ્રેસ માટે નવી પ્રોફાઇલ બનાવવા માટે વ્યક્તિ ઉમેરો પર ક્લિક કરો.</translation>
 <translation id="2688196195245426394">સર્વર સાથે ઉપકરણની નોંધણી કરતી વખતે ભૂલ: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="2688477613306174402">કન્ફિગરેશન</translation>
 <translation id="2690024944919328218">ભાષા વિકલ્પો બતાવો</translation>
 <translation id="2691385045260836588">મોડલ</translation>
 <translation id="2693176596243495071">અરેરે! અજાણી ભૂલ આવી. કૃપા કરીને થોડા સમય પછી ફરી પ્રયાસ કરો અથવા જો સમસ્યા ચાલુ રહે, તો તમારા વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
@@ -1530,7 +1523,6 @@
 <translation id="32939749466444286">Linux કન્ટેનર શરૂ થયું નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="3294437725009624529">અતિથિ</translation>
 <translation id="329703603001918157">શૉર્ટકટમાં ફેરફાર ન કરી શકાય</translation>
-<translation id="3297951628821704004">આ ઉપકરણમાંથી એકાઉન્ટ કાઢી નાખો</translation>
 <translation id="329838636886466101">સુધારો</translation>
 <translation id="3298789223962368867">અમાન્ય URL દાખલ થયો. </translation>
 <translation id="32991397311664836">ઉપકરણો:</translation>
@@ -1591,7 +1583,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">વિભાજક</translation>
 <translation id="3387614642886316601">વધુ સારી બનાવાયેલી જોડણીની તપાસનો ઉપયોગ કરો</translation>
-<translation id="3389312115541230716">ટાસ્કબારમાં <ph name="SMALL_PRODUCT_LOGO" /> આઇકનને રાઇટ ક્લિક કરો</translation>
 <translation id="3393352139658145068">જ્યારે કોઈ “ઓકે Google” કહે ત્યારે આસિસ્ટંટને સક્રિય કરો. બૅટરીની બચત કરવા માટે, જ્યારે તમારું ડિવાઇસ પાવર સ્રોત સાથે કનેક્ટેડ હોય ત્યારે જ માત્ર "ઓકે Google” ચાલુ હોય છે.</translation>
 <translation id="3396800784455899911">"સ્વીકારો અને ચાલુ રાખો" બટન પર ક્લિક કરીને, તમે આ Google સેવાઓ માટે ઉપર વર્ણવેલી પ્રક્રિયા સાથે સંમત થાઓ છો.</translation>
 <translation id="3399432415385675819">સૂચનાઓ અક્ષમ કરવામાં આવશે</translation>
@@ -1827,7 +1818,6 @@
 <translation id="3714195043138862580">આ ડેમો મોડ જોગવાઈ દૂર કરી સ્થિતિમાં મૂકવામાં આવી છે.</translation>
 <translation id="3714633008798122362">વેબ કેલેન્ડર</translation>
 <translation id="3719826155360621982">હોમપેજ</translation>
-<translation id="3720996970802414353">છતાં સ્વિચ કરો</translation>
 <translation id="3722108462506185496">વર્ચ્યુઅલ મશીન સેવા શરૂ કરતી વખતે ભૂલ આવી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="3725367690636977613"> પૃષ્ઠો</translation>
 <translation id="3726137731714254362">અહીંથી ફોલ્ડર કાઢી નાખવા શેર કરવાનું રોકશે પરંતુ ફાઇલોને ડિલીટ કરશે નહીં.</translation>
@@ -2442,7 +2432,6 @@
 <translation id="4662788913887017617">તમારા iPhone સાથે આ બુકમાર્ક શેર કરો</translation>
 <translation id="4663373278480897665">કૅમેરાને મંજૂરી</translation>
 <translation id="4664482161435122549">PKCS #12 નિકાસ ભૂલ</translation>
-<translation id="4664736447097490764">Kerberos ગોઠવણી ફાઇલમાં અહીં ફેરફાર કરો.</translation>
 <translation id="4665014895760275686">નિર્માતા</translation>
 <translation id="4665446389743427678"><ph name="SITE" />નો સ્ટોર કરેલો બધો ડેટા ડિલીટ કરવામાં આવશે.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ને ચાલુ કરવા માટે ક્લિક કરો</translation>
@@ -2557,6 +2546,7 @@
 <translation id="4850669014075537160">સ્ક્રોલિંગ</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4853020600495124913">&amp;નવી વિંડોમાં ખોલો</translation>
+<translation id="485480310608090163">વધુ સેટિંગ અને પરવાનગીઓ</translation>
 <translation id="4856478137399998590">તમારી મોબાઇલ ડેટા સેવા સક્રિય થઈ છે અને ઉપયોગ માટે તૈયાર છે</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{તમામ URLને &amp;છુપી વિંડોમાં ખોલો}=1{&amp;છુપી વિંડોમાં ખોલો}one{તમામ (#) URLને &amp;છુપી વિંડોમાં ખોલો}other{તમામ (#) URLને &amp;છુપી વિંડોમાં ખોલો}}</translation>
 <translation id="4858913220355269194">Fritz</translation>
@@ -2656,7 +2646,7 @@
 <translation id="4992066212339426712">અનમ્યૂટ કરો</translation>
 <translation id="4992458225095111526">Powerwash ની પુષ્ટિ કરો</translation>
 <translation id="4992473555164495036">તમારા વ્યવસ્થાપકે ઉપલબ્ધ ઇનપુટ પદ્ધતિઓને મર્યાદિત કરેલ છે.</translation>
-<translation id="4992866843815555470">તમારા ડૉકની સર્વિસ કરાવવી જરૂરી છે. કોઈ કામ કરવામાં ન આવે તો તમારા ડૉકનો પંખો બંધ થઈ જશે.</translation>
+<translation id="4992866843815555470">તમારા ડૉકની સર્વિસ કરાવવી જરૂરી છે. પંખો કામ નહીં કરતો હોય તો તમારું ડૉક બંધ થઈ જશે.</translation>
 <translation id="4992926179187649719">'ઓકે Google' ચાલુ કરો</translation>
 <translation id="4994474651455208930">પ્રોટોકૉલ્સ માટે ડિફૉલ્ટ હેન્ડલર્સ બનવા માટે સાઇટને પૂછવાની મંજૂરી આપો</translation>
 <translation id="4994754230098574403">સેટ કરી રહ્યા છીએ</translation>
@@ -2859,7 +2849,6 @@
 <translation id="5319359161174645648">Google Chromeની ભલામણ કરે છે</translation>
 <translation id="532247166573571973">સર્વર પહોંચની બહાર હોઇ શકે છે. પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="5324780743567488672">તમારા સ્થાનનો ઉપયોગ કરીને આપમેળે સમય ઝોન સેટ કરો</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> - ઑરિજિનલ ફાઇલોમાં સાચવવાની મંજૂરી ધરાવે છે</translation>
 <translation id="5327248766486351172">નામ</translation>
 <translation id="5327570636534774768">આ ડિવાઇસ ભિન્ન ડોમેન દ્વારા મેનેજમેન્ટ માટે ચિહ્નિત કર્યું છે. ડેમો મોડ સેટઅપ કરતા પહેલાં તે ડોમેનમાંથી તેને જોગવાઈઓને દૂર કરો.</translation>
 <translation id="532943162177641444">આ ડિવાઇસ દ્વારા ઉપયોગમાં લઈ શકાય એવું મોબાઇલ હોટસ્પોટ સેટ કરવા માટે તમારા <ph name="PHONE_NAME" /> પરની સૂચનાને ટૅપ કરો.</translation>
@@ -3021,6 +3010,7 @@
 <translation id="55601339223879446">ડિસ્પ્લેની અંદર તમારા ડેસ્કટૉપની સીમાઓ ગોઠવો</translation>
 <translation id="5562781907504170924">આ ટૅબ Bluetooth ડિવાઇસ સાથે કનેક્ટ થયેલ છે.</translation>
 <translation id="5563234215388768762">Google પર શોધો અથવા URL લખો</translation>
+<translation id="5565735124758917034">સક્રિય</translation>
 <translation id="5567989639534621706">ઍપ્લિકેશન કૅશેસ</translation>
 <translation id="5568069709869097550">સાઇન ઇન કરી શકાતું નથી</translation>
 <translation id="5568144734023334204">Android સ્ટોરેજ</translation>
@@ -3673,7 +3663,6 @@ USB ડિવાઇસ</translation>
 <translation id="6532101170117367231">Google ડ્રાઇવ પર સાચવો</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" /> નોંધ: <ph name="END_BOLD" /> જો તમે શું કરી રહ્યાં છો તે તમે જાણતા હો અથવા જો તમને તેવું કરવા માટે કહેવામાં આવ્યું હોય તો જ ચાલુ કરો, કારણ કે ડેટાનો સંગ્રહ પ્રદર્શન પર અસર કરી શકે છે.</translation>
 <translation id="6541638731489116978">આ સાઇટને તમારા મોશન સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરવામાં આવી છે.</translation>
-<translation id="6542184058496424548">વપરાશકર્તાનું નામ અમાન્ય (user@realm.com હોવું જોઈએ)</translation>
 <translation id="654233263479157500">નેવિગેશન ભૂલોને ઉકેલવામાં સહાય માટે વેબ સેવાનો ઉપયોગ કરો</translation>
 <translation id="6544215763872433504">Google દ્વારા વેબ બ્રાઉઝર, તમારા માટે</translation>
 <translation id="6545665334409411530">પુનરાવર્તન રેટ</translation>
@@ -3935,7 +3924,6 @@ USB ડિવાઇસ</translation>
 <translation id="6955446738988643816">પૉપઅપની તપાસ કરો</translation>
 <translation id="6957044667612803194">આ સુરક્ષા કોડ પિનને સહાય કરતો નથી</translation>
 <translation id="6957231940976260713">સેવાનું નામ</translation>
-<translation id="6957572737510023982">અરેરે! કંઈક ખોટું થયું (ભૂલનો કોડ <ph name="ERROR_CODE" />).</translation>
 <translation id="6964390816189577014">હીરો</translation>
 <translation id="6964760285928603117">ગ્રૂપમાંથી દૂર કરો</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
@@ -4194,7 +4182,6 @@ USB ડિવાઇસ</translation>
 <translation id="7328699668338161242">તમારું આસિસ્ટંટ પહેલેથી જ તમારો અવાજ ઓળખી શકે છે</translation>
 <translation id="7328867076235380839">અમાન્ય મિશ્રણ</translation>
 <translation id="7329154610228416156">સાઇન ઇન નિષ્ફળ થયું કારણ કે તે બિન-સુરક્ષિત URL (<ph name="BLOCKED_URL" />) નો ઉપયોગ કરવા માટે ગોઠવાયેલું હતું. કૃપા કરીને તમારા વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
-<translation id="733006820760728943">સક્રિય કન્ટેન્ટ તરીકે સેટ કરો</translation>
 <translation id="7334190995941642545">Smart Lock હાલમાં અનુપલબ્ધ છે. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="7334274148831027933">ડૉક કરેલા મેગ્નિફાયરને ચાલુ કરો</translation>
 <translation id="7335974957018254119">આ માટે જોડણીની તપાસનો ઉપયોગ કરો</translation>
@@ -4205,7 +4192,6 @@ USB ડિવાઇસ</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> હવે પૂર્ણ સ્ક્રીન છે.</translation>
 <translation id="7340650977506865820">સાઇટ તમારી સ્ક્રીન શેર કરી રહી છે</translation>
 <translation id="7341834142292923918">આ સાઇટને ઍક્સેસ કરવા માગે છે</translation>
-<translation id="7344488796804562294">વિગતવાર Kerberosની ગોઠવણી</translation>
 <translation id="7345706641791090287">તમારા પાસવર્ડની પુષ્ટિ કરો</translation>
 <translation id="7346909386216857016">બરાબર, સમજાઇ ગયું</translation>
 <translation id="7347751611463936647">આ એક્સ્ટેંશનનો ઉપયોગ કરવા, "<ph name="EXTENSION_KEYWORD" />" ટાઇપ કરો, તે પછી TAB, તે પછી તમારો આદેશ અથવા શોધ.</translation>
@@ -4298,7 +4284,6 @@ USB ડિવાઇસ</translation>
 <translation id="749028671485790643">વ્યક્તિ <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC ઍડ્રેસ</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> એક્સટેન્શન પાસવર્ડ અને ક્રેડિટ કાર્ડ નંબર સહિત, તમે ટાઇપ કરો તે બધી ટેક્સ્ટને એકત્રિત કરી શકે છે. શું તમે આ એક્સટેન્શનનો ઉપયોગ કરવા માંગો છો?</translation>
-<translation id="7494065396242762445">Windows સેટિંગ્સ ખોલો</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">તમારો જૂનો પાસવર્ડ ભૂલી ગયા છો?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> અને તેની સાથે સંકળાયેલ ડેટાને આ ડિવાઇસમાંથી કાઢી નાખવામાં આવશે.</translation>
@@ -4323,7 +4308,6 @@ USB ડિવાઇસ</translation>
 <translation id="7530016656428373557">ડિસ્ચાર્જ દર વોટ્સમાં</translation>
 <translation id="7531779363494549572">સેટિંગ &gt; ઍપ અને નોટિફિકેશન &gt; નોટિફિકેશન પર જાઓ.</translation>
 <translation id="7536220825385726660">Play સ્ટોર ઍપ્લિકેશનોને બાહ્ય ડ્રાઇવને ઍક્સેસ કરવાની મંજૂરી આપો</translation>
-<translation id="7537601449003285327">ટાસ્કબારમાં પિન કરો</translation>
 <translation id="7539856059004947393">બ્લૂટૂથ સુરક્ષા કોડ</translation>
 <translation id="7540972813190816353">અપડેટ્સ માટે તપાસ કરતી વખતે એક ભૂલ આવી: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">આ <ph name="IDS_SHORT_PRODUCT_NAME" /> ડિવાઇસ પર ડિબગીંગ સુવિધાઓ ચાલુ કરો</translation>
@@ -4354,7 +4338,6 @@ USB ડિવાઇસ</translation>
 <translation id="7574650250151586813">ટેક્સ્ટ લખવા માટે, Daydream કીબોર્ડ ઍપ અપડેટ કરો</translation>
 <translation id="7576690715254076113">કૉલેટ</translation>
 <translation id="7576976045740938453">ડેમો મોડ એકાઉન્ટમાં ભૂલ આવી.</translation>
-<translation id="757941033127302446">સાઇન ઇન કરેલું છે</translation>
 <translation id="7580671184200851182">તમામ સ્પીકર્સ મારફતે સમાન ઑડિઓ ચલાવો (મોનો ઑડિઓ)</translation>
 <translation id="7581462281756524039">સફાઈ સાધન</translation>
 <translation id="7582582252461552277">આ નેટવર્કને પસંદ કરો</translation>
@@ -4631,7 +4614,6 @@ USB ડિવાઇસ</translation>
 <translation id="7959074893852789871">ફાઇલમાં બહુવિધ પ્રમાણપત્રો રહેલા છે, તેમાંનાં કેટલાક આયાત કરેલા નથી:</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
 <translation id="7963826112438303517">તમારા આસિસ્ટંટ, તમારું વૉઇસ મૉડલ બનાવવા તથા અપડેટ કરવા માટે આ રેકોર્ડિંગનો તથા તમારી બોલાયેલી વિનંતીઓનો ઉપયોગ કરે છે, જેનો સંગ્રહ તમે જેમાં Voice Match ચાલુ કર્યું છે તે જ ડિવાઇસમાં કરવામાં આવે છે. આસિસ્ટંટના સેટિંગમાં વૉઇસ પ્રવૃત્તિ જુઓ અથવા ફરી તાલીમ આપો.</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> નજીકના બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરવા માગે છે, નીચે મુજબના ડિવાઇસ મળ્યાં છે:</translation>
 <translation id="7966241909927244760">છબી સરનામું કૉ&amp;પિ કરો</translation>
 <translation id="7968742106503422125">તમે કૉપિ અને પેસ્ટ કરો છો તે ડેટા વાંચો અને તેને સંશોધિત કરો</translation>
 <translation id="7968833647796919681">પ્રદર્શન ડેટા સંગ્રહ ચાલુ કરો</translation>
@@ -4783,7 +4765,6 @@ USB ડિવાઇસ</translation>
 <translation id="8184472985242519288">સમાન</translation>
 <translation id="8185331656081929126">નેટવર્ક પર નવા પ્રિન્ટર્સ શોધવામાં આવે ત્યારે સૂચનાઓ બતાવો</translation>
 <translation id="8186609076106987817">સર્વર ફાઇલને શોધી શક્યું નથી.</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> નીચે આપેલાં ફોલ્ડરની બધી ફાઇલો વાંચી શકે છે. આ ટૅબ ખુલ્લું હોય ત્યારે જ આ સાઇટ ફોલ્ડરમાં થયેલા ફેરફારોને જોઈ શકે છે.</translation>
 <translation id="8188389033983459049">તમારા ઉપકરણની સેટિંગ તપાસો અને ચાલુ રાખવા માટે તેને ચાલુ કરો</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> થી કનેક્ટ કરે છે</translation>
 <translation id="8191230140820435481">તમારી ઍપ્લિકેશનો, એક્સ્ટેન્શન અને થીમ્સ મેનેજ કરો</translation>
@@ -4919,7 +4900,6 @@ USB ડિવાઇસ</translation>
 <translation id="839736845446313156">નોંધણી કરો</translation>
 <translation id="8398877366907290961">કોઈપણ રીતે આગળ વધારો</translation>
 <translation id="8400146488506985033">લોકોને સંચાલિત કરો</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> તમારા ફેરફારોને સીધા નીચેના ફોલ્ડરમાં રહેલી ફાઇલોમાં સાચવી શકે છે. આ ટૅબ ખુલ્લું હોય ત્યારે આ સાઇટ ફેરફારોને સાચવી શકે છે.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">પહેલા પૂછો (ભલામણ કરેલ)</translation>
 <translation id="8418445294933751433">ટૅબ તરીકે &amp;બતાવો</translation>
@@ -5272,7 +5252,6 @@ USB ડિવાઇસ</translation>
 <translation id="891365694296252935">વપરાશ અને નિદાનનો ડેટા મોકલો. આ ડિવાઇસ હાલમાં Googleને નિદાન, ડિવાઇસ અને ઍપ વપરાશનો ડેટા ઑટોમૅટિક રીતે મોકલી રહ્યું છે. આનો ઉપયોગ તમારા બાળકને ઓળખવા માટે થશે નહીં અને સિસ્ટમ અને ઍપની સ્થિરતા અને અન્ય સુધારણાઓમાં સહાય કરશે. એકત્રીકરણ કરેલો કેટલોક ડેટા Google ઍપ અને ભાગીદારોને પણ મદદ કરશે, જેમ કે Android ડેવલપર. આ સેટિંગ માલિક દ્વારા લાગુ કરવામાં આવેલ છે. જો તમારા બાળક માટે વધારાની વેબ અને ઍપ પ્રવૃત્તિ ચાલુ હોય, તો આ ડેટા તેમના Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે. <ph name="BEGIN_LINK1" />વધુ જાણો<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">સૂચનને લોડ કરી રહ્યું છે</translation>
 <translation id="8916476537757519021">છુપો મોડ સબફ્રેમ: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> - તમારા ડિવાઇસ પર ફોલ્ડર વાંચવાની મંજૂરી ધરાવે છે</translation>
 <translation id="8919275547519617350">તમારા બધા ઉપકરણો પર તમારા બધા પાસવર્ડ મેળવવા માટે સાઇન ઇન કરો અને સિંક ચાલુ કરો.</translation>
 <translation id="8921366488406707015">તમારો સુરક્ષા કોડ ચકાસી રહ્યાં છીએ...</translation>
 <translation id="8922013791253848639">આ સાઇટ પર જાહેરાતો માટે હંમેશાં પરવાનગી આપે છે</translation>
@@ -5322,6 +5301,7 @@ USB ડિવાઇસ</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> દ્વારા સંચાલિત</translation>
 <translation id="8996526648899750015">એકાઉન્ટ ઉમેરો...</translation>
 <translation id="899657321862108550">સર્વત્ર તમારા Chromeમાં સાઇન ઇન કરો</translation>
+<translation id="899676909165543803">ફિંગરપ્રિન્ટ સેન્સર એ તમારા કીબોર્ડ પર સૌથી નીચે જમણી બાજુ સ્થિત કી છે. તેને કોઈપણ આંગળી વડે હળવેથી સ્પર્શ કરો.</translation>
 <translation id="9003647077635673607">તમામ વેબસાઇટ્સ પર મંજૂરી આપો</translation>
 <translation id="9003704114456258138">આવર્તન</translation>
 <translation id="9004952710076978168">અજ્ઞાત પ્રિંટર માટે સૂચના પ્રાપ્ત થઈ.</translation>
@@ -5357,7 +5337,6 @@ USB ડિવાઇસ</translation>
 <translation id="9044646465488564462">નેટવર્કથી કનેક્ટ કરવામાં નિષ્ફળ: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">તમે જે Google સુધી પહોંચવાનો પ્રયાસ કરી રહ્યાં છો તે પેજનું વેબ ઍડ્રેસ મોકલે છે</translation>
 <translation id="9046895021617826162">કનેક્ટ કરવું નિષ્ફળ</translation>
-<translation id="9047391224416514812">આ વપરાશકર્તા નામ ધરાવતું એકાઉન્ટ પહેલેથી બનેલું છે</translation>
 <translation id="9050666287014529139">પાસફ્રેઝ</translation>
 <translation id="9052208328806230490">તમે એકાઉન્ટ <ph name="EMAIL" /> નો ઉપયોગ કરીને, તમારા પ્રિન્ટરને <ph name="CLOUD_PRINT_NAME" /> સાથે નોંધાવ્યા છે</translation>
 <translation id="9052404922357793350">બ્લૉક કરવાનું ચાલુ રાખો</translation>

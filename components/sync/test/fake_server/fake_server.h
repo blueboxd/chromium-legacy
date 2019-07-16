@@ -258,7 +258,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   // Creates WeakPtr versions of the current FakeServer. This must be the last
   // data member!
-  base::WeakPtrFactory<FakeServer> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeServer> weak_ptr_factory_{this};
 };
 
 }  // namespace fake_server

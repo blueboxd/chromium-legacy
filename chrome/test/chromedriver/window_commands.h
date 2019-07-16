@@ -212,12 +212,6 @@ Status ExecuteTouchScroll(Session* session,
                           std::unique_ptr<base::Value>* value,
                           Timeout* timeout);
 
-Status ExecuteTouchPinch(Session* session,
-                         WebView* web_view,
-                         const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value,
-                         Timeout* timeout);
-
 Status ExecuteSendCommand(Session* session,
                           WebView* web_view,
                           const base::DictionaryValue& params,

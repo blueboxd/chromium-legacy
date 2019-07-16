@@ -386,8 +386,7 @@ ThreatDetails::ThreatDetails(
       cache_collector_(new ThreatDetailsCacheCollector),
       done_callback_(done_callback),
       all_done_expected_(false),
-      is_all_done_(false),
-      weak_factory_(this) {
+      is_all_done_(false) {
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
@@ -402,8 +401,7 @@ ThreatDetails::ThreatDetails()
       ambiguous_dom_(false),
       trim_to_ad_tags_(false),
       all_done_expected_(false),
-      is_all_done_(false),
-      weak_factory_(this) {}
+      is_all_done_(false) {}
 
 ThreatDetails::~ThreatDetails() {
   DCHECK(all_done_expected_ == is_all_done_);

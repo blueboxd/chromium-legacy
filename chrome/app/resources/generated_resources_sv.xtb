@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">Det gick inte att verifiera din identitet</translation>
 <translation id="1116694919640316211">Om</translation>
 <translation id="1116779635164066733">På grund av tillägget <ph name="NAME" /> är inställningen låst</translation>
-<translation id="1117602883390928720">Lägg till Kerberos-konto</translation>
 <translation id="111844081046043029">Vill du lämna den här sidan?</translation>
 <translation id="1118738876271697201">Det gick inte att fastställa enhetsmodell eller serienummer.</translation>
 <translation id="1119447706177454957">Internt fel</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">Ett problem med enhetslicenser för demoläge uppstod.</translation>
 <translation id="126710816202626562">Översättningsspråk:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">Avancerad konfiguration</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272293450992660632">Pinkoderna matchar inte.</translation>
 <translation id="1272978324304772054">Det här användarkontot hör inte till den domän som enheten är registrerad för. Om du vill registrera enheten för en annan domän måste du återställa den först.</translation>
@@ -510,7 +508,6 @@
 <translation id="1744060673522309905">Det gick inte att ansluta enheten till domänen. Kontrollera att du inte redan har lagt till det högsta tillåtna antalet enheter.</translation>
 <translation id="1744108098763830590">bakgrundssida</translation>
 <translation id="1745520510852184940">Gör alltid detta</translation>
-<translation id="174617397682753897">Kerberos-konton</translation>
 <translation id="1746402432151920942">Identifierare för skyddad media</translation>
 <translation id="175196451752279553">Ö&amp;ppna en stängd flik igen</translation>
 <translation id="1753905327828125965">Mest besökta</translation>
@@ -758,7 +755,6 @@
 <translation id="2135787500304447609">&amp;Återuppta</translation>
 <translation id="2136372518715274136">Skriv in det nya lösenordet</translation>
 <translation id="2136476978468204130">Den angivna lösenfrasen är felaktig</translation>
-<translation id="2137068468602026500">Klicka på <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> under Webbläsare</translation>
 <translation id="2138398485845393913">Anslutning till <ph name="DEVICE_NAME" /> pågår</translation>
 <translation id="214169863967063661">Öppna inställningarna för utseende</translation>
 <translation id="2142328300403846845">Öppna länk som</translation>
@@ -846,7 +842,6 @@
 <translation id="2241634353105152135">Bara en gång</translation>
 <translation id="2242687258748107519">Filinformation</translation>
 <translation id="2246549592927364792">Vill du hämta bildbeskrivningar från Google?</translation>
-<translation id="2249269794707377949">Alla Kerberos-konton för enkel inloggning till vissa appar och webbplatser och filresurser kan hanteras här.</translation>
 <translation id="2249605167705922988">till exempel 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Öppna med systemvisningsprogrammet</translation>
 <translation id="225163402930830576">Uppdatera nätverk</translation>
@@ -1079,7 +1074,6 @@
 <translation id="2587922270115112871">Inget Google-konto skapas när en kontrollerad användare skapas och användarens inställningar
     och data är inte tillgängliga på andra enheter via Chrome Sync. För närvarande gäller den kontrollerade användaren endast på den här enheten.</translation>
 <translation id="2588636910004461974">Enheter från <ph name="VENDOR_NAME" /></translation>
-<translation id="258932246702879617">Välj <ph name="BEGIN_BOLD" />Fäst i aktivitetsfältet<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Sök på Google eller skriv webbadressen</translation>
 <translation id="2597521610396315071">Lägg till kontroll</translation>
 <translation id="2603115962224169880">Rensa upp på datorn</translation>
@@ -1146,7 +1140,6 @@
 <translation id="2683638487103917598">Mappens innehåll har sorterats</translation>
 <translation id="2684004000387153598">Fortsätt genom att klicka på OK. Skapa sedan en ny profil för din e-postadress genom att klicka på Lägg till person.</translation>
 <translation id="2688196195245426394">Det uppstod ett fel när enheten registrerades med servern: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="2688477613306174402">Konfiguration</translation>
 <translation id="2690024944919328218">Visa språkalternativ</translation>
 <translation id="2691385045260836588">Modell</translation>
 <translation id="2693176596243495071">Hoppsan! Ett okänt fel har uppstått. Försök igen senare eller kontakta administratören om felet kvarstår.</translation>
@@ -1533,7 +1526,6 @@
 <translation id="32939749466444286">Det gick inte att starta Linux-behållaren. Försök igen.</translation>
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="329703603001918157">Det gick inte att redigera genvägen</translation>
-<translation id="3297951628821704004">Ta bort kontot från enheten</translation>
 <translation id="329838636886466101">Reparera</translation>
 <translation id="3298789223962368867">Du har angett en ogiltig webbadress.</translation>
 <translation id="32991397311664836">Enheter:</translation>
@@ -1594,7 +1586,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Avgränsare</translation>
 <translation id="3387614642886316601">Använd förbättrad stavningskontroll</translation>
-<translation id="3389312115541230716">Högerklicka på ikonen för <ph name="SMALL_PRODUCT_LOGO" /> i aktivitetsfältet</translation>
 <translation id="3393352139658145068">Aktivera assistenten när någon säger ”Ok Google”. För att spara batteri är ”Ok Google” bara aktiverat när enheten är ansluten till en extern strömkälla.</translation>
 <translation id="3396800784455899911">När du klickar på Godkänn och fortsätt samtycker du till att dessa tjänster från Google får bearbeta data enligt beskrivningen ovan.</translation>
 <translation id="3399432415385675819">Aviseringar inaktiveras</translation>
@@ -1830,7 +1821,6 @@
 <translation id="3714195043138862580">Demoenheten har avregistrerats.</translation>
 <translation id="3714633008798122362">webbkalender</translation>
 <translation id="3719826155360621982">Startsida</translation>
-<translation id="3720996970802414353">Byt ändå</translation>
 <translation id="3722108462506185496">Det gick inte att starta den virtuella maskinen. Försök igen.</translation>
 <translation id="3725367690636977613">sidor</translation>
 <translation id="3726137731714254362">Om mappar tas bort härifrån avbryts delningen, men inga filer tas bort.</translation>
@@ -2445,7 +2435,6 @@
 <translation id="4662788913887017617">Dela det här bokmärket med din iPhone</translation>
 <translation id="4663373278480897665">Kamera är tillåten</translation>
 <translation id="4664482161435122549">Fel vid export av PKCS #12</translation>
-<translation id="4664736447097490764">Redigera konfigurationsfilen för Kerberos här.</translation>
 <translation id="4665014895760275686">Tillverkare</translation>
 <translation id="4665446389743427678">All data som lagrats av <ph name="SITE" /> raderas.</translation>
 <translation id="4668721319092543482">Klicka för att aktivera <ph name="PLUGIN_NAME" /></translation>
@@ -2560,6 +2549,7 @@
 <translation id="4850669014075537160">Rullning</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4853020600495124913">Öppna i &amp;nytt fönster</translation>
+<translation id="485480310608090163">Fler inställningar och behörigheter</translation>
 <translation id="4856478137399998590">Datatjänsten har aktiverats och är klar att användas</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Öppna alla i ett &amp;inkognitofönster}=1{Öppna i ett &amp;inkognitofönster}other{Öppna alla (#) i ett &amp;inkognitofönster}}</translation>
 <translation id="4858913220355269194">Fotboll</translation>
@@ -2862,7 +2852,6 @@
 <translation id="5319359161174645648">Google rekommenderar Chrome</translation>
 <translation id="532247166573571973">Servern kanske inte kan nås. Försök igen senare.</translation>
 <translation id="5324780743567488672">Ange tidszon automatiskt genom att använda din plats</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> – har behörighet att spara originalfiler</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5327570636534774768">Enheten hanteras av en annan domän. Avregistrera enheten från den domänen innan du konfigurerar demoläge.</translation>
 <translation id="532943162177641444">Konfigurera den trådlösa surfzonen som den här enheten ska kunna använda genom att trycka på aviseringen på din <ph name="PHONE_NAME" />.</translation>
@@ -3024,6 +3013,7 @@
 <translation id="55601339223879446">Justera skrivbordets avgränsning på skärmen</translation>
 <translation id="5562781907504170924">Den här fliken är ansluten till en Bluetooth-enhet.</translation>
 <translation id="5563234215388768762">Sök på Google eller skriv en webbadress</translation>
+<translation id="5565735124758917034">Aktiv</translation>
 <translation id="5567989639534621706">Programmets cacheminnen</translation>
 <translation id="5568069709869097550">Kan inte logga in</translation>
 <translation id="5568144734023334204">Android-lagring</translation>
@@ -3674,7 +3664,6 @@
 <translation id="6532101170117367231">Spara på Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Obs!<ph name="END_BOLD" /> Aktivera endast om du vet vad du gör eller om du har blivit ombedd att göra det eftersom insamling av data kan försämra resultatet.</translation>
 <translation id="6541638731489116978">Den här webbplatsen har blockerats från att använda enhetens rörelsesensorer.</translation>
-<translation id="6542184058496424548">Ogiltigt användarnamn (ska vara användare@sfär.com)</translation>
 <translation id="654233263479157500">Åtgärda navigeringsfel med hjälp av en webbtjänst</translation>
 <translation id="6544215763872433504">En webbläsare till dig från Google</translation>
 <translation id="6545665334409411530">Upprepningsintervall</translation>
@@ -3936,7 +3925,6 @@
 <translation id="6955446738988643816">Kontrollera popup</translation>
 <translation id="6957044667612803194">Säkerhetsnyckeln har inte stöd för pinkoder</translation>
 <translation id="6957231940976260713">Namn på tjänsten</translation>
-<translation id="6957572737510023982">Hoppsan! Något gick fel (felkod <ph name="ERROR_CODE" />).</translation>
 <translation id="6964390816189577014">Hjälte</translation>
 <translation id="6964760285928603117">Ta bort från gruppen</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -4195,7 +4183,6 @@
 <translation id="7328699668338161242">Assistenten kan redan känna igen din röst</translation>
 <translation id="7328867076235380839">Ogiltig kombination</translation>
 <translation id="7329154610228416156">Inloggningen misslyckades eftersom den har konfigurerats att använda en webbadress som inte är säker (<ph name="BLOCKED_URL" />). Kontakta administratören.</translation>
-<translation id="733006820760728943">Ange som aktivt konto</translation>
 <translation id="7334190995941642545">Smart Lock är för närvarande inte tillgängligt. Försök igen senare.</translation>
 <translation id="7334274148831027933">Aktivera dockad skärmförstoring</translation>
 <translation id="7335974957018254119">Använd stavningskontroll för</translation>
@@ -4206,7 +4193,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> visas nu i helskärm.</translation>
 <translation id="7340650977506865820">Webbplatsen delar din skärm</translation>
 <translation id="7341834142292923918">Begär åtkomst till webbplatsen</translation>
-<translation id="7344488796804562294">Avancerad konfiguration av Kerberos</translation>
 <translation id="7345706641791090287">Bekräfta lösenordet</translation>
 <translation id="7346909386216857016">Ok, jag förstår</translation>
 <translation id="7347751611463936647">Om du vill använda det här tillägget skriver du ”<ph name="EXTENSION_KEYWORD" />”, trycker på tabbtangenten och anger kommandot eller sökningen.</translation>
@@ -4299,7 +4285,6 @@
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC-adress</translation>
 <translation id="7493386493263658176">Tillägget <ph name="EXTENSION_NAME" /> kan samla in all text du skriver, inklusive personlig information som lösenord och kreditkortsnummer. Vill du fortsätta att använda tillägget?</translation>
-<translation id="7494065396242762445">Öppna Windows-inställningar</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Har du glömt ditt gamla lösenord?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> och tillhörande data tas bort från den här enheten.</translation>
@@ -4324,7 +4309,6 @@
 <translation id="7530016656428373557">Urladdningstakt i watt</translation>
 <translation id="7531779363494549572">Öppna Inställningar &gt; Appar och aviseringar &gt; Aviseringar.</translation>
 <translation id="7536220825385726660">Tillåt att appar i Play Store ansluter till externa enheter</translation>
-<translation id="7537601449003285327">Fäst i aktivitetsfältet</translation>
 <translation id="7539856059004947393">Bluetooth-säkerhetsnyckel</translation>
 <translation id="7540972813190816353">Det gick inte att söka efter uppdateringar: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Aktiverar felsökningsfunktioner på den här <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten</translation>
@@ -4355,7 +4339,6 @@
 <translation id="7574650250151586813">Uppdatera appen Daydream Keyboard om du vill kunna använda tangentbordet</translation>
 <translation id="7576690715254076113">Jämför</translation>
 <translation id="7576976045740938453">Ett problem uppstod med kontot för demoläge.</translation>
-<translation id="757941033127302446">Inloggad</translation>
 <translation id="7580671184200851182">Spela samma ljud i alla högtalare (monoljud)</translation>
 <translation id="7581462281756524039">Ett rensningsverktyg</translation>
 <translation id="7582582252461552277">Föredra det här nätverket</translation>
@@ -4633,7 +4616,6 @@
 <translation id="7959074893852789871">Filen innehöll flera certifikat och några av dem importerades inte:</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963826112438303517">Assistenten använder dessa inspelningar och allt du ber den om för att skapa och uppdatera din röstmodell, som bara lagras på enheter där du har aktiverat Voice Match. Visa eller lär om röstaktiviteter i inställningarna för Assistenten.</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> vill söka efter Bluetooth-enheter i närheten. Följande enheter har hittats:</translation>
 <translation id="7966241909927244760">K&amp;opiera bildadress</translation>
 <translation id="7968742106503422125">Läsa och ändra data som du kopierar och klistrar in</translation>
 <translation id="7968833647796919681">Aktivera insamling av resultatdata</translation>
@@ -4790,7 +4772,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8184472985242519288">Jämnhög</translation>
 <translation id="8185331656081929126">Visa aviseringar när nya skrivare hittas i nätverket</translation>
 <translation id="8186609076106987817">Servern kunde inte hitta filen.</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> har läsbehörighet till alla filer i följande mapp. Webbplatsen kan bara läsa ändringar i mappen när den här fliken är öppen.</translation>
 <translation id="8188389033983459049">Kontrollera enhetsinställningarna och aktivera Bluetooth om du vill fortsätta</translation>
 <translation id="8190193592390505034">Ansluter till <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Hantera dina appar, tillägg och teman</translation>
@@ -4926,7 +4907,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="839736845446313156">Registrera</translation>
 <translation id="8398877366907290961">Fortsätt ändå</translation>
 <translation id="8400146488506985033">Hantera personer</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> har behörighet att spara ändringar direkt i filerna i följande mapp. Webbplatsen kan bara spara ändringar när den här fliken är öppen.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="8418445294933751433">&amp;Visa som flik</translation>
@@ -5279,7 +5259,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="891365694296252935">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Läser in förslag</translation>
 <translation id="8916476537757519021">Underram i inkognitoläge: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> – har läsbehörighet till en mapp på enheten</translation>
 <translation id="8919275547519617350">Logga in och aktivera synkronisering om du vill ha tillgång till alla lösenord oavsett vilken enhet du använder.</translation>
 <translation id="8921366488406707015">Säkerhetsnyckeln verifieras …</translation>
 <translation id="8922013791253848639">Tillåt alltid annonser på den här webbplatsen</translation>
@@ -5329,6 +5308,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8995603266996330174">Hanteras av <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Lägg till konto …</translation>
 <translation id="899657321862108550">Chrome på ditt sätt, var du än är</translation>
+<translation id="899676909165543803">Fingeravtryckssensorn är tangenten längst ned till höger på tangentbordet. Tryck lätt på den med valfritt finger.</translation>
 <translation id="9003647077635673607">Tillåt på alla webbplatser</translation>
 <translation id="9003704114456258138">Frekvens</translation>
 <translation id="9004952710076978168">Ett meddelande om en okänd skrivare mottogs.</translation>
@@ -5364,7 +5344,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9044646465488564462">Det gick inte att ansluta till nätverket: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Skickar webbadresserna till sidor som du försöker nå till Google</translation>
 <translation id="9046895021617826162">Kunde inte ansluta</translation>
-<translation id="9047391224416514812">Det finns redan ett konto med det här användarnamnet</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
 <translation id="9052208328806230490">Du har registrerat dina skrivare med <ph name="CLOUD_PRINT_NAME" /> och du använde kontot <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsätt blockera</translation>

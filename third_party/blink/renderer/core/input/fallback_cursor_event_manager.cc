@@ -185,10 +185,28 @@ bool FallbackCursorEventManager::ShouldLock(
     const ScrollableArea& scrollable,
     const IntSize& node_size,
     const IntPoint& cursor_location_in_node) {
+  // This method won't work correctly on RootFrameViewport because of how
+  // UserInputScrollable works.
+  DCHECK(!scrollable.IsRootFrameViewport());
+
   // Check can scroll in direction, if not should not lock this direction.
   IntSize current_offset = scrollable.ScrollOffsetInt();
   IntSize min_offset = scrollable.MinimumScrollOffsetInt();
   IntSize max_offset = scrollable.MaximumScrollOffsetInt();
+
+  // If a direction isn't scrollable (e.g. overflow:hidden), we should restrict
+  // the min/max in that axis so that the code below realizes we can't scroll
+  // in that direction. That'll ensure we don't lock the cursor in that
+  // direction and allow it to be moved rather than fruitlessly trying to
+  // scroll.
+  if (!scrollable.UserInputScrollable(kHorizontalScrollbar)) {
+    min_offset.SetWidth(current_offset.Width());
+    max_offset.SetWidth(current_offset.Width());
+  }
+  if (!scrollable.UserInputScrollable(kVerticalScrollbar)) {
+    min_offset.SetHeight(current_offset.Height());
+    max_offset.SetHeight(current_offset.Height());
+  }
 
   switch (d) {
     case Direction::kLeft:
@@ -257,26 +275,66 @@ void FallbackCursorEventManager::SetCursorVisibility(bool visible) {
 
 void FallbackCursorEventManager::ComputeLockCursor(
     const IntPoint& location_in_root_frame) {
+  DCHECK(root_frame_->GetDocument());
+  DCHECK(root_frame_->GetDocument()->View());
+  // TODO(bokan): Overly-defensive since we'll be merging, remove from ToT.
+  if (!root_frame_->GetDocument() || !root_frame_->GetDocument()->View())
+    return;
+
   ScrollableArea* scrollable = CurrentScrollingScrollableArea();
 
   DCHECK(scrollable);
   IntSize scrollable_clip_size_in_root_frame =
       ScrollableAreaClipSizeInRootFrame(*scrollable);
+  VisualViewport& visual_viewport = root_frame_->GetPage()->GetVisualViewport();
   IntPoint location_in_scrollable =
       RootFrameLocationToScrollable(location_in_root_frame, *scrollable);
 
+  // The RootFrameViewport is special because it's really two scrollers in one.
+  // We need to check each of the visual and layout viewports independently
+  // since we need to account for whether the scroller with extent
+  // (current_offset < MaxScrollOffset()) is UserInputScrollable, however,
+  // RootFrameViewport::UserInputScrollable will return whether either
+  // sub-viewport is UserInputScrollable.
+  // TODO(bokan): The below is awkward because we need a minimal change for
+  // merge. It relies on the fact that ShouldLock doesn't use the the passed in
+  // scroller to determine the mouse location relative to the scroll region,
+  // the geometry is calculated here the same is passed in both cases. We
+  // should refactor ShouldLock into InScrollRegion and CanScroll.
+  ScrollableArea* scroller_for_lock =
+      scrollable->IsRootFrameViewport()
+          ? root_frame_->GetDocument()->View()->LayoutViewport()
+          : scrollable;
+
   bool left =
-      ShouldLock(Direction::kLeft, *scrollable,
+      ShouldLock(Direction::kLeft, *scroller_for_lock,
                  scrollable_clip_size_in_root_frame, location_in_scrollable);
   bool right =
-      ShouldLock(Direction::kRight, *scrollable,
+      ShouldLock(Direction::kRight, *scroller_for_lock,
                  scrollable_clip_size_in_root_frame, location_in_scrollable);
   bool up =
-      ShouldLock(Direction::kUp, *scrollable,
+      ShouldLock(Direction::kUp, *scroller_for_lock,
                  scrollable_clip_size_in_root_frame, location_in_scrollable);
   bool down =
-      ShouldLock(Direction::kDown, *scrollable,
+      ShouldLock(Direction::kDown, *scroller_for_lock,
                  scrollable_clip_size_in_root_frame, location_in_scrollable);
+
+  // If we can't scroll the layout viewport, we should still check whether we
+  // might be able to scroll the visual viewport.
+  if (scrollable->IsRootFrameViewport()) {
+    left |=
+        ShouldLock(Direction::kLeft, visual_viewport,
+                   scrollable_clip_size_in_root_frame, location_in_scrollable);
+    right |=
+        ShouldLock(Direction::kRight, visual_viewport,
+                   scrollable_clip_size_in_root_frame, location_in_scrollable);
+    up |=
+        ShouldLock(Direction::kUp, visual_viewport,
+                   scrollable_clip_size_in_root_frame, location_in_scrollable);
+    down |=
+        ShouldLock(Direction::kDown, visual_viewport,
+                   scrollable_clip_size_in_root_frame, location_in_scrollable);
+  }
 
   LockCursor(left, right, up, down);
 }

@@ -41,7 +41,7 @@ class UpdateFilePathTask : public Task {
   base::FilePath file_path_;
   UpdateFilePathDoneCallback callback_;
 
-  base::WeakPtrFactory<UpdateFilePathTask> weak_ptr_factory_;
+  base::WeakPtrFactory<UpdateFilePathTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(UpdateFilePathTask);
 };
 

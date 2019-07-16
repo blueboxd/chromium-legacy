@@ -174,8 +174,7 @@ PasswordAutofillManager::PasswordAutofillManager(
     PasswordManagerClient* password_client)
     : password_manager_driver_(password_manager_driver),
       autofill_client_(autofill_client),
-      password_client_(password_client),
-      weak_ptr_factory_(this) {}
+      password_client_(password_client) {}
 
 PasswordAutofillManager::~PasswordAutofillManager() {
   if (deletion_callback_)

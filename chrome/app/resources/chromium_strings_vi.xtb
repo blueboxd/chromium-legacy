@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Nhận trợ giúp về cách sử dụng Chromium OS</translation>
 <translation id="1396446129537741364">Chromium đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="1414495520565016063">Bạn đã đăng nhập vào Chromium!</translation>
-<translation id="1502360822835740515">Đặt Chromium làm trình duyệt mặc định của bạn</translation>
 <translation id="151962892725702025">Chromium OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>
 <translation id="1524282610922162960">Chia sẻ một tab Chromium</translation>
-<translation id="1585657529869845941">Hãy nhấp vào nút <ph name="BEGIN_BOLD" />Vẫn chuyển<ph name="END_BOLD" /> khi nút này xuất hiện</translation>
 <translation id="1668054258064581266">Sau khi xóa tài khoản khỏi Chromium, bạn có thể cần tải lại các tab đang mở của mình để tác vụ có hiệu lực.</translation>
 <translation id="1688750314291223739">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Chromium trên bất kỳ máy tính nào.</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium sẽ truy cập vào Drive của bạn để đưa ra đề xuất trên thanh địa chỉ</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Ghim Chromium vào thanh tác vụ của bạn</translation>
 <translation id="388648406173476553">Tùy chỉnh và kiểm soát Chromium. Bạn cần lưu ý - nhấp để xem thông tin chi tiết.</translation>
 <translation id="3889543394854987837">Nhấp vào tên của bạn để mở Chromium và bắt đầu duyệt web.</translation>
 <translation id="3898493977366060150">Duyệt web bằng Google smarts</translation>
 <translation id="4036079820698952681">Giúp cải thiện Chromium bằng cách báo cáo <ph name="BEGIN_LINK" />cài đặt hiện tại<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
-<translation id="407254336480250557">Chọn <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Chromium.</translation>
 <translation id="4216212958613226427">Ngôn ngữ này dùng để hiển thị giao diện người dùng của Chromium</translation>
 <translation id="4222580632002216401">Bạn hiện đã đăng nhập vào Chromium! Quản trị viên của bạn đã tắt tính năng Đồng bộ hóa.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Dường như cấu hình này đang được quy trình Chromium khác (<ph name="PROCESS_ID" />) trên máy tính khác (<ph name="HOST_NAME" />) sử dụng. Chromium đã khóa cấu hình này để cấu hình không bị lỗi. Nếu bạn chắc chắn không có quy trình nào khác đang sử dụng cấu hình này, bạn có thể mở khóa cấu hình và chạy lại Chromium.</translation>
 <translation id="469338717132742108">Nhận trợ giúp về Chromium OS</translation>
 <translation id="4708774505295300557">Ai đó trước đây đã đăng nhập vào Chromium trên máy tính này bằng <ph name="ACCOUNT_EMAIL_LAST" />. Vui lòng tạo người dùng Chromium mới để giữ riêng biệt thông tin của bạn.</translation>
-<translation id="4714956846925717402">Truy cập Chromium nhanh hơn</translation>
 <translation id="4746050847053251315">Bạn vẫn muốn thoát khỏi Chromium?</translation>
 <translation id="4748217263233248895">Chromium vừa áp dụng một bản cập nhật bảo mật đặc biệt. Vui lòng khởi động lại ngay bây giờ và chúng tôi sẽ khôi phục các tab của bạn.</translation>
 <translation id="479167709087336770">Dịch vụ này sử dụng cùng một trình kiểm tra chính tả dùng trong Google Tìm kiếm. Thông tin bạn nhập vào trình duyệt sẽ được gửi tới Google. Bạn luôn có thể thay đổi hành động này trong phần cài đặt.</translation>

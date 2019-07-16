@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -45,6 +46,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
@@ -714,8 +716,21 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             PageInfoBubbleView::GetShownBubbleType());
 }
 
+class PageInfoBubbleViewBrowserTestWithAutoupgradesDisabled
+    : public PageInfoBubbleViewBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PageInfoBubbleViewBrowserTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Ensure changes to security state are reflected in an open PageInfo bubble.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTestWithAutoupgradesDisabled,
                        UpdatesOnSecurityStateChange) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(

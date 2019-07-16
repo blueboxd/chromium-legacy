@@ -75,7 +75,7 @@ const net::NetworkTrafficAnnotationTag UiDevToolsServer::kVizDevtoolsServerTag =
 
 UiDevToolsServer::UiDevToolsServer(int port,
                                    net::NetworkTrafficAnnotationTag tag)
-    : port_(port), tag_(tag), weak_ptr_factory_(this) {
+    : port_(port), tag_(tag) {
   DCHECK(!devtools_server_);
   devtools_server_ = this;
 }

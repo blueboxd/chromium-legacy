@@ -73,8 +73,7 @@ CastMessageHandler::CastMessageHandler(
       browser_version_(browser_version),
       locale_(locale),
       socket_service_(socket_service),
-      clock_(base::DefaultTickClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      clock_(base::DefaultTickClock::GetInstance()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   socket_service_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&CastSocketService::AddObserver,

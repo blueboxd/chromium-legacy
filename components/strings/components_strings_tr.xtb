@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kart</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tarafından geçersiz kılındığı için yoksayıldı.</translation>
+<translation id="2119505898009119320">Verildiği kuruluş: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Hareket Sensörleri</translation>
 <translation id="213826338245044447">Mobil Yer İşaretleri</translation>
 <translation id="214556005048008348">Ödemeyi iptal et</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Bulunduğunuz bölgedeki sinyali kontrol etme</translation>
 <translation id="2523886232349826891">Yalnızca bu cihazda kaydedildi</translation>
 <translation id="2524461107774643265">Daha Fazla Bilgi Ekleyin</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{ve 1 tane daha}other{ve # tane daha}}</translation>
 <translation id="2536110899380797252">Adres Ekle</translation>
 <translation id="2539524384386349900">Algıla</translation>
 <translation id="254947805923345898">Politika değeri geçerli değil.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Ebeveynlerinize bu siteyi ziyaret etmenizin uygun olup olmadığını sordunuz</translation>
 <translation id="4876188919622883022">Basitleştirilmiş görünüm</translation>
 <translation id="4876305945144899064">Kullanıcı adı yok</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Yok}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> araması</translation>
 <translation id="4879491255372875719">Otomatik (varsayılan)</translation>
 <translation id="4880827082731008257">Geçmişte ara</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Evet, sakla</translation>
 <translation id="6508722015517270189">Chrome'u yeniden başlatın</translation>
 <translation id="6517596291481585650">Uyarı: Bu politika bir liste olmadığından politikada belirtildiği gibi bir liste olarak birleştirilmemiştir.</translation>
+<translation id="6521745193039995384">Etkin değil</translation>
 <translation id="6529602333819889595">Silmeyi &amp;Yeniden Yap</translation>
 <translation id="6534179046333460208">Fiziksel Web önerileri</translation>
 <translation id="6545864417968258051">Bluetooth taraması</translation>
@@ -1479,6 +1483,7 @@ Ek ayrıntılar:
 <translation id="9076630408993835509">Bu tarayıcı bir şirket veya başka bir kuruluş tarafından yönetilmemektedir. Bu cihazdaki etkinlikler Chrome dışında yönetilebilir. <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Daha fazla bilgi gerekli</translation>
 <translation id="9080712759204168376">Sipariş Özeti</translation>
+<translation id="9089260154716455634">Mesai Dışı Saatler Politikası:</translation>
 <translation id="9095388113577226029">Diğer diller...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9106062320799175032">Fatura Adresi Ekleyin</translation>

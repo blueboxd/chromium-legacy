@@ -51,6 +51,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   FidoTransportProtocol DeviceTransport() const override;
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
+  bool RequiresBlePairingPin() const override;
 
  protected:
   // FidoDevice:

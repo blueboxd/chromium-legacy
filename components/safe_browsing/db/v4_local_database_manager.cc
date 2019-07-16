@@ -266,8 +266,7 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
                        ? task_runner_for_tests
                        : base::CreateSequencedTaskRunnerWithTraits(
                              {base::MayBlock(),
-                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      weak_factory_(this) {
+                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
 

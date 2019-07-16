@@ -283,7 +283,7 @@ class SyncSchedulerImpl : public SyncScheduler {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncSchedulerImpl);
 };

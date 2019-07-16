@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Google Chrome আপডেট হচ্ছে...</translation>
 <translation id="1469002951682717133">Chrome অ্যাপ লঞ্চার</translation>
 <translation id="1553358976309200471">Chrome আপডেট করুন</translation>
-<translation id="1585657529869845941">এটি দেখানো হলে <ph name="BEGIN_BOLD" />যেকোনওভাবে পরিবর্তন করতে<ph name="END_BOLD" /> ক্লিক করুন</translation>
 <translation id="1587223624401073077">Google Chrome আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> বিপজ্জনক, তাই Chrome এটিকে অবরুদ্ধ করেছে।</translation>
 <translation id="1590588151039584890">আপডেট করতে, এই কম্পিউটারে Chrome বন্ধ করতে হবে। এর ফলে, এই কম্পিউটারে লগ-ইন করে থাকা অন্যান্য ব্যবহারকারীরা যে পরিবর্তনগুলি সেভ করে রাখেননি সেগুলি হারাতে পারেন।</translation>
@@ -34,7 +33,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome হল একটি ওয়েব ব্রাউজার যা ওয়েব পৃষ্ঠাগুলি এবং অ্যাপগুলিকে বিদ্যুৎ গতিতে চালনা করে৷ এটি দ্রুত, সুস্থির এবং সহজেই ব্যবহারযোগ্য৷ Google Chrome-এ অন্তর্গঠিত ম্যালওয়ার এবং ফিশিং সুরক্ষার সাথে আরও নিরাপদে ওয়েব ব্রাউজ করুন৷</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome ১ ঘণ্টার মধ্যে আবার লঞ্চ হবে}one{Chrome # ঘণ্টার মধ্যে আবার লঞ্চ হবে}other{Chrome # ঘণ্টার মধ্যে আবার লঞ্চ হবে}}</translation>
-<translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> বেছে নিন</translation>
 <translation id="1734234790201236882">Google অ্যাকাউন্টে এই পাসওয়ার্ডটি Chrome সেভ করবে। আপনার এটি মনে রাখার দরকার নেই।</translation>
 <translation id="174539241580958092">সাইন ইনে ত্রুটির কারণে Google Chrome আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -117,7 +115,6 @@
 <translation id="3873044882194371212">Chrome-এ ছদ্মবেশী উইন্ডোতে লিঙ্ক খুলুন</translation>
 <translation id="3889417619312448367">Google Chrome আনইনস্টল করুন</translation>
 <translation id="3898493977366060150">Google স্মার্ট ব্যবহার করে ওয়েব ব্রাউজিং</translation>
-<translation id="4028693306634653894">Chrome এ আরও দ্রুত যান</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ ভার্সনে উপলভ্য।</translation>
 <translation id="4053720452172726777">Google Chrome কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="4143243756087420366">Chrome এর নাম এবং ছবি</translation>
@@ -240,7 +237,6 @@
 <translation id="7808348361785373670">Chrome থেকে সরান...</translation>
 <translation id="7825851276765848807">অনির্দিষ্ট ত্রুটির জন্য ইনস্টল করা যায়নি৷ অনুগ্রহ করে আবার Google Chrome ডাউনলোড করুন৷</translation>
 <translation id="7855730255114109580">Google Chrome আপ টু ডেট আছে</translation>
-<translation id="7888186132678118370">Chrome কে আপনার টাস্কবারে পিন করুন</translation>
 <translation id="7890208801193284374">যদি আপনি একটি কম্পিউটার শেয়ার করেন, তাহলে বন্ধু ও পরিবারের লোকজন পৃথকভাবে ব্রাউজ করতে পারবেন এবং তাদের ইচ্ছা অনুযায়ী Chrome-এর সেটআপ করতে পারবেন৷</translation>
 <translation id="7896673875602241923">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST" /> হিসাবে Chrome-এ সাইন-ইন করেছেন। আপনার তথ্য আলাদা রাখার জন্য অনুগ্রহ করে একটি নতুন Chrome ব্যবহারকারী তৈরি করুন।</translation>
 <translation id="7908168227788431038">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে Google Chrome আবার চালু করুন।</translation>
@@ -289,6 +285,5 @@
 <translation id="911206726377975832">আপনার ব্রাউজিং ডেটাও মুছে দেবেন?</translation>
 <translation id="9138603949443464873">আপনার পরিবর্তনগুলি প্রয়োগ করতে, Chrome রিলঞ্চ করুন</translation>
 <translation id="919706545465235479">সিঙ্ক শুরু করতে Chrome আপডেট করুন</translation>
-<translation id="924447568950697217">Chrome-কে আপনার ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="989369509083708165">Google Chrome আপনার ডিফল্ট ব্রাউজার</translation>
 </translationbundle>

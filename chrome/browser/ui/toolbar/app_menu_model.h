@@ -79,6 +79,9 @@ enum AppMenuAction {
   LIMIT_MENU_ACTION
 };
 
+// Function to record WrenchMenu.MenuAction histogram
+void LogWrenchMenuAction(AppMenuAction action_id);
+
 // A menu model that builds the contents of the zoom menu.
 class ZoomMenuModel : public ui::SimpleMenuModel {
  public:

@@ -39,8 +39,7 @@ GCMChannelStatusRequest::GCMChannelStatusRequest(
       channel_status_request_url_(channel_status_request_url),
       user_agent_(user_agent),
       callback_(callback),
-      backoff_entry_(&(GetGCMBackoffPolicy())),
-      weak_ptr_factory_(this) {}
+      backoff_entry_(&(GetGCMBackoffPolicy())) {}
 
 GCMChannelStatusRequest::~GCMChannelStatusRequest() {
 }

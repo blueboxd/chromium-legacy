@@ -2763,7 +2763,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // future when our context is current.
   std::set<scoped_refptr<TextureRef>> texture_refs_pending_destruction_;
 
-  base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -3464,8 +3464,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(
       validation_fbo_multisample_(0),
       validation_fbo_(0),
       texture_manager_service_id_generation_(0),
-      force_shader_name_hashing_for_test(false),
-      weak_ptr_factory_(this) {
+      force_shader_name_hashing_for_test(false) {
   DCHECK(client);
   DCHECK(group);
 }

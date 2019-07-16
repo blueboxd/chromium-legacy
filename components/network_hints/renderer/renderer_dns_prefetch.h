@@ -101,7 +101,7 @@ class RendererDnsPrefetch {
   int buffer_full_discard_count_;
   int numeric_ip_discard_count_;
 
-  base::WeakPtrFactory<RendererDnsPrefetch> weak_factory_;
+  base::WeakPtrFactory<RendererDnsPrefetch> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RendererDnsPrefetch);
 };  // class RendererDnsPrefetch

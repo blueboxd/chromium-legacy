@@ -439,6 +439,84 @@ CtapDeviceResponseCode CheckCredentialManagementPINAuth(
   }
   return CtapDeviceResponseCode::kSuccess;
 }
+
+// Like AsCBOR(const PublicKeyCredentialRpEntity&), but optionally allows name
+// to be INVALID_UTF8.
+base::Optional<cbor::Value> RpEntityAsCBOR(
+    const PublicKeyCredentialRpEntity& rp,
+    bool allow_invalid_utf8) {
+  if (!allow_invalid_utf8) {
+    return AsCBOR(rp);
+  }
+
+  cbor::Value::MapValue rp_map;
+  rp_map.emplace(kEntityIdMapKey, rp.id);
+  if (rp.name) {
+    rp_map.emplace(kEntityNameMapKey,
+                   cbor::Value::InvalidUTF8StringValueForTesting(*rp.name));
+  }
+  if (rp.icon_url) {
+    rp_map.emplace(kIconUrlMapKey, rp.icon_url->spec());
+  }
+  return cbor::Value(std::move(rp_map));
+}
+
+// Like AsCBOR(const PublicKeyCredentialUserEntity&), but optionally allows name
+// or displayName to be INVALID_UTF8.
+base::Optional<cbor::Value> UserEntityAsCBOR(
+    const PublicKeyCredentialUserEntity& user,
+    bool allow_invalid_utf8) {
+  if (!allow_invalid_utf8) {
+    return AsCBOR(user);
+  }
+
+  cbor::Value::MapValue user_map;
+  user_map.emplace(kEntityIdMapKey, user.id);
+  if (user.name) {
+    user_map.emplace(kEntityNameMapKey,
+                     cbor::Value::InvalidUTF8StringValueForTesting(*user.name));
+  }
+  // Empty icon URLs result in CTAP1_ERR_INVALID_LENGTH on some security keys.
+  if (user.icon_url && !user.icon_url->is_empty()) {
+    user_map.emplace(kIconUrlMapKey, user.icon_url->spec());
+  }
+  if (user.display_name) {
+    user_map.emplace(
+        kDisplayNameMapKey,
+        cbor::Value::InvalidUTF8StringValueForTesting(*user.display_name));
+  }
+  return cbor::Value(std::move(user_map));
+}
+
+std::vector<uint8_t> WriteCBOR(cbor::Value value,
+                               bool allow_invalid_utf8 = false) {
+  cbor::Writer::Config config;
+  config.allow_invalid_utf8_for_testing = allow_invalid_utf8;
+  return *cbor::Writer::Write(std::move(value), std::move(config));
+}
+
+std::vector<uint8_t> EncodeGetAssertionResponse(
+    const AuthenticatorGetAssertionResponse& response,
+    bool allow_invalid_utf8) {
+  cbor::Value::MapValue response_map;
+  if (response.credential()) {
+    response_map.emplace(1, AsCBOR(*response.credential()));
+  }
+
+  response_map.emplace(2, response.auth_data().SerializeToByteArray());
+  response_map.emplace(3, response.signature());
+
+  if (response.user_entity()) {
+    response_map.emplace(
+        4, *UserEntityAsCBOR(*response.user_entity(), allow_invalid_utf8));
+  }
+  if (response.num_credentials()) {
+    response_map.emplace(5, response.num_credentials().value());
+  }
+
+  return WriteCBOR(cbor::Value(std::move(response_map)), allow_invalid_utf8);
+}
+
 }  // namespace
 
 VirtualCtap2Device::Config::Config() = default;
@@ -968,13 +1046,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
         DCHECK_LT(found_registrations.size(), 256u);
         assertion.SetNumCredentials(found_registrations.size());
       }
-      *response = GetSerializedCtapDeviceResponse(assertion);
+      *response = EncodeGetAssertionResponse(
+          assertion, config_.allow_invalid_utf8_in_credential_entities);
       done_first = true;
     } else {
       // These replies will be returned in response to a GetNextAssertion
       // request.
       mutable_state()->pending_assertions.emplace_back(
-          GetSerializedCtapDeviceResponse(assertion));
+          EncodeGetAssertionResponse(
+              assertion, config_.allow_invalid_utf8_in_credential_entities));
     }
   }
 
@@ -1238,8 +1318,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
         GetNextRP(&response_map);
       }
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1249,8 +1329,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       }
       GetNextRP(&response_map);
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1292,8 +1372,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
           static_cast<int>(mutable_state()->pending_registrations.size()));
       mutable_state()->pending_registrations.pop_front();
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1305,8 +1385,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       response_map.swap(mutable_state()->pending_registrations.front());
       mutable_state()->pending_registrations.pop_front();
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1600,7 +1680,8 @@ void VirtualCtap2Device::InitPendingRegistrations(
     cbor::Value::MapValue response_map;
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kUser),
-        AsCBOR(*registration.second.user));
+        *UserEntityAsCBOR(*registration.second.user,
+                          config_.allow_invalid_utf8_in_credential_entities));
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kCredentialID),
         AsCBOR(PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
@@ -1619,8 +1700,10 @@ void VirtualCtap2Device::InitPendingRegistrations(
 
 void VirtualCtap2Device::GetNextRP(cbor::Value::MapValue* response_map) {
   DCHECK(!mutable_state()->pending_rps.empty());
-  response_map->emplace(static_cast<int>(CredentialManagementResponseKey::kRP),
-                        AsCBOR(mutable_state()->pending_rps.front()));
+  response_map->emplace(
+      static_cast<int>(CredentialManagementResponseKey::kRP),
+      *RpEntityAsCBOR(mutable_state()->pending_rps.front(),
+                      config_.allow_invalid_utf8_in_credential_entities));
   response_map->emplace(
       static_cast<int>(CredentialManagementResponseKey::kRPIDHash),
       fido_parsing_utils::CreateSHA256Hash(

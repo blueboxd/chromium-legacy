@@ -108,8 +108,7 @@ class FtlMessageReceptionChannelTest : public testing::Test {
   int GetRetryFailureCount() const;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   std::unique_ptr<FtlMessageReceptionChannel> channel_;
   base::MockCallback<FtlMessageReceptionChannel::StreamOpener>
       mock_stream_opener_;

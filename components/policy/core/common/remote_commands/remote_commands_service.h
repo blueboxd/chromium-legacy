@@ -103,7 +103,7 @@ class POLICY_EXPORT RemoteCommandsService
   // as executed.
   base::OnceClosure on_command_acked_callback_;
 
-  base::WeakPtrFactory<RemoteCommandsService> weak_factory_;
+  base::WeakPtrFactory<RemoteCommandsService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCommandsService);
 };

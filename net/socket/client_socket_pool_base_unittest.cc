@@ -628,7 +628,7 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
  protected:
   ClientSocketPoolBaseTest()
       : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()) {
     connect_backup_jobs_enabled_ =
         TransportClientSocketPool::connect_backup_jobs_enabled();

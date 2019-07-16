@@ -140,8 +140,7 @@ MostVisitedSites::MostVisitedSites(
       observer_(nullptr),
       max_num_sites_(0u),
       top_sites_observer_(this),
-      mv_source_(TileSource::TOP_SITES),
-      top_sites_weak_ptr_factory_(this) {
+      mv_source_(TileSource::TOP_SITES) {
   DCHECK(prefs_);
   // top_sites_ can be null in tests.
   // TODO(sfiera): have iOS use a dummy TopSites in its tests.

@@ -43,6 +43,7 @@ source_set("unit_tests") {
   sources = [
     "content_password_manager_driver_unittest.cc",
     "form_submission_tracker_util_unittest.cc",
+    "password_manager_internals_service_factory_unittest.cc",
   ]
   deps = [
     ":browser",

@@ -481,7 +481,7 @@ void ExtensionFunction::SendResponseImpl(bool success) {
   if (!results_)
     results_.reset(new base::ListValue());
 
-  response_callback_.Run(response, *results_, GetError(), histogram_value());
+  response_callback_.Run(response, *results_, GetError());
   LogUma(success, timer_.Elapsed(), histogram_value_);
 
   OnResponded();

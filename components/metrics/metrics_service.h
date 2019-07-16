@@ -394,7 +394,7 @@ class MetricsService : public base::HistogramFlattener {
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as MetricsService.
-  base::WeakPtrFactory<MetricsService> self_ptr_factory_;
+  base::WeakPtrFactory<MetricsService> self_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };

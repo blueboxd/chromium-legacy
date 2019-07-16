@@ -55,8 +55,7 @@ SingleClientVideoCaptureHost::SingleClientVideoCaptureHost(
     DeviceLauncherCreateCallback callback)
     : device_id_(device_id),
       type_(type),
-      device_launcher_callback_(std::move(callback)),
-      weak_factory_(this) {
+      device_launcher_callback_(std::move(callback)) {
   DCHECK(!device_launcher_callback_.is_null());
 }
 

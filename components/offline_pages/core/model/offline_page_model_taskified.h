@@ -228,7 +228,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelTaskified);
 };

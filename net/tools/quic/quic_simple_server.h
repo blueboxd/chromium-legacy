@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/log/net_log.h"
 #include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
 #include "net/quic/quic_chromium_connection_helper.h"
@@ -113,9 +112,6 @@ class QuicSimpleServer {
 
   // The source address of the current read.
   IPEndPoint client_address_;
-
-  // The log to use for the socket.
-  NetLog net_log_;
 
   quic::QuicSimpleServerBackend* quic_simple_server_backend_;
 

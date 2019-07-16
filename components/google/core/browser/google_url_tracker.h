@@ -129,7 +129,7 @@ class GoogleURLTracker
                            // bother to load anything.
                            // Consumers should register a callback via
                            // RegisterCallback().
-  base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_;
+  base::WeakPtrFactory<GoogleURLTracker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };

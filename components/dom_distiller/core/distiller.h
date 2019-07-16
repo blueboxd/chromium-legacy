@@ -188,7 +188,7 @@ class DistillerImpl : public Distiller {
 
   bool destruction_allowed_;
 
-  base::WeakPtrFactory<DistillerImpl> weak_factory_;
+  base::WeakPtrFactory<DistillerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DistillerImpl);
 };

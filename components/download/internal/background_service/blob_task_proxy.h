@@ -65,7 +65,7 @@ class BlobTaskProxy {
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
 
   // Bounded to IO thread task runner.
-  base::WeakPtrFactory<BlobTaskProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<BlobTaskProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobTaskProxy);
 };

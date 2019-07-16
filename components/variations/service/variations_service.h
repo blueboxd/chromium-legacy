@@ -419,7 +419,7 @@ class VariationsService
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VariationsService> weak_ptr_factory_;
+  base::WeakPtrFactory<VariationsService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VariationsService);
 };

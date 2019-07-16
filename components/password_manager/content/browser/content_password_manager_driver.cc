@@ -63,8 +63,7 @@ ContentPasswordManagerDriver::ContentPasswordManagerDriver(
       password_generation_helper_(client, this),
       password_autofill_manager_(this, autofill_client, client),
       is_main_frame_(render_frame_host->GetParent() == nullptr),
-      password_manager_receiver_(this),
-      weak_factory_(this) {
+      password_manager_receiver_(this) {
   // For some frames |this| may be instantiated before log manager creation, so
   // here we can not send logging state to renderer process for them. For such
   // cases, after the log manager got ready later,

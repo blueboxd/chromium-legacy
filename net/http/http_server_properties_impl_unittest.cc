@@ -69,7 +69,7 @@ class HttpServerPropertiesImplTest : public TestWithScopedTaskEnvironment {
  protected:
   HttpServerPropertiesImplTest()
       : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         test_tick_clock_(GetMockTickClock()),
         impl_(test_tick_clock_, &test_clock_) {
     // Set |test_clock_| to some random time.

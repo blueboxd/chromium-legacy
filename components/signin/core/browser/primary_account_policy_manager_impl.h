@@ -53,7 +53,8 @@ class PrimaryAccountPolicyManagerImpl : public PrimaryAccountPolicyManager {
   // Helper object to listen for changes to the signin allowed preference.
   BooleanPrefMember signin_allowed_;
 
-  base::WeakPtrFactory<PrimaryAccountPolicyManagerImpl> weak_pointer_factory_;
+  base::WeakPtrFactory<PrimaryAccountPolicyManagerImpl> weak_pointer_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PrimaryAccountPolicyManagerImpl);
 };

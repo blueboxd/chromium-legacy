@@ -172,6 +172,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(USE_NSS_CERTS)
@@ -980,6 +981,12 @@ class SSLUITestBase : public InProcessBrowserTest,
 class SSLUITest : public SSLUITestBase {
  public:
   SSLUITest() : SSLUITestBase() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SSLUITestBase::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
 
  protected:
   SSLBlockingPage* GetSSLBlockingPage(WebContents* tab) override {
@@ -3511,6 +3518,12 @@ class SSLUIWorkerFetchTest
 
   void SetUpOnMainThread() override {
     SSLUITestBase::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SSLUITestBase::SetUpCommandLine(command_line);
+    scoped_feature_list_.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
   }
 
  protected:

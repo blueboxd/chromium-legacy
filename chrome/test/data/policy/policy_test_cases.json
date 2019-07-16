@@ -4389,9 +4389,7 @@
   },
 
   "ContextualSuggestionsEnabled": {
-    "os": ["android"],
-    "test_policy": { "ContextualSuggestionsEnabled": false },
-    "pref_mappings": [{ "pref": "contextual_suggestions.enabled" }]
+    "note": "This policy has been removed. See https://crbug.com/938050"
   },
 
   "DeviceAutoUpdateTimeRestrictions": {

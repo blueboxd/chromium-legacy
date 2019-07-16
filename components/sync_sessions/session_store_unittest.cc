@@ -219,8 +219,7 @@ TEST_F(SessionStoreOpenTest, ShouldNotUseClientIfCancelled) {
   // Mimics a caller that uses a weak pointer.
   class Caller {
    public:
-    explicit Caller(SessionStore::OpenCallback cb)
-        : cb_(std::move(cb)), weak_ptr_factory_(this) {}
+    explicit Caller(SessionStore::OpenCallback cb) : cb_(std::move(cb)) {}
 
     SessionStore::OpenCallback GetCancelableCallback() {
       return base::BindOnce(&Caller::Completed, weak_ptr_factory_.GetWeakPtr());
@@ -234,7 +233,7 @@ TEST_F(SessionStoreOpenTest, ShouldNotUseClientIfCancelled) {
     }
 
     SessionStore::OpenCallback cb_;
-    base::WeakPtrFactory<Caller> weak_ptr_factory_;
+    base::WeakPtrFactory<Caller> weak_ptr_factory_{this};
   };
 
   NiceMock<MockOpenCallback> mock_completion;

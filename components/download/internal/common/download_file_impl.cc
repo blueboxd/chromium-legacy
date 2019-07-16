@@ -170,8 +170,7 @@ DownloadFileImpl::DownloadFileImpl(
       is_paused_(false),
       download_id_(download_id),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      observer_(observer),
-      weak_factory_(this) {
+      observer_(observer) {
   TRACE_EVENT_INSTANT0("download", "DownloadFileCreated",
                        TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("download", "DownloadFileActive",

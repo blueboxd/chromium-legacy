@@ -82,7 +82,7 @@ class SyncInvalidationScheduler : public invalidation::Scheduler {
   bool is_started_;
   bool is_stopped_;
 
-  base::WeakPtrFactory<SyncInvalidationScheduler> weak_factory_;
+  base::WeakPtrFactory<SyncInvalidationScheduler> weak_factory_{this};
 };
 
 // SyncNetworkChannel implements common tasks needed to interact with

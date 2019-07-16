@@ -287,7 +287,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GpuHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuHostImpl);
 };

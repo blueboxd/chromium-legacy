@@ -318,7 +318,7 @@ class DataReductionProxyConfig
   // Current HTTP RTT estimate.
   base::Optional<base::TimeDelta> http_rtt_;
 
-  base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_;
+  base::WeakPtrFactory<DataReductionProxyConfig> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);
 };

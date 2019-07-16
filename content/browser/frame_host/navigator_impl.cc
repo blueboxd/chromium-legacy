@@ -195,10 +195,9 @@ void NavigatorImpl::DidFailLoadWithError(
 
 bool NavigatorImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url,
     mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
-  return controller_->StartHistoryNavigationInNewSubframe(
-      render_frame_host, default_url, navigation_client);
+  return controller_->StartHistoryNavigationInNewSubframe(render_frame_host,
+                                                          navigation_client);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -633,8 +632,7 @@ void NavigatorImpl::OnBeginNavigation(
     // on the frame's unique name.  If this can't be found, fall back to the
     // default path below.
     if (frame_tree_node->navigator()->StartHistoryNavigationInNewSubframe(
-            frame_tree_node->current_frame_host(), common_params.url,
-            &navigation_client)) {
+            frame_tree_node->current_frame_host(), &navigation_client)) {
       return;
     }
   }

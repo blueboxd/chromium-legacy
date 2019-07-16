@@ -3345,19 +3345,8 @@
 <translation id="7123160381479171745">Apibrėžiamas naudotojų, kuriems leidžiama prisijungti prie įrenginio, sąrašas. Įrašai pateikiami <ph name="USER_WHITELIST_ENTRY_FORMAT" /> formos, pvz., <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Jei norite leisti atsitiktinius naudotojus domene, naudokite <ph name="USER_WHITELIST_ENTRY_WILDCARD" /> formos įrašus.
 
       Jei ši politika nesukonfigūruota, netaikomi naudotojų, kuriems leidžiama prisijungti, apribojimai. Atminkite, kad kuriant naujus naudotojus vis tiek reikia atitinkamai sukonfigūruoti politiką „<ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />“.</translation>
-<translation id="7123266440503901785">„<ph name="PRODUCT_NAME" />“ teikiama, siekiant užtikrinti saugų plėtinių atnaujinimą ir diegimą. Tačiau tam tikrų ne „Chrome“ internetinėje parduotuvėje priglobiamų plėtinių turinys gali būti apsaugotas tik naudojant nesaugų prisijungimą arba maišos algoritmus, pvz., SHA1. Kai ši politika išjungta, „Chrome“ neleidžia naujai įdiegti ir atnaujinti tokių plėtinių (kol plėtinių kūrėjai iš naujo sukuria plėtinį naudodami patikimesnius algoritmus). Kai ši politika įgalinta, leidžiama diegti ir atnaujinti tokius plėtinius.
-
-          Kai nenustatyta, pagal numatytuosius nustatymus yra įgalinama.
-          Naudojant 75 ar naujesnę „<ph name="PRODUCT_NAME" />“ versiją, kai nenustatyta, pagal numatytuosius nustatymus yra išjungiama.
-
-          Naudojant 77 ar naujesnę „<ph name="PRODUCT_NAME" />“ versiją, šios politikos nepaisoma ir ji išjungiama.</translation>
 <translation id="7126716959063786004">Įgalinti procesų užbaigimą užduočių tvarkytuvėje</translation>
 <translation id="7127892035367404455">Tikslinės versijos grąžinimas</translation>
-<translation id="7128918109610518786">Programų identifikatorių sąrašas „<ph name="PRODUCT_OS_NAME" />“ rodomas kaip paleidimo priemonės juostoje prisegtos programos.
-
-      Jei sukonfigūruota ši politika, nustatomas programų sąrašas ir naudotojas jo keisti negali.
-
-      Jei ši politika paliekama nenustatyta, naudotojas gali pakeisti paleidimo priemonėje prisegtų programų sąrašą.</translation>
 <translation id="713121532817834879">Ši politika – tai URL, nukreipiantis į XML failą tuo pačiu formatu kaip „Internet Explorer“ politika „<ph name="IEEM_SITELIST_POLICY" />“. Įkeliamos taisyklės iš XML failo, nebendrinant jų su „Internet Explorer“.
 
       Šio XML failo taisyklės taikomos taip pat, kaip politikos „<ph name="GREYLIST_POLICY_NAME" />“. T. y. šios taisyklės apsaugo „<ph name="PRODUCT_NAME" />“, kad nebūtų atidaroma kita naršyklė, ir kitą naršyklę, kad nebūtų atidaroma „<ph name="PRODUCT_NAME" />“.
@@ -4215,12 +4204,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
           Jei neleisite šio nustatymo arba jo nenustatysite, kanoninis serverio pavadinimas bus nustatytas naudojant CNAME paiešką.</translation>
 <translation id="8764477907716150749">Ši politika skirta naudoti tik „<ph name="PRODUCT_NAME" />“ viduje.</translation>
-<translation id="8765776988041674792">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
-      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi gairių, pasiekiamų adresu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jei šis nustatymas įgalintas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo rodomas įspėjimas naršyklėje.
-      Jei šis nustatymas išjungtas arba nenustatytas, naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
-      Ši politika pasiekiama tik „Windows“ objektuose, kurie susieti su „<ph name="MS_AD_NAME" />“ domenu, arba „Windows 10 Pro“ ar „Enterprise“ objektuose, kurie užregistruoti naudoti įrenginių tvarkymo funkciją.</translation>
 <translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8800453707696044281">Tinkintos akumuliatoriaus krovimo stabdymo vertės procentais nustatymas</translation>
 <translation id="8801680448782904838">Pranešimas naudotojui apie rekomenduojamą ar būtiną naršyklės arba įrenginio paleidimą iš naujo</translation>
@@ -4359,9 +4342,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 
       Politikos vertė turėtų būti nustatyta per kelias sekundes.</translation>
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
-<translation id="9038058011835642205">Nurodomas sąrašas programų, kurios įdiegiamos automatiškai, naudotojui neatliekant jokių veiksmų, ir kurių naudotojas negali pašalinti arba išjungti.
-
-      Kiekvienas politikos sąrašo elementas yra objektas su privalomu nariu: „url“ ir dviem pasirenkamais nariais: „default_launch_container“ bei „create_desktop_shortcut“. „url“ turėtų būti diegiamos žiniatinklio programos URL, o „launch_container“ – „window“ arba „tab“, nurodantis, kaip žiniatinklio programa atidaroma įdiegus. Jei sistemoje „Linux“ arba „Windows“ turi būti sukurtas darbalaukio spartusis klavišas, „desktop_shortcut“ reikšmė turi būti „true“. Praleidus „default_launch_container“, programa pagal numatytuosius nustatymus bus atidaroma skirtuke. Neatsižvelgiant į „default_launch_container“ reikšmę, naudotojai gali keisti sudėtinį rodinį, kuriame atidaroma programa. Praleidus „create_desktop_shortcuts“, darbalaukio spartieji klavišai nebus kuriami.</translation>
 <translation id="9038839118379817310">„Wi-Fi“ įgalinimas</translation>
 <translation id="9039822628127365650">Kai ši politika nustatyta, nurodoma trukmė, po kurios naudotojas automatiškai atjungiamas ir sesija nutraukiama. Naudotojui likusi trukmė nurodoma atvirkštiniu laikmačiu, pateikiamu sistemos juostelėje.
 
@@ -4375,6 +4355,15 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       Jei politikos reikšmė yra prieigos raktas, susiejantis su „Quick Fix Build“, įrenginys bus atnaujintas į atitinkamą „Quick Fix Build“, jei naujinio neblokuos kita politika.
 
       Jei ši politika nenustatyta arba jos reikšmė nesusieja su „Quick Fix Build“, įrenginys nebus atnaujintas į „Quick Fix Build“. Jei įrenginyje jau veikia „Quick Fix Build“ ir politika nebenustatyta arba jos reikšmė nebesusieja su „Quick Fix Build“, įrenginys bus atnaujintas į įprastinę versiją, jei naujinio neblokuos kita politika.</translation>
+<translation id="9054012305936267950">Pagal šią politiką valdoma naršyklės prisijungimo elgsena. Ši politika leidžia nurodyti, ar naudotojas gali prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo paskyrą ir naudoti su paskyra susijusias paslaugas, pvz., „Chrome“ sinchronizavimo funkciją.
+
+      Jei politika nustatyta kaip „Išjungti naršyklės prisijungimą“, naudotojas negali prisijungti prie naršyklės ir naudoti su paskyra susijusių paslaugų. Tokiu atveju negalima naudoti naršyklės lygio funkcijų, pvz., „Chrome“ sinchronizavimo funkcijos, ir šios funkcijos bus nepasiekiamos. Jei politika buvo nustatyta kaip „Išjungta“ naudotojui esant prisijungus, kitą kartą paleidus naršyklę „Chrome“ naudotojas bus atjungtas, bet vietiniai profilio duomenys, pvz., žymės, slaptažodžiai ir kt., liks išsaugoti. Naudotojas vis tiek galės prisijungti ir naudoti „Google“ žiniatinklio paslaugas, pvz., „Gmail“.
+
+      Jei politika nustatyta kaip „Įgalinti naršyklės prisijungimą“, naudotojui leidžiama prisijungti prie naršyklės ir jis automatiškai prijungiamas prie naršyklės, kai prisijungia prie „Google“ žiniatinklio paslaugų, pvz., „Gmail“. Kai naudotojas yra prisijungęs prie naršyklės, jo paskyros informacija saugoma naršyklėje. Tačiau tai nereiškia, kad „Chrome“ sinchronizavimo funkcija bus įjungta pagal numatytuosius nustatymus. Naudotojas turi atskirai pasirinkti naudoti šią funkciją. Įgalinus šią politiką naudotojui nebus leidžiama išjungti nustatymo, leidžiančio prisijungti prie naršyklės. Jei norite valdyti „Chrome“ sinchronizavimo funkcijos pasiekiamumą, naudokite politiką „SyncDisabled“.
+
+      Jei politika nustatyta kaip „Priverstinis naršyklės prisijungimas“, naudotojui pateikiamas paskyros pasirinkimo dialogo langas ir naudotojas turi pasirinkti paskyrą ir prie jos prisijungti, kad galėtų naudoti naršyklę. Taip užtikrinama, kad valdomoms paskyroms taikoma ir vykdoma su paskyra susijusi politika. Pagal numatytuosius nustatymus paskyroje įjungiama „Chrome“ sinchronizavimo funkcija, išskyrus tokius atvejus, kai sinchronizavimas buvo išjungtas domeno administratoriaus arba taikant politiką „SyncDisabled“. Numatytoji politikos „BrowserGuestModeEnabled“ vertė bus nustatyta kaip „false“. Atminkite, kad įgalinus šią politiką esami neprijungti profiliai bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį adresu https://support.google.com/chrome/a/answer/7572556. Ši funkcija nepalaikoma naudojant „Linux“: naudojant šią funkciją bus vėl įjungiama parinktis „Įgalinti naršyklės prisijungimą“.
+
+      Jei ši politika nenustatyta, naudotojas gali nuspręsti, ar nori įgalinti naršyklės prisijungimo parinktį, ir naudoti politiką pagal savo poreikius.</translation>
 <translation id="9072600218500597787">Konfigūruojami būtini prieglobos domenų pavadinimai, kurie bus nustatyti nuotolinės prieigos priegloboms, ir neleidžiama naudotojams jų keisti.
 
           Jei šis nustatymas įgalintas, prieglobas galima bendrinti tik naudojant nurodytais domenų pavadinimais užregistruotas paskyras.

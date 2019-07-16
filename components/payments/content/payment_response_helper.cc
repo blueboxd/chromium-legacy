@@ -36,8 +36,7 @@ PaymentResponseHelper::PaymentResponseHelper(
       delegate_(delegate),
       selected_instrument_(selected_instrument),
       payment_request_delegate_(payment_request_delegate),
-      selected_contact_profile_(selected_contact_profile),
-      weak_ptr_factory_(this) {
+      selected_contact_profile_(selected_contact_profile) {
   DCHECK(spec_);
   DCHECK(selected_instrument_);
   DCHECK(delegate_);

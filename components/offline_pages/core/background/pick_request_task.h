@@ -111,7 +111,7 @@ class PickRequestTask : public Task {
   // directly here seems dangerous.
   base::circular_deque<int64_t>* prioritized_requests_;
   // Allows us to pass a weak pointer to callbacks.
-  base::WeakPtrFactory<PickRequestTask> weak_ptr_factory_;
+  base::WeakPtrFactory<PickRequestTask> weak_ptr_factory_{this};
 };
 
 }  // namespace offline_pages

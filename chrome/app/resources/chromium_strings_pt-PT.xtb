@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Obter ajuda para utilizar o SO Chromium</translation>
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
 <translation id="1414495520565016063">Tem sessão iniciada no Chromium!</translation>
-<translation id="1502360822835740515">Tornar o Chromium o navegador predefinido</translation>
 <translation id="151962892725702025">O SO Chromium não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
 <translation id="1524282610922162960">Partilhe um separador do Chromium</translation>
-<translation id="1585657529869845941">Clique em <ph name="BEGIN_BOLD" />Mudar mesmo assim<ph name="END_BOLD" />, se esta opção for apresentada.</translation>
 <translation id="1668054258064581266">Depois de remover a sua conta do Chromium, poderá ter de recarregar os separadores abertos para que as alterações tenham efeito.</translation>
 <translation id="1688750314291223739">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Chromium em qualquer computador.</translation>
 <translation id="1708666629004767631">Está disponível uma versão nova e mais segura do Chromium.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">O Chromium vai aceder ao seu Drive para fornecer sugestões na barra de endereço.</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Afixar o Chromium na barra de tarefas</translation>
 <translation id="388648406173476553">Personalize e controle o Chromium. É necessária a sua atenção – clique para obter detalhes.</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="3898493977366060150">Navegação na Web com a inteligência da Google</translation>
 <translation id="4036079820698952681">Ajude a melhorar o Chromium ao comunicar as <ph name="BEGIN_LINK" />definições atuais<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
-<translation id="407254336480250557">Selecione o <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Descubra aplicações, jogos, extensões e temas fantásticos para o Chromium.</translation>
 <translation id="4216212958613226427">Este idioma é utilizado para apresentar a IU do Chromium</translation>
 <translation id="4222580632002216401">Tem agora sessão iniciada no Chromium! A sincronização foi desativada pelo seu gestor.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">O perfil parece estar a ser utilizado por outro processo do Chromium (<ph name="PROCESS_ID" />) noutro computador (<ph name="HOST_NAME" />). O Chromium bloqueou o perfil para que não seja danificado. Se tiver a certeza de que não existem outros processos a utilizar este perfil, pode desbloqueá-lo e reiniciar o Chromium.</translation>
 <translation id="469338717132742108">Obter ajuda relacionada com o SO Chromium</translation>
 <translation id="4708774505295300557">Alguém iniciou sessão no Chromium neste computador anteriormente com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo utilizador do Chromium para manter as informações em separado.</translation>
-<translation id="4714956846925717402">Aceder mais rapidamente ao Chromium</translation>
 <translation id="4746050847053251315">Pretende fechar o Chromium mesmo assim?</translation>
 <translation id="4748217263233248895">Acabou de ser instalada uma atualização de segurança especial para o Chromium. Reinicie agora e iremos restaurar os seus separadores.</translation>
 <translation id="479167709087336770">Utiliza o mesmo corretor ortográfico utilizado na Pesquisa Google. O texto que introduzir no navegador é enviado à Google. Pode alterar este comportamento nas definições.</translation>

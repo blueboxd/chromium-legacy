@@ -3212,19 +3212,8 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="7123160381479171745">Define a lista de usuários com permissão para fazer login no dispositivo. As entradas são feitas na forma <ph name="USER_WHITELIST_ENTRY_FORMAT" />, como <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para permitir usuários arbitrários em um domínio, use entradas na forma <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
 Se esta política não for definida, não haverá restrições quanto aos usuários autorizados a fazer login. Observe que a criação de novos usuários ainda requer que a política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> seja configurada apropriadamente.</translation>
-<translation id="7123266440503901785">O <ph name="PRODUCT_NAME" /> proporciona a atualização e a instalação seguras de extensões. No entanto, o conteúdo de algumas extensões hospedadas fora da Chrome Web Store pode ser protegido apenas por algoritmos de hash ou de assinatura inseguros, como SHA1. Quando essa política está desativada, instalações novas e atualizações dessas extensões não são permitidas pelo Chrome (até que os desenvolvedores da extensão a corrijam com algoritmos mais fortes). Quando essa política está ativada, as instalações e atualizações são permitidas.
-
-          Se a política não for definida, ela se comportará como ativada por padrão.
-          A partir do <ph name="PRODUCT_NAME" /> 75, a não definição da política fará com que ela se comporte como desativada por padrão.
-
-          A partir do <ph name="PRODUCT_NAME" /> 77, essa política será ignorada e tratada como desativada.</translation>
 <translation id="7126716959063786004">Permitir processos de finalização no gerenciador de tarefas</translation>
 <translation id="7127892035367404455">Reverter para a versão de destino</translation>
-<translation id="7128918109610518786">Lista os identificadores de aplicativo que o <ph name="PRODUCT_OS_NAME" /> mostra como aplicativos fixados na barra do iniciador. 
-
-      Se essa política for configurada, o conjunto de aplicativos é fixado e não pode ser alterado pelo usuário. 
-
-      Se esta política for deixada sem configuração, o usuário pode alterar a lista de aplicativos fixados no iniciador.</translation>
 <translation id="713121532817834879">Esta política é um URL que aponta para um arquivo XML no mesmo formato que a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer. As regras são carregadas a partir de um arquivo XML e não são compartilhadas com o Internet Explorer.
 
       As regras deste arquivo XML aplicam-se da mesma maneira que <ph name="GREYLIST_POLICY_NAME" />. Isto é, essas regras impedem que o <ph name="PRODUCT_NAME" /> abra o navegador alternativo e também que o navegador alternativo abra o <ph name="PRODUCT_NAME" />.
@@ -4056,12 +4045,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8759829385824155666">Permitir tipos de criptografia Kerberos</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos se baseia no nome DNS canônico ou no nome original inserido. Se ativar esta configuração, a pesquisa CNAME será ignorada e o nome do servidor será usado como inserido. Se desativar essa configuração ou a deixar sem definição, o nome canônico do servidor será determinado através da pesquisa CNAME.</translation>
 <translation id="8764477907716150749">Esta política é destinada a uso interno pelo próprio <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Configura o URL de alteração de senha (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas encaminhará os usuários a esse URL para que alterem a própria senha após receberem um aviso no navegador.
-      Para que o <ph name="PRODUCT_NAME" /> capture corretamente a nova impressão digital de senha na página de alteração de senha, essa página precisa seguir as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se essa configuração estiver ativada, o serviço de proteção de senhas encaminhará os usuários a esse URL para que alterem a própria senha após receberem um aviso no navegador.
-      Se essa configuração estiver desativada ou não for definida, o serviço de proteção de senhas encaminhará os usuários para https://myaccounts.google.com para a alteração da senha.
-      Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8800453707696044281">Configurar a parada personalizada do carregamento da bateria, em porcentagem</translation>
 <translation id="8801680448782904838">Notifica um usuário de que a reinicialização do navegador ou do dispositivo é recomendada ou obrigatória</translation>
@@ -4201,9 +4184,6 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 
       O valor da política precisa ser especificado em segundos.</translation>
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista de proibições</translation>
-<translation id="9038058011835642205">Especifica uma lista de sites que são instalados silenciosamente, sem qualquer interação do usuário e sem permitir a desinstalação nem a desativação feita por ele.
-
-      Cada item de lista da política é um objeto com um elemento obrigatório: "url" e dois elementos opcionais, que são "default_launch_container" e "create_desktop_shortcut". É necessário que "url" seja o URL do app da Web a ser instalado, "launch_container" seja "window" ou "tab" para indicar como o app da Web será aberto depois de instalado, e que "create_desktop_shortcut" seja verdadeiro se um atalho na área de trabalho precisar ser criado no Linux e no Windows. Se "default_launch_container" for omitido, o app será aberto em uma guia por padrão. Seja qual for o valor de "default_launch_container", os usuários poderão alterar em qual contêiner o app será aberto. Se "create_desktop_shortcuts" for omitido, nenhum atalho será criado na área de trabalho.</translation>
 <translation id="9038839118379817310">Ativar Wi-Fi</translation>
 <translation id="9039822628127365650">Quando esta política for definida, ela especificará o tempo que um usuário tem até ser desconectado automaticamente, encerrando a sessão. O usuário será informado sobre o tempo restante por um timer de contagem regressiva mostrado na bandeja do sistema.
 
@@ -4217,6 +4197,15 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se o valor da política for definido para um token que mapeia para um Quick Fix Build, o dispositivo será atualizado para o Quick Fix Build correspondente se a atualização não estiver bloqueada por outra política.
 
       Se essa política não for definida, ou se o valor dela não mapear para um Quick Fix Build, o dispositivo não será atualizado para um Quick Fix Build. Se o dispositivo já estiver executando um Quick Fix Build, e a política não estiver mais definida ou o valor não mapear mais para um Quick Fix Build, o dispositivo será atualizado para uma versão normal caso a atualização não seja bloqueada por outra política.</translation>
+<translation id="9054012305936267950">Esta política controla o comportamento de login no navegador. Ela permite especificar se o usuário pode fazer login no <ph name="PRODUCT_NAME" /> com a própria conta e usar os serviços relacionados a ela, como a Sincronização do Chrome.
+
+      Se a política for definida como "Desativar login no navegador", não será possível fazer login no navegador e usar os serviços baseados na conta. Nesse caso, os recursos do navegador, como a Sincronização do Chrome, não poderão ser usados e ficarão indisponíveis. Se o usuário estiver conectado e a política for definida como "Desativada", ele será desconectado na próxima vez que executar o Chrome, mas os dados locais do perfil dele, como favoritos e senhas, serão preservados. O usuário ainda conseguirá fazer login e usar os serviços do Google na Web, como o Gmail.
+
+      Se a política for definida como "Ativar login no navegador", o usuário poderá fazer login no navegador e será automaticamente conectado a ele quando se conectar aos serviços do Google na Web, como o Gmail. As informações da conta serão mantidas pelo navegador quando o usuário estiver conectado a ele. No entanto, isso não significa que a Sincronização do Chrome será ativada por padrão, ou seja, o usuário precisa ativar esse recurso separadamente. A ativação desta política impedirá que o usuário desative a configuração que permite o login no navegador. Para controlar a disponibilidade da Sincronização do Chrome, use a política SyncDisabled.
+
+      Se a política for definida como "Forçar login no navegador", o usuário verá uma caixa de diálogo de seleção de conta e precisará fazer login em uma delas para usar o navegador. Isso garante que, no caso de contas gerenciadas, as políticas associadas à conta sejam aplicadas e executadas. Por padrão, isso ativa a Sincronização do Chrome para a conta, exceto se a sincronização tiver sido desativada pelo administrador do domínio ou por meio da política SyncDisabled. O valor padrão de BrowserGuestModeEnabled será definido como falso. Os perfis existentes desconectados serão bloqueados, e não será possível acessá-los depois de ativar esta política. Para mais informações, consulte o artigo da Central de Ajuda: https://support.google.com/chrome/a/answer/7572556. Essa opção não é compatível com Linux e será substituída pela "Ativar login no navegador" se for usada.
+
+      Se esta política não for configurada, o usuário poderá decidir se quer ativar a opção de login no navegador e usá-la conforme adequado.</translation>
 <translation id="9072600218500597787">Configura os nomes de domínio de host necessários que serão impostos em hosts de acesso remoto e impede que os usuários façam alterações.
 
           Se esta configuração for ativada, os hosts poderão ser compartilhados apenas por meio de contas registradas em um dos nomes de domínio especificados.

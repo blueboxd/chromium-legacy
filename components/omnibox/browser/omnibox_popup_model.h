@@ -195,7 +195,7 @@ class OmniboxPopupModel {
   // Observers.
   base::ObserverList<OmniboxPopupModelObserver>::Unchecked observers_;
 
-  base::WeakPtrFactory<OmniboxPopupModel> weak_factory_;
+  base::WeakPtrFactory<OmniboxPopupModel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupModel);
 };

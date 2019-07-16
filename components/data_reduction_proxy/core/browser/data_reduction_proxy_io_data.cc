@@ -48,8 +48,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       ui_task_runner_(ui_task_runner),
       enabled_(enabled),
       channel_(channel),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      weak_factory_(this) {
+      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   DCHECK(io_task_runner_);
   DCHECK(ui_task_runner_);
   configurator_.reset(new DataReductionProxyConfigurator());
@@ -93,8 +92,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
       network_connection_tracker_(nullptr),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      weak_factory_(this) {
+      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   DCHECK(ui_task_runner_);
   DCHECK(io_task_runner_);
   network_properties_manager_.reset(new NetworkPropertiesManager(

@@ -509,18 +509,6 @@ class AssistantOptInFlowTestWithDisabledAssistant
   }
 };
 
-class AssistantOptInFlowTestWithVoiceMatchDisabled
-    : public AssistantOptInFlowTest {
- public:
-  AssistantOptInFlowTestWithVoiceMatchDisabled() = default;
-  ~AssistantOptInFlowTestWithVoiceMatchDisabled() override = default;
-
-  void InitializeFeatureList() override {
-    feature_list_.InitWithFeatures({switches::kAssistantFeature},
-                                   {assistant::features::kAssistantVoiceMatch});
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithDisabledAssistant,
                        ExitImmediately) {
   assistant_optin_flow_screen_->Show();
@@ -532,84 +520,6 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithDisabledAssistant,
             ::assistant::prefs::GetConsentStatus(prefs));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-}
-
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithVoiceMatchDisabled,
-                       EnableDuringSetup) {
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
-      ash::mojom::VoiceInteractionState::STOPPED);
-
-  SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
-
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
-  screen_waiter.set_assert_next_screen();
-  screen_waiter.Wait();
-
-  WaitForAssistantScreen("value-prop");
-  TapWhenEnabled({"assistant-optin-flow-card", "value-prop", "next-button"});
-
-  WaitForAssistantScreen("third-party");
-  TapWhenEnabled({"assistant-optin-flow-card", "third-party", "next-button"});
-
-  WaitForAssistantScreen("get-more");
-
-  std::initializer_list<base::StringPiece> hotword_toggle = {
-      "assistant-optin-flow-card", "get-more", "toggle-hotword"};
-  test::OobeJS().ExpectVisiblePath(hotword_toggle);
-  EXPECT_TRUE(test::OobeJS().GetBool(test::GetOobeElementPath(hotword_toggle) +
-                                     ".checked"));
-
-  TapWhenEnabled({"assistant-optin-flow-card", "get-more", "next-button"});
-
-  WaitForScreenExit();
-
-  ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
-  PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(ash::mojom::ConsentStatus::kActivityControlAccepted,
-            ::assistant::prefs::GetConsentStatus(prefs));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
-}
-
-IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTestWithVoiceMatchDisabled,
-                       KeepDisabled) {
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
-      ash::mojom::VoiceInteractionState::STOPPED);
-
-  SetUpAssistantScreensForTest();
-  assistant_optin_flow_screen_->Show();
-
-  OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
-  screen_waiter.set_assert_next_screen();
-  screen_waiter.Wait();
-
-  WaitForAssistantScreen("value-prop");
-  TapWhenEnabled({"assistant-optin-flow-card", "value-prop", "next-button"});
-
-  WaitForAssistantScreen("third-party");
-  TapWhenEnabled({"assistant-optin-flow-card", "third-party", "next-button"});
-
-  WaitForAssistantScreen("get-more");
-
-  std::initializer_list<base::StringPiece> hotword_toggle = {
-      "assistant-optin-flow-card", "get-more", "toggle-hotword"};
-  test::OobeJS().ExpectVisiblePath(hotword_toggle);
-  EXPECT_TRUE(test::OobeJS().GetBool(test::GetOobeElementPath(hotword_toggle) +
-                                     ".checked"));
-  test::OobeJS().Evaluate(test::GetOobeElementPath(hotword_toggle) +
-                          ".click()");
-
-  TapWhenEnabled({"assistant-optin-flow-card", "get-more", "next-button"});
-
-  WaitForScreenExit();
-
-  ExpectCollectedOptIns({FakeAssistantSettings::OptIn::ACTIVITY_CONTROL});
-  PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_EQ(ash::mojom::ConsentStatus::kActivityControlAccepted,
-            ::assistant::prefs::GetConsentStatus(prefs));
-  EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
-  EXPECT_TRUE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {

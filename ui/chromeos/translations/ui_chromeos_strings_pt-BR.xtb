@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliteração (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Visualização de slides</translation>
 <translation id="1045157690796831147">Transliteração (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Entrada em japonês (para teclado americano)</translation>
 <translation id="1047956942837015229">Excluindo <ph name="COUNT" /> itens...</translation>
 <translation id="1049926623896334335">Documento do Word</translation>
 <translation id="1062407476771304334">Substituir</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3549797760399244642">Ir para drive.google.com...</translation>
 <translation id="357479282490346887">Lituano</translation>
+<translation id="3583509704582854624">Entrada alfanumérica (para teclado japonês)</translation>
 <translation id="3603385196401704894">Francês canadense</translation>
 <translation id="3606220979431771195">Turco-F</translation>
 <translation id="3609785682760573515">Sincronizando...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
 <translation id="5913638992615760742">Falha na operação de cópia, erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Entrada em japonês (para teclado japonês)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Conceda aos apps do Linux permissão para modificar os arquivos no seu Google Drive. As alterações serão sincronizadas com seus outros dispositivos.</translation>
 <translation id="5982621672636444458">Opções de classificação</translation>

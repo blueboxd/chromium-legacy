@@ -13,6 +13,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.SystemClock;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -59,8 +60,7 @@ public class GridTabSwitcherLayout
 
     // Field trial parameter for whether skipping slow zooming animation.
     private static final String SKIP_SLOW_ZOOMING_PARAM = "skip-slow-zooming";
-    // TODO(wychen): Probably want to set this to true when launching.
-    private static final boolean DEFAULT_SKIP_SLOW_ZOOMING = false;
+    private static final boolean DEFAULT_SKIP_SLOW_ZOOMING = true;
 
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
@@ -151,6 +151,7 @@ public class GridTabSwitcherLayout
         boolean showShrinkingAnimation =
                 animate && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
         boolean quick = mGridTabSwitcher.prepareOverview();
+        Log.d(TAG, "SkipSlowZooming = " + getSkipSlowZooming());
         if (getSkipSlowZooming()) {
             showShrinkingAnimation &= quick;
         }
@@ -419,11 +420,8 @@ public class GridTabSwitcherLayout
     private boolean getSkipSlowZooming() {
         String skip = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.TAB_TO_GTS_ANIMATION, SKIP_SLOW_ZOOMING_PARAM);
-        try {
-            return Boolean.valueOf(skip);
-        } catch (NumberFormatException e) {
-            return DEFAULT_SKIP_SLOW_ZOOMING;
-        }
+        if (TextUtils.equals(skip, "")) return DEFAULT_SKIP_SLOW_ZOOMING;
+        return Boolean.valueOf(skip);
     }
 
     @Override

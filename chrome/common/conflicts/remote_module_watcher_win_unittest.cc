@@ -30,9 +30,7 @@ class RemoteModuleWatcherTest : public testing::Test,
  public:
   RemoteModuleWatcherTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         service_binding_(this,
                          test_connector_factory_.RegisterInstance(
                              content::mojom::kSystemServiceName)),

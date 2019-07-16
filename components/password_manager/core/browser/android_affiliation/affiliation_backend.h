@@ -160,7 +160,7 @@ class AffiliationBackend : public FacetManagerHost,
   std::unordered_map<FacetURI, std::unique_ptr<FacetManager>, FacetURIHash>
       facet_managers_;
 
-  base::WeakPtrFactory<AffiliationBackend> weak_ptr_factory_;
+  base::WeakPtrFactory<AffiliationBackend> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationBackend);
 };

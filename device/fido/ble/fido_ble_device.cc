@@ -116,7 +116,7 @@ bool FidoBleDevice::IsInPairingMode() const {
 
   return !fido_service_data->empty() &&
          (fido_service_data->front() &
-          static_cast<int>(FidoServiceDataFlags::kPairingMode)) != 0;
+          static_cast<uint8_t>(FidoServiceDataFlags::kPairingMode)) != 0;
 }
 
 bool FidoBleDevice::IsPaired() const {
@@ -125,6 +125,21 @@ bool FidoBleDevice::IsPaired() const {
     return false;
 
   return ble_device->IsPaired();
+}
+
+bool FidoBleDevice::RequiresBlePairingPin() const {
+  const BluetoothDevice* const ble_device = connection_->GetBleDevice();
+  if (!ble_device)
+    return true;
+
+  const std::vector<uint8_t>* const fido_service_data =
+      ble_device->GetServiceDataForUUID(BluetoothUUID(kFidoServiceUUID));
+  if (!fido_service_data)
+    return true;
+
+  return !fido_service_data->empty() &&
+         (fido_service_data->front() &
+          static_cast<uint8_t>(FidoServiceDataFlags::kPasskeyEntry));
 }
 
 FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {

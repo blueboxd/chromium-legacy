@@ -377,7 +377,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtr<DownloadDestinationObserver> observer_;
-  base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
+  base::WeakPtrFactory<DownloadFileImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };

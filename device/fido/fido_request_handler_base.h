@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "device/fido/fido_discovery_base.h"
@@ -57,7 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
   using BlePairingCallback =
       base::RepeatingCallback<void(std::string authenticator_id,
-                                   std::string pin_code,
+                                   base::Optional<std::string> pin_code,
                                    base::OnceClosure success_callback,
                                    base::OnceClosure error_callback)>;
 
@@ -195,7 +196,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void OnBluetoothAdapterPowerChanged(bool is_powered_on);
   void PowerOnBluetoothAdapter();
   void InitiatePairingWithDevice(std::string authenticator_id,
-                                 std::string pin_code,
+                                 base::Optional<std::string> pin_code,
                                  base::OnceClosure success_callback,
                                  base::OnceClosure error_callback);
 

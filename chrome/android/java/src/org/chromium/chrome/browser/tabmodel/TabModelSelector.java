@@ -187,6 +187,11 @@ public interface TabModelSelector {
     boolean isTabStateInitialized();
 
     /**
+     * Merges the tab states from two tab models.
+     */
+    void mergeState();
+
+    /**
      * Destroy all owned {@link TabModel}s and {@link Tab}s referenced by this selector.
      */
     void destroy();

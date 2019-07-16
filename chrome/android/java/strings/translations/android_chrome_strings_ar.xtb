@@ -9,7 +9,6 @@
 <translation id="10614374240317010">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
-<translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
 <translation id="1100066534610197918">فتح في علامة تبويب جديدة في مجموعة</translation>
 <translation id="1105960400813249514">التقاط الشاشة</translation>
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">تمت إضافة الموقع <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">لا توجد ذاكرة كافية لتنزيل المحتوى المحدد.</translation>
 <translation id="1376578503827013741">جارٍ الحوسبة...</translation>
-<translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">تم إيقاف التنزيل مؤقتًا</translation>
 <translation id="1386674309198842382">نشط قبل <ph name="LAST_UPDATED" /> من الأيام</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">طلب الإذن عند محاولة موقع ويب العثور على أجهزة البلوتوث المجاورة (إجراء موصَى به)</translation>
 <translation id="230115972905494466">لم يتم العثور على أي أجهزة متوافقة</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
+<translation id="2318045970523081853">انقر لإجراء اتصال.</translation>
 <translation id="2321086116217818302">جارٍ تحضير كلمات المرور…</translation>
 <translation id="2321958826496381788">اسحب شريط التمرير إلى أن تتمكّن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرّتين على أي فقرة.</translation>
 <translation id="2323763861024343754">مساحة تخزين الموقع</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">تحديد الموقع الجغرافي</translation>
 <translation id="2450083983707403292">هل ترغب في بدء تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
-<translation id="2476578072172137802">إعدادات الموقع</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2490684707762498678">تتم إدارتها من خلال <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">‏"مساعد Google" على Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">الحجم:</translation>
 <translation id="3443221991560634068">إعادة تحميل الصفحة الحالية</translation>
 <translation id="3445014427084483498">للتو</translation>
-<translation id="3452612588551937789">‏سجّل الدخول إلى حسابك على Google للحصول على الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى واستخدامها على جميع أجهزتك.</translation>
 <translation id="3478363558367712427">يمكنك استخدام محرّك بحث آخر.</translation>
 <translation id="3492207499832628349">علامة تبويب جديدة للتصفح المتخفي </translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
 <translation id="3513704683820682405">الواقع المعزّز</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
 <translation id="3522247891732774234">التحديث متاح. مزيد من الخيارات</translation>
+<translation id="3524138585025253783">واجهة مستخدم مطوّر البرامج</translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3542235761944717775">تتوفر مساحة <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="3549657413697417275">البحث في السجل</translation>
-<translation id="3552151358455404883">‏يمكنك إدارة ميزة "مزامنة Chrome" والتخصيص في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" />.</translation>
 <translation id="3557336313807607643">إضافة إلى جهات الاتصال</translation>
 <translation id="3566923219790363270">‏لا يزال Chrome يستعد للواقع الافتراضي. يُرجى إعادة تشغيل Chrome لاحقًا.</translation>
 <translation id="3568688522516854065">للحصول على علامات التبويب من أجهزتك الأخرى، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">جمع البيانات التابعة لي</translation>
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
-<translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="395206256282351086">اقتراحات البحث ومواقع الويب غير مفعّلة</translation>
 <translation id="3955193568934677022">السماح لمواقع الويب بتشغيل المحتوى المحمي (مُستحسَن)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{‏سيحمِّل Chrome الصفحة عندما تصبح جاهزة}zero{‏لن يحمِّل Chrome أي صفحات عندما تصبح جاهزة}two{‏سيحمِّل Chrome الصفحتين عندما تصبح جاهزتين}few{‏سيحمِّل Chrome الصفحات عندما تصبح جاهزة}many{‏سيحمِّل Chrome الصفحات عندما تصبح جاهزة}other{‏سيحمِّل Chrome الصفحات عندما تصبح جاهزة}}</translation>
@@ -458,7 +454,6 @@
 <translation id="447252321002412580">‏المساعدة في تحسين ميزات Chrome وأدائه</translation>
 <translation id="4479647676395637221">السؤال أولاً قبل السماح لمواقع الويب باستخدام الكاميرا (موصى به)</translation>
 <translation id="4479972344484327217">‏جارٍ تثبيت <ph name="MODULE" /> لمتصفِّح Chrome…</translation>
-<translation id="4482194545587547824">‏قد تستخدم Google سجلّ التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="4487967297491345095">‏سيتم حذف جميع بيانات تطبيق Chrome نهائيًا. ويشمل ذلك جميع الملفات والإعدادات والحسابات وقواعد البيانات وما إلى ذلك.</translation>
 <translation id="4493497663118223949">الوضع البسيط مفعَّل</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{قبل يوم واحد (#)}zero{قبل # يوم}two{قبل يومين (#)}few{قبل # أيام}many{قبل # يومًا}other{قبل # يوم}}</translation>
@@ -469,7 +464,6 @@
 <translation id="4532845899244822526">اختيار مجلد</translation>
 <translation id="4538018662093857852">تفعيل الوضع البسيط</translation>
 <translation id="4550003330909367850">عيّن قفل الشاشة على هذا الجهاز لعرض كلمة المرور أو نسخها هنا.</translation>
-<translation id="4556110439722119938">‏ستتم مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى مع حسابك على Google لكي يتسنّى لك استخدامها على جميع أجهزتك.</translation>
 <translation id="4558311620361989323">اختصارات صفحة الويب</translation>
 <translation id="4561979708150884304">لا يتوفّر اتصال بالإنترنت</translation>
 <translation id="4565377596337484307">إخفاء كلمة المرور</translation>
@@ -616,7 +610,6 @@
 <translation id="5527111080432883924">السؤال أولاً قبل السماح لمواقع الويب بقراءة النصوص والصور من الحافظة (موصى به)</translation>
 <translation id="5530766185686772672">إغلاق علامات تبويب التصفح المتخفي</translation>
 <translation id="5534640966246046842">تم نسخ الموقع</translation>
-<translation id="5537099431952529648">‏يمكنك أنت ووالداك إدارة ميزة "مزامنة Chrome" والتخصيص في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" />.</translation>
 <translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5561549206367097665">في انتظار الشبكة...</translation>
 <translation id="557283862590186398">‏يحتاج Chrome إلى إذن لاستخدام الميكروفون لموقع الويب هذا.</translation>
@@ -712,7 +705,6 @@
 على سبيل المثال، قد تستجيب بعض مواقع الويب لهذا الطلب عبر عرض إعلانات لا تستند إلى مواقع الويب الأخرى التي زرتها، بينما ستظل العديد من مواقع الويب تجمع بيانات تصفّحك وتستخدمها - مثلاً لتحسين الأمان وتقديم محتوى وخدمات وإعلانات واقتراحات وإعداد تقارير بالإحصاءات.</translation>
 <translation id="624789221780392884">التحديث جاهز</translation>
 <translation id="6255999984061454636">اقتراحات المحتوى</translation>
-<translation id="6258133034695130373">يريد <ph name="SITE" /> البحث عن أجهزة البلوتوث المجاورة، وقد تم العثور على الأجهزة التالية:</translation>
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. يُرجى إعادة المحاولة.</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="629730747756840877">الحساب</translation>
@@ -774,6 +766,7 @@
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="666731172850799929">الفتح في <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">‏إشعار خصوصية Chrome</translation>
+<translation id="6676840375528380067">‏هل تريد محو بيانات Chrome من هذا الجهاز؟</translation>
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
@@ -792,7 +785,6 @@
 <translation id="6803423358608456383">علامات تبويب مفتوحة بنصف ارتفاع</translation>
 <translation id="6811034713472274749">الصفحة جاهزة للعرض</translation>
 <translation id="6818926723028410516">اختيار عناصر</translation>
-<translation id="6820607729870073286">ليس لديك أي إعدادات محفوظة لمواقع ويب.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6845325883481699275">‏المساعدة في تحسين أمان Chrome</translation>
@@ -815,7 +807,6 @@
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6978479750597523876">إعادة تعيين إعدادات الترجمة</translation>
 <translation id="6979737339423435258">جميع الأوقات</translation>
-<translation id="6980462514016882061">‏قد تستخدم Google سجلّ التصفّح لتخصيص البحث والإعلانات وخدمات Google الأخرى.</translation>
 <translation id="6981982820502123353">إمكانية الوصول</translation>
 <translation id="6989267951144302301">تعذّر التنزيل</translation>
 <translation id="6990079615885386641">‏الحصول على التطبيق من متجر Google Play: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@
 <translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
-<translation id="722055596168483966">‏تخصيص خدمات Google</translation>
 <translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7233236755231902816">‏للاطّلاع على الويب بلغتك، يمكنك الحصول على أحدث إصدار من Chrome.</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
@@ -962,6 +952,7 @@
 <translation id="7999064672810608036">هل أنت متأكّد أنك تريد محو كل البيانات المحلية، بما في ذلك ملفات تعريف الارتباط، وإعادة ضبط كافة الأذونات لهذا الموقع الإلكتروني؟</translation>
 <translation id="8004582292198964060">المتصفّح</translation>
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
+<translation id="8013372441983637696">‏محو بيانات Chrome من هذا الجهاز أيضًا</translation>
 <translation id="8015452622527143194">إعادة كل محتويات الصفحة إلى الحجم التلقائي</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
@@ -1078,7 +1069,6 @@
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">التخزين</translation>
 <translation id="8901170036886848654">ما مِن إشارات مرجعية مطابقة</translation>
-<translation id="8904976895050290827">‏مزامنة Chrome</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8920114477895755567">الانتظار للحصول على تفاصيل الآباء</translation>

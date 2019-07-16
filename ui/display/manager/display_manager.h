@@ -700,7 +700,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   base::CancelableCallback<void()> on_display_zoom_modify_timeout_;
 #endif
 
-  base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };

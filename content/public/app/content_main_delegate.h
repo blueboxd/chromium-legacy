@@ -66,11 +66,6 @@ class CONTENT_EXPORT ContentMainDelegate {
   virtual bool ProcessRegistersWithSystemProcess(
       const std::string& process_type);
 
-  // Used to determine if we should send the mach port to the parent process or
-  // not. The embedder usually sends it for all child processes, use this to
-  // override this behavior.
-  virtual bool ShouldSendMachPort(const std::string& process_type);
-
   // Allows the embedder to override initializing the sandbox. This is needed
   // because some processes might not want to enable it right away or might not
   // want it at all.

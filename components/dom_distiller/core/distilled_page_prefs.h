@@ -89,7 +89,7 @@ class DistilledPagePrefs {
   PrefService* pref_service_;
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<DistilledPagePrefs> weak_ptr_factory_;
+  base::WeakPtrFactory<DistilledPagePrefs> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DistilledPagePrefs);
 };

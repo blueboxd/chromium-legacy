@@ -141,6 +141,8 @@ bool PlatformFontSkia::InitDefaultFont() {
 #else
     NOTREACHED();
 #endif
+  } else {
+    params = gfx::GetFontRenderParams(FontRenderParamsQuery(), nullptr);
   }
 
   sk_sp<SkTypeface> typeface =

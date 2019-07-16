@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/src/gpu/GrSemaphore.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/latency/latency_tracker.h"
 
 class SkSurface;
 
@@ -68,9 +69,11 @@ class SkiaOutputDevice {
                        gfx::OverlayTransform transform) = 0;
 
   // Presents the back buffer.
-  virtual gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) = 0;
-  virtual gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                          BufferPresentedCallback feedback);
+  virtual void SwapBuffers(BufferPresentedCallback feedback,
+                           std::vector<ui::LatencyInfo> latency_info) = 0;
+  virtual void PostSubBuffer(const gfx::Rect& rect,
+                             BufferPresentedCallback feedback,
+                             std::vector<ui::LatencyInfo> latency_info);
 
   // Set the rectangle that will be drawn into on the surface.
   virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
@@ -101,8 +104,9 @@ class SkiaOutputDevice {
 
   // Helper method for SwapBuffers() and PostSubBuffer(). It should be called
   // at the end of SwapBuffers() and PostSubBuffer() implementations
-  gfx::SwapResponse FinishSwapBuffers(gfx::SwapResult result,
-                                      const gfx::Size& size);
+  void FinishSwapBuffers(gfx::SwapResult result,
+                         const gfx::Size& size,
+                         std::vector<ui::LatencyInfo> latency_info);
 
   OutputSurface::Capabilities capabilities_;
 
@@ -113,6 +117,8 @@ class SkiaOutputDevice {
   // Only valid between StartSwapBuffers and FinishSwapBuffers.
   base::Optional<BufferPresentedCallback> feedback_;
   base::Optional<gpu::SwapBuffersCompleteParams> params_;
+
+  ui::LatencyTracker latency_tracker_;
 
   // RGBX format is emulated with RGBA.
   bool is_emulated_rgbx_ = false;

@@ -24,7 +24,7 @@ namespace em = enterprise_management;
 RemoteCommandsService::RemoteCommandsService(
     std::unique_ptr<RemoteCommandsFactory> factory,
     CloudPolicyClient* client)
-    : factory_(std::move(factory)), client_(client), weak_factory_(this) {
+    : factory_(std::move(factory)), client_(client) {
   DCHECK(client_);
   queue_.AddObserver(this);
 }

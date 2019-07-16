@@ -309,9 +309,7 @@ class DeviceManagementService::JobImpl : public Job, public JobControl {
  public:
   JobImpl(DeviceManagementService* service,
           std::unique_ptr<JobConfiguration> config)
-      : service_(service),
-        config_(std::move(config)),
-        weak_ptr_factory_(this) {}
+      : service_(service), config_(std::move(config)) {}
   ~JobImpl() override { service_->RemoveJob(this); }
 
  private:
@@ -344,7 +342,7 @@ class DeviceManagementService::JobImpl : public Job, public JobControl {
   // Network error code passed of last call to OnURLLoadComplete().
   int last_error_ = 0;
 
-  base::WeakPtrFactory<JobControl> weak_ptr_factory_;
+  base::WeakPtrFactory<JobControl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JobImpl);
 };
@@ -500,8 +498,7 @@ DeviceManagementService::DeviceManagementService(
     std::unique_ptr<Configuration> configuration)
     : configuration_(std::move(configuration)),
       initialized_(false),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(configuration_);
 }
 

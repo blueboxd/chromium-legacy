@@ -52,9 +52,7 @@ const char kTranslateServerStudy[] = "TranslateServerStudy";
 const char kServerParams[] = "server_params";
 
 TranslateScript::TranslateScript()
-    : expiration_delay_(base::TimeDelta::FromDays(kExpirationDelayDays)),
-      weak_method_factory_(this) {
-}
+    : expiration_delay_(base::TimeDelta::FromDays(kExpirationDelayDays)) {}
 
 TranslateScript::~TranslateScript() {
 }

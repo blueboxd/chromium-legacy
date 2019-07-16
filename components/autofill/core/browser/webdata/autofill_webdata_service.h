@@ -220,7 +220,7 @@ class AutofillWebDataService : public WebDataServiceBase {
 
   // This factory is used on the UI sequence. All vended weak pointers are
   // invalidated in ShutdownOnUISequence().
-  base::WeakPtrFactory<AutofillWebDataService> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillWebDataService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataService);
 };

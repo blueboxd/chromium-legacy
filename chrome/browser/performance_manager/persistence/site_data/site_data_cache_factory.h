@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -95,6 +96,17 @@ class SiteDataCacheFactory {
   void SetDataCacheInspectorForBrowserContext(
       SiteDataCacheInspector* inspector,
       const std::string& browser_context_id);
+
+  // Testing functions to check if the data cache associated with
+  // |browser_context_id| is recording. This will be completed asynchronously
+  // and |cb| will be called on the caller's sequence. This should be called
+  // only on the UI thread.
+  void IsDataCacheRecordingForTesting(const std::string& browser_context_id,
+                                      base::OnceCallback<void(bool)> cb);
+
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_for_testing() {
+    return task_runner_;
+  }
 
  private:
   explicit SiteDataCacheFactory(

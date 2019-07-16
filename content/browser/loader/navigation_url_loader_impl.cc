@@ -1007,20 +1007,19 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (!IsURLHandledByNetworkService(resource_request_->url)) {
       if (known_schemes_.find(resource_request_->url.scheme()) ==
           known_schemes_.end()) {
-        network::mojom::URLLoaderFactory* external_protocol_factory = nullptr;
+        network::mojom::URLLoaderFactoryPtr loader_factory;
         bool handled = GetContentClient()->browser()->HandleExternalProtocol(
             resource_request_->url, web_contents_getter_,
             ChildProcessHost::kInvalidUniqueID, navigation_ui_data_.get(),
             resource_request_->resource_type ==
                 static_cast<int>(ResourceType::kMainFrame),
             static_cast<ui::PageTransition>(resource_request_->transition_type),
-            resource_request_->has_user_gesture, &proxied_factory_request_,
-            external_protocol_factory);
+            resource_request_->has_user_gesture, &loader_factory);
 
-        if (external_protocol_factory) {
+        if (loader_factory) {
           factory =
-              base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                  external_protocol_factory);
+              base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+                  std::move(loader_factory));
         } else {
           factory = base::MakeRefCounted<SingleRequestURLLoaderFactory>(
               base::BindOnce(UnknownSchemeCallback, handled));

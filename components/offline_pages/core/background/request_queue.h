@@ -169,7 +169,7 @@ class RequestQueue : public TaskQueue::Delegate {
   std::unique_ptr<CleanupTaskFactory> cleanup_factory_;
 
   // Allows us to pass a weak pointer to callbacks.
-  base::WeakPtrFactory<RequestQueue> weak_ptr_factory_;
+  base::WeakPtrFactory<RequestQueue> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RequestQueue);
 };

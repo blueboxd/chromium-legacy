@@ -137,6 +137,11 @@ extern const char
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[];
 extern const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[];
 
+// Title and description for the flag to control if no thanks button should be
+// shown when saving a card.
+extern const char kEnableAutofillSaveCardShowNoThanksName[];
+extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
+
 // Title and description for the flag to control if credit card save should
 // utilize the Autofill StrikeDatabase when determining whether save
 // should be offered.

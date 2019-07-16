@@ -363,7 +363,6 @@ void ExtensionSystemImpl::Shutdown() {
 
 void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   TRACE_EVENT0("browser,startup", "ExtensionSystemImpl::InitForRegularProfile");
-  cookie_notifier_ = std::make_unique<ExtensionCookieNotifier>(profile_);
 
   if (shared_user_script_master() || extension_service())
     return;  // Already initialized.
@@ -371,10 +370,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   // The InfoMap needs to be created before the ProcessManager.
   shared_->info_map();
   shared_->Init(extensions_enabled);
-}
-
-void ExtensionSystemImpl::InitForIncognitoProfile() {
-  cookie_notifier_ = std::make_unique<ExtensionCookieNotifier>(profile_);
 }
 
 ExtensionService* ExtensionSystemImpl::extension_service() {

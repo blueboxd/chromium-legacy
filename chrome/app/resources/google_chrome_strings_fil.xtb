@@ -23,7 +23,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1457721931618994305">Ina-update ang Google Chrome...</translation>
 <translation id="1469002951682717133">App Launcher ng Chrome</translation>
 <translation id="1553358976309200471">I-update ang Chrome</translation>
-<translation id="1585657529869845941">I-click ang <ph name="BEGIN_BOLD" />Lumipat pa rin<ph name="END_BOLD" />, kung lalabas ito</translation>
 <translation id="1587223624401073077">Ginagamit ng Google Chrome ang iyong camera.</translation>
 <translation id="1587325591171447154">Mapanganib ang <ph name="FILE_NAME" />, kaya na-block ito ng Chrome.</translation>
 <translation id="1590588151039584890">Para i-update, kailangang tumigil sa pagtakbo ng Chrome sa computer na ito. Puwedeng magdulot ito sa iba pang user na naka-log in sa computer na ito na mawala ang mga hindi naka-save na pagbabago.</translation>
@@ -36,7 +35,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Ang Google Chrome ay isang web browser na nagpapatakbo ng mga webpage at application nang kasingbilis ng kidlat. Mabilis ito, matatag, at madaling gamitin. I-browse ang web nang mas ligtas na may proteksyon sa malware at phishing na isinama sa Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Muling ilulunsad ang Chrome sa loob ng isang oras}one{Muling ilulunsad ang Chrome sa loob ng # oras}other{Muling ilulunsad ang Chrome sa loob ng # na oras}}</translation>
-<translation id="1718131156967340976">Piliin ang <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Ise-save ng Chrome ang password na ito sa iyong Google Account. Hindi mo na ito kailangang tandaan.</translation>
 <translation id="174539241580958092">Hindi mai-sync ng Google Chrome ang iyong data dahil sa isang error sa pagsa-sign in.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="3873044882194371212">Buksan ang link sa inco&amp;gnito window ng Chrome</translation>
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
 <translation id="3898493977366060150">Pag-browse sa web gamit ang mga smart na feature ng Google</translation>
-<translation id="4028693306634653894">Pumunta sa Chrome nang mas mabilis</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
 <translation id="4053720452172726777">I-customize at kontrolin ang Google Chrome</translation>
 <translation id="4143243756087420366">Pangalan at larawan sa Chrome</translation>
@@ -244,7 +241,6 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7808348361785373670">Alisin sa Chrome...</translation>
 <translation id="7825851276765848807">Nabigo ang pag-install dahil sa hindi natukoy na error. Paki-download muli ang Google Chrome.</translation>
 <translation id="7855730255114109580">Napapanahon ang Google Chrome</translation>
-<translation id="7888186132678118370">I-pin ang Chrome sa iyong taskbar</translation>
 <translation id="7890208801193284374">Kung nagpapahiram ka ng computer, ang mga kaibigan at kapamilya ay maaaring mag-browse nang hiwalay at i-set up ang Chrome sa paraang gusto nila.</translation>
 <translation id="7896673875602241923">May nag-sign in dati sa Chrome sa computer na ito bilang <ph name="ACCOUNT_EMAIL_LAST" />. Mangyaring gumawa ng bagong user ng Chrome upang ihiwalay ang iyong impormasyon.</translation>
 <translation id="7908168227788431038">Halos napapanahon na! Muling ilunsad ang Google Chrome upang tapusin ang pag-a-update.</translation>
@@ -293,6 +289,5 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="9138603949443464873">Para ilapat ang iyong mga pagbabago, muling ilunsad ang Chrome</translation>
 <translation id="919706545465235479">I-update ang Chrome upang simulan ang pag-sync</translation>
-<translation id="924447568950697217">Gawing default mong browser ang Chrome</translation>
 <translation id="989369509083708165">Google Chrome ang iyong default na browser</translation>
 </translationbundle>

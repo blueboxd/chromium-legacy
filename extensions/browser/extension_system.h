@@ -67,7 +67,6 @@ class ExtensionSystem : public KeyedService {
   // These calls should occur after the profile IO data is initialized,
   // as extensions initialization depends on that.
   virtual void InitForRegularProfile(bool extensions_enabled) = 0;
-  virtual void InitForIncognitoProfile() = 0;
 
   // The ExtensionService is created at startup. ExtensionService is only
   // defined in Chrome.

@@ -333,8 +333,7 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    network::mojom::URLLoaderFactory*& out_factory) {
+    network::mojom::URLLoaderFactoryPtr* out_factory) {
   return false;
 }
 

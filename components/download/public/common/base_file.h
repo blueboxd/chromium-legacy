@@ -312,7 +312,7 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<BaseFile> weak_factory_;
+  base::WeakPtrFactory<BaseFile> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BaseFile);
 };

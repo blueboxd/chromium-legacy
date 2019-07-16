@@ -187,7 +187,7 @@ class FontServiceThread : public base::RefCountedThreadSafe<FontServiceThread> {
   std::set<base::WaitableEvent*> pending_waitable_events_;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<FontServiceThread> weak_factory_;
+  base::WeakPtrFactory<FontServiceThread> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FontServiceThread);
 };

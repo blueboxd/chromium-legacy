@@ -180,10 +180,10 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
     return path.MaybeAsASCII();
   }
 
+  TestNetLog net_log_;
   std::unique_ptr<MappedHostResolver> host_resolver_;
   std::unique_ptr<QuicSimpleServer> server_;
   std::unique_ptr<TestURLRequestContext> context_;
-  TestNetLog net_log_;
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
 };

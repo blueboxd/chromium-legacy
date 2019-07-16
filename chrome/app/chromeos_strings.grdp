@@ -3233,16 +3233,10 @@
   <message name="IDS_VOICE_INTERACTION_LOGO" desc="Logo label for voice interaction.">
     Google assistant logo
   </message>
-  <message name="IDS_ASSISTANT_HOTWORD_TITLE" desc="Title for assistant hotword optin.">
-    "Ok Google"
-  </message>
-  <message name="IDS_ASSISTANT_HOTWORD_DESC" desc="Description for assistant hotword optin.">
-    Access your Assistant any time you say "Ok Google" when your screen is on
-  </message>
-  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin.">
+  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin. This is also used as the title for a toggle that lets the assistant use whats on the screen in Assistant settings page.">
     Related info
   </message>
-  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin.">
+  <message name="IDS_ASSISTANT_SCREEN_CONTEXT_DESC" desc="Description for assistant screen context optin. This is also used as the sub label for context-enable toggle in Assistant settings page.">
     Let the Assistant show you info related to what's on your screen
   </message>
   <message name="IDS_ASSISTANT_READY_SCREEN_TITLE" desc="Title for assistant ready screen.">
@@ -3274,7 +3268,7 @@
   <message name="IDS_ASSISTANT_VOICE_MATCH_NO_DSP_MESSAGE" desc="Message without DSP support for Assistant voice match screen.">
     To save battery, “Ok Google” is on only when your device is connected to a power source. To make changes, go to Settings.
   </message>
-  <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen.">
+  <message name="IDS_ASSISTANT_VOICE_MATCH_RECORDING" desc="Title for recording in assistant voice match screen. This is also used as the sub label for the Assistant voice settings.">
     Teach your Assistant to recognize your voice
   </message>
   <message name="IDS_ASSISTANT_VOICE_MATCH_COMPLETED" desc="Title for completed assistant voice match screen.">

@@ -243,7 +243,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
 
   Delegate* delegate_;
 
-  base::WeakPtrFactory<SimpleMenuModel> method_factory_;
+  base::WeakPtrFactory<SimpleMenuModel> method_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuModel);
 };

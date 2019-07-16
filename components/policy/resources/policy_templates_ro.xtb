@@ -3250,19 +3250,8 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7123160381479171745">Definește lista de utilizatori care au permisiunea de a se conecta la dispozitiv. Intrările sunt de forma <ph name="USER_WHITELIST_ENTRY_FORMAT" />, cum ar fi <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Pentru a accepta utilizatori arbitrari pe un anumit domeniu, folosește intrări de forma <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Dacă această politică nu este configurată, nu există restricții cu privire la utilizatorii cărora le este permis să se conecteze. Reține că la crearea unor utilizatori noi este necesar în continuare ca politica <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> să fie configurată în mod corespunzător.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> oferă actualizarea și instalarea securizată a extensiilor. Totuși, conținutul unor extensii găzduite în afara Magazinului web Chrome poate fi protejat numai prin algoritmi nesecurizați de semnătură sau de hashing, cum ar fi SHA1. Dacă politica este dezactivată, instalarea nouă și actualizările acestor extensii nu vor fi permise de Chrome (până când dezvoltatorii extensiei reconstruiesc extensia cu algoritmi mai puternici). Dacă politica este activată, instalarea și actualizările acestor extensii vor fi permise.
-
-          Setarea prestabilită va fi de a activa comportamentul când nu este configurată.
-          Începând cu <ph name="PRODUCT_NAME" /> 75, setarea prestabilită va fi de a dezactiva comportamentul când nu este configurată.
-
-          Începând cu <ph name="PRODUCT_NAME" /> 77, politica va fi ignorată și considerată dezactivată.</translation>
 <translation id="7126716959063786004">Activează oprirea proceselor în Managerul de activități</translation>
 <translation id="7127892035367404455">Revino la versiunea țintă</translation>
-<translation id="7128918109610518786">Listează identificatorii aplicațiilor pe care <ph name="PRODUCT_OS_NAME" /> le afișează ca aplicații fixate în bara lansatorului.
-
-      Dacă această politică este configurată, setul de aplicații este fix și nu poate fi schimbat de către utilizator.
-
-      Dacă această politică este lăsată nesetată, utilizatorul poate modifica lista cu aplicații fixate din lansator.</translation>
 <translation id="713121532817834879">Această politică este o adresă URL care direcționează spre un fișier XML cu același format ca cel al politicii <ph name="IEEM_SITELIST_POLICY" /> a Internet Explorer. Această politică încarcă reguli dintr-un fișier XML, fără să permită accesul Internet Explorer la ele.
 
       Regulile din acest fișier XML se aplică în același fel ca <ph name="GREYLIST_POLICY_NAME" />. Cu alte cuvinte, aceste reguli împiedică <ph name="PRODUCT_NAME" /> să deschidă browserul secundar și împiedică browserul secundar să deschidă <ph name="PRODUCT_NAME" />.
@@ -4096,12 +4085,6 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8759829385824155666">Tipuri de criptare Kerberos permise</translation>
 <translation id="8764119899999036911">Specifică dacă numele SPN generat în protocolul Kerberos are la bază numele DNS canonic sau numele inițial introdus. Dacă activați această setare, căutarea CNAME va fi ignorată, iar numele serverului va fi utilizat așa cum este introdus. Dacă dezactivați această setare sau o lăsați nesetată, numele canonic al serverului va fi determinat prin intermediul căutării CNAME.</translation>
 <translation id="8764477907716150749">Această politică este destinată să fie utilizată la nivel intern de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Configurează adresa URL de modificare a parolei (doar schemele HTTP și HTTPS). Serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
-      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect noua amprentă a parolei pe această pagină de schimbare a parolei, asigură-te că pagina de schimbare a parolei respectă regulile prevăzute la https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Dacă această setare este activată, serviciul de protecție a parolei va direcționa utilizatorii la această adresă URL pentru a-și schimba parola după ce se afișează un avertisment în browser.
-      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție a parolei va direcționa utilizatorii la https://myaccounts.google.com pentru a-și schimba parola.
-      Această politică este disponibilă doar în instanțe Windows asociate unui domeniu <ph name="MS_AD_NAME" />, instanțele Windows 10 Pro sau instanțele Enterprise care au fost înscrise pentru gestionarea dispozitivului.</translation>
 <translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8800453707696044281">Setează în procente valoarea personalizată la care bateria se oprește din încărcare</translation>
 <translation id="8801680448782904838">Notifică utilizatorul că relansarea browserului sau repornirea dispozitivului este recomandată sau necesară</translation>
@@ -4226,9 +4209,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 
       Valoarea politicii trebuie specificată în milisecunde.</translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
-<translation id="9038058011835642205">Specifică o listă cu site-uri care sunt instalate în fundal, fără intervenția utilizatorului, și care nu pot fi dezinstalate sau dezactivate de utilizator.
-
-      Fiecare element din lista politicii este un obiect cu un membru obligatoriu: „url” și doi membri opționali: „default_launch_container” și „create_desktop_shortcut”. „url” ar trebui să fie adresa URL a aplicației web de instalat, iar „launch_container” ar trebui să fie „window” sau „tab” pentru a indica modul în care va fi deschisă aplicația web după instalare, iar „create_desktop_shortcut” ar trebui să fie adevărat dacă o comandă rapidă pe desktop este creată în Linux și Windows. Dacă „default_launch_container” se omite, aplicația se va deschide într-o filă în mod prestabilit. Indiferent de valoarea „default_launch_container”, utilizatorii pot schimba containerul în care se va deschide aplicația. Dacă „create_desktop_shortcuts” este omis, nu va fi creată nicio comandă rapidă pe desktop.</translation>
 <translation id="9038839118379817310">Activează Wi-Fi</translation>
 <translation id="9039822628127365650">Dacă este configurată, politica specifică perioada de timp după care un utilizator este deconectat în mod automat, încheind sesiunea. Utilizatorul este informat despre timpul rămas prin afișarea unui cronometru în bara de sistem.
 

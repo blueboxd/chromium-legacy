@@ -49,7 +49,7 @@ class DownloadStore : public Store {
   std::unique_ptr<leveldb_proto::ProtoDatabase<protodb::Entry>> db_;
   bool is_initialized_;
 
-  base::WeakPtrFactory<DownloadStore> weak_factory_;
+  base::WeakPtrFactory<DownloadStore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadStore);
 };

@@ -257,7 +257,7 @@ class GCMDriverDesktop : public GCMDriver,
       delete_token_callbacks_;
 
   // Used to pass a weak pointer to the IO worker.
-  base::WeakPtrFactory<GCMDriverDesktop> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMDriverDesktop> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriverDesktop);
 };

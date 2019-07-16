@@ -36,7 +36,8 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                gfx::OverlayTransform transform) override;
-  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
+  void SwapBuffers(BufferPresentedCallback feedback,
+                   std::vector<ui::LatencyInfo> latency_info) override;
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 

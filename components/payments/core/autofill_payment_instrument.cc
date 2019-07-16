@@ -44,8 +44,7 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
       billing_profiles_(billing_profiles),
       app_locale_(app_locale),
       delegate_(nullptr),
-      payment_request_delegate_(payment_request_delegate),
-      weak_ptr_factory_(this) {}
+      payment_request_delegate_(payment_request_delegate) {}
 AutofillPaymentInstrument::~AutofillPaymentInstrument() {}
 
 void AutofillPaymentInstrument::InvokePaymentApp(

@@ -24,8 +24,6 @@
 
 namespace syncer {
 
-class Encryptor;
-
 // USS implementation of SyncEncryptionHandler.
 // This class holds the current Nigori state and processes incoming changes and
 // queries:
@@ -38,10 +36,8 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                              public NigoriSyncBridge,
                              public SyncEncryptionHandler {
  public:
-  // |encryptor| must not be null and must outlive this object and any copies
-  // of the Cryptographer exposed by this object.
-  NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
-                       Encryptor* encryptor);
+  explicit NigoriSyncBridgeImpl(
+      std::unique_ptr<NigoriLocalChangeProcessor> processor);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.

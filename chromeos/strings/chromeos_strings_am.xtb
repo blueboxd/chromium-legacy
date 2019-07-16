@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">በአቅራቢያ ያሉ መሣሪያዎችን ለማግኘት ብሉቱዝን ያብሩ</translation>
 <translation id="2805756323405976993">መተግበሪያዎች</translation>
 <translation id="2872961005593481000">ዝጋ</translation>
-<translation id="2912823482158781027">ትኬትን ዳግም አድስ</translation>
-<translation id="3511655281162215899">እባክዎ አዲስ ይለፍ ቃል ወዲያውኑ ይምረጡ።</translation>
-<translation id="3562817605261346876">እባክዎ ለ <ph name="PRINCIPAL_NAME" /> በቅርቡ ትኬቱን ዳግም ያድሱ</translation>
 <translation id="3838338534323494292">አዲስ የይለፍ ቃል</translation>
 <translation id="445059817448385655">የቀድሞው የይለፍ ቃል</translation>
 <translation id="467510802200863975">የይለፍ ቃላትዎ አይዛመዱም</translation>
@@ -23,16 +20,12 @@
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5457599981699367932">እንደ እንግዳ ያስሱ</translation>
 <translation id="54609108002486618">የተቀናበረ</translation>
-<translation id="5733345267661125295">እባክዎ አሁን አዲስ የይለፍ ቃል ይምረጡ</translation>
-<translation id="5743581760404859096">የእርስዎ Kerberos ቲኬት አገልግሎት ጊዜው እያበቃ ነው</translation>
 <translation id="5832805196449965646">ሰው አክል</translation>
 <translation id="5895138241574237353">እንደገና ጀምር</translation>
 <translation id="6058625436358447366">ለማጠናቀቅ፣ የእርስዎን አሮጌ እና አዲስ የይለፍ ቃላት ያስገቡ</translation>
 <translation id="6106186594183574873">ለማጠናቀቅ፣ የእርስዎን ይለፍ ቃል ያስገቡ</translation>
 <translation id="6146993107019042706">ለማጠናቀቅ፣ የእርስዎን አዲስ የይለፍ ቃል ያስገቡ</translation>
 <translation id="6574601967010742428">የመሣሪያው አስተዳዳሪ የእርስዎን እንቅስቃሴ ሊከታተል ይችላል።</translation>
-<translation id="7280705187789120111">Kerberos ቲኬት አገልግሎት ጊዜው እያበቃ ነው</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{የአሁኑ ይለፍ ቃልዎ ጊዜው አልፎበታል!}=1{የአሁኑ ይለፍ ቃልዎ ከአንድ ቀን ባነሰ ጊዜ ውስጥ ጊዜው ያልፍበታል!}one{የአሁኑ ይለፍ ቃልዎ ከ# ቀኖች ባነሰ ጊዜ ውስጥ ጊዜው ያልፍበታል!}other{የአሁኑ ይለፍ ቃልዎ ከ# ቀኖች ባነሰ ጊዜ ውስጥ ጊዜው ያልፍበታል!}}</translation>
 <translation id="7658239707568436148">ይቅር</translation>
 <translation id="7690294790491645610">አዲስ የይለፍ ቃል ያረጋግጡ</translation>
 <translation id="808894953321890993">የይለፍ ቃል ለውጥ</translation>

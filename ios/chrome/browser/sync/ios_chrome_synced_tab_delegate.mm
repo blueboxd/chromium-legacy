@@ -10,6 +10,7 @@
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "components/sync_sessions/tab_node_pool.h"
+#import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/navigation_item.h"
@@ -147,23 +148,40 @@ bool IOSChromeSyncedTabDelegate::ShouldSync(
 }
 
 int64_t IOSChromeSyncedTabDelegate::GetTaskIdForNavigationId(int nav_id) const {
-  // TODO(davidjm) https://crbug.com/946356 - new task track implementation
-  // doesn't support iOS yet.
+  const IOSTaskTabHelper* ios_task_tab_helper = this->ios_task_tab_helper();
+  if (ios_task_tab_helper &&
+      ios_task_tab_helper->GetContextRecordTaskId(nav_id) != nullptr) {
+    return ios_task_tab_helper->GetContextRecordTaskId(nav_id)->task_id();
+  }
   return -1;
 }
 
 int64_t IOSChromeSyncedTabDelegate::GetParentTaskIdForNavigationId(
     int nav_id) const {
-  // TODO(davidjm) https://crbug.com/946356 - new task track implementation
-  // doesn't support iOS yet.
+  const IOSTaskTabHelper* ios_task_tab_helper = this->ios_task_tab_helper();
+  if (ios_task_tab_helper &&
+      ios_task_tab_helper->GetContextRecordTaskId(nav_id) != nullptr) {
+    return ios_task_tab_helper->GetContextRecordTaskId(nav_id)
+        ->parent_task_id();
+  }
   return -1;
 }
 
 int64_t IOSChromeSyncedTabDelegate::GetRootTaskIdForNavigationId(
     int nav_id) const {
-  // TODO(davidjm) https://crbug.com/946356 - new task track implementation
-  // doesn't support iOS yet.
+  const IOSTaskTabHelper* ios_task_tab_helper = this->ios_task_tab_helper();
+  if (ios_task_tab_helper &&
+      ios_task_tab_helper->GetContextRecordTaskId(nav_id) != nullptr) {
+    return ios_task_tab_helper->GetContextRecordTaskId(nav_id)->root_task_id();
+  }
   return -1;
+}
+
+const IOSTaskTabHelper* IOSChromeSyncedTabDelegate::ios_task_tab_helper()
+    const {
+  if (web_state_ == nullptr)
+    return nullptr;
+  return IOSTaskTabHelper::FromWebState(web_state_);
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(IOSChromeSyncedTabDelegate)

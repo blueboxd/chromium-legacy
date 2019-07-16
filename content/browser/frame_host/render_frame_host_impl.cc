@@ -102,6 +102,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/scoped_active_url.h"
+#include "content/browser/sms/sms_service.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
@@ -143,7 +144,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/site_isolation_policy.h"
-#include "content/public/browser/sms_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/bindings_policy.h"
@@ -6126,10 +6126,8 @@ void RenderFrameHostImpl::BindSmsReceiverRequest(
     mojo::ReportBadMessage("Must be in top-level browser context.");
     return;
   }
-  SmsService* sms_service = GetProcess()->GetBrowserContext()->GetSmsService();
-  if (sms_service) {
-    sms_service->Bind(std::move(request), GetLastCommittedOrigin());
-  }
+  SmsService* sms_service = BrowserMainLoop::GetInstance()->GetSmsService();
+  sms_service->Bind(std::move(request), GetLastCommittedOrigin());
 }
 
 void RenderFrameHostImpl::GetInterface(

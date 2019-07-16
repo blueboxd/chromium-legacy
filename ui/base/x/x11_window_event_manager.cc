@@ -88,7 +88,7 @@ class XWindowEventManager::MultiMask {
   DISALLOW_COPY_AND_ASSIGN(MultiMask);
 };
 
-XWindowEventManager::XWindowEventManager() : weak_ptr_factory_(this) {}
+XWindowEventManager::XWindowEventManager() {}
 
 XWindowEventManager::~XWindowEventManager() {
   // Clear events still requested by not-yet-deleted XScopedEventSelectors.

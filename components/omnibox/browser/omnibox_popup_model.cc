@@ -37,8 +37,7 @@ OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
       edit_model_(edit_model),
       selected_line_(kNoMatch),
       selected_line_state_(NORMAL),
-      has_selected_match_(false),
-      weak_factory_(this) {
+      has_selected_match_(false) {
   edit_model->set_popup_model(this);
 }
 

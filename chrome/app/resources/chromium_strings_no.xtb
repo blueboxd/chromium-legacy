@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Få hjelp med å bruke Chromium OS</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
 <translation id="1414495520565016063">Du er logget på Chromium.</translation>
-<translation id="1502360822835740515">Gjør Chromium til standard nettleser</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="1524282610922162960">Del en Chromium-fane</translation>
-<translation id="1585657529869845941">Klikk på <ph name="BEGIN_BOLD" />Bytt likevel<ph name="END_BOLD" /> (hvis knappen vises)</translation>
 <translation id="1668054258064581266">Når du har fjernet kontoen din fra Chromium, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
 <translation id="1688750314291223739">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Chromium på enhver datamaskin.</translation>
 <translation id="1708666629004767631">En ny, sikrere versjon av Chromium er tilgjengelig.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium får tilgang til Disk-lagringen din for å kunne gi deg forslag i adressefeltet</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Fest Chromium til oppgavelinjen</translation>
 <translation id="388648406173476553">Tilpass og kontrollér Chromium. Det er noe du må se på – klikk for mer informasjon.</translation>
 <translation id="3889543394854987837">Klikk på navnet ditt for å åpne Chromium og starte surfingen.</translation>
 <translation id="3898493977366060150">Surfing med Googles smarte funksjoner</translation>
 <translation id="4036079820698952681">Bidra til å gjøre Chromium bedre ved å rapportere de <ph name="BEGIN_LINK" />nåværende innstillingene<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
-<translation id="407254336480250557">Velg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Oppdag flotte apper, spill, utvidelser og temaer for Chromium.</translation>
 <translation id="4216212958613226427">Dette språket brukes for UI-et i Chromium</translation>
 <translation id="4222580632002216401">Du er nå logget på Chromium. Synkronisering er deaktivert av administratoren din.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Profilen ser ut til å være i bruk av en annen Chromium-prosess (<ph name="PROCESS_ID" />) på en annen datamaskin (<ph name="HOST_NAME" />). Chromium har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chromium på nytt.</translation>
 <translation id="469338717132742108">Få hjelp med Chromium OS</translation>
 <translation id="4708774505295300557">Noen har tidligere logget på Chromium på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chromium-bruker for å holde informasjonen din atskilt.</translation>
-<translation id="4714956846925717402">Kom deg raskere til Chromium</translation>
 <translation id="4746050847053251315">Vil du avslutte Chromium likevel?</translation>
 <translation id="4748217263233248895">En spesiell sikkerhetsoppdatering for Chromium ble nettopp installert. Start på nytt nå, så gjenoppretter vi fanene dine.</translation>
 <translation id="479167709087336770">Denne funksjonen bruker den samme stavekontrollen som Google Søk. Tekst du skriver inn i nettleseren, sendes til Google. Du kan når som helst endre dette i innstillingene.</translation>

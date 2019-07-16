@@ -13,10 +13,8 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
 <translation id="1414495520565016063">Je bent ingelogd bij Chromium.</translation>
-<translation id="1502360822835740515">Chromium instellen als je standaardbrowser</translation>
 <translation id="151962892725702025">Chromium OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="1524282610922162960">Een Chromium-tabblad delen</translation>
-<translation id="1585657529869845941">Klik op <ph name="BEGIN_BOLD" />Toch overschakelen<ph name="END_BOLD" /> als die knop wordt weergegeven</translation>
 <translation id="1668054258064581266">Nadat je je account uit Chromium hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
 <translation id="1688750314291223739">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te hebben tot deze functies via Chromium, vanaf elke computer.</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
@@ -84,13 +82,11 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3728336900324680424">Chromium gebruikt de toegang tot je Drive om suggesties te doen in de adresbalk</translation>
 <translation id="378917192836375108">Met Chromium kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Chromium vastzetten op je taakbalk</translation>
 <translation id="388648406173476553">Pas Chromium aan en beheer de instellingen. Je aandacht is vereist. Klik voor meer informatie.</translation>
 <translation id="3889543394854987837">Klik op je naam om Chromium te openen en begin met surfen.</translation>
 <translation id="3898493977366060150">Browsen met innovaties van Google</translation>
 <translation id="4036079820698952681">Help Chromium beter te maken door de <ph name="BEGIN_LINK" />huidige instellingen<ph name="END_LINK" /> te melden</translation>
 <translation id="4050175100176540509">Er zijn belangrijke beveiligingsverbeteringen en nieuwe functies beschikbaar in de nieuwste versie.</translation>
-<translation id="407254336480250557">Selecteer <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Ontdek fantastische apps, games, extensies en thema's voor Chromium.</translation>
 <translation id="4216212958613226427">Deze taal wordt gebruikt om de Chromium-UI weer te geven</translation>
 <translation id="4222580632002216401">Je bent nu ingelogd bij Chromium! Synchronisatie is uitgeschakeld door je beheerder.</translation>
@@ -107,7 +103,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4677944499843243528">Het profiel lijkt te worden gebruikt door een ander proces in Chromium (<ph name="PROCESS_ID" />) op een andere computer (<ph name="HOST_NAME" />). Het profiel is vergrendeld zodat het niet wordt beschadigd. Als je zeker weet dat dit profiel niet door andere processen wordt gebruikt, kun je het profiel ontgrendelen en Chromium opnieuw starten.</translation>
 <translation id="469338717132742108">Hulp bij Chromium OS</translation>
 <translation id="4708774505295300557">Iemand heeft eerder bij Chromium op deze computer ingelogd als <ph name="ACCOUNT_EMAIL_LAST" />. Maak een nieuwe Chromium-gebruiker om je informatie gescheiden te houden.</translation>
-<translation id="4714956846925717402">Chromium sneller openen</translation>
 <translation id="4746050847053251315">Chromium toch sluiten?</translation>
 <translation id="4748217263233248895">Er is zojuist een speciale beveiligingsupdate voor Chromium toegepast. Start nu opnieuw op. Je tabbladen worden hersteld.</translation>
 <translation id="479167709087336770">Hiervoor wordt dezelfde spellingcontrole gebruikt als voor Google Zoeken. Tekst die je in de browser typt, wordt naar Google gestuurd. Je kunt dit altijd wijzigen in de instellingen.</translation>

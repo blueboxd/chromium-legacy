@@ -66,8 +66,7 @@ PrefetchImporterImpl::PrefetchImporterImpl(
     scoped_refptr<base::TaskRunner> background_task_runner)
     : PrefetchImporter(dispatcher),
       offline_page_model_(offline_page_model),
-      background_task_runner_(background_task_runner),
-      weak_ptr_factory_(this) {}
+      background_task_runner_(background_task_runner) {}
 
 PrefetchImporterImpl::~PrefetchImporterImpl() = default;
 

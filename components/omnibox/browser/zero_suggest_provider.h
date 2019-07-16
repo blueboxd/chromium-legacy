@@ -219,7 +219,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   history::MostVisitedURLList most_visited_urls_;
 
   // For callbacks that may be run after destruction.
-  base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProvider);
 };

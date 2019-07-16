@@ -20,6 +20,9 @@
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -229,6 +232,44 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
   grey_dispatch_sync_on_main_thread(^{
     chrome_test_util::SetContentSettingsBlockPopups(CONTENT_SETTING_ALLOW);
   });
+}
+
++ (NSString*)takeSnapshotOfTabWithID:(NSString*)ID {
+  __block web::WebState* webState;
+  grey_dispatch_sync_on_main_thread(^{
+    webState = GetWebStateWithId(ID);
+  });
+
+  if (!webState)
+    return nil;
+
+  __block UIImage* snapshot = nil;
+  grey_dispatch_sync_on_main_thread(^{
+    CGRect bounds = webState->GetWebViewProxy().bounds;
+    UIEdgeInsets insets = webState->GetWebViewProxy().contentInset;
+    CGRect adjustedBounds = UIEdgeInsetsInsetRect(bounds, insets);
+
+    webState->TakeSnapshot(gfx::RectF(adjustedBounds),
+                           base::BindOnce(^(const gfx::Image& image) {
+                             snapshot = image.ToUIImage();
+                           }));
+  });
+
+  const NSTimeInterval kSnapshotTimeoutSeconds = 100;
+  bool success = WaitUntilConditionOrTimeout(kSnapshotTimeoutSeconds, ^bool {
+    __block BOOL snapshotComplete = NO;
+    grey_dispatch_sync_on_main_thread(^{
+      if (snapshot != nil)
+        snapshotComplete = YES;
+    });
+    return snapshotComplete;
+  });
+
+  if (!success)
+    return nil;
+
+  NSData* snapshotAsPNG = UIImagePNGRepresentation(snapshot);
+  return [snapshotAsPNG base64EncodedStringWithOptions:0];
 }
 
 @end

@@ -117,7 +117,7 @@ class TestingRemoteCommandsServer {
   base::WeakPtr<TestingRemoteCommandsServer> weak_ptr_to_this_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<TestingRemoteCommandsServer> weak_factory_;
+  base::WeakPtrFactory<TestingRemoteCommandsServer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestingRemoteCommandsServer);
 };

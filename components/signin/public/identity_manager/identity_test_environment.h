@@ -361,7 +361,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Shared constructor initialization logic.
   void Initialize();
 
-  base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_;
+  base::WeakPtrFactory<IdentityTestEnvironment> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironment);
 };

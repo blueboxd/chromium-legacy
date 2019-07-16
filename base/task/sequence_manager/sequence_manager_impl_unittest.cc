@@ -53,7 +53,7 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using base::sequence_manager::internal::EnqueueOrder;
+using base::sequence_manager::EnqueueOrder;
 using testing::_;
 using testing::AnyNumber;
 using testing::Contains;

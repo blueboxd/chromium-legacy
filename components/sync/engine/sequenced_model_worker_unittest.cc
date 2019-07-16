@@ -22,7 +22,7 @@ namespace {
 
 class SequencedModelWorkerTest : public testing::Test {
  public:
-  SequencedModelWorkerTest() : did_do_work_(false), weak_factory_(this) {}
+  SequencedModelWorkerTest() : did_do_work_(false) {}
 
   bool did_do_work() { return did_do_work_; }
   SequencedModelWorker* worker() { return worker_.get(); }
@@ -75,7 +75,7 @@ class SequencedModelWorkerTest : public testing::Test {
   base::RunLoop run_loop_;
 
  private:
-  base::WeakPtrFactory<SequencedModelWorkerTest> weak_factory_;
+  base::WeakPtrFactory<SequencedModelWorkerTest> weak_factory_{this};
 };
 
 TEST_F(SequencedModelWorkerTest, DoesWorkOnDatabaseSequence) {

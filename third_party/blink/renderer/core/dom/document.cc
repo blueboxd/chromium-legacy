@@ -2346,151 +2346,158 @@ void Document::PropagateStyleToViewport() {
 
   const ComputedStyle* body_style =
       body ? body->EnsureComputedStyle() : nullptr;
-  const ComputedStyle* document_element_style =
+  const ComputedStyle* document_style =
       documentElement()->EnsureComputedStyle();
 
-  TouchAction effective_touch_action =
-      document_element_style->GetEffectiveTouchAction();
-  WritingMode root_writing_mode = document_element_style->GetWritingMode();
-  TextDirection root_direction = document_element_style->Direction();
-  if (body_style) {
-    root_writing_mode = body_style->GetWritingMode();
-    root_direction = body_style->Direction();
-  }
-
-  const ComputedStyle* background_style = document_element_style;
-  // http://www.w3.org/TR/css3-background/#body-background
-  // <html> root element with no background steals background from its first
-  // <body> child.
-  // Also see LayoutBoxModelObject::BackgroundTransfersToView()
-  if (IsHTMLHtmlElement(documentElement()) &&
-      document_element_style->Display() != EDisplay::kNone &&
-      IsHTMLBodyElement(body) && !background_style->HasBackground()) {
-    background_style = body_style;
-  }
-
-  Color background_color = Color::kTransparent;
-  FillLayer background_layers(EFillLayerType::kBackground, true);
-  EImageRendering image_rendering = EImageRendering::kAuto;
-
-  if (background_style->Display() != EDisplay::kNone) {
-    background_color = background_style->VisitedDependentColor(
-        GetCSSPropertyBackgroundColor());
-    background_layers = background_style->BackgroundLayers();
-    for (auto* current_layer = &background_layers; current_layer;
-         current_layer = current_layer->Next()) {
-      // http://www.w3.org/TR/css3-background/#root-background
-      // The root element background always have painting area of the whole
-      // canvas.
-      current_layer->SetClip(EFillBox::kBorder);
-
-      // The root element doesn't scroll. It always propagates its layout
-      // overflow to the viewport. Positioning background against either box is
-      // equivalent to positioning against the scrolled box of the viewport.
-      if (current_layer->Attachment() == EFillAttachment::kScroll)
-        current_layer->SetAttachment(EFillAttachment::kLocal);
-    }
-    image_rendering = background_style->ImageRendering();
-  }
-
-  const ComputedStyle* overflow_style = nullptr;
-  Element* viewport_element = ViewportDefiningElement();
-  DCHECK(viewport_element);
-  if (viewport_element == body) {
-    overflow_style = body_style;
-  } else {
-    DCHECK_EQ(viewport_element, documentElement());
-    overflow_style = document_element_style;
-
-    // The body element has its own scrolling box, independent from the
-    // viewport.  This is a bit of a weird edge case in the CSS spec that we
-    // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
-    // see http://crbug.com/157855).
-    if (body_style && !body_style->IsOverflowVisible())
-      UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
-  }
-  DCHECK(overflow_style);
-
-  EOverflowAnchor overflow_anchor = overflow_style->OverflowAnchor();
-  EOverflow overflow_x = overflow_style->OverflowX();
-  EOverflow overflow_y = overflow_style->OverflowY();
-  // Visible overflow on the viewport is meaningless, and the spec says to
-  // treat it as 'auto':
-  if (overflow_x == EOverflow::kVisible)
-    overflow_x = EOverflow::kAuto;
-  if (overflow_y == EOverflow::kVisible)
-    overflow_y = EOverflow::kAuto;
-  if (overflow_anchor == EOverflowAnchor::kVisible)
-    overflow_anchor = EOverflowAnchor::kAuto;
-
-  ScrollBehavior scroll_behavior = document_element_style->GetScrollBehavior();
-
-  EOverscrollBehavior overscroll_behavior_x =
-      overflow_style->OverscrollBehaviorX();
-  EOverscrollBehavior overscroll_behavior_y =
-      overflow_style->OverscrollBehaviorY();
-  using OverscrollBehaviorType = cc::OverscrollBehavior::OverscrollBehaviorType;
-  if (IsInMainFrame()) {
-    GetPage()->GetChromeClient().SetOverscrollBehavior(
-        *GetFrame(),
-        cc::OverscrollBehavior(
-            static_cast<OverscrollBehaviorType>(overscroll_behavior_x),
-            static_cast<OverscrollBehaviorType>(overscroll_behavior_y)));
-  }
-
-  // We only propagate the properties related to snap container since viewport
-  // defining element cannot be a snap area.
-  cc::ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
-  Length scroll_padding_top = overflow_style->ScrollPaddingTop();
-  Length scroll_padding_right = overflow_style->ScrollPaddingRight();
-  Length scroll_padding_bottom = overflow_style->ScrollPaddingBottom();
-  Length scroll_padding_left = overflow_style->ScrollPaddingLeft();
-
-  bool dark_color_scheme = document_element_style->DarkColorScheme();
-
   const ComputedStyle& viewport_style = GetLayoutView()->StyleRef();
-  if (viewport_style.GetWritingMode() != root_writing_mode ||
-      viewport_style.Direction() != root_direction ||
-      viewport_style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
-          background_color ||
-      viewport_style.BackgroundLayers() != background_layers ||
-      viewport_style.ImageRendering() != image_rendering ||
-      viewport_style.OverflowAnchor() != overflow_anchor ||
-      viewport_style.OverflowX() != overflow_x ||
-      viewport_style.OverflowY() != overflow_y ||
-      viewport_style.GetScrollSnapType() != snap_type ||
-      viewport_style.GetScrollBehavior() != scroll_behavior ||
-      viewport_style.OverscrollBehaviorX() != overscroll_behavior_x ||
-      viewport_style.OverscrollBehaviorY() != overscroll_behavior_y ||
-      viewport_style.ScrollPaddingTop() != scroll_padding_top ||
-      viewport_style.ScrollPaddingRight() != scroll_padding_right ||
-      viewport_style.ScrollPaddingBottom() != scroll_padding_bottom ||
-      viewport_style.ScrollPaddingLeft() != scroll_padding_left ||
-      viewport_style.GetEffectiveTouchAction() != effective_touch_action ||
-      viewport_style.DarkColorScheme() != dark_color_scheme) {
-    scoped_refptr<ComputedStyle> new_style =
-        ComputedStyle::Clone(viewport_style);
-    new_style->SetWritingMode(root_writing_mode);
-    new_style->UpdateFontOrientation();
-    new_style->SetDirection(root_direction);
-    new_style->SetBackgroundColor(background_color);
-    new_style->AccessBackgroundLayers() = background_layers;
-    new_style->SetImageRendering(image_rendering);
-    new_style->SetOverflowAnchor(overflow_anchor);
-    new_style->SetOverflowX(overflow_x);
-    new_style->SetOverflowY(overflow_y);
-    new_style->SetScrollSnapType(snap_type);
-    new_style->SetScrollBehavior(scroll_behavior);
-    new_style->SetOverscrollBehaviorX(overscroll_behavior_x);
-    new_style->SetOverscrollBehaviorY(overscroll_behavior_y);
-    new_style->SetScrollPaddingTop(scroll_padding_top);
-    new_style->SetScrollPaddingRight(scroll_padding_right);
-    new_style->SetScrollPaddingBottom(scroll_padding_bottom);
-    new_style->SetScrollPaddingLeft(scroll_padding_left);
-    new_style->SetEffectiveTouchAction(effective_touch_action);
-    new_style->SetDarkColorScheme(dark_color_scheme);
-    GetLayoutView()->SetStyle(new_style);
-    SetupFontBuilder(*new_style);
+  scoped_refptr<ComputedStyle> new_viewport_style =
+      ComputedStyle::Clone(viewport_style);
+  bool changed = false;
+
+#define PROPAGATE_FROM(source, getter, setter) \
+  PROPAGATE_VALUE(source->getter(), getter, setter);
+
+#define PROPAGATE_VALUE(value, getter, setter) \
+  if ((viewport_style.getter()) != (value)) {  \
+    new_viewport_style->setter(value);         \
+    changed = true;                            \
+  }
+
+  // Writing mode and direction
+  {
+    const ComputedStyle* direction_style = document_style;
+    if (body_style)
+      direction_style = body_style;
+    PROPAGATE_FROM(direction_style, GetWritingMode, SetWritingMode);
+    PROPAGATE_FROM(direction_style, Direction, SetDirection);
+  }
+
+  // Background
+  {
+    const ComputedStyle* background_style = document_style;
+    // http://www.w3.org/TR/css3-background/#body-background
+    // <html> root element with no background steals background from its first
+    // <body> child.
+    // Also see LayoutBoxModelObject::BackgroundTransfersToView()
+    if (IsHTMLHtmlElement(documentElement()) &&
+        document_style->Display() != EDisplay::kNone &&
+        IsHTMLBodyElement(body) && !background_style->HasBackground()) {
+      background_style = body_style;
+    }
+
+    Color background_color = Color::kTransparent;
+    FillLayer background_layers(EFillLayerType::kBackground, true);
+    EImageRendering image_rendering = EImageRendering::kAuto;
+
+    if (background_style->Display() != EDisplay::kNone) {
+      background_color = background_style->VisitedDependentColor(
+          GetCSSPropertyBackgroundColor());
+      background_layers = background_style->BackgroundLayers();
+      for (auto* current_layer = &background_layers; current_layer;
+           current_layer = current_layer->Next()) {
+        // http://www.w3.org/TR/css3-background/#root-background
+        // The root element background always have painting area of the whole
+        // canvas.
+        current_layer->SetClip(EFillBox::kBorder);
+
+        // The root element doesn't scroll. It always propagates its layout
+        // overflow to the viewport. Positioning background against either box
+        // is equivalent to positioning against the scrolled box of the
+        // viewport.
+        if (current_layer->Attachment() == EFillAttachment::kScroll)
+          current_layer->SetAttachment(EFillAttachment::kLocal);
+      }
+      image_rendering = background_style->ImageRendering();
+    }
+
+    if (viewport_style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
+            background_color ||
+        viewport_style.BackgroundLayers() != background_layers ||
+        viewport_style.ImageRendering() != image_rendering) {
+      changed = true;
+      new_viewport_style->SetBackgroundColor(background_color);
+      new_viewport_style->AccessBackgroundLayers() = background_layers;
+      new_viewport_style->SetImageRendering(image_rendering);
+    }
+  }
+
+  // Overflow
+  {
+    const ComputedStyle* overflow_style = nullptr;
+    Element* viewport_element = ViewportDefiningElement();
+    DCHECK(viewport_element);
+    if (viewport_element == body) {
+      overflow_style = body_style;
+    } else {
+      DCHECK_EQ(viewport_element, documentElement());
+      overflow_style = document_style;
+
+      // The body element has its own scrolling box, independent from the
+      // viewport.  This is a bit of a weird edge case in the CSS spec that we
+      // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
+      // see http://crbug.com/157855).
+      if (body_style && !body_style->IsOverflowVisible())
+        UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
+    }
+    DCHECK(overflow_style);
+
+    // TODO(954423, 952711): scroll-snap-* and overscroll-behavior (and most
+    // likely overflow-anchor) should be propagated from documet element and not
+    // the viewport defining element.
+
+    // We only propagate the properties related to snap container since viewport
+    // defining element cannot be a snap area.
+    PROPAGATE_FROM(overflow_style, GetScrollSnapType, SetScrollSnapType);
+    PROPAGATE_FROM(overflow_style, ScrollPaddingTop, SetScrollPaddingTop);
+    PROPAGATE_FROM(overflow_style, ScrollPaddingRight, SetScrollPaddingRight);
+    PROPAGATE_FROM(overflow_style, ScrollPaddingBottom, SetScrollPaddingBottom);
+    PROPAGATE_FROM(overflow_style, ScrollPaddingLeft, SetScrollPaddingLeft);
+
+    PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX);
+    PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY);
+
+    EOverflow overflow_x = overflow_style->OverflowX();
+    EOverflow overflow_y = overflow_style->OverflowY();
+    EOverflowAnchor overflow_anchor = overflow_style->OverflowAnchor();
+
+    // Visible overflow on the viewport is meaningless, and the spec says to
+    // treat it as 'auto':
+    if (overflow_x == EOverflow::kVisible)
+      overflow_x = EOverflow::kAuto;
+    if (overflow_y == EOverflow::kVisible)
+      overflow_y = EOverflow::kAuto;
+    if (overflow_anchor == EOverflowAnchor::kVisible)
+      overflow_anchor = EOverflowAnchor::kAuto;
+
+    PROPAGATE_VALUE(overflow_x, OverflowX, SetOverflowX)
+    PROPAGATE_VALUE(overflow_y, OverflowY, SetOverflowY)
+    PROPAGATE_VALUE(overflow_anchor, OverflowAnchor, SetOverflowAnchor);
+
+    // TODO: Should this even be here?
+    if (IsInMainFrame()) {
+      using OverscrollBehaviorType =
+          cc::OverscrollBehavior::OverscrollBehaviorType;
+      GetPage()->GetChromeClient().SetOverscrollBehavior(
+          *GetFrame(),
+          cc::OverscrollBehavior(static_cast<OverscrollBehaviorType>(
+                                     overflow_style->OverscrollBehaviorX()),
+                                 static_cast<OverscrollBehaviorType>(
+                                     overflow_style->OverscrollBehaviorY())));
+    }
+  }
+
+  // Misc
+  {
+    PROPAGATE_FROM(document_style, GetEffectiveTouchAction,
+                   SetEffectiveTouchAction);
+    PROPAGATE_FROM(document_style, GetScrollBehavior, SetScrollBehavior);
+    PROPAGATE_FROM(document_style, DarkColorScheme, SetDarkColorScheme);
+  }
+
+  if (changed) {
+    new_viewport_style->UpdateFontOrientation();
+    GetLayoutView()->SetStyle(new_viewport_style);
+    SetupFontBuilder(*new_viewport_style);
 
     if (PaintLayerScrollableArea* scrollable_area =
             GetLayoutView()->GetScrollableArea()) {
@@ -2502,6 +2509,9 @@ void Document::PropagateStyleToViewport() {
         scrollable_area->VerticalScrollbar()->StyleChanged();
     }
   }
+
+#undef PROPAGATE_VALUE
+#undef PROPAGATE_FROM
 }
 
 #if DCHECK_IS_ON()

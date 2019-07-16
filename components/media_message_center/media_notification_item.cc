@@ -10,6 +10,7 @@
 #include "components/media_message_center/media_notification_constants.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
+#include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -21,9 +22,6 @@ namespace media_message_center {
 using media_session::mojom::MediaSessionAction;
 
 namespace {
-
-constexpr base::TimeDelta kDefaultSeekTime =
-    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
 
 MediaNotificationItem::Source GetSource(const std::string& name) {
   if (name == "web")
@@ -184,33 +182,7 @@ void MediaNotificationItem::OnMediaSessionActionButtonPressed(
     MediaSessionAction action) {
   UMA_HISTOGRAM_ENUMERATION(kUserActionHistogramName, action);
 
-  switch (action) {
-    case MediaSessionAction::kPreviousTrack:
-      media_controller_ptr_->PreviousTrack();
-      break;
-    case MediaSessionAction::kSeekBackward:
-      media_controller_ptr_->Seek(kDefaultSeekTime * -1);
-      break;
-    case MediaSessionAction::kPlay:
-      media_controller_ptr_->Resume();
-      break;
-    case MediaSessionAction::kPause:
-      media_controller_ptr_->Suspend();
-      break;
-    case MediaSessionAction::kSeekForward:
-      media_controller_ptr_->Seek(kDefaultSeekTime);
-      break;
-    case MediaSessionAction::kNextTrack:
-      media_controller_ptr_->NextTrack();
-      break;
-    case MediaSessionAction::kStop:
-      media_controller_ptr_->Stop();
-      break;
-    case MediaSessionAction::kSkipAd:
-    case MediaSessionAction::kSeekTo:
-    case MediaSessionAction::kScrubTo:
-      break;
-  }
+  media_session::PerformMediaSessionAction(action, media_controller_ptr_);
 }
 
 }  // namespace media_message_center

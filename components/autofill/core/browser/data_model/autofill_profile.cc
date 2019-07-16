@@ -231,8 +231,7 @@ AutofillProfile::AutofillProfile(const std::string& guid,
       company_(this),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
-      has_converted_(false),
-      weak_ptr_factory_(this) {}
+      has_converted_(false) {}
 
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
     : AutofillDataModel(base::GenerateGUID(), std::string()),
@@ -240,8 +239,7 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
       phone_number_(this),
       server_id_(server_id),
       record_type_(type),
-      has_converted_(false),
-      weak_ptr_factory_(this) {
+      has_converted_(false) {
   DCHECK(type == SERVER_PROFILE);
 }
 
@@ -250,14 +248,12 @@ AutofillProfile::AutofillProfile()
       company_(this),
       phone_number_(this),
       record_type_(LOCAL_PROFILE),
-      has_converted_(false),
-      weak_ptr_factory_(this) {}
+      has_converted_(false) {}
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
     : AutofillDataModel(std::string(), std::string()),
       company_(this),
-      phone_number_(this),
-      weak_ptr_factory_(this) {
+      phone_number_(this) {
   operator=(profile);
 }
 

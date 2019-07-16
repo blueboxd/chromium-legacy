@@ -49,7 +49,7 @@ class EVENTS_EXPORT EventProcessor : public EventDispatcherDelegate,
   virtual void OnEventProcessingFinished(Event* event);
 
  private:
-  base::WeakPtrFactory<EventProcessor> weak_ptr_factory_;
+  base::WeakPtrFactory<EventProcessor> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(EventProcessor);
 };
 

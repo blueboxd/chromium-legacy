@@ -53,7 +53,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
   void FixedTimerCompletion() { fixed_timer_completion_count_++; }
 
  protected:
-  FeedSchedulerHostTest() : weak_factory_(this) {
+  FeedSchedulerHostTest() {
     FeedSchedulerHost::RegisterProfilePrefs(profile_prefs_.registry());
     RefreshThrottler::RegisterProfilePrefs(profile_prefs_.registry());
     UserClassifier::RegisterProfilePrefs(profile_prefs_.registry());
@@ -173,7 +173,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
   std::vector<TimeDelta> schedule_wake_up_times_;
   int cancel_wake_up_call_count_ = 0;
   int fixed_timer_completion_count_ = 0;
-  base::WeakPtrFactory<FeedSchedulerHostTest> weak_factory_;
+  base::WeakPtrFactory<FeedSchedulerHostTest> weak_factory_{this};
 };
 
 TEST_F(FeedSchedulerHostTest, GetTriggerThreshold) {

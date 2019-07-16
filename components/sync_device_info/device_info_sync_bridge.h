@@ -139,7 +139,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
 
-  base::WeakPtrFactory<DeviceInfoSyncBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceInfoSyncBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoSyncBridge);
 };

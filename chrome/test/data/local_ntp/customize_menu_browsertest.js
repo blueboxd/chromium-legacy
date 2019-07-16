@@ -263,6 +263,8 @@ test.customizeMenu.testMenu_SaveUserSelections = function() {
   $(test.customizeMenu.IDS.COLORS_BUTTON).click();
   assertTrue(color.parentElement.classList.contains(
       test.customizeMenu.CLASSES.SELECTED));
+
+  $(test.customizeMenu.IDS.MENU_CANCEL).click();
 };
 
 /**

@@ -189,7 +189,7 @@ class NexeLoadManager {
 
   std::unique_ptr<TrustedPluginChannel> trusted_plugin_channel_;
   std::unique_ptr<ManifestServiceChannel> manifest_service_channel_;
-  base::WeakPtrFactory<NexeLoadManager> weak_factory_;
+  base::WeakPtrFactory<NexeLoadManager> weak_factory_{this};
 };
 
 }  // namespace nacl

@@ -218,10 +218,6 @@ Status StubWebView::SynthesizeScrollGesture(int x,
   return Status(kOk);
 }
 
-Status StubWebView::SynthesizePinchGesture(int x, int y, double scale_factor) {
-  return Status(kOk);
-}
-
 bool StubWebView::IsOOPIF(const std::string& frame_id) {
   return false;
 }

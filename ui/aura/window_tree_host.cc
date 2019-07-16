@@ -344,8 +344,7 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<Window> window)
       occlusion_state_(Window::OcclusionState::UNKNOWN),
       last_cursor_(ui::CursorType::kNull),
       input_method_(nullptr),
-      owned_input_method_(false),
-      weak_factory_(this) {
+      owned_input_method_(false) {
   if (!window_)
     window_ = new Window(nullptr);
   display::Screen::GetScreen()->AddObserver(this);

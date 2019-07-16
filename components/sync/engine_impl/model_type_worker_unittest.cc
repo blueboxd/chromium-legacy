@@ -14,7 +14,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/model_type_processor.h"
@@ -247,7 +246,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   void InitializeCryptographer() {
     if (!cryptographer_) {
-      cryptographer_ = std::make_unique<Cryptographer>(&fake_encryptor_);
+      cryptographer_ = std::make_unique<Cryptographer>();
     }
   }
 
@@ -499,9 +498,6 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
  private:
   const ModelType model_type_;
-
-  // An encryptor for our cryptographer.
-  FakeEncryptor fake_encryptor_;
 
   // The cryptographer itself. Null if we're not encrypting the type.
   std::unique_ptr<Cryptographer> cryptographer_;
@@ -1458,8 +1454,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
   UpdateResponseData response_data;
 
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1501,8 +1496,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
   // Add default value field for a Bookmark.
   entity.mutable_specifics()->mutable_bookmark();
 
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
 
   UpdateResponseData response_data;
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1524,8 +1518,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
 
   UpdateResponseData response_data;
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1552,8 +1545,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
   entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
 
   UpdateResponseData response_data;
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1582,8 +1574,7 @@ TEST_F(ModelTypeWorkerTest,
   entity.mutable_specifics()->CopyFrom(specifics);
 
   UpdateResponseData response_data;
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1607,8 +1598,7 @@ TEST_F(ModelTypeWorkerTest,
   entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
 
   UpdateResponseData response_data;
-  FakeEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,

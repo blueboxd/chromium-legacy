@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Thẻ</translation>
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
+<translation id="2119505898009119320">Cấp cho: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Cảm biến chuyển động</translation>
 <translation id="213826338245044447">Dấu trang trên thiết bị di động</translation>
 <translation id="214556005048008348">Hủy thanh toán</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Kiểm tra tín hiệu trong khu vực của bạn</translation>
 <translation id="2523886232349826891">Chỉ lưu trên thiết bị này</translation>
 <translation id="2524461107774643265">Thêm thông tin khác</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{và 1 miền khác}other{và # miền khác}}</translation>
 <translation id="2536110899380797252">Thêm địa chỉ</translation>
 <translation id="2539524384386349900">Phát hiện</translation>
 <translation id="254947805923345898">Giá trị của chính sách là không hợp lệ.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Bạn đã hỏi cha mẹ mình xem có thể truy cập vào trang này hay không</translation>
 <translation id="4876188919622883022">Chế độ xem đơn giản</translation>
 <translation id="4876305945144899064">Không có tên người dùng</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Không có}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Cụm từ tìm kiếm <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Tự động (mặc định)</translation>
 <translation id="4880827082731008257">Lịch sử tìm kiếm</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Có, lưu</translation>
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
 <translation id="6517596291481585650">Cảnh báo: Chính sách này không phải là danh sách nên không được hợp nhất dưới dạng danh sách như chỉ định trong chính sách.</translation>
+<translation id="6521745193039995384">Không hoạt động</translation>
 <translation id="6529602333819889595">&amp;Làm lại xóa</translation>
 <translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
 <translation id="6545864417968258051">Quét tìm Bluetooth</translation>
@@ -1479,6 +1483,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9076630408993835509">Không có công ty hay tổ chức nào quản lý trình duyệt này. Hoạt động trên thiết bị này có thể được quản lý ở bên ngoài Chrome. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Yêu cầu thêm thông tin</translation>
 <translation id="9080712759204168376">Tóm tắt đơn hàng</translation>
+<translation id="9089260154716455634">Chính sách về khoảng thời gian tắt:</translation>
 <translation id="9095388113577226029">Ngôn ngữ khác...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="9106062320799175032">Thêm địa chỉ thanh toán</translation>

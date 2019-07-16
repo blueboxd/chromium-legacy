@@ -73,7 +73,7 @@ class CreditCardCVCAuthenticator
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;
 
-  base::WeakPtrFactory<CreditCardCVCAuthenticator> weak_ptr_factory_;
+  base::WeakPtrFactory<CreditCardCVCAuthenticator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardCVCAuthenticator);
 };

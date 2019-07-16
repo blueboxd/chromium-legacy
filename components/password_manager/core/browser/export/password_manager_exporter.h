@@ -136,7 +136,7 @@ class PasswordManagerExporter {
   // will dereference a WeakPtr to |*this|, which means they all need to run on
   // the same sequence.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<PasswordManagerExporter> weak_factory_;
+  base::WeakPtrFactory<PasswordManagerExporter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerExporter);
 };

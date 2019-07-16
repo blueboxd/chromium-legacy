@@ -46,7 +46,7 @@ class GetOperationTask : public Task {
   PrefetchNetworkRequestFactory* request_factory_;
   GetOperationFinishedCallback callback_;
 
-  base::WeakPtrFactory<GetOperationTask> weak_factory_;
+  base::WeakPtrFactory<GetOperationTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GetOperationTask);
 };

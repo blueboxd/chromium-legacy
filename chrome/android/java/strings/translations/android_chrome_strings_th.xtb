@@ -9,7 +9,6 @@
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
 <translation id="1067922213147265141">บริการอื่นๆ ของ Google</translation>
 <translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="1080790410959514870">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME" /> การออกจากระบบจะลบข้อมูล Chrome ที่จัดเก็บในอุปกรณ์นี้ แต่ข้อมูลดังกล่าวจะยังคงอยู่ในบัญชี Google ของคุณ</translation>
 <translation id="1100066534610197918">เปิดในแท็บใหม่ในกลุ่ม</translation>
 <translation id="1105960400813249514">จับภาพหน้าจอ</translation>
 <translation id="1111673857033749125">บุ๊กมาร์กที่บันทึกไว้ในอุปกรณ์เครื่องอื่นๆ ของคุณจะปรากฏที่นี่</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">เพิ่มเว็บไซต์ <ph name="SITE_NAME" /> แล้ว</translation>
 <translation id="1373696734384179344">หน่วยความจำไม่เพียงพอที่จะดาวน์โหลดเนื้อหาที่เลือก</translation>
 <translation id="1376578503827013741">กำลังประมวลผล…</translation>
-<translation id="138361230106469022">สวัสดี คุณ <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1384959399684842514">หยุดดาวน์โหลดไว้ชั่วคราว</translation>
 <translation id="1386674309198842382">ใช้งานเมื่อ <ph name="LAST_UPDATED" /> วันที่ผ่านมา</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">ถามเมื่อเว็บไซต์ต้องการค้นหาอุปกรณ์บลูทูธใกล้เคียง (แนะนำ)</translation>
 <translation id="230115972905494466">ไม่พบอุปกรณ์ที่เข้ากันได้</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
+<translation id="2318045970523081853">แตะเพื่อโทร</translation>
 <translation id="2321086116217818302">กำลังเตรียมรหัสผ่าน…</translation>
 <translation id="2321958826496381788">ลากแถบเลื่อนจนกว่าคุณจะสามารถอ่านได้อย่างสะดวก ข้อความควรมีขนาดเท่านี้เป็นอย่างน้อยหลังจากแตะ 2 ครั้งบนย่อหน้า</translation>
 <translation id="2323763861024343754">พื้นที่เก็บข้อมูลเว็บไซต์</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">ดาวน์โหลดเสร็จสมบูรณ์ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">การเข้าถึงตำแหน่ง</translation>
 <translation id="2450083983707403292">คุณต้องการเริ่มดาวน์โหลด <ph name="FILE_NAME" /> อีกครั้งไหม</translation>
-<translation id="2476578072172137802">การตั้งค่าเว็บไซต์</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2490684707762498678">จัดการโดย <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google Assistant ใน Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">ขนาด:</translation>
 <translation id="3443221991560634068">โหลดหน้าปัจจุบันอีกครั้ง</translation>
 <translation id="3445014427084483498">เมื่อสักครู่</translation>
-<translation id="3452612588551937789">ลงชื่อเข้าใช้บัญชี Google เพื่อรับบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดของคุณ</translation>
 <translation id="3478363558367712427">คุณเลือกเครื่องมือค้นหาได้</translation>
 <translation id="3492207499832628349">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" />เกี่ยวกับเนื้อหาที่แนะนำ</translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
 <translation id="3522247891732774234">มีการอัปเดตให้บริการ ตัวเลือกเพิ่มเติม</translation>
+<translation id="3524138585025253783">UI นักพัฒนาซอฟต์แวร์</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3542235761944717775">ใช้ได้ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ค้นหาประวัติการเข้าชม</translation>
-<translation id="3552151358455404883">จัดการการซิงค์ของ Chrome และการปรับเปลี่ยนในแบบของคุณใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">เพิ่มในรายชื่อติดต่อ</translation>
 <translation id="3566923219790363270">Chrome ยังคงเตรียมความพร้อมสำหรับ VR อยู่ รีสตาร์ท Chrome ภายหลัง</translation>
 <translation id="3568688522516854065">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
 <translation id="393697183122708255">ไม่มีการเปิดใช้การค้นหาด้วยเสียง</translation>
-<translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="395206256282351086">ปิดใช้คำแนะนำการค้นหาและเว็บไซต์แล้ว</translation>
 <translation id="3955193568934677022">อนุญาตให้เว็บไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง (แนะนำ)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome จะโหลดหน้าเว็บเมื่อพร้อม}other{Chrome จะโหลดหน้าเว็บเมื่อพร้อม}}</translation>
@@ -458,7 +454,6 @@
 <translation id="447252321002412580">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
 <translation id="4479647676395637221">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ใช้กล้องถ่ายรูปของคุณ (แนะนำ)</translation>
 <translation id="4479972344484327217">กำลังติดตั้ง <ph name="MODULE" /> สำหรับ Chrome…</translation>
-<translation id="4482194545587547824">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยน Search และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="4487967297491345095">ระบบจะลบข้อมูลแอปทั้งหมดของ Chrome อย่างถาวร ซึ่งรวมถึงไฟล์ทั้งหมด การตั้งค่า บัญชี ฐานข้อมูล และอื่นๆ</translation>
 <translation id="4493497663118223949">โหมด Lite เปิดอยู่</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# วันที่ผ่านมา}other{# วันที่ผ่านมา}}</translation>
@@ -469,7 +464,6 @@
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
 <translation id="4538018662093857852">เปิดโหมด Lite</translation>
 <translation id="4550003330909367850">หากต้องการดูหรือคัดลอกรหัสผ่านที่นี่ ให้ตั้งค่าการล็อกหน้าจอในอุปกรณ์นี้</translation>
-<translation id="4556110439722119938">บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะซิงค์กับบัญชี Google เพื่อให้คุณสามารถใช้ข้อมูลเหล่านี้ได้กับอุปกรณ์ทุกเครื่อง</translation>
 <translation id="4558311620361989323">แป้นพิมพ์ลัดสำหรับหน้าเว็บ</translation>
 <translation id="4561979708150884304">ไม่มีการเชื่อมต่อ</translation>
 <translation id="4565377596337484307">ซ่อนรหัสผ่าน</translation>
@@ -616,7 +610,6 @@
 <translation id="5527111080432883924">ถามก่อนอนุญาตให้เว็บไซต์อ่านข้อความและดูรูปภาพจากคลิปบอร์ด (แนะนำ)</translation>
 <translation id="5530766185686772672">ปิดแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="5534640966246046842">คัดลอกไซต์แล้ว</translation>
-<translation id="5537099431952529648">คุณและผู้ปกครองสามารถจัดการการซิงค์ของ Chrome และการปรับเปลี่ยนในแบบของคุณใน<ph name="BEGIN_LINK1" />การตั้งค่า<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5561549206367097665">กำลังรอเครือข่าย…</translation>
 <translation id="557283862590186398">Chrome ต้องการสิทธิ์เข้าถึงไมโครโฟนของคุณสำหรับไซต์นี้</translation>
@@ -712,7 +705,6 @@
 ตัวอย่างเช่น บางเว็บไซต์อาจตอบสนองต่อคำขอนี้โดยแสดงให้คุณเห็นโฆษณาที่ไม่ได้อิงอยู่กับเว็บไซต์อื่นๆ ที่คุณเข้าชม เว็บไซต์จำนวนมากจะยังคงรวบรวมและใช้ข้อมูลการท่องเว็บของคุณเพื่อปรับปรุงความปลอดภัย เพื่อแสดงเนื้อหา โฆษณา และคำแนะนำ และเพื่อสร้างสถิติในการรายงาน เป็นต้น</translation>
 <translation id="624789221780392884">พร้อมอัปเดต</translation>
 <translation id="6255999984061454636">การแนะนำเนื้อหา</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> ต้องการสแกนหาอุปกรณ์บลูทูธที่อยู่ใกล้เคียงและพบอุปกรณ์ต่อไปนี้</translation>
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="6295158916970320988">เว็บไซต์ทั้งหมด</translation>
 <translation id="629730747756840877">บัญชี</translation>
@@ -774,6 +766,7 @@
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="666731172850799929">เปิดใน <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Chrome</translation>
+<translation id="6676840375528380067">ล้างข้อมูล Chrome ของคุณออกจากอุปกรณ์นี้ไหม</translation>
 <translation id="6697492270171225480">แสดงคำแนะนำหน้าที่คล้ายกันเมื่อไม่พบหน้าเว็บ</translation>
 <translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
@@ -792,7 +785,6 @@
 <translation id="6803423358608456383">แท็บที่เปิดอยู่ที่ระดับความสูงครึ่งหนึ่งของหน้าจอ</translation>
 <translation id="6811034713472274749">พร้อมดูหน้าเว็บแล้ว</translation>
 <translation id="6818926723028410516">เลือกรายการ</translation>
-<translation id="6820607729870073286">คุณไม่มีการตั้งค่าเว็บไซต์ที่บันทึกไว้</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6845325883481699275">ช่วยปรับปรุงความปลอดภัยของ Chrome</translation>
@@ -815,7 +807,6 @@
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6978479750597523876">รีเซ็ตการตั้งค่าการแปล</translation>
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
-<translation id="6980462514016882061">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="6989267951144302301">ดาวน์โหลดไม่ได้</translation>
 <translation id="6990079615885386641">รับแอปจาก Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7189372733857464326">กำลังรอให้บริการ Google Play อัปเดตเสร็จสิ้น</translation>
 <translation id="7191430249889272776">แท็บเปิดในพื้นหลัง</translation>
-<translation id="722055596168483966">ปรับเปลี่ยนบริการ Google ในแบบของคุณ</translation>
 <translation id="723171743924126238">เลือกภาพ</translation>
 <translation id="7233236755231902816">โปรดอัปเดต Chrome เป็นเวอร์ชันล่าสุดเพื่อดูเว็บเป็นภาษาของคุณ</translation>
 <translation id="7243308994586599757">มีตัวเลือกอยู่ทางด้านล่างของหน้าจอ</translation>
@@ -962,6 +952,7 @@
 <translation id="7999064672810608036">คุณแน่ใจไหมว่าต้องการล้างข้อมูลในเครื่องทั้งหมด รวมถึงคุกกี้ และรีเซ็ตสิทธิ์ทั้งหมดสำหรับเว็บไซต์นี้</translation>
 <translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="8007176423574883786">ปิดสำหรับอุปกรณ์นี้</translation>
+<translation id="8013372441983637696">ล้างข้อมูล Chrome ของคุณออกจากอุปกรณ์นี้ด้วย</translation>
 <translation id="8015452622527143194">เปลี่ยนทุกอย่างบนหน้ากลับไปเป็นขนาดเริ่มต้น</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>
 <translation id="8026334261755873520">ล้างข้อมูลการท่องเว็บ</translation>
@@ -1078,7 +1069,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> เป็นแท็บ</translation>
 <translation id="885701979325669005">พื้นที่เก็บข้อมูล</translation>
 <translation id="8901170036886848654">ไม่พบบุ๊กมาร์ก</translation>
-<translation id="8904976895050290827">การซิงค์ข้อมูลของ Chrome</translation>
 <translation id="8909135823018751308">แชร์…</translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="8920114477895755567">กำลังรอรายละเอียดของผู้ปกครอง</translation>

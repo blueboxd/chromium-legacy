@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Zanemareno jer je nadjačano pravilom <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Izdano za: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Senzori kretanja</translation>
 <translation id="213826338245044447">Mobilne oznake</translation>
 <translation id="214556005048008348">Otkaži plaćanje</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">provjerite jačinu signala na svom području</translation>
 <translation id="2523886232349826891">Sprema se samo na ovom uređaju</translation>
 <translation id="2524461107774643265">Dodajte još podataka</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{i još jedan sudionik}one{i još #}few{i još #}other{i još #}}</translation>
 <translation id="2536110899380797252">Dodaj adresu</translation>
 <translation id="2539524384386349900">Otkrij</translation>
 <translation id="254947805923345898">Vrijednost pravila nije važeća.</translation>
@@ -721,6 +723,7 @@
 <translation id="4858792381671956233">Pitao si roditelje smiješ li otvoriti tu web-lokaciju</translation>
 <translation id="4876188919622883022">Pojednostavljeni prikaz</translation>
 <translation id="4876305945144899064">Nema korisničkog imena</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Ništa}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Pretraživanje <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatski (zadano)</translation>
 <translation id="4880827082731008257">Pretraži povijest</translation>
@@ -1015,6 +1018,7 @@
 <translation id="650855688985305916">Da, pohrani</translation>
 <translation id="6508722015517270189">Ponovo pokrenite Chrome</translation>
 <translation id="6517596291481585650">Upozorenje: pravilo nije spojeno kao popis prema uputama u pravilima jer se ne radi o popisu.</translation>
+<translation id="6521745193039995384">Nije aktivno</translation>
 <translation id="6529602333819889595">&amp;Ponovi brisanje</translation>
 <translation id="6534179046333460208">Prijedlozi Fizičkog weba</translation>
 <translation id="6545864417968258051">Traženje Bluetootha</translation>
@@ -1478,6 +1482,7 @@ Dodatne pojedinosti:
 <translation id="9076630408993835509">Preglednikom ne upravlja tvrtka ili neka druga organizacija. Aktivnostima na tom uređaju možda se upravlja izvan Chromea. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Potrebno je više podataka</translation>
 <translation id="9080712759204168376">Sažetak narudžbe</translation>
+<translation id="9089260154716455634">Pravilo za prekid rada:</translation>
 <translation id="9095388113577226029">Više jezika...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja Chromiuma s web-lokacijom <ph name="SITE" /> ta je web-lokacija vratila neuobičajene
 i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chromium zaustavio povezivanje prije razmjene podataka.</translation>

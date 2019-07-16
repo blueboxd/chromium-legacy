@@ -57,7 +57,7 @@ class StoreVisualsTask : public Task {
   std::string thumbnail_;
   std::string favicon_;
   RowUpdatedCallback complete_callback_;
-  base::WeakPtrFactory<StoreVisualsTask> weak_ptr_factory_;
+  base::WeakPtrFactory<StoreVisualsTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StoreVisualsTask);
 };
 

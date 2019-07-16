@@ -275,7 +275,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // This flag ensures that this process is started only once.
   bool download_started_;
 
-  base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
 };

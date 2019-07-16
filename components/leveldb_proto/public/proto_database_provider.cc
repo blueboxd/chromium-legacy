@@ -26,8 +26,7 @@ const char kSharedProtoDatabaseDirectory[] = "shared_proto_db";
 
 ProtoDatabaseProvider::ProtoDatabaseProvider(const base::FilePath& profile_dir)
     : profile_dir_(profile_dir),
-      client_task_runner_(base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+      client_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 ProtoDatabaseProvider::~ProtoDatabaseProvider() = default;
 

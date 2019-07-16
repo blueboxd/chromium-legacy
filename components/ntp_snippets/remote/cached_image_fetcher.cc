@@ -54,8 +54,7 @@ CachedImageFetcher::CachedImageFetcher(
       database_(database),
       thumbnail_requests_throttler_(
           pref_service,
-          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL),
-      weak_ptr_factory_(this) {}
+          RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {}
 
 CachedImageFetcher::~CachedImageFetcher() {}
 

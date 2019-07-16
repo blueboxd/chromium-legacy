@@ -141,8 +141,6 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
               &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
   AddCallback("login.AssistantOptInFlowScreen.LoadingScreen.timeout",
               &AssistantOptInFlowScreenHandler::HandleLoadingTimeout);
-  AddCallback("login.AssistantOptInFlowScreen.hotwordResult",
-              &AssistantOptInFlowScreenHandler::HandleHotwordResult);
   AddCallback("login.AssistantOptInFlowScreen.flowFinished",
               &AssistantOptInFlowScreenHandler::HandleFlowFinished);
   AddCallback("login.AssistantOptInFlowScreen.initialized",
@@ -203,7 +201,7 @@ void AssistantOptInFlowScreenHandler::OnSpeakerIdEnrollmentFailure() {
   RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_ERROR);
   CallJS("login.AssistantOptInFlowScreen.onVoiceMatchUpdate",
          base::Value("failure"));
-  LOG(ERROR) << "Speaker ID enrollmend failure.";
+  LOG(ERROR) << "Speaker ID enrollment failure.";
 }
 
 void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
@@ -418,9 +416,9 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // Pass string constants dictionary.
   auto dictionary = GetSettingsUiStrings(settings_ui, activity_control_needed_);
-  const bool voice_match_enabled =
-      IsVoiceMatchEnabled(ProfileManager::GetActiveUserProfile()->GetPrefs());
-  dictionary.SetKey("voiceMatchEnabled", base::Value(voice_match_enabled));
+  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+  dictionary.SetKey("voiceMatchEnforcedOff",
+                    base::Value(IsVoiceMatchEnforcedOff(prefs)));
   ReloadContent(dictionary);
 
   // Now that screen's content has been reloaded, skip screens that can be
@@ -438,7 +436,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
 
   // If voice match is enabled, the screen that follows third party disclosure
   // is the "voice match" screen, not "get more" screen.
-  if (skip_get_more && !voice_match_enabled)
+  if (skip_get_more && IsVoiceMatchEnforcedOff(prefs))
     ShowNextScreen();
 }
 
@@ -466,12 +464,6 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
       // TODO(updowndta): Handle email optin update failure.
       LOG(ERROR) << "Email OptIn udpate error.";
     }
-    // Update hotword will cause Assistant restart. In order to make sure email
-    // optin request is successfully sent to server, update the hotword after
-    // email optin result has been received.
-    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
-                      enable_hotword_);
     HandleFlowFinished();
     return;
   }
@@ -505,9 +497,6 @@ void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenUserAction(
 void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     const std::string& action) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-
-  if (!IsVoiceMatchEnabled(prefs))
-    return;
 
   if (action == kVoiceMatchDone) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_DONE);
@@ -561,18 +550,6 @@ void AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown() {
 
 void AssistantOptInFlowScreenHandler::HandleLoadingTimeout() {
   ++loading_timeout_counter_;
-}
-
-void AssistantOptInFlowScreenHandler::HandleHotwordResult(bool enable_hotword) {
-  enable_hotword_ = enable_hotword;
-
-  if (!email_optin_needed_) {
-    // No need to send email optin result. Safe to update hotword pref and
-    // restart Assistant here.
-    PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled,
-                      enable_hotword);
-  }
 }
 
 void AssistantOptInFlowScreenHandler::HandleFlowFinished() {

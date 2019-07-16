@@ -3191,14 +3191,8 @@
       如果未設定這項政策，起初會停用背景模式，而使用者可以在瀏覽器設定中控制這項行為。</translation>
 <translation id="7123160381479171745">這會定義可登入裝置的使用者清單，輸入項目格式為 <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (例如 <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />)。如要允許特定網域的任意使用者登入裝置，請使用 <ph name="USER_WHITELIST_ENTRY_WILDCARD" /> 格式輸入項目。
       如果不設定這項政策，所有使用者均可登入裝置。請注意，想要建立新使用者，你仍需適當地設定 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> 可讓你安全地更新及安裝擴充功能。不過，某些擴充功能並不是由 Chrome 線上應用程式商店代管，因此這些擴充功能的內容可能只受到 SHA1 這類不安全的簽署或雜湊演算法保護。如果停用這項政策，Chrome 會禁止安裝與更新這類擴充功能 (直到擴充功能開發人員以更安全的演算法重建這些擴充功能)。如果啟用這項政策，Chrome 將允許安裝與更新這類擴充功能。如果不設定這項政策，Chrome 會預設採用政策啟用時的行為。從 <ph name="PRODUCT_NAME" /> 75 版本開始，如果不設定這項政策，Chrome 會預設採用政策停用時的行為。從 <ph name="PRODUCT_NAME" /> 77 版本開始，Chrome 會忽略這項政策，並將政策視為已停用。</translation>
 <translation id="7126716959063786004">允許在工作管理員中結束處理程序</translation>
 <translation id="7127892035367404455">復原至目標版本</translation>
-<translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME" /> 在啟動器列中顯示為固定應用程式的應用程式識別碼。
-
-      如果設定這項政策，應用程式集將會固定，無法讓使用者變更。
-
-      如果未設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
 <translation id="713121532817834879">這項政策是一個網址，指向和 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策採用相同格式的 XML 檔案。因此，系統會從 XML 檔案載入規則，但不會與 Internet Explorer 共用這些規則。
 
       系統套用這個 XML 檔案中所含規則的方式與 <ph name="GREYLIST_POLICY_NAME" /> 相同。也就是說，這些規則會禁止 <ph name="PRODUCT_NAME" /> 開啟替代瀏覽器，並禁止替代瀏覽器開啟 <ph name="PRODUCT_NAME" />。
@@ -4013,12 +4007,6 @@
 <translation id="8759829385824155666">允許的 Kerberos 加密類型</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
 <translation id="8764477907716150749">這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
-<translation id="8765776988041674792">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。密碼保護服務一旦發現瀏覽器中出現警告訊息，便會將使用者傳送到這個網址來變更密碼。
-      為了讓 <ph name="PRODUCT_NAME" /> 能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合以下網址所述的規範：https://www.chromium.org/developers/design-documents/create-amazing-password-forms.。
-
-      如果啟用這項設定，密碼保護服務一旦發現瀏覽器中出現警告訊息，便會將使用者傳送到這個網址來變更密碼。
-      如果停用這項設定或不予設定，則密碼保護服務會將使用者傳送到 https://myaccounts.google.com 以變更密碼。
-      這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8800453707696044281">自訂電池停止充電值 (以百分比表示)</translation>
 <translation id="8801680448782904838">透過通知建議或要求使用者重新啟動瀏覽器或裝置</translation>
@@ -4144,9 +4132,6 @@
 
       指定政策值時，請以秒為單位進行設定。</translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
-<translation id="9038058011835642205">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
-
-      這項政策的每個清單項目都是一個物件，由下列必要元素組成：「url」與另外兩個選用元素：「default_launch_container」和「create_desktop_shortcut」。「url」是要安裝的網路應用程式的網址，「launch_container」則是「window」(視窗) 或「tab」(分頁)，用於指定網路應用程式安裝後所採用的開啟方式。如要在 Linux 和 Windows 上建立桌面捷徑，請將「create_desktop_shortcut」設為 True。如果未設定「default_launch_container」，應用程式預設會在分頁中開啟。無論「default_launch_container」的值為何，使用者都可以變更開啟應用程式的容器。如果未設定「create_desktop_shortcuts」，系統將不會建立桌面捷徑。</translation>
 <translation id="9038839118379817310">啟用 Wi-Fi</translation>
 <translation id="9039822628127365650">如果設定這項政策，系統會在裝置閒置達指定時間後，將使用者自動登出並終止工作階段。使用者可以在系統匣所顯示的倒數計時器中，查看剩餘的等待時間。
 

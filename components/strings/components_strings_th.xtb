@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">บัตร</translation>
 <translation id="2114841414352855701">ไม่สนใจเพราะถูกแทนที่โดย <ph name="POLICY_NAME" /></translation>
+<translation id="2119505898009119320">ออกให้แก่: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">เซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="213826338245044447">บุ๊กมาร์กบนอุปกรณ์เคลื่อนที่</translation>
 <translation id="214556005048008348">ยกเลิกการชำระเงิน</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">ตรวจสอบสัญญาณในพื้นที่ของคุณ</translation>
 <translation id="2523886232349826891">บันทึกไว้เฉพาะในอุปกรณ์นี้</translation>
 <translation id="2524461107774643265">เพิ่มข้อมูลอื่นๆ</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{และอีก 1 โดเมน}other{และอีก # โดเมน}}</translation>
 <translation id="2536110899380797252">เพิ่มที่อยู่</translation>
 <translation id="2539524384386349900">ตรวจหา</translation>
 <translation id="254947805923345898">ค่านโยบายไม่ถูกต้อง</translation>
@@ -721,6 +723,7 @@
 <translation id="4858792381671956233">คุณถามผู้ปกครองแล้วว่าสามารถเข้าชมเว็บไซต์นี้ได้ไหม</translation>
 <translation id="4876188919622883022">มุมมองอย่างง่าย</translation>
 <translation id="4876305945144899064">ไม่มีชื่อผู้ใช้</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{ไม่มี}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">การค้นหา <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">อัตโนมัติ (ค่าเริ่มต้น)</translation>
 <translation id="4880827082731008257">ค้นประวัติการเข้าชม</translation>
@@ -1015,6 +1018,7 @@
 <translation id="650855688985305916">เก็บไว้</translation>
 <translation id="6508722015517270189">รีสตาร์ท Chrome</translation>
 <translation id="6517596291481585650">คำเตือน: ระบบไม่ได้รวมนโยบายนี้เป็นรายการตามที่นโยบายระบุเพราะไม่ใช่รายการ</translation>
+<translation id="6521745193039995384">ไม่ได้ใช้งานอยู่</translation>
 <translation id="6529602333819889595">&amp;ทำซ้ำการนำออก</translation>
 <translation id="6534179046333460208">คำแนะนำ Physical Web</translation>
 <translation id="6545864417968258051">การสแกนหาบลูทูธ</translation>
@@ -1478,6 +1482,7 @@
 <translation id="9076630408993835509">เบราว์เซอร์นี้ไม่ได้จัดการโดยบริษัทหรือองค์กรอื่นๆ กิจกรรมในอุปกรณ์นี้อาจมีการจัดการภายนอก Chrome <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">ต้องระบุข้อมูลเพิ่มเติม</translation>
 <translation id="9080712759204168376">สรุปการสั่งซื้อ</translation>
+<translation id="9089260154716455634">นโยบายสำหรับช่วงที่ไม่ค่อยมีการใช้งาน:</translation>
 <translation id="9095388113577226029">ภาษาเพิ่มเติม...</translation>
 <translation id="9103872766612412690">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="9106062320799175032">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>

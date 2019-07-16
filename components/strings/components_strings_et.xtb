@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kaart</translation>
 <translation id="2114841414352855701">Seda ignoreeritakse, kuna reegel <ph name="POLICY_NAME" /> alistab selle.</translation>
+<translation id="2119505898009119320">Väljastatud: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Liikumisandurid</translation>
 <translation id="213826338245044447">Mobiili järjehoidjad</translation>
 <translation id="214556005048008348">Tühista makse</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Kontrollige oma piirkonna signaali</translation>
 <translation id="2523886232349826891">Salvestatakse ainult sellesse seadmesse</translation>
 <translation id="2524461107774643265">Lisateabe lisamine</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{ja veel 1}other{ja veel #}}</translation>
 <translation id="2536110899380797252">Lisa aadress</translation>
 <translation id="2539524384386349900">Tuvasta</translation>
 <translation id="254947805923345898">Reegli väärtus on kehtetu.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Küsisite oma vanematelt, kas võite seda lehte külastada</translation>
 <translation id="4876188919622883022">Lihtsustatud vaade</translation>
 <translation id="4876305945144899064">Kasutajanimi puudub</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Puudub}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Otsing <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automaatne (vaikimisi)</translation>
 <translation id="4880827082731008257">Otsi ajaloost</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Jah, salvesta</translation>
 <translation id="6508722015517270189">Taaskäivitage Chrome</translation>
 <translation id="6517596291481585650">Hoiatus! Seda reeglit ei liidetud reeglis määratud loendina, kuna see ei ole loend.</translation>
+<translation id="6521745193039995384">Pole aktiivne</translation>
 <translation id="6529602333819889595">&amp;Kustuta uuesti</translation>
 <translation id="6534179046333460208">Füüsilise veebi soovitused</translation>
 <translation id="6545864417968258051">Bluetoothi otsimine</translation>
@@ -1478,6 +1482,7 @@ Lisateave:
 <translation id="9076630408993835509">Seda brauserit ei halda ettevõte ega muu organisatsioon. Selle seadme tegevusi võidakse hallata ka väljaspool Chrome'i. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Vaja on rohkem teavet</translation>
 <translation id="9080712759204168376">Tellimuse kokkuvõte</translation>
+<translation id="9089260154716455634">Eemalolekuaegade eeskirjad:</translation>
 <translation id="9095388113577226029">Rohkem keeli …</translation>
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9106062320799175032">Arveldusaadressi lisamine</translation>

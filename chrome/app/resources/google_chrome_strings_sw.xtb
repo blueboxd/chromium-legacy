@@ -23,7 +23,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1457721931618994305">Inasasisha Google Chrome...</translation>
 <translation id="1469002951682717133">Kizinduzi cha Programu za Chrome</translation>
 <translation id="1553358976309200471">Sasisha Chrome</translation>
-<translation id="1585657529869845941">Bofya kitufe cha <ph name="BEGIN_BOLD" />Badilisha tu<ph name="END_BOLD" />, kama kinaonekana</translation>
 <translation id="1587223624401073077">Google Chrome inatumia kamera yako.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ni hatari, kwa hivyo Chromium imeizuia.</translation>
 <translation id="1590588151039584890">Ili usasishe, unahitaji kuacha kutumia Chrome kwenye kompyuta hii. Hali hii inaweza kusababisha watumiaji wengine walioingia katika akaunti kwenye kompyuta hii kupoteza mabadiliko ambayo hawajahifadhi.</translation>
@@ -36,7 +35,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome ni kivinjari cha wavuti kinachoendesha kurasa za wavuti na programu kwa kasi ya umeme. Ni ya kasi, thabiti, na rahisi kutumia. Vinjari wavuti kwa usalama zaidi kwa kinga dhidi ya programu hasidi na hadaa iliyojengwa ndani ya Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome itafunguka upya ndani ya saa moja}other{Chrome itafunguka upya ndani ya saa #}}</translation>
-<translation id="1718131156967340976">Chagua <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome itahifadhi nenosiri hili kwenye Akaunti yako ya Google. Hutahitaji kulikumbuka.</translation>
 <translation id="174539241580958092">Google Chrome haikuweza kusawazisha data yako kutokana na hitilafu ya kuingia katika akaunti.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@ Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagi
 <translation id="3873044882194371212">Fungua kiungo katika dirisha fiche la Chrome</translation>
 <translation id="3889417619312448367">Ondoa Google Chrome</translation>
 <translation id="3898493977366060150">Kuvinjari kwenye wavuti kwa kutumia programu mahiri za Google</translation>
-<translation id="4028693306634653894">Fikia Google Chrome haraka</translation>
 <translation id="4050175100176540509">Maboresho muhimu ya usalama na vipengele vipya vinapatikana katika toleo jipya.</translation>
 <translation id="4053720452172726777">Dhibiti  na ugeuze Google Chrome ikufae</translation>
 <translation id="4143243756087420366">Jina na picha kwenye Chrome</translation>
@@ -244,7 +241,6 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7808348361785373670">Ondoa kwenye Chrome...</translation>
 <translation id="7825851276765848807">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Tafadhali pakua Google Chrome tena.</translation>
 <translation id="7855730255114109580">Google Chrome imesasishwa</translation>
-<translation id="7888186132678118370">Tundika Chrome kwenye upau wa kazi wa kompyuta yako</translation>
 <translation id="7890208801193284374">Kama unatumia kompyuta pamoja na wengine, marafiki na familia wanaweza kuvinjari tofauti na kusanidi Chrome jinsi wapendavyo.</translation>
 <translation id="7896673875602241923">Kuna mtu aliingia katika Chrome kwenye kompyuta hii akitumia <ph name="ACCOUNT_EMAIL_LAST" />. Tafadhali ongeza wasifu mwingine wa Chrome ili utenganishe maelezo yako.</translation>
 <translation id="7908168227788431038">Inakaribia kusasishwa! Anzisha Google Chrome upya ili imalize kusasisha.</translation>
@@ -293,6 +289,5 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
 <translation id="9138603949443464873">Ili utumie mabadiliko uliyofanya, fungua Chrome upya</translation>
 <translation id="919706545465235479">Sasisha Chrome ili uanze kusawazisha</translation>
-<translation id="924447568950697217">Fanya Chrome iwe kivinjari chako chaguomsingi</translation>
 <translation id="989369509083708165">Google Chrome ni kivinjari chako chaguomsingi</translation>
 </translationbundle>

@@ -873,7 +873,7 @@ class DnsTransactionTestWithMockTime : public DnsTransactionTestBase,
  protected:
   DnsTransactionTestWithMockTime()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~DnsTransactionTestWithMockTime() override = default;
 };
 

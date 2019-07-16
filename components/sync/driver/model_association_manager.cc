@@ -99,8 +99,7 @@ ModelAssociationManager::ModelAssociationManager(
       controllers_(controllers),
       delegate_(processor),
       configure_status_(DataTypeManager::UNKNOWN),
-      notified_about_ready_for_configure_(false),
-      weak_ptr_factory_(this) {}
+      notified_about_ready_for_configure_(false) {}
 
 ModelAssociationManager::~ModelAssociationManager() {}
 

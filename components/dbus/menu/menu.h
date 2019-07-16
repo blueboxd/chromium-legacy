@@ -131,7 +131,7 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
   int32_t last_item_id_ = 0;
   std::map<int32_t, std::unique_ptr<MenuItem>> items_;
 
-  base::WeakPtrFactory<DbusMenu> weak_factory_;
+  base::WeakPtrFactory<DbusMenu> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DbusMenu);
 };

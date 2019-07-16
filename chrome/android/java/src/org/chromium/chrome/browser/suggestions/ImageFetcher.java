@@ -65,11 +65,7 @@ public class ImageFetcher {
     public void makeArticleThumbnailRequest(SnippetArticle suggestion, Callback<Bitmap> callback) {
         assert !mIsDestroyed;
 
-        if (suggestion.isContextual()) {
-            mSuggestionsSource.fetchContextualSuggestionImage(suggestion, callback);
-        } else {
-            mSuggestionsSource.fetchSuggestionImage(suggestion, callback);
-        }
+        mSuggestionsSource.fetchSuggestionImage(suggestion, callback);
     }
 
     /**
@@ -83,7 +79,7 @@ public class ImageFetcher {
     public void makeFaviconRequest(
             SnippetArticle suggestion, final Callback<Bitmap> faviconCallback) {
         assert !mIsDestroyed;
-        if (!suggestion.isContextual() && !suggestion.isArticle()) return;
+        if (!suggestion.isArticle()) return;
 
         fetchFaviconFromLocalCacheOrGoogleServer(
                 suggestion, SystemClock.elapsedRealtime(), faviconCallback);

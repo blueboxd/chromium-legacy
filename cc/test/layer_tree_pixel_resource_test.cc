@@ -33,6 +33,19 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
   initialized_ = true;
 }
 
+const char* LayerTreeHostPixelResourceTest::GetRendererSuffix() const {
+  switch (renderer_type()) {
+    case RENDERER_GL:
+      return "gl";
+    case RENDERER_SKIA_GL:
+      return "skia_gl";
+    case RENDERER_SKIA_VK:
+      return "skia_vk";
+    case RENDERER_SOFTWARE:
+      return "sw";
+  }
+}
+
 std::unique_ptr<RasterBufferProvider>
 LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
     LayerTreeHostImpl* host_impl) {
@@ -66,7 +79,6 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
           compositor_context_provider->ContextCapabilities());
     }
   }
-
   switch (raster_type()) {
     case SOFTWARE:
       EXPECT_FALSE(compositor_context_provider);
@@ -74,14 +86,15 @@ LayerTreeHostPixelResourceTest::CreateRasterBufferProvider(
 
       return std::make_unique<BitmapRasterBufferProvider>(
           host_impl->layer_tree_frame_sink());
-    case GPU:
+    case GPU: {
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(worker_context_provider);
       EXPECT_NE(RENDERER_SOFTWARE, renderer_type());
-
+      bool enable_oopr = renderer_type() == RENDERER_SKIA_VK;
       return std::make_unique<GpuRasterBufferProvider>(
           compositor_context_provider, worker_context_provider, false, 0,
-          gpu_raster_format, gfx::Size(), true, false);
+          gpu_raster_format, gfx::Size(), true, enable_oopr);
+    }
     case ZERO_COPY:
       EXPECT_TRUE(compositor_context_provider);
       EXPECT_TRUE(gpu_memory_buffer_manager);

@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">کارت</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
+<translation id="2119505898009119320">صادر شده برای: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">حسگرهای حرکتی</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
 <translation id="214556005048008348">لغو پرداخت</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">بررسی سیگنال در منطقه‌تان</translation>
 <translation id="2523886232349826891">فقط در این دستگاه ذخیره شد</translation>
 <translation id="2524461107774643265">افزودن اطلاعات بیشتر</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{و ۱ مورد دیگر}one{و # مورد دیگر}other{و # مورد دیگر}}</translation>
 <translation id="2536110899380797252">افزودن نشانی</translation>
 <translation id="2539524384386349900">تشخیص</translation>
 <translation id="254947805923345898">مقدار خط‌مشی معتبر نیست.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">از والدینتان پرسیدید آیا اجازه بازدید از این سایت را دارید</translation>
 <translation id="4876188919622883022">نمای ساده‌شده</translation>
 <translation id="4876305945144899064">بدون نام کاربری</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{هیچ‌کدام}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />، <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />، <ph name="EXAMPLE_DOMAIN_2" />، <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">جستجوی <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">خودکار (پیش‌فرض)</translation>
 <translation id="4880827082731008257">سابقه جستجو</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">بله، ذخیره شود</translation>
 <translation id="6508722015517270189">‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="6517596291481585650">این خط‌مشی به‌عنوان فهرستی که خط‌مشی مشخص کرده است ادغام نشد، زیرا فهرست نیست.</translation>
+<translation id="6521745193039995384">غیرفعال</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6534179046333460208">پیشنهادهای «وب فیزیکی»</translation>
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
@@ -1478,6 +1482,7 @@
 <translation id="9076630408993835509">‏این مرورگر توسط شرکت یا سازمان دیگری مدیریت نمی‌شود. فعالیت در این دستگاه ممکن است خارج از Chrome مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">اطلاعات بیشتری نیاز است</translation>
 <translation id="9080712759204168376">خلاصه سفارش</translation>
+<translation id="9089260154716455634">خط‌مشی ساعت‌های خاموشی:</translation>
 <translation id="9095388113577226029">زبان‌های بیشتر...</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chromium تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Chromium قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
 <translation id="9106062320799175032">افزودن نشانی صورت‌حساب</translation>

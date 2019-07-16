@@ -60,9 +60,7 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
      * @param article The content suggestion to open.
      */
     public void openSnippet(final int windowOpenDisposition, final SnippetArticle article) {
-        if (!article.isContextual()) {
-            NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
-        }
+        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
         if (OfflinePageUtils.isEnabled()) {
             // We explicitly open an offline page only for prefetched offline pages when Data
@@ -99,7 +97,7 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
-        if (loadingTab != null && !article.isContextual()) {
+        if (loadingTab != null) {
             SuggestionsMetrics.recordVisit(loadingTab, article);
         }
     }

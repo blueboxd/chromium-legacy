@@ -202,8 +202,7 @@ Layer::Layer(LayerType type)
       cache_render_surface_requests_(0),
       deferred_paint_requests_(0),
       backdrop_filter_quality_(1.0f),
-      trilinear_filtering_request_(0),
-      weak_ptr_factory_(this) {
+      trilinear_filtering_request_(0) {
   CreateCcLayer();
 }
 

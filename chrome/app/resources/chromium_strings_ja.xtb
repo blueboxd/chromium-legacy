@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
-<translation id="1502360822835740515">Chromium をデフォルトのブラウザにする</translation>
 <translation id="151962892725702025">お使いのドメインでは同期を利用できないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="1524282610922162960">Chromium タブの共有</translation>
-<translation id="1585657529869845941">[<ph name="BEGIN_BOLD" />切り替える<ph name="END_BOLD" />] をクリックします（表示された場合）</translation>
 <translation id="1668054258064581266">Chromium からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Chromium をタスクバーにピン留めする</translation>
 <translation id="388648406173476553">Chromium をカスタマイズ、制御します。確認の必要な項目があります。クリックして詳細をご覧ください。</translation>
 <translation id="3889543394854987837">Chromium を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="3898493977366060150">Google の最先端技術を活用したウェブ ブラウジング</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />現在の設定<ph name="END_LINK" />を送信して Chromium の品質向上にご協力ください</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
-<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> を選択します</translation>
 <translation id="421369550622382712">Chromium の優れたアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="4216212958613226427">この言語が Chromium UI の表示に使用されます</translation>
 <translation id="4222580632002216401">Chromium にログインしています。同期は管理者によって無効にされています。</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Chromium プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chromium はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chromium を再起動できます。</translation>
 <translation id="469338717132742108">Chromium OS のヘルプを見る</translation>
 <translation id="4708774505295300557">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chromium にログインしました。情報を個別に保持するには、新しい Chromium ユーザーを作成してください。</translation>
-<translation id="4714956846925717402">Chromium をより迅速に起動</translation>
 <translation id="4746050847053251315">今すぐ Chromium を終了しますか？</translation>
 <translation id="4748217263233248895">Chromium の特別なセキュリティ アップデートが適用されました。今すぐ再起動してください。タブは復元されます。</translation>
 <translation id="479167709087336770">Google 検索と同じスペルチェックが使用されます。ブラウザに入力したテキストは Google に送信されます。この動作はいつでも設定で変更できます。</translation>

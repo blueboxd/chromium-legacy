@@ -122,8 +122,7 @@ ImageDataStoreDisk::ImageDataStoreDisk(
     FilePath generic_storage_path,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : initialization_status_(InitializationStatus::UNINITIALIZED),
-      task_runner_(task_runner),
-      weak_ptr_factory_(this) {
+      task_runner_(task_runner) {
   storage_path_ = generic_storage_path.Append(kPathPostfix);
 }
 

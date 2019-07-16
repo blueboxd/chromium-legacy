@@ -62,6 +62,10 @@
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "components/viz/service/display_embedder/output_surface_unified.h"
+#endif
+
 namespace viz {
 
 OutputSurfaceProviderImpl::OutputSurfaceProviderImpl(
@@ -95,6 +99,11 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
     const RendererSettings& renderer_settings) {
+#if defined(OS_CHROMEOS)
+  if (surface_handle == gpu::kNullSurfaceHandle)
+    return std::make_unique<OutputSurfaceUnified>();
+#endif
+
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;

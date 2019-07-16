@@ -81,11 +81,12 @@ component("gpu") {
   libs = []
   ldflags = []
 
+  if (use_v4l2_codec || use_vaapi) {
+    public_deps += [ "//media/gpu/linux:common" ]
+  }
+
   if (is_chromeos) {
-    public_deps += [
-      "//media/gpu/chromeos",
-      "//media/gpu/chromeos:common",
-    ]
+    public_deps += [ "//media/gpu/chromeos" ]
   }
 
   if (is_mac) {
@@ -357,8 +358,8 @@ source_set("video_frame_mapper") {
   deps = []
 
   # generic_dmabuf_video_frame_mapper
-  if (is_chromeos) {
-    deps += [ "//media/gpu/chromeos:video_frame_mapper" ]
+  if (use_v4l2_codec || use_vaapi) {
+    deps += [ "//media/gpu/linux:video_frame_mapper" ]
   }
 
   # vaapi_dmabuf_video_frame_mapper
@@ -561,8 +562,8 @@ source_set("unit_tests") {
     "h264_decoder_unittest.cc",
   ]
 
-  if (is_chromeos) {
-    deps += [ "//media/gpu/chromeos:unit_tests" ]
+  if (use_v4l2_codec || use_vaapi) {
+    deps += [ "//media/gpu/linux:unit_tests" ]
   }
   if (use_vaapi) {
     deps += [ "//media/gpu/vaapi:unit_test" ]

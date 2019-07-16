@@ -291,8 +291,7 @@ TestContextProvider::TestContextProvider(
       context_gl_(std::move(gl)),
       raster_context_(std::move(raster)),
       shared_image_interface_(std::make_unique<TestSharedImageInterface>()),
-      support_locking_(support_locking),
-      weak_ptr_factory_(this) {
+      support_locking_(support_locking) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context_gl_);
   context_thread_checker_.DetachFromThread();

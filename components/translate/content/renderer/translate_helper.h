@@ -179,7 +179,7 @@ class TranslateHelper : public content::RenderFrameObserver,
   mojo::Binding<mojom::Page> binding_;
 
   // Method factory used to make calls to TranslatePageImpl.
-  base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
+  base::WeakPtrFactory<TranslateHelper> weak_method_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TranslateHelper);
 };

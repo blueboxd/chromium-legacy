@@ -148,6 +148,11 @@ struct EnumerateRPsResponse {
       bool expect_rp_count,
       const base::Optional<cbor::Value>& cbor_response);
 
+  // StringFixupPredicate indicates which fields of an EnumerateRPsResponse may
+  // contain truncated UTF-8 strings. See
+  // |Ctap2DeviceOperation::CBORPathPredicate|.
+  static bool StringFixupPredicate(const std::vector<const cbor::Value*>& path);
+
   EnumerateRPsResponse(EnumerateRPsResponse&&);
   EnumerateRPsResponse& operator=(EnumerateRPsResponse&&);
   ~EnumerateRPsResponse();
@@ -169,6 +174,11 @@ struct EnumerateCredentialsResponse {
   static base::Optional<EnumerateCredentialsResponse> Parse(
       bool expect_credential_count,
       const base::Optional<cbor::Value>& cbor_response);
+
+  // StringFixupPredicate indicates which fields of an
+  // EnumerateCredentialsResponse may contain truncated UTF-8 strings. See
+  // |Ctap2DeviceOperation::CBORPathPredicate|.
+  static bool StringFixupPredicate(const std::vector<const cbor::Value*>& path);
 
   EnumerateCredentialsResponse(EnumerateCredentialsResponse&&);
   EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&&);

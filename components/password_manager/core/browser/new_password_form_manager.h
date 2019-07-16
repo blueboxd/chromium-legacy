@@ -404,7 +404,7 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // Used to transform FormData into PasswordForms.
   FormDataParser parser_;
 
-  base::WeakPtrFactory<NewPasswordFormManager> weak_ptr_factory_;
+  base::WeakPtrFactory<NewPasswordFormManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
 };

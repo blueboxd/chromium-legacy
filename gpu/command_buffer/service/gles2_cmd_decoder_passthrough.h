@@ -863,7 +863,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   GLuint linking_program_service_id_ = 0u;
 
-  base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_{this};
 
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.

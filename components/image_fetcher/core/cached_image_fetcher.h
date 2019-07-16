@@ -110,7 +110,7 @@ class CachedImageFetcher : public ImageFetcher {
   // object was created on.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<CachedImageFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<CachedImageFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CachedImageFetcher);
 };

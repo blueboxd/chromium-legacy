@@ -91,8 +91,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_protection_service_(pps),
       request_timeout_in_ms_(request_timeout_in_ms),
       request_proto_(std::make_unique<LoginReputationClientRequest>()),
-      is_modal_warning_showing_(false),
-      weakptr_factory_(this) {
+      is_modal_warning_showing_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||

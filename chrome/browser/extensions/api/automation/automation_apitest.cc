@@ -89,6 +89,16 @@ class AutomationApiTest : public ExtensionApiTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Canvas tests rely on the harness producing pixel output in order to read back
+// pixels from a canvas element. So we have to override the setup function.
+class AutomationApiCanvasTest : public AutomationApiTest {
+ public:
+  void SetUp() override {
+    EnablePixelOutput();
+    ExtensionApiTest::SetUp();
+  }
+};
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
   StartEmbeddedTestServer();
   const GURL url = GetURLForPath(kDomain, "/index.html");
@@ -189,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, LineStartOffsets) {
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageData) {
+IN_PROC_BROWSER_TEST_F(AutomationApiCanvasTest, ImageData) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "image_data.html"))
       << message_;

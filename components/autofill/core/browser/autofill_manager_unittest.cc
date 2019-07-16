@@ -4166,25 +4166,32 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 }
 
 // Test that the value patterns metric is reported.
-TEST_F(AutofillManagerTest, FormSubmitted_ValuePatternsMetric) {
-  // Set up our form data.
-  FormData form;
-  FormFieldData field;
-  test::CreateTestFormField("Some label", "my-field", "user@okaxis", "text",
-                            &field);
-  field.is_focusable = true;  // The metric skips hidden fields.
-  form.name = ASCIIToUTF16("my-form");
-  form.url = GURL("http://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-  form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+TEST_F(AutofillManagerTest, ValuePatternsMetric) {
+  struct ValuePatternTestCase {
+    const char* value;
+    autofill::ValuePatternsMetric pattern;
+  } kTestCases[] = {
+      {"user@okaxis", autofill::ValuePatternsMetric::kUpiVpa},
+      {"IT60X0542811101000000123456", autofill::ValuePatternsMetric::kIban}};
+  for (const ValuePatternTestCase test_case : kTestCases) {
+    // Set up our form data.
+    FormData form;
+    FormFieldData field;
+    test::CreateTestFormField("Some label", "my-field", test_case.value, "text",
+                              &field);
+    field.is_focusable = true;  // The metric skips hidden fields.
+    form.name = ASCIIToUTF16("my-form");
+    form.url = GURL("http://myform.com/form.html");
+    form.action = GURL("https://myform.com/submit.html");
+    form.fields.push_back(field);
+    std::vector<FormData> forms(1, form);
+    FormsSeen(forms);
 
-  base::HistogramTester histogram_tester;
-  FormSubmitted(form);
-  histogram_tester.ExpectUniqueSample("Autofill.SubmittedValuePatterns",
-                                      autofill::ValuePatternsMetric::kUpiVpa,
-                                      1);
+    base::HistogramTester histogram_tester;
+    FormSubmitted(form);
+    histogram_tester.ExpectUniqueSample("Autofill.SubmittedValuePatterns",
+                                        test_case.pattern, 1);
+  }
 }
 
 // Test that when Autofill is disabled, Autocomplete suggestions are still

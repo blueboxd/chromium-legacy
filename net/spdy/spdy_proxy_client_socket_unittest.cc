@@ -179,12 +179,12 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   // Whether to use net::Socket::ReadIfReady() instead of net::Socket::Read().
   bool use_read_if_ready() const { return GetParam(); }
 
+  BoundTestNetLog net_log_;
   SpdyTestUtil spdy_util_;
   std::unique_ptr<SpdyProxyClientSocket> sock_;
   TestCompletionCallback read_callback_;
   TestCompletionCallback write_callback_;
   std::unique_ptr<SequencedSocketData> data_;
-  BoundTestNetLog net_log_;
 
  private:
   scoped_refptr<IOBuffer> read_buf_;

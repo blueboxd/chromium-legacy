@@ -120,8 +120,7 @@ JsonRequest::JsonRequest(
     const ParseJSONCallback& callback)
     : exclusive_category_(exclusive_category),
       clock_(clock),
-      parse_json_callback_(callback),
-      weak_ptr_factory_(this) {
+      parse_json_callback_(callback) {
   creation_time_ = clock_->Now();
 }
 

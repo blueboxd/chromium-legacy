@@ -23,9 +23,7 @@ const base::FilePath::CharType kTracingFilename[] =
     FILE_PATH_LITERAL("tracing.json");
 }
 
-TracingManager::TracingManager()
-    : current_trace_id_(0),
-      weak_ptr_factory_(this) {
+TracingManager::TracingManager() : current_trace_id_(0) {
   DCHECK(!g_tracing_manager);
   g_tracing_manager = this;
   StartTracing();

@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">आस-पास के डिवाइस खोजने के लिए ब्लूटूथ चालू करें</translation>
 <translation id="2805756323405976993">ऐप्स</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
-<translation id="2912823482158781027">टिकट रीफ़्रेश करें</translation>
-<translation id="3511655281162215899">कृपया तुरंत कोई नया पासवर्ड चुनें</translation>
-<translation id="3562817605261346876">कृपया जल्द ही <ph name="PRINCIPAL_NAME" /> की टिकट रीफ़्रेश करें</translation>
 <translation id="3838338534323494292">नया पासवर्ड</translation>
 <translation id="445059817448385655">पुराना पासवर्ड</translation>
 <translation id="467510802200863975">पासवर्ड मेल नहीं खाते</translation>
@@ -23,16 +20,12 @@
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5457599981699367932">मेहमान के रूप में ब्राउज़ करें</translation>
 <translation id="54609108002486618">प्रबंधित</translation>
-<translation id="5733345267661125295">कृपया अभी कोई नया पासवर्ड चुनें</translation>
-<translation id="5743581760404859096">Kerberos टिकट की समय-सीमा खत्म हो रही है</translation>
 <translation id="5832805196449965646">व्‍यक्ति जोड़ें</translation>
 <translation id="5895138241574237353">फिर से प्रारंभ करें</translation>
 <translation id="6058625436358447366">पूरा करने के लिए, पुराना और नया पासवर्ड डालें</translation>
 <translation id="6106186594183574873">पूरा करने के लिए, पुराना पासवर्ड डालें</translation>
 <translation id="6146993107019042706">खत्म करने के लिए, नया पासवर्ड डालें</translation>
 <translation id="6574601967010742428">डिवाइस का एडमिन आपकी गतिविधि पर नज़र रख सकता है.</translation>
-<translation id="7280705187789120111">Kerberos टिकट की समय-सीमा खत्म हो रही है</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{आपके मौजूदा पासवर्ड की समय-सीमा खत्म हो चुकी है!}=1{आपके मौजूदा पासवर्ड की समय-सीमा एक दिन से कम समय में खत्म हो जाएगी!}one{आपके मौजूदा पासवर्ड की समय-सीमा # दिन से कम समय में खत्म हो जाएगी!}other{आपके मौजूदा पासवर्ड की समय-सीमा # दिन से कम समय में खत्म हो जाएगी!}}</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7690294790491645610">नए पासवर्ड की पुष्टि करें</translation>
 <translation id="808894953321890993">पासवर्ड बदलें</translation>

@@ -111,8 +111,7 @@ void IOThreadResponseCallback(
     int request_id,
     ExtensionFunction::ResponseType type,
     const base::ListValue& results,
-    const std::string& error,
-    functions::HistogramValue histogram_value) {
+    const std::string& error) {
   if (!ipc_sender.get())
     return;
 
@@ -159,8 +158,7 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
   void OnExtensionFunctionCompleted(int request_id,
                                     ExtensionFunction::ResponseType type,
                                     const base::ListValue& results,
-                                    const std::string& error,
-                                    functions::HistogramValue histogram_value) {
+                                    const std::string& error) {
     CommonResponseCallback(render_frame_host_,
                            render_frame_host_->GetRoutingID(), kMainThreadId,
                            request_id, type, results, error);
@@ -223,8 +221,7 @@ class ExtensionFunctionDispatcher::UIThreadWorkerResponseCallbackWrapper
   void OnExtensionFunctionCompleted(int request_id,
                                     ExtensionFunction::ResponseType type,
                                     const base::ListValue& results,
-                                    const std::string& error,
-                                    functions::HistogramValue histogram_value) {
+                                    const std::string& error) {
     if (type == ExtensionFunction::BAD_MESSAGE) {
       // The renderer will be shut down from ExtensionFunction::SetBadMessage().
       return;
@@ -617,7 +614,7 @@ bool ExtensionFunctionDispatcher::CheckPermissions(
     const ExtensionFunction::ResponseCallback& callback) {
   if (!function->HasPermission()) {
     LOG(ERROR) << "Permission denied for " << params.name;
-    SendAccessDenied(callback, function->histogram_value());
+    SendAccessDenied(callback);
     return false;
   }
   return true;
@@ -636,7 +633,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
       ExtensionFunctionRegistry::GetInstance().NewFunction(params.name);
   if (!function) {
     LOG(ERROR) << "Unknown Extension API - " << params.name;
-    SendAccessDenied(callback, extensions::functions::UNKNOWN);
+    SendAccessDenied(callback);
     return NULL;
   }
 
@@ -657,11 +654,10 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
 
 // static
 void ExtensionFunctionDispatcher::SendAccessDenied(
-    const ExtensionFunction::ResponseCallback& callback,
-    functions::HistogramValue histogram_value) {
+    const ExtensionFunction::ResponseCallback& callback) {
   base::ListValue empty_list;
   callback.Run(ExtensionFunction::FAILED, empty_list,
-               "Access to extension API denied.", histogram_value);
+               "Access to extension API denied.");
 }
 
 }  // namespace extensions

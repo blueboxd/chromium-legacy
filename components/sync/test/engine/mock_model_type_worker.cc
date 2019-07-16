@@ -17,9 +17,7 @@ namespace syncer {
 MockModelTypeWorker::MockModelTypeWorker(
     const sync_pb::ModelTypeState& model_type_state,
     ModelTypeProcessor* processor)
-    : model_type_state_(model_type_state),
-      processor_(processor),
-      weak_ptr_factory_(this) {
+    : model_type_state_(model_type_state), processor_(processor) {
   model_type_state_.set_initial_sync_done(true);
 }
 

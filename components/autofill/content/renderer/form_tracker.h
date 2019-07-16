@@ -124,7 +124,7 @@ class FormTracker : public content::RenderFrameObserver {
 
   SEQUENCE_CHECKER(form_tracker_sequence_checker_);
 
-  base::WeakPtrFactory<FormTracker> weak_ptr_factory_;
+  base::WeakPtrFactory<FormTracker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FormTracker);
 };

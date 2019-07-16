@@ -175,7 +175,7 @@ class INVALIDATION_EXPORT SyncInvalidationListener
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncInvalidationListener> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncInvalidationListener> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncInvalidationListener);
 };

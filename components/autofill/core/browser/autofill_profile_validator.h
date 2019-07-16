@@ -75,7 +75,7 @@ class AutofillProfileValidator : public autofill::LoadRulesListener {
 
     bool has_responded_ = false;
     base::CancelableOnceCallback<void()> on_timeout_;
-    base::WeakPtrFactory<ValidationRequest> weak_factory_;
+    base::WeakPtrFactory<ValidationRequest> weak_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(ValidationRequest);
   };
 

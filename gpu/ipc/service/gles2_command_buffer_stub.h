@@ -79,7 +79,7 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
 
-  base::WeakPtrFactory<GLES2CommandBufferStub> weak_ptr_factory_;
+  base::WeakPtrFactory<GLES2CommandBufferStub> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GLES2CommandBufferStub);
 };

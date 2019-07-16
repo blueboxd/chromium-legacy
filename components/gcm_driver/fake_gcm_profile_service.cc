@@ -74,7 +74,8 @@ class FakeGCMProfileService::CustomFakeGCMDriver
   // when unregister is called.
   int registration_count_ = 0;
 
-  base::WeakPtrFactory<CustomFakeGCMDriver> weak_factory_;  // Must be last.
+  base::WeakPtrFactory<CustomFakeGCMDriver> weak_factory_{
+      this};  // Must be last.
 
   DISALLOW_COPY_AND_ASSIGN(CustomFakeGCMDriver);
 };
@@ -83,8 +84,7 @@ FakeGCMProfileService::CustomFakeGCMDriver::CustomFakeGCMDriver(
     FakeGCMProfileService* service)
     : instance_id::FakeGCMDriverForInstanceID(
           base::ThreadTaskRunnerHandle::Get()),
-      service_(service),
-      weak_factory_(this) {}
+      service_(service) {}
 
 FakeGCMProfileService::CustomFakeGCMDriver::~CustomFakeGCMDriver() {}
 

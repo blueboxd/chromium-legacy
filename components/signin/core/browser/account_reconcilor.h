@@ -398,7 +398,7 @@ class AccountReconcilor : public KeyedService,
   std::unique_ptr<signin::ConsistencyCookieManagerBase>
       consistency_cookie_manager_;
 
-  base::WeakPtrFactory<AccountReconcilor> weak_factory_;
+  base::WeakPtrFactory<AccountReconcilor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };

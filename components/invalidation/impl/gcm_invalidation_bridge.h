@@ -101,7 +101,7 @@ class GCMInvalidationBridge : public gcm::GCMAppHandler,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<GCMInvalidationBridge> weak_factory_;
+  base::WeakPtrFactory<GCMInvalidationBridge> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMInvalidationBridge);
 };

@@ -72,8 +72,10 @@ def GenerateVendorDefinitions(table):
     product_table = "NULL"
     if len(vendor["products"]) != 0:
       product_table = "vendor_%.4x_products" % (vendor["id"])
-    output += "  {0x%.4x, \"%s\", %d, %s},\n" % (vendor["id"],
-        EscapeName(vendor["name"]), len(vendor["products"]), product_table)
+    output += "  {\"%s\", %s, 0x%.4x, %d},\n" % (EscapeName(vendor["name"]),
+                                                 product_table,
+                                                 vendor["id"],
+                                                 len(vendor["products"]))
 
   output += "};\n"
   return output

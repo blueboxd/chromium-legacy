@@ -76,7 +76,7 @@ void RecordActivityControlConsent(Profile* profile,
 
 bool IsHotwordDspAvailable();
 
-bool IsVoiceMatchEnabled(const PrefService* prefs);
+bool IsVoiceMatchEnforcedOff(const PrefService* prefs);
 
 }  // namespace chromeos
 

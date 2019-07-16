@@ -149,7 +149,7 @@ class ContentPasswordManagerDriver
   mojo::AssociatedReceiver<autofill::mojom::PasswordManagerDriver>
       password_manager_receiver_;
 
-  base::WeakPtrFactory<ContentPasswordManagerDriver> weak_factory_;
+  base::WeakPtrFactory<ContentPasswordManagerDriver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentPasswordManagerDriver);
 };

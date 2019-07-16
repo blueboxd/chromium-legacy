@@ -1515,8 +1515,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory);
+      network::mojom::URLLoaderFactoryPtr* out_factory);
 
   // Creates an OverlayWindow to be used for Picture-in-Picture. This window
   // will house the content shown when in Picture-in-Picture mode. This will

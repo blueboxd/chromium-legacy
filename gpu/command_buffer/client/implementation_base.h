@@ -156,7 +156,7 @@ class GLES2_IMPL_EXPORT ImplementationBase
 
   CommandBufferHelper* helper_;
 
-  base::WeakPtrFactory<ImplementationBase> weak_ptr_factory_;
+  base::WeakPtrFactory<ImplementationBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImplementationBase);
 };

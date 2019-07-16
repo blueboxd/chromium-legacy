@@ -27,9 +27,7 @@ bool IsOfflineItemPrefetchedPage(const OfflinePageItem& offline_page_item) {
 
 PrefetchedPagesTrackerImpl::PrefetchedPagesTrackerImpl(
     OfflinePageModel* offline_page_model)
-    : initialized_(false),
-      offline_page_model_(offline_page_model),
-      weak_ptr_factory_(this) {
+    : initialized_(false), offline_page_model_(offline_page_model) {
   DCHECK(offline_page_model_);
 }
 

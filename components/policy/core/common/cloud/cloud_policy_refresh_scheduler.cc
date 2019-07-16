@@ -70,8 +70,7 @@ CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
       error_retry_delay_ms_(kInitialErrorRetryDelayMs),
       refresh_delay_ms_(kDefaultRefreshDelayMs),
       invalidations_available_(false),
-      creation_time_(base::Time::NowFromSystemTime()),
-      weak_factory_(this) {
+      creation_time_(base::Time::NowFromSystemTime()) {
   client_->AddObserver(this);
   store_->AddObserver(this);
   network_connection_tracker_->AddNetworkConnectionObserver(this);

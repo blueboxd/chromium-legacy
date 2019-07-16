@@ -56,8 +56,7 @@ bool MockCanAddURLToHistory(const GURL& url) {
 // TopSites is queried before it finishes loading.
 class TopSitesQuerier {
  public:
-  TopSitesQuerier()
-      : number_of_callbacks_(0), waiting_(false), weak_ptr_factory_(this) {}
+  TopSitesQuerier() : number_of_callbacks_(0), waiting_(false) {}
 
   // Queries top sites. If |wait| is true a nested run loop is run until the
   // callback is notified.
@@ -95,7 +94,7 @@ class TopSitesQuerier {
   MostVisitedURLList urls_;
   int number_of_callbacks_;
   bool waiting_;
-  base::WeakPtrFactory<TopSitesQuerier> weak_ptr_factory_;
+  base::WeakPtrFactory<TopSitesQuerier> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesQuerier);
 };

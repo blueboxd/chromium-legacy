@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.device_dialog;
 
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
@@ -47,16 +48,24 @@ public class DeviceItemRow {
         if (!TextUtils.equals(mDescription, description)) return false;
         if (!TextUtils.equals(mIconDescription, iconDescription)) return false;
 
-        if (icon == null ^ mIcon == null) return false;
+        if (icon != null && mIcon != null) {
+            Bitmap myBitmap = Bitmap.createBitmap(
+                    icon.getIntrinsicWidth(), icon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas myCanvas = new Canvas();
+            myCanvas.setBitmap(myBitmap);
+            mIcon.setBounds(0, 0, myCanvas.getWidth(), myCanvas.getHeight());
+            mIcon.draw(myCanvas);
 
-        // On Android NMR1 and above, Drawable#getConstantState() always returns a different
-        // value, so it does not make sense to compare it.
-        // TODO(crbug.com/773043): Find a way to compare the icons.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1 && mIcon != null
-                && !mIcon.getConstantState().equals(icon.getConstantState())) {
-            return false;
+            Bitmap theirBitmap = Bitmap.createBitmap(
+                    icon.getIntrinsicWidth(), icon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas theirCanvas = new Canvas();
+            theirCanvas.setBitmap(theirBitmap);
+            icon.setBounds(0, 0, theirCanvas.getWidth(), theirCanvas.getHeight());
+            icon.draw(theirCanvas);
+
+            return myBitmap.sameAs(theirBitmap);
         }
 
-        return true;
+        return icon == null && mIcon == null;
     }
 }

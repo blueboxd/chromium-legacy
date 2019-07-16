@@ -218,8 +218,7 @@ ExternalPolicyDataFetcher::ExternalPolicyDataFetcher(
     const base::WeakPtr<ExternalPolicyDataFetcherBackend>& backend)
     : task_runner_(std::move(task_runner)),
       backend_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      backend_(backend),
-      weak_factory_(this) {}
+      backend_(backend) {}
 
 ExternalPolicyDataFetcher::~ExternalPolicyDataFetcher() {
   // No RunsTasksInCurrentSequence() check to avoid unit tests failures.
@@ -287,7 +286,7 @@ void ExternalPolicyDataFetcher::OnJobFinished(
 
 ExternalPolicyDataFetcherBackend::ExternalPolicyDataFetcherBackend(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)), weak_factory_(this) {}
+    : url_loader_factory_(std::move(url_loader_factory)) {}
 
 ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

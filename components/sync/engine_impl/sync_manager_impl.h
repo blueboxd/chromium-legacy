@@ -319,7 +319,7 @@ class SyncManagerImpl
 
   std::unique_ptr<SyncEncryptionHandler::Observer> encryption_observer_proxy_;
 
-  base::WeakPtrFactory<SyncManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncManagerImpl);
 };

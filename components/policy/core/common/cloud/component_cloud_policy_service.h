@@ -185,7 +185,7 @@ class POLICY_EXPORT ComponentCloudPolicyService
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Must be the last member.
-  base::WeakPtrFactory<ComponentCloudPolicyService> weak_ptr_factory_;
+  base::WeakPtrFactory<ComponentCloudPolicyService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ComponentCloudPolicyService);
 };

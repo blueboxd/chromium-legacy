@@ -378,7 +378,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestState);
 };

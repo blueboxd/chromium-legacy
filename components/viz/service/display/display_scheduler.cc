@@ -35,8 +35,7 @@ DisplayScheduler::DisplayScheduler(BeginFrameSource* begin_frame_source,
       pending_swaps_(0),
       max_pending_swaps_(max_pending_swaps),
       wait_for_all_surfaces_before_draw_(wait_for_all_surfaces_before_draw),
-      observing_begin_frame_source_(false),
-      weak_ptr_factory_(this) {
+      observing_begin_frame_source_(false) {
   begin_frame_deadline_closure_ = base::BindRepeating(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
 

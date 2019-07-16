@@ -121,7 +121,7 @@ class StaleHostResolver : public net::HostResolver {
   std::unordered_map<ResolveHostRequest*, std::unique_ptr<ResolveHostRequest>>
       detached_requests_;
 
-  base::WeakPtrFactory<StaleHostResolver> weak_ptr_factory_;
+  base::WeakPtrFactory<StaleHostResolver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StaleHostResolver);
 };

@@ -27,9 +27,7 @@
 #include "remoting/signaling/ftl_signal_strategy.h"
 #include "remoting/signaling/log_to_server.h"
 #include "remoting/signaling/server_log_entry.h"
-#include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
 
 namespace remoting {
 
@@ -110,9 +108,7 @@ void HeartbeatSender::HeartbeatClientImpl::Heartbeat(
       request.has_host_offline_reason()
           ? (", host_offline_reason: " + request.host_offline_reason())
           : "";
-  HOST_LOG << "Sending outgoing heartbeat."
-           << " jabber_id: " << request.jabber_id()
-           << ", tachyon_id: " << request.tachyon_id()
+  HOST_LOG << "Sending outgoing heartbeat. tachyon_id: " << request.tachyon_id()
            << host_offline_reason_or_empty_log;
 
   auto client_context = std::make_unique<grpc::ClientContext>();
@@ -136,7 +132,7 @@ HeartbeatSender::HeartbeatSender(
     base::OnceClosure on_unknown_host_id_error,
     base::OnceClosure on_auth_error,
     const std::string& host_id,
-    MuxingSignalStrategy* signal_strategy,
+    SignalStrategy* signal_strategy,
     OAuthTokenGetter* oauth_token_getter,
     LogToServer* log_to_server)
     : on_heartbeat_successful_callback_(
@@ -220,9 +216,9 @@ void HeartbeatSender::OnHostOfflineReasonAck() {
 void HeartbeatSender::SendHeartbeat() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (signal_strategy_->GetState() == SignalStrategy::State::DISCONNECTED) {
-    LOG(WARNING)
-        << "Not sending heartbeat because all strategies are disconnected.";
+  if (signal_strategy_->GetState() != SignalStrategy::State::CONNECTED) {
+    LOG(WARNING) << "Not sending heartbeat because the signal strategy is not "
+                    "connected.";
     return;
   }
 
@@ -328,22 +324,7 @@ apis::v1::HeartbeatRequest HeartbeatSender::CreateHeartbeatRequest() {
 
   apis::v1::HeartbeatRequest heartbeat;
   std::string signaling_id;
-  if (signal_strategy_->ftl_signal_strategy()->GetState() ==
-      SignalStrategy::State::CONNECTED) {
-    heartbeat.set_tachyon_id(
-        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid());
-    signaling_id =
-        signal_strategy_->ftl_signal_strategy()->GetLocalAddress().jid();
-  }
-  if (signal_strategy_->xmpp_signal_strategy()->GetState() ==
-      SignalStrategy::State::CONNECTED) {
-    heartbeat.set_jabber_id(
-        signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid());
-    if (signaling_id.empty()) {
-      signaling_id =
-          signal_strategy_->xmpp_signal_strategy()->GetLocalAddress().jid();
-    }
-  }
+  heartbeat.set_tachyon_id(signal_strategy_->GetLocalAddress().jid());
   heartbeat.set_host_id(host_id_);
   if (!host_offline_reason_.empty()) {
     heartbeat.set_host_offline_reason(host_offline_reason_);

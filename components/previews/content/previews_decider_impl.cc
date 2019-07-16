@@ -106,8 +106,7 @@ bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
 PreviewsDeciderImpl::PreviewsDeciderImpl(base::Clock* clock)
     : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()),
       clock_(clock),
-      page_id_(1u),
-      weak_factory_(this) {}
+      page_id_(1u) {}
 
 PreviewsDeciderImpl::~PreviewsDeciderImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

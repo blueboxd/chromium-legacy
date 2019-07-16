@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Vydáno organizaci <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Senzory pohybu</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
 <translation id="214556005048008348">Zrušit platbu</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">Zkontrolovat, zda máte dostatečně silný signál</translation>
 <translation id="2523886232349826891">Uloženo pouze do tohoto zařízení</translation>
 <translation id="2524461107774643265">Přidání dalších informací</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{a 1 další}few{a # další}many{a # další}other{a # dalších}}</translation>
 <translation id="2536110899380797252">Přidat adresu</translation>
 <translation id="2539524384386349900">Rozpoznat</translation>
 <translation id="254947805923345898">Hodnota zásady není platná.</translation>
@@ -710,6 +712,7 @@
 <translation id="4858792381671956233">Požádal(a) jsi rodiče o povolení návštěvy tohoto webu.</translation>
 <translation id="4876188919622883022">Zjednodušené zobrazení</translation>
 <translation id="4876305945144899064">Žádné uživatelské jméno</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Žádné}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Vyhledávání dotazu <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatické (výchozí)</translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
@@ -1003,6 +1006,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="650855688985305916">Ano, uložit</translation>
 <translation id="6508722015517270189">Restartujte Chrome</translation>
 <translation id="6517596291481585650">Upozornění: Tato zásada nebyla podle zásady sloučena jako seznam, protože se nejedná o seznam.</translation>
+<translation id="6521745193039995384">Neaktivní</translation>
 <translation id="6529602333819889595">&amp;Opakovat smazání</translation>
 <translation id="6534179046333460208">Návrhy fyzického webu</translation>
 <translation id="6545864417968258051">Vyhledávání Bluetooth</translation>
@@ -1462,6 +1466,7 @@ Další podrobnosti:
 <translation id="9076630408993835509">Tento prohlížeč není spravován administrátorem ani jinou organizací. Aktivita na tomto zařízení může být spravována mimo Chrome. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Jsou potřeba další informace</translation>
 <translation id="9080712759204168376">Přehled objednávky</translation>
+<translation id="9089260154716455634">Zásada Off-Hours:</translation>
 <translation id="9095388113577226029">Další jazyky...</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9106062320799175032">Přidání fakturační adresy</translation>

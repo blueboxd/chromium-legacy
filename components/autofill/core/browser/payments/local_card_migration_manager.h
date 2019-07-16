@@ -239,7 +239,7 @@ class LocalCardMigrationManager {
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
 
-  base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
+  base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationManager);
 };

@@ -214,7 +214,7 @@ class AutofillDownloadManager {
   // Used for exponential backoff of requests.
   net::BackoffEntry loader_backoff_;
 
-  base::WeakPtrFactory<AutofillDownloadManager> weak_factory_;
+  base::WeakPtrFactory<AutofillDownloadManager> weak_factory_{this};
 };
 
 }  // namespace autofill

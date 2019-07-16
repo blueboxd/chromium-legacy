@@ -53,8 +53,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
       should_reset_mouse_flags_(false),
       grab_input_window_(x11::None),
       grabbed_pointer_(false),
-      canceled_(false),
-      weak_factory_(this) {}
+      canceled_(false) {}
 
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() = default;
 

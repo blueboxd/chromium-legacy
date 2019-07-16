@@ -96,7 +96,7 @@ class DeleteDirectiveHandler : public syncer::SyncableService {
   base::CancelableTaskTracker internal_tracker_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<DeleteDirectiveHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DeleteDirectiveHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeleteDirectiveHandler);
 };

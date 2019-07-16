@@ -2507,7 +2507,8 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
       {"googleAssistantEnableContext", IDS_ASSISTANT_SCREEN_CONTEXT_TITLE},
       {"googleAssistantEnableContextDescription",
        IDS_ASSISTANT_SCREEN_CONTEXT_DESC},
-      {"googleAssistantEnableHotword", IDS_ASSISTANT_HOTWORD_TITLE},
+      {"googleAssistantEnableHotword",
+       IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD},
       {"googleAssistantEnableHotwordDescription",
        IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION},
       {"googleAssistantVoiceSettings",
@@ -2539,11 +2540,6 @@ void AddGoogleAssistantStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean("hotwordDspAvailable",
                           chromeos::IsHotwordDspAvailable());
-
-  html_source->AddBoolean(
-      "voiceMatchEnabled",
-      base::FeatureList::IsEnabled(
-          chromeos::assistant::features::kAssistantVoiceMatch));
 }
 #endif
 

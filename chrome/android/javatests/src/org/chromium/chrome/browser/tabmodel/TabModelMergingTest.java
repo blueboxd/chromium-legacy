@@ -33,6 +33,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
+import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStoreTest.MockTabPersistentStoreObserver;
@@ -96,7 +97,7 @@ public class TabModelMergingTest {
         mActivity1 = mActivityTestRule.getActivity();
         // Start multi-instance mode so that ChromeTabbedActivity's check for whether the activity
         // is started up correctly doesn't fail.
-        ChromeTabbedActivity.onMultiInstanceModeStarted();
+        MultiInstanceManager.onMultiInstanceModeStarted();
         mActivity2 = MultiWindowTestHelper.createSecondChromeTabbedActivity(
                 mActivity1, new LoadUrlParams(TEST_URL_7));
         CriteriaHelper.pollUiThread(new Criteria("CTA2 tab state failed to initialize.") {
@@ -195,7 +196,8 @@ public class TabModelMergingTest {
             final String[] expectedTabUrls, final int expectedNumberOfTabs,
             String expectedSelectedTabUrl) {
         // Merge tabs into the activity.
-        TestThreadUtils.runOnUiThreadBlocking(() -> { activity.maybeMergeTabs(); });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> activity.getMultiInstanceMangerForTesting().maybeMergeTabs());
 
         // Wait for all tabs to be merged into the activity.
         CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {

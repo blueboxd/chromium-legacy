@@ -80,9 +80,7 @@ IconCacherImpl::IconCacherImpl(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
       large_icon_service_(large_icon_service),
-      image_fetcher_(std::move(image_fetcher)),
-      weak_ptr_factory_(this) {
-}
+      image_fetcher_(std::move(image_fetcher)) {}
 
 IconCacherImpl::~IconCacherImpl() = default;
 

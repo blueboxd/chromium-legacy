@@ -183,14 +183,6 @@ enum NotificationType {
   // Source is the WebContents that holds the print job.
   NOTIFICATION_PRINT_JOB_RELEASED,
 
-  // Cookies -----------------------------------------------------------------
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Sent when a cookie changes, for consumption by extensions. The source is a
-  // Profile object, the details are a ChromeCookieDetails object.
-  NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS,
-#endif
-
   // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)

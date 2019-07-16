@@ -20,8 +20,7 @@ SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator(
       current_manager_has_all_history_downloads_(false),
       initialized_(false),
       download_when_full_manager_starts_cb_(
-          download_when_full_manager_starts_cb),
-      weak_factory_(this) {}
+          download_when_full_manager_starts_cb) {}
 
 SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
   if (simple_download_manager_)

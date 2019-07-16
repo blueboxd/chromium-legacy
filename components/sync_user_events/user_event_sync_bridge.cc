@@ -64,8 +64,7 @@ UserEventSyncBridge::UserEventSyncBridge(
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
     GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      global_id_mapper_(global_id_mapper),
-      weak_ptr_factory_(this) {
+      global_id_mapper_(global_id_mapper) {
   DCHECK(global_id_mapper_);
   std::move(store_factory)
       .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,

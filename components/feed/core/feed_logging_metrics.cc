@@ -478,8 +478,7 @@ FeedLoggingMetrics::FeedLoggingMetrics(
     HistoryURLCheckCallback history_url_check_callback,
     base::Clock* clock)
     : history_url_check_callback_(std::move(history_url_check_callback)),
-      clock_(clock),
-      weak_ptr_factory_(this) {}
+      clock_(clock) {}
 
 FeedLoggingMetrics::~FeedLoggingMetrics() = default;
 

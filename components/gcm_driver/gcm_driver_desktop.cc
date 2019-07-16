@@ -538,8 +538,7 @@ GCMDriverDesktop::GCMDriverDesktop(
       last_token_fetch_time_(base::Time::Max()),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
-      wake_from_suspend_enabled_(false),
-      weak_ptr_factory_(this) {
+      wake_from_suspend_enabled_(false) {
   gcm_enabled_ = gcm_channel_status_syncer_->gcm_enabled();
 
   // Create and initialize the GCMClient. Note that this does not initiate the

@@ -337,8 +337,7 @@ void DeleteDirectiveHandler::DeleteDirectiveTask::ProcessUrlDeleteDirectives(
 
 DeleteDirectiveHandler::DeleteDirectiveHandler(
     BackendTaskScheduler backend_task_scheduler)
-    : backend_task_scheduler_(std::move(backend_task_scheduler)),
-      weak_ptr_factory_(this) {}
+    : backend_task_scheduler_(std::move(backend_task_scheduler)) {}
 
 DeleteDirectiveHandler::~DeleteDirectiveHandler() {}
 

@@ -122,8 +122,7 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       blacklist_store_(std::move(blacklist_store)),
       tick_clock_(tick_clock),
       blacklist_upload_backoff_(&kBlacklistBackoffPolicy, tick_clock_),
-      blacklist_upload_timer_(tick_clock_),
-      weak_ptr_factory_(this) {
+      blacklist_upload_timer_(tick_clock_) {
   // |sync_service_| is null if switches::kDisableSync is set (tests use that).
   if (sync_service_)
     sync_service_observer_.Add(sync_service_);

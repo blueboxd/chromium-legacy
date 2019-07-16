@@ -143,7 +143,8 @@ class AutofillWalletMetadataSyncBridge
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<AutofillWalletMetadataSyncBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillWalletMetadataSyncBridge> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletMetadataSyncBridge);
 };

@@ -18,8 +18,7 @@ namespace {
 void SuccessCallback(bool* did_respond,
                      ExtensionFunction::ResponseType type,
                      const base::ListValue& results,
-                     const std::string& error,
-                     functions::HistogramValue histogram_value) {
+                     const std::string& error) {
   EXPECT_EQ(ExtensionFunction::ResponseType::SUCCEEDED, type);
   *did_respond = true;
 }
@@ -27,8 +26,7 @@ void SuccessCallback(bool* did_respond,
 void FailCallback(bool* did_respond,
                   ExtensionFunction::ResponseType type,
                   const base::ListValue& results,
-                  const std::string& error,
-                  functions::HistogramValue histogram_value) {
+                  const std::string& error) {
   EXPECT_EQ(ExtensionFunction::ResponseType::FAILED, type);
   *did_respond = true;
 }

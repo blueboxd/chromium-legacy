@@ -91,7 +91,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
   // cookie jar.
   std::set<std::pair<std::string, std::string>> cookies_to_set_;
 
-  base::WeakPtrFactory<OAuthMultiloginHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<OAuthMultiloginHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OAuthMultiloginHelper);
 };

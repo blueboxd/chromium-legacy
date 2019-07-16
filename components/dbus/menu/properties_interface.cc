@@ -27,7 +27,7 @@ const char kSignalPropertiesChanged[] = "PropertiesChanged";
 DbusPropertiesInterface::DbusPropertiesInterface(
     dbus::ExportedObject* exported_object,
     InitializedCallback callback)
-    : exported_object_(exported_object), weak_factory_(this) {
+    : exported_object_(exported_object) {
   static constexpr struct {
     const char* name;
     void (DbusPropertiesInterface::*callback)(

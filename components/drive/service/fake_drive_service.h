@@ -433,7 +433,7 @@ class FakeDriveService : public DriveServiceInterface {
 
   base::ObserverList<ChangeObserver>::Unchecked change_observers_;
 
-  base::WeakPtrFactory<FakeDriveService> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeDriveService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeDriveService);
 };

@@ -164,8 +164,7 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
           translate::kTranslateRankerAutoBlacklistOverride)),
       is_previous_language_matches_override_enabled_(
           base::FeatureList::IsEnabled(
-              translate::kTranslateRankerPreviousLanguageMatchesOverride)),
-      weak_ptr_factory_(this) {
+              translate::kTranslateRankerPreviousLanguageMatchesOverride)) {
   if (is_query_enabled_ || is_enforcement_enabled_) {
     model_loader_ = std::make_unique<assist_ranker::RankerModelLoaderImpl>(
         base::Bind(&ValidateModel),

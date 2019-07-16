@@ -55,9 +55,7 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
       focused_(false),
       is_painting_(false),
       is_resizing_(false),
-      web_view_helper_(this, preferences),
-      weak_factory_(this) {
-}
+      web_view_helper_(this, preferences) {}
 
 // static
 WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,

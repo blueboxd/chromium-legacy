@@ -48,8 +48,7 @@ GetVisualsTask::GetVisualsTask(OfflinePageMetadataStore* store,
                                CompleteCallback complete_callback)
     : store_(store),
       offline_id_(offline_id),
-      complete_callback_(std::move(complete_callback)),
-      weak_ptr_factory_(this) {}
+      complete_callback_(std::move(complete_callback)) {}
 
 GetVisualsTask::~GetVisualsTask() = default;
 

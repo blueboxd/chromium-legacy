@@ -89,7 +89,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
-#include "base/mac/mach_port_broker.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
@@ -723,10 +722,6 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     if (process_type.empty() ||
         delegate_->ProcessRegistersWithSystemProcess(process_type)) {
       base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
-    }
-
-    if (!process_type.empty() && delegate_->ShouldSendMachPort(process_type)) {
-      base::MachPortBroker::ChildSendTaskPortToParent(kMachBootstrapName);
     }
 #endif
 

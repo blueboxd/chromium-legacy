@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Shut down</translation>
-<translation id="2912823482158781027">REFRESH TICKET</translation>
-<translation id="3511655281162215899">Please choose a new password immediately</translation>
-<translation id="3562817605261346876">Please refresh the ticket for <ph name="PRINCIPAL_NAME" /> soon</translation>
 <translation id="3838338534323494292">New password</translation>
 <translation id="445059817448385655">Old password</translation>
 <translation id="467510802200863975">Passwords do not match</translation>
@@ -23,16 +20,12 @@ Try tapping the mic to ask me anything.</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="54609108002486618">Managed</translation>
-<translation id="5733345267661125295">Please choose a new password now</translation>
-<translation id="5743581760404859096">Your Kerberos ticket is expiring</translation>
 <translation id="5832805196449965646">Add Person</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="6058625436358447366">To finish, enter your old and new passwords</translation>
 <translation id="6106186594183574873">To finish, enter your old password</translation>
 <translation id="6146993107019042706">To finish, enter your new password</translation>
 <translation id="6574601967010742428">The device administrator may be able to monitor your activity.</translation>
-<translation id="7280705187789120111">Kerberos ticket expiring</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Your current password has expired.}=1{Your current password will expire in less than one day.}other{Your current password will expire in less than # days.}}</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="808894953321890993">Change password</translation>

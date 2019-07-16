@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kadi</translation>
 <translation id="2114841414352855701">Imepuuzwa kwa sababu ilifutwa na <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Umetolewa kwa: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Vitambuzi vya Mwendo</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
 <translation id="214556005048008348">Ghairi malipo</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Kuangalia uthabiti wa mawimbi katika eneo lako</translation>
 <translation id="2523886232349826891">Imehifadhiwa kwenye kifaa hiki pekee</translation>
 <translation id="2524461107774643265">Ongeza Maelezo Zaidi</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{na lingine 1}other{na mengine #}}</translation>
 <translation id="2536110899380797252">Ongeza Anwani</translation>
 <translation id="2539524384386349900">Gundua</translation>
 <translation id="254947805923345898">Thamani ya sera si sahihi.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Umewaomba wazazi wako ruhusa ya kuutembelea ukurasa huu.</translation>
 <translation id="4876188919622883022">Mwonekano rahisi</translation>
 <translation id="4876305945144899064">Hakuna jina la mtumiaji</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Hamna}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Tafuta <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Kiotomatiki (chaguomsingi)</translation>
 <translation id="4880827082731008257">Tafuta katika historia</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Ndiyo, hifadhi</translation>
 <translation id="6508722015517270189">Zima na uwashe Chrome</translation>
 <translation id="6517596291481585650">Ilani: Sera hii haikuunganishwa kama orodha jinsi ilivyobainishwa na sera kwa sababu haipo kwenye orodha.</translation>
+<translation id="6521745193039995384">Haitumiki</translation>
 <translation id="6529602333819889595">Rudia Kufuta</translation>
 <translation id="6534179046333460208">Mapendekezo ya Wavuti kila Mahali</translation>
 <translation id="6545864417968258051">Kutafuta Bluetooth</translation>
@@ -1475,6 +1479,7 @@
 <translation id="9076630408993835509">Kivinjari hiki hakidhibitiwi na kampuni au shirika lingine. Huenda shughuli kwenye kifaa hiki zinadhibitiwa nje ya Chrome. <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Maelezo zaidi yanahitajika</translation>
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
+<translation id="9089260154716455634">Sera ya Saa Zisizo za Kazi:</translation>
 <translation id="9095388113577226029">Lugha zaidi...</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>

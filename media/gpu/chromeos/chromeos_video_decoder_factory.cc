@@ -9,8 +9,8 @@
 #include "base/sequenced_task_runner.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
-#include "media/gpu/chromeos/mailbox_video_frame_converter.h"
-#include "media/gpu/chromeos/platform_video_frame_pool.h"
+#include "media/gpu/linux/mailbox_video_frame_converter.h"
+#include "media/gpu/linux/platform_video_frame_pool.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_decoder.h"

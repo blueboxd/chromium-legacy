@@ -110,7 +110,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void Shutdown();
 
   // Called when the last overview item from a grid is deleted.
-  void OnGridEmpty(OverviewGrid* grid);
+  void OnGridEmpty();
 
   // Moves the current selection by |increment| items. Positive values of
   // |increment| move the selection forward, negative values move it backward.

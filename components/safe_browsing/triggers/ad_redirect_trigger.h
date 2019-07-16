@@ -119,7 +119,7 @@ class AdRedirectTrigger
   // UI thread, but can be overwritten for tests.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<AdRedirectTrigger> weak_ptr_factory_;
+  base::WeakPtrFactory<AdRedirectTrigger> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

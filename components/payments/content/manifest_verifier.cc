@@ -66,8 +66,7 @@ ManifestVerifier::ManifestVerifier(content::WebContents* web_contents,
       parser_(parser),
       cache_(cache),
       number_of_manifests_to_verify_(0),
-      number_of_manifests_to_download_(0),
-      weak_ptr_factory_(this) {}
+      number_of_manifests_to_download_(0) {}
 
 ManifestVerifier::~ManifestVerifier() {
   for (const auto& handle : cache_request_handles_) {

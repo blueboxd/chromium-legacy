@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Se actualizează Google Chrome...</translation>
 <translation id="1469002951682717133">Lansatorul de aplicații Chrome</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
-<translation id="1585657529869845941">Dă clic pe <ph name="BEGIN_BOLD" />Comută oricum<ph name="END_BOLD" />, dacă apare</translation>
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> este periculos, așadar Chrome l-a blocat.</translation>
 <translation id="1590588151039584890">Pentru a se actualiza, Chrome trebuie să nu mai ruleze pe acest computer. Din acest motiv, alți utilizatori conectați la acest computer pot pierde modificări nesalvate.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome nu poate citi și scrie în directorul propriu de date: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome este un browser web care rulează pagini web și aplicații cu o viteză extraordinară. Este rapid, stabil și ușor de utilizat. Navigați pe web beneficiind de mai multă siguranță datorită protecției împotriva programelor malware și a phishingului, care este încorporată în Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome se va relansa într-o oră}few{Chrome se va relansa în # ore}other{Chrome se va relansa în # de ore}}</translation>
-<translation id="1718131156967340976">Selectează <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome va salva parola în Contul tău Google. Nu va trebui să o reții.</translation>
 <translation id="174539241580958092">Google Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="3873044882194371212">Deschide linkul într-o fereastră Chrome inco&amp;gnito</translation>
 <translation id="3889417619312448367">Dezinstalează Google Chrome</translation>
 <translation id="3898493977366060150">Navigare pe web cu ingeniozitatea Google</translation>
-<translation id="4028693306634653894">Accesează Chrome mai rapid</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="4143243756087420366">Numele și imaginea profilului Chrome</translation>
@@ -236,7 +233,6 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="7808348361785373670">Elimină din Chrome...</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7855730255114109580">Google Chrome este actualizat</translation>
-<translation id="7888186132678118370">Fixează Chrome pe bara de activități</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="7896673875602241923">Un alt utilizator s-a conectat anterior la Chrome pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chrome pentru a-ți păstra separat informațiile.</translation>
 <translation id="7908168227788431038">Aproape actualizat! Repornește Google Chrome pentru a finaliza actualizarea.</translation>
@@ -285,6 +281,5 @@ Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni supliment
 <translation id="911206726377975832">Ștergi și datele de navigare?</translation>
 <translation id="9138603949443464873">Pentru a aplica modificările, relansează Chrome</translation>
 <translation id="919706545465235479">Actualizează Chrome pentru a începe sincronizarea</translation>
-<translation id="924447568950697217">Setează Chrome ca browser prestabilit</translation>
 <translation id="989369509083708165">Google Chrome este browserul prestabilit</translation>
 </translationbundle>

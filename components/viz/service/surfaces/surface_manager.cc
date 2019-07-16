@@ -49,8 +49,7 @@ SurfaceManager::SurfaceManager(
       activation_deadline_in_frames_(activation_deadline_in_frames),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      weak_factory_(this) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   thread_checker_.DetachFromThread();
 
   // Android WebView doesn't have a task runner and doesn't need the timer.

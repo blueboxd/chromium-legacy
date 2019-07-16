@@ -5338,8 +5338,7 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    network::mojom::URLLoaderFactory*& out_factory) {
+    network::mojom::URLLoaderFactoryPtr* out_factory) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a

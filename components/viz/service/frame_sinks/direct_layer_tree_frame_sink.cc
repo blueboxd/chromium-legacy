@@ -87,8 +87,7 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
                             cc::GetClientNameForMetrics())),
       submit_begin_frame_histogram_(GetHistogramNamed(
           "GraphicsPipeline.%s.SubmitCompositorFrameAfterBeginFrame",
-          cc::GetClientNameForMetrics())),
-      weak_factory_(this) {
+          cc::GetClientNameForMetrics())) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

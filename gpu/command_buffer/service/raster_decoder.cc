@@ -578,7 +578,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   gl::GLApi* api_ = nullptr;
 
-  base::WeakPtrFactory<DecoderContext> weak_ptr_factory_;
+  base::WeakPtrFactory<DecoderContext> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RasterDecoderImpl);
 };
@@ -681,8 +681,7 @@ RasterDecoderImpl::RasterDecoderImpl(
                                            memory_tracker),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu.decoder"))),
-      font_manager_(base::MakeRefCounted<ServiceFontManager>(this)),
-      weak_ptr_factory_(this) {
+      font_manager_(base::MakeRefCounted<ServiceFontManager>(this)) {
   DCHECK(shared_context_state_);
 }
 

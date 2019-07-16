@@ -107,7 +107,7 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
 
   // Handles the case when this object is deleted after
   // the PostTaskAggregation call is scheduled but before invocation.
-  base::WeakPtrFactory<HitTestAggregator> weak_ptr_factory_;
+  base::WeakPtrFactory<HitTestAggregator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HitTestAggregator);
 };

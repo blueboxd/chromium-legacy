@@ -100,9 +100,6 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationView
   bool IsExpandable() const;
   bool IsActuallyExpanded() const;
 
-  std::set<media_session::mojom::MediaSessionAction> CalculateVisibleActions(
-      bool expanded) const;
-
   void UpdateForegroundColor();
 
   // Container that receives OnExpanded events.

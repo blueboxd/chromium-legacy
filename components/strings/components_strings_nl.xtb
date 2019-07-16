@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Pas</translation>
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Verleend aan: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Bewegingssensoren</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
 <translation id="214556005048008348">Betaling annuleren</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">Check of je bereik hebt in je omgeving</translation>
 <translation id="2523886232349826891">Alleen opgeslagen op dit apparaat</translation>
 <translation id="2524461107774643265">Meer informatie toevoegen</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{en nog 1}other{en nog #}}</translation>
 <translation id="2536110899380797252">Adres toevoegen</translation>
 <translation id="2539524384386349900">Detecteren</translation>
 <translation id="254947805923345898">Beleidswaarde is ongeldig.</translation>
@@ -709,6 +711,7 @@
 <translation id="4858792381671956233">Je hebt je ouders gevraagd of je deze site mag bezoeken</translation>
 <translation id="4876188919622883022">Vereenvoudigde weergave</translation>
 <translation id="4876305945144899064">Geen gebruikersnaam</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Geen}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> zoeken</translation>
 <translation id="4879491255372875719">Automatisch (standaard)</translation>
 <translation id="4880827082731008257">Geschiedenis doorzoeken</translation>
@@ -1002,6 +1005,7 @@
 <translation id="650855688985305916">Ja, opslaan</translation>
 <translation id="6508722015517270189">Chrome opnieuw starten</translation>
 <translation id="6517596291481585650">Waarschuwing: Dit beleid is niet samengevoegd als lijst zoals gespecificeerd door het beleid, omdat het geen lijst is.</translation>
+<translation id="6521745193039995384">Niet actief</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6534179046333460208">Fysieke web-suggesties</translation>
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
@@ -1461,6 +1465,7 @@ Aanvullende informatie:
 <translation id="9076630408993835509">Deze browser wordt niet beheerd door een bedrijf of andere organisatie. Activiteit op dit apparaat kan buiten Chrome worden beheerd. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Meer informatie vereist</translation>
 <translation id="9080712759204168376">Besteloverzicht</translation>
+<translation id="9089260154716455634">Beleid buiten gebruikstijd:</translation>
 <translation id="9095388113577226029">Meer talen...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9106062320799175032">Factuuradres toevoegen</translation>

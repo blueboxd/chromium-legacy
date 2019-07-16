@@ -251,14 +251,10 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   DCHECK(!tab_delegate->IsPlaceholderTab());
 
   if (tab_delegate->IsBeingDestroyed()) {
-    task_tracker_.CleanTabTasks(tab_delegate->GetSessionId());
     // Do nothing else. By not proactively adding the tab to the session, it
     // will be removed if necessary during subsequent cleanup.
     return;
   }
-
-  // Ensure the task tracker has up to date task ids for this tab.
-  UpdateTaskTracker(tab_delegate);
 
   if (!tab_delegate->ShouldSync(sessions_client_)) {
     return;
@@ -311,57 +307,15 @@ void LocalSessionEventHandlerImpl::AssociateTab(
   }
 }
 
-void LocalSessionEventHandlerImpl::UpdateTaskTracker(
-    SyncedTabDelegate* const tab_delegate) {
-  TabTasks* tab_tasks = task_tracker_.GetTabTasks(
-      tab_delegate->GetSessionId(), tab_delegate->GetSourceTabID());
-
-  // Iterate through all navigations in the tab to ensure they all have a task
-  // id set (it's possible some haven't been seen before, such as when a tab
-  // is restored).
-  for (int i = 0; i < tab_delegate->GetEntryCount(); ++i) {
-    sessions::SerializedNavigationEntry serialized_entry;
-    tab_delegate->GetSerializedNavigationAtIndex(i, &serialized_entry);
-
-    int nav_id = serialized_entry.unique_id();
-    int64_t global_id = serialized_entry.timestamp().ToInternalValue();
-    tab_tasks->UpdateWithNavigation(
-        nav_id, tab_delegate->GetTransitionAtIndex(i), global_id);
-  }
-}
-
 void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
     sync_pb::SessionTab* tab_specifics,
     SyncedTabDelegate* tab_delegate) {
-#if defined(OS_IOS)
-  TabTasks* tab_tasks = task_tracker_.GetTabTasks(
-      SessionID::FromSerializedValue(tab_specifics->tab_id()),
-      /*parent_tab_id=*/SessionID::InvalidValue());
-#endif
   for (int i = 0; i < tab_specifics->navigation_size(); i++) {
     // Excluding blocked navigations, which are appended at tail.
     if (tab_specifics->navigation(i).blocked_state() ==
         sync_pb::TabNavigation::STATE_BLOCKED) {
       break;
     }
-// TODO(davidjm) https://crbug.com/946356 - new task track implementation
-// doesn't support iOS yet.
-#if defined(OS_IOS)
-    std::vector<int64_t> task_ids = tab_tasks->GetTaskIdsForNavigation(
-        tab_specifics->navigation(i).unique_id());
-    if (task_ids.empty()) {
-      continue;
-    }
-
-    tab_specifics->mutable_navigation(i)->set_task_id(task_ids.back());
-    // Pop the task id of navigation self.
-    task_ids.pop_back();
-    tab_specifics->mutable_navigation(i)->clear_ancestor_task_id();
-    for (auto ancestor_task_id : task_ids) {
-      tab_specifics->mutable_navigation(i)->add_ancestor_task_id(
-          ancestor_task_id);
-    }
-#else
     int64_t task_id = tab_delegate->GetTaskIdForNavigationId(
         tab_specifics->navigation(i).unique_id());
     int64_t parent_task_id = tab_delegate->GetParentTaskIdForNavigationId(
@@ -372,7 +326,6 @@ void LocalSessionEventHandlerImpl::WriteTasksIntoSpecifics(
     tab_specifics->mutable_navigation(i)->set_task_id(task_id);
     tab_specifics->mutable_navigation(i)->add_ancestor_task_id(root_task_id);
     tab_specifics->mutable_navigation(i)->add_ancestor_task_id(parent_task_id);
-#endif
   }
 }
 

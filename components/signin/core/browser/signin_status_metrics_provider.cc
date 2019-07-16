@@ -18,8 +18,7 @@ SigninStatusMetricsProvider::SigninStatusMetricsProvider(
     bool is_test)
     : delegate_(std::move(delegate)),
       scoped_observer_(this),
-      is_test_(is_test),
-      weak_ptr_factory_(this) {
+      is_test_(is_test) {
   DCHECK(delegate_ || is_test_);
   if (is_test_)
     return;

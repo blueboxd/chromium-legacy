@@ -49,9 +49,9 @@ constexpr char kHintLoadedPercentageTotalKey[] = "Total";
 // Enumerates the possible outcomes of loading metadata. Used in UMA histograms,
 // so the order of enumerators should not be changed.
 //
-// Keep in sync with PreviewsHintCacheLevelDBStoreProcessMetadataResult in
-// tools/metrics/histograms/enums.xml.
-enum class PreviewsHintCacheLevelDBStoreLoadMetadataResult {
+// Keep in sync with OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult
+// in tools/metrics/histograms/enums.xml.
+enum class OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult {
   kSuccess = 0,
   kLoadMetadataFailed = 1,
   kSchemaMetadataMissing = 2,
@@ -67,22 +67,25 @@ enum class PreviewsHintCacheLevelDBStoreLoadMetadataResult {
 class ScopedLoadMetadataResultRecorder {
  public:
   ScopedLoadMetadataResultRecorder()
-      : result_(PreviewsHintCacheLevelDBStoreLoadMetadataResult::kSuccess) {}
+      : result_(OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
+                    kSuccess) {}
   ~ScopedLoadMetadataResultRecorder() {
     UMA_HISTOGRAM_ENUMERATION(
-        "Previews.HintCacheLevelDBStore.LoadMetadataResult", result_);
+        "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", result_);
   }
 
-  void set_result(PreviewsHintCacheLevelDBStoreLoadMetadataResult result) {
+  void set_result(
+      OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult result) {
     result_ = result;
   }
 
  private:
-  PreviewsHintCacheLevelDBStoreLoadMetadataResult result_;
+  OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult result_;
 };
 
 void RecordStatusChange(HintCacheStore::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("Previews.HintCacheLevelDBStore.Status", status);
+  UMA_HISTOGRAM_ENUMERATION("OptimizationGuide.HintCacheLevelDBStore.Status",
+                            status);
 }
 
 // Returns true if |key_prefix| is a prefix of |key|.
@@ -128,7 +131,7 @@ HintCacheStore::HintCacheStore(
     const base::FilePath& database_dir,
     PrefService* pref_service,
     scoped_refptr<base::SequencedTaskRunner> store_task_runner)
-    : pref_service_(pref_service), weak_ptr_factory_(this) {
+    : pref_service_(pref_service) {
   base::FilePath hint_store_dir =
       database_dir.AppendASCII(kHintCacheStoreFolder);
   database_ = database_provider->GetDB<proto::StoreEntry>(
@@ -141,9 +144,7 @@ HintCacheStore::HintCacheStore(
 HintCacheStore::HintCacheStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::StoreEntry>> database,
     PrefService* pref_service)
-    : database_(std::move(database)),
-      pref_service_(pref_service),
-      weak_ptr_factory_(this) {
+    : database_(std::move(database)), pref_service_(pref_service) {
   RecordStatusChange(status_);
 }
 
@@ -674,7 +675,8 @@ void HintCacheStore::OnLoadMetadata(
 
   if (!success) {
     result_recorder.set_result(
-        PreviewsHintCacheLevelDBStoreLoadMetadataResult::kLoadMetadataFailed);
+        OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
+            kLoadMetadataFailed);
 
     UpdateStatus(Status::kFailed);
     std::move(callback).Run();
@@ -690,11 +692,11 @@ void HintCacheStore::OnLoadMetadata(
       schema_entry->second.version() != kStoreSchemaVersion) {
     if (schema_entry == metadata_entries->end()) {
       result_recorder.set_result(
-          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+          OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
               kSchemaMetadataMissing);
     } else {
       result_recorder.set_result(
-          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+          OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
               kSchemaMetadataWrongVersion);
     }
 
@@ -711,8 +713,9 @@ void HintCacheStore::OnLoadMetadata(
     DCHECK(component_entry->second.has_version());
     SetComponentVersion(base::Version(component_entry->second.version()));
   } else {
-    result_recorder.set_result(PreviewsHintCacheLevelDBStoreLoadMetadataResult::
-                                   kComponentMetadataMissing);
+    result_recorder.set_result(
+        OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
+            kComponentMetadataMissing);
     component_metadata_missing = true;
   }
 
@@ -725,11 +728,11 @@ void HintCacheStore::OnLoadMetadata(
   } else {
     if (component_metadata_missing) {
       result_recorder.set_result(
-          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+          OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
               kComponentAndFetchedMetadataMissing);
     } else {
       result_recorder.set_result(
-          PreviewsHintCacheLevelDBStoreLoadMetadataResult::
+          OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult::
               kFetchedMetadataMissing);
     }
     fetched_update_time_ = base::Time();
@@ -817,7 +820,7 @@ void HintCacheStore::OnLoadHint(const std::string& entry_key,
     // expired hints could be asynchronously removed if necessary.
     // An empty hint is returned instead of the expired one.
     UMA_HISTOGRAM_BOOLEAN(
-        "Previews.HintCacheStore.OnLoadHint.FetchedHintExpired", true);
+        "OptimizationGuide.HintCacheStore.OnLoadHint.FetchedHintExpired", true);
     std::unique_ptr<proto::Hint> loaded_hint(nullptr);
     std::move(callback).Run(entry_key, std::move(loaded_hint));
     return;
@@ -829,15 +832,15 @@ void HintCacheStore::OnLoadHint(const std::string& entry_key,
 
   StoreEntryType store_entry_type =
       static_cast<StoreEntryType>(entry->entry_type());
-  UMA_HISTOGRAM_ENUMERATION(
-      "Previews.OptimizationGuide.HintCache.HintType.Loaded", store_entry_type);
+  UMA_HISTOGRAM_ENUMERATION("OptimizationGuide.HintCache.HintType.Loaded",
+                            store_entry_type);
 
   IncrementHintLoadedCountsPrefForKey(
       pref_service_, GetStringNameForStoreEntryType(store_entry_type));
 
   if (store_entry_type == StoreEntryType::kFetchedHint) {
     UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+        "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
         base::Time::FromDeltaSinceWindowsEpoch(
             base::TimeDelta::FromSeconds(entry->expiry_time_secs())) -
             base::Time::Now(),

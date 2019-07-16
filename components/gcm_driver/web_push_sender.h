@@ -51,7 +51,7 @@ class WebPushSender {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  base::WeakPtrFactory<WebPushSender> weak_ptr_factory_;
+  base::WeakPtrFactory<WebPushSender> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebPushSender);
 };

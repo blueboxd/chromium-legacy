@@ -11,8 +11,24 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+
+namespace {
+
+constexpr size_t kLeft = 0;
+constexpr size_t kRight = 1;
+constexpr size_t kUp = 2;
+constexpr size_t kDown = 3;
+
+}  //  namespace
+
+#define ExpectLock(l, r, u, d)                                        \
+  EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[kLeft], l);  \
+  EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[kRight], r); \
+  EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[kUp], u);    \
+  EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[kDown], d);
 
 namespace blink {
 
@@ -75,6 +91,24 @@ class FallbackCursorEventManagerTest : public RenderingTest,
         event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
   }
 
+  // Simulates a mouse move at the given point in the visual viewport (i.e. the
+  // coordinates relative to the Chrome window).
+  // TODO(bokan): Replace all above uses with this method.
+  void MouseMoveViewport(IntPoint point) {
+    VisualViewport& visual_viewport =
+        GetDocument().GetPage()->GetVisualViewport();
+    FloatPoint root_frame_point =
+        visual_viewport.ViewportToRootFrame(FloatPoint(point));
+
+    WebMouseEvent event(WebInputEvent::kMouseMove, root_frame_point,
+                        root_frame_point,
+                        WebPointerProperties::Button::kNoButton, 0,
+                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+    event.SetFrameScale(1.0f);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  }
+
   void MouseDown(int x, int y) {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
@@ -89,13 +123,6 @@ class FallbackCursorEventManagerTest : public RenderingTest,
         .GetFrame()
         ->GetEventHandler()
         .HandleFallbackCursorModeBackEvent();
-  }
-
-  void ExpectLock(bool l, bool r, bool u, bool d) {
-    EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[0], l);
-    EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[1], r);
-    EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[2], u);
-    EXPECT_EQ(GetFallbackCursorChromeClient().cursor_lock_[3], d);
   }
 
  private:
@@ -464,21 +491,102 @@ TEST_F(FallbackCursorEventManagerTest, ZoomedIn) {
   ASSERT_EQ(IntSize(800, 600), GetDocument().View()->Size());
   ASSERT_EQ(FloatSize(200, 150), visual_viewport.VisibleRect().Size());
 
-  // Note: MouseMove position is specified in root frame coordinates. To
-  // determine the coordinates in the visual viewport, subtract the visual
-  // viewport offset (400, 300) from the MouseMove position.
-
   // Move to the center of the viewport.
-  MouseMove(500, 375);
+  MouseMoveViewport(IntPoint(400, 300));
   ExpectLock(false, false, false, false);
 
   // Move below the scroll down line.
-  MouseMove(500, 430);
+  MouseMoveViewport(IntPoint(400, 550));
   ExpectLock(false, false, false, true);
 
   // Move to the left of scroll left line.
-  MouseMove(450, 375);
+  MouseMoveViewport(IntPoint(50, 300));
   ExpectLock(true, false, false, false);
+}
+
+// Ensure the cursor causes correct locking in the presence of overflow:hidden.
+TEST_F(FallbackCursorEventManagerTest, AccountsForOverflowHidden) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0px;
+    }
+    html {
+      overflow-x: hidden;
+    }
+    .big {
+      height: 10000px;
+      width: 10000px;
+    }
+    </style>
+    <div class='big'></div>
+  )HTML");
+  TurnOnFallbackCursorMode();
+  VisualViewport& visual_viewport =
+      GetDocument().GetPage()->GetVisualViewport();
+
+  // Start fully zoomed out.
+  ASSERT_EQ(IntSize(800, 600), GetDocument().View()->Size());
+  ASSERT_EQ(FloatSize(800, 600), visual_viewport.VisibleRect().Size());
+
+  // Move to the center of the viewport.
+  MouseMoveViewport(IntPoint(400, 300));
+  ExpectLock(false, false, false, false);
+
+  // Move to the right scroll region. We don't expect to lock because the visual
+  // viewport has no scroll extent. The layout viewport has scroll extent but
+  // is limited by overflow-x:hidden.
+  MouseMoveViewport(IntPoint(750, 300));
+  ExpectLock(false, false, false, false);
+
+  // Move to the bottom scroll region. Since only overflow-x is hidden, this
+  // should cause locking in the down direction.
+  MouseMoveViewport(IntPoint(400, 550));
+  ExpectLock(false, false, false, true);
+
+  // Now zoom in. Make sure we can still scroll the visual viewport but not the
+  // layout.
+  visual_viewport.SetScaleAndLocation(4, /*is_pinch_gesture_active=*/false,
+                                      FloatPoint(0, 0));
+  ASSERT_EQ(IntSize(800, 600), GetDocument().View()->Size());
+  ASSERT_EQ(FloatSize(200, 150), visual_viewport.VisibleRect().Size());
+
+  // Move to the right scroll region; since the visual viewport can scroll, we
+  // should expect to lock to the right.
+  MouseMoveViewport(IntPoint(750, 300));
+  ExpectLock(false, true, false, false);
+
+  // Now move the visual viewport to the bottom right corner of the layout
+  // viewport.
+  visual_viewport.SetScaleAndLocation(4, /*is_pinch_gesture_active=*/false,
+                                      FloatPoint(600, 450));
+
+  // Move mouse to the right scroll region. Since the visual viewport is at the
+  // extent, and the layout viewport isn't user scrollable, we shouldn't cause
+  // locking.
+  MouseMoveViewport(IntPoint(750, 350));
+  ExpectLock(false, false, false, false);
+
+  // Move the mouse to the bottom scroll region, we should expect to lock
+  // because the layout viewport can scroll vertically, even though the visual
+  // viewport is at the extent.
+  MouseMoveViewport(IntPoint(750, 550));
+  ExpectLock(false, false, false, true);
+
+  // Move the mouse to the bottom scroll region, we should expect to lock
+  // because the layout viewport can scroll vertically, even though the visual
+  // viewport is at the extent.
+  MouseMoveViewport(IntPoint(745, 550));
+  ExpectLock(false, false, false, true);
+
+  // Fully scroll the layout viewport to the bottom.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 100000), kProgrammaticScroll);
+
+  // Move the mouse to the bottom of the viewport, we shouldn't lock because
+  // both layout and visual are at the extent.
+  MouseMoveViewport(IntPoint(740, 550));
+  ExpectLock(false, false, false, false);
 }
 
 TEST_F(FallbackCursorEventManagerTest, NotInCursorMode) {

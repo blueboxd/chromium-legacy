@@ -149,8 +149,7 @@ SyncManagerImpl::SyncManagerImpl(
       change_delegate_(nullptr),
       initialized_(false),
       observing_network_connectivity_changes_(false),
-      sync_encryption_handler_(nullptr),
-      weak_ptr_factory_(this) {
+      sync_encryption_handler_(nullptr) {
   // Pre-fill |notification_info_map_|.
   for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
     notification_info_map_.insert(

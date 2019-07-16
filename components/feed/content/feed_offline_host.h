@@ -135,7 +135,7 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // Calls all OfflineStatusListeners with the updated status.
   NotifyStatusChangeCallback notify_status_change_;
 
-  base::WeakPtrFactory<FeedOfflineHost> weak_factory_;
+  base::WeakPtrFactory<FeedOfflineHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FeedOfflineHost);
 };

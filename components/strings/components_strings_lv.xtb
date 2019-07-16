@@ -225,6 +225,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Karte</translation>
 <translation id="2114841414352855701">Ignorēta, jo to atcēla politika <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Izsniegts: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Kustību sensori</translation>
 <translation id="213826338245044447">Mobilās grāmatzīmes</translation>
 <translation id="214556005048008348">Atcelt maksājumu</translation>
@@ -303,6 +304,7 @@
 <translation id="2515629240566999685">Pārbaudiet signālu savā apkaimē.</translation>
 <translation id="2523886232349826891">Tiks saglabāta tikai šajā ierīcē</translation>
 <translation id="2524461107774643265">Papildu informācijas pievienošana</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{un vēl 1}zero{un vēl #}one{un vēl #}other{un vēl #}}</translation>
 <translation id="2536110899380797252">Pievienot adresi</translation>
 <translation id="2539524384386349900">Noteikt</translation>
 <translation id="254947805923345898">Politikas vērtība nav derīga.</translation>
@@ -714,6 +716,7 @@
 <translation id="4858792381671956233">Jūs lūdzāt vecākiem atļauju apmeklēt šo lapu</translation>
 <translation id="4876188919622883022">Vienkāršotais skats</translation>
 <translation id="4876305945144899064">Nav lietotājvārda</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Nav}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}zero{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Teksta “<ph name="TEXT" />” meklēšana</translation>
 <translation id="4879491255372875719">Automātiski (noklusējums)</translation>
 <translation id="4880827082731008257">Meklēšanas vēsture</translation>
@@ -1008,6 +1011,7 @@
 <translation id="650855688985305916">Jā, saglabāt</translation>
 <translation id="6508722015517270189">Restartējiet pārlūku Chrome</translation>
 <translation id="6517596291481585650">Brīdinājums! Šī politika netika apvienota kā saraksts atbilstoši politikā noteiktajam, jo tā nav saraksts.</translation>
+<translation id="6521745193039995384">Nav aktīva</translation>
 <translation id="6529602333819889595">&amp;Dzēšanas atsaukuma atcelšana</translation>
 <translation id="6534179046333460208">Fiziskā tīmekļa ieteikumi</translation>
 <translation id="6545864417968258051">Bluetooth meklēšana</translation>
@@ -1468,6 +1472,7 @@ Papildu informācija:
 <translation id="9076630408993835509">Šo pārlūku nepārvalda uzņēmums vai cita organizācija. Darbību šajā ierīcē var pārvaldīt ārpus pārlūka Chrome. <ph name="BEGIN_LINK" />Uzzināt vairāk<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Nepieciešama plašāka informācija.</translation>
 <translation id="9080712759204168376">Pasūtījuma kopsavilkums</translation>
+<translation id="9089260154716455634">Izslēgšanas stundu politika:</translation>
 <translation id="9095388113577226029">Citas valodas…</translation>
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>

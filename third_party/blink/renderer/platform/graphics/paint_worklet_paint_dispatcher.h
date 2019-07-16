@@ -8,16 +8,16 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/thread_annotations.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_painter.h"
 #include "third_party/blink/renderer/platform/graphics/platform_paint_worklet_layer_painter.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
@@ -33,12 +33,11 @@ namespace blink {
 // worklets, and a scheduler, which is not shared. All PaintWorklets for a
 // single renderer process share one PaintWorkletPaintDispatcher on the
 // compositor side.
-class PLATFORM_EXPORT PaintWorkletPaintDispatcher
-    : public ThreadSafeRefCounted<PaintWorkletPaintDispatcher> {
+class PLATFORM_EXPORT PaintWorkletPaintDispatcher {
  public:
   static std::unique_ptr<PlatformPaintWorkletLayerPainter>
   CreateCompositorThreadPainter(
-      scoped_refptr<PaintWorkletPaintDispatcher>& paintee);
+      base::WeakPtr<PaintWorkletPaintDispatcher>* paintee);
 
   PaintWorkletPaintDispatcher();
 
@@ -68,6 +67,13 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
                                    scoped_refptr<base::SingleThreadTaskRunner>);
   void UnregisterPaintWorkletPainter(PaintWorkletId);
 
+  // The main thread is given a base::WeakPtr to this class to hand to the
+  // PaintWorklet thread(s), so that they can register and unregister
+  // PaintWorklets. See blink::WebFrameWidgetBase for where this happens.
+  base::WeakPtr<PaintWorkletPaintDispatcher> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   using PaintWorkletPainterToTaskRunnerMap =
       HashMap<PaintWorkletId,
               std::pair<CrossThreadPersistent<PaintWorkletPainter>,
@@ -81,14 +87,10 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
   // |DispatchWorklets|.
   void AsyncPaintDone();
 
-  // Provide a copy of the painter_map_; see comments on |painter_map_mutex_|.
-  PaintWorkletPainterToTaskRunnerMap GetPainterMapCopy();
-
   // This class handles paint class instances for multiple PaintWorklets. These
   // are disambiguated via the PaintWorklets unique id; this map exists to do
   // that disambiguation.
-  PaintWorkletPainterToTaskRunnerMap painter_map_
-      GUARDED_BY(painter_map_mutex_);
+  PaintWorkletPainterToTaskRunnerMap painter_map_;
 
   // Whilst an asynchronous paint is underway (see |DispatchWorklets|), we store
   // the input jobs and the completion callback. The jobs are shared with the
@@ -97,23 +99,11 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
   cc::PaintWorkletJobMap ongoing_jobs_;
   base::OnceCallback<void(cc::PaintWorkletJobMap)> on_async_paint_complete_;
 
-  // The (Un)registerPaintWorkletPainter comes from the worklet thread, the
-  // Paint call is initiated from the raster threads, and DispatchWorklet comes
-  // from the compositor thread - this mutex ensures that accessing / updating
-  // the |painter_map_| is thread safe.
-  //
-  // TODO(crbug.com/907897): Once we remove the raster thread path, we can
-  // convert PaintWorkletPaintDispatcher to have a WeakFactory, make all calls
-  // happen on the compositor thread, and remove this mutex.
-  Mutex painter_map_mutex_;
-
   // Used to ensure that appropriate methods are called on the same thread.
   // Currently only used for the asynchronous dispatch path.
-  //
-  // TODO(crbug.com/907897): Once we remove the raster thread path, we can
-  // convert PaintWorkletPaintDispatcher to have a WeakFactory, make all calls
-  // happen on the compositor thread, and check this on all methods.
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<PaintWorkletPaintDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaintWorkletPaintDispatcher);
 };

@@ -177,7 +177,7 @@ class MockGLES2Decoder : public GLES2Decoder {
       void(CopyTexImageResourceManager* copy_texture_resource_manager));
 
  private:
-  base::WeakPtrFactory<MockGLES2Decoder> weak_ptr_factory_;
+  base::WeakPtrFactory<MockGLES2Decoder> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);
 };

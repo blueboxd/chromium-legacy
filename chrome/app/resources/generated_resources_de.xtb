@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">Ihre Identität konnte nicht bestätigt werden</translation>
 <translation id="1116694919640316211">Über</translation>
 <translation id="1116779635164066733">Diese Einstellung wird durch die Erweiterung "<ph name="NAME" />" erzwungen.</translation>
-<translation id="1117602883390928720">Kerberos-Konto hinzufügen</translation>
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="1118738876271697201">Das System konnte das Gerätemodell oder die Seriennummer nicht ermitteln.</translation>
 <translation id="1119447706177454957">Interner Fehler</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">Ein Problem mit den Gerätelizenzen für den Demomodus ist aufgetreten.</translation>
 <translation id="126710816202626562">Zielsprache:</translation>
 <translation id="126768002343224824">16-fach</translation>
-<translation id="1269405567167332785">Erweiterte Konfiguration</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272293450992660632">Die PIN-Werte stimmen nicht überein.</translation>
 <translation id="1272978324304772054">Dieses Nutzerkonto gehört nicht zu der Domain, in der das Gerät angemeldet ist. Wenn Sie sich in einer anderen Domain anmelden möchten, müssen Sie zunächst eine Gerätewiederherstellung durchführen.</translation>
@@ -508,7 +506,6 @@
 <translation id="1744060673522309905">Das Gerät konnte der Domain nicht beitreten. Sie dürfen nicht mehr als die erlaubte Anzahl von Geräten hinzufügen.</translation>
 <translation id="1744108098763830590">Hintergrundseite</translation>
 <translation id="1745520510852184940">Immer so verfahren</translation>
-<translation id="174617397682753897">Kerberos-Konten</translation>
 <translation id="1746402432151920942">Kennzeichnung für geschützte Medien</translation>
 <translation id="175196451752279553">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
@@ -756,7 +753,6 @@
 <translation id="2135787500304447609">&amp;Fortsetzen</translation>
 <translation id="2136372518715274136">Neues Passwort eingeben</translation>
 <translation id="2136476978468204130">Sie haben eine ungültige Passphrase eingegeben</translation>
-<translation id="2137068468602026500">Klicken Sie unter "Webbrowser" auf <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">Es wird weiterhin versucht, eine Verbindung zu "<ph name="DEVICE_NAME" />" herzustellen</translation>
 <translation id="214169863967063661">Darstellungseinstellungen öffnen</translation>
 <translation id="2142328300403846845">Link öffnen als</translation>
@@ -844,7 +840,6 @@
 <translation id="2241634353105152135">Nur einmal</translation>
 <translation id="2242687258748107519">Dateiinformationen</translation>
 <translation id="2246549592927364792">Bildbeschreibungen von Google verwenden?</translation>
-<translation id="2249269794707377949">Alle Kerberos-Konten für die Einmalanmeldung (SSO) in bestimmten Apps, Websites und Dateifreigaben können hier verwaltet werden.</translation>
 <translation id="2249605167705922988">z. B. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mit System Viewer öffnen</translation>
 <translation id="225163402930830576">Netzwerke aktualisieren</translation>
@@ -879,7 +874,7 @@
 <translation id="2294358108254308676">Möchten Sie <ph name="PRODUCT_NAME" /> installieren?</translation>
 <translation id="2297705863329999812">Drucker suchen</translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> anpassen und verwalten</translation>
-<translation id="2300800387751317588">Die Synchronisierung wurde pausiert, da Sie Ihre Cookies beim Start löschen. Ändern Sie <ph name="COOKIE_SETTINGS_LINK" />, wenn die Synchronisierung fortgesetzt werden soll.</translation>
+<translation id="2300800387751317588">Anmelde-Cookies werden gelöscht, wenn Sie Chrome schließen. Wenn Sie die Synchronisierung fortsetzen möchten, ändern Sie die <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="2301382460326681002">Stammverzeichnis der Erweiterung ist ungültig.</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" hat zusätzliche Berechtigungen angefordert.</translation>
 <translation id="2307462900900812319">Netzwerk konfigurieren</translation>
@@ -1075,7 +1070,6 @@
 <translation id="2586672484245266891">Geben Sie eine kürzere URL ein</translation>
 <translation id="2587922270115112871">Beim Erstellen eines betreuten Nutzers wird kein Google-Konto erstellt und seine Einstellungen und Daten werden nicht über die Chrome-Synchronisierung auf anderen Geräten übernommen. Betreute Nutzer werden nur auf diesem Gerät eingerichtet.</translation>
 <translation id="2588636910004461974">Geräte von <ph name="VENDOR_NAME" /></translation>
-<translation id="258932246702879617">Wählen Sie <ph name="BEGIN_BOLD" />An Taskleiste anpinnen<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Bei Google suchen oder URL eingeben</translation>
 <translation id="2597521610396315071">Elternaufsicht einrichten</translation>
 <translation id="2603115962224169880">Computer bereinigen</translation>
@@ -1142,7 +1136,6 @@
 <translation id="2683638487103917598">Ordner sortiert</translation>
 <translation id="2684004000387153598">Um fortzufahren, klicken Sie auf Ok. Klicken Sie dann auf "Person hinzufügen", um ein neues Profil für Ihre E-Mail-Adresse zu erstellen.</translation>
 <translation id="2688196195245426394">Fehler bei der Registrierung des Geräts auf dem Server: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="2688477613306174402">Konfiguration</translation>
 <translation id="2690024944919328218">Sprachoptionen anzeigen</translation>
 <translation id="2691385045260836588">Modell</translation>
 <translation id="2693176596243495071">Hoppla! Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal oder wenden Sie sich an Ihren Administrator, wenn das Problem weiterhin besteht.</translation>
@@ -1529,7 +1522,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="32939749466444286">Der Linux-Container konnte nicht gestartet werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="329703603001918157">Verknüpfung kann nicht bearbeitet werden</translation>
-<translation id="3297951628821704004">Konto von diesem Gerät entfernen</translation>
 <translation id="329838636886466101">Reparieren</translation>
 <translation id="3298789223962368867">Die eingegebene URL ist ungültig.</translation>
 <translation id="32991397311664836">Geräte:</translation>
@@ -1590,7 +1582,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Trennzeichen</translation>
 <translation id="3387614642886316601">Erweiterte Rechtschreibprüfung verwenden</translation>
-<translation id="3389312115541230716">Klicken Sie mit der rechten Maustaste auf das Symbol <ph name="SMALL_PRODUCT_LOGO" /> in der Taskleiste</translation>
 <translation id="3393352139658145068">Assistant wird aktiviert, sobald jemand "Ok Google" sagt. Damit der Akku geschont wird, wird "Ok Google" nur aktiviert, wenn Ihr Gerät an eine Stromquelle angeschlossen ist.</translation>
 <translation id="3396800784455899911">Wenn Sie auf die Schaltfläche "Akzeptieren und fortfahren" klicken, willigen Sie damit in die oben für diese Google-Dienste beschriebene Verarbeitung Ihrer Daten ein.</translation>
 <translation id="3399432415385675819">Benachrichtigungen werden deaktiviert</translation>
@@ -1826,7 +1817,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3714195043138862580">Die Bereitstellung dieses Demogeräts wurde aufgehoben.</translation>
 <translation id="3714633008798122362">Web-Kalender</translation>
 <translation id="3719826155360621982">Startseite</translation>
-<translation id="3720996970802414353">Trotzdem wechseln</translation>
 <translation id="3722108462506185496">Fehler beim Starten des Dienstes für die virtuelle Maschine. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3725367690636977613">Seiten</translation>
 <translation id="3726137731714254362">Wenn Sie Ordner von hier entfernen, wird die Freigabe beendet, die Dateien werden aber nicht gelöscht.</translation>
@@ -2357,7 +2347,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4533985347672295764">CPU-Zeit</translation>
 <translation id="4534661889221639075">Versuchen Sie es noch einmal.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
-<translation id="4535767533210902251">Der Fingerabdrucksensor ist die Taste rechts oben auf der Tastatur. Berühren Sie sie leicht mit dem Finger.</translation>
+<translation id="4535767533210902251">Der Fingerabdrucksensor ist die Taste rechts oben auf der Tastatur. Berühren Sie ihn leicht mit dem Finger.</translation>
 <translation id="4538684596480161368">Plug-ins ohne Sandbox auf <ph name="HOST" /> immer blockieren</translation>
 <translation id="4538792345715658285">Durch Unternehmensrichtlinie installiert</translation>
 <translation id="4542520061254486227">Ihre Daten auf <ph name="WEBSITE_1" /> und <ph name="WEBSITE_2" /> lesen</translation>
@@ -2441,7 +2431,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4662788913887017617">Dieses Lesezeichen für mein iPhone freigeben</translation>
 <translation id="4663373278480897665">Kameranutzung zulässig</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
-<translation id="4664736447097490764">Hier können Sie die Kerberos-Konfiguration bearbeiten.</translation>
 <translation id="4665014895760275686">Hersteller</translation>
 <translation id="4665446389743427678">Alle von <ph name="SITE" /> gespeicherten Daten werden gelöscht.</translation>
 <translation id="4668721319092543482">Zum Aktivieren von <ph name="PLUGIN_NAME" /> klicken</translation>
@@ -2556,6 +2545,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4850669014075537160">Scrollen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4853020600495124913">In &amp;neuem Fenster öffnen</translation>
+<translation id="485480310608090163">Weitere Einstellungen und Berechtigungen</translation>
 <translation id="4856478137399998590">Ihr mobiler Datendienst ist aktiviert und einsatzbereit.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Alle in &amp;Inkognitofenster öffnen}=1{In &amp;Inkognitofenster öffnen}other{Alle (#) in &amp;Inkognitofenster öffnen}}</translation>
 <translation id="4858913220355269194">Fußball</translation>
@@ -2858,7 +2848,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5319359161174645648">Google empfiehlt Chrome</translation>
 <translation id="532247166573571973">Der Server ist eventuell nicht erreichbar. Versuchen Sie es später noch einmal.</translation>
 <translation id="5324780743567488672">Zeitzone automatisch anhand des Standorts einstellen</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> – darf in den Originaldateien speichern</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5327570636534774768">Dieses Gerät ist für die Verwaltung durch eine andere Domain markiert. Heben Sie die Bereitstellung von dieser Domain aus auf, bevor Sie den Demomodus einrichten.</translation>
 <translation id="532943162177641444">Tippen Sie auf die Benachrichtigung auf Ihrem <ph name="PHONE_NAME" />, um einen mobilen Hotspot einzurichten, den dieses Gerät nutzen kann.</translation>
@@ -3020,6 +3009,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="55601339223879446">Desktopbegrenzungen auf dem Bildschirm anpassen</translation>
 <translation id="5562781907504170924">Dieser Tab ist mit einem Bluetooth-Gerät verbunden.</translation>
 <translation id="5563234215388768762">Mit Google suchen oder eine URL eingeben</translation>
+<translation id="5565735124758917034">Aktiv</translation>
 <translation id="5567989639534621706">Caches</translation>
 <translation id="5568069709869097550">Anmeldung nicht möglich</translation>
 <translation id="5568144734023334204">Android-Speicherplatz</translation>
@@ -3571,7 +3561,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeminformationen<ph name="END_LINK1" /> und <ph name="BEGIN_LINK2" />Messwerte<ph name="END_LINK2" /> senden</translation>
 <translation id="6396988158856674517">Verwendung von Bewegungssensoren für Websites blockieren</translation>
 <translation id="6397094776139756010">Synchronisierungs- und Personalisierungsoptionen</translation>
-<translation id="6397449385184089588"><ph name="ORIGIN" /> wird in der Lage sein, Ihre Änderungen direkt in den Dateien im unten angegebenen Ordner zu speichern. Diese Website kann Änderungen nur speichern, während dieser Tab geöffnet ist.</translation>
+<translation id="6397449385184089588"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in den Dateien im unten angegebenen Ordner speichern. Diese Website kann Änderungen nur speichern, während dieser Tab geöffnet ist.</translation>
 <translation id="6398715114293939307">Google Play Store entfernen</translation>
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
 <translation id="6399774419735315745">Spionin</translation>
@@ -3670,7 +3660,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6532101170117367231">In Google Drive speichern</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Hinweis:<ph name="END_BOLD" /> Aktivieren Sie diese Option nur dann, wenn Sie dazu aufgefordert wurden und sich sicher sind, dass es unbedenklich ist. Die Datenerfassung kann die Leistung verringern.</translation>
 <translation id="6541638731489116978">Diese Website darf nicht auf Ihre Bewegungssensoren zugreifen.</translation>
-<translation id="6542184058496424548">Nutzername ungültig (Format muss "nutzer@bereich.de" entsprechen)</translation>
 <translation id="654233263479157500">Navigationsfehler mithilfe eines Webdienstes beheben</translation>
 <translation id="6544215763872433504">Der Webbrowser von Google, für Sie</translation>
 <translation id="6545665334409411530">Wiederholungsrate</translation>
@@ -3932,7 +3921,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6955446738988643816">Pop-up prüfen</translation>
 <translation id="6957044667612803194">Der Sicherheitsschlüssel unterstützt keine PINs</translation>
 <translation id="6957231940976260713">Name des Dienstes</translation>
-<translation id="6957572737510023982">Hoppla! Ein Fehler ist aufgetreten (Fehlercode <ph name="ERROR_CODE" />).</translation>
 <translation id="6964390816189577014">Held</translation>
 <translation id="6964760285928603117">Aus Gruppe entfernen</translation>
 <translation id="6965382102122355670">Ok</translation>
@@ -4191,7 +4179,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7328699668338161242">Assistant erkennt Ihre Stimme bereits</translation>
 <translation id="7328867076235380839">Ungültige Kombination</translation>
 <translation id="7329154610228416156">Sie konnten nicht angemeldet werden, weil in der Konfiguration eine unsichere URL angegeben ist (<ph name="BLOCKED_URL" />). Bitte wenden Sie sich an Ihren Administrator.</translation>
-<translation id="733006820760728943">Als aktives Konto festlegen</translation>
 <translation id="7334190995941642545">Smart Lock ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="7334274148831027933">Angedockte Lupe aktivieren</translation>
 <translation id="7335974957018254119">Rechtschreibprüfung verwenden für</translation>
@@ -4202,7 +4189,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> wird jetzt im Vollbildmodus angezeigt.</translation>
 <translation id="7340650977506865820">Ihr Bildschirm wurde von der Website freigegeben</translation>
 <translation id="7341834142292923918">Möchte auf diese Website zugreifen</translation>
-<translation id="7344488796804562294">Erweiterte Kerberos-Konfiguration</translation>
 <translation id="7345706641791090287">Passwort bestätigen</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="7347751611463936647">Um diese Erweiterung zu verwenden, geben Sie "<ph name="EXTENSION_KEYWORD" />" ein, dann TAB, und dann Ihren Befehl oder Ihre Suchanfrage.</translation>
@@ -4295,7 +4281,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="749028671485790643">Profil <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC-Adresse</translation>
 <translation id="7493386493263658176">Die Erweiterung <ph name="EXTENSION_NAME" /> erfasst unter Umständen alle von Ihnen eingegebenen Textinhalte, einschließlich personenbezogener Daten wie Passwörter und Kreditkartennummern. Möchten Sie diese Erweiterung verwenden?</translation>
-<translation id="7494065396242762445">Windows-Einstellungen öffnen</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Haben Sie Ihr altes Passwort vergessen?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> und die damit verknüpften Daten werden von diesem Gerät entfernt.</translation>
@@ -4320,7 +4305,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7530016656428373557">Entladerate in Watt</translation>
 <translation id="7531779363494549572">Gehen Sie zu "Einstellungen" &gt; "Apps &amp; Benachrichtigungen" &gt; "Benachrichtigungen".</translation>
 <translation id="7536220825385726660">Play Store-Apps erlauben, auf externe Laufwerke zuzugreifen</translation>
-<translation id="7537601449003285327">An Taskleiste anpinnen</translation>
 <translation id="7539856059004947393">Bluetooth-Sicherheitsschlüssel</translation>
 <translation id="7540972813190816353">Fehler beim Suchen nach Updates: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Debugging-Funktionen auf diesem <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät aktivieren</translation>
@@ -4351,7 +4335,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7574650250151586813">Wenn Sie Text eingegeben möchten, aktualisieren Sie die Daydream Keyboard App</translation>
 <translation id="7576690715254076113">Zuordnen</translation>
 <translation id="7576976045740938453">Ein Problem mit dem Konto für den Demomodus ist aufgetreten.</translation>
-<translation id="757941033127302446">Angemeldet</translation>
 <translation id="7580671184200851182">Dieselben Audioinhalte über alle Lautsprecher wiedergeben (Mono-Audio)</translation>
 <translation id="7581462281756524039">Ein Bereinigungstool</translation>
 <translation id="7582582252461552277">Dieses Netzwerk bevorzugen</translation>
@@ -4629,7 +4612,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7959074893852789871">Die Datei enthielt mehrere Zertifikate, von denen einige nicht importiert wurden:</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7963826112438303517">Assistant verwendet diese Aufzeichnungen und Ihre mündlichen Anfragen, um Ihr Sprachmodell zu erstellen und zu aktualisieren. Es wird nur in Geräten gespeichert, in denen Sie Voice Match aktiviert haben. In den Assistant-Einstellungen können Sie sich die Sprachaktivität anzeigen lassen oder das Sprachmodell neu trainieren.</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> möchte nach Bluetooth-Geräten in der Nähe suchen. Die folgenden Geräte wurden gefunden:</translation>
 <translation id="7966241909927244760">Bildadresse k&amp;opieren</translation>
 <translation id="7968742106503422125">Daten lesen und ändern, die Sie kopieren und einfügen</translation>
 <translation id="7968833647796919681">Erfassung von Leistungsdaten aktivieren</translation>
@@ -4695,7 +4677,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8037117027592400564">Alle mit künstlicher Sprachausgabe gesprochenen Texte lesen</translation>
 <translation id="8037357227543935929">Nachfragen (Standardeinstellung)</translation>
 <translation id="803771048473350947">Datei</translation>
-<translation id="8042142357103597104">Deckkraft von Text</translation>
+<translation id="8042142357103597104">Texttransparenz</translation>
 <translation id="8044899503464538266">Langsam</translation>
 <translation id="8045253504249021590">Die Synchronisierung wurde über das Google Dashboard gestoppt.</translation>
 <translation id="8045923671629973368">Anwendungs-ID oder Webstore-URL eingeben</translation>
@@ -4785,7 +4767,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8184472985242519288">Einheitlich</translation>
 <translation id="8185331656081929126">Benachrichtigung anzeigen, wenn neue Drucker im Netzwerk gefunden werden</translation>
 <translation id="8186609076106987817">Die Datei konnte nicht gefunden werden.</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> kann alle Dateien im unten angegebenen Ordner lesen. Diese Website kann Änderungen nur dann im Ordner speichern, wenn dieser Tab geöffnet ist.</translation>
 <translation id="8188389033983459049">Überprüfen Sie Ihre Geräteeinstellungen und aktivieren Sie Bluetooth, um fortzufahren</translation>
 <translation id="8190193592390505034">Verbindung zu <ph name="PROVIDER_NAME" /> wird hergestellt.</translation>
 <translation id="8191230140820435481">Apps, Erweiterungen und Designs verwalten</translation>
@@ -4921,7 +4902,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="839736845446313156">Registrieren</translation>
 <translation id="8398877366907290961">Trotzdem fortfahren</translation>
 <translation id="8400146488506985033">Nutzer verwalten</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in den Dateien im unten angegebenen Ordner speichern. Diese Website kann Änderungen nur speichern, während dieser Tab geöffnet ist.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Zuerst fragen (empfohlen)</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
@@ -5274,7 +5254,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="891365694296252935">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Vorschläge werden geladen</translation>
 <translation id="8916476537757519021">Inkognito-Subframe: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> – darf den Inhalt eines Ordners auf Ihrem Gerät lesen</translation>
 <translation id="8919275547519617350">Wenn Sie Ihre Passwörter auf allen Ihren Geräten verfügbar haben möchten, melden Sie sich an und aktivieren Sie die Synchronisierung.</translation>
 <translation id="8921366488406707015">Sicherheitsschlüssel wird geprüft…</translation>
 <translation id="8922013791253848639">Werbung auf dieser Website immer zulassen</translation>
@@ -5324,6 +5303,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8995603266996330174">Verwaltet von <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Konto hinzufügen...</translation>
 <translation id="899657321862108550">Ihr persönlicher Chrome-Browser – auf allen Geräten</translation>
+<translation id="899676909165543803">Der Fingerabdrucksensor ist die Taste rechts unten auf der Tastatur. Berühren Sie ihn leicht mit dem Finger.</translation>
 <translation id="9003647077635673607">Auf allen Websites zulassen</translation>
 <translation id="9003704114456258138">Frequenz</translation>
 <translation id="9004952710076978168">Benachrichtigung für unbekannten Drucker erhalten</translation>
@@ -5360,7 +5340,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9044646465488564462">Fehler beim Herstellen einer Verbindung mit dem Netzwerk: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Die Webadresse der Seite, die Sie aufrufen möchten, wird an Google gesendet</translation>
 <translation id="9046895021617826162">Verbindungsaufbau fehlgeschlagen</translation>
-<translation id="9047391224416514812">Ein Konto mit diesem Nutzernamen ist bereits vorhanden</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">Sie haben Ihre Drucker unter dem Konto <ph name="EMAIL" /> bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="9052404922357793350">Weiterhin blockieren</translation>
@@ -5453,7 +5432,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9214520840402538427">Hoppla! Bei der Initialisierung der Installationszeit-Attribute ist eine Zeitüberschreitung aufgetreten. Bitte wenden Sie sich an Ihren Support-Mitarbeiter.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" hinzugefügt</translation>
-<translation id="9216712190298404438"><ph name="ORIGIN" /> wird in der Lage sein, Ihre Änderungen direkt in der unten angegebenen Datei zu speichern. Diese Website kann Änderungen nur speichern, während dieser Tab geöffnet ist.</translation>
+<translation id="9216712190298404438"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in der unten angegebenen Datei speichern. Diese Website kann Änderungen nur speichern, während dieser Tab geöffnet ist.</translation>
 <translation id="9218430445555521422">Als Standard festlegen</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="9220525904950070496">Konto entfernen</translation>

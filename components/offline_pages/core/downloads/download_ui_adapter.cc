@@ -83,8 +83,7 @@ DownloadUIAdapter::DownloadUIAdapter(
       model_(model),
       request_coordinator_(request_coordinator),
       visuals_decoder_(std::move(visuals_decoder)),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {
+      delegate_(std::move(delegate)) {
   delegate_->SetUIAdapter(this);
   if (aggregator_)
     aggregator_->RegisterProvider(kOfflinePageNamespace, this);

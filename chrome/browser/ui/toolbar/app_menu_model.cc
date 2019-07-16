@@ -131,6 +131,13 @@ base::Optional<base::string16> GetInstallPWAAppMenuItemName(Browser* browser) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
+// LogWrenchMenuAction
+void LogWrenchMenuAction(AppMenuAction action_id) {
+  UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
+                            LIMIT_MENU_ACTION);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ZoomMenuModel
 
 ZoomMenuModel::ZoomMenuModel(ui::SimpleMenuModel::Delegate* delegate)
@@ -714,8 +721,7 @@ void AppMenuModel::NavigationEntryCommitted(
 }
 
 void AppMenuModel::LogMenuAction(AppMenuAction action_id) {
-  UMA_HISTOGRAM_ENUMERATION("WrenchMenu.MenuAction", action_id,
-                            LIMIT_MENU_ACTION);
+  LogWrenchMenuAction(action_id);
 }
 
 // Note: When adding new menu items please place under an appropriate section.

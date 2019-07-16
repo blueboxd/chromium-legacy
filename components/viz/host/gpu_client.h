@@ -96,7 +96,7 @@ class VIZ_HOST_EXPORT GpuClient : public mojom::GpuMemoryBufferFactory,
   // GpuClient instance is bound to this thread, and must be destroyed on this
   // thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<GpuClient> weak_factory_;
+  base::WeakPtrFactory<GpuClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuClient);
 };

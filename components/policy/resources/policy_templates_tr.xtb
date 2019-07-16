@@ -3311,19 +3311,8 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="7123160381479171745">Cihaza giriş yapmasına izin verilen kullanıcıların listesini tanımlar. Girişler <ph name="USER_WHITELIST_ENTRY_FORMAT" /> formundadır (örneğin, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Bir alan adı üzerinde rastgele kullanıcılara izin vermek için <ph name="USER_WHITELIST_ENTRY_WILDCARD" /> formunda girişler kullanın.
 
       Bu politika yapılandırılmazsa, hangi kullanıcıların oturum açmasına izin verileceğine dair herhangi bir kısıtlama olmaz. Ancak yeni kullanıcı oluşturmak için yine de <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> politikasının uygun şekilde yapılandırılması gerekeceğini unutmayın.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" />, uzantıların güvenli bir şekilde güncellenmesini ve yüklenmesini sağlar. Ancak Chrome Web Mağazası'nın dışında barındırılan bazı uzantıların içeriği yalnızca SHA1 gibi güvenli olmayan imzalama veya karma oluşturma algoritmaları ile korunabilir. Bu politika devre dışı bırakılırsa, Chrome bu tür uzantıların sıfırdan yüklenmesine veya güncellenmesine izin vermez (uzantının geliştiricileri uzantıyı daha güçlü algoritmalarla yeniden oluşturana kadar). Bu politika etkinleştirilirse bu tür uzantıların yüklenmesine ve güncellenmesine izin verilir.
-
-          Bu politika ayarlanmadan bırakılırsa, varsayılan etkin davranış olarak ayarlanır.
-          <ph name="PRODUCT_NAME" /> 75 sürümünden itibaren, bu politika ayarlanmadan bırakılırsa varsayılan devre dışı davranış olarak ayarlanır.
-
-          <ph name="PRODUCT_NAME" /> 77 sürümünden itibaren, bu politika yoksayılır ve devre dışı olarak değerlendirilir.</translation>
 <translation id="7126716959063786004">Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini etkinleştir</translation>
 <translation id="7127892035367404455">Hedef sürüme geri dönme</translation>
-<translation id="7128918109610518786"><ph name="PRODUCT_OS_NAME" /> tarafından başlatıcı çubuğunda sabitlenmiş uygulamalar olarak gösterilen uygulama tanımlayıcılarını listeler.
-
-      Bu politika yapılandırılırsa, uygulama seti sabittir ve kullanıcı tarafından değiştirilemez.
-
-      Bu politika ayarlanmadan bırakılırsa, kullanıcı başlatıcıdaki sabitlenmiş uygulamalar listesini değiştirebilir.</translation>
 <translation id="713121532817834879">Bu politika, Internet Explorer'ın <ph name="IEEM_SITELIST_POLICY" /> politikasıyla aynı biçimde bir XML dosyasına yönlendiren bir URL'dir. Bu politika, bir XML dosyasından kurallar yükler, ancak bu kuralları Internet Explorer ile paylaşmaz.
 
       Bu XML dosyasındaki kurallar, <ph name="GREYLIST_POLICY_NAME" /> ile aynı şekilde uygulanır. Diğer bir deyişle, bu kurallar <ph name="PRODUCT_NAME" /> ürününün alternatif tarayıcıyı açmasını ve ayrıca, alternatif tarayıcının <ph name="PRODUCT_NAME" /> ürününü açmasını engeller.
@@ -4165,12 +4154,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Bu ayarı devre dışı veya ayarlanmadan bırakırsanız, sunucunun standart adı CNAME araması ile belirlenir.</translation>
 <translation id="8764477907716150749">Bu politika <ph name="PRODUCT_NAME" /> tarafından dahili kullanım içindir.</translation>
-<translation id="8765776988041674792">Şifre değiştirme URL'sini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      <ph name="PRODUCT_NAME" /> ürününün bu şifre değiştirme sayfasında yeni şifre parmak izini doğru bir şekilde yakalayabilmesi için lütfen şifre değiştirme sayfanızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde belirtilen yönergelere uygun olduğundan emin olun.
-
-      Bu ayar etkinleştirilirse şifre koruma hizmeti, tarayıcıda bir uyarı gördükten sonra şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
-      Bu ayar devre dışı bırakılır veya ayarlanmazsa şifre koruma hizmeti, şifrelerini değiştirmeleri için kullanıcıları https://myaccounts.google.com adresine gönderir.
-      Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8800453707696044281">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarla</translation>
 <translation id="8801680448782904838">Kullanıcıya tarayıcının veya cihazın yeniden başlatılmasının önerildiğini ya da gerektiğini bildir</translation>
@@ -4293,9 +4276,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Politika değeri saniye olarak belirtilmelidir.</translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
-<translation id="9038058011835642205">Kullanıcı etkileşimi olmadan sessizce yüklenen ve yüklemesi kaldırılamayan uygulamaların bir listesini belirtir.
-
-      Politikanın her liste öğesi, zorunlu üyeli bir nesnedir: "url" ve iki isteğe bağlı üye: "default_launch_container" ve "create_desktop_shortcut". "url", yüklenecek web uygulamasının URL'si olmalı ve "launch_container", Web Uygulamasının yüklendikten sonra nasıl açılacağını belirtmek için "window" veya "tab" değerini almalı ve "create_desktop_shortcut", Linux ve Windows'da bir masaüstü kısayolu oluşturulması gerekiyorsa true (doğru) değerine ayarlanmalıdır. "default_launch_container" yoksayılırsa uygulama varsayılan olarak bir sekmede açılır. "default_launch_container" değerinden bağımsız olarak kullanıcılar, uygulamanın içinde açılacağı kapsayıcıyı değiştirebilir. "create_desktop_shortcuts" yoksayılırsa herhangi bir masaüstü kısayolu oluşturulmaz.</translation>
 <translation id="9038839118379817310">Kablosuzu etkinleştir</translation>
 <translation id="9039822628127365650">Bu politika ayarlandığında, kullanıcının otomatik olarak çıkış yapıp oturumu sonlandırılmadan önce geçecek süreyi belirtir. Kalan süre, sistem tepsisinde gösterilen bir geri sayım zamanlayıcı ile kullanıcıya bildirilir.
 

@@ -351,8 +351,7 @@ DownloadItemImpl::DownloadItemImpl(
       last_modified_time_(last_modified),
       etag_(etag),
       received_slices_(received_slices),
-      is_updating_observers_(false),
-      weak_ptr_factory_(this) {
+      is_updating_observers_(false) {
   delegate_->Attach();
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
          state_ == CANCELLED_INTERNAL);
@@ -398,8 +397,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       is_updating_observers_(false),
       fetch_error_body_(info.fetch_error_body),
       request_headers_(info.request_headers),
-      download_source_(info.download_source),
-      weak_ptr_factory_(this) {
+      download_source_(info.download_source) {
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_ACTIVE_DOWNLOAD);
   allow_metered_ |= delegate_->IsActiveNetworkMetered();
@@ -424,8 +422,7 @@ DownloadItemImpl::DownloadItemImpl(
       state_(IN_PROGRESS_INTERNAL),
       delegate_(delegate),
       destination_info_(path, path, 0, false, std::string(), base::Time()),
-      is_updating_observers_(false),
-      weak_ptr_factory_(this) {
+      is_updating_observers_(false) {
   job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
                                        DownloadCreateInfo(), true, nullptr,
                                        nullptr, nullptr);

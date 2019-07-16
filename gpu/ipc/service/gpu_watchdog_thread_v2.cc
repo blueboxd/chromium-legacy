@@ -30,8 +30,7 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
                                                  bool is_test_mode)
     : watchdog_timeout_(timeout),
       is_test_mode_(is_test_mode),
-      watched_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_factory_(this) {
+      watched_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   base::MessageLoopCurrent::Get()->AddTaskObserver(this);
   weak_ptr_ = weak_factory_.GetWeakPtr();
   Arm();

@@ -82,12 +82,12 @@ struct InitGlobals {
 
     print_comms_ = ::getenv("LPM_DUMP_NATIVE_INPUT");
 
-    // Mark this thread as an IO_THREAD with MOCK_TIME, and ensure that every
-    // other thread's time is driven from this thread's MOCK_TIME.
-    scoped_task_environment_ = std::make_unique<
-        base::test::ScopedTaskEnvironment>(
-        base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
-        base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+    // Mark this thread as an IO_THREAD with MOCK_TIME, and ensure that Now()
+    // is driven from the same mock clock.
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
 
     // Disable noisy logging as per "libFuzzer in Chrome" documentation:
     // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.

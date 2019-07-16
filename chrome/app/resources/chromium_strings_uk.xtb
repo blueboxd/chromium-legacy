@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Отримати довідку щодо користування ОС Chromium</translation>
 <translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
-<translation id="1502360822835740515">Як зробити Chromium веб-переглядачем за умовчанням</translation>
 <translation id="151962892725702025">ОС Chromium не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
 <translation id="1524282610922162960">Поділитися вкладкою Chromium</translation>
-<translation id="1585657529869845941">Натисніть кнопку <ph name="BEGIN_BOLD" />Усе одно змінити<ph name="END_BOLD" />, якщо вона з’явиться</translation>
 <translation id="1668054258064581266">Якщо видалити обліковий запис із Chromium, можливо, потрібно оновити відкриті вкладки, щоб зміни почали діяти.</translation>
 <translation id="1688750314291223739">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Chromium на будь-якому комп’ютері.</translation>
 <translation id="1708666629004767631">Доступна нова, надійніша версія Chromium.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium матиме доступ до Диска, щоб робити пропозиції в адресному рядку</translation>
 <translation id="378917192836375108">Chromium дозволяє натиснути номер телефону в Інтернеті та зателефонувати за ним через Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Як закріпити значок Chromium на панелі завдань</translation>
 <translation id="388648406173476553">Налаштуйте й керуйте Chromium. Якщо з’явиться сповіщення, натисніть його, щоб дізнатися більше.</translation>
 <translation id="3889543394854987837">Натисніть своє ім’я, щоб відкрити Chromium і розпочати перегляд сайтів.</translation>
 <translation id="3898493977366060150">Перегляд веб-сторінок із розумними функціями Google</translation>
 <translation id="4036079820698952681">Допоможіть покращити Chromium, надсилаючи звіти про <ph name="BEGIN_LINK" />поточні налаштування<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
-<translation id="407254336480250557">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Знаходьте чудові додатки, ігри, розширення й теми для Chromium.</translation>
 <translation id="4216212958613226427">Цією мовою відображається інтерфейс Chromium</translation>
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Схоже, профіль використовується іншим процесом Chromium (<ph name="PROCESS_ID" />) на іншому комп’ютері (<ph name="HOST_NAME" />). Chromium заблокував профіль, щоб запобігти його спотворенню. Якщо ви впевнені, що жоден інший процес не використовує цей профіль, розблокуйте профіль і перезапустіть Chromium.</translation>
 <translation id="469338717132742108">Отримати довідку щодо ОС Chromium</translation>
 <translation id="4708774505295300557">Хтось раніше входив у Chromium на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST" />. Створіть нового користувача Chromium, щоб зберігати свою інформацію окремо.</translation>
-<translation id="4714956846925717402">Відкривайте Chromium швидше</translation>
 <translation id="4746050847053251315">Усе одно вийти з Chromium?</translation>
 <translation id="4748217263233248895">Щойно було застосовано спеціальне оновлення для захисту Chromium. Перезапустіть веб-переглядач, і ваші вкладки буде відновлено.</translation>
 <translation id="479167709087336770">Використовується та сама технологія перевірки правопису, що й у Пошуку Google. Текст, який ви вводите у веб-переглядачі, надсилається в Google. Це завжди можна змінити в налаштуваннях.</translation>

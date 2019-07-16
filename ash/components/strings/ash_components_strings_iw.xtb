@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="104962181688258143">פתיחת האפליקציה 'קבצים'</translation>
-<translation id="1098295134904615027">הפעלת שולחן העבודה הווירטואלי שמימין</translation>
+<translation id="1098295134904615027">הפעלת שולחן העבודה הווירטואלי בצד ימין</translation>
 <translation id="1122869341872663659">מוצגות <ph name="N" /> תוצאות חיפוש לגבי <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">גרירת הקישור אל שורת כתובת האתר של הכרטיסייה</translation>
 <translation id="1204450209689312104">פתיחת חלון חדש במצב גלישה בסתר</translation>
@@ -24,7 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">‏הוספת www. ו-‎ .comלקלט בשורת כתובת האתר, ולאחר מכן פתיחת הדף</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> ואז <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> או <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">הפעלת שולחן העבודה הווירטואלי שמשמאל</translation>
+<translation id="1929866390202038233">הפעלת שולחן העבודה הווירטואלי בצד שמאל</translation>
 <translation id="1996162290124031907">מעבר לכרטיסייה הבאה</translation>
 <translation id="2010818616644390445">מעבר לכרטיסייה האחרונה בחלון</translation>
 <translation id="2040706009561734834">פתיחה/סגירה של מרכז האפליקציות</translation>

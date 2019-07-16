@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS Prerequisite check
+FAIL KV Storage: in non-secure contexts, import map mappings should fall back promise_test: Unhandled rejection with value: object "TypeError: KV Storage is only available in secure contexts"
+Harness: the test ran to completion.
+

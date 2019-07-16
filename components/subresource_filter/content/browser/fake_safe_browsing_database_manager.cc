@@ -12,8 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager()
-    : weak_factory_(this) {}
+FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager() {}
 
 void FakeSafeBrowsingDatabaseManager::AddBlacklistedUrl(
     const GURL& url,

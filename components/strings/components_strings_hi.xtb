@@ -228,6 +228,7 @@
 <translation id="2111256659903765347">सुपर-ए</translation>
 <translation id="2113977810652731515">कार्ड</translation>
 <translation id="2114841414352855701">ध्यान नहीं दिया गया क्योंकि यह <ph name="POLICY_NAME" /> द्वारा ओवरराइड की गई थी.</translation>
+<translation id="2119505898009119320">इसको जारी: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">हलचल पकड़ने वाले सेंसर</translation>
 <translation id="213826338245044447">मोबाइल बुकमार्क</translation>
 <translation id="214556005048008348">भुगतान न करें</translation>
@@ -309,6 +310,7 @@
 <translation id="2515629240566999685">अपने इलाके में सिग्नल की जाँच करें</translation>
 <translation id="2523886232349826891">सिर्फ़ इस डिवाइस पर सेव किया गया</translation>
 <translation id="2524461107774643265">ज़्यादा जानकारी जोड़ें</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{और 1 और व्यक्ति}one{और # और लोग}other{और # और लोग}}</translation>
 <translation id="2536110899380797252">पता जोड़ें</translation>
 <translation id="2539524384386349900">पता लगाएं</translation>
 <translation id="254947805923345898">नीति का मान मान्य नहीं है.</translation>
@@ -720,6 +722,7 @@
 <translation id="4858792381671956233">आपने अपने अभिभावकों से पूछा है कि इस साइट पर जाना ठीक है या नहीं</translation>
 <translation id="4876188919622883022">सरल बनाया गया व्यू</translation>
 <translation id="4876305945144899064">कोई उपयोगकर्ता नाम नहीं</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{कोई नहीं}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> खोज</translation>
 <translation id="4879491255372875719">अपने आप (डिफ़ॉल्ट)</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
@@ -1014,6 +1017,7 @@
 <translation id="650855688985305916">हां, सेव करें</translation>
 <translation id="6508722015517270189">Chrome को फिर से शुरू करें</translation>
 <translation id="6517596291481585650">चेतावनी: इस नीति को सूची के तौर पर नीति के बताए अनुसार नहीं मिलाया जा सकता, क्योंकि यह सूची नहीं है.</translation>
+<translation id="6521745193039995384">चालू नहीं</translation>
 <translation id="6529602333819889595">मिटाना &amp;फिर से करें</translation>
 <translation id="6534179046333460208">जीता-जागता वेब के सुझाव</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कैन करना</translation>
@@ -1477,6 +1481,7 @@
 <translation id="9076630408993835509">यह ब्राउज़र कोई कंपनी या दूसरा संगठन प्रबंधित नहीं करता. शायद इस डिवाइस की गतिविधि को Chrome से बाहर प्रबंधित किया जाए. <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">ज़्यादा जानकारी की आवश्यकता है</translation>
 <translation id="9080712759204168376">ऑर्डर की जानकारी</translation>
+<translation id="9089260154716455634">बंद रहने के समय के लिए नीति:</translation>
 <translation id="9095388113577226029">और भाषाएं...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> आपकी जानकारी की सुरक्षा करने के लिए आमतौर पर एन्क्रिप्शन का इस्तेमाल करती है. जब क्रोमियम ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की, तो वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने का प्रयास कर रहा हो या किसी वाई-फ़ाई साइन इन स्क्रीन ने कनेक्शन को रोक दिया हो. आपकी जानकारी अब भी सुरक्षित है क्योंकि किसी भी डेटा के आदान-प्रदान से पहले ही क्रोमियम ने कनेक्शन को रोक दिया था.</translation>
 <translation id="9106062320799175032">बिलिंग पता जोड़ें</translation>

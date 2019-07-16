@@ -15,6 +15,8 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
+class IOSTaskTabHelper;
+
 class IOSChromeSyncedTabDelegate
     : public sync_sessions::SyncedTabDelegate,
       public web::WebStateUserData<IOSChromeSyncedTabDelegate> {
@@ -48,6 +50,7 @@ class IOSChromeSyncedTabDelegate
 
  private:
   explicit IOSChromeSyncedTabDelegate(web::WebState* web_state);
+  const IOSTaskTabHelper* ios_task_tab_helper() const;
   friend class web::WebStateUserData<IOSChromeSyncedTabDelegate>;
 
   web::WebState* web_state_;

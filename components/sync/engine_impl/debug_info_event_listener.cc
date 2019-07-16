@@ -13,8 +13,7 @@ namespace syncer {
 DebugInfoEventListener::DebugInfoEventListener()
     : events_dropped_(false),
       cryptographer_has_pending_keys_(false),
-      cryptographer_ready_(false),
-      weak_ptr_factory_(this) {}
+      cryptographer_ready_(false) {}
 
 DebugInfoEventListener::~DebugInfoEventListener() {}
 

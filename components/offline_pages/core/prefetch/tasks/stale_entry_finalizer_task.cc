@@ -248,8 +248,7 @@ StaleEntryFinalizerTask::StaleEntryFinalizerTask(
     PrefetchDispatcher* prefetch_dispatcher,
     PrefetchStore* prefetch_store)
     : prefetch_dispatcher_(prefetch_dispatcher),
-      prefetch_store_(prefetch_store),
-      weak_ptr_factory_(this) {
+      prefetch_store_(prefetch_store) {
   DCHECK(prefetch_dispatcher_);
   DCHECK(prefetch_store_);
 }

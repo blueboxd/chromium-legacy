@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -37,7 +38,6 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 import java.util.concurrent.Callable;
@@ -49,66 +49,65 @@ import java.util.concurrent.Callable;
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class BluetoothChooserDialogTest {
-    /**
-     * Works like the BluetoothChooserDialog class, but records calls to native methods instead of
-     * calling back to C++.
-     */
-    static class BluetoothChooserDialogWithFakeNatives extends BluetoothChooserDialog {
-        int mFinishedEventType = -1;
-        String mFinishedDeviceId;
-        int mRestartSearchCount;
-
-        BluetoothChooserDialogWithFakeNatives(WindowAndroid windowAndroid, String origin,
-                int securityLevel, long nativeBluetoothChooserDialogPtr) {
-            super(windowAndroid, origin, securityLevel, nativeBluetoothChooserDialogPtr);
-        }
-
-        @Override
-        void nativeOnDialogFinished(
-                long nativeBluetoothChooserAndroid, int eventType, String deviceId) {
-            Assert.assertEquals(nativeBluetoothChooserAndroid, mNativeBluetoothChooserDialogPtr);
-            Assert.assertEquals(mFinishedEventType, -1);
-            mFinishedEventType = eventType;
-            mFinishedDeviceId = deviceId;
-            // The native code calls closeDialog() when OnDialogFinished is called.
-            closeDialog();
-        }
-
-        @Override
-        void nativeRestartSearch(long nativeBluetoothChooserAndroid) {
-            Assert.assertTrue(mNativeBluetoothChooserDialogPtr != 0);
-            mRestartSearchCount++;
-        }
-
-        @Override
-        void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid) {
-            // We shouldn't be running native functions if the native class has been destroyed.
-            Assert.assertTrue(mNativeBluetoothChooserDialogPtr != 0);
-        }
-
-        @Override
-        void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid) {
-            // We shouldn't be running native functions if the native class has been destroyed.
-            Assert.assertTrue(mNativeBluetoothChooserDialogPtr != 0);
-        }
-
-        @Override
-        void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid) {
-            // We shouldn't be running native functions if the native class has been destroyed.
-            Assert.assertTrue(mNativeBluetoothChooserDialogPtr != 0);
-        }
-    }
-
-    private ActivityWindowAndroid mWindowAndroid;
-    private FakeLocationUtils mLocationUtils;
-    private BluetoothChooserDialogWithFakeNatives mChooserDialog;
-
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    private ActivityWindowAndroid mWindowAndroid;
+    private FakeLocationUtils mLocationUtils;
+    private BluetoothChooserDialog mChooserDialog;
+
+    private int mFinishedEventType = -1;
+    private String mFinishedDeviceId;
+    private int mRestartSearchCount;
+
+    private class TestBluetoothChooserDialogJni implements BluetoothChooserDialog.Natives {
+        @Override
+        public void onDialogFinished(BluetoothChooserDialog self,
+                long nativeBluetoothChooserAndroid, int eventType, String deviceId) {
+            Assert.assertEquals(
+                    nativeBluetoothChooserAndroid, self.mNativeBluetoothChooserDialogPtr);
+            Assert.assertEquals(mFinishedEventType, -1);
+            mFinishedEventType = eventType;
+            mFinishedDeviceId = deviceId;
+            // The native code calls closeDialog() when OnDialogFinished is called.
+            self.closeDialog();
+        }
+
+        @Override
+        public void restartSearch(BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+            mRestartSearchCount++;
+        }
+
+        @Override
+        public void showBluetoothOverviewLink(
+                BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+            // We shouldn't be running native functions if the native class has been destroyed.
+            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+        }
+
+        @Override
+        public void showBluetoothAdapterOffLink(
+                BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+            // We shouldn't be running native functions if the native class has been destroyed.
+            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+        }
+
+        @Override
+        public void showNeedLocationPermissionLink(
+                BluetoothChooserDialog self, long nativeBluetoothChooserAndroid) {
+            // We shouldn't be running native functions if the native class has been destroyed.
+            Assert.assertTrue(self.mNativeBluetoothChooserDialogPtr != 0);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
+        mocker.mock(BluetoothChooserDialogJni.TEST_HOOKS, new TestBluetoothChooserDialogJni());
         mActivityTestRule.startMainActivityOnBlankPage();
         mLocationUtils = new FakeLocationUtils();
         LocationUtils.setFactory(() -> mLocationUtils);
@@ -120,22 +119,20 @@ public class BluetoothChooserDialogTest {
         LocationUtils.setFactory(null);
     }
 
-    private BluetoothChooserDialogWithFakeNatives createDialog() {
+    private BluetoothChooserDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> {
                     mWindowAndroid = new ActivityWindowAndroid(mActivityTestRule.getActivity());
-                    BluetoothChooserDialogWithFakeNatives dialog =
-                            new BluetoothChooserDialogWithFakeNatives(mWindowAndroid,
-                                    "https://origin.example.com/",
-                                    ConnectionSecurityLevel.SECURE, 42);
+                    BluetoothChooserDialog dialog = new BluetoothChooserDialog(mWindowAndroid,
+                            "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
+                            /*nativeBluetoothChooserDialogPtr=*/42);
                     dialog.show();
                     return dialog;
                 });
     }
 
-    private static void selectItem(final BluetoothChooserDialogWithFakeNatives chooserDialog,
-            int position) {
-        final Dialog dialog = chooserDialog.mItemChooserDialog.getDialogForTesting();
+    private void selectItem(int position) {
+        final Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
@@ -153,7 +150,7 @@ public class BluetoothChooserDialogTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return chooserDialog.mFinishedEventType != -1;
+                return mFinishedEventType != -1;
             }
         });
     }
@@ -211,13 +208,12 @@ public class BluetoothChooserDialogTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mChooserDialog.mFinishedEventType != -1;
+                return mFinishedEventType != -1;
             }
         });
 
-        Assert.assertEquals(
-                BluetoothChooserDialog.DialogFinished.CANCELLED, mChooserDialog.mFinishedEventType);
-        Assert.assertEquals("", mChooserDialog.mFinishedDeviceId);
+        Assert.assertEquals(BluetoothChooserDialog.DialogFinished.CANCELLED, mFinishedEventType);
+        Assert.assertEquals("", mFinishedDeviceId);
     }
 
     @Test
@@ -271,11 +267,10 @@ public class BluetoothChooserDialogTest {
         Assert.assertTrue(itemAdapter.getItem(3).hasSameContents("id-4", "Name 4",
                 mChooserDialog.mConnectedIcon, mChooserDialog.mConnectedIconDescription));
 
-        selectItem(mChooserDialog, 2);
+        selectItem(2);
 
-        Assert.assertEquals(
-                BluetoothChooserDialog.DialogFinished.SELECTED, mChooserDialog.mFinishedEventType);
-        Assert.assertEquals("id-2", mChooserDialog.mFinishedDeviceId);
+        Assert.assertEquals(BluetoothChooserDialog.DialogFinished.SELECTED, mFinishedEventType);
+        Assert.assertEquals("id-2", mFinishedDeviceId);
     }
 
     @Test
@@ -326,7 +321,7 @@ public class BluetoothChooserDialogTest {
                                 new String[] {Manifest.permission.ACCESS_COARSE_LOCATION},
                                 new int[] {PackageManager.PERMISSION_GRANTED}));
 
-        Assert.assertEquals(1, mChooserDialog.mRestartSearchCount);
+        Assert.assertEquals(1, mRestartSearchCount);
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
                                     R.string.bluetooth_searching)),
                 statusView.getText().toString());
@@ -378,7 +373,7 @@ public class BluetoothChooserDialogTest {
                                 mActivityTestRule.getActivity(),
                                 new Intent(LocationManager.MODE_CHANGED_ACTION)));
 
-        Assert.assertEquals(1, mChooserDialog.mRestartSearchCount);
+        Assert.assertEquals(1, mRestartSearchCount);
         Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
                                     R.string.bluetooth_searching)),
                 statusView.getText().toString());

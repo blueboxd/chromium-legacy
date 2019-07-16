@@ -180,6 +180,10 @@ bool WinWebAuthnApiAuthenticator::IsPaired() const {
   return false;
 }
 
+bool WinWebAuthnApiAuthenticator::RequiresBlePairingPin() const {
+  return false;
+}
+
 base::Optional<FidoTransportProtocol>
 WinWebAuthnApiAuthenticator::AuthenticatorTransport() const {
   // The Windows API could potentially use any external or

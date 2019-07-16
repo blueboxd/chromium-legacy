@@ -968,6 +968,16 @@ if (!is_ios) {
         "//chrome/test/chromedriver",
       ]
     }
+    group("wpt_tests_isolate") {
+      testonly = true
+      data_deps = [
+        "//chrome:chrome",
+        "//chrome/test/chromedriver",
+      ]
+      deps = [
+        "//third_party/blink/tools:wpt_tests_isolate",
+      ]
+    }
   }
 
   # https://www.chromium.org/developers/testing/webkit-layout-tests

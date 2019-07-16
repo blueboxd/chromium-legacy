@@ -223,8 +223,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory) override;
+      network::mojom::URLLoaderFactoryPtr* out_factory) override;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       int render_process_id,
       int render_frame_id,

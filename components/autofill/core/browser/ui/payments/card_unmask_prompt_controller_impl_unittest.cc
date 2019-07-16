@@ -29,7 +29,7 @@ using base::ASCIIToUTF16;
 
 class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  public:
-  TestCardUnmaskDelegate() : weak_factory_(this) {}
+  TestCardUnmaskDelegate() {}
 
   virtual ~TestCardUnmaskDelegate() {}
 
@@ -47,7 +47,7 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
 
  private:
   UnmaskResponse response_;
-  base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_;
+  base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskDelegate);
 };
@@ -67,8 +67,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       TestingPrefServiceSimple* pref_service)
       : CardUnmaskPromptControllerImpl(pref_service, false),
         can_store_locally_(!base::FeatureList::IsEnabled(
-            features::kAutofillNoLocalSaveOnUnmaskSuccess)),
-        weak_factory_(this) {}
+            features::kAutofillNoLocalSaveOnUnmaskSuccess)) {}
 
   bool CanStoreLocally() const override { return can_store_locally_; }
 
@@ -84,7 +83,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
 
  private:
   bool can_store_locally_;
-  base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_;
+  base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);
 };
@@ -244,6 +243,62 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
       AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogSavedCardLocally) {
+  ShowPromptAndSimulateResponse(true);
+  base::HistogramTester histogram_tester;
+
+  controller_->OnVerificationResult(AutofillClient::SUCCESS);
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptIn) {
+  SetImportCheckboxState(false);
+  ShowPromptAndSimulateResponse(true);
+  base::HistogramTester histogram_tester;
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptIn) {
+  SetImportCheckboxState(false);
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptOut) {
+  SetImportCheckboxState(true);
+  ShowPromptAndSimulateResponse(false);
+  base::HistogramTester histogram_tester;
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
+  SetImportCheckboxState(true);
+  ShowPromptAndSimulateResponse(true);
+  base::HistogramTester histogram_tester;
+  controller_->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT, 1);
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {

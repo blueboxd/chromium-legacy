@@ -47,9 +47,7 @@ class SOCKSConnectJobTest : public testing::Test,
 
   SOCKSConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         common_connect_job_params_(
             &client_socket_factory_,
             &host_resolver_,

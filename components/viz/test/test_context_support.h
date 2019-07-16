@@ -109,7 +109,7 @@ class TestContextSupport : public gpu::ContextSupport {
   ScheduleOverlayPlaneCallback schedule_overlay_plane_callback_;
   bool out_of_order_callbacks_;
 
-  base::WeakPtrFactory<TestContextSupport> weak_ptr_factory_;
+  base::WeakPtrFactory<TestContextSupport> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestContextSupport);
 };

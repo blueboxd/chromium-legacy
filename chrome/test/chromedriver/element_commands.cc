@@ -150,27 +150,6 @@ Status ExecuteFindChildElements(int interval_ms,
       interval_ms, false, &element_id, session, web_view, params, value);
 }
 
-Status ExecuteHoverOverElement(Session* session,
-                               WebView* web_view,
-                               const std::string& element_id,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
-  WebPoint location;
-  Status status = GetElementClickableLocation(
-      session, web_view, element_id, &location);
-  if (status.IsError())
-    return status;
-
-  MouseEvent move_event(kMovedMouseEventType, kNoneMouseButton, location.x,
-                        location.y, session->sticky_modifiers, 0, 0);
-  std::list<MouseEvent> events;
-  events.push_back(move_event);
-  status = web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
-  if (status.IsOk())
-    session->mouse_position = location;
-  return status;
-}
-
 Status ExecuteClickElement(Session* session,
                            WebView* web_view,
                            const std::string& element_id,

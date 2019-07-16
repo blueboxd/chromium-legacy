@@ -26,9 +26,7 @@ class TabClosedDetector {
 class TabStripAnimatorTest : public testing::Test {
  public:
   TabStripAnimatorTest()
-      : env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-             base::test::ScopedTaskEnvironment::NowSource::
-                 MAIN_THREAD_MOCK_TIME),
+      : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         animator_(
             base::BindRepeating(&TabStripAnimatorTest::OnAnimationProgressed,
                                 base::Unretained(this))),

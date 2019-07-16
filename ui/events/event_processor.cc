@@ -9,7 +9,7 @@
 
 namespace ui {
 
-EventProcessor::EventProcessor() : weak_ptr_factory_(this) {}
+EventProcessor::EventProcessor() {}
 
 EventProcessor::~EventProcessor() {}
 

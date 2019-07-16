@@ -126,8 +126,7 @@ TranslateManager::TranslateManager(TranslateClient* translate_client,
       translate_ranker_(translate_ranker),
       language_model_(language_model),
       language_state_(translate_driver_),
-      translate_event_(std::make_unique<metrics::TranslateEventProto>()),
-      weak_method_factory_(this) {}
+      translate_event_(std::make_unique<metrics::TranslateEventProto>()) {}
 
 base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
   return weak_method_factory_.GetWeakPtr();

@@ -25,7 +25,7 @@ static int CompareProducts(const void* a, const void* b) {
 }  // namespace
 
 const UsbVendor* UsbIds::FindVendor(uint16_t vendor_id) {
-  const UsbVendor key = {vendor_id, NULL, 0, NULL};
+  const UsbVendor key = {nullptr, nullptr, vendor_id, 0};
   void* result = bsearch(&key, vendors_, vendor_size_, sizeof(vendors_[0]),
                          &CompareVendors);
   if (!result)

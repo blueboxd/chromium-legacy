@@ -71,7 +71,7 @@ class ClearStorageTask : public Task {
   ClearStorageCallback callback_;
   base::Time clearup_time_;
 
-  base::WeakPtrFactory<ClearStorageTask> weak_ptr_factory_;
+  base::WeakPtrFactory<ClearStorageTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ClearStorageTask);
 };
 

@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/http/http_log_util.h"
+#include "net/log/net_log_values.h"
 
 namespace net {
 

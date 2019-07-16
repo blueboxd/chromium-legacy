@@ -223,7 +223,7 @@ class NetExportFileWriter {
   // during initialization. This getter is initialized to base::GetTempDir().
   DirectoryGetter default_log_base_dir_getter_;
 
-  base::WeakPtrFactory<NetExportFileWriter> weak_ptr_factory_;
+  base::WeakPtrFactory<NetExportFileWriter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetExportFileWriter);
 };

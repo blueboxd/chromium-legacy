@@ -73,7 +73,7 @@ gfx::Rect NoDamage() {
 
 class MockAggregatedDamageCallback {
  public:
-  MockAggregatedDamageCallback() : weak_ptr_factory_(this) {}
+  MockAggregatedDamageCallback() {}
   ~MockAggregatedDamageCallback() = default;
 
   CompositorFrameSinkSupport::AggregatedDamageCallback GetCallback() {
@@ -89,7 +89,7 @@ class MockAggregatedDamageCallback {
                     base::TimeTicks expected_display_time));
 
  private:
-  base::WeakPtrFactory<MockAggregatedDamageCallback> weak_ptr_factory_;
+  base::WeakPtrFactory<MockAggregatedDamageCallback> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockAggregatedDamageCallback);
 };

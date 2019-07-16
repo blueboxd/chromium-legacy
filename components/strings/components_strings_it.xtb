@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Carta</translation>
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Rilasciato a: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Sensori di movimento</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
 <translation id="214556005048008348">Annulla pagamento</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Controllare il segnale nella tua area</translation>
 <translation id="2523886232349826891">Salvataggio effettuato solo su questo dispositivo</translation>
 <translation id="2524461107774643265">Aggiungi altre informazioni</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{e 1 altra}other{e altre #}}</translation>
 <translation id="2536110899380797252">Aggiungi indirizzo</translation>
 <translation id="2539524384386349900">Rileva</translation>
 <translation id="254947805923345898">Il valore della norma non è valido.</translation>
@@ -719,6 +721,7 @@
 <translation id="4858792381671956233">Hai chiesto ai tuoi genitori se puoi visitare questo sito</translation>
 <translation id="4876188919622883022">Visualizzazione semplificata</translation>
 <translation id="4876305945144899064">Nessun nome utente</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Nessuna}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Ricerca di <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatica (impostazione predefinita)</translation>
 <translation id="4880827082731008257">Cerca nella cronologia</translation>
@@ -1012,6 +1015,7 @@
 <translation id="650855688985305916">Sì, memorizza</translation>
 <translation id="6508722015517270189">Riavvia Chrome</translation>
 <translation id="6517596291481585650">Avviso: questo criterio non è stato unito come elenco come specificato dal criterio perché non è un elenco.</translation>
+<translation id="6521745193039995384">Non attivo</translation>
 <translation id="6529602333819889595">&amp;Ripeti eliminazione</translation>
 <translation id="6534179046333460208">Suggerimenti relativi al Physical Web</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
@@ -1474,6 +1478,7 @@ Ulteriori dettagli:
 <translation id="9076630408993835509">Questo browser non è gestito da un'azienda o da un'altra organizzazione. L'attività svolta su questo dispositivo potrebbe essere gestita al di fuori di Chrome. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Sono necessarie maggiori informazioni</translation>
 <translation id="9080712759204168376">Riepilogo dell'ordine</translation>
+<translation id="9089260154716455634">Criterio Orari di disattivazione:</translation>
 <translation id="9095388113577226029">Altre lingue</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chromium ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="9106062320799175032">Aggiungi indirizzo di fatturazione</translation>

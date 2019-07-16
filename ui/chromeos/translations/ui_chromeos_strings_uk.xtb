@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Транслітерація (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Режим слайдів</translation>
 <translation id="1045157690796831147">Транслітерація (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Спосіб введення для японської мови (клавіатура США)</translation>
 <translation id="1047956942837015229">Видалення елементів (<ph name="COUNT" />)…</translation>
 <translation id="1049926623896334335">Документ Word</translation>
 <translation id="1062407476771304334">Замінити</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3549797760399244642">Перейти на drive.google.com...</translation>
 <translation id="357479282490346887">Литовська</translation>
+<translation id="3583509704582854624">Буквено-цифрове введення (японська клавіатура)</translation>
 <translation id="3603385196401704894">Французька (Канада)</translation>
 <translation id="3606220979431771195">Турецька клавіатура F</translation>
 <translation id="3609785682760573515">Синхронізація…</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Сталася помилка під час встановлення додатка Linux.</translation>
 <translation id="5912396950572065471">Формат</translation>
 <translation id="5913638992615760742">Не вдалося скопіювати. Неочікувана помилка: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Спосіб введення для японської мови (японська клавіатура)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Надайте додаткам Linux дозвіл змінювати файли на Google Диску. Зміни буде синхронізовано на інших ваших пристроях.</translation>
 <translation id="5982621672636444458">Параметри сортування</translation>

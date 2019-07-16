@@ -110,7 +110,7 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   // Content settings maps associated with this instance.
   scoped_refptr<HostContentSettingsMap> content_settings_;
 
-  base::WeakPtrFactory<VerdictCacheManager> weak_factory_;
+  base::WeakPtrFactory<VerdictCacheManager> weak_factory_{this};
 };
 
 }  // namespace safe_browsing

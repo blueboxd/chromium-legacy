@@ -3252,19 +3252,8 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7123160381479171745">Meghatározza azon felhasználók listáját, akik bejelentkezhetnek az eszközön. A bejegyzések formátuma <ph name="USER_WHITELIST_ENTRY_FORMAT" />, például <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Ha egy adott domain tetszőleges felhasználóit szeretné engedélyezni, használja a következő formátumot: <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Ha a házirend nincs beállítva, akkor nincs korlátozás arra nézve, hogy kik jelentkezhetnek be. Fontos, hogy új felhasználók létrehozásához továbbra is szükség van a <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> házirend megfelelő konfigurálására.</translation>
-<translation id="7123266440503901785">A <ph name="PRODUCT_NAME" /> gondoskodik a bővítmények biztonságos frissítéséről és telepítéséről. Azonban előfordulhat, hogy bizonyos, a Chrome Internetes áruházon kívülről származó bővítmények tartalmának védelméről csak nem biztonságos aláíró vagy kivonatoló algoritmusok (pl. SHA1) gondoskodnak. Ha le van tiltva ez a házirend, a Chrome nem engedélyezi az ilyen bővítmények friss telepítését és frissítését (amíg a bővítmény fejlesztői újra el nem készítik a bővítményt erősebb algoritmusok használatával). Ha a házirend engedélyezve van, lehetséges az ilyen bővítmények telepítése és frissítése.
-
-          Ha a házirend nincs beállítva, a rendszer alapértelmezés szerint az engedélyezett viselkedést használja.
-          A <ph name="PRODUCT_NAME" /> 75-ös verziójától kezdve a rendszer alapértelmezés szerint a letiltott viselkedést használja, ha nincs beállítva a házirend.
-
-          A <ph name="PRODUCT_NAME" /> 77-es verziójától kezdve a rendszer figyelmen kívül hagyja és letiltottként kezeli a házirendet.</translation>
 <translation id="7126716959063786004">A folyamatok befejezésének engedélyezése a Feladatkezelőben</translation>
 <translation id="7127892035367404455">Visszaállítás célverzióra</translation>
-<translation id="7128918109610518786">Listázza a(z) <ph name="PRODUCT_OS_NAME" /> által az indítósávon rögzített alkalmazásként megjelenített alkalmazásazonosítókat.
-
-      Ennek a házirendnek a beállítása esetén az alkalmazáskészlet rögzített, és a felhasználó nem módosíthatja.
-
-      Ha nincs beállítva, akkor a felhasználó módosíthatja az indítóban rögzített alkalmazások listáját.</translation>
 <translation id="713121532817834879">Ez a házirend egy ugyanolyan formátumban lévő XML-fájlra mutató URL, mint az Internet Explorer által használt <ph name="IEEM_SITELIST_POLICY" /> házirend formátuma. A rendszer szabályokat tölt be ebből az XML-fájlból, de nem osztja meg őket az Internet Explorerrel.
 
       Az XML-fájlban lévő szabályok alkalmazása a következőhöz hasonlóan történik: <ph name="GREYLIST_POLICY_NAME" />. Ezek a szabályok tehát megakadályozzák, hogy a <ph name="PRODUCT_NAME" /> másik böngészőt nyisson meg, és a másik böngészőt is megakadályozzák abban, hogy megnyissa a <ph name="PRODUCT_NAME" /> böngészőt.
@@ -4102,12 +4091,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8759829385824155666">Engedélyezett Kerberos-titkosítástípusok</translation>
 <translation id="8764119899999036911">Meghatározza, hogy a generált Kerberos SPN a kanonikus DNS-néven vagy az eredetileg beírt néven alapul-e. Ha engedélyezi ezt a beállítást, a CNAME keresés kimarad, és a rendszer a szerver beírt nevét fogja használni. Ha letiltja vagy konfigurálatlanul hagyja ezt a beállítást, a rendszer a szerver kanonikus nevét CNAME kereséssel fogja meghatározni.</translation>
 <translation id="8764477907716150749">Ez a házirend a <ph name="PRODUCT_NAME" /> általi belső használatra való.</translation>
-<translation id="8765776988041674792">A jelszómódosítási URL beállítása (csak HTTP vagy HTTPS protokoll esetén). A jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
-      A <ph name="PRODUCT_NAME" /> akkor tudja megfelelően rögzíteni az új jelszavak ujjlenyomatát ezen a jelszómódosító oldalon, ha Ön gondoskodik arról, hogy a jelszómódosító oldala megfeleljen a https://www.chromium.org/developers/design-documents/create-amazing-password-forms oldalon található irányelveknek.
-
-      A beállítás engedélyezése esetén a jelszóvédelmi szolgáltatás erre az URL-re küldi a felhasználókat jelszómódosítás céljából, miután figyelmeztetés jelenik meg számukra a böngészőben.
-      Ha a beállítás le van tiltva, vagy ha nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás a https://myaccounts.google.com webhelyre küldi a felhasználókat jelszómódosítás céljából.
-      Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
 <translation id="8800453707696044281">Az akkumulátor töltésének beállítása úgy, hogy abbahagyja a töltést a megadott százalékos érték elérésekor</translation>
 <translation id="8801680448782904838">A felhasználó értesítése arról, hogy ajánlott, illetve szükséges a böngésző vagy az eszköz újraindítása</translation>
@@ -4247,9 +4230,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 
       A házirend értékét másodpercben kell megadni.</translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
-<translation id="9038058011835642205">Megadja azon webhelyek listáját, amelyek telepítése a háttérben, felhasználói interakció nélkül történik, és amelyeket a felhasználó nem távolíthat el vagy tilthat le.
-
-      A házirend listaelemei kötelező taggal rendelkező objektumok: „url” és két nem kötelező objektum: „default_launch_container” és „create_desktop_shortcut”. Az „url" a telepítendő internetes alkalmazás URL-je, míg a „launch_container” értéke vagy „window” (ablak), vagy „tab” (lap), amely jelzi, hogy a böngésző hogyan nyitja meg az internetes alkalmazást a telepítés után. A „create_desktop_shortcut” értékének pedig igaznak kell lennie, ha Linux és Windows rendszerekben asztali parancsikont kell létrehozni. Ha a „default_launch_container” nem szerepel itt, akkor az alkalmazás alapértelmezett módon lapon nyílik meg. A „default_launch_container” értékétől függetlenül a felhasználók módosíthatják, hogy a böngésző hogyan nyissa meg az alkalmazást. Ha a „create_desktop_shortcut” nem szerepel itt, akkor a rendszer nem hoz létre asztali parancsikont.</translation>
 <translation id="9038839118379817310">Wi-Fi engedélyezése</translation>
 <translation id="9039822628127365650">Ha be van állítva a házirend, megadja, hogy a rendszer mennyi idő után jelentkeztesse ki automatikusan a felhasználót, befejezve ezzel a munkamenetet. A hátralévő időt a felhasználó a tálcán lévő visszaszámlálón láthatja.
 
@@ -4263,6 +4243,15 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha a házirend értéke olyan tokenre van állítva, amely megfeleltethető egy Quick Fix Buildnek, akkor az eszköz frissül a kapcsolódó Quick Fix Buildre, feltéve, hogy a frissítést nem akadályozza másik házirend.
 
       Ha a házirend nincs beállítva, vagy az értéke nem feleltethető meg Quick Fix Buildnek, akkor az eszköz nem frissül Quick Fix Buildre. Ha az eszközön már fut Quick Fix Build, és a házirend már nincs beállítva, vagy értéke már nem feleltethető meg Quick Fix Buildnek, akkor az eszköz szokásos buildre frissül, feltéve, hogy a frissítést nem akadályozza másik házirend.</translation>
+<translation id="9054012305936267950">Ez a házirend a böngésző bejelentkezési viselkedését szabályozza. Segítségével megadhatja, hogy bejelentkezhet-e a felhasználó a fiókjával a <ph name="PRODUCT_NAME" /> böngészőbe, és használhatja-e a fiókkal kapcsolatos szolgáltatásokat, például a Chrome-szinkronizálást.
+
+      Ha a házirend beállítása „A böngészőbe való bejelentkezés letiltása”, akkor a felhasználó nem tud bejelentkezni a böngészőbe, és nem tudja használni a fiókalapú szolgáltatásokat. Ebben az esetben nem használhatók és nem is hozzáférhetők a böngészőszintű funkciók, például a Chrome-szinkronizálás. Ha a felhasználó bejelentkezett, és Ön ezt követően állítja a házirendet „Letiltva” állapotúra, akkor a Chrome felhasználó általi következő futtatásakor a rendszer kijelentkezteti a felhasználót, akinek azonban a helyi profiladatai – így a könyvjelzői, jelszavai stb. – megőrződnek. A felhasználó ezt követően is be tud jelentkezni a Google webes szolgáltatásaiba (például a Gmail szolgáltatásba), és használni is tudja őket.
+
+      Ha a házirend beállítása „A böngészőbe való bejelentkezés engedélyezése”, akkor a felhasználó bejelentkezhet a böngészőbe, valamint a rendszer automatikusan bejelentkezteti a böngészőbe, ha be van jelentkezve a Google webes szolgáltatásaiba, például a Gmailbe. Ha a felhasználó be van jelentkezve a böngészőbe, az azt jelenti, hogy a böngésző megőrzi a felhasználó fiókadatait. Ez azonban nem jelenti azt, hogy a Chrome-szinkronizálás alapértelmezés szerint bekapcsolódna; a felhasználónak külön kell engedélyeznie a funkció használatát. E házirend engedélyezése megakadályozza, hogy a felhasználó kikapcsolja azt a beállítást, amely lehetővé teszi a böngészőbe való bejelentkezést. A Chrome-szinkronizálás funkció rendelkezésre állásának vezérléséhez használja a szinkronizálást letiltó „SyncDisabled” házirendet.
+
+      Ha a házirend beállítása „A felhasználók bejelentkezésre kényszerítése a böngésző használatához”, akkor a rendszer fiókválasztó párbeszédablakot jelenít meg a felhasználónak, akinek fiókot kell választania, majd be kell jelentkeznie a kiválasztott fiókba a böngésző használatához. Felügyelt fiók esetében ez biztosítja a fiókhoz társított házirendek alkalmazását és betartását. Alapértelmezés szerint ez bekapcsolja a Chrome-szinkronizálást az adott fiókra vonatkozóan – kivéve, ha a szinkronizálást a domainadminisztrátor vagy a szinkronizálást letiltó „SyncDisabled” házirend letiltotta. A „BrowserGuestModeEnabled” alapértelmezett értékét a rendszer hamisra állítja. Megjegyzés: A meglévő, nem hitelesített profilokat a rendszer kizárja, e profilok a házirend engedélyezése után hozzáférhetetlenné válnak. További információ a következő súgócikkben található: https://support.google.com/chrome/a/answer/7572556. Ez a lehetőség nem támogatja a Linuxot, és használata esetén „A böngészőbe való bejelentkezés engedélyezése” beállítás lesz aktív.
+
+      Ha a házirend nincs beállítva, akkor a felhasználó döntheti el, hogy kívánja-e engedélyezni – és saját belátása szerint használni – a böngészőbe való bejelentkezés lehetőségét.</translation>
 <translation id="9072600218500597787">Beállítja a távoli hozzáférésű gazdagépek kötelező domainneveit, és megakadályozza, hogy a felhasználók módosítsák őket.
 
           Ha a beállítás aktiválva van, a gazdagépeket kizárólag a megadott domainnevek valamelyikén regisztrált fiókok használatával lehet megosztani.

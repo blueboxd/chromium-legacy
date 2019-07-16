@@ -85,7 +85,7 @@ class ClipboardProvider : public AutocompleteProvider {
 
   // Used to cancel image construction callbacks if autocomplete Stop() is
   // called.
-  base::WeakPtrFactory<ClipboardProvider> callback_weak_ptr_factory_;
+  base::WeakPtrFactory<ClipboardProvider> callback_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardProvider);
 };

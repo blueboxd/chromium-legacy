@@ -67,8 +67,7 @@ std::unique_ptr<EntityData> MoveToEntityData(
 ConsentSyncBridgeImpl::ConsentSyncBridgeImpl(
     OnceModelTypeStoreFactory store_factory,
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
-    : ModelTypeSyncBridge(std::move(change_processor)),
-      weak_ptr_factory_(this) {
+    : ModelTypeSyncBridge(std::move(change_processor)) {
   std::move(store_factory)
       .Run(syncer::USER_CONSENTS,
            base::BindOnce(&ConsentSyncBridgeImpl::OnStoreCreated,

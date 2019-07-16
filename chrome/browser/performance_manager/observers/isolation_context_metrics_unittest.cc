@@ -51,10 +51,8 @@ class IsolationContextMetricsTest : public GraphTestHarness {
  public:
   IsolationContextMetricsTest()
       : GraphTestHarness(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
 
   ~IsolationContextMetricsTest() override = default;
 

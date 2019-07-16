@@ -14031,17 +14031,18 @@
       'name': 'ContextualSuggestionsEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['android:69-'],
+      'supported_on': ['android:69-75'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 452,
       'caption': '''Enable contextual suggestions of related web pages''',
       'tags': ['google-sharing'],
       'desc':
-      '''If this is set to true or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will suggest pages related to the current page.
+      '''This feature never launched, therefore the policy is deprecated. If this is set to true or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will suggest pages related to the current page.
       These suggestions are fetched remotely from Google servers.
 
       If this setting is set to false, suggestions will not be fetched or displayed.''',

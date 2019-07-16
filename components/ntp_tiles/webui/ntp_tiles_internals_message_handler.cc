@@ -59,8 +59,7 @@ NTPTilesInternalsMessageHandler::NTPTilesInternalsMessageHandler(
     favicon::FaviconService* favicon_service)
     : favicon_service_(favicon_service),
       client_(nullptr),
-      site_count_(ntp_tiles::kMaxNumMostVisited),
-      weak_ptr_factory_(this) {}
+      site_count_(ntp_tiles::kMaxNumMostVisited) {}
 
 NTPTilesInternalsMessageHandler::~NTPTilesInternalsMessageHandler() = default;
 

@@ -23,7 +23,7 @@ using SafeSitesFilterBehavior = policy::SafeSitesFilterBehavior;
 PolicyBlacklistNavigationThrottle::PolicyBlacklistNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     content::BrowserContext* context)
-    : NavigationThrottle(navigation_handle), weak_ptr_factory_(this) {
+    : NavigationThrottle(navigation_handle) {
   blacklist_service_ = PolicyBlacklistFactory::GetForBrowserContext(context);
   prefs_ = user_prefs::UserPrefs::Get(context);
   DCHECK(prefs_);

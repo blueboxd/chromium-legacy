@@ -521,11 +521,11 @@ TEST_P(MainOrOffThreadPaintWorkletTest, AllGlobalScopesMustBeCreated) {
 
   EXPECT_TRUE(paint_worklet_to_test->GetGlobalScopesForTesting().IsEmpty());
 
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher =
-      base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher =
+      std::make_unique<PaintWorkletPaintDispatcher>();
   Persistent<PaintWorkletProxyClient> proxy_client =
-      MakeGarbageCollected<PaintWorkletProxyClient>(1, paint_worklet_to_test,
-                                                    dispatcher);
+      MakeGarbageCollected<PaintWorkletProxyClient>(
+          1, paint_worklet_to_test, dispatcher->GetWeakPtr(), nullptr);
   paint_worklet_to_test->SetProxyClientForTesting(proxy_client);
 
   while (paint_worklet_to_test->NeedsToCreateGlobalScopeForTesting()) {

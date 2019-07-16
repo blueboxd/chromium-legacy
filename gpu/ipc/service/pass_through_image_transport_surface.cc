@@ -40,8 +40,7 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
       is_gpu_vsync_disabled_(HasSwitch(switches::kDisableGpuVsync)),
       is_multi_window_swap_vsync_override_enabled_(
           override_vsync_for_multi_window_swap),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {}
+      delegate_(delegate) {}
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
 }

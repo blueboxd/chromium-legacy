@@ -410,6 +410,11 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
+  if (output_surface_->capabilities().skips_draw) {
+    TRACE_EVENT_INSTANT0("viz", "Skip draw", TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
+
   // During aggregation, SurfaceAggregator marks all resources used for a draw
   // in the resource provider.  This has the side effect of deleting unused
   // resources and their textures, generating sync tokens, and returning the

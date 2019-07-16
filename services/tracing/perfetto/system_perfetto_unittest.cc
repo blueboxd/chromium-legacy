@@ -59,9 +59,19 @@ class SystemPerfettoTest : public testing::Test {
     // Construct the process global object and clear data sources between tests.
     PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
 
-    // Set up the system socket locations in a valid tmp directory.
     EXPECT_TRUE(tmp_dir_.CreateUniqueTempDir());
+    // We need to set TMPDIR environment variable because when a new producer
+    // connects to the perfetto service it needs to create a memmap'd file for
+    // the shared memory buffer. Setting TMPDIR allows the service to know
+    // where this should be.
+    //
+    // Finally since environment variables are leaked into other tests if
+    // multiple tests run we need to restore the value so each test is
+    // hermetic.
+    old_tmp_dir_ = getenv("TMPDIR");
     setenv("TMPDIR", tmp_dir_.GetPath().value().c_str(), true);
+
+    // Set up the system socket locations in a valid tmp directory.
     producer_socket_ =
         tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("producer")).value();
     consumer_socket_ =
@@ -122,7 +132,16 @@ class SystemPerfettoTest : public testing::Test {
                                                producer_socket_);
   }
 
-  ~SystemPerfettoTest() override { RunUntilIdle(); }
+  ~SystemPerfettoTest() override {
+    RunUntilIdle();
+    if (old_tmp_dir_) {
+      // Restore the old value back to its initial value.
+      setenv("TMPDIR", old_tmp_dir_, true);
+    } else {
+      // TMPDIR wasn't set originally so unset it.
+      unsetenv("TMPDIR");
+    }
+  }
 
   PerfettoService* local_service() const { return perfetto_service_.get(); }
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
@@ -180,6 +199,7 @@ class SystemPerfettoTest : public testing::Test {
   std::vector<std::unique_ptr<TestDataSource>> data_sources_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string stderr_;
+  const char* old_tmp_dir_ = nullptr;
 };
 
 TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {

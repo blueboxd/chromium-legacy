@@ -248,7 +248,7 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
   static unsigned keepalive_throttle_interval_milliseconds_;
 
-  base::WeakPtrFactory<NaClProcessHost> weak_factory_;
+  base::WeakPtrFactory<NaClProcessHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

@@ -21,7 +21,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
-#include "media/gpu/chromeos/platform_video_frame_pool.h"
+#include "media/gpu/linux/platform_video_frame_pool.h"
 #include "media/gpu/video_frame_converter.h"
 #endif  // defined(OS_CHROMEOS)
 

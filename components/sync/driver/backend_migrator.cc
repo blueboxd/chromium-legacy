@@ -28,8 +28,7 @@ BackendMigrator::BackendMigrator(
       manager_(manager),
       reconfigure_callback_(reconfigure_callback),
       migration_done_callback_(migration_done_callback),
-      state_(IDLE),
-      weak_ptr_factory_(this) {
+      state_(IDLE) {
   DCHECK(!reconfigure_callback_.is_null());
   DCHECK(!migration_done_callback_.is_null());
 }

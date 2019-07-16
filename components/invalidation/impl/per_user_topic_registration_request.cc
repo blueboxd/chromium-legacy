@@ -83,8 +83,7 @@ void RecordRequestStatus(
 
 namespace syncer {
 
-PerUserTopicRegistrationRequest::PerUserTopicRegistrationRequest()
-    : weak_ptr_factory_(this) {}
+PerUserTopicRegistrationRequest::PerUserTopicRegistrationRequest() {}
 
 PerUserTopicRegistrationRequest::~PerUserTopicRegistrationRequest() = default;
 

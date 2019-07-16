@@ -603,8 +603,8 @@ function reloadTiles() {
 
   const pages = ntpApiHandle.mostVisited;
   const cmds = [];
-  const maxNumTiles = configData.isGooglePage ? MAX_NUM_TILES_CUSTOM_LINKS :
-                                                MAX_NUM_TILES_MOST_VISITED;
+  const maxNumTiles = customLinksEnabled() ? MAX_NUM_TILES_CUSTOM_LINKS :
+                                             MAX_NUM_TILES_MOST_VISITED;
   for (let i = 0; i < Math.min(maxNumTiles, pages.length); ++i) {
     cmds.push({cmd: 'tile', rid: pages[i].rid});
   }

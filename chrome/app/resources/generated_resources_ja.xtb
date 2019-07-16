@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">本人確認ができませんでした</translation>
 <translation id="1116694919640316211">概要</translation>
 <translation id="1116779635164066733">この設定は拡張機能「<ph name="NAME" />」により制御されています。</translation>
-<translation id="1117602883390928720">Kerberos アカウントの追加</translation>
 <translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
 <translation id="1118738876271697201">デバイスの機種またはシリアル番号を特定できませんでした。</translation>
 <translation id="1119447706177454957">内部エラー</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">デモモードデバイスライセンスで問題が発生しました。</translation>
 <translation id="126710816202626562">翻訳言語:</translation>
 <translation id="126768002343224824">16 倍</translation>
-<translation id="1269405567167332785">詳細設定</translation>
 <translation id="1272079795634619415">中止</translation>
 <translation id="1272293450992660632">PIN の値が一致しません。</translation>
 <translation id="1272978324304772054">このユーザー アカウントは、デバイスが登録されているドメインに属していません。別のドメインに登録する場合は、まず、デバイス リカバリ操作を行う必要があります。</translation>
@@ -511,7 +509,6 @@
 <translation id="1744060673522309905">デバイスをドメインに追加できません。追加できるデバイスの上限数を超えていないかご確認ください。</translation>
 <translation id="1744108098763830590">バックグラウンド ページ</translation>
 <translation id="1745520510852184940">常に翻訳する</translation>
-<translation id="174617397682753897">Kerberos アカウント</translation>
 <translation id="1746402432151920942">保護されているメディア識別子</translation>
 <translation id="175196451752279553">閉じたタブを開く(&amp;R)</translation>
 <translation id="1753905327828125965">よくアクセスするページ</translation>
@@ -759,7 +756,6 @@
 <translation id="2135787500304447609">再開(&amp;R)</translation>
 <translation id="2136372518715274136">新しいパスワードを入力</translation>
 <translation id="2136476978468204130">入力したパスフレーズが正しくありません</translation>
-<translation id="2137068468602026500">[ウェブブラウザ] で [<ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" />] をクリックします</translation>
 <translation id="2138398485845393913">「<ph name="DEVICE_NAME" />」に接続中です</translation>
 <translation id="214169863967063661">表示設定を開く</translation>
 <translation id="2142328300403846845">別のユーザーとしてリンクを開く</translation>
@@ -847,7 +843,6 @@
 <translation id="2241634353105152135">一回限り</translation>
 <translation id="2242687258748107519">ファイル情報</translation>
 <translation id="2246549592927364792">Google から画像の説明を取得しますか？</translation>
-<translation id="2249269794707377949">特定のアプリやウェブサイト、およびファイル共有へのシングル サインオンに使用するすべての Kerberos アカウントをここで管理できます。</translation>
 <translation id="2249605167705922988">例 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">システム ビューアで開く</translation>
 <translation id="225163402930830576">ネットワークを更新</translation>
@@ -1080,7 +1075,6 @@
 <translation id="2587922270115112871">監視対象ユーザーを作成しても Google アカウントは作成されません。監視対象ユーザーの設定と
     データは、Chrome Sync で他のデバイスにはコピーされません。監視対象ユーザーはこのデバイスでのみ有効です。</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> のデバイス</translation>
-<translation id="258932246702879617">[<ph name="BEGIN_BOLD" />タスクバーにピン留めする<ph name="END_BOLD" />] を選択します</translation>
 <translation id="2594999711683503743">Google で検索、または URL を入力</translation>
 <translation id="2597521610396315071">管理機能を設定する</translation>
 <translation id="2603115962224169880">パソコンのクリーンアップ</translation>
@@ -1147,7 +1141,6 @@
 <translation id="2683638487103917598">フォルダが並べ替えられました</translation>
 <translation id="2684004000387153598">利用を続けるには、[OK]、[ユーザーを追加] の順にクリックして、お使いのメールアドレス用の新しいプロフィールを作成してください。</translation>
 <translation id="2688196195245426394">デバイスをサーバーに登録するときにエラーが発生しました: <ph name="CLIENT_ERROR" />。</translation>
-<translation id="2688477613306174402">設定</translation>
 <translation id="2690024944919328218">言語オプションを表示</translation>
 <translation id="2691385045260836588">機種</translation>
 <translation id="2693176596243495071">不明なエラーが発生しました。後でもう一度お試しになるか、問題が解決しない場合は管理者にお問い合わせください。</translation>
@@ -1534,7 +1527,6 @@
 <translation id="32939749466444286">Linux コンテナを起動できませんでした。もう一度お試しください。</translation>
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="329703603001918157">ショートカットの編集はできません</translation>
-<translation id="3297951628821704004">このデバイスからアカウントを削除</translation>
 <translation id="329838636886466101">修復</translation>
 <translation id="3298789223962368867">入力された URL が無効です。</translation>
 <translation id="32991397311664836">デバイス:</translation>
@@ -1595,7 +1587,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">セパレータ</translation>
 <translation id="3387614642886316601">拡張スペルチェックを使用する</translation>
-<translation id="3389312115541230716">タスクバーで <ph name="SMALL_PRODUCT_LOGO" /> アイコンを右クリックします</translation>
 <translation id="3393352139658145068">「OK Google」と話すとアシスタントを起動できます。バッテリー消費を抑えるため、お使いのデバイスがコンセントに接続されている場合にのみ「OK Google」に反応します。</translation>
 <translation id="3396800784455899911">[同意して続行] をクリックすると、これらの Google サービスに関する上記の処理内容に同意したことになります。</translation>
 <translation id="3399432415385675819">通知が無効になります</translation>
@@ -1831,7 +1822,6 @@
 <translation id="3714195043138862580">このデモデバイスはプロビジョニングを解除されている状態です。</translation>
 <translation id="3714633008798122362">ウェブ カレンダー</translation>
 <translation id="3719826155360621982">トップページ</translation>
-<translation id="3720996970802414353">切り替える</translation>
 <translation id="3722108462506185496">仮想マシンサービスの起動中にエラーが発生しました。もう一度お試しください。</translation>
 <translation id="3725367690636977613">ページ</translation>
 <translation id="3726137731714254362">ここからフォルダを削除した場合、共有は停止されますがファイルは削除されません。</translation>
@@ -2446,7 +2436,6 @@
 <translation id="4662788913887017617">このブックマークは iPhone と共有できます</translation>
 <translation id="4663373278480897665">カメラを使用できます</translation>
 <translation id="4664482161435122549">PKCS #12 エクスポート エラー</translation>
-<translation id="4664736447097490764">Kerberos 設定ファイルをここで編集します。</translation>
 <translation id="4665014895760275686">メーカー</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> で保存されたすべてのデータが削除されます。</translation>
 <translation id="4668721319092543482">クリックして <ph name="PLUGIN_NAME" /> を有効にします</translation>
@@ -2561,6 +2550,7 @@
 <translation id="4850669014075537160">スクロール</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4853020600495124913">新しいウィンドウで開く(&amp;N)</translation>
+<translation id="485480310608090163">その他の設定と権限</translation>
 <translation id="4856478137399998590">モバイル データ サービスがご利用いただけるようになりました</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{すべてをシークレット ウィンドウで開く(&amp;I)}=1{シークレット ウィンドウで開く(&amp;I)}other{すべて（# 件）をシークレット ウィンドウで開く(&amp;I)}}</translation>
 <translation id="4858913220355269194">フリッツ</translation>
@@ -2863,7 +2853,6 @@
 <translation id="5319359161174645648">Google は Chrome を推奨しています</translation>
 <translation id="532247166573571973">サーバーへのアクセスに問題が起こっている可能性があります。しばらくしてからもう一度お試しください。</translation>
 <translation id="5324780743567488672">ユーザーの現在地情報を使用して自動的にタイムゾーンを設定する</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> は元のファイルへの保存が許可されています</translation>
 <translation id="5327248766486351172">名前</translation>
 <translation id="5327570636534774768">このデバイスは別のドメインの管理対象として指定されています。デモモードを設定する前にそのドメインのプロビジョニングを解除してください。</translation>
 <translation id="532943162177641444">「<ph name="PHONE_NAME" />」で通知をタップして、このデバイスで使用できるモバイル アクセス ポイントを設定してください。</translation>
@@ -3025,6 +3014,7 @@
 <translation id="55601339223879446">ディスプレイ内のデスクトップの境界線を調整します</translation>
 <translation id="5562781907504170924">このタブは Bluetooth デバイスに接続しています。</translation>
 <translation id="5563234215388768762">Google で検索または URL を入力</translation>
+<translation id="5565735124758917034">有効</translation>
 <translation id="5567989639534621706">アプリケーション キャッシュ</translation>
 <translation id="5568069709869097550">ログインできない</translation>
 <translation id="5568144734023334204">Android のストレージ</translation>
@@ -3675,7 +3665,6 @@
 <translation id="6532101170117367231">Google ドライブに保存</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
 <translation id="6541638731489116978">このサイトではモーション センサーへのアクセスがブロックされています。</translation>
-<translation id="6542184058496424548">無効なユーザー名です（user@realm.com の形式で指定してください）</translation>
 <translation id="654233263479157500">ウェブ サービスを使用してナビゲーション エラーの解決を支援する</translation>
 <translation id="6544215763872433504">Google によるあなたのウェブブラウザ</translation>
 <translation id="6545665334409411530">リピート回数 / 秒</translation>
@@ -3937,7 +3926,6 @@
 <translation id="6955446738988643816">ポップアップを検証</translation>
 <translation id="6957044667612803194">このセキュリティ キーでは PIN がサポートされていません</translation>
 <translation id="6957231940976260713">サービス名</translation>
-<translation id="6957572737510023982">エラー: 問題が発生しました（エラーコード <ph name="ERROR_CODE" />）。</translation>
 <translation id="6964390816189577014">ヒーロー</translation>
 <translation id="6964760285928603117">グループから削除</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -4196,7 +4184,6 @@
 <translation id="7328699668338161242">声をアシスタントに登録済みです</translation>
 <translation id="7328867076235380839">無効な組み合わせです</translation>
 <translation id="7329154610228416156">保護されていない URL（<ph name="BLOCKED_URL" />）を使用するよう設定されているため、ログインできませんでした。管理者にお問い合わせください。</translation>
-<translation id="733006820760728943">有効なアカウントとして設定</translation>
 <translation id="7334190995941642545">Smart Lock は現在ご利用いただけません。しばらくしてからもう一度お試しください。</translation>
 <translation id="7334274148831027933">拡大鏡（ドッキング）を有効にする</translation>
 <translation id="7335974957018254119">スペルチェックを使用する言語</translation>
@@ -4207,7 +4194,6 @@
 <translation id="7340431621085453413">現在 <ph name="FULLSCREEN_ORIGIN" /> は全画面表示です。</translation>
 <translation id="7340650977506865820">サイトで画面が共有されています</translation>
 <translation id="7341834142292923918">このサイトへのアクセス許可が必要です</translation>
-<translation id="7344488796804562294">Kerberos の詳細設定</translation>
 <translation id="7345706641791090287">パスワードを再入力</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7347751611463936647">この拡張機能を使用するには、「<ph name="EXTENSION_KEYWORD" />」と入力して Tab キーを押してからコマンドまたは検索キーワードを入力してください。</translation>
@@ -4301,7 +4287,6 @@
 <translation id="749028671485790643">ユーザー <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC アドレス</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> 拡張機能では、パスワードやクレジット カード番号などの個人データを含むすべての入力テキストが収集される可能性があります。この拡張機能を使用しますか？</translation>
-<translation id="7494065396242762445">Windows の設定を開く</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">パスワードを忘れた場合</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> および関連付けられているデータはこのデバイスから削除されます。</translation>
@@ -4326,7 +4311,6 @@
 <translation id="7530016656428373557">放電率（ワット）</translation>
 <translation id="7531779363494549572">[設定] &gt; [アプリと通知] &gt; [通知] の順に選択します。</translation>
 <translation id="7536220825385726660">Play ストアのアプリによる外部デバイスへのアクセスを許可する</translation>
-<translation id="7537601449003285327">タスクバーにピン留めする</translation>
 <translation id="7539856059004947393">Bluetooth セキュリティ キー</translation>
 <translation id="7540972813190816353">更新の確認中にエラーが発生しました: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">この <ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスでデバッグ機能を有効にします</translation>
@@ -4357,7 +4341,6 @@
 <translation id="7574650250151586813">テキストを入力するには、Daydream キーボード アプリを更新してください</translation>
 <translation id="7576690715254076113">部単位で印刷</translation>
 <translation id="7576976045740938453">デモモード アカウントで問題が発生しました。</translation>
-<translation id="757941033127302446">ログイン中</translation>
 <translation id="7580671184200851182">すべてのスピーカーで同じオーディオを再生（モノラル オーディオ）</translation>
 <translation id="7581462281756524039">クリーンアップ ツール</translation>
 <translation id="7582582252461552277">このネットワークを優先する</translation>
@@ -4635,7 +4618,6 @@
 <translation id="7959074893852789871">ファイルに含まれる複数の証明書のうち、一部をインポートできませんでした:</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7963826112438303517">アシスタントによって、これらの録音データと音声によるリクエストからお客様の音声モデルが作成、更新されます。この音声モデルは、Voice Match をオンにしているデバイスにのみ保存されます。音声認識の確認や再認識は、[アシスタントの設定] で行います。</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> が近くの Bluetooth デバイスのスキャンを求めています。検出済みのデバイスは次のとおりです。</translation>
 <translation id="7966241909927244760">画像アドレスをコピー(&amp;C)</translation>
 <translation id="7968742106503422125">コピーして貼り付けるデータの読み取りと修正</translation>
 <translation id="7968833647796919681">パフォーマンス データの収集を有効にする</translation>
@@ -4792,7 +4774,6 @@
 <translation id="8184472985242519288">均一</translation>
 <translation id="8185331656081929126">ネットワーク上で新しいプリンタが検出されたときに通知を表示する</translation>
 <translation id="8186609076106987817">お探しのファイルはサーバーにはありません。</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> は次のフォルダのすべてのファイルを読み取ることができます。このサイトは、このタブが開いている間のみフォルダへの変更にアクセスできます。</translation>
 <translation id="8188389033983459049">続行するには、デバイスの設定で Bluetooth をオンにしてください</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> に接続中</translation>
 <translation id="8191230140820435481">アプリ、拡張機能、テーマを管理する</translation>
@@ -4928,7 +4909,6 @@
 <translation id="839736845446313156">登録</translation>
 <translation id="8398877366907290961">このまま続行</translation>
 <translation id="8400146488506985033">ユーザーを管理</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> は次のフォルダのファイルに変更を直接保存できます。このサイトは、このタブが開いている間のみ変更を保存できます。</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="8418445294933751433">タブで表示(&amp;S)</translation>
@@ -5281,7 +5261,6 @@
 <translation id="891365694296252935">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">候補を読み込んでいます</translation>
 <translation id="8916476537757519021">シークレット サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> はデバイスのフォルダの読み取りが許可されています</translation>
 <translation id="8919275547519617350">お使いのどのデバイスでも同じパスワードを使用するには、ログインして同期を有効にします。</translation>
 <translation id="8921366488406707015">セキュリティ キーの確認中...</translation>
 <translation id="8922013791253848639">このサイトで常に広告を許可します</translation>
@@ -5331,6 +5310,7 @@
 <translation id="8995603266996330174">管理ドメイン: <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">アカウントを追加...</translation>
 <translation id="899657321862108550">あなたの Chrome をいつでもどこでも</translation>
+<translation id="899676909165543803">指紋認証センサーはキーボードの右下のキーに搭載されています。いずれかの指で軽く触れてください。</translation>
 <translation id="9003647077635673607">すべてのウェブサイトで許可する</translation>
 <translation id="9003704114456258138">周波数</translation>
 <translation id="9004952710076978168">不明なプリンタのメッセージを受け取りました。</translation>
@@ -5366,7 +5346,6 @@
 <translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">アクセスしようとしているページのウェブアドレスを Google に送信します</translation>
 <translation id="9046895021617826162">接続に失敗しました</translation>
-<translation id="9047391224416514812">このユーザー名のアカウントはすでに設定されています</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9052208328806230490"><ph name="CLOUD_PRINT_NAME" /> に、アカウント <ph name="EMAIL" /> を使ってプリンタを登録しました</translation>
 <translation id="9052404922357793350">引き続きブロックする</translation>

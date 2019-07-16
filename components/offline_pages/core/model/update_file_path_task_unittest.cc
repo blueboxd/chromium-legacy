@@ -19,8 +19,7 @@ namespace {
 // Callback to check results of task.
 class UpdateFilePathTaskTestCallback {
  public:
-  UpdateFilePathTaskTestCallback()
-      : called_(false), success_(false), weak_ptr_factory_(this) {}
+  UpdateFilePathTaskTestCallback() : called_(false), success_(false) {}
 
   bool called() const { return called_; }
 
@@ -38,7 +37,7 @@ class UpdateFilePathTaskTestCallback {
  private:
   bool called_;
   bool success_;
-  base::WeakPtrFactory<UpdateFilePathTaskTestCallback> weak_ptr_factory_;
+  base::WeakPtrFactory<UpdateFilePathTaskTestCallback> weak_ptr_factory_{this};
 };
 }  // namespace
 

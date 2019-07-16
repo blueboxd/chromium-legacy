@@ -28,8 +28,7 @@ bool MapContainsValue(const std::map<T, U>& map, U value) {
 
 }  // namespace
 
-OfflineContentAggregator::OfflineContentAggregator()
-    : weak_ptr_factory_(this) {}
+OfflineContentAggregator::OfflineContentAggregator() {}
 
 OfflineContentAggregator::~OfflineContentAggregator() = default;
 

@@ -80,14 +80,19 @@ class NonSfiUnitTestPlatformDelegate : public base::UnitTestPlatformDelegate {
   }
 
  private:
-  bool CreateResultsFile(base::FilePath* path) override {
-    if (!base::CreateNewTempDirectory(base::FilePath::StringType(), path))
+  bool CreateResultsFile(const base::FilePath& temp_dir,
+                         base::FilePath* path) override {
+    if (!base::CreateTemporaryDirInDir(temp_dir, base::FilePath::StringType(),
+                                       path))
       return false;
     *path = path->AppendASCII("test_results.xml");
     return true;
   }
 
-  bool CreateTemporaryFile(base::FilePath* path) override { return false; }
+  bool CreateTemporaryFile(const base::FilePath& temp_dir,
+                           base::FilePath* path) override {
+    return false;
+  }
 
   bool GetTests(std::vector<base::TestIdentifier>* output) override {
     base::FilePath output_file;

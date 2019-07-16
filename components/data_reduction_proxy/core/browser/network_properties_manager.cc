@@ -51,7 +51,7 @@ base::Optional<NetworkProperties> GetParsedNetworkProperty(
 class NetworkPropertiesManager::PrefManager {
  public:
   PrefManager(base::Clock* clock, PrefService* pref_service)
-      : clock_(clock), pref_service_(pref_service), ui_weak_ptr_factory_(this) {
+      : clock_(clock), pref_service_(pref_service) {
     DCHECK(clock_);
     DictionaryPrefUpdate update(pref_service_, prefs::kNetworkProperties);
     base::DictionaryValue* properties_dict = update.Get();
@@ -175,7 +175,7 @@ class NetworkPropertiesManager::PrefManager {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Used to get |weak_ptr_| to self on the UI thread.
-  base::WeakPtrFactory<PrefManager> ui_weak_ptr_factory_;
+  base::WeakPtrFactory<PrefManager> ui_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefManager);
 };

@@ -60,8 +60,7 @@ FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
       clock_(base::DefaultTickClock::GetInstance()),
       oracle_(std::move(oracle)),
       frame_pool_(kDesignLimitMaxFrames),
-      feedback_weak_factory_(oracle_.get()),
-      capture_weak_factory_(this) {
+      feedback_weak_factory_(oracle_.get()) {
   DCHECK(frame_sink_manager_);
   DCHECK(oracle_);
 

@@ -21,9 +21,7 @@ FCMInvalidationListener::Delegate::~Delegate() {}
 
 FCMInvalidationListener::FCMInvalidationListener(
     std::unique_ptr<FCMSyncNetworkChannel> network_channel)
-    : network_channel_(std::move(network_channel)),
-      delegate_(nullptr),
-      weak_factory_(this) {
+    : network_channel_(std::move(network_channel)), delegate_(nullptr) {
   network_channel_->AddObserver(this);
 }
 

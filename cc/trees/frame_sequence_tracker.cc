@@ -32,7 +32,7 @@ constexpr const char* const kBuiltinSequences[] = {
 };
 
 constexpr int kBuiltinSequenceNum = base::size(kBuiltinSequences);
-constexpr int kMaxHistogramIndex = 2 * kBuiltinSequenceNum;
+constexpr int kMaximumHistogramIndex = 2 * kBuiltinSequenceNum;
 
 int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
   return thread_type == ThreadType::kMain
@@ -357,7 +357,7 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
   const int percent =
       static_cast<int>(100 * data.frames_produced / data.frames_expected);
   STATIC_HISTOGRAM_POINTER_GROUP(
-      name, metric_index, kMaxHistogramIndex, Add(percent),
+      name, metric_index, kMaximumHistogramIndex, Add(percent),
       base::LinearHistogram::FactoryGet(
           name, 1, 100, 101, base::HistogramBase::kUmaTargetedHistogramFlag));
 }

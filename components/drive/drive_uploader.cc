@@ -101,8 +101,7 @@ struct DriveUploader::UploadFileInfo {
         progress_callback(progress_callback),
         content_length(0),
         next_start_position(-1),
-        cancelled(false),
-        weak_ptr_factory_(this) {
+        cancelled(false) {
     if (wake_lock_provider) {
       wake_lock_provider->GetWakeLockWithoutContext(
           device::mojom::WakeLockType::kPreventAppSuspension,
@@ -167,7 +166,7 @@ struct DriveUploader::UploadFileInfo {
       cancel_callback.Run();
   }
 
-  base::WeakPtrFactory<UploadFileInfo> weak_ptr_factory_;
+  base::WeakPtrFactory<UploadFileInfo> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(UploadFileInfo);
 };
 
@@ -177,8 +176,7 @@ DriveUploader::DriveUploader(
     device::mojom::WakeLockProviderPtr wake_lock_provider)
     : drive_service_(drive_service),
       blocking_task_runner_(blocking_task_runner),
-      wake_lock_provider_(std::move(wake_lock_provider)),
-      weak_ptr_factory_(this) {}
+      wake_lock_provider_(std::move(wake_lock_provider)) {}
 
 DriveUploader::~DriveUploader() = default;
 

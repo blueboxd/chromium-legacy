@@ -13,10 +13,8 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1298199220304005244">Kumuha ng tulong sa paggamit ng Chromium OS</translation>
 <translation id="1396446129537741364">Sinusubukan ng Chromium na magpakita ng mga password.</translation>
 <translation id="1414495520565016063">Naka-sign in ka sa Chromium!</translation>
-<translation id="1502360822835740515">Gawing default mong browser ang Chromium</translation>
 <translation id="151962892725702025">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="1524282610922162960">Magbahagi ng tab ng Chromium</translation>
-<translation id="1585657529869845941">I-click ang <ph name="BEGIN_BOLD" />Lumipat pa rin<ph name="END_BOLD" />, kung lalabas ito</translation>
 <translation id="1668054258064581266">Pagkatapos alisin ang iyong account sa Chromium, maaaring kailangan mong i-reload ang mga nakabukas mong tab upang magkabisa.</translation>
 <translation id="1688750314291223739">I-set up ang Pag-sync upang i-save ang iyong personalized na mga tampok ng browser sa web at i-access ang mga iyon mula sa Chromium sa anumang computer.</translation>
 <translation id="1708666629004767631">May available na bago at mas ligtas na bersyon ng Chromium.</translation>
@@ -84,13 +82,11 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3728336900324680424">Ia-access ng Chromium ang iyong Drive para makapagmungkahi sa address bar</translation>
 <translation id="378917192836375108">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">I-pin ang Chromium sa iyong taskbar</translation>
 <translation id="388648406173476553">I-customize at kontrolin ang Chromium. May kailangan kang pagtuunan ng pansin - mag-click para sa mga detalye.</translation>
 <translation id="3889543394854987837">I-click ang iyong pangalan upang buksan ang Chromium at simulan ang pagba-browse.</translation>
 <translation id="3898493977366060150">Pag-browse sa web gamit ang mga smart na feature ng Google</translation>
 <translation id="4036079820698952681">Tulungang pahusayin ang Chromium sa pamamagitan ng pag-ulat sa <ph name="BEGIN_LINK" />mga kasalukuyang setting<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
-<translation id="407254336480250557">Piliin ang <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Tumuklas ng mahuhusay na app, laro, extension at tema para sa Chromium.</translation>
 <translation id="4216212958613226427">Ginagamit ang wikang ito para ipakita ang Chromium UI</translation>
 <translation id="4222580632002216401">Naka-sign in ka na ngayon sa Chromium! Na-disable ng iyong administrator ang pag-sync.</translation>
@@ -107,7 +103,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4677944499843243528">Mukhang ginagamit ang profile ng iba pang proseso ng Chromium (<ph name="PROCESS_ID" />) sa iba pang computer (<ph name="HOST_NAME" />).  Ni-lock ng Chromium ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chromium.</translation>
 <translation id="469338717132742108">Humingi ng tulong sa Chromium OS</translation>
 <translation id="4708774505295300557">May nag-sign in dati sa Chromium sa computer na ito bilang <ph name="ACCOUNT_EMAIL_LAST" />. Mangyaring gumawa ng bagong user ng Chromium upang ihiwalay ang iyong impormasyon.</translation>
-<translation id="4714956846925717402">Pumunta sa Chromium nang mas mabilis</translation>
 <translation id="4746050847053251315">Umalis pa rin sa Chromium?</translation>
 <translation id="4748217263233248895">Naglapat ng espesyal na update sa seguridad para sa Chromium. Mag-restart na at ire-restore namin ang iyong mga tab.</translation>
 <translation id="479167709087336770">Ginagamit nito ang parehong spellchecker na ginagamit sa paghahanap sa Google. Ipinapadala sa Google ang text na tina-type mo sa browser. Puwede mong baguhin ang gawing ito sa mga setting sa lahat ng oras.</translation>

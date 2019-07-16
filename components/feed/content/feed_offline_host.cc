@@ -135,8 +135,7 @@ FeedOfflineHost::FeedOfflineHost(OfflinePageModel* offline_page_model,
     : offline_page_model_(offline_page_model),
       prefetch_service_(prefetch_service),
       on_suggestion_consumed_(on_suggestion_consumed),
-      on_suggestions_shown_(on_suggestions_shown),
-      weak_factory_(this) {
+      on_suggestions_shown_(on_suggestions_shown) {
   DCHECK(offline_page_model_);
   DCHECK(prefetch_service_);
   DCHECK(!on_suggestion_consumed_.is_null());

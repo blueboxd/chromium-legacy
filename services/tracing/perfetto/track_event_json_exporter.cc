@@ -539,7 +539,10 @@ void TrackEventJSONExporter::HandleStreamingProfilePacket(
   std::string result;
   for (const auto& frame_id : callstack->second) {
     auto frame = current_state_->interned_frames_.find(frame_id);
-    DCHECK(frame != current_state_->interned_frames_.end());
+    if (frame == current_state_->interned_frames_.end()) {
+      base::StringAppendF(&result, "MISSING FRAME REFERENCE - ???\n");
+      continue;
+    }
 
     std::string frame_name;
     std::string module_name;

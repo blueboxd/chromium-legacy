@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -35,17 +36,22 @@ PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document,
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
   PaintWorklet* paint_worklet = PaintWorklet::From(*document->domWindow());
-  scoped_refptr<PaintWorkletPaintDispatcher> compositor_paint_dispatcher =
-      local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher();
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue;
+  base::WeakPtr<PaintWorkletPaintDispatcher> compositor_paint_dispatcher =
+      local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher(
+          &compositor_host_queue);
   return MakeGarbageCollected<PaintWorkletProxyClient>(
-      worklet_id, paint_worklet, std::move(compositor_paint_dispatcher));
+      worklet_id, paint_worklet, std::move(compositor_paint_dispatcher),
+      std::move(compositor_host_queue));
 }
 
 PaintWorkletProxyClient::PaintWorkletProxyClient(
     int worklet_id,
     PaintWorklet* paint_worklet,
-    scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher)
+    base::WeakPtr<PaintWorkletPaintDispatcher> paint_dispatcher,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue)
     : paint_dispatcher_(std::move(paint_dispatcher)),
+      compositor_host_queue_(std::move(compositor_host_queue)),
       worklet_id_(worklet_id),
       state_(RunState::kUninitialized),
       main_thread_runner_(Thread::MainThread()->GetTaskRunner()),
@@ -74,7 +80,12 @@ void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
       global_scope->GetThread()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   state_ = RunState::kWorking;
 
-  paint_dispatcher_->RegisterPaintWorkletPainter(this, global_scope_runner);
+  PostCrossThreadTask(
+      *compositor_host_queue_, FROM_HERE,
+      CrossThreadBindOnce(
+          &PaintWorkletPaintDispatcher::RegisterPaintWorkletPainter,
+          paint_dispatcher_, WrapCrossThreadPersistent(this),
+          global_scope_runner));
 }
 
 void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
@@ -130,7 +141,11 @@ void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
 
 void PaintWorkletProxyClient::Dispose() {
   if (state_ == RunState::kWorking) {
-    paint_dispatcher_->UnregisterPaintWorkletPainter(worklet_id_);
+    PostCrossThreadTask(
+        *compositor_host_queue_, FROM_HERE,
+        CrossThreadBindOnce(
+            &PaintWorkletPaintDispatcher::UnregisterPaintWorkletPainter,
+            paint_dispatcher_, worklet_id_));
   }
   paint_dispatcher_ = nullptr;
 

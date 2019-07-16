@@ -249,8 +249,7 @@ DesktopNativeWidgetAura::DesktopNativeWidgetAura(
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false),
       cursor_(gfx::kNullCursor),
-      widget_type_(Widget::InitParams::TYPE_WINDOW),
-      close_widget_factory_(this) {
+      widget_type_(Widget::InitParams::TYPE_WINDOW) {
   aura::client::SetFocusChangeObserver(content_window_, this);
   wm::SetActivationChangeObserver(content_window_, this);
 }

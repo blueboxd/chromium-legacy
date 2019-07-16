@@ -94,8 +94,7 @@ InputScrollElasticityController::InputScrollElasticityController(
     : helper_(helper),
       state_(kStateInactive),
       momentum_animation_reset_at_next_frame_(false),
-      received_overscroll_update_(false),
-      weak_factory_(this) {}
+      received_overscroll_update_(false) {}
 
 InputScrollElasticityController::~InputScrollElasticityController() {
 }

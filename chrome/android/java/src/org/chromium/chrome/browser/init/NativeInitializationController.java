@@ -135,7 +135,7 @@ class NativeInitializationController {
             onResume();
         }
 
-        LibraryLoader.getInstance().onNativeInitializationComplete();
+        LibraryLoader.getInstance().onBrowserNativeInitializationComplete();
     }
 
     /**

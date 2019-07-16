@@ -156,9 +156,7 @@ class SpellCheck::SpellcheckRequest {
 SpellCheck::SpellCheck(
     service_manager::BinderRegistry* registry,
     service_manager::LocalInterfaceProvider* embedder_provider)
-    : embedder_provider_(embedder_provider),
-      spellcheck_enabled_(true),
-      weak_factory_(this) {
+    : embedder_provider_(embedder_provider), spellcheck_enabled_(true) {
   DCHECK(embedder_provider);
   if (!registry)
     return;  // Can be NULL in tests.

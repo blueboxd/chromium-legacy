@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.28.0
+Version: 3.29.0
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -71,7 +71,7 @@ cd third_party/sqlite
 
 # Must match the version in //third_party/sqlite/sqlite-src-xxxxxxx.
 # This is SQLite's version number, and uses upstream's convention.
-export BASE=3280000
+export BASE=3290000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Create a reference branch.
@@ -93,7 +93,6 @@ git new-branch --upstream-current sqlite-dev
 git am --keep-non-patch --ignore-space-change patches/*.patch
 git diff origin/master patched/
 # This branch should be identical to master.
-
 
 #### Develop and validate the change, or cherry-pick it from a dev branch.
 # The goal is to have a set of reasonably-independent CLs which can be
@@ -160,8 +159,8 @@ cd third_party/sqlite
 
 # The numbers below are SQLite version numbers, and use upstream's convention
 # for tagging release binaries and source zipballs.
-export OLD=3280000
-export NEW=3290000
+export OLD=3290000
+export NEW=3300000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Download and unpack the new SQLite release.
@@ -181,7 +180,7 @@ xdg-open sqlite-src-${NEW}  # Make sure everything looks right.
 git add sqlite-src-${NEW}  # Committing the code as downloaded, on purpose.
 git clean -i -d -x sqlite-src-${NEW}  # Make sure no file is git-ignored.
 git commit -m "sqlite: Add code for release ${NEW}"
-git cl upload  # Have the new code in a separate (impossible to review) CL.
+git cl upload # Have the new code in a separate CL.
 
 #### Create a branch for the old SQLite release's upstream version.
 git new-branch sqlite-old-base
@@ -263,13 +262,13 @@ git add patches/
 git commit -m "Squash: regenerate amalgamation and patches."
 git branch --set-upstream-to=origin/master
 git cl upload --squash
-# Edit the commit message appropriately to reflect anything from
-# <https://www.sqlite.org/changes.html> which might be deemed important. Don't
-# enumerate all of the patch messages, those are assumed, but do reference any
-# material changes made.
-# TODO(pwnall) Describe an appropriate comment style.  Seems like it should at
-# least include the SQLite version number.  Meanwhile, look in the logs for past
-# commits to model things on.
+# Example commit message (https://crrev.com/c/1699400):
+# sqlite: Upgrade from 3.28.0 to 3.29.0
+#
+# sqlite 3.29.0 update changes:
+# https://www.sqlite.org/releaselog/3_29_0.html
+#
+# Bug: 983713
 
 #### Drop the old version of SQLite.
 git new-branch sqlite-rm-old

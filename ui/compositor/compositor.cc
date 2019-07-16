@@ -82,8 +82,7 @@ Compositor::Compositor(
       lock_manager_(task_runner),
       trace_environment_name_(trace_environment_name
                                   ? trace_environment_name
-                                  : kDefaultTraceEnvironmentName),
-      context_creation_weak_ptr_factory_(this) {
+                                  : kDefaultTraceEnvironmentName) {
   if (context_factory_private) {
     auto* host_frame_sink_manager =
         context_factory_private_->GetHostFrameSinkManager();

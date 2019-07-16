@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME" />」覆寫了，因此遭到略過。</translation>
+<translation id="2119505898009119320">核發對象：<ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">動作感應器</translation>
 <translation id="213826338245044447">行動版書籤</translation>
 <translation id="214556005048008348">取消付款</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">檢查所在位置的網路訊號</translation>
 <translation id="2523886232349826891">僅儲存在這部裝置</translation>
 <translation id="2524461107774643265">新增詳細資訊</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{和另外 1 個網域}other{和另外 # 個網域}}</translation>
 <translation id="2536110899380797252">新增地址</translation>
 <translation id="2539524384386349900">偵測</translation>
 <translation id="254947805923345898">政策的值無效。</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">你已詢問家長是否同意你造訪這個網站</translation>
 <translation id="4876188919622883022">簡易檢視</translation>
 <translation id="4876305945144899064">沒有使用者名稱</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{無}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">搜尋「<ph name="TEXT" />」</translation>
 <translation id="4879491255372875719">自動 (預設)</translation>
 <translation id="4880827082731008257">搜尋記錄</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">是，我要儲存</translation>
 <translation id="6508722015517270189">重新啟動 Chrome</translation>
 <translation id="6517596291481585650">警告：這項政策並非清單，因此未依照政策中指定的方式合併為清單。</translation>
+<translation id="6521745193039995384">未啟用</translation>
 <translation id="6529602333819889595">重做刪除(&amp;R)</translation>
 <translation id="6534179046333460208">實體化網路建議</translation>
 <translation id="6545864417968258051">藍牙掃描</translation>
@@ -1478,6 +1482,7 @@
 <translation id="9076630408993835509">這個瀏覽器未受到任何公司或其他機構管理。這部裝置上的活動可透過 Chrome 以外的服務管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">請提供詳細資訊</translation>
 <translation id="9080712759204168376">訂單摘要</translation>
+<translation id="9089260154716455634">停機時間政策：</translation>
 <translation id="9095388113577226029">更多語言...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="9106062320799175032">新增帳單地址</translation>

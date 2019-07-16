@@ -95,8 +95,8 @@ class InSessionPasswordChangeManagerTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle test_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::MainThreadType::UI,
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   TestingProfile* profile_;
 

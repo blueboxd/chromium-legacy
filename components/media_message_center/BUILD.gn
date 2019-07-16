@@ -24,6 +24,7 @@ component("media_message_center") {
     "//base",
     "//components/strings:components_strings_grit",
     "//components/vector_icons",
+    "//services/media_session/public/cpp",
     "//services/media_session/public/mojom",
     "//skia",
     "//ui/accessibility",

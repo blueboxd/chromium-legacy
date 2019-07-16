@@ -21,7 +21,6 @@
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/base/system_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -117,7 +116,7 @@ bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
 std::string PackKeystoreBootstrapToken(
     const std::vector<std::string>& old_keystore_keys,
     const std::string& current_keystore_key,
-    Encryptor* encryptor) {
+    const Encryptor& encryptor) {
   if (current_keystore_key.empty())
     return std::string();
 
@@ -133,14 +132,14 @@ std::string PackKeystoreBootstrapToken(
   JSONStringValueSerializer json(&serialized_keystores);
   json.Serialize(keystore_key_values);
   std::string encrypted_keystores;
-  encryptor->EncryptString(serialized_keystores, &encrypted_keystores);
+  encryptor.EncryptString(serialized_keystores, &encrypted_keystores);
   std::string keystore_bootstrap;
   base::Base64Encode(encrypted_keystores, &keystore_bootstrap);
   return keystore_bootstrap;
 }
 
 bool UnpackKeystoreBootstrapToken(const std::string& keystore_bootstrap_token,
-                                  Encryptor* encryptor,
+                                  const Encryptor& encryptor,
                                   std::vector<std::string>* old_keystore_keys,
                                   std::string* current_keystore_key) {
   if (keystore_bootstrap_token.empty())
@@ -151,8 +150,8 @@ bool UnpackKeystoreBootstrapToken(const std::string& keystore_bootstrap_token,
     return false;
   }
   std::string decrypted_keystore_bootstrap;
-  if (!encryptor->DecryptString(base64_decoded_keystore_bootstrap,
-                                &decrypted_keystore_bootstrap)) {
+  if (!encryptor.DecryptString(base64_decoded_keystore_bootstrap,
+                               &decrypted_keystore_bootstrap)) {
     return false;
   }
 
@@ -303,8 +302,7 @@ bool ShouldSetExplicitCustomPassphraseKeyDerivationMethod(
 bool CanDecryptKeybagWithBase64DecodedKeys(
     const std::vector<std::string>& keystore_keys,
     const sync_pb::NigoriSpecifics& specifics) {
-  SystemEncryptor encryptor;
-  Cryptographer cryptographer(&encryptor);
+  Cryptographer cryptographer;
   for (const std::string& keystore_key : keystore_keys) {
     std::string decoded_key;
     base::Base64Decode(keystore_key, &decoded_key);
@@ -324,36 +322,36 @@ bool CanDecryptKeybagWithBase64DecodedKeys(
 
 }  // namespace
 
-SyncEncryptionHandlerImpl::Vault::Vault(Encryptor* encryptor,
-                                        ModelTypeSet encrypted_types,
+SyncEncryptionHandlerImpl::Vault::Vault(ModelTypeSet encrypted_types,
                                         PassphraseType passphrase_type)
-    : cryptographer(encryptor),
-      encrypted_types(encrypted_types),
-      passphrase_type(passphrase_type) {}
+    : encrypted_types(encrypted_types), passphrase_type(passphrase_type) {}
 
 SyncEncryptionHandlerImpl::Vault::~Vault() {}
 
 SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     UserShare* user_share,
-    Encryptor* encryptor,
+    const Encryptor* encryptor,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     const base::RepeatingCallback<std::string()>& random_salt_generator)
     : user_share_(user_share),
-      vault_unsafe_(encryptor, SensitiveTypes(), kInitialPassphraseType),
+      encryptor_(encryptor),
+      vault_unsafe_(SensitiveTypes(), kInitialPassphraseType),
       encrypt_everything_(false),
       nigori_overwrite_count_(0),
       random_salt_generator_(random_salt_generator),
       migration_attempted_(false),
       weak_ptr_factory_(this) {
+  DCHECK(encryptor);
   // Restore the cryptographer's previous keys. Note that we don't add the
   // keystore keys into the cryptographer here, in case a migration was pending.
-  vault_unsafe_.cryptographer.Bootstrap(restored_key_for_bootstrapping);
+  vault_unsafe_.cryptographer.Bootstrap(*encryptor,
+                                        restored_key_for_bootstrapping);
 
   // If this fails, we won't have a valid keystore key, and will simply request
   // new ones from the server on the next DownloadUpdates.
   UnpackKeystoreBootstrapToken(restored_keystore_key_for_bootstrapping,
-                               encryptor, &old_keystore_keys_, &keystore_key_);
+                               *encryptor, &old_keystore_keys_, &keystore_key_);
 }
 
 SyncEncryptionHandlerImpl::~SyncEncryptionHandlerImpl() {}
@@ -558,7 +556,7 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
           observer.OnPassphraseTypeChanged(
               *passphrase_type, GetExplicitPassphraseTime(*passphrase_type));
         }
-        cryptographer->GetBootstrapToken(&bootstrap_token);
+        cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
 
         UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
 
@@ -689,7 +687,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
       // Otherwise, we're in a situation where the pending keys are
       // encrypted with an old gaia passphrase, while the default is the
       // current gaia passphrase. In that case, we preserve the default.
-      Cryptographer temp_cryptographer(cryptographer->encryptor());
+      Cryptographer temp_cryptographer;
       temp_cryptographer.SetPendingKeys(cryptographer->GetPendingKeys());
       if (temp_cryptographer.DecryptPendingKeys(key_params)) {
         // Check to see if the pending bag of keys contains the current
@@ -702,7 +700,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
           // Case 7. The pending keybag contains the current default. Go ahead
           // and update the cryptographer, letting the default change.
           cryptographer->DecryptPendingKeys(key_params);
-          cryptographer->GetBootstrapToken(&bootstrap_token);
+          cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
           success = true;
         } else {
           // Case 8. The pending keybag does not contain the current default
@@ -713,11 +711,12 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
                    << "decryption, restoring implicit internal passphrase "
                    << "as default.";
           std::string bootstrap_token_from_current_key;
-          cryptographer->GetBootstrapToken(&bootstrap_token_from_current_key);
+          cryptographer->GetBootstrapToken(*encryptor_,
+                                           &bootstrap_token_from_current_key);
           cryptographer->DecryptPendingKeys(key_params);
           // Overwrite the default from the pending keys.
           cryptographer->AddKeyFromBootstrapToken(
-              bootstrap_token_from_current_key);
+              *encryptor_, bootstrap_token_from_current_key);
           success = true;
         }
       } else {  // !temp_cryptographer.DecryptPendingKeys(..)
@@ -737,7 +736,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
         // above. This user provided passphrase could be the current or the
         // old. But, as long as we persist the token, there's nothing more
         // we can do.
-        cryptographer->GetBootstrapToken(&bootstrap_token);
+        cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
         DVLOG(1) << "Implicit user provided passphrase accepted, initializing"
                  << " cryptographer.";
         success = true;
@@ -751,7 +750,7 @@ void SyncEncryptionHandlerImpl::SetDecryptionPassphrase(
     // with the passphrase provided by the user.
     if (cryptographer->DecryptPendingKeys(key_params)) {
       DVLOG(1) << "Explicit passphrase accepted for decryption.";
-      cryptographer->GetBootstrapToken(&bootstrap_token);
+      cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
       success = true;
     } else {
       DVLOG(1) << "Explicit passphrase failed to decrypt.";
@@ -891,7 +890,7 @@ bool SyncEncryptionHandlerImpl::SetKeystoreKeys(
   // which will force us to download the keystore keys again on the next
   // restart.
   std::string keystore_bootstrap = PackKeystoreBootstrapToken(
-      old_keystore_keys_, keystore_key_, cryptographer->encryptor());
+      old_keystore_keys_, keystore_key_, *encryptor_);
 
   for (auto& observer : observers_) {
     observer.OnBootstrapTokenUpdated(keystore_bootstrap,
@@ -1417,7 +1416,7 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
 
   DVLOG(1) << "Setting custom passphrase with key derivation method "
            << KeyDerivationMethodToString(key_derivation_params.method());
-  cryptographer->GetBootstrapToken(&bootstrap_token);
+  cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
 
   PassphraseType* passphrase_type =
       &UnlockVaultMutable(trans->GetWrappedTrans())->passphrase_type;
@@ -1483,7 +1482,7 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
   std::string bootstrap_token;
   if (cryptographer->DecryptPendingKeys(key_params)) {
     DVLOG(1) << "Explicit passphrase accepted for decryption.";
-    cryptographer->GetBootstrapToken(&bootstrap_token);
+    cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
     success = true;
 
     if (passphrase_type == PassphraseType::CUSTOM_PASSPHRASE) {
@@ -1701,7 +1700,7 @@ SyncEncryptionHandlerImpl::GetMigrationReason(
     // Note that once a key rotation has been performed, we no longer
     // preserve backwards compatibility, and the keybag will therefore be
     // encrypted with the current keystore key.
-    Cryptographer temp_cryptographer(cryptographer.encryptor());
+    Cryptographer temp_cryptographer;
     KeyParams keystore_params = {KeyDerivationParams::CreateForPbkdf2(),
                                  keystore_key_};
     temp_cryptographer.AddKey(keystore_params);
@@ -1930,7 +1929,7 @@ bool SyncEncryptionHandlerImpl::GetKeystoreDecryptor(
     LOG(ERROR) << "Failed to get cryptographer bootstrap token.";
     return false;
   }
-  Cryptographer temp_cryptographer(cryptographer.encryptor());
+  Cryptographer temp_cryptographer;
   KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), keystore_key};
   if (!temp_cryptographer.AddKey(key_params))
     return false;
@@ -1971,7 +1970,7 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
   DCHECK(cryptographer->has_pending_keys());
   if (keystore_decryptor_token.blob().empty())
     return false;
-  Cryptographer temp_cryptographer(cryptographer->encryptor());
+  Cryptographer temp_cryptographer;
 
   // First, go through and all all the old keystore keys to the temporary
   // cryptographer.
@@ -2024,7 +2023,7 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
     }
     if (cryptographer->is_ready()) {
       std::string bootstrap_token;
-      cryptographer->GetBootstrapToken(&bootstrap_token);
+      cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
       DVLOG(1) << "Keystore decryptor token decrypted pending keys.";
       // Note: These are separate loops to match previous functionality and not
       // out of explicit knowledge that they must be.

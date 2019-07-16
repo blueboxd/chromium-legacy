@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">获取 Chromium 操作系统使用帮助</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
-<translation id="1502360822835740515">将 Chromium 设置为您的默认浏览器</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
 <translation id="1524282610922162960">共享 Chromium 标签页</translation>
-<translation id="1585657529869845941">请点击<ph name="BEGIN_BOLD" />确定切换<ph name="END_BOLD" />（如果显示该按钮的话）</translation>
 <translation id="1668054258064581266">从Chromium移除您的帐号后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
 <translation id="1688750314291223739">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Chromium 中使用这些功能。</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium 将访问您的云端硬盘，以在地址栏提供建议</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">将 Chromium 固定到任务栏</translation>
 <translation id="388648406173476553">自定义和控制 Chromium。出了点需要您注意的状况 - 点击即可查看详情。</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
 <translation id="3898493977366060150">利用 Google 的智能技术浏览网页</translation>
 <translation id="4036079820698952681">报告<ph name="BEGIN_LINK" />当前设置<ph name="END_LINK" />，协助我们改进 Chromium</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
-<translation id="407254336480250557">选择 <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">在这里，您可以找到适用于 Chromium 的精彩应用、游戏、扩展程序和主题背景。</translation>
 <translation id="4216212958613226427">使用此语言显示 Chromium 界面</translation>
 <translation id="4222580632002216401">您现在已登录 Chromium！不过，管理员已停用同步功能。</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">其他计算机 (<ph name="HOST_NAME" />) 的另一个 Chromium 进程 (<ph name="PROCESS_ID" />) 好像正在使用此个人资料。Chromium 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chromium。</translation>
 <translation id="469338717132742108">获取有关 Chromium 操作系统的帮助</translation>
 <translation id="4708774505295300557">之前已有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 的身份登录了 Chromium。请新建一个 Chromium 用户来单独保存您的信息。</translation>
-<translation id="4714956846925717402">更快地访问 Chromium</translation>
 <translation id="4746050847053251315">仍要退出 Chromium？</translation>
 <translation id="4748217263233248895">Chromium 刚刚应用了一项特殊的安全更新。请立即重启，以便系统恢复您的标签页。</translation>
 <translation id="479167709087336770">这项服务会使用 Google 搜索所用的拼写检查工具。您在浏览器中输入的文字会被发送给 Google。您随时可在“设置”中更改此行为。</translation>

@@ -452,13 +452,19 @@ WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
   return mutator_dispatcher_;
 }
 
-scoped_refptr<PaintWorkletPaintDispatcher>
-WebFrameWidgetBase::EnsureCompositorPaintDispatcher() {
-  if (!paint_dispatcher_) {
+base::WeakPtr<PaintWorkletPaintDispatcher>
+WebFrameWidgetBase::EnsureCompositorPaintDispatcher(
+    scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner) {
+  // We check paint_task_runner_ not paint_dispatcher_ because the dispatcher is
+  // a base::WeakPtr that should only be used on the compositor thread.
+  if (!paint_task_runner_) {
     Client()->SetPaintWorkletLayerPainterClient(
         PaintWorkletPaintDispatcher::CreateCompositorThreadPainter(
-            paint_dispatcher_));
+            &paint_dispatcher_));
+    paint_task_runner_ = Thread::CompositorThread()->GetTaskRunner();
   }
+  DCHECK(paint_task_runner_);
+  *paint_task_runner = paint_task_runner_;
   return paint_dispatcher_;
 }
 

@@ -53,7 +53,7 @@ class PasswordStoreConsumer {
 
  private:
   base::CancelableTaskTracker cancelable_task_tracker_;
-  base::WeakPtrFactory<PasswordStoreConsumer> weak_ptr_factory_;
+  base::WeakPtrFactory<PasswordStoreConsumer> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

@@ -254,7 +254,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members
   // variable's destructors are executed, rendering them invalid.
-  base::WeakPtrFactory<GpuChannelManager> weak_factory_;
+  base::WeakPtrFactory<GpuChannelManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelManager);
 };

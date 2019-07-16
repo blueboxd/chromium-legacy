@@ -59,7 +59,7 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
   base::TimeTicks start_time_;
   Result result_;
 
-  base::WeakPtrFactory<WebSocketSBHandshakeThrottle> weak_factory_;
+  base::WeakPtrFactory<WebSocketSBHandshakeThrottle> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketSBHandshakeThrottle);
 };

@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Google Chrome'i värskendamine ...</translation>
 <translation id="1469002951682717133">Chrome'i rakenduste käiviti</translation>
 <translation id="1553358976309200471">Värskenda Chrome'i</translation>
-<translation id="1585657529869845941">Kui see kuvatakse, klõpsake valikul <ph name="BEGIN_BOLD" />Vaheta ikkagi<ph name="END_BOLD" /></translation>
 <translation id="1587223624401073077">Google Chrome kasutab teie kaamerat.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> on ohtlik, mistõttu Chrome blokeeris selle.</translation>
 <translation id="1590588151039584890">Värskendamiseks peab Chrome'i selles arvutis sulgema. Seetõttu võivad teiste sellesse arvutisse sisselogitud kasutajate salvestamata muudatused kaotsi minna.</translation>
@@ -34,7 +33,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebi sirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome käivitatakse uuesti tunni aja pärast}other{Chrome käivitatakse uuesti # tunni pärast}}</translation>
-<translation id="1718131156967340976">Valige <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome salvestab selle parooli teie Google'i kontole. Te ei pea seda meeles pidama.</translation>
 <translation id="174539241580958092">Google Chrome ei saanud sisselogimisvea tõttu teie andmeid sünkroonida.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -117,7 +115,6 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3873044882194371212">Ava link Chrome'i inko&amp;gnito aknas</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="3898493977366060150">Veebi sirvimine Google'i nutikate funktsioonidega</translation>
-<translation id="4028693306634653894">Chrome'i kiirem avamine</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
 <translation id="4053720452172726777">Google Chrome'i kohandamine ja juhtimine</translation>
 <translation id="4143243756087420366">Chrome'i nimi ja pilt</translation>
@@ -240,7 +237,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7808348361785373670">Chrome'ist eemaldamine ...</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="7855730255114109580">Google Chrome on ajakohane</translation>
-<translation id="7888186132678118370">Chrome'i kinnitamine tegumiribale</translation>
 <translation id="7890208801193284374">Kui jagate oma arvutit, siis saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chrome'i just nii, nagu neile meeldib.</translation>
 <translation id="7896673875602241923">Keegi on varem selles arvutis Chrome'i sisse loginud kasutajana <ph name="ACCOUNT_EMAIL_LAST" />. Looge uus Chrome'i kasutaja, et oma teave eraldi hoida.</translation>
 <translation id="7908168227788431038">Rakendus on peaaegu ajakohane! Värskenduse lõpuleviimiseks taaskäivitage Google Chrome.</translation>
@@ -289,6 +285,5 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="9138603949443464873">Muudatuste rakendamiseks käivitage Chrome uuesti</translation>
 <translation id="919706545465235479">Sünkroonimise alustamiseks värskendage Chrome'i</translation>
-<translation id="924447568950697217">Chrome'i vaikebrauseriks muutmine</translation>
 <translation id="989369509083708165">Google Chrome on teie vaikebrauser</translation>
 </translationbundle>

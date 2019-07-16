@@ -98,7 +98,7 @@ class ImageMetadataStoreLevelDB : public ImageMetadataStore {
       database_;
   // Clock is owned by the service that creates this object.
   base::Clock* clock_;
-  base::WeakPtrFactory<ImageMetadataStoreLevelDB> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageMetadataStoreLevelDB> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageMetadataStoreLevelDB);
 };

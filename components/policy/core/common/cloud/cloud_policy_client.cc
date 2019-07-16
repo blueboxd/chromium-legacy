@@ -180,8 +180,7 @@ CloudPolicyClient::CloudPolicyClient(
       service_(service),  // Can be null for unit tests.
       signing_service_(signing_service),
       device_dm_token_callback_(device_dm_token_callback),
-      url_loader_factory_(url_loader_factory),
-      weak_ptr_factory_(this) {}
+      url_loader_factory_(url_loader_factory) {}
 
 CloudPolicyClient::~CloudPolicyClient() {
 }

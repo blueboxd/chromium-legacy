@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Aktualizowanie Google Chrome...</translation>
 <translation id="1469002951682717133">Menu z aplikacjami Chrome</translation>
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
-<translation id="1585657529869845941">Kliknij przycisk <ph name="BEGIN_BOLD" />Przełącz mimo to<ph name="END_BOLD" />, jeśli jest widoczny</translation>
 <translation id="1587223624401073077">Google Chrome używa Twojej kamery.</translation>
 <translation id="1587325591171447154">Plik <ph name="FILE_NAME" /> jest niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="1590588151039584890">Aby można było przeprowadzić aktualizację, musisz wyłączyć Chrome na tym komputerze. Może to spowodować, że inni zalogowani na nim użytkownicy utracą niezapisane dane.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
 <translation id="1698376642261615901">Google Chrome jest przeglądarką internetową, w której witryny internetowe i aplikacje są szybkie jak błyskawica. Jest szybka, stabilna i łatwa w obsłudze. Dzięki wbudowanej ochronie przed złośliwym oprogramowaniem i wyłudzaniem informacji przeglądanie internetu przy użyciu przeglądarki Google Chrome jest bezpieczniejsze.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome uruchomi się ponownie za godzinę}few{Chrome uruchomi się ponownie za # godziny}many{Chrome uruchomi się ponownie za # godzin}other{Chrome uruchomi się ponownie za # godziny}}</translation>
-<translation id="1718131156967340976">Wybierz <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome zapisze to hasło na Twoim koncie Google. Nie musisz go pamiętać.</translation>
 <translation id="174539241580958092">Google Chrome nie może zsynchronizować danych z powodu błędu podczas logowania.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="3873044882194371212">Otwórz link w oknie inco&amp;gnito Chrome</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
 <translation id="3898493977366060150">Przeglądanie stron internetowych za pomocą inteligentnych rozwiązań Google</translation>
-<translation id="4028693306634653894">Szybciej uruchamiaj Chrome</translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
 <translation id="4053720452172726777">Dostosowywanie i kontrolowanie Google Chrome</translation>
 <translation id="4143243756087420366">Nazwa i zdjęcie w Chrome</translation>
@@ -237,7 +234,6 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="7808348361785373670">Usuń z Chrome...</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
 <translation id="7855730255114109580">Masz aktualną wersję Google Chrome</translation>
-<translation id="7888186132678118370">Przypinanie Chrome na pasku zadań</translation>
 <translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
 <translation id="7896673875602241923">Ktoś zalogował się wcześniej w Chrome na tym komputerze jako <ph name="ACCOUNT_EMAIL_LAST" />. Utwórz nowego użytkownika Chrome, by Twoje informacje były przechowywane oddzielnie.</translation>
 <translation id="7908168227788431038">Już prawie gotowe. Uruchom ponownie Google Chrome, by zakończyć aktualizację.</translation>
@@ -286,6 +282,5 @@ Więcej instrukcji znajdziesz w e-mailu wysłanym na adres <ph name="ACCOUNT_EM
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
 <translation id="9138603949443464873">Aby zastosować zmiany, uruchom ponownie Chrome</translation>
 <translation id="919706545465235479">Aby rozpocząć synchronizację, zaktualizuj Chrome</translation>
-<translation id="924447568950697217">Ustawianie Chrome jako przeglądarki domyślnej</translation>
 <translation id="989369509083708165">Google Chrome jest domyślną przeglądarką</translation>
 </translationbundle>

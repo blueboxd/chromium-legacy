@@ -46,6 +46,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsInherited() const { return flags_ & kInherited; }
   bool IsVisited() const { return flags_ & kVisited; }
   bool IsInternal() const { return flags_ & kInternal; }
+  bool IsAffectedByForcedColors() const {
+    return flags_ & kIsAffectedByForcedColors;
+  }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -103,7 +106,8 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // computed value as seen by painting (as opposed to the computed value
     // seen by CSSOM, which is represented by the unvisited property).
     kVisited = 1 << 7,
-    kInternal = 1 << 8
+    kInternal = 1 << 8,
+    kIsAffectedByForcedColors = 1 << 9
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

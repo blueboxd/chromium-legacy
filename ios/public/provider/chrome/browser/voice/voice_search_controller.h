@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 
 @protocol LoadQueryCommands;
-@class Tab;
 @class UIViewController;
 
 namespace web {
@@ -27,10 +26,6 @@ class VoiceSearchController
   // Preloads views and view controllers needed for the voice search UI.
   virtual void PrepareToAppear();
 
-  // TODO(crbug.com/982030): Deprecated - This method will be removed after
-  // switching to use WebState instead of Tab.
-  virtual void StartRecognition(UIViewController* presenting_view_controller,
-                                Tab* current_tab);
   // Starts recognizing and recording process. Will call the delegate method
   // upon completion if the recognition succeeds.
   // |presenting_view_controller| is the UIViewController from which to present

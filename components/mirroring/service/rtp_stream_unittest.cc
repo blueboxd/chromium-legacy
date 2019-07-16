@@ -31,7 +31,7 @@ namespace {
 
 class DummyClient final : public RtpStreamClient {
  public:
-  DummyClient() : weak_factory_(this) {}
+  DummyClient() {}
   ~DummyClient() override {}
 
   // RtpStreamClient implementation.
@@ -49,7 +49,7 @@ class DummyClient final : public RtpStreamClient {
   }
 
  private:
-  base::WeakPtrFactory<DummyClient> weak_factory_;
+  base::WeakPtrFactory<DummyClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DummyClient);
 };

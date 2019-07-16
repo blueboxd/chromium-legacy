@@ -23,7 +23,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
 <translation id="1553358976309200471">Update Chrome</translation>
-<translation id="1585657529869845941">Click <ph name="BEGIN_BOLD" />Switch anyway<ph name="END_BOLD" />, if it appears</translation>
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is dangerous, so Chrome has blocked it.</translation>
 <translation id="1590588151039584890">To update, Chrome needs to stop running on this computer. This may cause other users logged into this computer to lose unsaved changes.</translation>
@@ -36,7 +35,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome will relaunch in an hour}other{Chrome will relaunch in # hours}}</translation>
-<translation id="1718131156967340976">Select <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome will save this password in your Google Account. You won’t have to remember it.</translation>
 <translation id="174539241580958092">Google Chrome could not sync your data due to an error signing in.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="3873044882194371212">Open link in Chrome inco&amp;gnito window</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
 <translation id="3898493977366060150">Web browsing with Google smarts</translation>
-<translation id="4028693306634653894">Get to Chrome faster</translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
 <translation id="4143243756087420366">Chrome name and picture</translation>
@@ -244,7 +241,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7808348361785373670">Remove from Chrome...</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="7855730255114109580">Google Chrome is up to date</translation>
-<translation id="7888186132678118370">Pin Chrome to your taskbar</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7896673875602241923">Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chrome user to keep your information separate.</translation>
 <translation id="7908168227788431038">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
@@ -293,6 +289,5 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="9138603949443464873">To apply your changes, relaunch Chrome</translation>
 <translation id="919706545465235479">Update Chrome to start sync</translation>
-<translation id="924447568950697217">Make Chrome your default browser</translation>
 <translation id="989369509083708165">Google Chrome is your default browser</translation>
 </translationbundle>

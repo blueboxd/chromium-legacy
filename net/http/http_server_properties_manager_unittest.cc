@@ -107,7 +107,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
  protected:
   HttpServerPropertiesManagerTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);

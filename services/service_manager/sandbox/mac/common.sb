@@ -99,7 +99,6 @@
 
 (allow mach-lookup
   (browser-service-name "MachPortRendezvousServer")
-  (browser-service-name "rohitfork")
 )
 
 ; Allow realpath() to work.

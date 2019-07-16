@@ -2576,8 +2576,10 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
     SetNeedsRedraw();
   }
 
-  if (input_handler_client_)
+  if (input_handler_client_) {
+    scrollbar_controller_->WillBeginImplFrame();
     input_handler_client_->DeliverInputForBeginFrame(args);
+  }
 
   Animate();
 

@@ -57,8 +57,7 @@ PickRequestTask::PickRequestTask(
       request_count_callback_(std::move(request_count_callback)),
       device_conditions_(std::move(device_conditions)),
       disabled_requests_(disabled_requests),
-      prioritized_requests_(prioritized_requests),
-      weak_ptr_factory_(this) {}
+      prioritized_requests_(prioritized_requests) {}
 
 PickRequestTask::~PickRequestTask() {}
 

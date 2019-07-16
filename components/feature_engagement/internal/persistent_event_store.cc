@@ -24,7 +24,7 @@ void NoopUpdateCallback(bool success) {
 
 PersistentEventStore::PersistentEventStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> db)
-    : db_(std::move(db)), ready_(false), weak_ptr_factory_(this) {}
+    : db_(std::move(db)), ready_(false) {}
 
 PersistentEventStore::~PersistentEventStore() = default;
 

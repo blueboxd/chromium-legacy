@@ -535,6 +535,7 @@ class QuicProxyClientSocketTest
     return std::string(buffer.get(), header_length);
   }
 
+  BoundTestNetLog net_log_;
   QuicFlagSaver saver_;
   const quic::ParsedQuicVersion version_;
   const quic::QuicStreamId client_data_stream_id1_;
@@ -547,8 +548,6 @@ class QuicProxyClientSocketTest
   std::unique_ptr<QuicChromiumClientSession> session_;
   std::unique_ptr<QuicChromiumClientSession::Handle> session_handle_;
   std::unique_ptr<QuicProxyClientSocket> sock_;
-
-  BoundTestNetLog net_log_;
 
   quic::test::MockSendAlgorithm* send_algorithm_;
   scoped_refptr<TestTaskRunner> runner_;

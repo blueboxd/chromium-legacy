@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">开启蓝牙以发现附近的设备</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2872961005593481000">关机</translation>
-<translation id="2912823482158781027">刷新凭据</translation>
-<translation id="3511655281162215899">请立即选择新密码</translation>
-<translation id="3562817605261346876">请尽快刷新 <ph name="PRINCIPAL_NAME" /> 的凭据</translation>
 <translation id="3838338534323494292">新密码</translation>
 <translation id="445059817448385655">旧密码</translation>
 <translation id="467510802200863975">输入的两个密码不相同</translation>
@@ -23,16 +20,12 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5457599981699367932">以访客身份浏览</translation>
 <translation id="54609108002486618">托管</translation>
-<translation id="5733345267661125295">请尽快选择新密码</translation>
-<translation id="5743581760404859096">您的 Kerberos 凭据即将过期</translation>
 <translation id="5832805196449965646">添加用户</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="6058625436358447366">要完成更改，请输入您的旧密码和新密码</translation>
 <translation id="6106186594183574873">要完成更改，请输入您的旧密码</translation>
 <translation id="6146993107019042706">要完成更改，请输入您的新密码</translation>
 <translation id="6574601967010742428">设备管理员或许能监控您的活动。</translation>
-<translation id="7280705187789120111">Kerberos 凭据即将过期</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{您当前的密码已过期！}=1{您当前的密码将在 1 天内过期！}other{您当前的密码将在 # 天内过期！}}</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7690294790491645610">再次输入新密码</translation>
 <translation id="808894953321890993">更改密码</translation>

@@ -215,7 +215,7 @@ class AccountTrackerService {
 
   // Used to pass weak pointers of |this| to tasks created by
   // |image_storage_task_runner_|.
-  base::WeakPtrFactory<AccountTrackerService> weak_factory_;
+  base::WeakPtrFactory<AccountTrackerService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccountTrackerService);
 };

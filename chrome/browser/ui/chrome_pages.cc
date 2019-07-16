@@ -434,6 +434,15 @@ void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
+
+GURL GetOSSettingsUrl(const std::string& sub_page) {
+  DCHECK(sub_page.empty() || chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
+  std::string url =
+      base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
+          ? kChromeUIOSSettingsURL
+          : kChromeUISettingsURL;
+  return GURL(url + sub_page);
+}
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

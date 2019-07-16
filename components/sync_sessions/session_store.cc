@@ -412,8 +412,7 @@ SessionStore::SessionStore(
     : local_session_info_(local_session_info),
       restored_foreign_tab_callback_(restored_foreign_tab_callback),
       store_(std::move(underlying_store)),
-      session_tracker_(sessions_client),
-      weak_ptr_factory_(this) {
+      session_tracker_(sessions_client) {
   session_tracker_.InitLocalSession(local_session_info_.session_tag,
                                     local_session_info_.client_name,
                                     local_session_info_.device_type);

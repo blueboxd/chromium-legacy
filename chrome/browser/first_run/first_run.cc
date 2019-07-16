@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -123,42 +122,30 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   DISALLOW_COPY_AND_ASSIGN(ImportEndedObserver);
 };
 
-// Helper class that performs delayed first-run tasks that need more of the
-// chrome infrastructure to be up and running before they can be attempted.
-class FirstRunDelayedTasks : public content::NotificationObserver {
+// Helper class that makes sure extensions get updated as soon as the
+// ExtensionService is ready.
+class FirstRunDelayedExtensionUpdater : public content::NotificationObserver {
  public:
-  FirstRunDelayedTasks() {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                   content::NotificationService::AllSources());
-  }
+  static void Create() { new FirstRunDelayedExtensionUpdater(); }
 
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    switch (type) {
-      case chrome::NOTIFICATION_PROFILE_CREATED: {
-        content::BrowserContext* context =
-            content::Source<Profile>(source).ptr();
-        extensions::ExtensionSystem::Get(context)->ready().Post(
-            FROM_HERE,
-            base::BindOnce(&FirstRunDelayedTasks::OnExtensionSystemReady,
-                           weak_ptr_factory_.GetWeakPtr(), context));
-        break;
-      }
-      case chrome::NOTIFICATION_BROWSER_CLOSED: {
-        delete this;
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
+    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
+    content::BrowserContext* context = content::Source<Profile>(source).ptr();
+    extensions::ExtensionSystem::Get(context)->ready().Post(
+        FROM_HERE,
+        base::BindOnce(&FirstRunDelayedExtensionUpdater::OnExtensionSystemReady,
+                       base::Unretained(this), context));
   }
 
  private:
-  // Private ctor forces it to be created only in the heap.
-  ~FirstRunDelayedTasks() override {}
+  FirstRunDelayedExtensionUpdater() {
+    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                   content::NotificationService::AllSources());
+  }
+  ~FirstRunDelayedExtensionUpdater() override = default;
 
   void OnExtensionSystemReady(content::BrowserContext* context) {
     // Process the notification and delete this.
@@ -174,23 +161,7 @@ class FirstRunDelayedTasks : public content::NotificationObserver {
   }
 
   content::NotificationRegistrar registrar_;
-  base::WeakPtrFactory<FirstRunDelayedTasks> weak_ptr_factory_{this};
 };
-
-// Installs a task to do an extensions update check once the extensions system
-// is running.
-void DoDelayedInstallExtensions() {
-  new FirstRunDelayedTasks();
-}
-
-void DoDelayedInstallExtensionsIfNeeded(
-    installer::MasterPreferences* install_prefs) {
-  base::DictionaryValue* extensions = 0;
-  if (install_prefs->GetExtensionsBlock(&extensions)) {
-    DVLOG(1) << "Extensions block found in master preferences";
-    DoDelayedInstallExtensions();
-  }
-}
 
 // Launches the import, via |importer_host|, from |source_profile| into
 // |target_profile| for the items specified in the |items_to_import| bitfield.
@@ -500,7 +471,11 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
       DLOG(ERROR) << "Failed to initialize from master_preferences.";
     }
 
-    DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
+    base::DictionaryValue* extensions = 0;
+    if (install_prefs->GetExtensionsBlock(&extensions)) {
+      DVLOG(1) << "Extensions block found in master preferences";
+      FirstRunDelayedExtensionUpdater::Create();
+    }
 
     internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
   }

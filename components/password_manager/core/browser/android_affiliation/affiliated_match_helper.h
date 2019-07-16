@@ -148,7 +148,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // Being the sole consumer of AffiliationService, |this| owns the service.
   std::unique_ptr<AffiliationService> affiliation_service_;
 
-  base::WeakPtrFactory<AffiliatedMatchHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<AffiliatedMatchHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AffiliatedMatchHelper);
 };

@@ -1346,15 +1346,15 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 // and re-encrypt everything.
 // (case 2 in SyncManager::SyncInternal::SetEncryptionPassphrase)
 TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
-  Cryptographer verifier(&encryptor_);
+  Cryptographer verifier;
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     // Store the default (soon to be old) key.
     Cryptographer* cryptographer = trans.GetCryptographer();
     std::string bootstrap_token;
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    verifier.Bootstrap(bootstrap_token);
+    cryptographer->GetBootstrapToken(encryptor_, &bootstrap_token);
+    verifier.Bootstrap(encryptor_, bootstrap_token);
 
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
@@ -1396,13 +1396,13 @@ TEST_F(SyncManagerTest, SetPassphraseWithPassword) {
 // (case 7 in SyncManager::SyncInternal::SetDecryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer;
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
     std::string bootstrap_token;
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    other_cryptographer.Bootstrap(bootstrap_token);
+    cryptographer->GetBootstrapToken(encryptor_, &bootstrap_token);
+    other_cryptographer.Bootstrap(encryptor_, bootstrap_token);
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
@@ -1439,13 +1439,13 @@ TEST_F(SyncManagerTest, SupplyPendingGAIAPass) {
 // (case 9 in SyncManager::SyncInternal::SetDecryptionPassphrase)
 TEST_F(SyncManagerTest, SupplyPendingExplicitPass) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer;
   {
     WriteTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
     std::string bootstrap_token;
-    cryptographer->GetBootstrapToken(&bootstrap_token);
-    other_cryptographer.Bootstrap(bootstrap_token);
+    cryptographer->GetBootstrapToken(encryptor_, &bootstrap_token);
+    other_cryptographer.Bootstrap(encryptor_, bootstrap_token);
 
     // Now update the nigori to reflect the new keys, and update the
     // cryptographer to have pending keys.
@@ -2052,7 +2052,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorPasswords) {
     // Create a synced bookmark with undecryptable data.
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
 
-    Cryptographer other_cryptographer(&encryptor_);
+    Cryptographer other_cryptographer;
     KeyParams fake_params = {KeyDerivationParams::CreateForPbkdf2(),
                              "fake_key"};
     other_cryptographer.AddKey(fake_params);
@@ -2095,7 +2095,7 @@ TEST_F(SyncManagerTest, ReencryptEverythingWithUnrecoverableErrorBookmarks) {
     // Create a synced bookmark with undecryptable data.
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
 
-    Cryptographer other_cryptographer(&encryptor_);
+    Cryptographer other_cryptographer;
     KeyParams fake_params = {KeyDerivationParams::CreateForPbkdf2(),
                              "fake_key"};
     other_cryptographer.AddKey(fake_params);

@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Cartão</translation>
 <translation id="2114841414352855701">Ignorada porque foi substituída por <ph name="POLICY_NAME" /> .</translation>
+<translation id="2119505898009119320">Emitido para: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Sensores de movimentos</translation>
 <translation id="213826338245044447">Marcadores de Telemóvel</translation>
 <translation id="214556005048008348">Cancelar pagamento</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Verificar o sinal na área</translation>
 <translation id="2523886232349826891">Guardado apenas neste dispositivo.</translation>
 <translation id="2524461107774643265">Adicionar mais informações</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{e mais 1}other{e mais #}}</translation>
 <translation id="2536110899380797252">Adicionar endereço</translation>
 <translation id="2539524384386349900">Detetar</translation>
 <translation id="254947805923345898">O valor da política não é válido.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Perguntaste aos teus pais se podes aceder a este site.</translation>
 <translation id="4876188919622883022">Vista simplificada</translation>
 <translation id="4876305945144899064">Sem nome de utilizador</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Nenhuma}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Pesquisa de <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automático (predefinição)</translation>
 <translation id="4880827082731008257">Pesquisar histórico</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Sim, armazenar</translation>
 <translation id="6508722015517270189">Reiniciar o Chrome</translation>
 <translation id="6517596291481585650">Aviso: esta política não foi unida como lista, conforme especificado pela política, porque não é uma lista.</translation>
+<translation id="6521745193039995384">Não ativa</translation>
 <translation id="6529602333819889595">&amp;Refazer eliminação</translation>
 <translation id="6534179046333460208">Sugestões da Web física</translation>
 <translation id="6545864417968258051">Procura de Bluetooth</translation>
@@ -1478,6 +1482,7 @@ Detalhes adicionais:
 <translation id="9076630408993835509">Este navegador não é gerido por uma empresa ou outra entidade. A atividade neste dispositivo pode ser gerida fora do Chrome. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">São necessárias mais informações</translation>
 <translation id="9080712759204168376">Resumo da encomenda</translation>
+<translation id="9089260154716455634">Política para fora do horário de funcionamento:</translation>
 <translation id="9095388113577226029">Mais idiomas…</translation>
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="9106062320799175032">Adicionar endereço de faturação</translation>

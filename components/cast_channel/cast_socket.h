@@ -418,7 +418,7 @@ class CastSocketImpl : public CastSocket {
   // List of socket observers.
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<CastSocketImpl> weak_factory_;
+  base::WeakPtrFactory<CastSocketImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastSocketImpl);
 };

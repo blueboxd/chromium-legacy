@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">無法驗證你的身分</translation>
 <translation id="1116694919640316211">關於</translation>
 <translation id="1116779635164066733">這項設定是由「<ph name="NAME" />」擴充功能強制執行。</translation>
-<translation id="1117602883390928720">新增 Kerberos 帳戶</translation>
 <translation id="111844081046043029">你確定要離開此網頁嗎?</translation>
 <translation id="1118738876271697201">系統無法判別裝置型號或序號。</translation>
 <translation id="1119447706177454957">內部錯誤</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">示範模式的裝置授權發生問題。</translation>
 <translation id="126710816202626562">翻譯語言：</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">進階設定</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272293450992660632">PIN 碼值不相符。</translation>
 <translation id="1272978324304772054">裝置註冊的網域中沒有這個使用者帳戶。如果你要使用其他網域進行註冊，必須先完成裝置修復作業。</translation>
@@ -511,7 +509,6 @@
 <translation id="1744060673522309905">無法將這個裝置加入網域。請確認裝置數量沒有超過添加上限。</translation>
 <translation id="1744108098763830590">背景頁面</translation>
 <translation id="1745520510852184940">一律採取這種處理方式</translation>
-<translation id="174617397682753897">Kerberos 帳戶</translation>
 <translation id="1746402432151920942">受保護媒體 ID</translation>
 <translation id="175196451752279553">重新開啟已關閉分頁(&amp;E)</translation>
 <translation id="1753905327828125965">最常造訪</translation>
@@ -759,7 +756,6 @@
 <translation id="2135787500304447609">繼續(&amp;R)</translation>
 <translation id="2136372518715274136">輸入新密碼</translation>
 <translation id="2136476978468204130">你輸入的通關密語不正確</translation>
-<translation id="2137068468602026500">在「網路瀏覽器」之下，按一下 [Microsoft Edge]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">仍在連線至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="214169863967063661">開啟顯示外觀設定</translation>
 <translation id="2142328300403846845">以其他身分開啟連結</translation>
@@ -847,7 +843,6 @@
 <translation id="2241634353105152135">只有這一次</translation>
 <translation id="2242687258748107519">檔案資訊</translation>
 <translation id="2246549592927364792">要取得 Google 提供的圖片說明嗎？</translation>
-<translation id="2249269794707377949">這個頁面可讓你管理所有用於單一登入特定應用程式、網站和檔案共用區的 Kerberos 帳戶。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系統檢視器開啟</translation>
 <translation id="225163402930830576">重新整理網路</translation>
@@ -1079,7 +1074,6 @@
 <translation id="2587922270115112871">建立受監管的使用者時並不會建立 Google 帳戶，且該使用者的設定
     及資料都不會同步處理至使用 Chrome 同步功能的其他裝置。目前，受監管的使用者只適用於這個裝置上所安裝的 Chrome。</translation>
 <translation id="2588636910004461974">來自 <ph name="VENDOR_NAME" /> 的裝置</translation>
-<translation id="258932246702879617">選取 [固定至工作列]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">搜尋 Google 或輸入網址</translation>
 <translation id="2597521610396315071">新增監督功能</translation>
 <translation id="2603115962224169880">清理電腦</translation>
@@ -1146,7 +1140,6 @@
 <translation id="2683638487103917598">資料夾已排序</translation>
 <translation id="2684004000387153598">如要繼續操作，請依序點選 [確定] 和 [新增使用者]，為你的電子郵件地址建立新的設定檔。</translation>
 <translation id="2688196195245426394">向伺服器註冊裝置時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
-<translation id="2688477613306174402">設定</translation>
 <translation id="2690024944919328218">顯示語言選項</translation>
 <translation id="2691385045260836588">型號</translation>
 <translation id="2693176596243495071">糟糕！發生不明錯誤，請稍後再試。如果這樣無法解決問題，請與你的管理員聯絡。</translation>
@@ -1533,7 +1526,6 @@
 <translation id="32939749466444286">無法啟動 Linux 容器，請再試一次。</translation>
 <translation id="3294437725009624529">訪客</translation>
 <translation id="329703603001918157">無法編輯捷徑</translation>
-<translation id="3297951628821704004">從這個裝置移除帳戶</translation>
 <translation id="329838636886466101">修復</translation>
 <translation id="3298789223962368867">輸入的網址無效。</translation>
 <translation id="32991397311664836">裝置：</translation>
@@ -1594,7 +1586,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="3387614642886316601">使用進階拼字檢查功能</translation>
-<translation id="3389312115541230716">以滑鼠右鍵按一下工作列中的 <ph name="SMALL_PRODUCT_LOGO" /> 圖示</translation>
 <translation id="3393352139658145068">只要有人說出「Ok Google」即啟動 Google 助理。為了節省電力，系統只有在裝置連接到電源時才會啟動「Ok Google」。</translation>
 <translation id="3396800784455899911">點選 [接受並繼續] 按鈕即表示您同意上述的 Google 服務處理程序。</translation>
 <translation id="3399432415385675819">通知功能會遭到停用</translation>
@@ -1671,7 +1662,7 @@
 <translation id="3496213124478423963">縮小</translation>
 <translation id="3497560059572256875">分享 Doodle</translation>
 <translation id="3505030558724226696">撤銷裝置存取權</translation>
-<translation id="3505635633742443645">透過 USB Type-C 通訊埠輸出影片時，無法使用座架的 HDMI 通訊埠。請為其中一個螢幕使用不同的通訊埠。</translation>
+<translation id="3505635633742443645">透過 USB Type-C 通訊埠輸出視訊時，無法使用座架的 HDMI 通訊埠。請為其中一個螢幕使用不同的通訊埠。</translation>
 <translation id="3507421388498836150">「<ph name="EXTENSION_NAME" />」目前擁有的權限</translation>
 <translation id="3507888235492474624">重新掃描藍牙裝置</translation>
 <translation id="3508920295779105875">選擇另一個資料夾...</translation>
@@ -1830,7 +1821,6 @@
 <translation id="3714195043138862580">這個示範裝置已設為取消佈建狀態。</translation>
 <translation id="3714633008798122362">網路日曆</translation>
 <translation id="3719826155360621982">首頁</translation>
-<translation id="3720996970802414353">確定切換</translation>
 <translation id="3722108462506185496">啟用虛擬機器服務時發生錯誤，請再試一次。</translation>
 <translation id="3725367690636977613">頁數</translation>
 <translation id="3726137731714254362">從這裡移除資料夾會停止與他人共用檔案，但不會刪除檔案。</translation>
@@ -2444,7 +2434,6 @@
 <translation id="4662788913887017617">在 iPhone 上取得這個書籤</translation>
 <translation id="4663373278480897665">可使用攝影機</translation>
 <translation id="4664482161435122549">PKCS #12 匯出錯誤</translation>
-<translation id="4664736447097490764">請在這裡編輯 Kerberos 設定檔。</translation>
 <translation id="4665014895760275686">製造商</translation>
 <translation id="4665446389743427678"><ph name="SITE" /> 儲存的所有資料都將遭到刪除。</translation>
 <translation id="4668721319092543482">按一下即可啟用「<ph name="PLUGIN_NAME" />」</translation>
@@ -2559,6 +2548,7 @@
 <translation id="4850669014075537160">捲動</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4853020600495124913">在新視窗中開啟(&amp;N)</translation>
+<translation id="485480310608090163">更多設定和權限</translation>
 <translation id="4856478137399998590">你的行動數據服務已啟用，隨時可供使用</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{在無痕式視窗中開啟所有書籤(&amp;I)}=1{在無痕式視窗中開啟(&amp;I)}other{在無痕式視窗中開啟全部 # 個書籤(&amp;I)}}</translation>
 <translation id="4858913220355269194">飛球</translation>
@@ -2861,7 +2851,6 @@
 <translation id="5319359161174645648">Google 推薦使用 Chrome</translation>
 <translation id="532247166573571973">無法連上伺服器，請稍後再試。</translation>
 <translation id="5324780743567488672">自動使用您的位置資訊設定時區</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> - 可以儲存至原始檔案</translation>
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5327570636534774768">這個裝置的標記狀態是由其他網域管理。請先從該網域取消佈建裝置，再設定示範模式。</translation>
 <translation id="532943162177641444">在 <ph name="PHONE_NAME" /> 上輕觸通知，即可設定可供這個裝置使用的可攜式無線基地台。</translation>
@@ -3023,6 +3012,7 @@
 <translation id="55601339223879446">調整顯示畫面中的桌面邊界</translation>
 <translation id="5562781907504170924">這個分頁已連線至藍牙裝置。</translation>
 <translation id="5563234215388768762">搜尋 Google 或輸入網址</translation>
+<translation id="5565735124758917034">管理中</translation>
 <translation id="5567989639534621706">應用程式快取</translation>
 <translation id="5568069709869097550">無法登入</translation>
 <translation id="5568144734023334204">Android 儲存空間</translation>
@@ -3673,7 +3663,6 @@
 <translation id="6532101170117367231">儲存至 Google 雲端硬碟</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非你瞭解這項功能的用途或是收到相關指示，否則請不要啟用這項功能，因為收集資料可能會導致系統效能降低。</translation>
 <translation id="6541638731489116978">這個網站無法存取你的動作感應器。</translation>
-<translation id="6542184058496424548">使用者名稱無效 (格式應為 user@realm.com)</translation>
 <translation id="654233263479157500">使用網路服務來協助解決瀏覽錯誤</translation>
 <translation id="6544215763872433504">Google 提供的網路瀏覽器，滿足你的需求</translation>
 <translation id="6545665334409411530">重複頻率</translation>
@@ -3935,7 +3924,6 @@
 <translation id="6955446738988643816">檢查彈出式視窗</translation>
 <translation id="6957044667612803194">這個安全金鑰不支援 PIN 碼</translation>
 <translation id="6957231940976260713">服務名稱</translation>
-<translation id="6957572737510023982">糟糕！發生錯誤 (錯誤代碼：<ph name="ERROR_CODE" />)。</translation>
 <translation id="6964390816189577014">英雄</translation>
 <translation id="6964760285928603117">從群組中移除</translation>
 <translation id="6965382102122355670">確定</translation>
@@ -4194,7 +4182,6 @@
 <translation id="7328699668338161242">Google 助理已能成功辨識你的聲音</translation>
 <translation id="7328867076235380839">按鍵組合無效</translation>
 <translation id="7329154610228416156">由於設定使用的網址 (<ph name="BLOCKED_URL" />) 不安全，導致登入失敗。請與您的管理員聯絡。</translation>
-<translation id="733006820760728943">設為使用中帳戶</translation>
 <translation id="7334190995941642545">目前無法使用 Smart Lock，請稍後再試。</translation>
 <translation id="7334274148831027933">啟用停駐放大鏡</translation>
 <translation id="7335974957018254119">使用拼字檢查的語言：</translation>
@@ -4205,7 +4192,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> 已顯示為全螢幕。</translation>
 <translation id="7340650977506865820">網站正在分享你的螢幕畫面</translation>
 <translation id="7341834142292923918">需要這個網站的存取權限</translation>
-<translation id="7344488796804562294">Kerberos 進階設定</translation>
 <translation id="7345706641791090287">確認您的密碼</translation>
 <translation id="7346909386216857016">好，我知道了</translation>
 <translation id="7347751611463936647">如要使用這個擴充功能，請輸入「<ph name="EXTENSION_KEYWORD" />」，然後按 TAB 鍵，接著再輸入你的指令或搜尋項目。</translation>
@@ -4298,7 +4284,6 @@
 <translation id="749028671485790643">人員 <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC 位址</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> 擴充功能可能會收集您輸入的所有文字，包括密碼和信用卡號碼等個人資料。您要使用這個擴充功能嗎？</translation>
-<translation id="7494065396242762445">開啟 Windows 設定</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">忘記舊密碼了嗎？</translation>
 <translation id="7496511874649569424">「<ph name="LINUX_APP_NAME" />」和與這個應用程式相關聯的資料會從這個裝置上移除。</translation>
@@ -4323,7 +4308,6 @@
 <translation id="7530016656428373557">放電速率 (瓦特)</translation>
 <translation id="7531779363494549572">依序輕觸 [設定] &gt; [應用程式和通知] &gt; [通知]。</translation>
 <translation id="7536220825385726660">允許 Play 商店應用程式存取外部硬碟</translation>
-<translation id="7537601449003285327">固定至工作列</translation>
 <translation id="7539856059004947393">藍牙安全金鑰</translation>
 <translation id="7540972813190816353">檢查更新時發生錯誤：<ph name="ERROR" /></translation>
 <translation id="7543104066686362383">在這個 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置上啟用偵錯功能</translation>
@@ -4353,7 +4337,6 @@
 <translation id="7574650250151586813">如要輸入文字，請更新 Daydream 鍵盤應用程式</translation>
 <translation id="7576690715254076113">自動分頁</translation>
 <translation id="7576976045740938453">示範模式的帳戶發生問題。</translation>
-<translation id="757941033127302446">已登入</translation>
 <translation id="7580671184200851182">透過所有喇叭播放相同的音效 (單聲道音訊)</translation>
 <translation id="7581462281756524039">清理工具</translation>
 <translation id="7582582252461552277">偏好使用這個網路</translation>
@@ -4631,7 +4614,6 @@
 <translation id="7959074893852789871">檔案含有多個憑證，但某些無法匯入：</translation>
 <translation id="7961015016161918242">一律不要</translation>
 <translation id="7963826112438303517">Google 助理會使用這些錄音檔案和你的語音要求，建立及更新你的語音模型；語音模型只會儲存在已啟用 Voice Match 的裝置上。你可在 Google 助理設定頁面中查看或重新調校語音活動。</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> 要求掃描附近的藍牙裝置，已找到下列裝置：</translation>
 <translation id="7966241909927244760">複製圖片位址(&amp;O)</translation>
 <translation id="7968742106503422125">讀取及修改你複製和貼上的資料</translation>
 <translation id="7968833647796919681">啟用效能資料收集</translation>
@@ -4787,7 +4769,6 @@
 <translation id="8184472985242519288">平均</translation>
 <translation id="8185331656081929126">在網路上偵測到新印表機時顯示通知</translation>
 <translation id="8186609076106987817">伺服器找不到檔案。</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> 可以讀取下列資料夾中的所有檔案。這個網站只有在此分頁開啟時才能查看資料夾的變更。</translation>
 <translation id="8188389033983459049">檢查裝置設定並開啟藍牙功能，以便繼續操作</translation>
 <translation id="8190193592390505034">正在連線至 <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">管理你的應用程式、擴充功能和主題</translation>
@@ -4923,7 +4904,6 @@
 <translation id="839736845446313156">註冊</translation>
 <translation id="8398877366907290961">仍要繼續</translation>
 <translation id="8400146488506985033">管理使用者</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> 可以將你的變更直接儲存至下列資料夾中的檔案。這個網站只有在此分頁開啟時才能儲存變更。</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">先詢問我 (建議)</translation>
 <translation id="8418445294933751433">顯示為分頁(&amp;S)</translation>
@@ -5276,7 +5256,6 @@
 <translation id="891365694296252935">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項設定是由裝置擁有者執行。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">正在載入建議</translation>
 <translation id="8916476537757519021">無痕模式子頁框：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> - 可以讀取裝置上的資料夾</translation>
 <translation id="8919275547519617350">如要將密碼同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="8921366488406707015">正在驗證安全金鑰...</translation>
 <translation id="8922013791253848639">一律允許在這個網站中顯示廣告</translation>
@@ -5326,6 +5305,7 @@
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="8996526648899750015">新增帳戶...</translation>
 <translation id="899657321862108550">隨時隨地享有個人化的 Chrome 體驗</translation>
+<translation id="899676909165543803">指紋感應器位於鍵盤右下方，請用任何一隻手指輕觸指紋感應器。</translation>
 <translation id="9003647077635673607">允許在所有網站上執行</translation>
 <translation id="9003704114456258138">頻率</translation>
 <translation id="9004952710076978168">收到不明印表機的通知。</translation>
@@ -5361,7 +5341,6 @@
 <translation id="9044646465488564462">無法連線至網路：<ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">將你嘗試瀏覽的網頁網址傳送給 Google</translation>
 <translation id="9046895021617826162">連線失敗</translation>
-<translation id="9047391224416514812">已有帳戶使用這個使用者名稱</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9052208328806230490">你已透過 <ph name="EMAIL" /> 帳戶並使用 <ph name="CLOUD_PRINT_NAME" /> 為你的印表機註冊</translation>
 <translation id="9052404922357793350">繼續封鎖</translation>

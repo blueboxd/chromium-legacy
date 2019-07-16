@@ -884,6 +884,13 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Empty and duplicate usernames"/>
 </enum>
 
+<enum name="AccountManagerTokenLoadStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="File Read Error"/>
+  <int value="2" label="File Parse Error"/>
+  <int value="3" label="Account Corruption Detected"/>
+</enum>
+
 <enum name="AccountRelation">
   <int value="0" label="Empty cookie jar"/>
   <int value="1" label="No signed in, single signed out match"/>
@@ -4343,6 +4350,7 @@ Unknown properties are collapsed to zero. -->
 <enum name="AutofillValuePatterns">
   <int value="0" label="No pattern found"/>
   <int value="1" label="UPI VPA"/>
+  <int value="2" label="IBAN"/>
 </enum>
 
 <enum name="AutofillWalletAddressConversionType">
@@ -20013,14 +20021,18 @@ Called by update_net_error_codes.py.-->
 
 <enum name="ExtensionInstallPromptType">
   <int value="0" label="Install prompt"/>
-  <int value="1" label="Inline install prompt"/>
-  <int value="2" label="Bundle install prompt"/>
+  <int value="1" label="Inline install prompt (deprecated)"/>
+  <int value="2" label="Bundle install prompt (deprecated)"/>
   <int value="3" label="Re-enable prompt"/>
   <int value="4" label="Permissions prompt"/>
   <int value="5" label="External install prompt"/>
   <int value="6" label="Post install permissions prompt"/>
-  <int value="7" label="Launch prompt"/>
+  <int value="7" label="Launch prompt (deprecated)"/>
   <int value="8" label="Remote install prompt"/>
+  <int value="9" label="Repair prompt"/>
+  <int value="10" label="Delegated permissions prompt"/>
+  <int value="11" label="Delegated bundle permissions prompt (deprecated)"/>
+  <int value="12" label="Webstore widget prompt"/>
 </enum>
 
 <enum name="ExtensionInstallVerifierGetSignatureResult">
@@ -39945,6 +39957,9 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="NativeLibraryPreloaderResult">
+  <obsolete>
+    Removed in July 2019. See https://crbug.com/975556.
+  </obsolete>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="WRONG_PACKAGE_NAME"/>
   <int value="2" label="ADDRESS_SPACE_NOT_RESERVED"/>
@@ -44034,6 +44049,23 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Active other profiles."/>
 </enum>
 
+<enum name="OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="LoadMetadataFailed"/>
+  <int value="2" label="SchemaMetadataMissing"/>
+  <int value="3" label="SchemaMetadataWrongVersion"/>
+  <int value="4" label="ComponentMetadataMissing"/>
+  <int value="5" label="FetchedMetadataMissing"/>
+  <int value="6" label="ComponentAndFetchedMetadataMissing"/>
+</enum>
+
+<enum name="OptimizationGuideHintCacheLevelDBStoreStatus">
+  <int value="0" label="Unitialized"/>
+  <int value="1" label="Initializing"/>
+  <int value="2" label="Available"/>
+  <int value="3" label="Failed"/>
+</enum>
+
 <enum name="OptimizationGuideProcessHintsResult">
   <int value="0" label="Success"/>
   <int value="1" label="FailedInvalidParameters"/>
@@ -47890,6 +47922,10 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
+  <obsolete>
+    Replaced by OptimizationGuideHintCacheLevelDBStoreLoadMetadataResult in
+    07/19.
+  </obsolete>
   <int value="0" label="Success"/>
   <int value="1" label="LoadMetadataFailed"/>
   <int value="2" label="SchemaMetadataMissing"/>
@@ -47900,6 +47936,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreStatus">
+  <obsolete>
+    Replaced by OptimizationGuideHintCacheLevelDBStoreStatus in 07/19.
+  </obsolete>
   <int value="0" label="Unitialized"/>
   <int value="1" label="Initializing"/>
   <int value="2" label="Available"/>

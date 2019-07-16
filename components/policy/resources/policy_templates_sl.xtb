@@ -3348,19 +3348,8 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7123160381479171745">Določa seznam uporabnikov, ki se lahko prijavijo v napravo. Vnosi so v obliki <ph name="USER_WHITELIST_ENTRY_FORMAT" />, na primer <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Če želite omogočiti poljubne uporabnike v domeni, naj bodo vnosi v obliki <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Če pravilnik ni nastavljen, se lahko prijavijo vsi uporabniki. Če ustvarite nove uporabnike, morate ustrezno nastaviti pravilnik <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> zagotavlja varno posodabljanje in nameščanje razširitev. Kljub temu lahko vsebino nekaterih razširitev, ki gostujejo zunaj Spletne trgovine Chrome, ščitijo samo algoritmi za podpisovanje ali zgoščevanje, ki niso varni, na primer SHA1. Če je ta pravilnik onemogočen, Chrome ne bo dovolil sveže namestitve takšnih razširitev in njihovih posodobitev (dokler razvijalci razširitve ne predelajo z močnejšimi algoritmi). Če je ta pravilnik omogočen, bodo namestitev in posodobitve takšnih razširitev dovoljene.
-
-          Če pravilnik ni nastavljen, je privzeto omogočeno delovanje.
-          Od brskalnika <ph name="PRODUCT_NAME" /> različice 75 bo privzeto omogočeno delovanje, če pravilnik ne bo nastavljen.
-
-          Od brskalnika <ph name="PRODUCT_NAME" /> različice 77 bo ta pravilnik prezrt in obravnavan kot onemogočen.</translation>
 <translation id="7126716959063786004">Omogoči končevanje procesov v upravitelju opravil</translation>
 <translation id="7127892035367404455">Povrnitev na ciljno različico</translation>
-<translation id="7128918109610518786">Prikaže identifikatorje aplikacij, ki jih <ph name="PRODUCT_OS_NAME" /> pokaže kot pripete aplikacije v vrstici zaganjalnika.
-
-      Če je pravilnik nastavljen, je seznam aplikacij fiksen in ga uporabnik ne more spreminjati.
-
-      Če pravilnik ni nastavljen, lahko uporabnik spremeni seznam pripetih aplikacij v zaganjalniku.</translation>
 <translation id="713121532817834879">Ta pravilnik je URL, ki kaže na datoteko XML v isti obliki, kakršen je pravilnik <ph name="IEEM_SITELIST_POLICY" /> za Internet Explorer. Pravila nalaga iz datoteke XML, ne da bi ta pravila delil z Internet Explorerjem.
 
       Pravila v tej datoteki XML se uporabljajo enako kot pravilnik <ph name="GREYLIST_POLICY_NAME" />. Ta pravila torej izdelku <ph name="PRODUCT_NAME" /> preprečujejo odpiranje v nadomestnem brskalniku in prav tako preprečujejo nadomestnemu brskalniku odpiranje v izdelku <ph name="PRODUCT_NAME" />.
@@ -4217,12 +4206,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
           Če to nastavitev onemogočite ali jo ne nastavite, bo kanonično ime strežnika določeno z iskanjem CNAME.</translation>
 <translation id="8764477907716150749">Ta pravilnik je namenjen za notranjo uporabo v samem brskalniku <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Konfiguriranje URL-ja za spreminjanje gesla (samo sheme HTTP in HTTPS). Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike na ta URL, da spremenijo geslo.
-      Če želite, da <ph name="PRODUCT_NAME" /> pravilno zajame prstni odtis novega gesla na tej strani za spreminjanje gesla, poskrbite, da je stran za spremembo gesla skladna s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Če je ta nastavitev omogočena, storitev za zaščito gesel po prikazu opozorila v brskalniku pošlje uporabnike na ta URL, da spremenijo geslo.
-      Če je ta nastavitev onemogočena ali ni nastavljena, storitev za zaščito gesel pošlje uporabnike na naslov https://myaccounts.google.com, da spremenijo geslo.
-      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="8798099450830957504">Privzeto</translation>
 <translation id="8800453707696044281">Nastavitev prilagojene točke ustavitve polnjenja akumulatorja v odstotkih</translation>
 <translation id="8801680448782904838">Obveščanje uporabnika, da je priporočen ali obvezen vnovičen zagon brskalnika ali naprave</translation>
@@ -4362,9 +4345,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Vrednost za pravilnik mora biti izražena v sekundah.</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
-<translation id="9038058011835642205">Določa seznam spletnih mest, ki so nameščene brez obveščanja in poseganja uporabnika ter jih uporabnik ne more odmestiti ali onemogočiti.
-
-      Vsak element na seznamu pravilnika je predmet z obveznim članom, »url«, in dvema neobveznima članoma, »default_launch_container« in »create_desktop_shortcut«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« mora biti »window« ali »tab«, ki pokaže, kako naj se spletna aplikacija po namestitvi odpira, član »create_desktop_shortcut« pa mora biti nastavljen na »true«, če naj bo bližnjica na namizju ustvarjena v sistemih Linux in Windows. Če je izpuščen član »default_launch_container«, se aplikacija privzeto odpira na zavihku. Ne glede na vrednost člana »default_launch_container« uporabniki lahko spremenijo, v katerem vsebniku se bo odpirala aplikacija. Če je izpuščen član »create_desktop_shortcuts«, bližnjice na namizju ne bodo ustvarjene.</translation>
 <translation id="9038839118379817310">Omogočanje povezave Wi-Fi</translation>
 <translation id="9039822628127365650">Če je ta pravilnik nastavljen, določa dolžino časa, po katerem je uporabnik samodejno odjavljen, seja pa se konča. Uporabnik je obveščen o preostalem času s časovnikom, prikazanem v sistemski vrstici.
 
@@ -4378,6 +4358,15 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če je vrednost pravilnika nastavljena na žeton, ki preslika v delovno različico Quick Fixa, bo naprava posodobljena na ustrezno delovno različico Quick Fixa, če posodobitve ne blokira drug pravilnik.
 
       Če ta pravilnik ni nastavljen ali njegova vrednost ne preslika v delovno različico Quick Fixa, naprava ne bo posodobljena na delovno različico Quick Fixa. Če naprava že uporablja delovno različico Quick Fixa in pravilnik ni več nastavljen ali njegova vrednost ne preslika več v delovno različico Quick Fixa, bo naprava posodobljena v običajno različico, če posodobitve ne blokira drug pravilnik.</translation>
+<translation id="9054012305936267950">Ta pravilnik nadzira delovanje prijave v brskalniku. Omogoča vam, da določite, ali se sme uporabnik prijaviti v brskalnik <ph name="PRODUCT_NAME" /> z računom in uporabljati storitve, povezane z računom, na primer sinhronizacijo za Chrome.
+
+      Če je pravilnik nastavljen na »Onemogočanje prijave v brskalnik«, se uporabnik ne more prijaviti v brskalnik in uporabljati storitev, ki temeljijo na računu. V tem primeru funkcij na ravni brskalnika, kot je sinhronizacija za Chrome, ni mogoče uporabljati in niso na voljo. Če je bil uporabnik prijavljen in je pravilnik nastavljen na »Onemogočeno«, bo ob naslednjem zagonu Chroma odjavljen, lokalni podatki profila, kot so zaznamki, gesla ipd., pa se bodo ohranili. Uporabnik se bo še vedno lahko prijavljal v Googlove spletne storitve, na primer Gmail, in jih uporabljal.
+
+      Če je pravilnik nastavljen na »Omogočanje prijave v brskalnik«, se uporabnik sme prijaviti v brskalnik in je samodejno prijavljen vanj, če je prijavljen v Googlove spletne storitve, na primer Gmail. Če je uporabnik prijavljen v brskalnik, pomeni, da brskalnik ohrani podatke o njegovem računu, vendar to ne pomeni, da je sinhronizacija za Chrome privzeto vklopljena; če želi uporabnik to funkcijo uporabljati, jo mora omogočiti ločeno. Če omogočite ta pravilnik, bo uporabniku preprečen izklop nastavitve, ki omogoča prijavo v brskalnik. Če želite nadzirati razpoložljivost sinhronizacije za Chrome, uporabite pravilnik »SyncDisabled«.
+
+      Če je pravilnik nastavljen na »Vsiljenje prijave v brskalnik«, je uporabniku prikazano pogovorno okno za izbiro računa, v katerem mora izbrati račun in se prijaviti vanj, če želi uporabljati brskalnik. S tem se zagotovi, da se pri upravljanih računih uporabljajo in izvajajo pravilniki, povezani z računom. S tem je za račun privzeto vklopljena sinhronizacija za Chrome, razen v primeru, če sinhronizacijo prek pravilnika »SyncDisabled« onemogoči skrbnik domene. Privzeta vrednost za BrowserGuestModeEnabled bo nastavljena na onemogočeno. Obstoječi neprijavljeni profili bodo po omogočanju tega pravilnika zaklenjeni in nedostopni. Več informacij je na voljo v tem članku centra za pomoč: https://support.google.com/chrome/a/answer/7572556. Ta možnost ne podpira Linuxa in uporabi »Omogočanje prijave v brskalnik«, če je uporabljena.
+
+      Če ta pravilnik ni nastavljen, se lahko uporabnik odloči, ali želi omogočiti možnost prijave v brskalnik in jo uporabljati po želji.</translation>
 <translation id="9072600218500597787">Konfigurira zahtevana imena domen gostiteljev, ki bodo veljala za gostitelje oddaljenega dostopa, in prepreči uporabnikom njihovo spreminjanje.
 
           Če je ta nastavitev omogočena, se lahko gostitelji delijo samo z računi, registriranimi v enem od določenih imen domene.

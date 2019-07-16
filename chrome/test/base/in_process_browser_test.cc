@@ -93,7 +93,6 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/test/base/default_ash_event_generator_delegate.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
@@ -180,11 +179,6 @@ void InProcessBrowserTest::Initialize() {
 
 #if defined(OS_MACOSX)
   bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
-#endif
-
-#if defined(OS_CHROMEOS)
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(
-      base::BindRepeating(&CreateAshEventGeneratorDelegate));
 #endif
 }
 

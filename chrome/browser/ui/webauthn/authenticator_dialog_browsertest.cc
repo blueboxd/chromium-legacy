@@ -78,7 +78,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           "test_authenticator_id" /* authenticator_id */,
           base::string16() /* authenticator_display_name */,
           AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
-          false /* is_paired */));
+          false /* is_paired */, true /* requires_ble_pairing_pin */));
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePinEntry);
     } else if (name == "ble_verifying") {

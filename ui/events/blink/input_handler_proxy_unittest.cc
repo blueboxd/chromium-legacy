@@ -421,8 +421,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   InputHandlerProxyEventQueueTest()
       : input_handler_proxy_(&mock_input_handler_,
                              &mock_client_,
-                             /*force_input_to_main_thread=*/false),
-        weak_ptr_factory_(this) {
+                             /*force_input_to_main_thread=*/false) {
     if (input_handler_proxy_.compositor_event_queue_)
       input_handler_proxy_.compositor_event_queue_ =
           std::make_unique<CompositorThreadEventQueue>();
@@ -519,7 +518,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_;
+  base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_{this};
 };
 
 TEST_P(InputHandlerProxyTest, MouseWheelNoListener) {

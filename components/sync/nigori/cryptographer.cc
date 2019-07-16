@@ -24,14 +24,10 @@ KeyParams::KeyParams(const KeyParams& other) = default;
 KeyParams::KeyParams(KeyParams&& other) = default;
 KeyParams::~KeyParams() = default;
 
-Cryptographer::Cryptographer(Encryptor* encryptor)
-    : encryptor_(encryptor), key_bag_(NigoriKeyBag::CreateEmpty()) {
-  DCHECK(encryptor);
-}
+Cryptographer::Cryptographer() : key_bag_(NigoriKeyBag::CreateEmpty()) {}
 
 Cryptographer::Cryptographer(const Cryptographer& other)
-    : encryptor_(other.encryptor_),
-      key_bag_(other.key_bag_.Clone()),
+    : key_bag_(other.key_bag_.Clone()),
       default_nigori_name_(other.default_nigori_name_) {
   if (other.pending_keys_) {
     pending_keys_ =
@@ -41,14 +37,15 @@ Cryptographer::Cryptographer(const Cryptographer& other)
 
 Cryptographer::~Cryptographer() {}
 
-void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
+void Cryptographer::Bootstrap(const Encryptor& encryptor,
+                              const std::string& restored_bootstrap_token) {
   if (is_initialized()) {
     NOTREACHED();
     return;
   }
 
   std::string serialized_nigori_key =
-      UnpackBootstrapToken(restored_bootstrap_token);
+      UnpackBootstrapToken(encryptor, restored_bootstrap_token);
   if (serialized_nigori_key.empty())
     return;
   ImportNigoriKey(serialized_nigori_key);
@@ -140,10 +137,11 @@ bool Cryptographer::AddNonDefaultKey(const KeyParams& params) {
 }
 
 bool Cryptographer::AddKeyFromBootstrapToken(
+    const Encryptor& encryptor,
     const std::string& restored_bootstrap_token) {
   // Create the new Nigori and make it the default encryptor.
   std::string serialized_nigori_key =
-      UnpackBootstrapToken(restored_bootstrap_token);
+      UnpackBootstrapToken(encryptor, restored_bootstrap_token);
   return ImportNigoriKey(serialized_nigori_key);
 }
 
@@ -224,14 +222,15 @@ bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
   return true;
 }
 
-bool Cryptographer::GetBootstrapToken(std::string* token) const {
+bool Cryptographer::GetBootstrapToken(const Encryptor& encryptor,
+                                      std::string* token) const {
   DCHECK(token);
   std::string unencrypted_token = GetDefaultNigoriKeyData();
   if (unencrypted_token.empty())
     return false;
 
   std::string encrypted_token;
-  if (!encryptor_->EncryptString(unencrypted_token, &encrypted_token)) {
+  if (!encryptor.EncryptString(unencrypted_token, &encrypted_token)) {
     return false;
   }
 
@@ -241,6 +240,7 @@ bool Cryptographer::GetBootstrapToken(std::string* token) const {
 }
 
 std::string Cryptographer::UnpackBootstrapToken(
+    const Encryptor& encryptor,
     const std::string& token) const {
   if (token.empty())
     return std::string();
@@ -252,7 +252,7 @@ std::string Cryptographer::UnpackBootstrapToken(
   }
 
   std::string unencrypted_token;
-  if (!encryptor_->DecryptString(encrypted_data, &unencrypted_token)) {
+  if (!encryptor.DecryptString(encrypted_data, &unencrypted_token)) {
     DLOG(WARNING) << "Decryption of bootstrap token failed.";
     return std::string();
   }

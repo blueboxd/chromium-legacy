@@ -8,7 +8,7 @@
 
 namespace viz {
 
-StubSurfaceClient::StubSurfaceClient() : weak_factory(this) {}
+StubSurfaceClient::StubSurfaceClient() {}
 
 StubSurfaceClient::~StubSurfaceClient() = default;
 

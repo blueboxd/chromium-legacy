@@ -143,8 +143,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       is_generation_popup_possibly_visible_(false),
       is_user_gesture_required_(true),
       is_secure_context_required_(false),
-      form_tracker_(render_frame),
-      weak_ptr_factory_(this) {
+      form_tracker_(render_frame) {
   render_frame->GetWebFrame()->SetAutofillClient(this);
   password_autofill_agent->SetAutofillAgent(this);
   AddFormObserver(this);

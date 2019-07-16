@@ -2953,19 +2953,8 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política s'estableix en False, el mode de segon pla es desactiva i l'usuari no el pot controlar a la configuració del navegador.
 
       Si aquesta política es deixa sense establir, el mode de segon pla es desactiva en un primer moment i l'usuari el pot controlar a la configuració del navegador.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> permet actualitzar i instal·lar les extensions de manera segura. Tanmateix, pot ser que el contingut d'algunes extensions allotjades fora de Chrome Web Store només estigui protegit per algoritmes de resum o de signatura poc segurs, com ara SHA1. Si aquesta política es desactiva, Chrome no permetrà que tornis a instal·lar ni que actualitzis aquestes extensions fins que els seus desenvolupadors no les tornin a crear amb algoritmes més segurs. Si aquesta política s'activa, s'admetrà la instal·lació i les actualitzacions d'aquest tipus d'extensions.
-
-          Aquest comportament serà el predeterminat si la política no s'estableix.
-          A partir de <ph name="PRODUCT_NAME" /> 75, si la política no s'estableix, es desactivarà de manera predeterminada.
-
-          A partir de <ph name="PRODUCT_NAME" /> 77, aquesta política s'ignorarà i es considerarà desactivada.</translation>
 <translation id="7126716959063786004">Activa la finalització de processos al gestor de tasques</translation>
 <translation id="7127892035367404455">Torna a la versió de destinació</translation>
-<translation id="7128918109610518786">Enumera els identificadors de les aplicacions que <ph name="PRODUCT_OS_NAME" /> mostra com a aplicacions fixades a la barra d'execució ràpida.
-
-      Si configureu aquesta política, el conjunt d'aplicacions queda fixada i l'usuari no la pot modificar.
-
-      Si no configureu aquesta política, l'usuari pot modificar la llista d'aplicacions fixades a la barra d'execució ràpida.</translation>
 <translation id="713121532817834879">Aquesta política és un URL que assenyala un fitxer XML en el mateix format que la política <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Fa que es carreguin les regles d'un fitxer XML, sense compartir-les amb Internet Explorer.
 
       Les regles d'aquest fitxer XML s'apliquen de la mateixa manera que <ph name="GREYLIST_POLICY_NAME" />. És a dir, aquestes regles impedeixen que <ph name="PRODUCT_NAME" /> obri un altre navegador i que l'altre navegador obri <ph name="PRODUCT_NAME" />.
@@ -3716,12 +3705,6 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="8758831693895931466">Activa la inscripció obligatòria a la gestió al núvol</translation>
 <translation id="8759829385824155666">Tipus d'encriptació Kerberos permesos</translation>
 <translation id="8764119899999036911">Especifica si l'SPN de Kerberos que es genera es basa en el nom del DNS canònic o en el nom original introduït. Si activeu aquest paràmetre, s'ometrà la cerca de CNAME i el nom del servidor s'utilitzarà tal com s'ha introduït. Si desactiveu aquest paràmetre o el deixeu sense definir, el nom canònic del servidor es determinarà a través de la cerca de CNAME.</translation>
-<translation id="8765776988041674792">Configura l'URL per canviar la contrasenya (només esquemes HTTP i HTTPS). El servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya després que vegin un advertiment al navegador.
-      Perquè <ph name="PRODUCT_NAME" /> pugui capturar correctament l'empremta digital de la nova contrasenya en aquesta pàgina per canviar de contrasenya, assegura't que la pàgina segueixi les directrius descrites a https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si aquesta opció de configuració està activada, el servei de protecció de contrasenyes enviarà els usuaris a aquest URL perquè canviïn la contrasenya després que vegin un advertiment al navegador.
-      Si aquesta opció de configuració està desactivada o no s'estableix, el servei de protecció de contrasenyes enviarà els usuaris a https://myaccounts.google.com perquè canviïn la contrasenya.
-      Aquesta política només està disponible en instàncies de Windows que s'hagin unit a un domini de <ph name="MS_AD_NAME" /> o instàncies de Windows 10 Pro o Enterprise que s'hagin inscrit per a la gestió de dispositius.</translation>
 <translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8800453707696044281">Estableix l'aturada personalitzada de la càrrega de la bateria en percentatge</translation>
 <translation id="8801680448782904838">Notifica a un usuari que es recomana o que és necessari reiniciar el navegador o el dispositiu</translation>
@@ -3838,15 +3821,21 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
-<translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
-
-      Cada element de la política inclòs a la llista és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
 <translation id="9038839118379817310">Activa la Wi-Fi</translation>
 <translation id="9050853837490399534">Aquesta política controla si el dispositiu s'ha d'actualitzar o no a una compilació de correcció ràpida.
 
       Si el valor de la política s'estableix en un testimoni que s'assigna a una compilació de correcció ràpida, el dispositiu s'actualitzarà a la compilació corresponent si l'actualització no està bloquejada per una altra política.
 
       Si aquesta política no s'estableix o si el seu valor no s'assigna a una compilació de correcció ràpida, el dispositiu no s'actualitzarà a una compilació d'aquest tipus. Si el dispositiu ja utilitza una compilació de correcció ràpida i la política es deixa d'establir o el seu valor es deixa d'assignar a una compilació d'aquest tipus, el dispositiu s'actualitzarà a una compilació normal si l'actualització no està bloquejada per una altra política.</translation>
+<translation id="9054012305936267950">Aquesta política controla el comportament de l'inici de sessió al navegador. Et permet especificar si l'usuari pot iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu compte i utilitzar serveis relacionats amb el compte, com ara la Sincronització de Chrome.
+
+      Si la política s'estableix en "Desactiva l'inici de sessió al navegador", l'usuari no podrà iniciar la sessió al navegador ni utilitzar serveis basats en el compte. En aquest cas, les funcions del navegador, com ara la Sincronització de Chrome, no es podran utilitzar i no estaran disponibles. Si l'usuari ha iniciat la sessió i la política s'ha establert en "Desactivada", es tancarà la sessió de l'usuari la propera vegada que executi Chrome, però es conservaran les dades del perfil local, com ara els marcadors, les contrasenyes, etc. L'usuari podrà continuar iniciant la sessió i utilitzant serveis web de Google com ara Gmail.
+
+      Si la política s'estableix en "Activa l'inici de sessió al navegador", l'usuari podrà iniciar la sessió al navegador i la seva sessió s'hi iniciarà automàticament quan la tingui iniciada en serveis web de Google com ara Gmail. Quan s'inicia la sessió al navegador, la informació del compte de l'usuari s'hi manté. Tanmateix, la Sincronització de Chrome no s'activarà de manera predeterminada; si l'usuari vol utilitzar aquesta funció, l'haurà d'activar per separat. En activar aquesta política, s'impedeix que l'usuari desactivi l'opció de configuració que permet l'inici de sessió al navegador. Per controlar la disponibilitat de la Sincronització de Chrome, fes servir la política "SyncDisabled".
+
+      Si la política s'estableix en "Força l'inici de sessió al navegador", es mostrarà a l'usuari un quadre de diàleg per seleccionar un compte. L'usuari n'haurà de triar un i iniciar-hi la sessió per fer servir el navegador. D'aquesta manera, es garanteix que, als comptes gestionats, s'hi apliquin i es compleixin les polítiques associades. De manera predeterminada, s'activa la Sincronització de Chrome al compte, excepte en el cas que l'administrador del domini hagi desactivat la sincronització o s'hagi desactivat amb la política "SyncDisabled". El valor predeterminat de BrowserGuestModeEnabled s'establirà en "false". Tingues en compte que, després d'activar aquesta política, els perfils en què no s'hagi iniciat la sessió es bloquejaran i no s'hi podrà accedir. Per obtenir més informació, consulta l'article següent del Centre d'ajuda: https://support.google.com/chrome/a/answer/7572556. Aquesta opció no admet Linux i, si s'utilitza, farà servir "Activa l'inici de sessió al navegador".
+
+      Si aquesta política no s'estableix, l'usuari pot decidir si vol activar l'opció d'inici de sessió al navegador i utilitzar-lo com li sembli més adequat.</translation>
 <translation id="9077227880520270584">Temporitzador d'inici de sessió automàtic al compte local del dispositiu</translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
 <translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>

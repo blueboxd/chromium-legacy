@@ -228,6 +228,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">ಕಾರ್ಡ್</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ರಿಂದ ಅತಿಕ್ರಮಿಸಲಾಗಿರುವ ಕಾರಣ ಇದನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
+<translation id="2119505898009119320">ಇವರಿಗೆ ನೀಡಲಾಗಿದೆ: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">ಚಲನಾ ಸೆನ್ಸರ್‌ಗಳು</translation>
 <translation id="213826338245044447">ಮೊಬೈಲ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
 <translation id="214556005048008348">ಪಾವತಿಯನ್ನು ರದ್ದುಮಾಡಿ</translation>
@@ -308,6 +309,7 @@
 <translation id="2515629240566999685">ನಿಮ್ಮ ಪ್ರದೇಶದಲ್ಲಿನ ಸಿಗ್ನಲ್ ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2523886232349826891">ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2524461107774643265">ಇನ್ನಷ್ಟು ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸಿ</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{ಮತ್ತು ಇನ್ನೂ 1}one{ಮತ್ತು ಇನ್ನೂ #}other{ಮತ್ತು ಇನ್ನೂ #}}</translation>
 <translation id="2536110899380797252">ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="2539524384386349900">ಪತ್ತೆ ಮಾಡು</translation>
 <translation id="254947805923345898">ಕಾರ್ಯನೀತಿಯ ಮೌಲ್ಯವು ಮಾನ್ಯವಾಗಿಲ್ಲ.</translation>
@@ -717,6 +719,7 @@
 <translation id="4858792381671956233">ಈ ಸೈಟ್ ಅನ್ನು ಭೇಟಿ ಮಾಡಬಹುದು ಎಂದು ನಿಮ್ಮ ಪೋಷಕರಿಗೆ ನೀವು ಕೇಳಿರುವಿರಿ.</translation>
 <translation id="4876188919622883022">ಸರಳೀಕೃತ ವೀಕ್ಷಣೆ</translation>
 <translation id="4876305945144899064">ಯಾವುದೇ ಬಳಕೆದಾರರ ಹೆಸರಿಲ್ಲ</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{ಒಂದೂ ಇಲ್ಲ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> ಹುಡುಕಾಟ</translation>
 <translation id="4879491255372875719">ಸ್ವಯಂಚಾಲಿತ (ಡಿಫಾಲ್ಟ್)</translation>
 <translation id="4880827082731008257">ಹುಡುಕಾಟ ಇತಿಹಾಸ</translation>
@@ -1010,6 +1013,7 @@
 <translation id="650855688985305916">ಹೌದು, ಸಂಗ್ರಹಿಸಿ</translation>
 <translation id="6508722015517270189">Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="6517596291481585650">ಎಚ್ಚರಿಕೆ: ಈ ಕಾರ್ಯನೀತಿಯು ಪಟ್ಟಿಯಾಗಿಲ್ಲದ ಕಾರಣ, ಅದನ್ನು ಕಾರ್ಯನೀತಿ ಮೂಲಕ ನಿರ್ದಿಷ್ಟಪಡಿಸಿರುವಂತೆ ವಿಲೀನಗೊಳಿಸಲಾಗಿಲ್ಲ.</translation>
+<translation id="6521745193039995384">ಸಕ್ರಿಯವಾಗಿಲ್ಲ</translation>
 <translation id="6529602333819889595">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="6534179046333460208">ಭೌತಿಕ ವೆಬ್ ಸಲಹೆಗಳು</translation>
 <translation id="6545864417968258051">ಬ್ಲೂಟೂತ್ ಸ್ಕ್ಯಾನಿಂಗ್</translation>
@@ -1472,6 +1476,7 @@
 <translation id="9076630408993835509">ಈ ಬ್ರೌಸರ್ ಅನ್ನು ಕಂಪನಿ ಅಥವಾ ಇತರ ಸಂಸ್ಥೆಯ ಮೂಲಕ ನಿರ್ವಹಿಸುತ್ತಿಲ್ಲ. ಈ ಸಾಧನದಲ್ಲಿನ ಚಟುವಟಿಕೆಯನ್ನು Chrome ನಿಂದ ಹೊರಗೆ ನಿರ್ವಹಿಸಬಹುದು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">ಇನ್ನಷ್ಟು ಮಾಹಿತಿಯ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="9080712759204168376">ಆರ್ಡರ್ ಸಾರಾಂಶ</translation>
+<translation id="9089260154716455634">ಬಿಡುವಿನ ಅವಧಿಯ ಕಾರ್ಯನೀತಿ:</translation>
 <translation id="9095388113577226029">ಇನ್ನಷ್ಟು ಭಾಷೆಗಳು...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> ಸಾಮಾನ್ಯವಾಗಿ ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಸಂರಕ್ಷಿಸಲು ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಪ್ರಯೋಜನವನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತದೆ. ಈ ಸಂದರ್ಭದಲ್ಲಿ Chromium <ph name="SITE" /> ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿದಾಗ, ಆ ವೆಬ್‌ಸೈಟ್‌‌ ಅಸಹಜ ಮತ್ತು ತಪ್ಪು ರುಜುವಾತುಗಳನ್ನು ಹಿಂತಿರುಗಿಸಿದೆ. ದಾಳಿಕೋರರು <ph name="SITE" /> ರೂಪದಲ್ಲಿ ಸೋಗು ಹಾಕಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವಾಗ ಅಥವಾ ವೈ-ಫೈ ಸೈನ್-ಇನ್ ಪರದೆಯು ಸಂಪರ್ಕಕ್ಕೆ ಅಡ್ಡಿಯುಂಟು ಮಾಡಿದಾಗ ಇದು ಕಂಡುಬರಬಹುದು. ಯಾವುದೇ ಡೇಟಾವನ್ನು ವಿನಿಮಯ ಮಾಡಿಕೊಳ್ಳುವ ಮೊದಲೇ Chromium ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಿರುವ ಕಾರಣ, ನಿಮ್ಮ ಮಾಹಿತಿ ಈಗಲೂ ಸುರಕ್ಷಿತವಾಗಿದೆ.</translation>
 <translation id="9106062320799175032">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ</translation>

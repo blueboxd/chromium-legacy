@@ -13,8 +13,8 @@
 namespace blink {
 
 PlatformPaintWorkletLayerPainter::PlatformPaintWorkletLayerPainter(
-    scoped_refptr<PaintWorkletPaintDispatcher> dispatcher)
-    : dispatcher_(dispatcher) {
+    std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher)
+    : dispatcher_(std::move(dispatcher)) {
   TRACE_EVENT0(
       TRACE_DISABLED_BY_DEFAULT("cc"),
       "PlatformPaintWorkletLayerPainter::PlatformPaintWorkletLayerPainter");

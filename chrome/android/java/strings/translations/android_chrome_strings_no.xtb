@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1067922213147265141">Andre Google-tjenester</translation>
 <translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME" />. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
 <translation id="1100066534610197918">Åpne i en ny fane i en gruppe</translation>
 <translation id="1105960400813249514">Skjermdump</translation>
 <translation id="1111673857033749125">Bokmerker som er lagret på de andre enhetene dine, vises her.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1373696734384179344">Det er ikke nok ledig minne til å laste ned det valgte innholdet.</translation>
 <translation id="1376578503827013741">Beregner …</translation>
-<translation id="138361230106469022">Hei, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
 <translation id="1386674309198842382">Aktiv for <ph name="LAST_UPDATED" /> dager siden</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">Spør når nettsteder vil oppdage Bluetooth-enheter i nærheten (anbefales)</translation>
 <translation id="230115972905494466">Fant ingen kompatible enheter</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
+<translation id="2318045970523081853">Trykk for å ringe</translation>
 <translation id="2321086116217818302">Klargjør passordene …</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2323763861024343754">Nettstedslagring</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">Nedlasting fullført <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Posisjonstilgang</translation>
 <translation id="2450083983707403292">Vil du laste ned <ph name="FILE_NAME" /> på nytt?</translation>
-<translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2490684707762498678">Administreres av <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google-assistenten i Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">Størrelse:</translation>
 <translation id="3443221991560634068">Last inn den aktive siden på nytt</translation>
 <translation id="3445014427084483498">Nå nettopp</translation>
-<translation id="3452612588551937789">Logg på med Google-kontoen din for å få bokmerkene, passordene, loggoppføringene og de andre innstillingene dine på alle enhetene du bruker.</translation>
 <translation id="3478363558367712427">Du kan velge søkemotor</translation>
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om foreslått innhold</translation>
 <translation id="3513704683820682405">Utvidet virkelighet</translation>
 <translation id="3518985090088779359">Godta og fortsett</translation>
 <translation id="3522247891732774234">En oppdatering er tilgjengelig. Flere alternativer</translation>
+<translation id="3524138585025253783">Utvikler-UI</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB er tilgjengelig</translation>
 <translation id="3549657413697417275">Søk i loggen</translation>
-<translation id="3552151358455404883">Administrer Chrome-synkronisering og personlig tilpasning i <ph name="BEGIN_LINK1" />Innstillinger<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Legg til i kontakter</translation>
 <translation id="3566923219790363270">Chrome klargjør fremdeles for VR. Start Chrome på nytt senere.</translation>
 <translation id="3568688522516854065">For å få fanene dine fra de andre enhetene du bruker, logg på og slå på synkronisering.</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
 <translation id="393697183122708255">Ingen aktiverte talesøk er tilgjengelige</translation>
-<translation id="3950820424414687140">Logg på</translation>
 <translation id="395206256282351086">Nettsteds- og søkeforslag er slått av</translation>
 <translation id="3955193568934677022">Gi nettsteder tillatelse til å spille av beskyttet innhold (anbefales)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome laster inn siden når den er klar}other{Chrome laster inn sidene når de er klare}}</translation>
@@ -458,7 +454,6 @@ Hvis du vil endre søkeordet, kan du trykke og holde inne for å merke. Hvis du 
 <translation id="447252321002412580">Hjelp til med å forbedre funksjonene og ytelsen til Chrome</translation>
 <translation id="4479647676395637221">Spør før nettsteder får bruke kameraet (anbefales)</translation>
 <translation id="4479972344484327217">Installerer <ph name="MODULE" /> for Chrome …</translation>
-<translation id="4482194545587547824">Google kan bruke nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg</translation>
 <translation id="4487967297491345095">Alle appdataene for Chrome slettes permanent. Dette omfatter alle filer, innstillinger, kontoer, databaser osv.</translation>
 <translation id="4493497663118223949">Forenklet modus er på</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{for # dag siden}other{for # dager siden}}</translation>
@@ -469,7 +464,6 @@ Google-kontoen din kan ha andre former for nettleserlogger, for eksempel søk og
 <translation id="4532845899244822526">Velg en mappe</translation>
 <translation id="4538018662093857852">Slå på forenklet modus</translation>
 <translation id="4550003330909367850">For å se eller kopiere passordet ditt her, angi skjermlås på denne enheten.</translation>
-<translation id="4556110439722119938">Bokmerkene, loggoppføringene, passordene og de andre innstillingene dine blir synkronisert med Google-kontoen din, slik at du kan bruke dem på alle enhetene dine.</translation>
 <translation id="4558311620361989323">Hurtigtaster for nettsider</translation>
 <translation id="4561979708150884304">Ingen tilkobling</translation>
 <translation id="4565377596337484307">Skjul passord</translation>
@@ -616,7 +610,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5527111080432883924">Spør før nettsteder får tilgang til tekst og bilder fra utklipptavlen (anbefalt)</translation>
 <translation id="5530766185686772672">Lukk inkognitofaner</translation>
 <translation id="5534640966246046842">Nettstedet er kopiert</translation>
-<translation id="5537099431952529648">Du og foreldrene dine kan administrere Chrome-synkronisering og personlig tilpasning i <ph name="BEGIN_LINK1" />Innstillinger<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5561549206367097665">Venter på nettverket …</translation>
 <translation id="557283862590186398">Chrome trenger tilgang til mikrofonen din for dette nettstedet.</translation>
@@ -712,7 +705,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg annonser som ikke er basert på andre nettsteder du har besøkt. Mange nettsteder samler likevel inn og bruker nettlesingsdataene dine – for eksempel for å forbedre sikkerheten, for å levere innhold, annonser og anbefalinger og for å generere rapporteringsstatistikk.</translation>
 <translation id="624789221780392884">Oppdateringen er klar</translation>
 <translation id="6255999984061454636">Innholdsforslag</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> vil skanne etter Bluetooth-enheter i nærheten. Disse enhetene ble funnet:</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -774,6 +766,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666731172850799929">Åpne i <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Merknad om personvern for Chrome</translation>
+<translation id="6676840375528380067">Vil du fjerne Chrome-dataene dine fra denne enheten?</translation>
 <translation id="6697492270171225480">Viser forslag for lignende sider når en side ikke kan finnes</translation>
 <translation id="6697947395630195233">Chrome trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet.</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
@@ -792,7 +785,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6803423358608456383">Åpnede faner i halv høyde</translation>
 <translation id="6811034713472274749">Siden er klar til å vises</translation>
 <translation id="6818926723028410516">Velg elementer</translation>
-<translation id="6820607729870073286">Du har ingen lagrede nettstedsinnstillinger.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6845325883481699275">Bidra til å gjøre Chrome sikrere</translation>
@@ -815,7 +807,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Tilbakestill innstillingene for oversetting</translation>
 <translation id="6979737339423435258">Alle datoer</translation>
-<translation id="6980462514016882061">Google kan bruke nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="6989267951144302301">Kunne ikke laste ned</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
-<translation id="722055596168483966">Tilpass Google-tjenester</translation>
 <translation id="723171743924126238">Velg bilder</translation>
 <translation id="7233236755231902816">For å se nettet på ditt eget språk, skaff den nyeste versjonen av Chrome</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
@@ -962,6 +952,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="7999064672810608036">Er du sikker på at du vil slette alle lokale data, deriblant informasjonskapsler, og tilbakestille alle tillatelser for dette nettstedet?</translation>
 <translation id="8004582292198964060">Nettleser</translation>
 <translation id="8007176423574883786">Slått av for denne enheten</translation>
+<translation id="8013372441983637696">Fjern også Chrome-dataene dine fra denne enheten</translation>
 <translation id="8015452622527143194">Tilbakestill alt på siden til standardstørrelsen</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8026334261755873520">Slett nettleserdata</translation>
@@ -1078,7 +1069,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
 <translation id="8901170036886848654">Fant ingen bokmerker</translation>
-<translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="8909135823018751308">Del</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på informasjon om foreldre.</translation>

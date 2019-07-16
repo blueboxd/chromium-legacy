@@ -11,7 +11,7 @@ public_headers = [
 traits_headers =
     [ "//services/media_session/public/cpp/media_session_mojom_traits.h" ]
 public_deps = [
-  "//services/media_session/public/cpp",
+  "//services/media_session/public/cpp:base_cpp",
   "//skia",
 ]
 deps = [

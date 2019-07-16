@@ -12,7 +12,7 @@
 
 #include "third_party/openscreen/src/osp/public/service_info.h"
 #include "third_party/openscreen/src/osp/public/service_listener.h"
-#include "third_party/openscreen/src/osp_base/ip_address.h"
+#include "third_party/openscreen/src/platform/base/ip_address.h"
 
 namespace media_router {
 class OpenScreenListener

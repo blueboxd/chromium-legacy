@@ -64,7 +64,8 @@ class GCMProfileService::IdentityObserver
   // is not running.
   std::string account_id_;
 
-  base::WeakPtrFactory<GCMProfileService::IdentityObserver> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMProfileService::IdentityObserver> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(IdentityObserver);
 };
@@ -73,9 +74,7 @@ GCMProfileService::IdentityObserver::IdentityObserver(
     identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     GCMDriver* driver)
-    : driver_(driver),
-      identity_manager_(identity_manager),
-      weak_ptr_factory_(this) {
+    : driver_(driver), identity_manager_(identity_manager) {
   identity_manager_->AddObserver(this);
 
   OnPrimaryAccountSet(identity_manager_->GetPrimaryAccountInfo());

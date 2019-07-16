@@ -139,7 +139,7 @@ class GCMKeyStore {
                      std::unordered_map<std::string, KeyPairAndAuthSecret>>
       key_data_;
 
-  base::WeakPtrFactory<GCMKeyStore> weak_factory_;
+  base::WeakPtrFactory<GCMKeyStore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMKeyStore);
 };

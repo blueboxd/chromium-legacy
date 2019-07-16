@@ -227,6 +227,19 @@ base::Optional<EnumerateRPsResponse> EnumerateRPsResponse::Parse(
                               rp_count);
 }
 
+// static
+bool EnumerateRPsResponse::StringFixupPredicate(
+    const std::vector<const cbor::Value*>& path) {
+  // In the rp field (0x04), "name" may be truncated.
+  if (path.size() != 2 || !path[0]->is_unsigned() ||
+      path[0]->GetUnsigned() !=
+          static_cast<int>(CredentialManagementResponseKey::kRP) ||
+      !path[1]->is_string()) {
+    return false;
+  }
+  return path[1]->GetString() == "name";
+}
+
 EnumerateRPsResponse::EnumerateRPsResponse(EnumerateRPsResponse&&) = default;
 EnumerateRPsResponse& EnumerateRPsResponse::operator=(EnumerateRPsResponse&&) =
     default;
@@ -300,6 +313,20 @@ EnumerateCredentialsResponse::Parse(
   }
   return EnumerateCredentialsResponse(
       std::move(*opt_user), std::move(*opt_credential_id), credential_count);
+}
+
+// static
+bool EnumerateCredentialsResponse::StringFixupPredicate(
+    const std::vector<const cbor::Value*>& path) {
+  // In the user field (0x06), "name" or "displayName" may be truncated.
+  if (path.size() != 2 || !path[0]->is_unsigned() ||
+      path[0]->GetUnsigned() !=
+          static_cast<int>(CredentialManagementResponseKey::kUser) ||
+      !path[1]->is_string()) {
+    return false;
+  }
+  const std::string& user_key = path[1]->GetString();
+  return user_key == "name" || user_key == "displayName";
 }
 
 EnumerateCredentialsResponse::EnumerateCredentialsResponse(

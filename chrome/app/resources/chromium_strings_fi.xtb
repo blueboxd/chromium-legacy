@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Hanki apua Chromium-käyttöjärjestelmän käytössä</translation>
 <translation id="1396446129537741364">Chromium yrittää näyttää salasanat.</translation>
 <translation id="1414495520565016063">Olet kirjautunut Chromiumiin!</translation>
-<translation id="1502360822835740515">Chromiumin asettaminen oletusselaimeksi</translation>
 <translation id="151962892725702025">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="1524282610922162960">Jaa Chromium-välilehti</translation>
-<translation id="1585657529869845941">Klikkaa <ph name="BEGIN_BOLD" />Vaihda joka tapauksessa<ph name="END_BOLD" /> ‑painiketta, jos se tulee näkyviin.</translation>
 <translation id="1668054258064581266">Kun olet poistanut tilisi Chromiumista, sinun on ehkä avattava avoinna olleet välilehdet uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="1688750314291223739">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Chromiumilla.</translation>
 <translation id="1708666629004767631">Chromiumista on saatavilla uusi, turvallisempi versio.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium käyttää Drivea antaakseen ehdotuksia osoitepalkissa</translation>
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Chromiumin kiinnittäminen tehtäväpalkkiin</translation>
 <translation id="388648406173476553">Yksilöi ja ylläpidä Chromiumia. Toimenpiteitä vaaditaan. Katso lisätiedot klikkaamalla.</translation>
 <translation id="3889543394854987837">Avaa Chromium klikkaamalla nimeäsi ja aloita selaaminen.</translation>
 <translation id="3898493977366060150">Verkkoselaaminen Googlen älykkäillä ratkaisuilla</translation>
 <translation id="4036079820698952681">Auta parantamaan Chromiumia ilmoittamalla <ph name="BEGIN_LINK" />nykyiset asetukset<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
-<translation id="407254336480250557">Valitse <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
 <translation id="421369550622382712">Löydät hienoja sovelluksia, pelejä, laajennuksia ja teemoja Chromiumille.</translation>
 <translation id="4216212958613226427">Chromium-käyttöliittymä näytetään tällä kielellä</translation>
 <translation id="4222580632002216401">Olet nyt kirjautunut sisään Chromiumiin! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Profiili näyttäisi olevan toisen Chromium-prosessin (<ph name="PROCESS_ID" />) käytössä toisella tietokoneella (<ph name="HOST_NAME" />). Chromium on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromiumin uudelleen.</translation>
 <translation id="469338717132742108">Ohjeita Chromium-käyttöjärjestelmän käyttöön</translation>
 <translation id="4708774505295300557">Joku on jo kirjautunut tällä tietokoneella Chromiumiin käyttäjätilillä <ph name="ACCOUNT_EMAIL_LAST" />. Luo uusi Chromium-käyttäjä, jos haluat pitää tiedot erillään.</translation>
-<translation id="4714956846925717402">Avaa Chromium nopeammin</translation>
 <translation id="4746050847053251315">Suljetaanko Chromium silti?</translation>
 <translation id="4748217263233248895">Chromiumin tärkeä tietoturvapäivitys on asennettu. Käynnistä selain uudelleen – palautamme avoimet välilehdet.</translation>
 <translation id="479167709087336770">Tämä käyttää samaa oikeinkirjoituksen tarkistusta kuin Google Haku. Selaimeen kirjoittamasi teksti lähetetään Googlelle. Voit muuttaa tätä milloin tahansa asetuksista.</translation>

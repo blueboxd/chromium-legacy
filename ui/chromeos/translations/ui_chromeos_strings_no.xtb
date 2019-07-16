@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Translitterasjon (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Lysbildevisning</translation>
 <translation id="1045157690796831147">Translitterasjon (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japansk inndata (for amerikansk tastatur)</translation>
 <translation id="1047956942837015229">Sletter <ph name="COUNT" /> elementer ...</translation>
 <translation id="1049926623896334335">Word-dokument</translation>
 <translation id="1062407476771304334">Erstatt</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3549797760399244642">Gå til drive.google.com</translation>
 <translation id="357479282490346887">Litauisk</translation>
+<translation id="3583509704582854624">Alfanumerisk inndata (for japansk tastatur)</translation>
 <translation id="3603385196401704894">Canadisk fransk</translation>
 <translation id="3606220979431771195">Tyrkisk F</translation>
 <translation id="3609785682760573515">Synkroniserer …</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Det oppsto en feil under installasjon av Linux-appen.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Kopieringshandlingen mislyktes på grunn av en uventet feil: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japansk inndata (for japansk tastatur)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Gi Linux-apper tillatelse til å endre filer på Google Disk. Endringer synkroniseres med de andre enhetene dine.</translation>
 <translation id="5982621672636444458">Sorteringsalternativer</translation>

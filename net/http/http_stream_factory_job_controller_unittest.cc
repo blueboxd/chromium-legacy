@@ -178,7 +178,7 @@ class HttpStreamFactoryJobControllerTest
  public:
   HttpStreamFactoryJobControllerTest()
       : TestWithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {
     session_deps_.enable_quic = true;
     session_deps_.host_resolver->set_synchronous_mode(true);
   }
@@ -307,6 +307,7 @@ class HttpStreamFactoryJobControllerTest
   void TestMainJobFailsAfterAltJobSucceeded(
       bool alt_job_retried_on_non_default_network);
 
+  BoundTestNetLog net_log_;
   TestJobFactory job_factory_;
   MockHttpStreamRequestDelegate request_delegate_;
   SpdySessionDependencies session_deps_{ProxyResolutionService::CreateDirect()};
@@ -328,7 +329,6 @@ class HttpStreamFactoryJobControllerTest
       false};
 
  protected:
-  BoundTestNetLog net_log_;
   bool use_alternative_proxy_ = false;
   bool is_preconnect_ = false;
   bool enable_ip_based_pooling_ = true;

@@ -249,6 +249,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
                               LIMIT_RECENT_TAB_ACTION);
     UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowHistory",
                                menu_opened_timer_.Elapsed());
+    LogWrenchMenuAction(MENU_ACTION_SHOW_HISTORY);
     // We show all "other devices" on the history page.
     chrome::ExecuteCommandWithDisposition(browser_, IDC_SHOW_HISTORY,
         ui::DispositionFromEventFlags(event_flags));

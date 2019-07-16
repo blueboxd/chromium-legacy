@@ -30,6 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,11 +119,6 @@ public class LibraryLoader {
     // The number of milliseconds it took to load all the native libraries, which
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
-
-    // The return value of NativeLibraryPreloader.loadLibrary(), which will be reported
-    // via UMA, it is initialized to the invalid value which shouldn't showup in UMA
-    // report.
-    private int mLibraryPreloaderStatus = -1;
 
     /**
      * Call this method to determine if this chromium project must
@@ -229,7 +225,7 @@ public class LibraryLoader {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
             assert !useCrazyLinker();
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
-                mLibraryPreloaderStatus = mLibraryPreloader.loadLibrary(appInfo);
+                mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
             }
         }
@@ -592,35 +588,23 @@ public class LibraryLoader {
     }
 
     // Called after all native initializations are complete.
-    public void onNativeInitializationComplete() {
+    public void onBrowserNativeInitializationComplete() {
         synchronized (mLock) {
-            recordBrowserProcessHistogramAlreadyLocked();
+            if (useCrazyLinker()) {
+                RecordHistogram.recordTimesHistogram(
+                        "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
+            }
         }
     }
 
-    // Record Chromium linker histogram state for the main browser process. Called from
-    // onNativeInitializationComplete().
-    private void recordBrowserProcessHistogramAlreadyLocked() {
-        assert Thread.holdsLock(mLock);
-        if (useCrazyLinker()) {
-            nativeRecordChromiumAndroidLinkerBrowserHistogram(mLibraryLoadTimeMs);
-        }
-        if (mLibraryPreloader != null) {
-            nativeRecordLibraryPreloaderBrowserHistogram(mLibraryPreloaderStatus);
-        }
-    }
-
-    // Register pending Chromium linker histogram state for renderer processes. This cannot be
-    // recorded as a histogram immediately because histograms and IPC are not ready at the
-    // time it are captured. This function stores a pending value, so that a later call to
+    // Records pending Chromium linker histogram state for renderer process. This cannot be
+    // recorded as a histogram immediately because histograms and IPCs are not ready at the
+    // time they are captured. This function stores a pending value, so that a later call to
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram() {
         synchronized (mLock) {
             if (useCrazyLinker()) {
-                nativeRegisterChromiumAndroidLinkerRendererHistogram(mLibraryLoadTimeMs);
-            }
-            if (mLibraryPreloader != null) {
-                nativeRegisterLibraryPreloaderRendererHistogram(mLibraryPreloaderStatus);
+                nativeRecordRendererLibraryLoadTime(mLibraryLoadTimeMs);
             }
         }
     }
@@ -715,21 +699,8 @@ public class LibraryLoader {
     // Return true on success and false on failure.
     private native boolean nativeLibraryLoaded(@LibraryProcessType int processType);
 
-    // Records the number of milliseconds it took to load the libraries in the browser.
-    private native void nativeRecordChromiumAndroidLinkerBrowserHistogram(
-            long libraryLoadTime);
-
-    // Method called to record the return value of NativeLibraryPreloader.loadLibrary for the main
-    // browser process.
-    private native void nativeRecordLibraryPreloaderBrowserHistogram(int status);
-
     // Records the number of milliseconds it took to load the libraries in the renderer.
-    private native void nativeRegisterChromiumAndroidLinkerRendererHistogram(
-            long libraryLoadTime);
-
-    // Method called to register (for later recording) the return value of
-    // NativeLibraryPreloader.loadLibrary for a renderer process.
-    private native void nativeRegisterLibraryPreloaderRendererHistogram(int status);
+    private native void nativeRecordRendererLibraryLoadTime(long libraryLoadTime);
 
     // Get the version of the native library. This is needed so that we can check we
     // have the right version before initializing the (rest of the) JNI.

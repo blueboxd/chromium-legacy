@@ -95,7 +95,7 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
 
   bool recompute_task_params_scheduled_ = false;
 
-  base::WeakPtrFactory<AutoResumptionHandler> weak_factory_;
+  base::WeakPtrFactory<AutoResumptionHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutoResumptionHandler);
 };

@@ -316,8 +316,7 @@ DocumentProvider::DocumentProvider(AutocompleteProviderClient* client,
       field_trial_triggered_in_session_(false),
       backoff_for_session_(false),
       client_(client),
-      listener_(listener),
-      weak_ptr_factory_(this) {}
+      listener_(listener) {}
 
 DocumentProvider::~DocumentProvider() {}
 

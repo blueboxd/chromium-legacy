@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -144,11 +145,11 @@ public class TabGridDialogMediator {
     }
 
     void onReset(Integer tabId) {
+        TabGroupModelFilter filter =
+                (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                        .getCurrentTabModelFilter();
         if (tabId != null) {
             mCurrentTabId = tabId;
-            TabGroupModelFilter filter =
-                    (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
-                            .getCurrentTabModelFilter();
             int index = filter.indexOf(
                     TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId));
             if (mAnimationOriginProvider != null) {
@@ -158,6 +159,12 @@ public class TabGridDialogMediator {
             updateDialog();
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
         } else {
+            int index = filter.indexOf(
+                    TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), mCurrentTabId));
+            if (mAnimationOriginProvider != null && index != TabModel.INVALID_TAB_INDEX) {
+                Rect rect = mAnimationOriginProvider.getAnimationOriginRect(index);
+                mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, rect);
+            }
             mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, false);
         }
     }

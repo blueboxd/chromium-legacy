@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">ยืนยันตัวตนของคุณไม่ได้</translation>
 <translation id="1116694919640316211">เกี่ยวกับ</translation>
 <translation id="1116779635164066733">การตั้งค่านี้ถูกบังคับใช้โดยส่วนขยาย "<ph name="NAME" />"</translation>
-<translation id="1117602883390928720">เพิ่มบัญชี Kerberos</translation>
 <translation id="111844081046043029">คุณแน่ใจหรือไม่ว่าต้องการออกจากหน้านี้</translation>
 <translation id="1118738876271697201">ระบบระบุรุ่นหรือหมายเลขซีเรียลของอุปกรณ์ไม่สำเร็จ</translation>
 <translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">เกิดปัญหาเกี่ยวกับใบอนุญาตของอุปกรณ์โหมดสาธิต</translation>
 <translation id="126710816202626562">ภาษาที่แปล:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">การกำหนดค่าขั้นสูง</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1272293450992660632">ค่า PIN ไม่ตรงกัน</translation>
 <translation id="1272978324304772054">บัญชีผู้ใช้นี้ไม่ได้อยู่ในโดเมนที่ลงทะเบียนอุปกรณ์ ถ้าคุณต้องการลงทะเบียนไปยังโดเมนอื่น คุณจะต้องกู้คืนอุปกรณ์ก่อน</translation>
@@ -511,7 +509,6 @@
 <translation id="1744060673522309905">นำอุปกรณ์เข้าร่วมโดเมนไม่ได้ ตรวจสอบว่าคุณไม่ได้เพิ่มอุปกรณ์เกินจำนวนจำกัด</translation>
 <translation id="1744108098763830590">หน้าพื้นหลัง</translation>
 <translation id="1745520510852184940">แปลทุกครั้ง</translation>
-<translation id="174617397682753897">บัญชี Kerberos</translation>
 <translation id="1746402432151920942">ตัวระบุสื่อที่มีการป้องกัน</translation>
 <translation id="175196451752279553">เ&amp;ปิดแท็บที่ถูกปิดขึ้นใหม่</translation>
 <translation id="1753905327828125965">เข้าชมบ่อยสุด</translation>
@@ -759,7 +756,6 @@
 <translation id="2135787500304447609">&amp;ทำต่อ</translation>
 <translation id="2136372518715274136">ป้อนรหัสผ่านใหม่</translation>
 <translation id="2136476978468204130">รหัสผ่านที่คุณป้อนไม่ถูกต้อง</translation>
-<translation id="2137068468602026500">คลิก <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> ใต้เว็บเบราว์เซอร์</translation>
 <translation id="2138398485845393913">การเชื่อมต่อกับ "<ph name="DEVICE_NAME" />" ยังคงดำเนินการอยู่</translation>
 <translation id="214169863967063661">เปิดการตั้งค่าลักษณะที่ปรากฏ</translation>
 <translation id="2142328300403846845">เปิดลิงก์ในฐานะ</translation>
@@ -847,7 +843,6 @@
 <translation id="2241634353105152135">เพียงครั้งเดียว</translation>
 <translation id="2242687258748107519">ข้อมูลไฟล์</translation>
 <translation id="2246549592927364792">รับคำอธิบายรูปภาพจาก Google ไหม</translation>
-<translation id="2249269794707377949">คุณจัดการบัญชี Kerberos ทั้งหมดสำหรับการลงชื่อเข้าใช้แอปและเว็บไซต์บางรายการเพียงครั้งเดียว รวมถึงพื้นที่แชร์ไฟล์ได้ที่นี่</translation>
 <translation id="2249605167705922988">เช่น 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">เปิดด้วยเครื่องมือดูระบบ</translation>
 <translation id="225163402930830576">รีเฟรชเครือข่าย</translation>
@@ -1080,7 +1075,6 @@
 <translation id="2587922270115112871">การสร้างผู้ใช้ภายใต้การดูแลไม่ได้สร้างบัญชี Google และการตั้งค่า
     และข้อมูลของพวกเขาจะไม่ตามพวกเขาไปยังอุปกรณ์อื่นๆ ที่มีการซิงค์ของ Chrome ผู้ใช้ภายใต้การดูแลใช้เฉพาะกับอุปกรณ์นี้เท่านั้น</translation>
 <translation id="2588636910004461974">อุปกรณ์จาก <ph name="VENDOR_NAME" /></translation>
-<translation id="258932246702879617">เลือก<ph name="BEGIN_BOLD" />ตรึงกับแถบงาน<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">ค้นหาด้วย Google หรือพิมพ์ URL</translation>
 <translation id="2597521610396315071">เพิ่มการควบคุมดูแล</translation>
 <translation id="2603115962224169880">ล้างข้อมูลในคอมพิวเตอร์</translation>
@@ -1147,7 +1141,6 @@
 <translation id="2683638487103917598">จัดเรียงโฟลเดอร์แล้ว</translation>
 <translation id="2684004000387153598">หากต้องการดำเนินการต่อ ให้คลิก "ตกลง" จากนั้นคลิก "เพิ่มบุคคล" เพื่อสร้างโปรไฟล์ใหม่สำหรับที่อยู่อีเมล</translation>
 <translation id="2688196195245426394">เกิดข้อผิดพลาดขณะลงทะเบียนอุปกรณ์กับเซิร์ฟเวอร์: <ph name="CLIENT_ERROR" /></translation>
-<translation id="2688477613306174402">การกำหนดค่า</translation>
 <translation id="2690024944919328218">แสดงตัวเลือกภาษา</translation>
 <translation id="2691385045260836588">รุ่น</translation>
 <translation id="2693176596243495071">อ๊ะ! เกิดข้อผิดพลาดที่ไม่รู้จัก โปรดลองอีกครั้งภายหลังหรือติดต่อผู้ดูแลระบบหากยังมีปัญหานี้อยู่</translation>
@@ -1534,7 +1527,6 @@
 <translation id="32939749466444286">คอนเทนเนอร์ Linux ไม่เริ่มทำงาน โปรดลองอีกครั้ง</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="329703603001918157">แก้ไขทางลัดไม่ได้</translation>
-<translation id="3297951628821704004">นำบัญชีออกจากอุปกรณ์นี้</translation>
 <translation id="329838636886466101">ซ่อม</translation>
 <translation id="3298789223962368867">URL ที่ป้อนไม่ถูกต้อง</translation>
 <translation id="32991397311664836">อุปกรณ์:</translation>
@@ -1595,7 +1587,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">ตัวแยก</translation>
 <translation id="3387614642886316601">ใช้ฟีเจอร์ตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
-<translation id="3389312115541230716">คลิกขวาที่ไอคอน <ph name="SMALL_PRODUCT_LOGO" /> ในแถบงาน</translation>
 <translation id="3393352139658145068">เปิดใช้งาน Assistant เมื่อมีคนพูดว่า “Ok Google” วลี “Ok Google” นี้จะใช้ได้เฉพาะเมื่ออุปกรณ์เชื่อมต่อกับแหล่งจ่ายไฟเพื่อเป็นการประหยัดแบตเตอรี่</translation>
 <translation id="3396800784455899911">การคลิกปุ่ม "ยอมรับและดำเนินการต่อ" แสดงว่าคุณยอมรับการดำเนินการของบริการต่างๆ ของ Google ตามที่ชี้แจ้งไว้ด้านบน</translation>
 <translation id="3399432415385675819">ระบบจะปิดใช้การแจ้งเตือน</translation>
@@ -1831,7 +1822,6 @@
 <translation id="3714195043138862580">อุปกรณ์สาธิตนี้ได้รับการกำหนดไว้ให้อยู่ในสถานะยกเลิกการจัดสรร</translation>
 <translation id="3714633008798122362">ปฏิทินเว็บ</translation>
 <translation id="3719826155360621982">หน้าแรก</translation>
-<translation id="3720996970802414353">สลับบัญชี</translation>
 <translation id="3722108462506185496">เกิดข้อผิดพลาดขณะเริ่มบริการเครื่องเสมือน โปรดลองอีกครั้ง</translation>
 <translation id="3725367690636977613">หน้า</translation>
 <translation id="3726137731714254362">การนำโฟลเดอร์ออกจากตรงนี้จะหยุดการแชร์ แต่จะไม่ลบไฟล์</translation>
@@ -2446,7 +2436,6 @@
 <translation id="4662788913887017617">แชร์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
 <translation id="4663373278480897665">อนุญาตให้ใช้กล้องถ่ายรูป</translation>
 <translation id="4664482161435122549">ข้อผิดพลาดในการส่งออก PKCS #12</translation>
-<translation id="4664736447097490764">แก้ไขไฟล์การกำหนดค่า Kerberos ที่นี่</translation>
 <translation id="4665014895760275686">ผู้ผลิต</translation>
 <translation id="4665446389743427678">ระบบจะลบข้อมูลทั้งหมดที่ <ph name="SITE" /> จัดเก็บไว้</translation>
 <translation id="4668721319092543482">คลิกเพื่อเปิดใช้ <ph name="PLUGIN_NAME" /></translation>
@@ -2561,6 +2550,7 @@
 <translation id="4850669014075537160">การเลื่อน</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4853020600495124913">เปิดใน&amp;หน้าต่างใหม่</translation>
+<translation id="485480310608090163">การตั้งค่าและสิทธิ์อื่นๆ</translation>
 <translation id="4856478137399998590">บริการดาต้าบนมือถือของคุณเปิดใช้งานและพร้อมทำงานแล้ว</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{เปิดทั้งหมดใน&amp;หน้าต่างที่ไม่ระบุตัวตน}=1{เปิดใน&amp;หน้าต่างที่ไม่ระบุตัวตน}other{เปิดทั้งหมด (#) ใน&amp;หน้าต่างที่ไม่ระบุตัวตน}}</translation>
 <translation id="4858913220355269194">ฟริทซ์</translation>
@@ -2863,7 +2853,6 @@
 <translation id="5319359161174645648">Google ขอแนะนำ Chrome</translation>
 <translation id="532247166573571973">อาจไม่สามารถเข้าถึงเซิร์ฟเวอร์ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="5324780743567488672">ตั้งค่าเขตเวลาโดยอัตโนมัติโดยใช้ตำแหน่งของคุณ</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> บันทึกการเปลี่ยนแปลงลงในไฟล์ต้นฉบับได้</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
 <translation id="5327570636534774768">อุปกรณ์มีเครื่องหมายกำกับว่าได้รับการจัดการโดยโดเมนอื่น โปรดยกเลิกการจัดสรรอุปกรณ์จากโดเมนนั้นก่อนที่จะตั้งค่าโหมดสาธิต</translation>
 <translation id="532943162177641444">แตะการแจ้งเตือนใน <ph name="PHONE_NAME" /> เพื่อตั้งค่าฮอตสปอตเคลื่อนที่ที่อุปกรณ์นี้ใช้ได้</translation>
@@ -3025,6 +3014,7 @@
 <translation id="55601339223879446">ปรับขอบของเดสก์ท็อปให้อยู่ในหน้าจอแสดงผล</translation>
 <translation id="5562781907504170924">แท็บนี้เชื่อมต่อกับอุปกรณ์บลูทูธอยู่</translation>
 <translation id="5563234215388768762">ค้นหาด้วย Google หรือพิมพ์ URL</translation>
+<translation id="5565735124758917034">ใช้งานอยู่</translation>
 <translation id="5567989639534621706">แคชของแอปพลิเคชัน</translation>
 <translation id="5568069709869097550">ไม่สามารถลงชื่อเข้าใช้</translation>
 <translation id="5568144734023334204">พื้นที่เก็บข้อมูล Android</translation>
@@ -3666,7 +3656,7 @@
 <translation id="6519437681804756269">[<ph name="TIMESTAMP" />]
         <ph name="FILE_INFO" />
         <ph name="EVENT_NAME" /></translation>
-<translation id="652492607360843641">คุณเชื่อมต่ออยู่กับเครือข่าย<ph name="NETWORK_TYPE" /></translation>
+<translation id="652492607360843641">คุณเชื่อมต่ออยู่กับเครือข่าย <ph name="NETWORK_TYPE" /></translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6528513914570774834">อนุญาตให้ผู้ใช้อุปกรณ์นี้คนอื่นๆ ใช้เครือข่ายนี้ได้</translation>
 <translation id="652948702951888897">ประวัติการเข้าชมใน Chrome</translation>
@@ -3675,7 +3665,6 @@
 <translation id="6532101170117367231">บันทึกไปยัง Google ไดรฟ์</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />หมายเหตุ:<ph name="END_BOLD" /> เปิดใช้งานเฉพาะเมื่อคุณทราบว่าคุณกำลังทำอะไรอยู่ หรือเมื่อคุณถูกร้องขอให้ทำเช่นนั้นเท่านั้น เนื่องจากคอลเล็กชันข้อมูลอาจลดประสิทธิภาพในการปฏิบัติงาน</translation>
 <translation id="6541638731489116978">เว็บไซต์นี้ถูกบล็อกไม่ให้เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
-<translation id="6542184058496424548">ชื่อผู้ใช้ไม่ถูกต้อง (ต้องเป็น user@realm.com)</translation>
 <translation id="654233263479157500">ใช้บริการเว็บช่วยแก้ไขข้อผิดพลาดในการนำทาง</translation>
 <translation id="6544215763872433504">เว็บเบราว์เซอร์โดย Google สำหรับคุณ</translation>
 <translation id="6545665334409411530">อัตราการพิมพ์ซ้ำ</translation>
@@ -3937,7 +3926,6 @@
 <translation id="6955446738988643816">ตรวจสอบป๊อปอัป</translation>
 <translation id="6957044667612803194">คีย์ความปลอดภัยนี้ไม่รองรับ PIN</translation>
 <translation id="6957231940976260713">ชื่อบริการ</translation>
-<translation id="6957572737510023982">อ๊ะ! มีบางอย่างผิดพลาด (รหัสข้อผิดพลาด <ph name="ERROR_CODE" />)</translation>
 <translation id="6964390816189577014">ฮีโร่</translation>
 <translation id="6964760285928603117">นำออกจากกลุ่ม</translation>
 <translation id="6965382102122355670">ตกลง</translation>
@@ -4196,7 +4184,6 @@
 <translation id="7328699668338161242">Assistant จำเสียงของคุณได้อยู่แล้ว</translation>
 <translation id="7328867076235380839">ชุดค่าผสมไม่ถูกต้อง</translation>
 <translation id="7329154610228416156">การลงชื่อเข้าใช้ล้มเหลวเนื่องจากมีการกำหนดค่าให้ใช้ URL ที่ไม่ปลอดภัย (<ph name="BLOCKED_URL" />) โปรดติดต่อผู้ดูแลระบบของคุณ</translation>
-<translation id="733006820760728943">กำหนดเป็นบัญชีที่มีการใช้งาน</translation>
 <translation id="7334190995941642545">ไม่สามารถใช้ Smart Lock ได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="7334274148831027933">เปิดใช้แว่นขยายหน้าจอบางส่วน</translation>
 <translation id="7335974957018254119">ใช้การตรวจตัวสะกดสำหรับ</translation>
@@ -4207,7 +4194,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> แสดงแบบเต็มหน้าจออยู่</translation>
 <translation id="7340650977506865820">เว็บไซต์กำลังแชร์หน้าจอของคุณ</translation>
 <translation id="7341834142292923918">ต้องการเข้าถึงเว็บไซต์นี้</translation>
-<translation id="7344488796804562294">การกำหนดค่า Kerberos ขั้นสูง</translation>
 <translation id="7345706641791090287">ยืนยันรหัสผ่าน</translation>
 <translation id="7346909386216857016">รับทราบ</translation>
 <translation id="7347751611463936647">ในการใช้ส่วนขยายนี้ ให้พิมพ์ "<ph name="EXTENSION_KEYWORD" />" แล้วกด TAB ตามด้วยคำสั่งหรือการค้นหาของคุณ</translation>
@@ -4300,7 +4286,6 @@
 <translation id="749028671485790643">คนที่ <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">ที่อยู่ MAC</translation>
 <translation id="7493386493263658176">ส่วนขยาย <ph name="EXTENSION_NAME" /> อาจรวบรวมข้อความทั้งหมดที่คุณพิมพ์ ซึ่งรวมถึงข้อมูลส่วนตัว เช่น รหัสผ่านและหมายเลขบัตรเครดิต คุณต้องการใช้ส่วนขยายนี้ไหม</translation>
-<translation id="7494065396242762445">เปิดการตั้งค่า Windows</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">หากลืมรหัสผ่านเก่า</translation>
 <translation id="7496511874649569424">ระบบจะนำ <ph name="LINUX_APP_NAME" /> และข้อมูลที่เชื่อมโยงกับแอปนี้ออกจากอุปกรณ์เครื่องนี้</translation>
@@ -4325,7 +4310,6 @@
 <translation id="7530016656428373557">อัตราการใช้ไฟฟ้าเป็นวัตต์</translation>
 <translation id="7531779363494549572">ไปที่การตั้งค่า &gt; แอปและการแจ้งเตือน &gt; การแจ้งเตือน</translation>
 <translation id="7536220825385726660">อนุญาตให้แอปพลิเคชัน Play Store เข้าถึงไดรฟ์ภายนอก</translation>
-<translation id="7537601449003285327">ตรึงกับแถบงาน</translation>
 <translation id="7539856059004947393">คีย์ความปลอดภัยบลูทูธ</translation>
 <translation id="7540972813190816353">เกิดข้อผิดพลาดในขณะทำการตรวจสอบการอัปเดต: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">เปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่องบนอุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME" /> นี้</translation>
@@ -4356,7 +4340,6 @@
 <translation id="7574650250151586813">อัปเดตแอปแป้นพิมพ์ Daydream เพื่อพิมพ์ข้อความ</translation>
 <translation id="7576690715254076113">เรียง</translation>
 <translation id="7576976045740938453">เกิดปัญหาเกี่ยวกับบัญชีโหมดสาธิต</translation>
-<translation id="757941033127302446">ลงชื่อเข้าใช้อยู่</translation>
 <translation id="7580671184200851182">เล่นเสียงเหมือนกันผ่านลำโพงทุกตัว (เสียงโมโน)</translation>
 <translation id="7581462281756524039">เครื่องมือทำความสะอาด</translation>
 <translation id="7582582252461552277">ต้องการใช้เครือข่ายนี้</translation>
@@ -4634,7 +4617,6 @@
 <translation id="7959074893852789871">ไฟล์มีใบรับรองหลายใบ แต่มีบางรายการที่ไม่ได้นำเข้า:</translation>
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7963826112438303517">Assistant จะใช้ไฟล์เสียงและเสียงคำขอของคุณในการสร้างและอัปเดตรูปแบบเสียง ซึ่งจะจัดเก็บไว้ในอุปกรณ์ที่คุณเปิด Voice Match เท่านั้น ดูหรือฝึกกิจกรรมเสียงอีกครั้งในการตั้งค่า Assistant</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> ต้องการสแกนหาอุปกรณ์บลูทูธที่อยู่ใกล้เคียงและพบอุปกรณ์ต่อไปนี้</translation>
 <translation id="7966241909927244760">คัด&amp;ลอกที่อยู่รูปภาพ</translation>
 <translation id="7968742106503422125">อ่านและแก้ไขข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="7968833647796919681">เปิดใช้งานการเก็บรวบรวมข้อมูลผลการปฏิบัติงาน</translation>
@@ -4791,7 +4773,6 @@
 <translation id="8184472985242519288">แบบเดียวกัน</translation>
 <translation id="8185331656081929126">แสดงการแจ้งเตือนเมื่อตรวจพบเครื่องพิมพ์ใหม่บนเครือข่าย</translation>
 <translation id="8186609076106987817">เซิร์ฟเวอร์ไม่พบไฟล์</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> อ่านไฟล์ทั้งหมดในโฟลเดอร์ต่อไปนี้ได้ โดยจะดูการเปลี่ยนแปลงในโฟลเดอร์ได้ขณะที่แท็บนี้เปิดอยู่เท่านั้น</translation>
 <translation id="8188389033983459049">ตรวจสอบการตั้งค่าอุปกรณ์และเปิดบลูทูธเพื่อดำเนินการต่อ</translation>
 <translation id="8190193592390505034">กำลังเชื่อมต่อกับ <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">จัดการแอปพลิเคชัน ส่วนขยาย และธีมของคุณ</translation>
@@ -4927,7 +4908,6 @@
 <translation id="839736845446313156">ลงทะเบียน</translation>
 <translation id="8398877366907290961">ดำเนินการต่อ</translation>
 <translation id="8400146488506985033">จัดการบุคคล</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> บันทึกการเปลี่ยนแปลงลงในไฟล์ของโฟลเดอร์ต่อไปนี้ได้โดยตรง โดยจะบันทึกการเปลี่ยนแปลงได้ขณะที่แท็บนี้เปิดอยู่เท่านั้น</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">ถามก่อน (แนะนำ)</translation>
 <translation id="8418445294933751433">แ&amp;สดงเป็นแถบ</translation>
@@ -5280,7 +5260,6 @@
 <translation id="891365694296252935">ส่งข้อมูลการใช้งานและการวินิจฉัย ปัจจุบันอุปกรณ์นี้ส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ โดยจะไม่มีการใช้ข้อมูลนี้ในการระบุชื่อบุตรหลานของคุณ และจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android เจ้าของเป็นผู้บังคับใช้การตั้งค่านี้ หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปสำหรับบุตรหลาน ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของบุตรหลาน <ph name="BEGIN_LINK1" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">กำลังโหลดคำแนะนำ</translation>
 <translation id="8916476537757519021">เฟรมย่อยแบบไม่ระบุตัวตน: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> อ่านโฟลเดอร์ในอุปกรณ์ของคุณได้</translation>
 <translation id="8919275547519617350">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับรหัสผ่านทั้งหมดในอุปกรณ์ทุกเครื่องของคุณ</translation>
 <translation id="8921366488406707015">กำลังยืนยันคีย์ความปลอดภัย...</translation>
 <translation id="8922013791253848639">อนุญาตโฆษณาในไซต์นี้เสมอ</translation>
@@ -5330,6 +5309,7 @@
 <translation id="8995603266996330174">จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">เพิ่มบัญชี...</translation>
 <translation id="899657321862108550">Chrome ของคุณในทุกๆ ที่</translation>
+<translation id="899676909165543803">เซ็นเซอร์ลายนิ้วมืออยู่ในแป้นด้านขวาล่างของแป้นพิมพ์ โปรดแตะเบาๆ ด้วยนิ้วใดก็ได้</translation>
 <translation id="9003647077635673607">อนุญาตบนทุกเว็บไซต์</translation>
 <translation id="9003704114456258138">ความถี่</translation>
 <translation id="9004952710076978168">ได้รับการแจ้งเตือนสำหรับเครื่องพิมพ์ที่ไม่รู้จัก</translation>
@@ -5365,7 +5345,6 @@
 <translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">ส่งที่อยู่เว็บของหน้าที่คุณพยายามเข้าถึงให้กับ Google</translation>
 <translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
-<translation id="9047391224416514812">มีบัญชีที่ใช้ชื่อผู้ใช้นี้แล้ว</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="9052208328806230490">คุณได้ลงทะเบียนเครื่องพิมพ์กับ <ph name="CLOUD_PRINT_NAME" /> โดยใช้บัญชี <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">บล็อกต่อไป</translation>

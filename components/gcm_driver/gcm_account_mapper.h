@@ -124,7 +124,7 @@ class GCMAccountMapper : public GCMAppHandler {
 
   bool initialized_;
 
-  base::WeakPtrFactory<GCMAccountMapper> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMAccountMapper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMAccountMapper);
 };

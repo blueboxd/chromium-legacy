@@ -122,6 +122,10 @@ struct PaintLayerRareData {
   PaintLayerRareData();
   ~PaintLayerRareData();
 
+  // The offset for an in-flow relative-positioned PaintLayer. This is not
+  // set by any other style.
+  PhysicalOffset offset_for_in_flow_rel_position;
+
   std::unique_ptr<TransformationMatrix> transform;
 
   // Pointer to the enclosing Layer that caused us to be paginated. It is 0 if
@@ -297,7 +301,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 #if DCHECK_IS_ON()
     DCHECK(!needs_position_update_);
 #endif
-    return location_;
+    PhysicalOffset location = location_;
+    if (GetLayoutObject().IsInFlowPositioned())
+      location += GetLayoutObject().OffsetForInFlowPosition();
+    return location;
   }
 
   LayoutSize ScrolledContentOffset() const;
@@ -332,7 +339,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void UpdateLayerPosition();
   void UpdateLayerPositionsAfterLayout();
-  void UpdateLayerPositionsAfterOverflowScroll();
 
   PaintLayer* EnclosingPaginationLayer() const {
     return rare_data_ ? rare_data_->enclosing_pagination_layer : nullptr;
@@ -1118,9 +1124,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool HasOverflowControls() const;
 
-  enum UpdateLayerPositionBehavior { AllLayers, OnlyStickyLayers };
-  void UpdateLayerPositionRecursive(UpdateLayerPositionBehavior = AllLayers,
-                                    bool dirty_compositing_if_needed = true);
+  void UpdateLayerPositionRecursive();
 
   void SetNextSibling(PaintLayer* next) { next_ = next; }
   void SetPreviousSibling(PaintLayer* prev) { previous_ = prev; }

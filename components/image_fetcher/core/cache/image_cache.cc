@@ -66,8 +66,7 @@ ImageCache::ImageCache(std::unique_ptr<ImageDataStore> data_store,
       metadata_store_(std::move(metadata_store)),
       pref_service_(pref_service),
       clock_(clock),
-      task_runner_(task_runner),
-      weak_ptr_factory_(this) {}
+      task_runner_(task_runner) {}
 
 ImageCache::~ImageCache() = default;
 

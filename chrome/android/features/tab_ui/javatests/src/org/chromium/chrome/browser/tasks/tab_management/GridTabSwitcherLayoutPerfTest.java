@@ -18,8 +18,6 @@ import android.support.test.espresso.Espresso;
 import android.support.test.espresso.action.ViewActions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.ViewMatchers;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -62,6 +61,8 @@ import java.util.List;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutPerfTest {
     private static final String TAG = "GTSLayoutPerfTest";
+    private static final String BASE_PARAMS = "force-fieldtrial-params="
+            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false";
 
     /** Flip this to {@code true} to run performance tests locally. */
     private static final boolean PERF_RUN = false;
@@ -102,54 +103,48 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab");
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10Tabs() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs");
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWith10TabsWarm() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (warm)");
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/10000"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWith10TabsSoft() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (soft)");
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:downsampling-scale/1/soft-cleanup-delay/0/cleanup-delay/0"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/downsampling-scale/1"})
     public void testTabToGridFromLiveTabWith10TabsNoDownsample() throws InterruptedException {
         prepareTabs(10, NTP_URL);
         reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (no downsample)");
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.
         prepareTabs(10, null);
@@ -157,9 +152,8 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @LargeTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith100Tabs() throws InterruptedException {
         // Skip waiting for loading. Otherwise it would take too long.
         // Note that most of the tabs won't have thumbnails.
@@ -168,9 +162,8 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportTabToGridPerf(NTP_URL, "Tab-to-Grid from NTP");
@@ -252,35 +245,35 @@ public class GridTabSwitcherLayoutPerfTest {
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToCurrentNTP() throws InterruptedException {
         prepareTabs(1, NTP_URL);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current NTP");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToOtherNTP() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other NTP");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToCurrentLive() throws InterruptedException {
         prepareTabs(1, mUrl);
         reportGridToTabPerf(false, false, "Grid-to-Tab to current live tab");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToOtherLive() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, false, "Grid-to-Tab to other live tab");
     }
 
     @Test
-    @MediumTest
+    @EnormousTest
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         prepareTabs(2, mUrl);
         reportGridToTabPerf(true, true, "Grid-to-Tab to other frozen tab");

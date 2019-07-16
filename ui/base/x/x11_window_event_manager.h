@@ -67,7 +67,7 @@ class XWindowEventManager {
   // This is used to set XScopedEventSelector::event_manager_.  If |this| is
   // destroyed before any XScopedEventSelector, the |event_manager_| will become
   // invalidated.
-  base::WeakPtrFactory<XWindowEventManager> weak_ptr_factory_;
+  base::WeakPtrFactory<XWindowEventManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(XWindowEventManager);
 };

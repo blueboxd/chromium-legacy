@@ -97,7 +97,6 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #endif
 
@@ -190,8 +189,6 @@ void OffTheRecordProfileImpl::Init() {
   // Make the chrome//extension-icon/ resource available.
   content::URLDataSource::Add(
       this, std::make_unique<extensions::ExtensionIconSource>(profile_));
-
-  extensions::ExtensionSystem::Get(this)->InitForIncognitoProfile();
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},

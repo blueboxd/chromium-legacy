@@ -191,7 +191,7 @@ bool ReportMetricsAndFinalizeSync(sql::Database* db) {
 }  // namespace
 
 MetricsFinalizationTask::MetricsFinalizationTask(PrefetchStore* prefetch_store)
-    : prefetch_store_(prefetch_store), weak_factory_(this) {}
+    : prefetch_store_(prefetch_store) {}
 
 MetricsFinalizationTask::~MetricsFinalizationTask() {}
 

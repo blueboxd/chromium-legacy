@@ -191,7 +191,7 @@ class ModelAssociationManager {
 
   bool notified_about_ready_for_configure_;
 
-  base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };

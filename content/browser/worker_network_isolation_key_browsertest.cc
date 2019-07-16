@@ -14,6 +14,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/features.h"
+#include "services/network/public/cpp/features.h"
 
 namespace content {
 
@@ -131,6 +132,10 @@ IN_PROC_BROWSER_TEST_P(WorkerNetworkIsolationKeyBrowserTest,
   bool test_same_network_isolation_key;
   WorkerType worker_type;
   std::tie(test_same_network_isolation_key, worker_type) = GetParam();
+
+  // TODO(http://crbug.com/984099): Fix this with network service disabled.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
 
   if (worker_type == WorkerType::kSharedWorker && !SupportsSharedWorker())
     return;

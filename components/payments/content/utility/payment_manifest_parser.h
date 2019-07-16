@@ -153,7 +153,7 @@ class PaymentManifestParser {
   int64_t parse_webapp_callback_counter_ = 0;
 
   std::unique_ptr<ErrorLogger> log_;
-  base::WeakPtrFactory<PaymentManifestParser> weak_factory_;
+  base::WeakPtrFactory<PaymentManifestParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentManifestParser);
 };

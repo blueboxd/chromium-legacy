@@ -199,8 +199,7 @@ AccountReconcilor::AccountReconcilor(
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false),
       timer_(new base::OneShotTimer),
-      state_(signin_metrics::ACCOUNT_RECONCILOR_OK),
-      weak_factory_(this) {
+      state_(signin_metrics::ACCOUNT_RECONCILOR_OK) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
   DCHECK(delegate_);
   delegate_->set_reconcilor(this);

@@ -36,7 +36,7 @@ KeyedService* HatsServiceFactory::BuildServiceInstanceFor(
   return (profile->IsOffTheRecord() || profile->IsGuestSession() ||
           profile->IsSystemProfile())
              ? nullptr
-             : new HatsService(profile);
+             : new HatsService();
 }
 
 HatsServiceFactory::~HatsServiceFactory() = default;

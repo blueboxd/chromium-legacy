@@ -121,8 +121,7 @@ Directory::Directory(
       unrecoverable_error_set_(false),
       nigori_handler_(nigori_handler),
       cryptographer_(cryptographer),
-      invariant_check_level_(VERIFY_CHANGES),
-      weak_ptr_factory_(this) {}
+      invariant_check_level_(VERIFY_CHANGES) {}
 
 Directory::~Directory() {
   Close();

@@ -44,9 +44,6 @@ class RemoteSuggestion {
                                          int remote_category_id,
                                          const base::Time& fetch_date);
 
-  static std::unique_ptr<RemoteSuggestion>
-  CreateFromContextualSuggestionsDictionary(const base::DictionaryValue& dict);
-
   // Creates an RemoteSuggestion from a protocol buffer. Returns a null pointer
   // if the protocol buffer doesn't correspond to a valid suggestion.
   static std::unique_ptr<RemoteSuggestion> CreateFromProto(

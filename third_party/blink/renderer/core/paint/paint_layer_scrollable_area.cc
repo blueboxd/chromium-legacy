@@ -437,9 +437,11 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   // Update the positions of our child layers (if needed as only fixed layers
   // should be impacted by a scroll).
   if (!frame_view->IsInPerformLayout()) {
-    // If we're in the middle of layout, we'll just update layers once layout
-    // has finished.
-    Layer()->UpdateLayerPositionsAfterOverflowScroll();
+    if (!Layer()->IsRootLayer()) {
+      Layer()->SetNeedsCompositingInputsUpdate();
+      Layer()->ClearClipRects();
+    }
+
     // Update regions, scrolling may change the clip of a particular region.
     frame_view->UpdateDocumentAnnotatedRegions();
 

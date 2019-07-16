@@ -7,41 +7,20 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":os_add_languages_dialog",
-    ":os_languages",
     ":os_languages_page",
     ":os_languages_section",
+    "../../languages_page:languages",
     "../../languages_page:languages_browser_proxy",
     "../../languages_page:languages_types",
     "../../languages_page:manage_input_methods_page",
   ]
 }
 
-js_library("os_languages") {
-  deps = [
-    "../../languages_page:languages_browser_proxy",
-    "../../languages_page:languages_types",
-    "../../prefs",
-    "../../prefs:prefs_types",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:cr",
-    "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js:promise_resolver",
-  ]
-  externs_list = [
-    "$externs_path/input_method_private.js",
-    "$externs_path/language_settings_private.js",
-  ]
-  extra_sources = [
-    "$interfaces_path/input_method_private_interface.js",
-    "$interfaces_path/language_settings_private_interface.js",
-  ]
-}
-
 js_library("os_languages_section") {
   deps = [
-    ":os_languages",
     ":os_languages_page",
     "../..:route",
+    "../../languages_page:languages",
     "../../languages_page:languages_types",
     "../../languages_page:manage_input_methods_page",
     "../../settings_page:settings_animated_pages",
@@ -71,7 +50,7 @@ js_library("os_languages_page") {
 
 js_library("os_add_languages_dialog") {
   deps = [
-    ":os_languages",
+    "../../languages_page:languages",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:find_shortcut_behavior",

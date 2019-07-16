@@ -66,8 +66,8 @@ class ExtensionInstallPrompt {
     REPAIR_PROMPT = 9,
     DELEGATED_PERMISSIONS_PROMPT = 10,
     // DELEGATED_BUNDLE_PERMISSIONS_PROMPT_DEPRECATED = 11,
-    NUM_PROMPT_TYPES = 12,
-    WEBSTORE_WIDGET_PROMPT = 13,
+    WEBSTORE_WIDGET_PROMPT = 12,
+    NUM_PROMPT_TYPES = 13,
   };
 
   // The last prompt type to display; only used for testing.

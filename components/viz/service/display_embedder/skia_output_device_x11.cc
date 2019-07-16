@@ -53,16 +53,18 @@ void SkiaOutputDeviceX11::Reshape(const gfx::Size& size,
   pixels_.reserve(ii.computeMinByteSize());
 }
 
-gfx::SwapResponse SkiaOutputDeviceX11::SwapBuffers(
-    BufferPresentedCallback feedback) {
+void SkiaOutputDeviceX11::SwapBuffers(
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   return PostSubBuffer(
       gfx::Rect(0, 0, sk_surface_->width(), sk_surface_->height()),
-      std::move(feedback));
+      std::move(feedback), std::move(latency_info));
 }
 
-gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
+void SkiaOutputDeviceX11::PostSubBuffer(
     const gfx::Rect& rect,
-    BufferPresentedCallback feedback) {
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers(std::move(feedback));
 
   auto ii =
@@ -130,9 +132,9 @@ gfx::SwapResponse SkiaOutputDeviceX11::PostSubBuffer(
     NOTIMPLEMENTED();
   }
   XFlush(display_);
-  return FinishSwapBuffers(
-      gfx::SwapResult::SWAP_ACK,
-      gfx::Size(sk_surface_->width(), sk_surface_->height()));
+  FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
+                    gfx::Size(sk_surface_->width(), sk_surface_->height()),
+                    std::move(latency_info));
 }
 
 }  // namespace viz

@@ -105,8 +105,7 @@ FCMNetworkHandler::FCMNetworkHandler(
       instance_id_driver_(instance_id_driver),
       token_validation_timer_(std::make_unique<base::OneShotTimer>()),
       sender_id_(sender_id),
-      app_id_(app_id),
-      weak_ptr_factory_(this) {}
+      app_id_(app_id) {}
 
 FCMNetworkHandler::~FCMNetworkHandler() {
   StopListening();

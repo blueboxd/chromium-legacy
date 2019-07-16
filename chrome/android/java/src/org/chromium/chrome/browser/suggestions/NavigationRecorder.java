@@ -90,7 +90,7 @@ public class NavigationRecorder extends EmptyTabObserver {
         // the omnibox. This doesn't cover the navigate-back case so we also need to observe
         // changes to WebContent's navigation entries.
         int transitionTypeMask = PageTransition.FROM_ADDRESS_BAR | PageTransition.HOME_PAGE
-                | PageTransition.CHAIN_START | PageTransition.CHAIN_END;
+                | PageTransition.CHAIN_START | PageTransition.CHAIN_END | PageTransition.FROM_API;
 
         if ((params.getTransitionType() & transitionTypeMask) != 0) endRecording(tab, null);
     }

@@ -49,7 +49,7 @@ class FakeDeviceLauncher final : public content::VideoCaptureDeviceLauncher {
                               MockVideoCaptureDevice*)>;
 
   explicit FakeDeviceLauncher(DeviceLaunchedCallback launched_cb)
-      : after_launch_cb_(std::move(launched_cb)), weak_factory_(this) {}
+      : after_launch_cb_(std::move(launched_cb)) {}
 
   ~FakeDeviceLauncher() override {}
 
@@ -81,7 +81,7 @@ class FakeDeviceLauncher final : public content::VideoCaptureDeviceLauncher {
   }
 
   DeviceLaunchedCallback after_launch_cb_;
-  base::WeakPtrFactory<FakeDeviceLauncher> weak_factory_;
+  base::WeakPtrFactory<FakeDeviceLauncher> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceLauncher);
 };
 
@@ -166,7 +166,7 @@ media::mojom::VideoFrameInfoPtr GetVideoFrameInfo() {
 
 class SingleClientVideoCaptureHostTest : public ::testing::Test {
  public:
-  SingleClientVideoCaptureHostTest() : weak_factory_(this) {
+  SingleClientVideoCaptureHostTest() {
     auto host_impl = std::make_unique<SingleClientVideoCaptureHost>(
         std::string(), blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
         base::BindRepeating(
@@ -259,7 +259,7 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
     OnDeviceLaunchedCall();
   }
 
-  base::WeakPtrFactory<SingleClientVideoCaptureHostTest> weak_factory_;
+  base::WeakPtrFactory<SingleClientVideoCaptureHostTest> weak_factory_{this};
 };
 
 TEST_F(SingleClientVideoCaptureHostTest, Basic) {

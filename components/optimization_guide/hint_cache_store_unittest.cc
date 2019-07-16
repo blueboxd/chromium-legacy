@@ -343,16 +343,18 @@ TEST_F(HintCacheStoreTest, NoInitialization) {
   CreateDatabase();
 
   histogram_tester.ExpectTotalCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", 0);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest, InitializeFailedOnInitializeWithNoInitialData) {
@@ -367,16 +369,18 @@ TEST_F(HintCacheStoreTest, InitializeFailedOnInitializeWithNoInitialData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectTotalCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", 0);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest, InitializeFailedOnLoadMetadataWithNoInitialData) {
@@ -394,17 +398,19 @@ TEST_F(HintCacheStoreTest, InitializeFailedOnLoadMetadataWithNoInitialData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       1 /* kLoadMetadataFailed */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest, InitializeFailedOnUpdateMetadataNoInitialData) {
@@ -425,17 +431,19 @@ TEST_F(HintCacheStoreTest, InitializeFailedOnUpdateMetadataNoInitialData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       2 /* kSchemaMetadataMissing */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest, InitializeFailedOnInitializeWithInitialData) {
@@ -450,16 +458,18 @@ TEST_F(HintCacheStoreTest, InitializeFailedOnInitializeWithInitialData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectTotalCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", 0);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest, InitializeFailedOnLoadMetadataWithInitialData) {
@@ -477,17 +487,19 @@ TEST_F(HintCacheStoreTest, InitializeFailedOnLoadMetadataWithInitialData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       1 /* kLoadMetadataFailed */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest,
@@ -508,17 +520,19 @@ TEST_F(HintCacheStoreTest,
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       3 /* kSchemaMetadataWrongVersion */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 0);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest, InitializeFailedOnLoadHintEntryKeysWithInitialData) {
@@ -538,16 +552,19 @@ TEST_F(HintCacheStoreTest, InitializeFailedOnLoadHintEntryKeysWithInitialData) {
   EXPECT_EQ(GetStoreHintEntryKeyCount(), static_cast<size_t>(0));
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0 /* kSuccess */, 1);
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
+      0 /* kSuccess */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 1);
 }
 
 TEST_F(HintCacheStoreTest, InitializeSucceededWithoutSchemaEntry) {
@@ -565,17 +582,19 @@ TEST_F(HintCacheStoreTest, InitializeSucceededWithoutSchemaEntry) {
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       2 /* kSchemaMetadataMissing */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
@@ -593,17 +612,19 @@ TEST_F(HintCacheStoreTest, InitializeSucceededWithInvalidSchemaEntry) {
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       3 /* kSchemaMetadataWrongVersion */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest, InitializeSucceededWithValidSchemaEntry) {
@@ -621,23 +642,25 @@ TEST_F(HintCacheStoreTest, InitializeSucceededWithValidSchemaEntry) {
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       4 /* kComponentMetadataMissing*/, 0);
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       5 /* kFetchedMetadataMissing*/, 0);
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       6 /* kComponentAndFetchedMetadataMissing*/, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest,
@@ -657,17 +680,19 @@ TEST_F(HintCacheStoreTest,
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       3 /* kSchemaMetadataWrongVersion */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest, InitializeSucceededWithPurgeExistingData) {
@@ -685,16 +710,18 @@ TEST_F(HintCacheStoreTest, InitializeSucceededWithPurgeExistingData) {
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
   histogram_tester.ExpectTotalCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0);
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult", 0);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest,
@@ -717,16 +744,19 @@ TEST_F(HintCacheStoreTest,
   ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult", 0 /* kSuccess */, 1);
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
+      0 /* kSuccess */, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest,
@@ -749,23 +779,25 @@ TEST_F(HintCacheStoreTest,
   ExpectComponentHintsPresent(kDefaultComponentVersion, component_hint_count);
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       4 /* kComponentMetadataMissing*/, 0);
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       5 /* kFetchedMetadataMissing*/, 1);
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       6 /* kComponentAndFetchedMetadataMissing*/, 0);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest,
@@ -787,17 +819,19 @@ TEST_F(HintCacheStoreTest,
   EXPECT_TRUE(IsMetadataSchemaEntryKeyPresent());
 
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheLevelDBStore.LoadMetadataResult",
+      "OptimizationGuide.HintCacheLevelDBStore.LoadMetadataResult",
       4 /* kComponentMetadataMissing*/, 1);
 
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     0 /* kUninitialized */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     1 /* kInitializing */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     2 /* kAvailable */, 1);
-  histogram_tester.ExpectBucketCount("Previews.HintCacheLevelDBStore.Status",
-                                     3 /* kFailed */, 0);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 0 /* kUninitialized */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 1 /* kInitializing */,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 2 /* kAvailable */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.HintCacheLevelDBStore.Status", 3 /* kFailed */, 0);
 }
 
 TEST_F(HintCacheStoreTest,
@@ -1619,7 +1653,8 @@ TEST_F(HintCacheStoreTest, FetchedHintsLoadExpiredHint) {
   EXPECT_EQ(last_loaded_hint_entry_key(), hint_entry_key);
   EXPECT_FALSE(last_loaded_hint());
   histogram_tester.ExpectBucketCount(
-      "Previews.HintCacheStore.OnLoadHint.FetchedHintExpired", true, 1);
+      "OptimizationGuide.HintCacheStore.OnLoadHint.FetchedHintExpired", true,
+      1);
 }
 
 }  // namespace optimization_guide

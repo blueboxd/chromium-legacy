@@ -304,8 +304,7 @@ BookmarkModelAssociator::BookmarkModelAssociator(
       favicon_service_(favicon_service),
       user_share_(user_share),
       unrecoverable_error_handler_(std::move(unrecoverable_error_handler)),
-      expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder),
-      weak_factory_(this) {
+      expect_mobile_bookmarks_folder_(expect_mobile_bookmarks_folder) {
   DCHECK(bookmark_model_);
   DCHECK(user_share_);
   DCHECK(unrecoverable_error_handler_);

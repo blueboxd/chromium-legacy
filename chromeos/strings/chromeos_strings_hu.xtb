@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Kapcsolja be a Bluetooth-t a közeli eszközök felfedezéséhez</translation>
 <translation id="2805756323405976993">Alkalmazások</translation>
 <translation id="2872961005593481000">Leállítás</translation>
-<translation id="2912823482158781027">JEGY FRISSÍTÉSE</translation>
-<translation id="3511655281162215899">Válasszon új jelszót most rögtön</translation>
-<translation id="3562817605261346876">Hamarosan frissítenie kell a(z) <ph name="PRINCIPAL_NAME" /> fiók jegyét</translation>
 <translation id="3838338534323494292">Új jelszó</translation>
 <translation id="445059817448385655">Régi jelszó</translation>
 <translation id="467510802200863975">A jelszavak nem egyeznek</translation>
@@ -23,16 +20,12 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5457599981699367932">Böngészés vendégként</translation>
 <translation id="54609108002486618">Kezelt</translation>
-<translation id="5733345267661125295">Válasszon új jelszót most</translation>
-<translation id="5743581760404859096">Kerberos-jegye hamarosan lejár</translation>
 <translation id="5832805196449965646">Személy hozzáadása</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
 <translation id="6058625436358447366">A befejezéshez adja meg régi és új jelszavát</translation>
 <translation id="6106186594183574873">A befejezéshez adja meg régi jelszavát</translation>
 <translation id="6146993107019042706">A befejezéshez adja meg új jelszavát</translation>
 <translation id="6574601967010742428">Lehetséges, hogy tevékenységeit megfigyelheti az eszköz adminisztrátora.</translation>
-<translation id="7280705187789120111">Lejáró Kerberos-jegy</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Jelenlegi jelszava lejárt!}=1{Jelenlegi jelszava 1 napon belül lejár!}other{Jelenlegi jelszava # napon belül lejár!}}</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7690294790491645610">Új jelszó megerősítése</translation>
 <translation id="808894953321890993">Jelszó módosítása</translation>

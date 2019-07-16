@@ -32,6 +32,7 @@ static_library("service") {
     "variations_field_trial_creator.h",
     "variations_service.cc",
     "variations_service.h",
+    "variations_service_client.cc",
     "variations_service_client.h",
   ]
 

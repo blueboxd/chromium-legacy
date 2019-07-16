@@ -139,25 +139,6 @@ class ScopedTaskEnvironment {
     DEFAULT = ASYNC
   };
 
-  // Deprecated: Use TimeSource::MOCK_TIME_AND_NOW instead.
-  // TODO(gab): Migrate users.
-  enum class NowSource {
-    // base::Time::Now() and base::TimeTicks::Now() are real time.
-    REAL_TIME,
-
-    // base::Time::Now() and base::TimeTicks::Now() are driven from the main
-    // thread's MOCK_TIME. This may alter the order of delayed and non-delayed
-    // tasks on other threads.
-    //
-    // Warning some platform APIs are still real time, and don't interact with
-    // MOCK_TIME as expected, e.g.:
-    //   PlatformThread::Sleep
-    //   WaitableEvent::TimedWait
-    //   WaitableEvent::TimedWaitUntil
-    //   ConditionVariable::TimedWait
-    MAIN_THREAD_MOCK_TIME,
-  };
-
   enum class ThreadingMode {
     // ThreadPool will be initialized, thus adding support for multi-threaded
     // tests.
@@ -173,7 +154,6 @@ class ScopedTaskEnvironment {
     ValidTrait(TimeSource);
     ValidTrait(MainThreadType);
     ValidTrait(ThreadPoolExecutionMode);
-    ValidTrait(NowSource);
     ValidTrait(SubclassCreatesDefaultTaskRunner);
     ValidTrait(ThreadingMode);
   };
@@ -321,15 +301,13 @@ class ScopedTaskEnvironment {
 
   // Helper to extract TimeSource from a set of traits provided to
   // ScopedTaskEnvironment's constructor. Helper for the migration (while
-  // TimeSource is optionally defined by MainThreadType or NowSource).
+  // TimeSource is optionally defined by MainThreadType).
   template <class... ArgTypes>
   static constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
     const auto explicit_time_source =
         trait_helpers::GetOptionalEnum<TimeSource>(args...);
     const auto explicit_main_thread_type =
         trait_helpers::GetOptionalEnum<MainThreadType>(args...);
-    const auto explicit_now_source =
-        trait_helpers::GetOptionalEnum<NowSource>(args...);
     const bool requested_mock_time_via_main_thread_type =
         explicit_main_thread_type &&
         (*explicit_main_thread_type == MainThreadType::MOCK_TIME ||
@@ -337,17 +315,10 @@ class ScopedTaskEnvironment {
          *explicit_main_thread_type == MainThreadType::IO_MOCK_TIME);
 
     if (explicit_time_source) {
-      DCHECK(!explicit_now_source) << "NowSource is deprecated, use TimeSource";
       DCHECK(!requested_mock_time_via_main_thread_type)
           << "Don't specify MOCK_TIME via MainThreadType, TimeSource is "
              "sufficient";
       return *explicit_time_source;
-    } else if (explicit_now_source &&
-               *explicit_now_source == NowSource::MAIN_THREAD_MOCK_TIME) {
-      // NowSource::MAIN_THREAD_MOCK_TIME was previously combined with
-      // MainThread::.*MOCK_TIME.
-      DCHECK(requested_mock_time_via_main_thread_type);
-      return TimeSource::MOCK_TIME_AND_NOW;
     } else if (requested_mock_time_via_main_thread_type) {
       return TimeSource::MOCK_TIME;
     }

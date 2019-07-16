@@ -19,12 +19,14 @@ SkiaOutputDevice::SkiaOutputDevice(
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 
-gfx::SwapResponse SkiaOutputDevice::PostSubBuffer(
+void SkiaOutputDevice::PostSubBuffer(
     const gfx::Rect& rect,
-    BufferPresentedCallback feedback) {
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   NOTREACHED();
   StartSwapBuffers(std::move(feedback));
-  return FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED, gfx::Size());
+  FinishSwapBuffers(gfx::SwapResult::SWAP_FAILED, gfx::Size(),
+                    std::move(latency_info));
 }
 
 void SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
@@ -40,8 +42,10 @@ void SkiaOutputDevice::StartSwapBuffers(
   params_->swap_response.timings.swap_start = base::TimeTicks::Now();
 }
 
-gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result,
-                                                      const gfx::Size& size) {
+void SkiaOutputDevice::FinishSwapBuffers(
+    gfx::SwapResult result,
+    const gfx::Size& size,
+    std::vector<ui::LatencyInfo> latency_info) {
   DCHECK(params_);
 
   params_->swap_response.result = result;
@@ -59,9 +63,18 @@ gfx::SwapResponse SkiaOutputDevice::FinishSwapBuffers(gfx::SwapResult result,
   }
 
   feedback_.reset();
-  auto response = params_->swap_response;
+  auto& response = params_->swap_response;
+
+  for (auto& latency : latency_info) {
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.timings.swap_start);
+    latency.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
+        response.timings.swap_end);
+  }
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
+
   params_.reset();
-  return response;
 }
 
 void SkiaOutputDevice::EnsureBackbuffer() {}

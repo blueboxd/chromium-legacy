@@ -3290,19 +3290,8 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 <translation id="7123160381479171745">Definuje zoznam používateľov, ktorí sa do zariadenia môžu prihlásiť. Záznamy sú v tvare <ph name="USER_WHITELIST_ENTRY_FORMAT" />, napríklad <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Ak chcete povoliť všetkých používateľov v doméne, použite položky v tvare <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Ak toto pravidlo nenakonfigurujete, budú sa do zariadenia môcť prihlasovať všetci používatelia. Na vytváranie nových používateľov je však aj v tomto prípade potrebná správna konfigurácia pravidla <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> zaisťuje bezpečnú aktualizáciu a inštaláciu rozšírení. Obsah niektorých rozšírení hostený mimo Internetového obchodu Chrome však môže byť chránený iba nezabezpečenými prihlasovacími alebo hašovacími algoritmami, ako je napríklad SHA1. Keď toto pravidlo zakážete, Chrome nepovolí novú inštaláciu ani aktualizácie týchto rozšírení (kým vývojári do príslušného rozšírenia nepridajú silnejšie algoritmy). Keď toto pravidlo povolíte, inštalácia aj aktualizácie týchto rozšírení budú povolené.
-
-          Ak ho nenastavíte, inštalácie aj aktualizácie budú predvolene povolené.
-          Ak ho nenastavíte v prehliadači <ph name="PRODUCT_NAME" /> od verzie 75, inštalácie aj aktualizácie budú predvolene zakázané.
-
-          V prehliadači <ph name="PRODUCT_NAME" /> od verzie 77 bude toto pravidlo ignorované a považované za zakázané.</translation>
 <translation id="7126716959063786004">Povoliť ukončovanie procesov v Správcovi úloh</translation>
 <translation id="7127892035367404455">Vrátenie na cieľovú verziu</translation>
-<translation id="7128918109610518786">Zoznam identifikátorov aplikácií, ktoré sa v <ph name="PRODUCT_OS_NAME" /> na paneli spustenia zobrazujú ako pripnuté.
-
-      Ak je toto pravidlo nakonfigurované, tieto aplikácie sú pevne dané a používateľ ich nemôže zmeniť.
-
-      Ak toto pravidlo nastavené nie je, používateľ zoznam aplikácií v spúšťači zmeniť môže.</translation>
 <translation id="713121532817834879">Toto pravidlo je webová adresa, ktorá smeruje na súbor XML v rovnakom formáte ako pravidlo <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer. Načíta pravidlá zo súboru XML bez ich zdieľania s prehliadačom Internet Explorer.
 
       Pravidlá v tomto súbore XML platia rovnako ako <ph name="GREYLIST_POLICY_NAME" />. Znamená to, že prehliadaču <ph name="PRODUCT_NAME" /> bránia otvoriť alternatívny prehliadač a tiež bránia alternatívnemu prehliadaču otvoriť <ph name="PRODUCT_NAME" />.
@@ -4154,12 +4143,6 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 
           Ak toto nastavenie zakážete alebo ho ponecháte nenastavené, kanonický názov servera sa určí prostredníctvom vyhľadávania záznamov CNAME.</translation>
 <translation id="8764477907716150749">Toto pravidlo sa vzťahuje len na interné používanie služby <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Nakonfiguruje webovú adresu na zmenu hesla (iba schémy HTTP a HTTPS). Služba ochrany hesiel odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
-      Na to, aby <ph name="PRODUCT_NAME" /> správne zaznamenal digitálny odtlačok nového hesla na tejto stránke na zmenu hesla, musí táto stránka dodržiavať pokyny uvedené na https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ak toto nastavenie povolíte, služba ochrany hesiel odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
-      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany hesiel odkáže používateľov na https://myaccounts.google.com, aby si tam zmenili heslo.
-      Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
 <translation id="8798099450830957504">Predvolené</translation>
 <translation id="8800453707696044281">Nastaviť vlastnú hodnotu zastavenia nabíjania batérie v percentách</translation>
 <translation id="8801680448782904838">Upozorňovať používateľa, že sa odporúča alebo vyžaduje opätovné reštartovanie prehliadača</translation>
@@ -4287,9 +4270,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 
       Hodnota tohto pravidla by mala byť určená v sekundách.</translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
-<translation id="9038058011835642205">Umožňuje špecifikovať zoznam webov, ktoré sa inštalujú potichu bez interakcie s používateľom a ktoré používateľ nemôže odinštalovať ani deaktivovať.
-
-      Jednotlivé položky zoznamu v danom pravidle sú objekty pozostávajúce z povinnej časti „url“ a dvoch voliteľných častí „default_launch_container“ a „create_desktop_shortcut“. Parameter „url“ by mal byť adresa webovej aplikácie, ktorá sa má nainštalovať, parameter „launch_container“ by mal mať hodnotu „window“ (okno) alebo „tab“ (karta), ktorá určuje, ako sa webová aplikácia po inštalácii otvorí, a parameter „create_desktop_shortcut“ by mal byť nastavený na hodnotu true, ak sa má v systémoch Linux a Windows vytvoriť odkaz na pracovnej ploche. Ak parameter „default_launch_container“ vynecháte, aplikácia sa predvolene otvorí na karte. Bez ohľadu na hodnotu parametra „default_launch_container“ môžu používatelia zmeniť, v ktorom kontajneri sa aplikácia otvorí. Ak vynecháte parameter „create_desktop_shortcuts“, nevytvoria sa žiadne odkazy na pracovnej ploche.</translation>
 <translation id="9038839118379817310">Povoliť Wi‑Fi</translation>
 <translation id="9039822628127365650">Keď je toto pravidlo nastavené, stanovuje časový interval, po uplynutí ktorého bude používateľ automaticky odhlásený a relácia ukončená. O zostávajúcom čase informuje používateľa odpočítavanie v oblasti oznámení.
 
@@ -4303,6 +4283,15 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak nastavíte hodnotu pravidla na token, ktorý mapuje na zostavu s rýchlou opravou, zariadenie bude aktualizované na zodpovedajúcu zostavu s rýchlou opravou (ak danú aktualizáciu neblokuje iné pravidlo).
 
       Ak toto pravidlo nenastavíte alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa na túto zostavu neaktualizuje. Ak zariadenie už používa zostavu s rýchlou opravou a pravidlo už nie je nastavené alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa aktualizuje na bežnú zostavu (ak danú aktualizáciu neblokuje iné pravidlo).</translation>
+<translation id="9054012305936267950">Toto pravidlo ovláda prihlasovacie správanie prehliadača. Umožňuje určiť, či sa používateľ môže prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho účtu a používať služby súvisiace s účtom, ako je napríklad synchronizácia Chromu.
+
+      Ak ho nastavíte na možnosť Zakázať prihlásenie do prehliadača, používateľ sa nebude môcť prihlásiť do prehliadača ani používať služby využívajúce účet. V tomto prípade nie je možné použiť funkcie na úrovni prehliadača, ako napríklad synchronizáciu Chromu, pričom nebudú k dispozícii. Ak bol používateľ prihlásený a pravidlo nastavíte na možnosť Zakázané, bude pri ďalšom spustení Chromu odhlásený, ale údaje jeho miestneho profilu (napríklad záložky, heslá atď.) sa zachovajú. Používateľ sa bude môcť naďalej prihlasovať do webových služieb Googlu, ako je napríklad Gmail, a používať ich.
+
+      Ak ho nastavíte na možnosť Povoliť prihlásenie do prehliadača, používateľ sa môže prihlásiť do prehliadača a automaticky bude prihlasovaný do prehliadača pri prihlásení do webových služieb Googlu, ako je napríklad Gmail. To, že je používateľ prihlásený do prehliadača, znamená, že prehliadač bude uchovávať informácie o jeho účte. Neznamená to však, že synchronizácia Chromu bude predvolene zapnutá. Používateľ si musí túto funkciu samostatne aktivovať. Povolením tohto pravidla zabránite používateľovi vypnúť nastavenie umožňujúce prihlásenie do účtu. Ak chcete ovládať dostupnosť synchronizácie Chromu, použite pravidlo SyncDisabled.
+
+      Ak ho nastavíte na možnosť Presadzovať prihlásenie do prehliadača, používateľovi sa zobrazí dialógové okno na výber účtu, v ktorom musí vybrať účet a prihlásiť sa doň, aby mohol prehliadač používať. Tým sa zaistí, že v prípade spravovaných účtov sa budú uplatňovať a presadzovať pravidlá priradené k danému účtu. Predvolene sa tým v danom účte zapne aj synchronizácia Chromu. Výnimku predstavujú prípady, keď je zakázaná správcom domény alebo pravidlom SyncDisabled. Predvolená hodnota pravidla BrowserGuestModeEnabled bude nastavená na hodnotu False. Upozorňujeme, že po povolení tohto pravidla sa existujúce nepriradené profily uzamknú a budú neprístupné. Ďalšie informácie nájdete v článku centra pomoci na https://support.google.com/chrome/a/answer/7572556. Táto možnosť nie je podporovaná v systéme Linux a v prípade jej použitia sa ako záložná hodnota použije Povoliť prihlásenie do prehliadača.
+
+      Ak toto pravidlo nenastavíte, používateľ sa môže rozhodnúť, či chce možnosť prihlásenia do prehliadača povoliť, a následne ju použiť, keď to považuje za vhodné.</translation>
 <translation id="9072600218500597787">Nakonfiguruje požadované názvy domén hostiteľa, ktoré budú použité pre hostiteľov vzdialeného prístupu, a zabráni používateľom ich zmeniť.
 
           Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba s účtami, zaregistrovanými v niektorej zo zadaných domén.

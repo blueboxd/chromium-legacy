@@ -19,7 +19,7 @@ namespace viz {
 constexpr base::TimeDelta InterprocessFramePool::kMinLoggingPeriod;
 
 InterprocessFramePool::InterprocessFramePool(int capacity)
-    : capacity_(std::max(capacity, 0)), weak_factory_(this) {
+    : capacity_(std::max(capacity, 0)) {
   DCHECK_GT(capacity_, 0u);
 }
 

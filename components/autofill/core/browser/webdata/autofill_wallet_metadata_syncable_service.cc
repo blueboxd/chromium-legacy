@@ -668,8 +668,7 @@ AutofillWalletMetadataSyncableService::AutofillWalletMetadataSyncableService(
     : web_data_backend_(web_data_backend),
       scoped_observer_(this),
       track_wallet_data_(false),
-      ignore_multiple_changed_notification_(false),
-      weak_ptr_factory_(this) {
+      ignore_multiple_changed_notification_(false) {
   scoped_observer_.Add(web_data_backend_);
 }
 

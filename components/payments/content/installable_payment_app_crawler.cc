@@ -45,8 +45,7 @@ InstallablePaymentAppCrawler::InstallablePaymentAppCrawler(
       number_of_payment_method_manifest_to_parse_(0),
       number_of_web_app_manifest_to_download_(0),
       number_of_web_app_manifest_to_parse_(0),
-      number_of_web_app_icons_to_download_and_decode_(0),
-      weak_ptr_factory_(this) {}
+      number_of_web_app_icons_to_download_and_decode_(0) {}
 
 InstallablePaymentAppCrawler::~InstallablePaymentAppCrawler() {}
 

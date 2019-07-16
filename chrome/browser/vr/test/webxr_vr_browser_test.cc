@@ -56,10 +56,21 @@ void WebXrVrBrowserTestBase::EndSessionOrFail(
       kPollTimeoutLong, web_contents);
 }
 
+gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
+  return gfx::Vector3dF();
+}
+
 #if defined(OS_WIN)
 XrBrowserTestBase::RuntimeType WebXrVrOpenVrBrowserTestBase::GetRuntimeType()
     const {
   return XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR;
+}
+
+gfx::Vector3dF WebXrVrOpenVrBrowserTestBase::GetControllerOffset() const {
+  // The 0.08f comes from the slight adjustment we perform in
+  // openvr_render_loop.cc to account for OpenVR reporting the controller
+  // position at the tip, but WebXR using the position at the grip.
+  return gfx::Vector3dF(0, 0, 0.08f);
 }
 
 WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {}

@@ -94,8 +94,7 @@ PaymentRequest::PaymentRequest(
           render_frame_host->GetLastCommittedURL())),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
-                      ukm::GetSourceIdForWebContentsDocument(web_contents)),
-      weak_ptr_factory_(this) {
+                      ukm::GetSourceIdForWebContentsDocument(web_contents)) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).

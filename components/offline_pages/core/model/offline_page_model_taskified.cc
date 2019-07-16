@@ -180,8 +180,7 @@ OfflinePageModelTaskified::OfflinePageModelTaskified(
       task_queue_(this),
       skip_clearing_original_url_for_testing_(false),
       skip_maintenance_tasks_for_testing_(false),
-      task_runner_(task_runner),
-      weak_ptr_factory_(this) {
+      task_runner_(task_runner) {
   DCHECK_LT(kMaintenanceTasksDelay, OfflinePageMetadataStore::kClosingDelay);
   CreateArchivesDirectoryIfNeeded();
 }

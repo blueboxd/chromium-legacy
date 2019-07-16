@@ -16,8 +16,7 @@ DownloadJob::DownloadJob(
     std::unique_ptr<DownloadRequestHandleInterface> request_handle)
     : download_item_(download_item),
       request_handle_(std::move(request_handle)),
-      is_paused_(false),
-      weak_ptr_factory_(this) {}
+      is_paused_(false) {}
 
 DownloadJob::~DownloadJob() = default;
 

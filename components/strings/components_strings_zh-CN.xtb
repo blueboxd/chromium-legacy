@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
+<translation id="2119505898009119320">颁发对象：<ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">动态传感器</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="214556005048008348">取消付款</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">检查您所在区域的网络信号</translation>
 <translation id="2523886232349826891">仅会保存在此设备上</translation>
 <translation id="2524461107774643265">添加更多信息</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{以及另外 1 个网域}other{以及另外 # 个网域}}</translation>
 <translation id="2536110899380797252">添加地址</translation>
 <translation id="2539524384386349900">检测</translation>
 <translation id="254947805923345898">政策值无效。</translation>
@@ -710,6 +712,7 @@
 <translation id="4858792381671956233">您已向父母发送请求，询问他们是否允许您访问此网站</translation>
 <translation id="4876188919622883022">简化版视图</translation>
 <translation id="4876305945144899064">无用户名</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{无}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />、<ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">搜索<ph name="TEXT" /></translation>
 <translation id="4879491255372875719">自动（默认）</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
@@ -1003,6 +1006,7 @@
 <translation id="650855688985305916">存储</translation>
 <translation id="6508722015517270189">重新启动 Chrome</translation>
 <translation id="6517596291481585650">警告：系统未按照相关政策中指定的方式将此政策合并为列表，因为此政策不是一个列表。</translation>
+<translation id="6521745193039995384">无效</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6534179046333460208">实物网建议</translation>
 <translation id="6545864417968258051">蓝牙扫描</translation>
@@ -1463,6 +1467,7 @@
 <translation id="9076630408993835509">此浏览器不由某个公司或其他组织管理。此设备上的活动可能会在 Chrome 外部受管理。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">必须提供更多信息</translation>
 <translation id="9080712759204168376">订单摘要</translation>
+<translation id="9089260154716455634">“非工作时间”政策：</translation>
 <translation id="9095388113577226029">更多语言…</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>

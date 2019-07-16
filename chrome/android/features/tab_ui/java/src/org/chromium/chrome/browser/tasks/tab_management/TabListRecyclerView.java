@@ -335,15 +335,31 @@ class TabListRecyclerView extends RecyclerView {
         TabGridViewHolder holder =
                 (TabGridViewHolder) findViewHolderForAdapterPosition(currentTabIndex);
         if (holder == null) return null;
+        return getRectOfComponent(holder.thumbnail);
+    }
 
-        int[] loc = new int[2];
-        holder.thumbnail.getLocationInWindow(loc);
-        Rect rect = new Rect(loc[0], loc[1], loc[0] + holder.thumbnail.getWidth(),
-                loc[1] + holder.thumbnail.getHeight());
-        getLocationInWindow(loc);
-        rect.top -= loc[1];
-        rect.bottom -= loc[1];
-        return rect;
+    /**
+     * @param currentTabIndex The the current tab's index in the model.
+     * @return The {@link Rect} of the tab grid card of the current tab, relative to the
+     *         {@link TabListRecyclerView} coordinates.
+     */
+    @Nullable
+    Rect getRectOfCurrentTabGridCard(int currentTabIndex) {
+        TabGridViewHolder holder =
+                (TabGridViewHolder) findViewHolderForAdapterPosition(currentTabIndex);
+        if (holder == null) return null;
+        return getRectOfComponent(holder.itemView);
+    }
+
+    private Rect getRectOfComponent(View v) {
+        Rect recyclerViewRect = new Rect();
+        Rect componentRect = new Rect();
+        getGlobalVisibleRect(recyclerViewRect);
+        v.getGlobalVisibleRect(componentRect);
+
+        // Get the relative position.
+        componentRect.offset(-recyclerViewRect.left, -recyclerViewRect.top);
+        return componentRect;
     }
 
     /**
@@ -373,18 +389,5 @@ class TabListRecyclerView extends RecyclerView {
     private static boolean isOverlap(
             float left1, float top1, float left2, float top2, float threshold) {
         return Math.abs(left1 - left2) < threshold && Math.abs(top1 - top2) < threshold;
-    }
-
-    /**
-     * This method gets the position of certain item in the {@link TabListRecyclerView}.
-     *
-     * @param index  The index of the item whose position is requested.
-     * @return The {@link Rect} that contains the position information.
-     */
-    Rect getTabPosition(int index) {
-        Rect rect = new Rect();
-        View holder = findViewHolderForAdapterPosition(index).itemView;
-        holder.getGlobalVisibleRect(rect);
-        return rect;
     }
 }

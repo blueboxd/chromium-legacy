@@ -67,7 +67,7 @@ class FakeExternalBeginFrameSource : public BeginFrameSource {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_{this};
 };
 
 }  // namespace viz

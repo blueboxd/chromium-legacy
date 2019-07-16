@@ -71,8 +71,7 @@ GLES2CommandBufferStub::GLES2CommandBufferStub(
                         sequence_id,
                         stream_id,
                         route_id),
-      gles2_decoder_(nullptr),
-      weak_ptr_factory_(this) {}
+      gles2_decoder_(nullptr) {}
 
 GLES2CommandBufferStub::~GLES2CommandBufferStub() {}
 

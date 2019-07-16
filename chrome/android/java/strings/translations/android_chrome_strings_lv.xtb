@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Netiek saglabātas</translation>
 <translation id="1067922213147265141">Citi Google pakalpojumi</translation>
 <translation id="1068672505746868501">Nekad netulkot lapas šādā valodā: <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="1080790410959514870">Jūs izrakstāties no konta, kurš tiek pārvaldīts domēnā <ph name="DOMAIN_NAME" />. Tādējādi tiks dzēsti šajā ierīcē glabātie Chrome dati, taču tie joprojām būs pieejami jūsu Google kontā.</translation>
 <translation id="1100066534610197918">Atvērt jaunu cilni grupā</translation>
 <translation id="1105960400813249514">Ekrāna tveršana</translation>
 <translation id="1111673857033749125">Šeit būs redzamas grāmatzīmes, kuras esat saglabājis citās ierīcēs.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">Tika pievienota vietne <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Nepietiek vietas, lai lejupielādētu atlasīto saturu.</translation>
 <translation id="1376578503827013741">Notiek aprēķināšana...</translation>
-<translation id="138361230106469022">Sveicināti, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Meklēt</translation>
 <translation id="1384959399684842514">Lejupielāde pārtraukta</translation>
 <translation id="1386674309198842382">Aktīvs pirms <ph name="LAST_UPDATED" /> dienām</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">Vaicāt, ja vietne vēlas redzēt tuvumā esošās Bluetooth ierīces (ieteicams)</translation>
 <translation id="230115972905494466">Netika atrastas saderīgas ierīces.</translation>
 <translation id="2315043854645842844">Operētājsistēma neatbalsta klienta puses sertifikāta atlasi.</translation>
+<translation id="2318045970523081853">Pieskarieties, lai zvanītu</translation>
 <translation id="2321086116217818302">Notiek paroļu sagatavošana…</translation>
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
 <translation id="2323763861024343754">Vietnes krātuve</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">Lejupielāde pabeigta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Piekļuve atrašanās vietai</translation>
 <translation id="2450083983707403292">Vai vēlaties vēlreiz sākt faila <ph name="FILE_NAME" /> lejupielādi?</translation>
-<translation id="2476578072172137802">Vietnes iestatījumi</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2490684707762498678">Pārvalda <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google asistents pārlūkprogrammā Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">Lielums:</translation>
 <translation id="3443221991560634068">Atkārtoti ielādēt pašreizējo lapu</translation>
 <translation id="3445014427084483498">Tikko</translation>
-<translation id="3452612588551937789">Pierakstieties Google kontā, lai izmantotu savas grāmatzīmes, paroles, vēsturi un citus Chrome datus visās jūsu ierīcēs.</translation>
 <translation id="3478363558367712427">Varat izvēlēties savu meklētājprogrammu.</translation>
 <translation id="3492207499832628349">Jauna inkognito cilne</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" /> par ieteikto saturu.</translation>
 <translation id="3513704683820682405">Papildinātā realitāte</translation>
 <translation id="3518985090088779359">Piekrist un turpināt</translation>
 <translation id="3522247891732774234">Pieejams atjauninājums. Citas iespējas</translation>
+<translation id="3524138585025253783">Izstrādātāja lietotājsaskarne</translation>
 <translation id="3527085408025491307">Mape</translation>
 <translation id="3542235761944717775">Pieejami <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">Meklēt savā vēsturē</translation>
-<translation id="3552151358455404883">Pārvaldīt Chrome sinhronizāciju un personalizēšanu <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Pievienot kontaktpersonām</translation>
 <translation id="3566923219790363270">Chrome joprojām gatavojas virtuālajai realitātei. Vēlāk restartējiet pārlūku Chrome.</translation>
 <translation id="3568688522516854065">Lai varētu piekļūt cilnēm no citām ierīcēm, pierakstieties un ieslēdziet sinhronizāciju.</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Datu apvienošana</translation>
 <translation id="393697183122708255">Nav iespējota meklēšana ar balsi.</translation>
-<translation id="3950820424414687140">Pierakstīties</translation>
 <translation id="395206256282351086">Meklēšanas un vietņu ieteikumi atspējoti</translation>
 <translation id="3955193568934677022">Atļaut vietnēm atskaņot aizsargātu saturu (ieteicams)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Kad ierīce būs gatava, jūsu lapa tiks ielādēta pārlūkā Chrome}zero{Kad ierīce būs gatava, jūsu lapas tiks ielādētas pārlūkā Chrome}one{Kad ierīce būs gatava, jūsu lapas tiks ielādētas pārlūkā Chrome}other{Kad ierīce būs gatava, jūsu lapas tiks ielādētas pārlūkā Chrome}}</translation>
@@ -458,7 +454,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="447252321002412580">Palīdzēt uzlabot Chrome funkcijas un veiktspēju</translation>
 <translation id="4479647676395637221">Jautāt, pirms atļaut vietnēm izmantot jūsu kameru (ieteicams)</translation>
 <translation id="4479972344484327217">Notiek moduļa <ph name="MODULE" /> instalēšana pārlūkprogrammai Chrome…</translation>
-<translation id="4482194545587547824">Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
 <translation id="4487967297491345095">Visi lietotnes Chrome dati tiks neatgriezeniski izdzēsti. Tas attiecas uz visiem failiem, iestatījumiem, kontiem, datu bāzēm un citiem datiem.</translation>
 <translation id="4493497663118223949">Vienkāršotais režīms ir ieslēgts</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{pirms # dienas}zero{pirms # dienām}one{pirms # dienas}other{pirms # dienām}}</translation>
@@ -469,7 +464,6 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4532845899244822526">Mapes izvēlēšanās</translation>
 <translation id="4538018662093857852">Ieslēgt vienkāršoto režīmu</translation>
 <translation id="4550003330909367850">Lai skatītu vai kopētu savu paroli šeit, iestatiet ekrāna bloķēšanu šajā ierīcē.</translation>
-<translation id="4556110439722119938">Jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi tiks sinhronizēti ar jūsu Google kontu, lai jūs varētu tos izmantot visās savās ierīcēs.</translation>
 <translation id="4558311620361989323">Tīmekļa lapu īsinājumtaustiņi</translation>
 <translation id="4561979708150884304">Nav savienojuma</translation>
 <translation id="4565377596337484307">Slēpt paroli</translation>
@@ -616,7 +610,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5527111080432883924">Vaicāt, pirms atļaut vietnēm lasīt tekstu un attēlus no starpliktuves (ieteicams)</translation>
 <translation id="5530766185686772672">Aizvērt inkognito cilnes</translation>
 <translation id="5534640966246046842">Vietne ir nokopēta.</translation>
-<translation id="5537099431952529648">Jūs un jūsu vecāki varat pārvaldīt Chrome sinhronizāciju un personalizēšanu <ph name="BEGIN_LINK1" />iestatījumos<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5561549206367097665">Tiek gaidīts savienojums ar tīklu…</translation>
 <translation id="557283862590186398">Pārlūkam Chrome ir nepieciešama atļauja piekļūt jūsu mikrofonam šajā vietnē.</translation>
@@ -712,7 +705,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums reklāmas, kuru pamatā nav citas jūsu apmeklētās vietnes. Tomēr daudzas vietnes apkopos un izmantos jūsu pārlūkošanas datus, piemēram, lai uzlabotu drošību, nodrošinātu saturu, reklāmas un ieteikumus un ģenerētu pārskatu statistiku.</translation>
 <translation id="624789221780392884">Var veikt atjaunināšanu</translation>
 <translation id="6255999984061454636">Satura ieteikumi</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> vēlas meklēt tuvumā esošas Bluetooth ierīces; tika atrastas šīs ierīces:</translation>
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="629730747756840877">Konts</translation>
@@ -774,6 +766,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6659594942844771486">Cilne</translation>
 <translation id="666731172850799929">Atvērt lietotnē <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome konfidencialitātes paziņojums</translation>
+<translation id="6676840375528380067">Vai dzēst jūsu Chrome datus no šīs ierīces?</translation>
 <translation id="6697492270171225480">Ja lapu neizdotas atrast, rāda ieteikumus par līdzīgām lapām</translation>
 <translation id="6697947395630195233">Pārlūkam Chrome ir nepieciešama piekļuve jūsu atrašanās vietas datiem, lai varētu tos kopīgot ar šo vietni.</translation>
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>
@@ -792,7 +785,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6803423358608456383">Atvērtās cilnes pusekrāna augstumā</translation>
 <translation id="6811034713472274749">Lapu var skatīt</translation>
 <translation id="6818926723028410516">Vienumu atlase</translation>
-<translation id="6820607729870073286">Jums nav saglabātu vietnes iestatījumu.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="6845325883481699275">Palīdzēt uzlabot Chrome drošību</translation>
@@ -815,7 +807,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6965382102122355670">Labi</translation>
 <translation id="6978479750597523876">Atiestatīt tulkošanas iestatījumus</translation>
 <translation id="6979737339423435258">Visā periodā</translation>
-<translation id="6980462514016882061">Google var izmantot jūsu pārlūkošanas vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="6989267951144302301">Nevarēja lejupielādēt</translation>
 <translation id="6990079615885386641">Iegūstiet lietotni Google Play veikalā: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7180611975245234373">Atsvaidzināt</translation>
 <translation id="7189372733857464326">Gaida, kad tiks pabeigta Google Play pakalpojumu atjaunināšana</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
-<translation id="722055596168483966">Google pakalpojumu personalizēšana</translation>
 <translation id="723171743924126238">Atlasīt attēlus</translation>
 <translation id="7233236755231902816">Lai skatītu tīmekli savā valodā, iegūstiet jaunāko Chrome versiju</translation>
 <translation id="7243308994586599757">Opcijas, kas pieejamas ekrāna apakšējā daļā</translation>
@@ -962,6 +952,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7999064672810608036">Vai tiešām vēlaties notīrīt visus ar šo vietni saistītos lokālos datus, tostarp sīkfailus, un atiestatīt visas atļaujas?</translation>
 <translation id="8004582292198964060">Pārlūkprogramma</translation>
 <translation id="8007176423574883786">Izslēgts šai ierīcei</translation>
+<translation id="8013372441983637696">Arī noņemt jūsu Chrome datus no šīs ierīces</translation>
 <translation id="8015452622527143194">Atjaunot visam lapas saturam noklusējuma lielumu</translation>
 <translation id="802154636333426148">Lejupielāde neizdevās</translation>
 <translation id="8026334261755873520">Notīrīt pārlūkošanas datus</translation>
@@ -1078,7 +1069,6 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8853345339104747198">Cilne <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Krātuve</translation>
 <translation id="8901170036886848654">Nav atrasta neviena grāmatzīme</translation>
-<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">Kopīgot...</translation>
 <translation id="8912362522468806198">Google konts</translation>
 <translation id="8920114477895755567">Gaida vecāku informāciju.</translation>

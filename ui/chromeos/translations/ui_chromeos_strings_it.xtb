@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Traslitterazione (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Visualizzazione diapositiva</translation>
 <translation id="1045157690796831147">Traslitterazione (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Japanese Input (per tastiera USA)</translation>
 <translation id="1047956942837015229">Eliminazione di <ph name="COUNT" /> elementi...</translation>
 <translation id="1049926623896334335">Documento di Word</translation>
 <translation id="1062407476771304334">Sostituisci</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3549797760399244642">Vai all'indirizzo drive.google.com...</translation>
 <translation id="357479282490346887">Lituano</translation>
+<translation id="3583509704582854624">Input alfanumerico (per tastiera giapponese)</translation>
 <translation id="3603385196401704894">Francese canadese</translation>
 <translation id="3606220979431771195">Turco F</translation>
 <translation id="3609785682760573515">Sincronizzazione in corso...</translation>
@@ -431,6 +433,7 @@
 <translation id="5911887972742538906">Si è verificato un errore durante l'installazione dell'applicazione Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
 <translation id="5913638992615760742">Operazione di copia non riuscita, errore imprevisto: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Japanese Input (per tastiera giapponese)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Concedi a Linux l'autorizzazione per modificare i file nel tuo Google Drive. Le modifiche verranno sincronizzate con i tuoi altri dispositivi.</translation>
 <translation id="5982621672636444458">Opzioni ordinamento</translation>

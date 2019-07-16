@@ -45,6 +45,10 @@
 // Allows script to open tabs using "window.open" JavaScript calls.
 + (void)enablePopups;
 
+// Takes a snapshot of the specified tab. Returns the snapshot as a base64-
+// encoded image. If no such tab exists, returns nil.
++ (NSString*)takeSnapshotOfTabWithID:(NSString*)ID;
+
 @end
 
 #endif  // IOS_CHROME_TEST_WPT_CWT_WEBDRIVER_APP_INTERFACE_H_

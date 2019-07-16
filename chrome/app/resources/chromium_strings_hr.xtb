@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Pomoć za upotrebu OS-a Chromium</translation>
 <translation id="1396446129537741364">Chromium pokušava prikazati zaporke.</translation>
 <translation id="1414495520565016063">Prijavljeni ste na Chromium!</translation>
-<translation id="1502360822835740515">Postavljanje Chromiuma kao zadanog preglednika</translation>
 <translation id="151962892725702025">OS Chromium nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="1524282610922162960">Dijeljenje kartice Chromium</translation>
-<translation id="1585657529869845941">Kliknite <ph name="BEGIN_BOLD" />Svejedno promijeni<ph name="END_BOLD" />, ako ste ta opcija pojavi</translation>
 <translation id="1668054258064581266">Nakon uklanjanja računa s Chromiuma možda ćete morati ponovo učitati otvorene kartice kako bi nastupile promjene.</translation>
 <translation id="1688750314291223739">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Chromium na bilo kojem računalu.</translation>
 <translation id="1708666629004767631">Dostupna je nova, sigurnija verzija preglednika Chromium.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium će pristupati vašem Disku radi prikazivanja prijedloga u adresnoj traci</translation>
 <translation id="378917192836375108">Chromium omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Prikvačite Chromium na programsku traku</translation>
 <translation id="388648406173476553">Prilagodite Chromium i upravljajte njime. Trebate obratiti pozornost na nešto – kliknite za pojedinosti.</translation>
 <translation id="3889543394854987837">Kliknite svoje ime da biste otvorili Chromium i počeli s pregledavanjem.</translation>
 <translation id="3898493977366060150">Pregledavanje weba uz pametne Googleove značajke</translation>
 <translation id="4036079820698952681">Pomognite poboljšati Chromium tako što ćete prijaviti <ph name="BEGIN_LINK" />trenutačne postavke<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
-<translation id="407254336480250557">Odaberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Otkrijte sjajne aplikacije, igre, proširenja i teme za Chromium.</translation>
 <translation id="4216212958613226427">Taj se jezik koristi za prikaz korisničkog sučelja Chromiuma</translation>
 <translation id="4222580632002216401">Sada ste prijavljeni na Chromium! Administrator je onemogućio sinkronizaciju.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Izgleda da neki drugi proces Chromiuma (<ph name="PROCESS_ID" />) na nekom drugom računalu (<ph name="HOST_NAME" />) upotrebljava taj profil. Chromium je zaključao profil da se profil ne bi promijenio. Ako ste sigurni da nijedan drugi proces ne upotrebljava taj profil, možete ga otključati i ponovo pokrenuti Chromium.</translation>
 <translation id="469338717132742108">Potraži pomoć za upotrebu OS-a Chromium</translation>
 <translation id="4708774505295300557">Netko se prethodno prijavio na Chromium na ovom računalu kao <ph name="ACCOUNT_EMAIL_LAST" />. Izradite novog korisnika Chromiuma kako bi vaši podaci bili odvojeni.</translation>
-<translation id="4714956846925717402">Otvorite Chromium brže</translation>
 <translation id="4746050847053251315">Želite li ipak zatvoriti Chromium?</translation>
 <translation id="4748217263233248895">Upravo je primijenjeno posebno sigurnosno ažuriranje za Chromium. Ponovo pokrenite sustav i vratit ćemo vaše kartice.</translation>
 <translation id="479167709087336770">Upotrebljava istu provjeru pravopisa koja se upotrebljava na Google pretraživanju. Tekst koji unesete u preglednik šalje se Googleu. To ponašanje možete promijeniti u postavkama kad god želite.</translation>

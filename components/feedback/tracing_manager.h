@@ -71,7 +71,7 @@ class TracingManager {
   // Callback for the current trace request.
   TraceDataCallback trace_callback_;
 
-  base::WeakPtrFactory<TracingManager> weak_ptr_factory_;
+  base::WeakPtrFactory<TracingManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TracingManager);
 };

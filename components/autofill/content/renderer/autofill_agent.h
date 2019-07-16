@@ -392,7 +392,7 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   base::OneShotTimer on_select_update_timer_;
 
-  base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };

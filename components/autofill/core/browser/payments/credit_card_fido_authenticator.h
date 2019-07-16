@@ -81,7 +81,7 @@ class CreditCardFIDOAuthenticator {
   // Weak pointer to object that is requesting authentication.
   base::WeakPtr<Requester> requester_;
 
-  base::WeakPtrFactory<CreditCardFIDOAuthenticator> weak_ptr_factory_;
+  base::WeakPtrFactory<CreditCardFIDOAuthenticator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardFIDOAuthenticator);
 };

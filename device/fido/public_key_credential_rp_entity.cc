@@ -46,8 +46,16 @@ PublicKeyCredentialRpEntity::CreateFromCBORValue(const cbor::Value& cbor) {
 
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity() = default;
 
-PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
-    : id(std::move(rp_id)) {}
+PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string id_)
+    : id(std::move(id_)) {}
+
+PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(
+    std::string id_,
+    base::Optional<std::string> name_,
+    base::Optional<GURL> icon_url_)
+    : id(std::move(id_)),
+      name(std::move(name_)),
+      icon_url(std::move(icon_url_)) {}
 
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(
     const PublicKeyCredentialRpEntity& other) = default;

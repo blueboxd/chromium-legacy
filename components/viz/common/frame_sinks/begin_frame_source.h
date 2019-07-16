@@ -246,7 +246,7 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
   base::flat_set<BeginFrameObserver*> observers_;
   base::flat_set<BeginFrameObserver*> pending_begin_frame_observers_;
   uint64_t next_sequence_number_;
-  base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_;
+  base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackToBackBeginFrameSource);
 };

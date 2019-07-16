@@ -229,7 +229,7 @@ class AutocompleteHistoryManager : public KeyedService,
 
   UMARecorder uma_recorder_;
 
-  base::WeakPtrFactory<AutocompleteHistoryManager> weak_ptr_factory_;
+  base::WeakPtrFactory<AutocompleteHistoryManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteHistoryManager);
 };

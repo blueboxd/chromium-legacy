@@ -476,6 +476,10 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       except Exception:
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
+      # TODO(https://crbug.com/983600): Remove this once the truncated images
+      # are determined to be legitimate or due to upload issues.
+      failure_name = 'gold_%s' % image_name
+      self._UploadErrorImagesToCloudStorage(failure_name, screenshot, None)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed')
 

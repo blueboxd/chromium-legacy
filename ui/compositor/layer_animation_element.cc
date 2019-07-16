@@ -536,8 +536,7 @@ LayerAnimationElement::LayerAnimationElement(AnimatableProperties properties,
       animation_group_id_(0),
       last_progressed_fraction_(0.0),
       animation_metrics_reporter_(nullptr),
-      start_frame_number_(0),
-      weak_ptr_factory_(this) {}
+      start_frame_number_(0) {}
 
 LayerAnimationElement::LayerAnimationElement(
     const LayerAnimationElement& element)
@@ -549,8 +548,7 @@ LayerAnimationElement::LayerAnimationElement(
       animation_group_id_(element.animation_group_id_),
       last_progressed_fraction_(element.last_progressed_fraction_),
       animation_metrics_reporter_(nullptr),
-      start_frame_number_(0),
-      weak_ptr_factory_(this) {}
+      start_frame_number_(0) {}
 
 LayerAnimationElement::~LayerAnimationElement() {
 }

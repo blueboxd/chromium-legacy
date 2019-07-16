@@ -12,10 +12,8 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1298199220304005244">Obtenir de l'aide sur l'utilisation de Chromium OS</translation>
 <translation id="1396446129537741364">Tentative d'affichage des mots de passe dans Chromium</translation>
 <translation id="1414495520565016063">Vous êtes connecté à Chromium.</translation>
-<translation id="1502360822835740515">Définir Chromium en tant que navigateur par défaut</translation>
 <translation id="151962892725702025">Impossible de synchroniser vos données dans Chromium OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="1524282610922162960">Partager un onglet Chromium</translation>
-<translation id="1585657529869845941">Si le bouton <ph name="BEGIN_BOLD" />Changer quand même<ph name="END_BOLD" /> s'affiche, cliquez dessus</translation>
 <translation id="1668054258064581266">Une fois votre compte Chromium supprimé, vous devrez peut-être charger de nouveau les onglets ouverts pour que les modifications prennent effet.</translation>
 <translation id="1688750314291223739">Configurez la synchronisation pour enregistrer sur le Web les fonctionnalités personnalisées de votre navigateur et y accéder à partir de Chromium sur n'importe quel ordinateur.</translation>
 <translation id="1708666629004767631">Une nouvelle version de Chromium encore plus sûre est disponible.</translation>
@@ -83,13 +81,11 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3728336900324680424">Chromium va accéder à votre Drive pour proposer des suggestions dans la barre d'adresse</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Épingler Chromium à votre barre des tâches</translation>
 <translation id="388648406173476553">Personnalisez et contrôlez Chromium. Une action de votre part est requise. Cliquez pour en savoir plus.</translation>
 <translation id="3889543394854987837">Cliquez sur votre nom pour ouvrir Chromium et commencer à naviguer.</translation>
 <translation id="3898493977366060150">Navigation sur le Web avec les fonctionnalités intelligentes de Google</translation>
 <translation id="4036079820698952681">Aidez-nous à améliorer Chromium en nous signalant vos <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
-<translation id="407254336480250557">Sélectionnez <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="421369550622382712">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Chromium.</translation>
 <translation id="4216212958613226427">Cette langue est utilisée pour l'UI Chromium</translation>
 <translation id="4222580632002216401">Vous êtes maintenant connecté à Chromium. La synchronisation a été désactivée par votre administrateur.</translation>
@@ -106,7 +102,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4677944499843243528">Le profil semble être utilisé dans le cadre d'un autre processus Chromium (<ph name="PROCESS_ID" />) sur un autre ordinateur (<ph name="HOST_NAME" />). Ce profil a été verrouillé de sorte qu'il ne soit pas endommagé. Si vous êtes sûr que le profil n'est utilisé dans le cadre d'aucun autre processus, vous pouvez le déverrouiller et relancer Chromium.</translation>
 <translation id="469338717132742108">Obtenir de l'aide avec Chromium OS</translation>
 <translation id="4708774505295300557">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chromium pour séparer vos informations.</translation>
-<translation id="4714956846925717402">Accédez à Chromium plus rapidement</translation>
 <translation id="4746050847053251315">Quitter Chromium quand même ?</translation>
 <translation id="4748217263233248895">Une mise à jour spéciale de sécurité pour Chromium vient d'être installée. Veuillez redémarrer le navigateur. Vos onglets seront restaurés.</translation>
 <translation id="479167709087336770">Le correcteur orthographique utilisé est le même que celui employé dans la recherche Google. Le texte que vous saisissez dans le navigateur est envoyé à Google. Vous pouvez toujours modifier ce comportement dans les paramètres.</translation>

@@ -69,8 +69,7 @@ TriggerManager::TriggerManager(BaseUIManager* ui_manager,
                                PrefService* local_state_prefs)
     : ui_manager_(ui_manager),
       referrer_chain_provider_(referrer_chain_provider),
-      trigger_throttler_(new TriggerThrottler(local_state_prefs)),
-      weak_factory_(this) {}
+      trigger_throttler_(new TriggerThrottler(local_state_prefs)) {}
 
 TriggerManager::~TriggerManager() {}
 

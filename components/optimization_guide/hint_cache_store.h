@@ -52,7 +52,7 @@ class HintCacheStore {
   // the store transitions to kFailed, at which point it is fully purged and
   // becomes unusable.
   //
-  // Keep in sync with PreviewsHintCacheLevelDBStoreStatus in
+  // Keep in sync with OptimizationGuideHintCacheLevelDBStoreStatus in
   // tools/metrics/histograms/enums.xml.
   enum class Status {
     kUninitialized = 0,
@@ -338,7 +338,7 @@ class HintCacheStore {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<HintCacheStore> weak_ptr_factory_;
+  base::WeakPtrFactory<HintCacheStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HintCacheStore);
 };

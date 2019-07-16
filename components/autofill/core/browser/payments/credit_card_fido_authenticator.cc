@@ -22,8 +22,7 @@ CreditCardFIDOAuthenticator::CreditCardFIDOAuthenticator(AutofillDriver* driver,
                                                          AutofillClient* client)
     : autofill_driver_(driver),
       autofill_client_(client),
-      payments_client_(client->GetPaymentsClient()),
-      weak_ptr_factory_(this) {}
+      payments_client_(client->GetPaymentsClient()) {}
 
 CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {}
 

@@ -2009,6 +2009,11 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool IsDisplayTableType() const { return IsDisplayTableType(Display()); }
 
+  bool BlockifiesChildren() const {
+    return IsDisplayFlexibleOrGridBox() || IsDisplayLayoutCustomBox() ||
+           (Display() == EDisplay::kContents && IsInBlockifyingDisplay());
+  }
+
   // Isolation utility functions.
   bool HasIsolation() const { return Isolation() != EIsolation::kAuto; }
 

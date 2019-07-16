@@ -1316,6 +1316,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'linux_viz_gtests',
+          'isolated_scripts': 'skia_renderer_isolated_scripts',
         },
       },
       'Linux x64 Goma Canary (clobber)': {
@@ -1618,6 +1619,7 @@
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
+        'browser_config': 'cros-chrome',
         'swarming': {
           'dimension_sets': [
             {
@@ -1630,6 +1632,7 @@
           ],
         },
         'test_suites': {
+          'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
           'isolated_scripts': 'chromeos_experimental_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
@@ -1825,6 +1828,14 @@
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_gtests',
+        },
+      },
+      'linux-wpt-fyi-rel': {
+        'mixins': [
+          'linux-trusty',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests',
         },
       },
       'mac-hermetic-upgrade-rel': {
@@ -2969,7 +2980,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
       },
       'Optional Mac Retina Release (AMD)': {
@@ -2980,7 +2991,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_gold_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
       },
       'Optional Mac Retina Release (NVIDIA)': {

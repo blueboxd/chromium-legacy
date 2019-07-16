@@ -8,6 +8,12 @@
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/media_controls_header_view.h"
+#include "ash/public/cpp/ash_features.h"
+#include "base/test/scoped_feature_list.h"
+#include "services/media_session/public/cpp/test/test_media_controller.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/vector_icons.h"
@@ -15,12 +21,22 @@
 
 namespace ash {
 
+using media_session::mojom::MediaSessionAction;
+using media_session::test::TestMediaController;
+
 namespace {
 
 const int kAppIconSize = 20;
 constexpr int kArtworkViewWidth = 270;
 constexpr int kArtworkViewHeight = 200;
+
 const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
+
+// Checks if the view class name is used by a media button.
+bool IsMediaButtonType(const char* class_name) {
+  return class_name == views::ImageButton::kViewClassName ||
+         class_name == views::ToggleImageButton::kViewClassName;
+}
 
 }  // namespace
 
@@ -30,6 +46,11 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   ~LockScreenMediaControlsViewTest() override = default;
 
   void SetUp() override {
+    // Enable media controls.
+    feature_list.InitWithFeatures(
+        {features::kLockScreenMediaKeys, features::kLockScreenMediaControls},
+        {});
+
     LoginTestBase::SetUp();
 
     lock_contents_view_ = new LockContentsView(
@@ -45,10 +66,96 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     SetUserCount(1);
 
     media_controls_view_ = lock_contents.media_controls_view();
+
+    // Inject the test media controller into the media controls view.
+    media_controller_ = std::make_unique<TestMediaController>();
+    media_controls_view_->set_media_controller_for_testing(
+        media_controller_->CreateMediaControllerPtr());
+
+    SimulateMediaSessionChanged(
+        media_session::mojom::MediaPlaybackState::kPlaying);
+  }
+
+  void TearDown() override {
+    actions_.clear();
+
+    LoginTestBase::TearDown();
+  }
+
+  void EnableAllActions() {
+    actions_.insert(MediaSessionAction::kPlay);
+    actions_.insert(MediaSessionAction::kPause);
+    actions_.insert(MediaSessionAction::kPreviousTrack);
+    actions_.insert(MediaSessionAction::kNextTrack);
+    actions_.insert(MediaSessionAction::kSeekBackward);
+    actions_.insert(MediaSessionAction::kSeekForward);
+    actions_.insert(MediaSessionAction::kStop);
+
+    NotifyUpdatedActions();
+  }
+
+  void EnableAction(MediaSessionAction action) {
+    actions_.insert(action);
+    NotifyUpdatedActions();
+  }
+
+  void DisableAction(MediaSessionAction action) {
+    actions_.erase(action);
+    NotifyUpdatedActions();
+  }
+
+  void SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState playback_state) {
+    // Simulate media session change.
+    media_controls_view_->MediaSessionChanged(base::UnguessableToken::Create());
+
+    // Create media session information.
+    media_session::mojom::MediaSessionInfoPtr session_info(
+        media_session::mojom::MediaSessionInfo::New());
+    session_info->playback_state = playback_state;
+
+    // Simulate media session information change.
+    media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
+  }
+
+  void SimulateButtonClick(MediaSessionAction action) {
+    views::Button* button = GetButtonForAction(action);
+    EXPECT_TRUE(button->GetVisible());
+
+    // Send event to click media playback action button.
+    ui::test::EventGenerator* generator = GetEventGenerator();
+    generator->MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+    generator->ClickLeftButton();
+  }
+
+  void SimulateTab() {
+    ui::KeyEvent pressed_tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+    media_controls_view_->GetFocusManager()->OnKeyEvent(pressed_tab);
+  }
+
+  views::Button* GetButtonForAction(MediaSessionAction action) const {
+    const auto& children = button_row()->children();
+    const auto it = std::find_if(
+        children.begin(), children.end(), [action](const views::View* v) {
+          return views::Button::AsButton(v)->tag() == static_cast<int>(action);
+        });
+
+    if (it == children.end())
+      return nullptr;
+
+    return views::Button::AsButton(*it);
+  }
+
+  TestMediaController* media_controller() const {
+    return media_controller_.get();
   }
 
   MediaControlsHeaderView* header_row() const {
     return media_controls_view_->header_row_;
+  }
+
+  NonAccessibleView* button_row() const {
+    return media_controls_view_->button_row_;
   }
 
   views::ImageView* artwork_view() const {
@@ -66,10 +173,169 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
 
  private:
+  void NotifyUpdatedActions() {
+    media_controls_view_->MediaSessionActionsChanged(
+        std::vector<MediaSessionAction>(actions_.begin(), actions_.end()));
+  }
+
+  base::test::ScopedFeatureList feature_list;
+
   LockContentsView* lock_contents_view_ = nullptr;
+  std::unique_ptr<TestMediaController> media_controller_;
+  std::set<MediaSessionAction> actions_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
+
+TEST_F(LockScreenMediaControlsViewTest, KeepMediaSessionDataBetweenSessions) {
+  // Simulate media session stopping.
+  media_controls_view_->MediaSessionChanged(base::nullopt);
+
+  // Simulate new media session starting within the timer delay.
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  // Set icon for new media session.
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(kAppIconSize, kAppIconSize);
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kSourceIcon, bitmap);
+
+  // Default icon.
+  gfx::ImageSkia default_icon = gfx::CreateVectorIcon(
+      message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
+
+  // Verify that the default icon is not drawn.
+  EXPECT_FALSE(GetAppIcon().BackedBySameObjectAs(default_icon));
+
+  // Set artwork for new media session.
+  SkBitmap artwork;
+  artwork.allocN32Pixels(kArtworkViewWidth, kArtworkViewHeight);
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, artwork);
+
+  // Verify that the default artwork is not drawn.
+  EXPECT_FALSE(artwork_view()->GetImage().isNull());
+
+  // Set app name for new media session.
+  media_session::MediaMetadata metadata;
+  metadata.source_title = kTestAppName;
+  media_controls_view_->MediaSessionMetadataChanged(metadata);
+
+  // Verify that the default name is not used.
+  EXPECT_EQ(kTestAppName, GetAppName());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {
+  EnableAllActions();
+
+  EXPECT_TRUE(button_row()->GetVisible());
+  EXPECT_EQ(3u, button_row()->children().size());
+
+  for (auto* child : button_row()->children()) {
+    ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
+
+    EXPECT_TRUE(child->GetVisible());
+    EXPECT_FALSE(views::Button::AsButton(child)->GetAccessibleName().empty());
+  }
+
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPreviousTrack));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kNextTrack));
+
+  // |kPlay| cannot be present if |kPause| is.
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
+}
+
+TEST_F(LockScreenMediaControlsViewTest, ButtonsFocusCheck) {
+  EnableAllActions();
+
+  views::FocusManager* focus_manager = media_controls_view_->GetFocusManager();
+
+  {
+    // Focus the first action button.
+    auto* button = GetButtonForAction(MediaSessionAction::kPreviousTrack);
+    focus_manager->SetFocusedView(button);
+    EXPECT_EQ(button, focus_manager->GetFocusedView());
+  }
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kPause),
+            focus_manager->GetFocusedView());
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kNextTrack),
+            focus_manager->GetFocusedView());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, PlayPauseButtonTooltipCheck) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  auto* button = GetButtonForAction(MediaSessionAction::kPause);
+  base::string16 tooltip = button->GetTooltipText(gfx::Point());
+  EXPECT_FALSE(tooltip.empty());
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPaused;
+  media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
+
+  base::string16 new_tooltip = button->GetTooltipText(gfx::Point());
+  EXPECT_FALSE(new_tooltip.empty());
+  EXPECT_NE(tooltip, new_tooltip);
+}
+
+TEST_F(LockScreenMediaControlsViewTest, PreviousTrackButtonClick) {
+  EnableAction(MediaSessionAction::kPreviousTrack);
+
+  EXPECT_EQ(0, media_controller()->previous_track_count());
+
+  SimulateButtonClick(MediaSessionAction::kPreviousTrack);
+  media_controls_view_->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->previous_track_count());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, PlayButtonClick) {
+  EnableAction(MediaSessionAction::kPlay);
+
+  EXPECT_EQ(0, media_controller()->resume_count());
+
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPaused;
+  media_controls_view_->MediaSessionInfoChanged(session_info.Clone());
+
+  SimulateButtonClick(MediaSessionAction::kPlay);
+  media_controls_view_->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->resume_count());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, PauseButtonClick) {
+  EnableAction(MediaSessionAction::kPause);
+
+  EXPECT_EQ(0, media_controller()->suspend_count());
+
+  SimulateButtonClick(MediaSessionAction::kPause);
+  media_controls_view_->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->suspend_count());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, NextTrackButtonClick) {
+  EnableAction(MediaSessionAction::kNextTrack);
+
+  EXPECT_EQ(0, media_controller()->next_track_count());
+
+  SimulateButtonClick(MediaSessionAction::kNextTrack);
+  media_controls_view_->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->next_track_count());
+}
 
 TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {
   gfx::ImageSkia default_icon = gfx::CreateVectorIcon(

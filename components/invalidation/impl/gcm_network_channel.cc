@@ -123,8 +123,7 @@ GCMNetworkChannel::GCMNetworkChannel(
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
       gcm_channel_online_(false),
       http_channel_online_(false),
-      diagnostic_info_(this),
-      weak_factory_(this) {
+      diagnostic_info_(this) {
   network_connection_tracker_->AddNetworkConnectionObserver(this);
   delegate_->Initialize(
       base::Bind(&GCMNetworkChannel::OnConnectionStateChanged,

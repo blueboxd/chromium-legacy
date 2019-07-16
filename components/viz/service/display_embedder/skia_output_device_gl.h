@@ -22,6 +22,10 @@ class GLContext;
 class GLSurface;
 }  // namespace gl
 
+namespace gfx {
+class GpuFence;
+}  // namespace gfx
+
 namespace gpu {
 namespace gles2 {
 class FeatureInfo;
@@ -54,9 +58,11 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
                const gfx::ColorSpace& color_space,
                bool has_alpha,
                gfx::OverlayTransform transform) override;
-  gfx::SwapResponse SwapBuffers(BufferPresentedCallback feedback) override;
-  gfx::SwapResponse PostSubBuffer(const gfx::Rect& rect,
-                                  BufferPresentedCallback feedback) override;
+  void SwapBuffers(BufferPresentedCallback feedback,
+                   std::vector<ui::LatencyInfo> latency_info) override;
+  void PostSubBuffer(const gfx::Rect& rect,
+                     BufferPresentedCallback feedback,
+                     std::vector<ui::LatencyInfo> latency_info) override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
@@ -88,6 +94,13 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
   bool supports_alpha_ = false;
 
   base::WeakPtrFactory<SkiaOutputDeviceGL> weak_ptr_factory_{this};
+
+  // Used as callback for SwapBuffersAsync and PostSubBufferAsync to finish
+  // operation
+  void DoFinishSwapBuffers(const gfx::Size& size,
+                           std::vector<ui::LatencyInfo> latency_info,
+                           gfx::SwapResult result,
+                           std::unique_ptr<gfx::GpuFence>);
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputDeviceGL);
 };

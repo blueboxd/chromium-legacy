@@ -177,7 +177,7 @@ class SharedProtoDatabaseClient : public UniqueProtoDatabase {
 
   scoped_refptr<SharedProtoDatabase> parent_db_;
 
-  base::WeakPtrFactory<SharedProtoDatabaseClient> weak_ptr_factory_;
+  base::WeakPtrFactory<SharedProtoDatabaseClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabaseClient);
 };

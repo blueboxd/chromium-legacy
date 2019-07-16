@@ -20,7 +20,7 @@
 namespace metrics {
 
 DriveMetricsProvider::DriveMetricsProvider(int local_state_path_key)
-    : local_state_path_key_(local_state_path_key), weak_ptr_factory_(this) {}
+    : local_state_path_key_(local_state_path_key) {}
 
 DriveMetricsProvider::~DriveMetricsProvider() {}
 

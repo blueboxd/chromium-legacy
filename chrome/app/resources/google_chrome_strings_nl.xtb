@@ -23,7 +23,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1457721931618994305">Google Chrome wordt bijgewerkt</translation>
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
 <translation id="1553358976309200471">Chrome updaten</translation>
-<translation id="1585657529869845941">Klik op <ph name="BEGIN_BOLD" />Toch overschakelen<ph name="END_BOLD" /> als die knop wordt weergegeven</translation>
 <translation id="1587223624401073077">Google Chrome gebruikt je camera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is gevaarlijk en is daarom door Chrome geblokkeerd.</translation>
 <translation id="1590588151039584890">Chrome moet worden gestopt op deze computer om een update uit te voeren. Hierdoor kunnen andere gebruikers die bij deze computer zijn ingelogd, niet-opgeslagen wijzigingen kwijtraken.</translation>
@@ -36,7 +35,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome is een webbrowser die bliksemsnel webpagina's en online applicaties kan weergeven. Het programma is snel, stabiel en gebruiksvriendelijk. Met Google Chrome kun je veiliger op internet surfen dankzij de ingebouwde bescherming tegen phishing en malware.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome wordt over een uur opnieuw gestart}other{Chrome wordt over # uur opnieuw gestart}}</translation>
-<translation id="1718131156967340976">Selecteer <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome slaat dit wachtwoord op in je Google-account. Je hoeft het niet te onthouden.</translation>
 <translation id="174539241580958092">Google Chrome kan je gegevens niet synchroniseren vanwege een fout tijdens het inloggen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="3873044882194371212">Link openen in een Chrome-inco&amp;gnitovenster</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
 <translation id="3898493977366060150">Browsen met innovaties van Google</translation>
-<translation id="4028693306634653894">Chrome sneller openen</translation>
 <translation id="4050175100176540509">Er zijn belangrijke beveiligingsverbeteringen en nieuwe functies beschikbaar in de nieuwste versie.</translation>
 <translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
 <translation id="4143243756087420366">Naam en afbeelding voor Chrome</translation>
@@ -242,7 +239,6 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7808348361785373670">Verwijderen uit Chrome…</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
 <translation id="7855730255114109580">Google Chrome is up-to-date</translation>
-<translation id="7888186132678118370">Chrome vastzetten op je taakbalk</translation>
 <translation id="7890208801193284374">Als je een computer deelt, kunnen vrienden en familie afzonderlijk surfen en Chrome configureren zoals zij dat willen.</translation>
 <translation id="7896673875602241923">Iemand heeft eerder bij Chrome op deze computer ingelogd als <ph name="ACCOUNT_EMAIL_LAST" />. Maak een nieuwe Chrome-gebruiker om je informatie gescheiden te houden.</translation>
 <translation id="7908168227788431038">Updaten bijna voltooid. Start Google Chrome opnieuw op om de update te voltooien.</translation>
@@ -291,6 +287,5 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="9138603949443464873">Als je de wijzigingen wilt toepassen, start je Chrome opnieuw</translation>
 <translation id="919706545465235479">Chrome updaten om de synchronisatie te starten</translation>
-<translation id="924447568950697217">Chrome instellen als je standaardbrowser</translation>
 <translation id="989369509083708165">Google Chrome is je standaardbrowser</translation>
 </translationbundle>

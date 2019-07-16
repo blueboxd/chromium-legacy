@@ -284,6 +284,13 @@ viz_component("service") {
     ]
   }
 
+  if (is_chromeos) {
+    sources += [
+      "display_embedder/output_surface_unified.cc",
+      "display_embedder/output_surface_unified.h",
+    ]
+  }
+
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan" ]
   }
@@ -307,8 +314,6 @@ viz_source_set("gpu_service_dependencies") {
     "display_embedder/skia_output_device_gl.h",
     "display_embedder/skia_output_device_offscreen.cc",
     "display_embedder/skia_output_device_offscreen.h",
-    "display_embedder/skia_output_surface_base.cc",
-    "display_embedder/skia_output_surface_base.h",
     "display_embedder/skia_output_surface_dependency.h",
     "display_embedder/skia_output_surface_dependency_impl.cc",
     "display_embedder/skia_output_surface_dependency_impl.h",

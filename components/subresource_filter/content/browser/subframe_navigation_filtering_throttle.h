@@ -77,7 +77,8 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   // object.
   Delegate* delegate_;
 
-  base::WeakPtrFactory<SubframeNavigationFilteringThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<SubframeNavigationFilteringThrottle> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SubframeNavigationFilteringThrottle);
 };

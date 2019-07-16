@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Παιχνίδια με κάρτες</translation>
 <translation id="2114841414352855701">Αγνοήθηκε επειδή αντικαταστάθηκε από την πολιτική <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Εκδόθηκε σε: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Αισθητήρες κίνησης</translation>
 <translation id="213826338245044447">Σελιδοδείκτες κινητής συσκευής</translation>
 <translation id="214556005048008348">Ακύρωση πληρωμής</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Ελέγξτε το σήμα στην περιοχή σας.</translation>
 <translation id="2523886232349826891">Αποθηκεύτηκε μόνο σε αυτήν τη συσκευή</translation>
 <translation id="2524461107774643265">Προσθήκη περισσότερων πληροφοριών</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{και 1 ακόμα}other{και # ακόμα}}</translation>
 <translation id="2536110899380797252">Προσθήκη διεύθυνσης</translation>
 <translation id="2539524384386349900">Αναγνώριση</translation>
 <translation id="254947805923345898">Η τιμή πολιτικής δεν είναι έγκυρη.</translation>
@@ -723,6 +725,7 @@
 <translation id="4858792381671956233">Ρώτησες τους γονείς σου εάν σου επιτρέπουν να επισκεφτείς αυτόν τον ιστότοπο</translation>
 <translation id="4876188919622883022">Απλοποιημένη προβολή</translation>
 <translation id="4876305945144899064">Δεν υπάρχει όνομα χρήστη</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Κανένας}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Αναζήτηση <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Αυτόματο (προεπιλογή)</translation>
 <translation id="4880827082731008257">Αναζήτηση ιστορικού</translation>
@@ -1017,6 +1020,7 @@
 <translation id="650855688985305916">Ναι, να αποθηκευτεί</translation>
 <translation id="6508722015517270189">Επανεκκινήστε το Chrome</translation>
 <translation id="6517596291481585650">Προειδοποίηση: Αυτή η πολιτική δεν συγχωνεύτηκε ως λίστα, όπως ορίζεται από την πολιτική, επειδή δεν είναι λίστα.</translation>
+<translation id="6521745193039995384">Ανενεργή</translation>
 <translation id="6529602333819889595">&amp;Επανάληψη διαγραφής</translation>
 <translation id="6534179046333460208">Προτάσεις Φυσικού δικτύου</translation>
 <translation id="6545864417968258051">Σάρωση Bluetooth</translation>
@@ -1480,6 +1484,7 @@
 <translation id="9076630408993835509">Αυτός ο ιστότοπος δεν είναι διαχειριζόμενος από κάποια εταιρεία ή άλλον οργανισμό. Η διαχείριση της δραστηριότητας σε αυτήν τη συσκευή μπορεί να πραγματοποιηθεί εκτός Chrome. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Απαιτούνται περισσότερες πληροφορίες</translation>
 <translation id="9080712759204168376">Σύνοψη παραγγελίας</translation>
+<translation id="9089260154716455634">Πολιτική ελεύθερου χρόνου:</translation>
 <translation id="9095388113577226029">Περισσότερες γλώσσες…</translation>
 <translation id="9103872766612412690">Κανονικά, ο ιστότοπος <ph name="SITE" /> χρησιμοποιεί κρυπτογράφηση για να προστατεύει τα στοιχεία σας. Όταν το Chromium επιχείρησε πρόσφατα να συνδεθεί στο <ph name="SITE" />, ο ιστότοπος ανταποκρίθηκε δημιουργώντας ασυνήθιστα και εσφαλμένα διαπιστευτήρια. Αυτό μπορεί να συμβεί όταν κάποιος εισβολέας προσπαθεί να υποκριθεί ότι είναι ο ιστότοπος <ph name="SITE" /> ή όταν κάποια οθόνη σύνδεσης Wi-Fi έχει διακόψει τη σύνδεσή σας. Τα στοιχεία σας εξακολουθούν να είναι ασφαλή επειδή το Chromium διέκοψε τη σύνδεση πριν από την ανταλλαγή δεδομένων.</translation>
 <translation id="9106062320799175032">Προσθήκη διεύθυνσης χρέωσης</translation>

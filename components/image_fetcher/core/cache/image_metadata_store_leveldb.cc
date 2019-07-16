@@ -74,8 +74,7 @@ ImageMetadataStoreLevelDB::ImageMetadataStoreLevelDB(
     : estimated_size_(0),
       initialization_status_(InitializationStatus::UNINITIALIZED),
       database_(std::move(database)),
-      clock_(clock),
-      weak_ptr_factory_(this) {}
+      clock_(clock) {}
 
 ImageMetadataStoreLevelDB::~ImageMetadataStoreLevelDB() = default;
 

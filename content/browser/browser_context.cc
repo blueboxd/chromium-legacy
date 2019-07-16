@@ -832,10 +832,6 @@ SharedCorsOriginAccessList* BrowserContext::GetSharedCorsOriginAccessList() {
   return empty_list->get();
 }
 
-SmsService* BrowserContext::GetSmsService() {
-  return nullptr;
-}
-
 NativeFileSystemPermissionContext*
 BrowserContext::GetNativeFileSystemPermissionContext() {
   return nullptr;

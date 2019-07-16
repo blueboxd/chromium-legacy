@@ -68,6 +68,13 @@ extern const char kPriceRe[];
 //   - https://upipayments.co.in/virtual-payment-address-vpa/
 extern const char kUPIVirtualPaymentAddressRe[];
 
+// Used to match field data that might be an International Bank Account Number.
+// TODO(crbug.com/977377): The regex doesn't match IBANs for Saint Lucia (LC),
+// Kazakhstan (KZ) and Romania (RO). Consider replace the regex with something
+// like "(?:IT|SM)\d{2}[A-Z]\d{22}|CY\d{2}[A-Z]\d{23}...". For reference:
+//    - https://www.swift.com/resource/iban-registry-pdf
+extern const char kInternationalBankAccountNumberRe[];
+
 // Match the path values for form actions that look like generic search:
 //  e.g. /search
 //       /search/

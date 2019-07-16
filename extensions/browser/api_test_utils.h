@@ -50,8 +50,7 @@ class SendResponseHelper {
   // Response handler.
   void OnResponse(ExtensionFunction::ResponseType response,
                   const base::ListValue& results,
-                  const std::string& error,
-                  functions::HistogramValue histogram_value);
+                  const std::string& error);
 
   base::RunLoop run_loop_;
   std::unique_ptr<bool> response_;

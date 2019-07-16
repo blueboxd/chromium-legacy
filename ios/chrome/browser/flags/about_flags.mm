@@ -587,6 +587,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,
      flag_descriptions::kEnableSyncUSSNigoriDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncUSSNigori)},
+    {"enable-autofill-save-card-show-no-thanks",
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 };
 
 // Add all switches from experimental flags to |command_line|.

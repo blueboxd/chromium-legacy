@@ -109,7 +109,7 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
   scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
-  base::WeakPtrFactory<NonBlockingInvalidator> weak_ptr_factory_;
+  base::WeakPtrFactory<NonBlockingInvalidator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingInvalidator);
 };

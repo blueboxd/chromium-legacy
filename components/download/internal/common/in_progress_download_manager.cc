@@ -178,8 +178,7 @@ InProgressDownloadManager::InProgressDownloadManager(
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
       use_empty_db_(in_progress_db_dir.empty()),
-      connector_(connector),
-      weak_factory_(this) {
+      connector_(connector) {
   Initialize(in_progress_db_dir);
 }
 

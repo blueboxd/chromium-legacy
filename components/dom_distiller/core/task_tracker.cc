@@ -36,8 +36,7 @@ TaskTracker::TaskTracker(const ArticleEntry& entry,
       entry_(entry),
       distilled_article_(),
       content_ready_(false),
-      destruction_allowed_(true),
-      weak_ptr_factory_(this) {}
+      destruction_allowed_(true) {}
 
 TaskTracker::~TaskTracker() {
   DCHECK(destruction_allowed_);

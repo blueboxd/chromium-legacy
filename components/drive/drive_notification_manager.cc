@@ -55,8 +55,7 @@ DriveNotificationManager::DriveNotificationManager(
       push_notification_enabled_(false),
       observers_notified_(false),
       batch_timer_(clock),
-      use_fcm_object_ids_(use_fcm_object_ids),
-      weak_ptr_factory_(this) {
+      use_fcm_object_ids_(use_fcm_object_ids) {
   DCHECK(invalidation_service_);
   RegisterDriveNotifications();
   RestartPollingTimer();

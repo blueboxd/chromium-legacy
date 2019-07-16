@@ -18,9 +18,7 @@ namespace safe_browsing {
 RendererURLLoaderThrottle::RendererURLLoaderThrottle(
     mojom::SafeBrowsing* safe_browsing,
     int render_frame_id)
-    : safe_browsing_(safe_browsing),
-      render_frame_id_(render_frame_id),
-      weak_factory_(this) {}
+    : safe_browsing_(safe_browsing), render_frame_id_(render_frame_id) {}
 
 RendererURLLoaderThrottle::~RendererURLLoaderThrottle() {
   if (deferred_)

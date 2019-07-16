@@ -33,8 +33,7 @@ GLOutputSurface::GLOutputSurface(
       use_gpu_fence_(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
-              .use_gpu_fences_for_overlay_planes),
-      weak_ptr_factory_(this) {
+              .use_gpu_fences_for_overlay_planes) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
   capabilities_.supports_stencil =

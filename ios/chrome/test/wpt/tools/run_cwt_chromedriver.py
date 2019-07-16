@@ -58,7 +58,7 @@ output_directory = os.path.join(args.out_dir, 'run%d' %  int(time.time()))
 
 egtests_app = xcodebuild_runner.EgtestsApp(
     egtests_app=test_app, test_args=['--port %s' % args.port],
-    host_app_path=host_app, invert=True)
+    host_app_path=host_app)
 
 launch_command = xcodebuild_runner.LaunchCommand(egtests_app, destination,
     shards=1, retries=1, out_dir=output_directory)

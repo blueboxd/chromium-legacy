@@ -37,8 +37,7 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       surface_resource_holder_(this),
       is_root_(is_root),
       needs_sync_tokens_(needs_sync_tokens),
-      allow_copy_output_requests_(is_root),
-      weak_factory_(this) {
+      allow_copy_output_requests_(is_root) {
   // This may result in SetBeginFrameSource() being called.
   frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
 }

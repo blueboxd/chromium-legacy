@@ -104,6 +104,11 @@ class CBOR_EXPORT Value {
     UNDEFINED = 23,
   };
 
+  // Returns a Value with Type::INVALID_UTF8. This factory method lets tests
+  // encode such a value as a CBOR string. It should never be used outside of
+  // tests since encoding may yield invalid CBOR data.
+  static Value InvalidUTF8StringValueForTesting(base::StringPiece in_string);
+
   Value(Value&& that) noexcept;
   Value() noexcept;  // A NONE value.
 
@@ -174,7 +179,7 @@ class CBOR_EXPORT Value {
  private:
   friend class Reader;
   // This constructor allows INVALID_UTF8 values to be created, which only
-  // |Reader| may do.
+  // |Reader| and InvalidUTF8StringValueForTesting() may do.
   Value(base::span<const uint8_t> in_bytes, Type type);
 
   Type type_;
@@ -193,6 +198,7 @@ class CBOR_EXPORT Value {
 
   DISALLOW_COPY_AND_ASSIGN(Value);
 };
+
 }  // namespace cbor
 
 #endif  // COMPONENTS_CBOR_VALUES_H_

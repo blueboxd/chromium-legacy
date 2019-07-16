@@ -2300,8 +2300,14 @@ void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
   for (const auto& request : requests) {
     switch (request.AlgorithmType()) {
       case NGBaselineAlgorithmType::kAtomicInline: {
-        if (Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline())
+        if (Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline()) {
+          LayoutUnit block_end = container_builder_.BlockSize();
+          NGBoxStrut margins =
+              ComputeMarginsForSelf(ConstraintSpace(), Style());
+          container_builder_.AddBaseline(request,
+                                         block_end + margins.block_end);
           break;
+        }
 
         const auto& children = container_builder_.Children();
         for (auto it = children.rbegin(); it != children.rend(); ++it) {

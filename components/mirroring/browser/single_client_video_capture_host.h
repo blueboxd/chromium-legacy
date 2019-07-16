@@ -128,7 +128,7 @@ class SingleClientVideoCaptureHost final
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SingleClientVideoCaptureHost> weak_factory_;
+  base::WeakPtrFactory<SingleClientVideoCaptureHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientVideoCaptureHost);
 };

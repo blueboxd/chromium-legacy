@@ -6,6 +6,7 @@
 #define COMPONENTS_SERVICES_LEVELDB_LEVELDB_DATABASE_IMPL_H_
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "base/trace_event/memory_dump_provider.h"
@@ -44,6 +45,8 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
   void GetPrefixed(const std::vector<uint8_t>& key_prefix,
                    GetPrefixedCallback callback) override;
+  void GetMany(std::vector<mojom::GetManyRequestPtr> keys_or_prefixes,
+               GetManyCallback callback) override;
   void CopyPrefixed(const std::vector<uint8_t>& source_key_prefix,
                     const std::vector<uint8_t>& destination_key_prefix,
                     CopyPrefixedCallback callback) override;
@@ -79,11 +82,16 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
   void SetCloseBindingClosure(base::OnceClosure close_binding);
 
  private:
+  using StatusAndKeyValues =
+      std::tuple<Status, std::vector<mojom::KeyValuePtr>>;
+
   // Returns the state of |it| to a caller. Note: This assumes that all the
   // iterator movement methods have the same callback signature. We don't
   // directly reference the underlying type in case of bindings change.
   void ReplyToIteratorMessage(leveldb::Iterator* it,
                               IteratorSeekToFirstCallback callback);
+
+  StatusAndKeyValues GetPrefixedHelper(const std::vector<uint8_t>& key_prefix);
 
   leveldb::Status DeletePrefixedHelper(const leveldb::Slice& key_prefix,
                                        leveldb::WriteBatch* batch);

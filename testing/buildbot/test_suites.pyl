@@ -3657,34 +3657,6 @@
           '${buildername}',
         ],
       },
-      'pixel': {
-        'name': 'pixel_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
-          '--os-type',
-          '${os_type}',
-          '--build-revision',
-          '${got_revision}',
-          '--test-machine-name',
-          '${buildername}',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
-        'precommit_args': [
-          '--download-refimg-from-cloud-storage',
-        ],
-      },
-      'screenshot_sync': {
-        'args': [
-          '--dont-restore-color-profile-after-test',
-        ],
-      },
-    },
-
-    'gpu_telemetry_tests_for_skia_gold_testing': {
       'pixel_skia': {
         'name': 'pixel_skia_gold_test',
         'args': [
@@ -3718,6 +3690,11 @@
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
         'telemetry_test_name': 'pixel',
+      },
+      'screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+        ],
       },
     },
 
@@ -4524,6 +4501,64 @@
       },
     },
 
+    'skia_renderer_isolated_scripts': {
+      'skia_renderer_swiftshader_blink_web_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--use-gl=swiftshader',
+          '--additional-driver-flag=--enable-gpu-rasterization',
+          '--additional-driver-flag=--force-gpu-rasterization',
+          '--additional-driver-flag=--enable-oop-rasterization',
+          '--fuzzy-diff',
+          '--skipped=always',
+          '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-gl=swiftshader',
+        ],
+        'isolate_name': 'blink_web_tests_exparchive',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
+      },
+      'vulkan_swiftshader_blink_web_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
+          '--additional-driver-flag=--enable-gpu-rasterization',
+          '--additional-driver-flag=--force-gpu-rasterization',
+          '--additional-driver-flag=--enable-oop-rasterization',
+          '--additional-driver-flag=--use-vulkan=swiftshader',
+          '--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing',
+          '--fuzzy-diff',
+          '--skipped=always',
+          '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=swiftshader',
+        ],
+        'isolate_name': 'blink_web_tests_exparchive',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
+      },
+   },
+
     'system_webview_shell_instrumentation_tests': {
       'system_webview_shell_layout_test_apk': {},
     },
@@ -4776,7 +4811,24 @@
         # Experimental until we're sure these are stable.
         'experiment_percentage': 100,
       }
-    }
+    },
+
+    'wpt_web_tests': {
+      'wpt_tests_suite': {
+        'args': [
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate',
+        'swarming': {
+          'shards': 10,
+        },
+      },
+    },
   },
 
   ##############################################################################
@@ -5111,14 +5163,12 @@
     'gpu_common_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
     'gpu_common_win_and_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
@@ -5136,7 +5186,7 @@
     ],
 
     'gpu_fyi_android_webgl2_and_gold_telemetry_tests': [
-      'gpu_telemetry_tests_for_skia_gold_testing',
+      'gpu_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
     ],
 
@@ -5152,7 +5202,6 @@
     'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
@@ -5206,26 +5255,15 @@
       'gpu_swiftshader_gtests',
     ],
 
-    # Gold tests added here since all bot that use it are FYI-only.
     'gpu_fyi_mac_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # TODO(https://crbug.com/850107): Merge this back into
-    # gpu_fyi_optional_telemetry_tests once Gold is stabilized.
-    'gpu_fyi_optional_gold_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
-      'gpu_webgl2_conformance_telemetry_tests',
-    ],
-
     'gpu_fyi_optional_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
@@ -5248,12 +5286,9 @@
       'gpu_win_specific_gtests',
     ],
 
-    # Gold tests added directly here since the only two builders that use this
-    # set of tests are FYI.
     'gpu_fyi_win7_nvidia_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
@@ -5263,12 +5298,9 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
-    # Gold tests added directly here since the only two builders that use this
-    # set of tests are FYI.
     'gpu_fyi_win_amd_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_validating_telemetry_tests',
@@ -5292,30 +5324,24 @@
       'gpu_win_specific_gtests',
     ],
 
-    # Gold tests added here since the only builder that uses it is FYI.
     'gpu_fyi_win_and_linux_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # Gold tests added here since the only builder that uses it is FYI.
     'gpu_fyi_win_and_linux_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
-    # Gold tests added here since the only two builders that use this are FYI.
     'gpu_fyi_win_debug_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_validating_telemetry_tests',
@@ -5338,11 +5364,9 @@
       'gpu_win_specific_gtests',
     ],
 
-    # Gold tests added here since all bots that use it are FYI-only.
     'gpu_fyi_win_intel_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
@@ -5363,11 +5387,9 @@
       'gpu_swiftshader_gtests',
     ],
 
-    # Gold tests added here since all the bots that use it are FYI-only.
     'gpu_fyi_win_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
@@ -5381,7 +5403,6 @@
     'gpu_nexus5x_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
@@ -5389,14 +5410,12 @@
     'gpu_nexus5x_telemetry_tests_v8': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
     'gpu_optional_win_intel_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
@@ -5407,7 +5426,6 @@
 
     'gpu_optional_win_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d11_validating_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
@@ -5420,7 +5438,6 @@
     'gpu_v8_desktop_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
-      'gpu_telemetry_tests_for_skia_gold_testing',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],

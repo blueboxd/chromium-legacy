@@ -33,9 +33,7 @@ namespace dom_distiller {
 
 DomDistillerStore::DomDistillerStore(
     std::unique_ptr<ProtoDatabase<ArticleEntry>> database)
-    : database_(std::move(database)),
-      database_loaded_(false),
-      weak_ptr_factory_(this) {
+    : database_(std::move(database)), database_loaded_(false) {
   database_->Init(base::BindOnce(&DomDistillerStore::OnDatabaseInit,
                                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -45,8 +43,7 @@ DomDistillerStore::DomDistillerStore(
     const std::vector<ArticleEntry>& initial_data)
     : database_(std::move(database)),
       database_loaded_(false),
-      model_(initial_data),
-      weak_ptr_factory_(this) {
+      model_(initial_data) {
   database_->Init(base::BindOnce(&DomDistillerStore::OnDatabaseInit,
                                  weak_ptr_factory_.GetWeakPtr()));
 }

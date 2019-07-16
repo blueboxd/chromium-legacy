@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Ei ole kunagi salvestatud</translation>
 <translation id="1067922213147265141">Muud Google'i teenused</translation>
 <translation id="1068672505746868501">Ära tõlgi kunagi <ph name="SOURCE_LANGUAGE" /> keeles olevaid lehti</translation>
-<translation id="1080790410959514870">Logite välja kontolt, mida haldab <ph name="DOMAIN_NAME" />. Selle tulemusel kustutatakse seadmesse salvestatud Chrome'i andmed, kuid need säilivad teie Google'i kontol.</translation>
 <translation id="1100066534610197918">Ava rühmas uuel vahelehel</translation>
 <translation id="1105960400813249514">Kuva jäädvustamine</translation>
 <translation id="1111673857033749125">Siin kuvatakse teie teistes seadmetes salvestatud järjehoidjad.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> on lisatud</translation>
 <translation id="1373696734384179344">Valitud sisu allalaadimiseks pole piisavalt mäluruumi.</translation>
 <translation id="1376578503827013741">Arvutamine …</translation>
-<translation id="138361230106469022">Tere, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="1384959399684842514">Allalaadimine peatatud</translation>
 <translation id="1386674309198842382">Aktiivne <ph name="LAST_UPDATED" /> päeva tagasi</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">Küsi, kui sait soovib läheduses asuvaid Bluetoothi seadmeid tuvastada (soovitatav)</translation>
 <translation id="230115972905494466">Ühilduvaid seadmeid ei leitud</translation>
 <translation id="2315043854645842844">Operatsioonisüsteem ei toeta kliendipoolset sertifikaadi valimist.</translation>
+<translation id="2318045970523081853">Puudutage helistamiseks</translation>
 <translation id="2321086116217818302">Paroolide ettevalmistamine …</translation>
 <translation id="2321958826496381788">Lohistage liugurit, kuni saate seda mugavalt lugeda. Lõigu topeltkoputamisel peab tekst olema vähemalt nii suur.</translation>
 <translation id="2323763861024343754">Saidi salvestusruum</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">Allalaadimine jõudis lõpule: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Juurdepääs asukohale</translation>
 <translation id="2450083983707403292">Kas soovite faili <ph name="FILE_NAME" /> allalaadimist uuesti alustada?</translation>
-<translation id="2476578072172137802">Saidi seaded</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="2490684707762498678">Haldab <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google'i assistent Chrome'is</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">Suurus:</translation>
 <translation id="3443221991560634068">Praeguse lehe uuesti laadimine</translation>
 <translation id="3445014427084483498">Just praegu</translation>
-<translation id="3452612588551937789">Logige sisse oma Google'i kontoga, et oma järjehoidjaid, ajalugu, paroole ja muid seadeid kõigis oma seadmetes näha.</translation>
 <translation id="3478363558367712427">Võite valida oma otsingumootori</translation>
 <translation id="3492207499832628349">Uus inkognito vaheleht</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /> soovitatud sisu kohta</translation>
 <translation id="3513704683820682405">Liitreaalsus</translation>
 <translation id="3518985090088779359">Nõustu ja jätka</translation>
 <translation id="3522247891732774234">Värskendus on saadaval. Rohkem valikuid</translation>
+<translation id="3524138585025253783">Arendaja kasutajaliides</translation>
 <translation id="3527085408025491307">Kaust</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB on saadaval</translation>
 <translation id="3549657413697417275">Otsige oma ajaloost</translation>
-<translation id="3552151358455404883">Chrome'i sünkroonimist ja isikupärastamist saate hallata jaotises <ph name="BEGIN_LINK1" />Seaded<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Kontaktide lisamine</translation>
 <translation id="3566923219790363270">Chrome teeb VR-i kasutamiseks endiselt ettevalmistusi. Taaskäivitage Chrome hiljem.</translation>
 <translation id="3568688522516854065">Oma teistest seadmetest vahelehtede hankimiseks logige sisse ja lülitage sünkroonimine sisse</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Minu andmete kombineerimine</translation>
 <translation id="393697183122708255">Lubatud häälotsing pole saadaval</translation>
-<translation id="3950820424414687140">Sisselogimine</translation>
 <translation id="395206256282351086">Otsingu- ja saidisoovitused on keelatud</translation>
 <translation id="3955193568934677022">Luba saitidel esitada kaitstud sisu (soovitatav)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome laadib teie lehe, kui see on valmis}other{Chrome laadib teie lehed, kui need on valmis}}</translation>
@@ -458,7 +454,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="447252321002412580">Aidake täiustada Chrome'i funktsioone ja toimivust</translation>
 <translation id="4479647676395637221">Küsi enne saitidele minu kaamera kasutamiseks juurdepääsu lubamist (soovitatav)</translation>
 <translation id="4479972344484327217">Chrome'i jaoks installitakse moodulit <ph name="MODULE" /> …</translation>
-<translation id="4482194545587547824">Google võib kasutada teie sirvimisajalugu otsingu ja teiste Google'i teenuste isikupärastamiseks</translation>
 <translation id="4487967297491345095">Kõik Chrome'i rakenduse andmed kustutatakse jäädavalt. See hõlmab kõiki faile, seadeid, kontosid, andmebaase jms.</translation>
 <translation id="4493497663118223949">Lihtsustatud režiim on sees</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# päev tagasi}other{# päeva tagasi}}</translation>
@@ -469,7 +464,6 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4532845899244822526">Kausta valimine</translation>
 <translation id="4538018662093857852">Lülita lihtsustatud režiim sisse</translation>
 <translation id="4550003330909367850">Parooli vaatamiseks või siia kleepimiseks määrake selles seadmes ekraanilukk.</translation>
-<translation id="4556110439722119938">Teie järjehoidjad, ajalugu, paroolid ja muud seaded sünkroonitakse teie Google'i kontoga, et saaksite neid kasutada kõigis oma seadmetes</translation>
 <translation id="4558311620361989323">Veebilehe otseteed</translation>
 <translation id="4561979708150884304">Ühendus puudub</translation>
 <translation id="4565377596337484307">Peida parool</translation>
@@ -616,7 +610,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5527111080432883924">Küsi luba, kui sait soovib lugeda lõikelaual olevat teksti ja pilte (soovitatav)</translation>
 <translation id="5530766185686772672">Inkognito vahelehtede sulgemine</translation>
 <translation id="5534640966246046842">Sait on kopeeritud</translation>
-<translation id="5537099431952529648">Teie (ja teie vanemad) saate Chrome'i sünkroonimist ning isikupärastamist hallata jaotises <ph name="BEGIN_LINK1" />Seaded<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5561549206367097665">Võrguühenduse ootamine …</translation>
 <translation id="557283862590186398">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda.</translation>
@@ -712,7 +705,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teile reklaame, mis ei põhine muudel külastatud veebisaitidel. Paljud veebisaidid koguvad ning kasutavad endiselt teie sirvimisandmeid, näiteks turvalisuse parandamiseks, sisu, reklaamide ja soovituste pakkumiseks ning aruandlusstatistika loomiseks.</translation>
 <translation id="624789221780392884">Värskendus on valmis</translation>
 <translation id="6255999984061454636">Sisu soovitused</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> soovib otsida läheduses olevaid Bluetooth-seadmeid. Leiti järgmised seadmed:</translation>
 <translation id="6277522088822131679">Lehe printimisel ilmnes probleem. Proovige uuesti.</translation>
 <translation id="6295158916970320988">Kõik saidid</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -774,6 +766,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6659594942844771486">Vaheleht</translation>
 <translation id="666731172850799929">Ava rakenduses <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome'i privaatsusteatis</translation>
+<translation id="6676840375528380067">Kas kustutada sellest seadmest Chrome'i andmed?</translation>
 <translation id="6697492270171225480">Kui lehte ei leita, kuvatakse sarnaste lehtede soovitusi</translation>
 <translation id="6697947395630195233">Chrome vajab juurdepääsu teie asukohale, et seda selle saidiga jagada.</translation>
 <translation id="6698801883190606802">Sünkroonitud andmete haldamine</translation>
@@ -792,7 +785,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6803423358608456383">Avatud vahelehti poole kõrgusega</translation>
 <translation id="6811034713472274749">Leht on vaatamiseks valmis</translation>
 <translation id="6818926723028410516">Valige üksused</translation>
-<translation id="6820607729870073286">Teil pole salvestatud veebilehe seadeid.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tõlgi</translation>
 <translation id="6845325883481699275">Aidake Chrome'i turvalisust täiustada</translation>
@@ -815,7 +807,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Tõlkimisseadete lähtestamine</translation>
 <translation id="6979737339423435258">Algusest</translation>
-<translation id="6980462514016882061">Google võib kasutada teie sirvimisajalugu otsingu, reklaamide ja muude Google'i teenuste isikupärastamiseks</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="6989267951144302301">Ei saanud alla laadida</translation>
 <translation id="6990079615885386641">Hankige rakendus Google Play poest: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7180611975245234373">Värskenda</translation>
 <translation id="7189372733857464326">Google Play teenuste värskendamise lõpetamise ootamine</translation>
 <translation id="7191430249889272776">Taustal on avatud vaheleht.</translation>
-<translation id="722055596168483966">Google'i teenuste isikupärastamine</translation>
 <translation id="723171743924126238">Kujutiste valimine</translation>
 <translation id="7233236755231902816">Hankige Chrome'i uusim versioon, et saaksite oma keeles veebi sirvida</translation>
 <translation id="7243308994586599757">Valikud on saadaval ekraani allosas</translation>
@@ -962,6 +952,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7999064672810608036">Kas soovite kindlasti kustutada kõik kohalikud andmed (sh küpsised) ja lähtestada kõik selle veebisaidi load?</translation>
 <translation id="8004582292198964060">Brauser</translation>
 <translation id="8007176423574883786">Selle seadme puhul on välja lülitatud</translation>
+<translation id="8013372441983637696">Kustuta sellest seadmest ka Chrome'i andmed</translation>
 <translation id="8015452622527143194">Lehel kuvatud sisu vaikesuuruses kuvamine</translation>
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>
 <translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
@@ -1078,7 +1069,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, vahekaart</translation>
 <translation id="885701979325669005">Salvestamine</translation>
 <translation id="8901170036886848654">Ei leitud ühtegi järjehoidjat</translation>
-<translation id="8904976895050290827">Chrome'i sünkroonimine</translation>
 <translation id="8909135823018751308">Jaga ...</translation>
 <translation id="8912362522468806198">Google'i konto</translation>
 <translation id="8920114477895755567">Vanema üksikasjade ootamine.</translation>

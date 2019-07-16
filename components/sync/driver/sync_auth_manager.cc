@@ -61,8 +61,7 @@ SyncAuthManager::SyncAuthManager(
       account_state_changed_callback_(account_state_changed),
       credentials_changed_callback_(credentials_changed),
       registered_for_auth_notifications_(false),
-      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
-      weak_ptr_factory_(this) {
+      request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy) {
   // |identity_manager_| can be null if local Sync is enabled.
 }
 

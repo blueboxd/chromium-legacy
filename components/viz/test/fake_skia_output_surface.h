@@ -124,7 +124,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<FakeSkiaOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeSkiaOutputSurface> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeSkiaOutputSurface);
 };

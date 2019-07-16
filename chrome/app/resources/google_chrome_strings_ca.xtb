@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">S'està actualitzant Google Chrome...</translation>
 <translation id="1469002951682717133">Menú d'aplicacions de Chrome</translation>
 <translation id="1553358976309200471">Actualitza Chrome</translation>
-<translation id="1585657529869845941">Si es mostra l'opció <ph name="BEGIN_BOLD" />Canvia igualment<ph name="END_BOLD" />, fes-hi clic</translation>
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1587325591171447154">Chrome ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
 <translation id="1590588151039584890">Per fer l'actualització, cal que Chrome deixi d'executar-se en aquest ordinador. Com a conseqüència, és possible que altres usuaris que hagin iniciat la sessió en aquest ordinador perdin els canvis que no hagin desat.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome no pot llegir ni escriure en el directori de dades: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navega d'una manera més segura pel web amb la protecció integrada contra programari maliciós i llocs de pesca de credencials a Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome es reiniciarà d'aquí a 1 hora}other{Chrome es reiniciarà d'aquí a # hores}}</translation>
-<translation id="1718131156967340976">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome desarà aquesta contrasenya al Compte de Google. No caldrà que la recordis.</translation>
 <translation id="174539241580958092">Google Chrome no ha pogut sincronitzar les dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3873044882194371212">Obre l'enllaç en una finestra d'incò&amp;gnit a Chrome</translation>
 <translation id="3889417619312448367">Desinstal·la Google Chrome</translation>
 <translation id="3898493977366060150">Navegació web amb les eines intel·ligents de Google</translation>
-<translation id="4028693306634653894">Accedeix a Chrome més de pressa</translation>
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
 <translation id="4053720452172726777">Personalitza i controla Google Chrome</translation>
 <translation id="4143243756087420366">Nom i foto de Chrome</translation>
@@ -236,7 +233,6 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7808348361785373670">Suprimeix de Chrome...</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome està actualitzat</translation>
-<translation id="7888186132678118370">Ancora Chrome a la barra de tasques</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
 <translation id="7896673875602241923">Algú ha iniciat anteriorment la sessió a Chrome en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuari de Chrome per mantenir la informació separada.</translation>
 <translation id="7908168227788431038">Gairebé heu acabat. Reinicieu Google Chrome per completar l'actualització.</translation>
@@ -285,6 +281,5 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="9138603949443464873">Torna a iniciar Chrome perquè s'apliquin els canvis</translation>
 <translation id="919706545465235479">Actualitza Chrome per iniciar la sincronització</translation>
-<translation id="924447568950697217">Estableix Chrome com a navegador predeterminat</translation>
 <translation id="989369509083708165">Google Chrome és el navegador predeterminat</translation>
 </translationbundle>

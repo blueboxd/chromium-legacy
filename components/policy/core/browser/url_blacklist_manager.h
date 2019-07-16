@@ -168,7 +168,7 @@ class POLICY_EXPORT URLBlacklistManager {
   std::unique_ptr<URLBlacklist> blacklist_;
 
   // Used to post update tasks to the UI thread.
-  base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_;
+  base::WeakPtrFactory<URLBlacklistManager> ui_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLBlacklistManager);
 };

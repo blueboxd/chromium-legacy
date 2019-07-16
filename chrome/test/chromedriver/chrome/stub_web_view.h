@@ -108,7 +108,6 @@ class StubWebView : public WebView {
                                  int y,
                                  int xoffset,
                                  int yoffset) override;
-  Status SynthesizePinchGesture(int x, int y, double scale_factor) override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;

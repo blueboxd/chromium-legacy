@@ -84,8 +84,7 @@ UkmService::UkmService(PrefService* pref_service,
       client_(client),
       reporting_service_(client, pref_service),
       initialize_started_(false),
-      initialize_complete_(false),
-      self_ptr_factory_(this) {
+      initialize_complete_(false) {
   DCHECK(pref_service_);
   DCHECK(client_);
   DVLOG(1) << "UkmService::Constructor";

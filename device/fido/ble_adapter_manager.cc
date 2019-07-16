@@ -38,7 +38,7 @@ void BleAdapterManager::SetAdapterPower(bool set_power_on) {
 }
 
 void BleAdapterManager::InitiatePairing(std::string authenticator_id,
-                                        std::string pin_code,
+                                        base::Optional<std::string> pin_code,
                                         base::OnceClosure success_callback,
                                         base::OnceClosure error_callback) {
   DCHECK(adapter_);
@@ -56,8 +56,12 @@ void BleAdapterManager::InitiatePairing(std::string authenticator_id,
     return;
   }
 
+  // Devices that pair using the 'Just Works' method may expect a passkey set
+  // to zero.
+  const std::string pin = pin_code ? std::move(*pin_code) : "0";
+
   pairing_delegate_.StoreBlePinCodeForDevice(std::move(authenticator_id),
-                                             std::move(pin_code));
+                                             std::move(pin));
 
   auto failure_callback = base::BindOnce(
       [](base::OnceClosure callback,

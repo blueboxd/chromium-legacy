@@ -190,13 +190,6 @@ test("cast_base_unittests") {
   ]
 }
 
-if (build_for_android_things_n) {
-  config("absence-no-function-error") {
-    # for n build doesn't use all functions
-    cflags = [ "-Wno-unused-function" ]
-  }
-}
-
 # Declares CreateSysInfo() without defining the implementation (see below).
 cast_source_set("cast_sys_info_util") {
   public = [
@@ -252,9 +245,6 @@ if (is_android) {
         "cast_sys_info_android_things.cc",
         "cast_sys_info_android_things.h",
       ]
-      if (build_for_android_things_n) {
-        configs += [ ":absence-no-function-error" ]
-      }
     }
   }
 } else {  # !is_android

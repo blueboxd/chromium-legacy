@@ -3304,19 +3304,8 @@ Ikiwa sera haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
 <translation id="7123160381479171745">Hubainisha orodha ya watumiaji ambao wanaruhusiwa kuingia katika akaunti kwenye kifaa. Hoja zinazowekwa ni za muundo wa <ph name="USER_WHITELIST_ENTRY_FORMAT" />, kama vile <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Ili kuruhusu watumiaji wowote kwenye kikoa, tumia hoja za muundo wa <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Ikiwa mipangilio ya sera hii haijawekwa, hakuna vizuizi ambavyo watumiaji wanahitaji kuingia katika akaunti yake. Kumbuka kuwa hatua ya kuweka watumiaji wapya bado inahitaji mipangilio ya sera ya <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> kuwekwa ifaavyo.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> huwezesha usakinishaji na usasishaji salama wa viendelezi. Hata hivyo, huenda maudhui ya baadhi ya viendelezi vinavyopangishwa nje ya Duka la Chrome kwenye Wavuti yakalindwa tu kwa kutumia njia isiyo salama ya kuambatisha vyeti au algoriti za kupunguza urefu kama vile SHA1. Sera hii inapozimwa, usakinishaji mpya na masasisho ya viendelezi kama hivyo havitaruhusiwa na Chrome (hadi wasanidi wa viendelezi waunde upya viendelezi vinavyotumia algoriti thabiti). Sera hii ikiwashwa, usakinishaji na masasisho ya viendelezi kama hivi utaruhusiwa.
-
-          Sera isipowekwa, hali hii itawashwa kwa chaguomsingi.
-          Kwa kuanzia <ph name="PRODUCT_NAME" /> 75, sera isipowekwa, hali hii itazimwa kwa chaguomsingi.
-
-          Kwa kuanzia <ph name="PRODUCT_NAME" /> 77, sera hii haitatumiwa na itachukuliwa kuwa imezimwa.</translation>
 <translation id="7126716959063786004">Washa kipengele cha kutamatisha shughuli katika Kidhibiti cha Shughuli kwenye Chrome</translation>
 <translation id="7127892035367404455">Rejea kwenye toleo lengwa</translation>
-<translation id="7128918109610518786">Inaorodhesha vitambuaji vya programu <ph name="PRODUCT_OS_NAME" /> huonyesha kama programu zilizobanwa katika upau wa kizinduzi.
-
-      Ikiwa sera hii itasanidiwa, uwekaji wa programu ni wa kudumu na hauwezi kubadilishwa na mtumiaji..
-
-      Ikiwa sera hii itaachwa bila kuwekwa, huenda mtumiaji akabadilisha orodha ya programu zilizobanwa katika kizinduzi.</translation>
 <translation id="713121532817834879">Sera hii ni URL inayorejelea faili ya XML katika muundo sawa na sera ya Internet Explorer ya <ph name="IEEM_SITELIST_POLICY" />. Sera hii hupakia sheria kutoka faili ya XML, bila kushiriki sheria hizo na Internet Explorer.
 
       Sheria katika faili ya XML hutumika kwa njia sawa kama <ph name="GREYLIST_POLICY_NAME" />. Sheria hizi huzuia <ph name="PRODUCT_NAME" /> kufungua kivinjari mbadala na pia huzuia kivinjari mbadala kufungua <ph name="PRODUCT_NAME" />.
@@ -4148,12 +4137,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 
           Ukilemaza mpangilio huu au uuache bila kuuweka, jina la kanuni la seva litathibitishwa kupitia kidokezo cha CNAME.</translation>
 <translation id="8764477907716150749">Sera hii inatumiwa na <ph name="PRODUCT_NAME" /> ndani ya kampuni.</translation>
-<translation id="8765776988041674792">Weka mipangilio ya URL ya kubadilisha nenosiri (Mifumo ya HTTP na HTTPS pekee). Huduma ya ulinzi wa manenosiri itawaelekeza watumiaji kwenye URL hii ili wabadilishe manenosiri yao baada ya kuona ilani katika kivinjari.
-      Ili <ph name="PRODUCT_NAME" /> iweze kurekodi vizuri alama bainifu ya nenosiri jipya kwenye ukurasa huu wa kubadilisha nenosiri, tafadhali hakikisha kuwa ukurasa wa kubadilisha nenosiri lako unafuata mwongozo ulio kwenye https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Iwapo umewasha mipangilio hii, inamaanisha kuwa huduma ya ulinzi wa nenosiri itaelekeza watumiaji kwenye URL hii ili wabadilishe nenosiri lao baada ya kuona onyo katika kivinjari.
-      Iwapo mipangilio imezimwa au haijawekwa, inamaanisha kuwa huduma ya ulinzi wa nenosiri itaelekeza watumiaji kwenye https://myaccounts.google.com ili wabadilishe nenosiri lao.
-      Sera hii inapatikana kwenye matukio ya Windows ambayo yameunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />. au matukio ya Windows 10 Pro au Enterprise yaliyojumuishwa katika usimamizi wa kifaa.</translation>
 <translation id="8798099450830957504">Chaguomsingi</translation>
 <translation id="8800453707696044281">Weka mipangilio ya kusimamisha mchakato wa kuchaji betri katika asilimia</translation>
 <translation id="8801680448782904838">Imwarifu mtumiaji kwamba anashauriwa au anatakiwa afungue upya kivinjari au azime kisha awashe kifaa</translation>
@@ -4281,9 +4264,6 @@ kiwekwe kwenye maombi yote ya HTTP na HTTPS katika vikoa vyote vya google.com, j
 
       Thamani ya sera lazima ibainishwe katika sekunde.</translation>
 <translation id="9035964157729712237">Vitambulisho vya viendelezi vya kuondolewa kenye orodha isiyokubalika</translation>
-<translation id="9038058011835642205">Hubainisha orodha ya tovuti zinazosakinishwa chinichini bila kumhusisha mtumiaji na ambazo haziwezi kuondolewa wala kuzimwa na mtumiaji.
-
-      Kila kipengee kwenye orodha ya sera ni sehemu yenye kipengele cha lazima: "url" na vipengele vingine viwili visivyo vya lazima: "default_launch_container" na "create_desktop_shortcut". Ni sharti "url" iwe URL ya programu ya wavuti ili isakinishwe, ni sharti "launch_container" iwe aidha "dirisha" au "kichupo" ili kuashiria jinsi Programu ya Wavuti itafunguliwa baada ya kusakinishwa na ni sharti "create_desktop_shortcut" iwekwe kuwa 'ndivyo' ikiwa njia ya mkato ya eneo-kazi inapaswa kuundwa kwenye Linux na Windows. Ikiwa "default_launch_container" haijajumuishwa, programu itafunguka katika kichupo kwa chaguomsingi. Licha ya thamani ya "default_launch_container", watumiaji wanaweza kubadilisha metadata ambamo programu itafunguka. Iwapo "create_desktop_shortcuts" haijajumuishwa, hakuna njia za mkato za eneo-kazi zitakazoundwa.</translation>
 <translation id="9038839118379817310">Washa Wi-Fi</translation>
 <translation id="9039822628127365650">Sera hii ikiwekwa, hubainisha kipindi cha muda ambacho huchukuliwa kisha mtumiaji anaondolewa katika akaunti kiotomatiki; hali inayosimamisha kipindi. Mtumiaji huarifiwa kuhusu muda unaosalia katika kipima muda kinachoonyeshwa kwenye ubao wa aikoni.
 

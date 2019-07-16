@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/extensions_activity.h"
-#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -533,7 +532,6 @@ class SyncerTest : public testing::Test,
   TestIdFactory ids_;
 
   TestUserShare test_user_share_;
-  FakeEncryptor encryptor_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   std::unique_ptr<MockConnectionManager> mock_server_;
   CancelationSignal cancelation_signal_;
@@ -661,7 +659,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     // Mark bookmarks as encrypted and set the cryptographer to have pending
     // keys.
     syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
-    Cryptographer other_cryptographer(&encryptor_);
+    Cryptographer other_cryptographer;
     other_cryptographer.AddKey(other_params);
     sync_pb::EntitySpecifics specifics;
     sync_pb::NigoriSpecifics* nigori = specifics.mutable_nigori();
@@ -1016,7 +1014,7 @@ TEST_F(SyncerTest, GetCommitIds_VerifyDeletionCommitOrderMaxEntries) {
 
 TEST_F(SyncerTest, EncryptionAwareConflicts) {
   KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), "foobar"};
-  Cryptographer other_cryptographer(&encryptor_);
+  Cryptographer other_cryptographer;
   other_cryptographer.AddKey(key_params);
   sync_pb::EntitySpecifics bookmark, encrypted_bookmark, modified_bookmark;
   bookmark.mutable_bookmark()->set_title("title");

@@ -42,8 +42,7 @@ MenuRunnerImpl::MenuRunnerImpl(MenuItemView* menu)
       delete_after_run_(false),
       for_drop_(false),
       controller_(nullptr),
-      owns_controller_(false),
-      weak_factory_(this) {}
+      owns_controller_(false) {}
 
 bool MenuRunnerImpl::IsRunning() const {
   return running_;

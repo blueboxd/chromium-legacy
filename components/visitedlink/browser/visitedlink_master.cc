@@ -224,8 +224,7 @@ VisitedLinkMaster::VisitedLinkMaster(content::BrowserContext* browser_context,
     : browser_context_(browser_context),
       delegate_(delegate),
       listener_(std::make_unique<VisitedLinkEventListener>(browser_context)),
-      persist_to_disk_(persist_to_disk),
-      weak_ptr_factory_(this) {}
+      persist_to_disk_(persist_to_disk) {}
 
 VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      VisitedLinkDelegate* delegate,
@@ -233,9 +232,7 @@ VisitedLinkMaster::VisitedLinkMaster(Listener* listener,
                                      bool suppress_rebuild,
                                      const base::FilePath& filename,
                                      int32_t default_table_size)
-    : delegate_(delegate),
-      persist_to_disk_(persist_to_disk),
-      weak_ptr_factory_(this) {
+    : delegate_(delegate), persist_to_disk_(persist_to_disk) {
   listener_.reset(listener);
   DCHECK(listener_);
 

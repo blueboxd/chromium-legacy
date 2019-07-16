@@ -133,6 +133,23 @@ void SiteDataCacheFactory::SetDataCacheInspectorForBrowserContext(
   }
 }
 
+void SiteDataCacheFactory::IsDataCacheRecordingForTesting(
+    const std::string& browser_context_id,
+    base::OnceCallback<void(bool)> cb) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::BindOnce(
+          [](SiteDataCacheFactory* tracker,
+             const std::string& browser_context_id) {
+            auto it = tracker->data_cache_map_.find(browser_context_id);
+            CHECK(it != tracker->data_cache_map_.end());
+            return it->second->IsRecordingForTesting();
+          },
+          this, browser_context_id),
+      std::move(cb));
+}
+
 void SiteDataCacheFactory::OnBrowserContextCreated(
     const std::string& browser_context_id,
     const base::FilePath& context_path,

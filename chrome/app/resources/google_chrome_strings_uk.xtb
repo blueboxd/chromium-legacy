@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Оновлення Google Chrome...</translation>
 <translation id="1469002951682717133">Панель запуску програм Chrome</translation>
 <translation id="1553358976309200471">Оновити Chrome</translation>
-<translation id="1585657529869845941">Натисніть кнопку <ph name="BEGIN_BOLD" />Усе одно змінити<ph name="END_BOLD" />, якщо вона з’явиться</translation>
 <translation id="1587223624401073077">Google Chrome використовує вашу камеру.</translation>
 <translation id="1587325591171447154">Файл <ph name="FILE_NAME" /> небезпечний, тому Chrome заблокував його.</translation>
 <translation id="1590588151039584890">Для оновлення потрібно припинити роботу Chrome. У результаті інші користувачі, що ввійшли в обліковий запис на цьому комп’ютері, можуть утратити незбережені зміни.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome перезапуститься через годину}one{Chrome перезапуститься через # годину}few{Chrome перезапуститься через # години}many{Chrome перезапуститься через # годин}other{Chrome перезапуститься через # години}}</translation>
-<translation id="1718131156967340976">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome збереже цей пароль в обліковому записі Google. Не потрібно його запам’ятовувати.</translation>
 <translation id="174539241580958092">Google Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@
 <translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
 <translation id="3898493977366060150">Перегляд веб-сторінок із розумними функціями Google</translation>
-<translation id="4028693306634653894">Відкривайте Chrome швидше</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
 <translation id="4143243756087420366">Ім’я та зображення профілю Chrome</translation>
@@ -236,7 +233,6 @@
 <translation id="7808348361785373670">Видалити з Chrome…</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
 <translation id="7855730255114109580">У вас остання версія Google Chrome</translation>
-<translation id="7888186132678118370">Як закріпити значок Chrome на панелі завдань</translation>
 <translation id="7890208801193284374">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chrome на свій смак.</translation>
 <translation id="7896673875602241923">Хтось раніше входив у Chrome на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST" />. Створіть нового користувача Chrome, щоб зберігати свою інформацію окремо.</translation>
 <translation id="7908168227788431038">Майже оновлено. Перезапустіть Google Chrome, щоб завершити оновлення.</translation>
@@ -285,6 +281,5 @@
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="9138603949443464873">Щоб застосувати зміни, перезапустіть Chrome</translation>
 <translation id="919706545465235479">Щоб почати синхронізацію, оновіть Chrome</translation>
-<translation id="924447568950697217">Як зробити Chrome веб-переглядачем за умовчанням</translation>
 <translation id="989369509083708165">Google Chrome – ваш веб-переглядач за умовчанням</translation>
 </translationbundle>

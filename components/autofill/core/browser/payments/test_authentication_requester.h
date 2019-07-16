@@ -67,7 +67,7 @@ class TestAuthenticationRequester
   // The card number returned from On*AuthenticationComplete().
   base::string16 number_;
 
-  base::WeakPtrFactory<TestAuthenticationRequester> weak_ptr_factory_;
+  base::WeakPtrFactory<TestAuthenticationRequester> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

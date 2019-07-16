@@ -21,7 +21,7 @@
 #include "remoting/proto/remoting/v1/directory_service.grpc.pb.h"
 #include "remoting/signaling/fake_signal_strategy.h"
 #include "remoting/signaling/log_to_server.h"
-#include "remoting/signaling/muxing_signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 #include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +44,6 @@ constexpr char kHostId[] = "fake_host_id";
 constexpr char kUserEmail[] = "fake_user@domain.com";
 
 constexpr char kFtlId[] = "fake_user@domain.com/chromoting_ftl_abc123";
-constexpr char kJabberId[] = "fake_user@domain.com/chromotingABC123";
 
 constexpr int32_t kGoodIntervalSeconds = 300;
 
@@ -56,8 +55,6 @@ constexpr base::TimeDelta kTestHeartbeatDelay =
     base::TimeDelta::FromSeconds(350);
 
 void ValidateHeartbeat(const apis::v1::HeartbeatRequest& request,
-                       bool expects_ftl_id,
-                       bool expects_jabber_id,
                        const std::string& expected_host_offline_reason = {}) {
   ASSERT_TRUE(request.has_host_version());
   if (expected_host_offline_reason.empty()) {
@@ -66,28 +63,14 @@ void ValidateHeartbeat(const apis::v1::HeartbeatRequest& request,
     ASSERT_EQ(expected_host_offline_reason, request.host_offline_reason());
   }
   ASSERT_EQ(kHostId, request.host_id());
-
-  std::string signaling_id;
-  if (expects_ftl_id) {
-    ASSERT_EQ(kFtlId, request.tachyon_id());
-    signaling_id = kFtlId;
-  }
-  if (expects_jabber_id) {
-    ASSERT_EQ(kJabberId, request.jabber_id());
-    if (signaling_id.empty()) {
-      signaling_id = kJabberId;
-    }
-  }
+  ASSERT_EQ(kFtlId, request.tachyon_id());
 }
 
 decltype(auto) DoValidateHeartbeatAndRespondOk(
-    bool expects_ftl_id,
-    bool expects_jabber_id,
     const std::string& expected_host_offline_reason = {}) {
   return [=](const apis::v1::HeartbeatRequest& request,
              HeartbeatResponseCallback callback) {
-    ValidateHeartbeat(request, expects_ftl_id, expects_jabber_id,
-                      expected_host_offline_reason);
+    ValidateHeartbeat(request, expected_host_offline_reason);
     apis::v1::HeartbeatResponse response;
     response.set_set_interval_seconds(kGoodIntervalSeconds);
     std::move(callback).Run(grpc::Status::OK, response);
@@ -99,25 +82,17 @@ decltype(auto) DoValidateHeartbeatAndRespondOk(
 class HeartbeatSenderTest : public testing::Test, public LogToServer {
  public:
   HeartbeatSenderTest() {
-    auto ftl_signal_strategy =
+    signal_strategy_ =
         std::make_unique<FakeSignalStrategy>(SignalingAddress(kFtlId));
-    auto xmpp_signal_strategy =
-        std::make_unique<FakeSignalStrategy>(SignalingAddress(kJabberId));
-    ftl_signal_strategy_ = ftl_signal_strategy.get();
-    xmpp_signal_strategy_ = xmpp_signal_strategy.get();
 
     // Start in disconnected state.
-    ftl_signal_strategy_->Disconnect();
-    xmpp_signal_strategy_->Disconnect();
-
-    muxing_signal_strategy_ = std::make_unique<MuxingSignalStrategy>(
-        std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
+    signal_strategy_->Disconnect();
 
     heartbeat_sender_ = std::make_unique<HeartbeatSender>(
         mock_heartbeat_successful_callback_.Get(),
         mock_unknown_host_id_error_callback_.Get(),
         mock_unauthenticated_error_callback_.Get(), kHostId,
-        muxing_signal_strategy_.get(), &oauth_token_getter_, this);
+        signal_strategy_.get(), &oauth_token_getter_, this);
     auto heartbeat_client = std::make_unique<MockHeartbeatClient>();
     mock_client_ = heartbeat_client.get();
     heartbeat_sender_->client_ = std::move(heartbeat_client);
@@ -125,7 +100,7 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
 
   ~HeartbeatSenderTest() override {
     heartbeat_sender_.reset();
-    muxing_signal_strategy_.reset();
+    signal_strategy_.reset();
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
   }
 
@@ -148,12 +123,10 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   MockHeartbeatClient* mock_client_;
 
-  FakeSignalStrategy* ftl_signal_strategy_;
-  FakeSignalStrategy* xmpp_signal_strategy_;
+  std::unique_ptr<FakeSignalStrategy> signal_strategy_;
 
   base::MockCallback<base::OnceClosure> mock_heartbeat_successful_callback_;
   base::MockCallback<base::OnceClosure> mock_unknown_host_id_error_callback_;
@@ -169,8 +142,6 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
 
   ServerLogEntry::Mode mode() const override { return ServerLogEntry::ME2ME; }
 
-  std::unique_ptr<MuxingSignalStrategy> muxing_signal_strategy_;
-
   // |heartbeat_sender_| must be deleted before |muxing_signal_strategy_|.
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
 
@@ -178,80 +149,31 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
                                            kUserEmail, kOAuthAccessToken};
 };
 
-TEST_F(HeartbeatSenderTest, SendHeartbeat_OnlyXmpp) {
+TEST_F(HeartbeatSenderTest, SendHeartbeat) {
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ false,
-                                                /* xmpp */ true));
+      .WillOnce(DoValidateHeartbeatAndRespondOk());
 
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
 
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
   scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
-}
-
-TEST_F(HeartbeatSenderTest, SendHeartbeat_OnlyFtl) {
-  EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ false));
-
-  EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
-
-  ftl_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
-}
-
-TEST_F(HeartbeatSenderTest, SendHeartbeat_XmppAndFtl) {
-  EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true));
-
-  EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
-
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
-}
-
-TEST_F(HeartbeatSenderTest, SendHeartbeat_SendFtlThenBoth) {
-  base::RunLoop run_loop;
-
-  EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ false))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true));
-
-  EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
-
-  ftl_signal_strategy_->Connect();
-  scoped_task_environment_.FastForwardBy(kWaitForAllStrategiesConnectedTimeout);
-  xmpp_signal_strategy_->Connect();
 }
 
 TEST_F(HeartbeatSenderTest, SignalingReconnect_NewHeartbeats) {
   base::RunLoop run_loop;
 
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ false,
-                                                /* xmpp */ true))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ false,
-                                                /* xmpp */ true))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true));
+      .WillOnce(DoValidateHeartbeatAndRespondOk())
+      .WillOnce(DoValidateHeartbeatAndRespondOk())
+      .WillOnce(DoValidateHeartbeatAndRespondOk());
 
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
 
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
-  ftl_signal_strategy_->Disconnect();
-  ftl_signal_strategy_->Connect();
-  ftl_signal_strategy_->Disconnect();
-  xmpp_signal_strategy_->Disconnect();
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
+  signal_strategy_->Disconnect();
+  signal_strategy_->Connect();
+  signal_strategy_->Disconnect();
+  signal_strategy_->Connect();
 }
 
 TEST_F(HeartbeatSenderTest, SetHostOfflineReason) {
@@ -264,22 +186,20 @@ TEST_F(HeartbeatSenderTest, SetHostOfflineReason) {
   testing::Mock::VerifyAndClearExpectations(&mock_ack_callback);
 
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true, "test_error"));
+      .WillOnce(DoValidateHeartbeatAndRespondOk("test_error"));
 
   // Callback should run once, when we get response to offline-reason.
   EXPECT_CALL(mock_ack_callback, Run(_)).Times(1);
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
 
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
 }
 
 TEST_F(HeartbeatSenderTest, HostOsInfoOnFirstHeartbeat) {
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
       .WillOnce([](const apis::v1::HeartbeatRequest& request,
                    HeartbeatResponseCallback callback) {
-        ValidateHeartbeat(request, /* ftl */ true, /* xmpp */ true);
+        ValidateHeartbeat(request);
         // First heartbeat has host OS info.
         EXPECT_TRUE(request.has_host_os_name());
         EXPECT_TRUE(request.has_host_os_version());
@@ -288,13 +208,12 @@ TEST_F(HeartbeatSenderTest, HostOsInfoOnFirstHeartbeat) {
         std::move(callback).Run(grpc::Status::OK, response);
       });
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
 
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
       .WillOnce([&](const apis::v1::HeartbeatRequest& request,
                     HeartbeatResponseCallback callback) {
-        ValidateHeartbeat(request, /* ftl */ true, /* xmpp */ true);
+        ValidateHeartbeat(request);
         // Subsequent heartbeat has no host OS info.
         EXPECT_FALSE(request.has_host_os_name());
         EXPECT_FALSE(request.has_host_os_version());
@@ -309,28 +228,25 @@ TEST_F(HeartbeatSenderTest, UnknownHostId) {
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
       .WillRepeatedly([](const apis::v1::HeartbeatRequest& request,
                          HeartbeatResponseCallback callback) {
-        ValidateHeartbeat(request, /* ftl */ true, /* xmpp */ true);
+        ValidateHeartbeat(request);
         std::move(callback).Run(
             grpc::Status(grpc::StatusCode::NOT_FOUND, "not found"), {});
       });
 
   EXPECT_CALL(mock_unknown_host_id_error_callback_, Run()).Times(1);
 
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(HeartbeatSenderTest, SendHeartbeatLogEntryOnHeartbeat) {
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-      .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                /* xmpp */ true));
+      .WillOnce(DoValidateHeartbeatAndRespondOk());
 
   EXPECT_CALL(mock_heartbeat_successful_callback_, Run()).Times(1);
 
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
 
   ASSERT_EQ(1u, received_log_entries_.size());
 }
@@ -343,19 +259,17 @@ TEST_F(HeartbeatSenderTest, FailedToHeartbeat_Backoff) {
         .Times(2)
         .WillRepeatedly([&](const apis::v1::HeartbeatRequest& request,
                             HeartbeatResponseCallback callback) {
-          ValidateHeartbeat(request, /* ftl */ true, /* xmpp */ true);
+          ValidateHeartbeat(request);
           std::move(callback).Run(
               grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"), {});
         });
 
     EXPECT_CALL(*mock_client_, Heartbeat(_, _))
-        .WillOnce(DoValidateHeartbeatAndRespondOk(/* ftl */ true,
-                                                  /* xmpp */ true));
+        .WillOnce(DoValidateHeartbeatAndRespondOk());
   }
 
   ASSERT_EQ(0, GetBackoff().failure_count());
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
   ASSERT_EQ(1, GetBackoff().failure_count());
   scoped_task_environment_.FastForwardBy(GetBackoff().GetTimeUntilRelease());
   ASSERT_EQ(2, GetBackoff().failure_count());
@@ -368,7 +282,7 @@ TEST_F(HeartbeatSenderTest, Unauthenticated) {
   EXPECT_CALL(*mock_client_, Heartbeat(_, _))
       .WillRepeatedly([&](const apis::v1::HeartbeatRequest& request,
                           HeartbeatResponseCallback callback) {
-        ValidateHeartbeat(request, /* ftl */ true, /* xmpp */ true);
+        ValidateHeartbeat(request);
         heartbeat_count++;
         std::move(callback).Run(
             grpc::Status(grpc::StatusCode::UNAUTHENTICATED, "unauthenticated"),
@@ -377,8 +291,7 @@ TEST_F(HeartbeatSenderTest, Unauthenticated) {
 
   EXPECT_CALL(mock_unauthenticated_error_callback_, Run()).Times(1);
 
-  ftl_signal_strategy_->Connect();
-  xmpp_signal_strategy_->Connect();
+  signal_strategy_->Connect();
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
   // Should retry heartbeating at least once.

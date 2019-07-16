@@ -93,6 +93,17 @@ class CWTRequestHandler {
   //    value returned by this method is a default-constructed base::Value.
   base::Value ExecuteScript(const base::Value* script, bool is_async_function);
 
+  // Takes a snapshot of the target tab. Returns an error value if the target
+  // tab is no longer open. Otherwise, returns the snapshot as a base64-encoded
+  // image.
+  base::Value GetSnapshot();
+
+  // Set the target tab's position and size. This is currently a no-op since
+  // tabs cannot be arbitrarily sized or positioned on iOS. It may make sense
+  // to implement this in the future on iPad-only, once multiwindow support on
+  // iPad is more fully fleshed out.
+  base::Value SetWindowRect(const base::Value& rect);
+
   // Processes the given command, HTTP method, and request content. Returns the
   // result of processing the command, or nullopt_t if the command is unknown.
   base::Optional<base::Value> ProcessCommand(

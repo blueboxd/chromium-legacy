@@ -84,7 +84,8 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   base::queue<uint64_t> pending_local_swap_ids_;
 #endif
 
-  base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };

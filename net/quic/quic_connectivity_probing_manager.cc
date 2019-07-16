@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 #include "net/quic/address_utils.h"
 
 namespace net {

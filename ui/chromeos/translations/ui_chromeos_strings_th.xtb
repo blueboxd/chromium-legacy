@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">การทับศัพท์ (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">มุมมองสไลด์</translation>
 <translation id="1045157690796831147">การทับศัพท์ (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">การป้อนภาษาญี่ปุ่น (สำหรับแป้นพิมพ์สหรัฐฯ)</translation>
 <translation id="1047956942837015229">กำลังลบ <ph name="COUNT" /> รายการ...</translation>
 <translation id="1049926623896334335">เอกสาร Word</translation>
 <translation id="1062407476771304334">แทนที่</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3549797760399244642">ไปยัง drive.google.com...</translation>
 <translation id="357479282490346887">ลิทัวเนีย</translation>
+<translation id="3583509704582854624">การป้อนตัวอักษรและตัวเลข (สำหรับแป้นพิมพ์ญี่ปุ่น)</translation>
 <translation id="3603385196401704894">ฝรั่งเศสแบบแคนาดา</translation>
 <translation id="3606220979431771195">ภาษาตุรกี-F</translation>
 <translation id="3609785682760573515">กำลังซิงค์...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">ข้อผิดพลาดเกิดขึ้นระหว่างการติดตั้งแอปพลิเคชัน Linux</translation>
 <translation id="5912396950572065471">รูปแบบ</translation>
 <translation id="5913638992615760742">การคัดลอกล้มเหลว ข้อผิดพลาดที่ไม่คาดคิด: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">การป้อนภาษาญี่ปุ่น (สำหรับแป้นพิมพ์ญี่ปุ่น)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">ให้สิทธิ์แอป Linux แก้ไขไฟล์ใน Google ไดรฟ์ การเปลี่ยนแปลงจะซิงค์กับอุปกรณ์อื่นๆ ของคุณ</translation>
 <translation id="5982621672636444458">ตัวเลือกการจัดเรียง</translation>

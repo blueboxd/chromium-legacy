@@ -66,8 +66,7 @@ DistillerPageWebContents::DistillerPageWebContents(
     : state_(IDLE),
       source_page_handle_(nullptr),
       browser_context_(browser_context),
-      render_view_size_(render_view_size),
-      weak_factory_(this) {
+      render_view_size_(render_view_size) {
   if (optional_web_contents_handle) {
     source_page_handle_ = std::move(optional_web_contents_handle);
     if (render_view_size.IsEmpty())

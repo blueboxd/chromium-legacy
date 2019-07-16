@@ -225,8 +225,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : invalidation_state_tracker_(invalidation_state_tracker),
       parent_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      network_task_runner_(network_task_runner),
-      weak_ptr_factory_(this) {
+      network_task_runner_(network_task_runner) {
   base::WeakPtr<NonBlockingInvalidator> weak_ptr_this =
       weak_ptr_factory_.GetWeakPtr();
   weak_ptr_this.get();  // Bind to this thread.

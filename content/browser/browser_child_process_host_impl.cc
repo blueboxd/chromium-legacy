@@ -57,7 +57,7 @@
 #include "services/service_manager/public/cpp/constants.h"
 
 #if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
+#include "content/browser/child_process_task_port_provider_mac.h"
 #endif
 
 namespace content {
@@ -128,7 +128,7 @@ BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
 
 #if defined(OS_MACOSX)
 base::PortProvider* BrowserChildProcessHost::GetPortProvider() {
-  return MachBroker::GetInstance();
+  return ChildProcessTaskPortProvider::GetInstance();
 }
 #endif
 
@@ -404,6 +404,12 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 
   is_channel_connected_ = true;
   notify_child_disconnected_ = true;
+
+#if defined(OS_MACOSX)
+  ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
+      peer_pid, static_cast<ChildProcessHostImpl*>(child_process_host_.get())
+                    ->child_control());
+#endif
 
 #if defined(OS_WIN)
   // From this point onward, the exit of the child process is detected by an

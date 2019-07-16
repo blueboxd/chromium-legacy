@@ -27,8 +27,7 @@ constexpr int kTimeCheckInterval = 10;
 
 TEST(LapTimer, UsageExample) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
 
   LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval);
 
@@ -54,8 +53,7 @@ TEST(LapTimer, UsageExample) {
 // iOS simulator does not support using ThreadTicks.
 TEST(LapTimer, ThreadTicksUsageExample) {
   ScopedTaskEnvironment scoped_task_environment(
-      ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
+      ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
   LapTimer timer(kWarmupRuns, kTimeLimit, kTimeCheckInterval,
                  LapTimer::TimerMethod::kUseThreadTicks);
 

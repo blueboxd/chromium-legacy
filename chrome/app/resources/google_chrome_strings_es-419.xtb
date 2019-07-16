@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
 <translation id="1469002951682717133">Selector de aplicaciones de Google Chrome</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
-<translation id="1585657529869845941">Haz clic en <ph name="BEGIN_BOLD" />Cambiar de todas formas<ph name="END_BOLD" />, si aparece la opción</translation>
 <translation id="1587223624401073077">Google Chrome está usando tu cámara.</translation>
 <translation id="1587325591171447154">Chrome bloqueó <ph name="FILE_NAME" /> porque es un archivo peligroso.</translation>
 <translation id="1590588151039584890">Para actualizarse, Chrome debe dejar de ejecutarse en esta computadora. Es posible que esta acción haga que los usuarios que accedieron en esta computadora pierdan cambios no guardados.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome no puede leer ni agregar datos al directorio de datos: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a gran velocidad. Es rápido, estable y fácil de utilizar. Navega por la Web de forma más segura con protección contra suplantación de identidad y software malicioso integrada a Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Se reiniciará Chrome en una hora}other{Se reiniciará Chrome en # horas}}</translation>
-<translation id="1718131156967340976">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome guardará esta contraseña en tu cuenta de Google, por lo que no tendrás que recordarla.</translation>
 <translation id="174539241580958092">Google Chrome no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="3873044882194371212">Abrir vínculo en una ventana de navegación de incó&amp;gnito de Chrome</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
 <translation id="3898493977366060150">Navegación en Internet con las funciones inteligentes de Google</translation>
-<translation id="4028693306634653894">Cómo acceder a Chrome más rápido</translation>
 <translation id="4050175100176540509">La última versión proporciona importantes mejoras de seguridad y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4143243756087420366">Nombre y foto de Chrome</translation>
@@ -236,7 +233,6 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7808348361785373670">Eliminar de Chrome…</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>
-<translation id="7888186132678118370">Cómo fijar Chrome a la barra de tareas</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
 <translation id="7896673875602241923">Alguien accedió anteriormente a Google Chrome en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuario de Chrome nuevo para mantener tu información por separado.</translation>
 <translation id="7908168227788431038">Google Chrome está casi actualizado. Reinícialo para completar la actualización.</translation>
@@ -285,6 +281,5 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="9138603949443464873">Para aplicar los cambios, vuelve a ejecutar Chrome</translation>
 <translation id="919706545465235479">Actualiza Chrome para iniciar la sincronización</translation>
-<translation id="924447568950697217">Cómo establecer Chrome como navegador predeterminado</translation>
 <translation id="989369509083708165">Google Chrome es tu navegador predeterminado</translation>
 </translationbundle>

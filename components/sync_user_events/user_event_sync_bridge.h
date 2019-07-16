@@ -80,7 +80,7 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
 
   GlobalIdMapper* global_id_mapper_;
 
-  base::WeakPtrFactory<UserEventSyncBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<UserEventSyncBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserEventSyncBridge);
 };

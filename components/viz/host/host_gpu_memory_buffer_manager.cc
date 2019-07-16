@@ -52,8 +52,7 @@ HostGpuMemoryBufferManager::HostGpuMemoryBufferManager(
       gpu_memory_buffer_support_(std::move(gpu_memory_buffer_support)),
       native_configurations_(gpu::GetNativeGpuMemoryBufferConfigurations(
           gpu_memory_buffer_support_.get())),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "HostGpuMemoryBufferManager", task_runner_);
 }

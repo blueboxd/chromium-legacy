@@ -24,8 +24,7 @@ OmniboxController::OmniboxController(OmniboxEditModel* omnibox_edit_model,
       autocomplete_controller_(new AutocompleteController(
           client_->CreateAutocompleteProviderClient(),
           this,
-          AutocompleteClassifier::DefaultOmniboxProviders())),
-      weak_ptr_factory_(this) {}
+          AutocompleteClassifier::DefaultOmniboxProviders())) {}
 
 OmniboxController::~OmniboxController() {
 }

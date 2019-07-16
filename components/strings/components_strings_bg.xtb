@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Издаден на: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Сензори за движение</translation>
 <translation id="213826338245044447">Мобилни отметки</translation>
 <translation id="214556005048008348">Анулиране на плащането</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Проверете сигнала в района.</translation>
 <translation id="2523886232349826891">Запазено само на това устройство</translation>
 <translation id="2524461107774643265">Добавяне на още информация</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
 <translation id="2536110899380797252">Добавяне на адрес</translation>
 <translation id="2539524384386349900">Откриване</translation>
 <translation id="254947805923345898">Стойността на правилото не е валидна.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Попитахте родителите си дали може да посетите този сайт</translation>
 <translation id="4876188919622883022">Опростен изглед</translation>
 <translation id="4876305945144899064">Няма потребителско име</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Няма}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Търсене на „<ph name="TEXT" />“</translation>
 <translation id="4879491255372875719">Автоматично (стандартно)</translation>
 <translation id="4880827082731008257">Търсене в историята</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Да, искам</translation>
 <translation id="6508722015517270189">Рестартирайте Chrome.</translation>
 <translation id="6517596291481585650">Предупреждение: Това правило не бе обединено като списък според посоченото в правилото, тъй като не е списък.</translation>
+<translation id="6521745193039995384">Не е активно</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
 <translation id="6534179046333460208">Предложения от Физическата мрежа</translation>
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
@@ -1478,6 +1482,7 @@
 <translation id="9076630408993835509">Този браузър не се управлява от дружество или друга организация. Възможно е активността на устройството да се управлява извън Chrome. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Изисква се още информация</translation>
 <translation id="9080712759204168376">Обобщена информация за поръчката</translation>
+<translation id="9089260154716455634">Пренебрегване на правилата:</translation>
 <translation id="9095388113577226029">Още езици...</translation>
 <translation id="9103872766612412690">Обикновено <ph name="SITE" /> използва шифроване за защита на информацията ви. Когато Chromium опита да установи връзка с/ъс <ph name="SITE" /> този път, уебсайтът върна необичайни и неправилни идентификационни данни. Това може да се случи, когато извършител на атака пробва да се представи за <ph name="SITE" /> или връзката е прекъсната от екран за вход в Wi-Fi. Информацията ви продължава да е защитена, тъй като Chromium спря връзката, преди да бъдат обменени данни.</translation>
 <translation id="9106062320799175032">Добавяне на адрес за фактуриране</translation>

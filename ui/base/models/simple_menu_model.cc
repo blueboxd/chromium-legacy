@@ -71,9 +71,7 @@ bool SimpleMenuModel::Delegate::GetAcceleratorForCommandId(
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, public:
 
-SimpleMenuModel::SimpleMenuModel(Delegate* delegate)
-    : delegate_(delegate),
-      method_factory_(this) {}
+SimpleMenuModel::SimpleMenuModel(Delegate* delegate) : delegate_(delegate) {}
 
 SimpleMenuModel::~SimpleMenuModel() {
 }

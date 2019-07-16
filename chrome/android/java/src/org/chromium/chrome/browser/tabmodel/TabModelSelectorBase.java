@@ -234,6 +234,9 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {}
 
     @Override
+    public void mergeState() {}
+
+    @Override
     public void destroy() {
         mTabModelFilterProvider.destroy();
         for (int i = 0; i < getModels().size(); i++) getModelAt(i).destroy();

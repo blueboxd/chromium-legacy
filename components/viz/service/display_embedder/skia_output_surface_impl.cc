@@ -66,8 +66,7 @@ SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
     const RendererSettings& renderer_settings)
     : dependency_(std::move(deps)),
       is_using_vulkan_(dependency_->IsUsingVulkan()),
-      renderer_settings_(renderer_settings),
-      weak_ptr_factory_(this) {
+      renderer_settings_(renderer_settings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
@@ -111,7 +110,10 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
 
 void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  SkiaOutputSurfaceBase::BindToClient(client);
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
+
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -119,6 +121,10 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
                                  base::Unretained(this), &event);
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
   event.Wait();
+}
+
+void SkiaOutputSurfaceImpl::BindFramebuffer() {
+  // TODO(penghuang): remove this method when GLRenderer is removed.
 }
 
 void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
@@ -641,6 +647,99 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     return GrBackendFormat();
 #endif
   }
+}
+
+void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
+  NOTREACHED();
+}
+
+uint32_t SkiaOutputSurfaceImpl::GetFramebufferCopyTextureFormat() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  return GL_RGB;
+}
+
+bool SkiaOutputSurfaceImpl::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
+unsigned SkiaOutputSurfaceImpl::GetOverlayTextureId() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return 0;
+}
+
+gfx::BufferFormat SkiaOutputSurfaceImpl::GetOverlayBufferFormat() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return gfx::BufferFormat::RGBX_8888;
+}
+
+bool SkiaOutputSurfaceImpl::HasExternalStencilTest() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  return false;
+}
+
+void SkiaOutputSurfaceImpl::ApplyExternalStencil() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
+unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
+  return 0;
+}
+
+void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
+    bool needs_swap_size_notifications) {
+  needs_swap_size_notifications_ = needs_swap_size_notifications;
+}
+
+void SkiaOutputSurfaceImpl::AddContextLostObserver(
+    ContextLostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void SkiaOutputSurfaceImpl::RemoveContextLostObserver(
+    ContextLostObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void SkiaOutputSurfaceImpl::PrepareYUVATextureIndices(
+    const std::vector<ResourceMetadata>& metadatas,
+    bool has_alpha,
+    SkYUVAIndex indices[4]) {
+  DCHECK((has_alpha && (metadatas.size() == 3 || metadatas.size() == 4)) ||
+         (!has_alpha && (metadatas.size() == 2 || metadatas.size() == 3)));
+
+  bool uv_interleaved =
+      has_alpha ? metadatas.size() == 3 : metadatas.size() == 2;
+
+  indices[SkYUVAIndex::kY_Index].fIndex = 0;
+  indices[SkYUVAIndex::kY_Index].fChannel = SkColorChannel::kR;
+
+  if (uv_interleaved) {
+    indices[SkYUVAIndex::kU_Index].fIndex = 1;
+    indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
+
+    indices[SkYUVAIndex::kV_Index].fIndex = 1;
+    indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kG;
+
+    indices[SkYUVAIndex::kA_Index].fIndex = has_alpha ? 2 : -1;
+    indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
+  } else {
+    indices[SkYUVAIndex::kU_Index].fIndex = 1;
+    indices[SkYUVAIndex::kU_Index].fChannel = SkColorChannel::kR;
+
+    indices[SkYUVAIndex::kV_Index].fIndex = 2;
+    indices[SkYUVAIndex::kV_Index].fChannel = SkColorChannel::kR;
+
+    indices[SkYUVAIndex::kA_Index].fIndex = has_alpha ? 3 : -1;
+    indices[SkYUVAIndex::kA_Index].fChannel = SkColorChannel::kR;
+  }
+}
+
+void SkiaOutputSurfaceImpl::ContextLost() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  for (auto& observer : observers_)
+    observer.OnContextLost();
 }
 
 }  // namespace viz

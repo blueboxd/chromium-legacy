@@ -52,9 +52,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
                                   public SyncEncryptionHandler,
                                   public syncable::NigoriHandler {
  public:
+  // |encryptor| and |user_share| must outlive this object.
   SyncEncryptionHandlerImpl(
       UserShare* user_share,
-      Encryptor* encryptor,
+      const Encryptor* encryptor,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       const base::RepeatingCallback<std::string()>& random_salt_generator);
@@ -138,9 +139,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // accessed via UnlockVault(..) and UnlockVaultMutable(..), which enforce
   // that a transaction is held.
   struct Vault {
-    Vault(Encryptor* encryptor,
-          ModelTypeSet encrypted_types,
-          PassphraseType passphrase_type);
+    Vault(ModelTypeSet encrypted_types, PassphraseType passphrase_type);
     ~Vault();
 
     // Sync's cryptographer. Used for encrypting and decrypting sync data.
@@ -348,7 +347,11 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
 
   // The current user share (for creating transactions).
-  UserShare* user_share_;
+  UserShare* const user_share_;
+
+  // Used for encryption/decryption of keystore keys and the key derived from
+  // custom passphrase in order to store them locally.
+  const Encryptor* const encryptor_;
 
   // Container for all data that can be accessed from multiple threads. Do not
   // access this object directly. Instead access it via UnlockVault(..) and
@@ -393,7 +396,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // only.
   bool migration_attempted_;
 
-  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
 };

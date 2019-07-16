@@ -32,30 +32,10 @@ const char* g_library_version_number = "";
 LibraryLoadedHook* g_registration_callback = NULL;
 NativeInitializationHook* g_native_initialization_hook = NULL;
 
-// Indicates whether g_library_preloader_renderer_histogram_code is valid.
-bool g_library_preloader_renderer_histogram_code_registered = false;
-
-// The return value of NativeLibraryPreloader.loadLibrary() in child processes,
-// it is initialized to the invalid value which shouldn't showup in UMA report.
-int g_library_preloader_renderer_histogram_code = -1;
-
 // The amount of time, in milliseconds, that it took to load the shared
 // libraries in the renderer. Set in
-// JNI_LibraryLoader_RegisterChromiumAndroidLinkerRendererHistogram.
+// JNI_LibraryLoader_RecordRendererLibraryLoadTime().
 long g_renderer_library_load_time_ms = 0;
-
-void RecordChromiumAndroidLinkerRendererHistogram() {
-  // Record how long it took to load the shared libraries.
-  UMA_HISTOGRAM_TIMES("ChromiumAndroidLinker.RendererLoadTime",
-      base::TimeDelta::FromMilliseconds(g_renderer_library_load_time_ms));
-}
-
-void RecordLibraryPreloaderRendereHistogram() {
-  if (g_library_preloader_renderer_histogram_code_registered) {
-    UmaHistogramSparse("Android.NativeLibraryPreloader.Result.Renderer",
-                       g_library_preloader_renderer_histogram_code);
-  }
-}
 
 }  // namespace
 
@@ -67,35 +47,11 @@ bool IsUsingOrderfileOptimization() {
 #endif
 }
 
-static void JNI_LibraryLoader_RegisterChromiumAndroidLinkerRendererHistogram(
+static void JNI_LibraryLoader_RecordRendererLibraryLoadTime(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jlong library_load_time_ms) {
   g_renderer_library_load_time_ms = library_load_time_ms;
-}
-
-static void JNI_LibraryLoader_RecordChromiumAndroidLinkerBrowserHistogram(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jlong library_load_time_ms) {
-  // Record how long it took to load the shared libraries.
-  UMA_HISTOGRAM_TIMES("ChromiumAndroidLinker.BrowserLoadTime",
-                      base::TimeDelta::FromMilliseconds(library_load_time_ms));
-}
-
-static void JNI_LibraryLoader_RecordLibraryPreloaderBrowserHistogram(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jint status) {
-  UmaHistogramSparse("Android.NativeLibraryPreloader.Result.Browser", status);
-}
-
-static void JNI_LibraryLoader_RegisterLibraryPreloaderRendererHistogram(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    jint status) {
-  g_library_preloader_renderer_histogram_code = status;
-  g_library_preloader_renderer_histogram_code_registered = true;
 }
 
 void SetNativeInitializationHook(
@@ -104,8 +60,10 @@ void SetNativeInitializationHook(
 }
 
 void RecordLibraryLoaderRendererHistograms() {
-  RecordChromiumAndroidLinkerRendererHistogram();
-  RecordLibraryPreloaderRendereHistogram();
+  // Record how long it took to load the shared libraries.
+  UMA_HISTOGRAM_TIMES(
+      "ChromiumAndroidLinker.RendererLoadTime",
+      base::TimeDelta::FromMilliseconds(g_renderer_library_load_time_ms));
 }
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {

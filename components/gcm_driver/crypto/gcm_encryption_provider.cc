@@ -46,9 +46,7 @@ IncomingMessage CreateMessageWithId(const std::string& message_id) {
 
 }  // namespace
 
-GCMEncryptionProvider::GCMEncryptionProvider()
-    : weak_ptr_factory_(this) {
-}
+GCMEncryptionProvider::GCMEncryptionProvider() {}
 
 GCMEncryptionProvider::~GCMEncryptionProvider() = default;
 

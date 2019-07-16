@@ -253,7 +253,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   // The clock used to vend times.
   std::unique_ptr<base::Clock> clock_;
 
-  base::WeakPtrFactory<BrowsingHistoryService> weak_factory_;
+  base::WeakPtrFactory<BrowsingHistoryService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryService);
 };

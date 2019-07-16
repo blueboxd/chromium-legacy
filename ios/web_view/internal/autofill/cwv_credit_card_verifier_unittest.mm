@@ -198,7 +198,7 @@ TEST_F(CWVCreditCardVerifierTest, VerifyCard) {
   id unused_data_source =
       OCMProtocolMock(@protocol(CWVCreditCardVerifierDataSource));
   NSString* cvc = @"123";
-  BOOL store_locally = NO;
+  BOOL store_locally = YES;
   [credit_card_verifier_ loadRiskData:std::move(base::DoNothing())];
   [credit_card_verifier_
         verifyWithCVC:cvc
@@ -207,7 +207,7 @@ TEST_F(CWVCreditCardVerifierTest, VerifyCard) {
          storeLocally:store_locally
            dataSource:unused_data_source
              delegate:nil];
-  EXPECT_FALSE(credit_card_verifier_.lastStoreLocallyValue);
+  EXPECT_TRUE(credit_card_verifier_.lastStoreLocallyValue);
 
   const FakeCardUnmaskDelegate::UnmaskResponse& unmask_response_ =
       card_unmask_delegate_.GetUnmaskResponse();

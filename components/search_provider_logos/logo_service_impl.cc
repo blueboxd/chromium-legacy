@@ -68,8 +68,7 @@ class ImageDecodedHandlerWithTimeout {
   explicit ImageDecodedHandlerWithTimeout(
       const base::RepeatingCallback<void(const SkBitmap&)>&
           image_decoded_callback)
-      : image_decoded_callback_(image_decoded_callback),
-        weak_ptr_factory_(this) {}
+      : image_decoded_callback_(image_decoded_callback) {}
 
   void OnImageDecoded(const gfx::Image& decoded_image) {
     image_decoded_callback_.Run(decoded_image.AsBitmap());
@@ -77,7 +76,7 @@ class ImageDecodedHandlerWithTimeout {
   }
 
   base::RepeatingCallback<void(const SkBitmap&)> image_decoded_callback_;
-  base::WeakPtrFactory<ImageDecodedHandlerWithTimeout> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageDecodedHandlerWithTimeout> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodedHandlerWithTimeout);
 };
@@ -197,8 +196,7 @@ LogoServiceImpl::LogoServiceImpl(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       logo_cache_(new LogoCache(cache_directory_),
-                  base::OnTaskRunnerDeleter(cache_task_runner_)),
-      weak_ptr_factory_(this) {
+                  base::OnTaskRunnerDeleter(cache_task_runner_)) {
   identity_manager_->AddObserver(this);
 }
 

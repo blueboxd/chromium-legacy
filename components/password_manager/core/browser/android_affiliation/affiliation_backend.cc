@@ -32,8 +32,7 @@ AffiliationBackend::AffiliationBackend(
     : task_runner_(task_runner),
       clock_(time_source),
       tick_clock_(time_tick_source),
-      construction_time_(clock_->Now()),
-      weak_ptr_factory_(this) {
+      construction_time_(clock_->Now()) {
   DCHECK_LT(base::Time(), clock_->Now());
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }

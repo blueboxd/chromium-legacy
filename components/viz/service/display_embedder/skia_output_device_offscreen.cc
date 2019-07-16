@@ -53,21 +53,23 @@ void SkiaOutputDeviceOffscreen::Reshape(const gfx::Size& size,
   }
 }
 
-gfx::SwapResponse SkiaOutputDeviceOffscreen::SwapBuffers(
-    BufferPresentedCallback feedback) {
+void SkiaOutputDeviceOffscreen::SwapBuffers(
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
   // Reshape should have been called first.
   DCHECK(sk_surface_);
 
   StartSwapBuffers(std::move(feedback));
-  return FinishSwapBuffers(
-      gfx::SwapResult::SWAP_ACK,
-      gfx::Size(sk_surface_->width(), sk_surface_->height()));
+  FinishSwapBuffers(gfx::SwapResult::SWAP_ACK,
+                    gfx::Size(sk_surface_->width(), sk_surface_->height()),
+                    std::move(latency_info));
 }
 
-gfx::SwapResponse SkiaOutputDeviceOffscreen::PostSubBuffer(
+void SkiaOutputDeviceOffscreen::PostSubBuffer(
     const gfx::Rect& rect,
-    BufferPresentedCallback feedback) {
-  return SwapBuffers(std::move(feedback));
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
+  return SwapBuffers(std::move(feedback), std::move(latency_info));
 }
 
 void SkiaOutputDeviceOffscreen::EnsureBackbuffer() {

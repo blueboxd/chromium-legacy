@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Hilfe für Chromium OS aufrufen</translation>
 <translation id="1396446129537741364">Chromium versucht, Passwörter anzuzeigen.</translation>
 <translation id="1414495520565016063">Sie sind in Chromium angemeldet.</translation>
-<translation id="1502360822835740515">Chromium als Standardbrowser festlegen</translation>
 <translation id="151962892725702025">Chromium OS konnte Ihre Daten nicht synchronisieren, da die Synchronisierung für Ihre Domain nicht verfügbar ist.</translation>
 <translation id="1524282610922162960">Chromium-Tab freigeben</translation>
-<translation id="1585657529869845941">Klicken Sie auf <ph name="BEGIN_BOLD" />Trotzdem wechseln<ph name="END_BOLD" />, falls die Schaltfläche angezeigt wird</translation>
 <translation id="1668054258064581266">Nachdem Sie Ihr Konto aus Chromium entfernt haben, müssen Sie Ihre geöffneten Tabs möglicherweise neu laden, damit die Änderung wirksam wird.</translation>
 <translation id="1688750314291223739">Richten Sie die Synchronisierung ein, um Ihre personalisierten Browserfunktionen online zu speichern und über Chromium auf jedem Computer darauf zuzugreifen.</translation>
 <translation id="1708666629004767631">Es gibt eine neue, sicherere Version von Chromium.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
 <translation id="378917192836375108">In Chromium können Sie auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Chromium an Ihre Taskleiste anpinnen</translation>
 <translation id="388648406173476553">Sie können Chromium anpassen und Einstellungen festlegen. Etwas erfordert Ihre Aufmerksamkeit – klicken Sie, um mehr zu erfahren.</translation>
 <translation id="3889543394854987837">Klicken Sie auf Ihren Namen, um Chromium zu öffnen und im Web zu surfen.</translation>
 <translation id="3898493977366060150">Smart surfen mit Google</translation>
 <translation id="4036079820698952681">Helfen Sie uns mit Ihrem Feedback zu den <ph name="BEGIN_LINK" />aktuellen Einstellungen<ph name="END_LINK" /> bei der Verbesserung von Chromium</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
-<translation id="407254336480250557">Wählen Sie <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> aus</translation>
 <translation id="421369550622382712">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Chromium.</translation>
 <translation id="4216212958613226427">Diese Sprache wird für die Chromium-UI verwendet</translation>
 <translation id="4222580632002216401">Sie sind nun in Chromium angemeldet. Die Synchronisierung wurde von Ihrem Administrator deaktiviert.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Das Profil wird offenbar gerade von einem Chromium-Prozess (<ph name="PROCESS_ID" />) auf einem anderen Computer (<ph name="HOST_NAME" />) verwendet. Das Profil wurde von Chromium gesperrt, damit es nicht beschädigt wird. Wenn Sie sicher sind, dass das Profil nicht von anderen Prozessen verwendet wird, können Sie das Profil entsperren und Chromium neu starten.</translation>
 <translation id="469338717132742108">Hilfe für Chromium OS aufrufen</translation>
 <translation id="4708774505295300557">Auf diesem Computer war zuvor ein Nutzer mit dem Konto <ph name="ACCOUNT_EMAIL_LAST" /> in Chromium angemeldet. Erstellen Sie einen neuen Chromium-Nutzer, um Ihre Daten getrennt zu verwenden.</translation>
-<translation id="4714956846925717402">Schneller Zugriff auf Chromium</translation>
 <translation id="4746050847053251315">Chromium trotzdem beenden?</translation>
 <translation id="4748217263233248895">Da soeben ein kritisches Sicherheitsupdate für Chromium installiert wurde, sollten Sie jetzt einen Neustart durchführen. Ihre Tabs werden dann automatisch wiederhergestellt.</translation>
 <translation id="479167709087336770">Es wird dieselbe Rechtschreibprüfung wie in der Google-Suche verwendet. Der in den Browser eingegebene Text wird an Google gesendet. Sie können dies jederzeit in den Einstellungen ändern.</translation>

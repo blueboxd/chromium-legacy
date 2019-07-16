@@ -83,7 +83,7 @@ class OnDeviceHeadProvider : public AutocompleteProvider,
                  OnDeviceHeadProvider>
       observer_;
 
-  base::WeakPtrFactory<OnDeviceHeadProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<OnDeviceHeadProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OnDeviceHeadProvider);
 };

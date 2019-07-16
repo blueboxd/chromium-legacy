@@ -384,7 +384,7 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // For callbacks may be run after destruction, used exclusively for TopSites
   // (since it's used to detect whether there's a query in flight).
-  base::WeakPtrFactory<MostVisitedSites> top_sites_weak_ptr_factory_;
+  base::WeakPtrFactory<MostVisitedSites> top_sites_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };

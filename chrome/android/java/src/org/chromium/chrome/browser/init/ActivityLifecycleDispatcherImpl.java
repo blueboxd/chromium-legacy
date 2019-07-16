@@ -44,6 +44,8 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
     private final ObserverList<ConfigurationChangedObserver> mConfigurationChangedListeners =
             new ObserverList<>();
 
+    private @ActivityState int mActivityState = ActivityState.DESTROYED;
+
     @Override
     public void register(LifecycleObserver observer) {
         if (observer instanceof InflationObserver) {
@@ -108,6 +110,11 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         }
     }
 
+    @Override
+    public int getCurrentActivityState() {
+        return mActivityState;
+    }
+
     void dispatchPreInflationStartup() {
         for (InflationObserver observer : mInflationObservers) {
             observer.onPreInflationStartup();
@@ -120,25 +127,33 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         }
     }
 
+    void onCreateWithNative() {
+        mActivityState = ActivityState.CREATED_WITH_NATIVE;
+    }
+
     void dispatchOnResumeWithNative() {
+        mActivityState = ActivityState.RESUMED_WITH_NATIVE;
         for (PauseResumeWithNativeObserver observer : mPauseResumeObservers) {
             observer.onResumeWithNative();
         }
     }
 
     void dispatchOnPauseWithNative() {
+        mActivityState = ActivityState.PAUSED_WITH_NATIVE;
         for (PauseResumeWithNativeObserver observer : mPauseResumeObservers) {
             observer.onPauseWithNative();
         }
     }
 
     void dispatchOnStartWithNative() {
+        mActivityState = ActivityState.STARTED_WITH_NATIVE;
         for (StartStopWithNativeObserver observer : mStartStopObservers) {
             observer.onStartWithNative();
         }
     }
 
     void dispatchOnStopWithNative() {
+        mActivityState = ActivityState.STOPPED_WITH_NATIVE;
         for (StartStopWithNativeObserver observer : mStartStopObservers) {
             observer.onStopWithNative();
         }
@@ -151,6 +166,8 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
     }
 
     void dispatchOnDestroy() {
+        mActivityState = ActivityState.DESTROYED;
+
         for (Destroyable destroyable : mDestroyables) {
             destroyable.destroy();
         }
@@ -165,6 +182,7 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         mSaveInstanceStateObservers.clear();
         mWindowFocusChangesObservers.clear();
         mActivityResultWithNativeObservers.clear();
+        mConfigurationChangedListeners.clear();
         mDestroyables.clear();
     }
 

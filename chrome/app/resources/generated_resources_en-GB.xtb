@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">Your identity couldn't be verified</translation>
 <translation id="1116694919640316211">About</translation>
 <translation id="1116779635164066733">This setting is enforced by the '<ph name="NAME" />' extension.</translation>
-<translation id="1117602883390928720">Add Kerberos Account</translation>
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
 <translation id="1118738876271697201">The system failed to determine device model or serial number.</translation>
 <translation id="1119447706177454957">Internal error</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">A problem with demo mode device licences occurred.</translation>
 <translation id="126710816202626562">Translation language:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">Advanced configuration</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272293450992660632">PIN values do not match.</translation>
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
@@ -511,7 +509,6 @@
 <translation id="1744060673522309905">Can't join the device to the domain. Make sure that you haven’t exceeded the number of devices that you can add.</translation>
 <translation id="1744108098763830590">background page</translation>
 <translation id="1745520510852184940">Always Do This</translation>
-<translation id="174617397682753897">Kerberos accounts</translation>
 <translation id="1746402432151920942">Protected media identifier</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="1753905327828125965">Most Visited</translation>
@@ -759,7 +756,6 @@
 <translation id="2135787500304447609">&amp;Resume</translation>
 <translation id="2136372518715274136">Enter new password</translation>
 <translation id="2136476978468204130">The passphrase you entered is incorrect</translation>
-<translation id="2137068468602026500">Click <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> under Web Browser</translation>
 <translation id="2138398485845393913">Connection to '<ph name="DEVICE_NAME" />' still in progress</translation>
 <translation id="214169863967063661">Open appearance settings</translation>
 <translation id="2142328300403846845">Open Link as</translation>
@@ -847,7 +843,6 @@
 <translation id="2241634353105152135">Just once</translation>
 <translation id="2242687258748107519">File Info</translation>
 <translation id="2246549592927364792">Get image descriptions from Google?</translation>
-<translation id="2249269794707377949">All Kerberos accounts for single sign-on into certain apps and websites and file shares can be managed here.</translation>
 <translation id="2249605167705922988">e.g. 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Open with system viewer</translation>
 <translation id="225163402930830576">Refresh Networks</translation>
@@ -1079,7 +1074,6 @@
 <translation id="2586672484245266891">Please enter a shorter URL</translation>
 <translation id="2587922270115112871">Creating a supervised user does not create a Google Account, and their settings and data will not follow them to other devices with Chrome Sync. A supervised user applies only to this device.</translation>
 <translation id="2588636910004461974">Devices from <ph name="VENDOR_NAME" /></translation>
-<translation id="258932246702879617">Select <ph name="BEGIN_BOLD" />Pin to taskbar<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Search Google or type URL</translation>
 <translation id="2597521610396315071">Add supervision</translation>
 <translation id="2603115962224169880">Clean up computer</translation>
@@ -1146,7 +1140,6 @@
 <translation id="2683638487103917598">Folder sorted</translation>
 <translation id="2684004000387153598">To continue, click OK, then click Add Person to create a new profile for your email address.</translation>
 <translation id="2688196195245426394">Error when registering the device with the server: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="2688477613306174402">Configuration</translation>
 <translation id="2690024944919328218">Show language options</translation>
 <translation id="2691385045260836588">Model</translation>
 <translation id="2693176596243495071">Oops!  An unknown error occurred. Please try again later or contact your administrator if the issue persists.</translation>
@@ -1533,7 +1526,6 @@
 <translation id="32939749466444286">The Linux container didn't start. Please try again.</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="329703603001918157">Can’t edit shortcut</translation>
-<translation id="3297951628821704004">Remove account from this device</translation>
 <translation id="329838636886466101">Repair</translation>
 <translation id="3298789223962368867">Invalid URL entered.</translation>
 <translation id="32991397311664836">Devices:</translation>
@@ -1594,7 +1586,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="3387614642886316601">Use enhanced spell check</translation>
-<translation id="3389312115541230716">Right click the <ph name="SMALL_PRODUCT_LOGO" /> icon in the taskbar</translation>
 <translation id="3393352139658145068">Activate the Assistant when anyone says “Ok Google”. To save battery, “Ok Google” is on only when your device is connected to a power source.</translation>
 <translation id="3396800784455899911">By clicking the 'Accept and continue' button, you agree to the processing described above for these Google services.</translation>
 <translation id="3399432415385675819">Notifications will be disabled</translation>
@@ -1830,7 +1821,6 @@
 <translation id="3714195043138862580">This demo device has been placed into a deprovisioned state.</translation>
 <translation id="3714633008798122362">web calendar</translation>
 <translation id="3719826155360621982">Homepage</translation>
-<translation id="3720996970802414353">Switch anyway</translation>
 <translation id="3722108462506185496">Error starting the virtual machine service. Please try again.</translation>
 <translation id="3725367690636977613">pages</translation>
 <translation id="3726137731714254362">Removing folders from here will stop sharing but will not delete files.</translation>
@@ -2445,7 +2435,6 @@
 <translation id="4662788913887017617">Share this bookmark with your iPhone</translation>
 <translation id="4663373278480897665">Camera allowed</translation>
 <translation id="4664482161435122549">PKCS No.12 Export Error</translation>
-<translation id="4664736447097490764">Edit the Kerberos configuration file here.</translation>
 <translation id="4665014895760275686">Manufacturer</translation>
 <translation id="4665446389743427678">All data stored by <ph name="SITE" /> will be deleted.</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
@@ -2560,6 +2549,7 @@
 <translation id="4850669014075537160">Scrolling</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4853020600495124913">Open in &amp;new window</translation>
+<translation id="485480310608090163">More settings and permissions</translation>
 <translation id="4856478137399998590">Your data service is activated and ready to use</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Open All in &amp;incognito Window}=1{Open in &amp;incognito Window}other{Open All (#) in &amp;incognito Window}}</translation>
 <translation id="4858913220355269194">Footy</translation>
@@ -2862,7 +2852,6 @@
 <translation id="5319359161174645648">Google recommends Chrome</translation>
 <translation id="532247166573571973">The server may be unreachable. Try again later.</translation>
 <translation id="5324780743567488672">Set time zone automatically using your location</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> – is allowed to save to original files</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5327570636534774768">This device is marked for management by a different domain. Deprovision it from that domain before setting up demo mode.</translation>
 <translation id="532943162177641444">Tap the notification on your <ph name="PHONE_NAME" /> to set up the mobile hotspot that can be used by this device.</translation>
@@ -3024,6 +3013,7 @@
 <translation id="55601339223879446">Adjust the boundaries of your desktop within the display</translation>
 <translation id="5562781907504170924">This tab is connected to a Bluetooth device.</translation>
 <translation id="5563234215388768762">Search Google or type a URL</translation>
+<translation id="5565735124758917034">Active</translation>
 <translation id="5567989639534621706">Application Caches</translation>
 <translation id="5568069709869097550">Can't sign in</translation>
 <translation id="5568144734023334204">Android storage</translation>
@@ -3674,7 +3664,6 @@
 <translation id="6532101170117367231">Save to Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Note:<ph name="END_BOLD" /> Only enable if you know what you are doing or if you have been asked to do so, as collection of data may reduce performance.</translation>
 <translation id="6541638731489116978">This site has been blocked from accessing your motion sensors.</translation>
-<translation id="6542184058496424548">Username invalid (should be user@realm.com)</translation>
 <translation id="654233263479157500">Use a web service to help resolve navigation errors</translation>
 <translation id="6544215763872433504">The web browser by Google, for you</translation>
 <translation id="6545665334409411530">Repeat rate</translation>
@@ -3936,7 +3925,6 @@
 <translation id="6955446738988643816">Inspect Pop-up</translation>
 <translation id="6957044667612803194">This security key doesn’t support PINs</translation>
 <translation id="6957231940976260713">Service name</translation>
-<translation id="6957572737510023982">Oops! Something went wrong (error code <ph name="ERROR_CODE" />).</translation>
 <translation id="6964390816189577014">Hero</translation>
 <translation id="6964760285928603117">Remove From Group</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -4195,7 +4183,6 @@
 <translation id="7328699668338161242">Your Assistant can already recognise your voice</translation>
 <translation id="7328867076235380839">Invalid combination</translation>
 <translation id="7329154610228416156">Sign-in failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL" />). Please contact your administrator.</translation>
-<translation id="733006820760728943">Set as active account</translation>
 <translation id="7334190995941642545">Smart Lock is currently unavailable. Please try again later.</translation>
 <translation id="7334274148831027933">Enable docked magnifier</translation>
 <translation id="7335974957018254119">Use spell check for</translation>
@@ -4206,7 +4193,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> is now full screen.</translation>
 <translation id="7340650977506865820">Site is sharing your screen</translation>
 <translation id="7341834142292923918">Wants access to this site</translation>
-<translation id="7344488796804562294">Advanced Kerberos configuration</translation>
 <translation id="7345706641791090287">Confirm your password</translation>
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="7347751611463936647">To use this extension, type "<ph name="EXTENSION_KEYWORD" />", then TAB, then your command or search.</translation>
@@ -4299,7 +4285,6 @@
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC address</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> extension may collect all the text you type, including personal data like passwords and credit card numbers. Do you want to use this extension?</translation>
-<translation id="7494065396242762445">Open Windows Settings</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Forgot your old password?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> and the data associated with it will be removed from this device.</translation>
@@ -4324,7 +4309,6 @@
 <translation id="7530016656428373557">Discharge Rate in Watts</translation>
 <translation id="7531779363494549572">Go to Settings &gt; Apps &amp; notifications &gt; Notifications.</translation>
 <translation id="7536220825385726660">Allow Play Store applications to access external drives</translation>
-<translation id="7537601449003285327">Pin to taskbar</translation>
 <translation id="7539856059004947393">Bluetooth security key</translation>
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Enable debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
@@ -4355,7 +4339,6 @@
 <translation id="7574650250151586813">To type text, update the Daydream Keyboard app</translation>
 <translation id="7576690715254076113">Collate</translation>
 <translation id="7576976045740938453">A problem with demo mode account occurred.</translation>
-<translation id="757941033127302446">Signed in</translation>
 <translation id="7580671184200851182">Play the same audio through all speakers (mono audio)</translation>
 <translation id="7581462281756524039">A cleanup tool</translation>
 <translation id="7582582252461552277">Prefer this network</translation>
@@ -4633,7 +4616,6 @@
 <translation id="7959074893852789871">The file contained multiple certificates, some of which were not imported:</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7963826112438303517">Your Assistant uses these recordings and your spoken requests to create and update your voice model, which is only stored on devices where you've turned on Voice Match. View or retrain voice activity in Assistant Settings.</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> wants to scan for nearby Bluetooth devices. The following devices have been found:</translation>
 <translation id="7966241909927244760">C&amp;opy Image Address</translation>
 <translation id="7968742106503422125">Read and modify data that you copy and paste</translation>
 <translation id="7968833647796919681">Enable performance data collection</translation>
@@ -4790,7 +4772,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8184472985242519288">Uniform</translation>
 <translation id="8185331656081929126">Show notifications when new printers are detected on the network</translation>
 <translation id="8186609076106987817">The server could not find the file.</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> can read all the files in the following folder. This site can see changes to the folder only while this tab is open.</translation>
 <translation id="8188389033983459049">Check your device settings and turn it on to continue</translation>
 <translation id="8190193592390505034">Connecting to <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Manage your apps, extensions, and themes</translation>
@@ -4926,7 +4907,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="839736845446313156">Register</translation>
 <translation id="8398877366907290961">Proceed anyway</translation>
 <translation id="8400146488506985033">Manage people</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> can save your changes directly to the files in the following folder. This site can save changes only while this tab is open.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Ask first (recommended)</translation>
 <translation id="8418445294933751433">&amp;Show as tab</translation>
@@ -5279,7 +5259,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="891365694296252935">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If additional Web &amp; App Activity is turned on for your child, this data may be saved to their Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Loading suggestion</translation>
 <translation id="8916476537757519021">Incognito Subframe: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> – is allowed to read a folder on your device</translation>
 <translation id="8919275547519617350">To get all of your passwords on all your devices, sign in and turn on sync.</translation>
 <translation id="8921366488406707015">Verifying your security key...</translation>
 <translation id="8922013791253848639">Always allow ads on this site</translation>
@@ -5329,6 +5308,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8995603266996330174">Managed by <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Add account...</translation>
 <translation id="899657321862108550">Your Chrome, Everywhere</translation>
+<translation id="899676909165543803">The fingerprint sensor is the bottom-right key on your keyboard. Touch it lightly with any finger.</translation>
 <translation id="9003647077635673607">Allow on all websites</translation>
 <translation id="9003704114456258138">Frequency:</translation>
 <translation id="9004952710076978168">Received a notification for an unknown printer.</translation>
@@ -5364,7 +5344,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9044646465488564462">Failed to connect to network: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Sends the web address of the page that you're trying to reach to Google</translation>
 <translation id="9046895021617826162">Connection failed</translation>
-<translation id="9047391224416514812">An account with this username already exists</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9052208328806230490">You have registered your printers with <ph name="CLOUD_PRINT_NAME" />, using the account <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Continue blocking</translation>

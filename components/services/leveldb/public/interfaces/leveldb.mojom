@@ -38,6 +38,17 @@ struct KeyValue {
   array<uint8> value;
 };
 
+union GetManyRequest {
+  array<uint8> key_prefix;
+  array<uint8> key;
+};
+
+union GetManyResult {
+  DatabaseError status;
+  array<KeyValue> key_prefix_values;
+  array<uint8> key_value;
+};
+
 enum SharedReadCache {
   Default,
   Web,
@@ -136,6 +147,13 @@ interface LevelDBDatabase {
 
   GetPrefixed(array<uint8> key_prefix)
       => (DatabaseError status, array<KeyValue> data);
+
+  // Get multiple keys and key prefixes and return corresponding values or
+  // non-OK error in the same order. Each request has a corresponding result
+  // in the same array position. A result can only be either a non-OK
+  // db status or a value for the key or key prefix.
+  GetMany(array<GetManyRequest> keys_or_prefixes)
+      => (array<GetManyResult> data);
 
   // Copies all data from the source prefix to the destination prefix. Useful
   // for deep copies.

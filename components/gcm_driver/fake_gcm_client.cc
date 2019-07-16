@@ -65,8 +65,7 @@ FakeGCMClient::FakeGCMClient(
       start_mode_(DELAYED_START),
       start_mode_overridding_(RESPECT_START_MODE),
       ui_thread_(ui_thread),
-      io_thread_(io_thread),
-      weak_ptr_factory_(this) {}
+      io_thread_(io_thread) {}
 
 FakeGCMClient::~FakeGCMClient() {
 }

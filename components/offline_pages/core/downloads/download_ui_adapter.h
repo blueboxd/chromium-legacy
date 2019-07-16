@@ -199,7 +199,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
   // The observers.
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUIAdapter);
 };

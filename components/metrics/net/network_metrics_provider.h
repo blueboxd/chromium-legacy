@@ -150,7 +150,7 @@ class NetworkMetricsProvider
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<NetworkMetricsProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMetricsProvider);
 };

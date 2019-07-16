@@ -96,7 +96,6 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override {
     return nullptr;
   }
-  version_info::Channel GetChannel() override { return channel_; }
   bool OverridesRestrictParameter(std::string* parameter) override {
     if (restrict_parameter_.empty())
       return false;
@@ -115,6 +114,9 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   }
 
  private:
+  // VariationsServiceClient:
+  version_info::Channel GetChannel() override { return channel_; }
+
   std::string restrict_parameter_;
   version_info::Channel channel_ = version_info::Channel::UNKNOWN;
   network::TestURLLoaderFactory test_url_loader_factory_;

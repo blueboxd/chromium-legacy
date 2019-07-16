@@ -733,7 +733,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // layer.
   unsigned trilinear_filtering_request_;
 
-  base::WeakPtrFactory<Layer> weak_ptr_factory_;
+  base::WeakPtrFactory<Layer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

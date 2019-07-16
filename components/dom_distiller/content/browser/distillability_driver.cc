@@ -40,7 +40,7 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
 };
 
 DistillabilityDriver::DistillabilityDriver(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
   if (!web_contents)
     return;
   frame_interfaces_.AddInterface(

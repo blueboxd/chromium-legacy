@@ -3231,19 +3231,8 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7123160381479171745">Define la lista de usuarios con permiso para acceder al dispositivo. Las entradas se ingresan en el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" />, por ejemplo <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para permitir usuarios aleatorios en un dominio, usa las entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Si no se configura esta política, no se establecerán restricciones sobre los usuarios con permiso para acceder. Ten en cuenta que para crear nuevos usuarios, sigue siendo necesario configurar la política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> de manera adecuada.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> garantiza que la instalación y actualización de extensiones sean seguras. Sin embargo, es posible que el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo cuente con la protección de algoritmos de hash y acceso no seguros, como SHA1. Si se inhabilita esta política, Chrome no permitirá la instalación ni la actualización de esas extensiones (hasta que los desarrolladores vuelvan a diseñar la extensión con algoritmos más seguros). Si se habilita, Chrome permitirá la instalación y actualización de las extensiones.
-
-          Si no se establece, se considerará habilitada.
-          A partir de <ph name="PRODUCT_NAME" /> 75, la configuración predeterminada se comportará como si estuviera inhabilitada.
-
-          A partir de <ph name="PRODUCT_NAME" /> 77, si ignorará esta política y se tratará como inhabilitada.</translation>
 <translation id="7126716959063786004">Permitir finalizar procesos en el Administrador de tareas</translation>
 <translation id="7127892035367404455">Reversión a la versión objetivo</translation>
-<translation id="7128918109610518786">Muestra la lista de identificadores de las aplicaciones que <ph name="PRODUCT_OS_NAME" /> muestra como aplicaciones fijas en la barra del menú de aplicaciones.
-
-      Si se configura esta política, se fijará el conjunto de aplicaciones y el usuario no podrá cambiarlo.
-
-      Si no se configura esta política, el usuario podrá cambiar la lista de aplicaciones fijas en el menú de aplicaciones.</translation>
 <translation id="713121532817834879">Esta política es una URL que redirecciona a un archivo XML en el mismo formato que la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer. De esta manera, se cargan reglas de un archivo XML sin la necesidad de compartir esas reglas con Internet Explorer.
 
       Las reglas de este archivo XML se aplican de la misma manera que <ph name="GREYLIST_POLICY_NAME" />, es decir, impiden que <ph name="PRODUCT_NAME" /> abra el navegador alternativo y que el navegador alternativo abra <ph name="PRODUCT_NAME" />.
@@ -4094,12 +4083,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8759829385824155666">Se permiten los tipos de encriptación de Kerberos</translation>
 <translation id="8764119899999036911">Especifica si el SPN de Kerberos generado se basa en el nombre canónico DNS o en el nombre original introducido. Si se habilita esta configuración, se salteará la búsqueda de CNAME y se usará el nombre del servidor que se haya introducido. Si se inhabilita esta opción o si no se configura, el nombre canónico del servidor se determinará a través de una búsqueda de CNAME.</translation>
 <translation id="8764477907716150749">Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
-      Para que <ph name="PRODUCT_NAME" /> capture la nueva huella digital de contraseña correctamente en esta página de cambio de contraseña, asegúrate de que la página cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta configuración, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que vean una advertencia en el navegador.
-      Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccounts.google.com para que cambien sus contraseñas.
-      Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Establecer el porcentaje del nivel de la batería en el que se debe detener la carga</translation>
 <translation id="8801680448782904838">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador o el dispositivo</translation>
@@ -4237,9 +4220,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       El valor de la política debe especificarse en segundos.</translation>
 <translation id="9035964157729712237">Identificaciones de extensión para excluir de la lista negra</translation>
-<translation id="9038058011835642205">Especifica una lista de sitios web instalados de manera silenciosa, sin interacción del usuario y que este no puede desinstalar ni inhabilitar.
-
-      Cada elemento de la lista de la política es un objeto con un miembro obligatorio: "url" y dos miembros opcionales: "default_launch_container" y "create_desktop_shortcut". "url" debe ser la URL de la aplicación web que se va a instalar, "launch_container" debe ser "window" o "tab" para indicar cómo se abrirá la app una vez que se instale, y "create_desktop_shortcut" debe ser verdadero si desea crear un acceso directo de escritorio en Linux y Windows. Si se omite "default_launch_container", se abrirá la app en una pestaña de forma predeterminada. Más allá del valor de "default_launch_container", los usuarios podrán cambiar el contenedor donde se abrirá la app. Si se omite "create_desktop_shortcuts", no se crearán accesos directos de escritorio.</translation>
 <translation id="9038839118379817310">Habilitar Wi-Fi</translation>
 <translation id="9039822628127365650">Si se configura esta política, especificará el tiempo después del cual el usuario saldrá de su cuenta automáticamente. Se informa al usuario del tiempo restante mediante un cronómetro que aparece en la bandeja del sistema.
 

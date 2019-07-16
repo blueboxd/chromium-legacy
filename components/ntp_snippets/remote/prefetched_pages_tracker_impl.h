@@ -60,7 +60,7 @@ class PrefetchedPagesTrackerImpl
 
   std::vector<base::OnceCallback<void()>> initialization_completed_callbacks_;
 
-  base::WeakPtrFactory<PrefetchedPagesTrackerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrefetchedPagesTrackerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchedPagesTrackerImpl);
 };

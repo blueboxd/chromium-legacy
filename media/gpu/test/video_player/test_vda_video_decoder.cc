@@ -21,9 +21,9 @@
 #include "media/gpu/test/video_player/video.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
-#endif  // defined(OS_CHROMEOS)
+#if defined(USE_V4L2_CODEC) || defined(USE_VAAPI)
+#include "media/gpu/linux/platform_video_frame_utils.h"
+#endif
 
 namespace media {
 namespace test {
@@ -216,7 +216,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
       // handles to the video frame's data to the decoder.
       for (const PictureBuffer& picture_buffer : picture_buffers) {
         scoped_refptr<VideoFrame> video_frame;
-#if defined(OS_CHROMEOS)
+#if defined(USE_V4L2_CODEC) || defined(USE_VAAPI)
         video_frame = CreatePlatformVideoFrame(
             format, dimensions, visible_rect, visible_rect.size(),
             base::TimeDelta(), gfx::BufferUsage::SCANOUT_VDA_WRITE);
@@ -224,7 +224,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
         gfx::GpuMemoryBufferHandle handle;
-#if defined(OS_CHROMEOS)
+#if defined(USE_V4L2_CODEC) || defined(USE_VAAPI)
         handle = CreateGpuMemoryBufferHandle(video_frame.get());
 #else
         NOTREACHED();

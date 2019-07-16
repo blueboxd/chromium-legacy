@@ -74,7 +74,7 @@ class ShaderDiskCacheEntry : public base::ThreadChecker {
   std::string shader_;
   disk_cache::Entry* entry_;
   base::WeakPtr<ShaderDiskCacheEntry> weak_ptr_;
-  base::WeakPtrFactory<ShaderDiskCacheEntry> weak_ptr_factory_;
+  base::WeakPtrFactory<ShaderDiskCacheEntry> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskCacheEntry);
 };
@@ -112,7 +112,7 @@ class ShaderDiskReadHelper : public base::ThreadChecker {
   std::unique_ptr<disk_cache::Backend::Iterator> iter_;
   scoped_refptr<net::IOBufferWithSize> buf_;
   disk_cache::Entry* entry_;
-  base::WeakPtrFactory<ShaderDiskReadHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<ShaderDiskReadHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShaderDiskReadHelper);
 };
@@ -141,7 +141,7 @@ class ShaderClearHelper : public base::ThreadChecker {
   base::Time delete_begin_;
   base::Time delete_end_;
   base::OnceClosure callback_;
-  base::WeakPtrFactory<ShaderClearHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<ShaderClearHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ShaderClearHelper);
 };
@@ -174,8 +174,7 @@ ShaderDiskCacheEntry::ShaderDiskCacheEntry(ShaderDiskCache* cache,
       op_type_(OPEN_ENTRY),
       key_(key),
       shader_(shader),
-      entry_(nullptr),
-      weak_ptr_factory_(this) {
+      entry_(nullptr) {
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -283,8 +282,7 @@ ShaderDiskReadHelper::ShaderDiskReadHelper(ShaderDiskCache* cache,
       shader_loaded_callback_(callback),
       op_type_(OPEN_NEXT),
       buf_(nullptr),
-      entry_(nullptr),
-      weak_ptr_factory_(this) {}
+      entry_(nullptr) {}
 
 ShaderDiskReadHelper::~ShaderDiskReadHelper() {
   DCHECK(CalledOnValidThread());
@@ -397,8 +395,7 @@ ShaderClearHelper::ShaderClearHelper(ShaderCacheFactory* factory,
       path_(path),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 ShaderClearHelper::~ShaderClearHelper() {
   DCHECK(CalledOnValidThread());

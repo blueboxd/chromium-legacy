@@ -359,7 +359,7 @@ PaymentManifestParser::WebAppIcon::WebAppIcon() = default;
 PaymentManifestParser::WebAppIcon::~WebAppIcon() = default;
 
 PaymentManifestParser::PaymentManifestParser(std::unique_ptr<ErrorLogger> log)
-    : log_(std::move(log)), weak_factory_(this) {
+    : log_(std::move(log)) {
   DCHECK(log_);
 }
 

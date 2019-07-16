@@ -13,8 +13,7 @@ namespace syncer {
 FakeSyncEncryptionHandler::FakeSyncEncryptionHandler()
     : encrypted_types_(SensitiveTypes()),
       encrypt_everything_(false),
-      passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE),
-      cryptographer_(&encryptor_) {}
+      passphrase_type_(PassphraseType::IMPLICIT_PASSPHRASE) {}
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() {}
 
 bool FakeSyncEncryptionHandler::Init() {

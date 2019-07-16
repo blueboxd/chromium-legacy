@@ -28,8 +28,7 @@ SubframeNavigationFilteringThrottle::SubframeNavigationFilteringThrottle(
     Delegate* delegate)
     : content::NavigationThrottle(handle),
       parent_frame_filter_(parent_frame_filter),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {
+      delegate_(delegate) {
   DCHECK(!handle->IsInMainFrame());
   DCHECK(parent_frame_filter_);
 }

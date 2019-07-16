@@ -257,7 +257,7 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Checks that we are on the sync thread.
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncEngineBackend> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEngineBackend> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineBackend);
 };

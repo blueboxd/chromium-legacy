@@ -64,8 +64,7 @@ class ThrottledOfflineContentProviderTest : public testing::Test {
       : task_runner_(new base::TestMockTimeTaskRunner),
         handle_(task_runner_),
         delay_(base::TimeDelta::FromSeconds(1)),
-        provider_(delay_, &wrapped_provider_),
-        weak_ptr_factory_(this) {}
+        provider_(delay_, &wrapped_provider_) {}
   ~ThrottledOfflineContentProviderTest() override {}
 
   MOCK_METHOD1(OnGetAllItemsDone,
@@ -84,7 +83,8 @@ class ThrottledOfflineContentProviderTest : public testing::Test {
   base::TimeDelta delay_;
   MockOfflineContentProvider wrapped_provider_;
   ThrottledOfflineContentProvider provider_;
-  base::WeakPtrFactory<ThrottledOfflineContentProviderTest> weak_ptr_factory_;
+  base::WeakPtrFactory<ThrottledOfflineContentProviderTest> weak_ptr_factory_{
+      this};
 };
 
 TEST_F(ThrottledOfflineContentProviderTest, TestBasicPassthrough) {

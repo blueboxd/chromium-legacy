@@ -49,7 +49,7 @@ class OverlayJsRenderFrameObserver : public content::RenderFrameObserver {
   // URL or not.
   bool did_start_enabling_js_api_ = false;
 
-  base::WeakPtrFactory<OverlayJsRenderFrameObserver> weak_factory_;
+  base::WeakPtrFactory<OverlayJsRenderFrameObserver> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OverlayJsRenderFrameObserver);
 };

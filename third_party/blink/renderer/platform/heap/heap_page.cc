@@ -1434,7 +1434,7 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
     DCHECK_GT(size, 0u);
     DCHECK_LT(size, BlinkPagePayloadSize());
 
-    if (header->IsFree()) {
+    if (header->IsFree<HeapObjectHeader::AccessMode::kAtomic>()) {
       // Zero the memory in the free list header to maintain the
       // invariant that memory on the free list is zero filled.
       // The rest of the memory is already on the free list and is
@@ -1445,7 +1445,9 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
       header_address += size;
       continue;
     }
-    if (!header->IsMarked()) {
+    if (!header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>()) {
+      // The following accesses to the header are safe non-atomically, because
+      // we just established the invariant that the object is not marked.
       ToBeFinalizedObject object{header};
       if (finalize_type == FinalizeType::kInlined ||
           !header->HasNonTrivialFinalizer()) {
@@ -1472,7 +1474,7 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
 #endif
     }
     object_start_bit_map()->SetBit(header_address);
-    header->Unmark();
+    header->Unmark<HeapObjectHeader::AccessMode::kAtomic>();
     header_address += size;
     start_of_gap = header_address;
   }

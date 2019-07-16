@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">Kunne ikke bekrefte identiteten din</translation>
 <translation id="1116694919640316211">Info</translation>
 <translation id="1116779635164066733">Denne innstillingen håndheves av «<ph name="NAME" />»-utvidelsen.</translation>
-<translation id="1117602883390928720">Legg til Kerberos-konto</translation>
 <translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
 <translation id="1118738876271697201">Systemet kunne ikke fastslå enhetens modell eller serienummer.</translation>
 <translation id="1119447706177454957">Intern feil</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">Det oppsto et problem med enhetslisenser i demomodus.</translation>
 <translation id="126710816202626562">Målspråket:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">Avansert konfigurasjon</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1272293450992660632">PIN-kodene er ikke like.</translation>
 <translation id="1272978324304772054">Denne brukerkontoen tilhører ikke domenet som enheten er registrert for. Hvis du vil registrere deg for et annet domene, må du først gå gjennom enhetsgjenoppretting.</translation>
@@ -508,7 +506,6 @@
 <translation id="1744060673522309905">Kan ikke knytte enheten til domenet. Kontrollér at du ikke har overskredet antall enheter som du kan legge til.</translation>
 <translation id="1744108098763830590">bakgrunnsside</translation>
 <translation id="1745520510852184940">Gjør alltid dette</translation>
-<translation id="174617397682753897">Kerberos-kontoer</translation>
 <translation id="1746402432151920942">Beskyttet medieidentifikator</translation>
 <translation id="175196451752279553">Gj&amp;enåpne den lukkede fanen</translation>
 <translation id="1753905327828125965">Mest besøkt</translation>
@@ -756,7 +753,6 @@
 <translation id="2135787500304447609">&amp;Fortsett</translation>
 <translation id="2136372518715274136">Skriv inn et nytt passord</translation>
 <translation id="2136476978468204130">Passordfrasen du skrev inn, er feil</translation>
-<translation id="2137068468602026500">Klikk på <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> under Nettleser</translation>
 <translation id="2138398485845393913">Tilkoblingen til <ph name="DEVICE_NAME" /> pågår fortsatt</translation>
 <translation id="214169863967063661">Åpne innstillingene for utseende</translation>
 <translation id="2142328300403846845">Åpne linken som</translation>
@@ -844,7 +840,6 @@
 <translation id="2241634353105152135">Bare én gang</translation>
 <translation id="2242687258748107519">Filinformasjon</translation>
 <translation id="2246549592927364792">Vil du få bildebeskrivelser fra Google?</translation>
-<translation id="2249269794707377949">Her kan du administrere alle Kerberos-kontoer for global pålogging på visse apper, nettsteder og delte nettverksressurser.</translation>
 <translation id="2249605167705922988">f.eks. 1–5, 8, 11–13</translation>
 <translation id="2251218783371366160">Åpne med visningsprogrammet for systemet</translation>
 <translation id="225163402930830576">Oppdater nettverk</translation>
@@ -1076,7 +1071,6 @@
 <translation id="2586672484245266891">Skriv inn en kortere nettadresse</translation>
 <translation id="2587922270115112871">Når du oppretter en administrert bruker, oppretter du ikke en Google-konto, og vedkommendes innstillinger og data blir ikke kopiert til andre enheter med Chrome-synkronisering. En administrert bruker er bare tilgjengelig på denne enheten.</translation>
 <translation id="2588636910004461974">Enheter fra <ph name="VENDOR_NAME" /></translation>
-<translation id="258932246702879617">Velg <ph name="BEGIN_BOLD" />Fest til oppgavelinjen<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Søk på Google, eller skriv inn en nettadresse</translation>
 <translation id="2597521610396315071">Legg til tilsyn</translation>
 <translation id="2603115962224169880">Rydd opp i datamaskinen</translation>
@@ -1143,7 +1137,6 @@
 <translation id="2683638487103917598">Mappen er sortert</translation>
 <translation id="2684004000387153598">For å fortsette, klikk på OK. Klikk deretter på Legg til person for å opprette en ny profil for e-postadressen din.</translation>
 <translation id="2688196195245426394">Feil under registreringen av enheten hos tjeneren: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="2688477613306174402">Konfigurasjon</translation>
 <translation id="2690024944919328218">Vis alternativer for språk</translation>
 <translation id="2691385045260836588">Modell</translation>
 <translation id="2693176596243495071">Beklager. En ukjent feil oppsto. Prøv på nytt senere, eller kontakt administratoren hvis problemet fortsetter.</translation>
@@ -1530,7 +1523,6 @@
 <translation id="32939749466444286">Linux-beholderen startet ikke. Prøv på nytt.</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="329703603001918157">Kan ikke endre snarveien</translation>
-<translation id="3297951628821704004">Fjern kontoen fra denne enheten</translation>
 <translation id="329838636886466101">Reparer</translation>
 <translation id="3298789223962368867">Ugyldig nettadresse angitt.</translation>
 <translation id="32991397311664836">Enheter:</translation>
@@ -1590,7 +1582,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Skillelinje</translation>
 <translation id="3387614642886316601">Bruk forbedret stavekontroll</translation>
-<translation id="3389312115541230716">Høyreklikk på <ph name="SMALL_PRODUCT_LOGO" />-ikonet på oppgavelinjen</translation>
 <translation id="3393352139658145068">Aktivér assistenten når noen sier «Ok Google». For å spare batteri er «Ok Google» bare på når enheten er koblet til en ekstern strømkilde.</translation>
 <translation id="3396800784455899911">Ved å klikke på «Godta og fortsett»-knappen godtar du behandlingen som beskrives ovenfor, for disse Google-tjenestene.</translation>
 <translation id="3399432415385675819">Varsler slås av</translation>
@@ -1667,7 +1658,7 @@
 <translation id="3496213124478423963">Zoom ut</translation>
 <translation id="3497560059572256875">Del doodlen</translation>
 <translation id="3505030558724226696">Opphev enhetstilgangen</translation>
-<translation id="3505635633742443645">HDMI-porten på dokken kan ikke brukes når USB-C-porten brukes som utenhet for video. Bruk en annen port til en av skjermene.</translation>
+<translation id="3505635633742443645">HDMI-porten på dokken kan ikke brukes når USB-C-porten brukes som utenhet for video. Bruk en annen port for en av skjermene.</translation>
 <translation id="3507421388498836150">Nåværende tillatelser for «<ph name="EXTENSION_NAME" />»</translation>
 <translation id="3507888235492474624">Skann etter Bluetooth-enheter på nytt</translation>
 <translation id="3508920295779105875">Velg en annen mappe</translation>
@@ -1826,7 +1817,6 @@
 <translation id="3714195043138862580">Denne demoenheten er satt i en tilstand uten tilgang og ressurser.</translation>
 <translation id="3714633008798122362">nettkalender</translation>
 <translation id="3719826155360621982">Startside</translation>
-<translation id="3720996970802414353">Bytt uansett</translation>
 <translation id="3722108462506185496">Feil ved oppstart av den virtuelle maskinen. Prøv på nytt.</translation>
 <translation id="3725367690636977613">sider</translation>
 <translation id="3726137731714254362">Hvis du fjerner mapper herfra, deles de ikke lenger, men filene blir ikke slettet.</translation>
@@ -2355,7 +2345,7 @@
 <translation id="4533985347672295764">CPU-tid</translation>
 <translation id="4534661889221639075">Prøv på nytt.</translation>
 <translation id="4535127706710932914">Standardprofil</translation>
-<translation id="4535767533210902251">Fingeravtrykkssensoren er knappen øverst til høyre på tastaturet. Trykk på den forsiktig med hvilken som helst finger.</translation>
+<translation id="4535767533210902251">Fingeravtrykkssensoren er knappen øverst til høyre på tastaturet. Trykk forsiktig på den med hvilken som helst finger.</translation>
 <translation id="4538684596480161368">Blokkér alltid programtillegg som ikke er prosessisolert, på <ph name="HOST" /></translation>
 <translation id="4538792345715658285">Installert av bedriftsinnstillingen.</translation>
 <translation id="4542520061254486227">Les dataene dine på <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /></translation>
@@ -2389,7 +2379,7 @@
 <translation id="457386861538956877">Mer</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Koble til Bluetooth-enhet</translation>
-<translation id="4578012756826807359">Påloggingsdataene ble slettet.</translation>
+<translation id="4578012756826807359">Påloggingsinformasjonen din er slettet.</translation>
 <translation id="4579581181964204535">Kunne ikke caste <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Feil under gjenoppretting av Linux</translation>
 <translation id="4582563038311694664">Tilbakestill alle innstillingene</translation>
@@ -2439,7 +2429,6 @@
 <translation id="4662788913887017617">Del dette bokmerket med iPhone</translation>
 <translation id="4663373278480897665">Kameraet er tillatt</translation>
 <translation id="4664482161435122549">Eksportfeil for PKCS #12</translation>
-<translation id="4664736447097490764">Rediger Kerberos-konfigurasjonsfilen her.</translation>
 <translation id="4665014895760275686">Produsent</translation>
 <translation id="4665446389743427678">Alle data som lagres av <ph name="SITE" />, blir slettet.</translation>
 <translation id="4668721319092543482">Klikk for å slå på <ph name="PLUGIN_NAME" /></translation>
@@ -2554,6 +2543,7 @@
 <translation id="4850669014075537160">Rulling</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4853020600495124913">Åpne i &amp;nytt vindu</translation>
+<translation id="485480310608090163">Flere innstillinger og tillatelser</translation>
 <translation id="4856478137399998590">Mobildatatjenesten er aktivert og klar til bruk</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Åpne alle i &amp;inkognitovinduer}=1{Åpne i et &amp;inkognitovindu}other{Åpne alle (#) i &amp;inkognitovinduer}}</translation>
 <translation id="4858913220355269194">Drible</translation>
@@ -2856,7 +2846,6 @@
 <translation id="5319359161174645648">Google anbefaler Chrome</translation>
 <translation id="532247166573571973">Det kan hende tjeneren ikke er tilgjengelig. Prøv igjen senere.</translation>
 <translation id="5324780743567488672">Angi tidssonen automatisk ved hjelp av posisjonen din</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> – har lov til å lagre til opprinnelige filer</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5327570636534774768">Denne enheten er merket for administrering av et annet domene. Fjern tilgangen og ressursene fra det domenet før du konfigurerer demomodus.</translation>
 <translation id="532943162177641444">Trykk på varselet på <ph name="PHONE_NAME" />-enheten din for å konfigurere en mobil Wi-Fi-sone denne enheten kan bruke.</translation>
@@ -3018,6 +3007,7 @@
 <translation id="55601339223879446">Juster grensene for skrivebordet på skjermen</translation>
 <translation id="5562781907504170924">Denne fanen er koblet til en Bluetooth-enhet.</translation>
 <translation id="5563234215388768762">Søk i Google eller skriv inn en nettadresse</translation>
+<translation id="5565735124758917034">Aktiv</translation>
 <translation id="5567989639534621706">Programbuffere</translation>
 <translation id="5568069709869097550">Kan ikke logge på</translation>
 <translation id="5568144734023334204">Android-lagring</translation>
@@ -3668,7 +3658,6 @@
 <translation id="6532101170117367231">Lagre i Google Disk</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Merk:<ph name="END_BOLD" /> Ettersom innsamling av data kan redusere ytelsen bør du bare aktivere dette hvis du vet hva du gjør eller har blitt bedt om å gjøre dette.</translation>
 <translation id="6541638731489116978">Dette nettstedet er blokkert fra å få tilgang til bevegelsessensorene dine.</translation>
-<translation id="6542184058496424548">Ugyldig brukernavn (må være bruker@område.com)</translation>
 <translation id="654233263479157500">Bruk en nettjeneste til å løse problemer med navigeringsfeil</translation>
 <translation id="6544215763872433504">Nettleseren fra Google – til deg</translation>
 <translation id="6545665334409411530">Gjentakelsesfrekvens</translation>
@@ -3930,7 +3919,6 @@
 <translation id="6955446738988643816">Undersøk forgrunnsvindu</translation>
 <translation id="6957044667612803194">Denne sikkerhetsnøkkelen støtter ikke PIN-koder</translation>
 <translation id="6957231940976260713">Tjenestenavn</translation>
-<translation id="6957572737510023982">Beklager! Noe gikk galt (feilkode <ph name="ERROR_CODE" />).</translation>
 <translation id="6964390816189577014">Helt</translation>
 <translation id="6964760285928603117">Fjern fra gruppen</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -4189,7 +4177,6 @@
 <translation id="7328699668338161242">Assistenten gjenkjenner allerede stemmen din</translation>
 <translation id="7328867076235380839">Ugyldig kombinasjon</translation>
 <translation id="7329154610228416156">Påloggingen mislyktes fordi den var konfigurert til å bruke en usikret nettadresse (<ph name="BLOCKED_URL" />). Kontakt administratoren din.</translation>
-<translation id="733006820760728943">Angi som aktiv konto</translation>
 <translation id="7334190995941642545">Smart Lock er for øyeblikket utilgjengelig. Prøv igjen senere.</translation>
 <translation id="7334274148831027933">Aktivér den dokkede lupen</translation>
 <translation id="7335974957018254119">Bruk stavekontroll for</translation>
@@ -4200,7 +4187,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> kjører nå i full skjerm.</translation>
 <translation id="7340650977506865820">Nettstedet deler skjermen din</translation>
 <translation id="7341834142292923918">Vil ha tilgang til dette nettstedet</translation>
-<translation id="7344488796804562294">Avansert Kerberos-konfigurasjon</translation>
 <translation id="7345706641791090287">Bekreft passordet</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="7347751611463936647">For å bruke denne utvidelsen, skriver du «<ph name="EXTENSION_KEYWORD" />» , trykker på TAB, og skriver kommandoordet eller søkeordet.</translation>
@@ -4293,7 +4279,6 @@
 <translation id="749028671485790643">Person <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC-adresse</translation>
 <translation id="7493386493263658176">Det kan hende at utvidelsen <ph name="EXTENSION_NAME" /> registrerer all tekst du skriver inn, deriblant personlige data som passord og kredittkortnumre. Vil du bruke denne utvidelsen?</translation>
-<translation id="7494065396242762445">Åpne Windows-innstillingene</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Har du glemt det gamle passordet?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> og alle tilknyttede data blir fjernet fra denne enheten.</translation>
@@ -4318,7 +4303,6 @@
 <translation id="7530016656428373557">Utladningshastighet i watt</translation>
 <translation id="7531779363494549572">Gå til Innstillinger &gt; Apper og varsler &gt; Varsler.</translation>
 <translation id="7536220825385726660">Gi Play Butikk-programmer tilgang til eksterne stasjoner</translation>
-<translation id="7537601449003285327">Fest til oppgavelinjen</translation>
 <translation id="7539856059004947393">Bluetooth-sikkerhetsnøkkel</translation>
 <translation id="7540972813190816353">Det oppsto en feil under søk etter oppdateringer: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Slå på feilsøkingsfunksjoner på denne <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten</translation>
@@ -4347,7 +4331,6 @@
 <translation id="7574650250151586813">For å skrive inn tekst, oppdater appen Daydream-tastatur.</translation>
 <translation id="7576690715254076113">I rekkefølge</translation>
 <translation id="7576976045740938453">Det oppsto et problem med kontoen for demomodus.</translation>
-<translation id="757941033127302446">Pålogget</translation>
 <translation id="7580671184200851182">Spill den samme lyden på alle høyttalere (monolyd)</translation>
 <translation id="7581462281756524039">Et opprydningsverktøy</translation>
 <translation id="7582582252461552277">Foretrekk dette nettverket</translation>
@@ -4625,7 +4608,6 @@
 <translation id="7959074893852789871">Filen inneholdt flere sertifikater, og enkelte av dem ble ikke importert:</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7963826112438303517">Assistenten bruker disse opptakene og uttalte forespørsler fra deg for å opprette og oppdatere stemmemodellen din, som bare lagres på enheter der du har slått på Voice Match. Du kan se taleaktivitet eller lære den opp på nytt i Assistent-innstillingene.</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> vil skanne etter Bluetooth-enheter i nærheten. Disse enhetene ble funnet:</translation>
 <translation id="7966241909927244760">K&amp;opiér bildeadressen</translation>
 <translation id="7968742106503422125">lese og endre data du kopierer og limer inn</translation>
 <translation id="7968833647796919681">Aktiverer innsamling av ytelsesdata</translation>
@@ -4782,7 +4764,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8184472985242519288">Helhetlig</translation>
 <translation id="8185331656081929126">Vis varsler når nye skrivere oppdages på nettverket</translation>
 <translation id="8186609076106987817">Tjeneren fant ikke filen.</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> kan lese alle filene i denne mappen. Nettstedet kan bare se endringer i mappen så lenge denne fanen er åpen.</translation>
 <translation id="8188389033983459049">Sjekk enhetsinnstillingene dine og slå det på for å fortsette</translation>
 <translation id="8190193592390505034">Kobler til <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrering av programmer, utvidelser og temaer</translation>
@@ -4918,7 +4899,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="839736845446313156">Registrer</translation>
 <translation id="8398877366907290961">Fortsett likevel</translation>
 <translation id="8400146488506985033">Administrer personer</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> kan lagre endringer direkte til filene i denne mappen. Nettstedet kan bare lagre endringer så lenge denne fanen er åpen.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Spør først (anbefales)</translation>
 <translation id="8418445294933751433">Vi&amp;s som fane</translation>
@@ -5271,7 +5251,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="891365694296252935">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Hvis du har slått på annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Laster inn forslag …</translation>
 <translation id="8916476537757519021">Inkognito-underramme: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> – har lov til å lese mapper på enheten</translation>
 <translation id="8919275547519617350">For å få alle passordene dine på alle enhetene du bruker, logg på og slå på synkronisering.</translation>
 <translation id="8921366488406707015">Bekrefter sikkerhetsnøkkelen din …</translation>
 <translation id="8922013791253848639">Tillat alltid annonser på dette nettstedet</translation>
@@ -5321,6 +5300,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8995603266996330174">Drevet av <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Legg til konto</translation>
 <translation id="899657321862108550">Din egen Chrome – uansett hvor du er</translation>
+<translation id="899676909165543803">Fingeravtrykkssensoren er knappen nederst til høyre på tastaturet. Trykk forsiktig på den med hvilken som helst finger.</translation>
 <translation id="9003647077635673607">Tillat på alle nettsteder</translation>
 <translation id="9003704114456258138">Frekvens</translation>
 <translation id="9004952710076978168">Mottok et varsel for en ukjent skriver.</translation>
@@ -5356,7 +5336,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9044646465488564462">Kunne ikke koble til nettverket: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Sender Google nettadressen til siden du prøver å åpne</translation>
 <translation id="9046895021617826162">Tilkoblingen mislyktes</translation>
-<translation id="9047391224416514812">Det finnes allerede en konto med dette brukernavnet</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
 <translation id="9052208328806230490">Du har registrert skriverne dine med <ph name="CLOUD_PRINT_NAME" /> ved hjelp av konto <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Fortsett blokkering</translation>

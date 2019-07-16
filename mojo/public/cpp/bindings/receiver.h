@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
+#include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -154,10 +155,12 @@ class Receiver {
   // Receiver.
   void Bind(PendingReceiver<Interface> pending_receiver,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    if (pending_receiver)
-      internal_state_.Bind(pending_receiver.PassPipe(), std::move(task_runner));
-    else
+    if (pending_receiver) {
+      internal_state_.Bind(pending_receiver.internal_state(),
+                           std::move(task_runner));
+    } else {
       reset();
+    }
   }
 
   // Unbinds this Receiver, preventing any further |impl| method calls or

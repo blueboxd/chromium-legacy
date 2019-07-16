@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Schakel Bluetooth in om apparaten in de buurt te vinden</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
-<translation id="2912823482158781027">TICKET VERNIEUWEN</translation>
-<translation id="3511655281162215899">Kies onmiddellijk een nieuw wachtwoord</translation>
-<translation id="3562817605261346876">Vernieuw het ticket voor <ph name="PRINCIPAL_NAME" /> binnenkort</translation>
 <translation id="3838338534323494292">Nieuw wachtwoord</translation>
 <translation id="445059817448385655">Oud wachtwoord</translation>
 <translation id="467510802200863975">De wachtwoorden komen niet overeen</translation>
@@ -23,16 +20,12 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5457599981699367932">Gebruiken als gast</translation>
 <translation id="54609108002486618">Beheerd</translation>
-<translation id="5733345267661125295">Kies nu een nieuw wachtwoord</translation>
-<translation id="5743581760404859096">Je Kerberos-ticket verloopt binnenkort</translation>
 <translation id="5832805196449965646">Persoon toevoegen</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="6058625436358447366">Geef je oude en nieuwe wachtwoord op om te voltooien</translation>
 <translation id="6106186594183574873">Geef je oude wachtwoord op om te voltooien</translation>
 <translation id="6146993107019042706">Geef je nieuwe wachtwoord opnieuw op om te voltooien</translation>
 <translation id="6574601967010742428">De beheerder van het apparaat kan je activiteit mogelijk bekijken.</translation>
-<translation id="7280705187789120111">Kerberos-ticket verloopt bijna</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Je huidige wachtwoord is verlopen.}=1{Je huidige wachtwoord verloopt binnen één dag.}other{Je huidige wachtwoord verloopt binnen # dagen.}}</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7690294790491645610">Nieuw wachtwoord bevestigen</translation>
 <translation id="808894953321890993">Wachtwoord wijzigen</translation>

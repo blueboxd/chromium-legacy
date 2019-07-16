@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">আশেপাশের ডিভাইস খুঁজে পেতে ব্লুটুথ চালু করুন</translation>
 <translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
-<translation id="2912823482158781027">টিকিট রিফ্রেশ করুন</translation>
-<translation id="3511655281162215899">এখনই একটি নতুন পাসওয়ার্ড বেছে নিন</translation>
-<translation id="3562817605261346876"><ph name="PRINCIPAL_NAME" /> টিকিট শীঘ্রই রিফ্রেশ করুন</translation>
 <translation id="3838338534323494292">নতুন পাসওয়ার্ড</translation>
 <translation id="445059817448385655">পুরনো পাসওয়ার্ড</translation>
 <translation id="467510802200863975">পাসওয়ার্ড মিলছে না</translation>
@@ -22,16 +19,12 @@
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5457599981699367932">অতিথি হিসাবে ব্রাউজ করুন</translation>
 <translation id="54609108002486618">পরিচালিত</translation>
-<translation id="5733345267661125295">এখন একটি নতুন পাসওয়ার্ড বেছে নিন</translation>
-<translation id="5743581760404859096">আপনার Kerberos টিকিটের মেয়াদ শীঘ্রই শেষ হয়ে যাবে</translation>
 <translation id="5832805196449965646">একজন ব্যক্তিকে যোগ করুন</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="6058625436358447366">সম্পূর্ণ করতে, আপনার পুরনো ও নতুন পাসওয়ার্ড লিখুন</translation>
 <translation id="6106186594183574873">সম্পূর্ণ করতে, আপনার পুরনো পাসওয়ার্ড লিখুন</translation>
 <translation id="6146993107019042706">সম্পূর্ণ করতে, আপনার নতুন পাসওয়ার্ড লিখুন</translation>
 <translation id="6574601967010742428">ডিভাইস অ্যাডমিনিস্ট্রেটর আপনার অ্যাক্টিভিটি হয়ত মনিটর করতে পারেন।</translation>
-<translation id="7280705187789120111">Kerberos টিকিটের মেয়াদ শীঘ্রই শেষ হয়ে যাবে</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{আপনার বর্তমান পাসওয়ার্ডের মেয়াদ শেষ হয়ে গেছে!}=1{আপনার বর্তমান পাসওয়ার্ডের মেয়াদ ১ দিনেরও কম সময়ে শেষ হয়ে যাবে!}one{আপনার বর্তমান পাসওয়ার্ডের মেয়াদ # দিনেরও কম সময়ে শেষ হয়ে যাবে!}other{আপনার বর্তমান পাসওয়ার্ডের মেয়াদ # দিনেরও কম সময়ে শেষ হয়ে যাবে!}}</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7690294790491645610">নতুন পাসওয়ার্ড নিশ্চিত করুন</translation>
 <translation id="808894953321890993">পাসওয়ার্ড পরিবর্তন করুন</translation>

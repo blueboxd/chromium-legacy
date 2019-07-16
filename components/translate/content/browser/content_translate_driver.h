@@ -154,7 +154,7 @@ class ContentTranslateDriver : public TranslateDriver,
   // other end of this binding in the form of a ContentTranslateDriverPtr.
   mojo::BindingSet<translate::mojom::ContentTranslateDriver> bindings_;
 
-  base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
+  base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentTranslateDriver);
 };

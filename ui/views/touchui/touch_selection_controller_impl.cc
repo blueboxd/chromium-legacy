@@ -219,8 +219,7 @@ class TouchSelectionControllerImpl::EditingHandleView
       : controller_(controller),
         image_(GetCenterHandleImage()),
         is_cursor_handle_(is_cursor_handle),
-        draw_invisible_(false),
-        weak_ptr_factory_(this) {
+        draw_invisible_(false) {
     widget_.reset(CreateTouchSelectionPopupWidget(parent, this));
 
     targeter_ = new aura::WindowTargeter();
@@ -394,7 +393,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   // handle.
   bool draw_invisible_;
 
-  base::WeakPtrFactory<EditingHandleView> weak_ptr_factory_;
+  base::WeakPtrFactory<EditingHandleView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EditingHandleView);
 };

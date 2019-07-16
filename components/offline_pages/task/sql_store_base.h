@@ -179,8 +179,8 @@ class SqlStoreBase {
   // Time of the last time the store was closed. Kept for metrics reporting.
   base::TimeTicks last_closing_time_;
 
-  base::WeakPtrFactory<SqlStoreBase> weak_ptr_factory_;
-  base::WeakPtrFactory<SqlStoreBase> closing_weak_ptr_factory_;
+  base::WeakPtrFactory<SqlStoreBase> weak_ptr_factory_{this};
+  base::WeakPtrFactory<SqlStoreBase> closing_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SqlStoreBase);
 };

@@ -349,7 +349,7 @@ class VIZ_SERVICE_EXPORT Surface final {
 
   SurfaceAllocationGroup* const allocation_group_;
 
-  base::WeakPtrFactory<Surface> weak_factory_;
+  base::WeakPtrFactory<Surface> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };

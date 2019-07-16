@@ -337,11 +337,11 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // WeakPtrFactory for this processor for ModelTypeController (only gets
   // invalidated during destruction).
   base::WeakPtrFactory<ModelTypeControllerDelegate>
-      weak_ptr_factory_for_controller_;
+      weak_ptr_factory_for_controller_{this};
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<ClientTagBasedModelTypeProcessor>
-      weak_ptr_factory_for_worker_;
+      weak_ptr_factory_for_worker_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientTagBasedModelTypeProcessor);
 };

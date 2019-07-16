@@ -335,7 +335,7 @@ class GPU_EXPORT Scheduler {
 
   // Invalidated on main thread.
   base::WeakPtr<Scheduler> weak_ptr_;
-  base::WeakPtrFactory<Scheduler> weak_factory_;
+  base::WeakPtrFactory<Scheduler> weak_factory_{this};
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SchedulerTest, StreamPriorities);

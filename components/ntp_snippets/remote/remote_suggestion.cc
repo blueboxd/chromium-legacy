@@ -151,31 +151,6 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
 }
 
 // static
-std::unique_ptr<RemoteSuggestion>
-RemoteSuggestion::CreateFromContextualSuggestionsDictionary(
-    const base::DictionaryValue& dict) {
-  std::string id;
-  if (!dict.GetString("url", &id) || id.empty()) {
-    return nullptr;
-  }
-  // TODO(gaschler): Remove the unused kArticlesRemoteId argument when moving
-  // away from RemoteSuggestion.
-  auto remote_suggestion = MakeUnique({id}, kArticlesRemoteId);
-  GetURLValue(dict, "url", &remote_suggestion->url_);
-  if (!dict.GetString("title", &remote_suggestion->title_)) {
-    dict.GetString("source", &remote_suggestion->title_);
-  }
-  dict.GetString("snippet", &remote_suggestion->snippet_);
-  GetTimeValue(dict, "creationTime", &remote_suggestion->publish_date_);
-  GetTimeValue(dict, "expirationTime", &remote_suggestion->expiry_date_);
-  GetURLValue(dict, "imageUrl", &remote_suggestion->salient_image_url_);
-  if (!dict.GetString("attribution", &remote_suggestion->publisher_name_)) {
-    dict.GetString("source", &remote_suggestion->publisher_name_);
-  }
-  return remote_suggestion;
-}
-
-// static
 std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
     const SnippetProto& proto) {
   // Need at least the id.

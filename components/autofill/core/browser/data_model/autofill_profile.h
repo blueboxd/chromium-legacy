@@ -344,7 +344,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // A map identifying what fields are valid according to client validation.
   mutable std::map<ServerFieldType, ValidityState> client_validity_states_;
-  mutable base::WeakPtrFactory<AutofillProfile> weak_ptr_factory_;
+  mutable base::WeakPtrFactory<AutofillProfile> weak_ptr_factory_{this};
 };
 
 // So we can compare AutofillProfiles with EXPECT_EQ().

@@ -462,10 +462,6 @@ class ChromeDriver(object):
     }
     self.ExecuteCommand(Command.TOUCH_FLICK, params)
 
-  def TouchPinch(self, x, y, scale):
-    params = {'x': x, 'y': y, 'scale': scale}
-    self.ExecuteCommand(Command.TOUCH_PINCH, params)
-
   def PerformActions(self, actions):
     """
     actions: a dictionary containing the specified actions users wish to perform

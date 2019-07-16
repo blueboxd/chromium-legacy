@@ -23,7 +23,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1457721931618994305">Atnaujinama „Google Chrome“...</translation>
 <translation id="1469002951682717133">„Chrome“ programų paleidimo priemonė</translation>
 <translation id="1553358976309200471">Atnaujinkite „Chrome“</translation>
-<translation id="1585657529869845941">Jei bus rodomas, spustelėkite mygtuką <ph name="BEGIN_BOLD" />Vis tiek perjungti<ph name="END_BOLD" /></translation>
 <translation id="1587223624401073077">„Google Chrome“ naudoja jūsų fotoaparatą.</translation>
 <translation id="1587325591171447154">Failas „<ph name="FILE_NAME" />“ pavojingas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="1590588151039584890">Norint atnaujinti „Chrome“, programa šiame kompiuteryje turi būti sustabdyta. Todėl kiti naudotojai, prisijungę prie šio kompiuterio, gali prarasti neišsaugotus pakeitimus.</translation>
@@ -36,7 +35,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">„Google Chrome“ yra žiniatinklio naršyklė, kuri akimirksniu paleidžia tinklalapius ir programas. Ji greita, stabili ir lengvai naudojama. Naršykite žiniatinklį saugiau – „Google Chrome“ įdiegta apsauga nuo kenkėjiškų programų ir sukčiavimo.</translation>
 <translation id="1713301662689114961">{0,plural, =1{„Chrome“ bus paleista iš naujo po valandos}one{„Chrome“ bus paleista iš naujo po # valandos}few{„Chrome“ bus paleista iš naujo po # valandų}many{„Chrome“ bus paleista iš naujo po # valandos}other{„Chrome“ bus paleista iš naujo po # valandų}}</translation>
-<translation id="1718131156967340976">Pasirinkite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">„Chrome“ išsaugos šį slaptažodį „Google“ paskyroje. Jums nereikia jo prisiminti.</translation>
 <translation id="174539241580958092">„Google Chrome“ negali sinchronizuoti duomenų, nes prisijungiant įvyko klaida.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@ Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką,
 <translation id="3873044882194371212">Atidaryti nuorodą „Chrome“ inko&amp;gnito lange</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
 <translation id="3898493977366060150">Žiniatinklio naršymas naudojant „Google“ išmaniąsias funkcijas</translation>
-<translation id="4028693306634653894">Greičiau pasiekite „Chrome“</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="4053720452172726777">Tinkinkite ir valdykite „Google Chrome“</translation>
 <translation id="4143243756087420366">„Chrome“ pavadinimas ir paveikslėlis</translation>
@@ -245,7 +242,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7808348361785373670">Pašalinti iš „Chrome“...</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="7855730255114109580">„Google Chrome“ yra naujausios versijos</translation>
-<translation id="7888186132678118370">„Chrome“ prisegimas prie užduočių juostos</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="7896673875602241923">Kažkas anksčiau prisijungė prie „Chrome“ šiame kompiuteryje kaip <ph name="ACCOUNT_EMAIL_LAST" />. Sukurkite naują „Chrome“ naudotoją, kad apsaugotumėte savo informaciją.</translation>
 <translation id="7908168227788431038">Beveik atnaujinta! Paleiskite „Google Chrome“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
@@ -294,6 +290,5 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="9138603949443464873">Norėdami pritaikyti pakeitimus, paleiskite „Chrome“ iš naujo</translation>
 <translation id="919706545465235479">Atnaujinkite „Chrome“, kad galėtumėte pradėti sinchronizuoti</translation>
-<translation id="924447568950697217">Nustatymas „Chrome“ numatytąja naršykle</translation>
 <translation id="989369509083708165">„Google Chrome“ yra numatytoji naršyklė</translation>
 </translationbundle>

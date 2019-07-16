@@ -113,8 +113,7 @@ CastSocketImpl::CastSocketImpl(NetworkContextGetter network_context_getter,
       connect_state_(ConnectionState::START_CONNECT),
       error_state_(ChannelError::NONE),
       ready_state_(ReadyState::NONE),
-      auth_delegate_(nullptr),
-      weak_factory_(this) {
+      auth_delegate_(nullptr) {
   DCHECK(open_params.ip_endpoint.address().IsValid());
 }
 

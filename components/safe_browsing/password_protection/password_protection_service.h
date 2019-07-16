@@ -379,7 +379,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // we need CancelableTaskTracker to cancel tasks posted to IO thread.
   base::CancelableTaskTracker tracker_;
 
-  base::WeakPtrFactory<PasswordProtectionService> weak_factory_;
+  base::WeakPtrFactory<PasswordProtectionService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionService);
 };
 

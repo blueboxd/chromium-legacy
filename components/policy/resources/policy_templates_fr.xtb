@@ -3336,19 +3336,8 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="7123160381479171745">Définit la liste des utilisateurs autorisés à se connecter à l'appareil. Les entrées se présentent sous la forme suivante : <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (<ph name="USER_WHITELIST_ENTRY_EXAMPLE" />, par exemple). Pour autoriser des utilisateurs arbitraires sur un domaine, utilisez les entrées sous la forme suivante : <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
 En cas de non-configuration de cette règle, aucune restriction ne s'applique quant aux utilisateurs autorisés à se connecter. Notez que la création d'utilisateurs nécessite toujours une configuration correcte de la règle <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> assure la sécurité de la mise à jour et de l'installation d'extensions. Cependant, le contenu de certaines extensions hébergées en dehors du Chrome Web Store peut n'être protégé que par une connexion non sécurisée ou des algorithmes de hachage tels que SHA1. Si cette règle est désactivée, Chrome n'autorisera pas la nouvelle installation ni la mise à jour de ces extensions (tant que les développeurs ne les dotent pas d'algorithmes plus sécurisés). Si cette règle est activée, l'installation et la mise à jour de ces extensions seront autorisées.
-
-          Si elle n'est pas définie, la règle sera activée par défaut.
-          À partir de <ph name="PRODUCT_NAME" /> 75, la règle sera désactivée par défaut si elle n'est pas définie.
-
-          À partir de <ph name="PRODUCT_NAME" /> 77, la règle sera ignorée et considérée comme désactivée.</translation>
 <translation id="7126716959063786004">Mettre fin aux processus dans le gestionnaire des tâches</translation>
 <translation id="7127892035367404455">Rétablir la version cible</translation>
-<translation id="7128918109610518786">Permet de répertorier les identifiants des applications épinglées que <ph name="PRODUCT_OS_NAME" /> affiche dans la barre du lanceur d'applications.
-
-      Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
-
-      Si cette règle n'est pas configurée, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le lanceur d'applications.</translation>
 <translation id="713121532817834879">Cette règle se rapporte à une URL, qui renvoie vers un fichier XML au même format que celui de la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Les instructions sont ainsi chargées à partir d'un fichier XML, sans être partagées avec Internet Explorer.
 
       Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir le navigateur secondaire et empêchent le navigateur secondaire d'ouvrir <ph name="PRODUCT_NAME" />.
@@ -4195,12 +4184,6 @@ Si vous activez ce paramètre, la recherche du CNAME sera ignorée et le nom du 
 
 Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du serveur sera déterminé par le biais de la recherche du CNAME.</translation>
 <translation id="8764477907716150749">Il s'agit d'une règle utilisée en interne par <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement la nouvelle empreinte numérique du mot de passe sur la page de modification de ce dernier, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si ce paramètre est activé, le service de protection par mot de passe dirige les utilisateurs vers cette URL afin que ces derniers modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccounts.google.com afin que ces derniers modifient leur mot de passe.
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8800453707696044281">Personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter</translation>
 <translation id="8801680448782904838">Avertir un utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou exigé</translation>
@@ -4341,9 +4324,6 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       La valeur doit être indiquée en secondes.</translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
-<translation id="9038058011835642205">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver.
-
-      Dans cette règle, chaque élément de la liste est un objet avec un membre obligatoire, "url", et deux membres facultatifs, "default_launch_container" et "create_desktop_shortcut". "url" doit correspondre à l'URL de l'application Web à installer et "launch_container" doit correspondre à "fenêtre" ou "onglet" pour préciser dans quel élément d'interface l'application Web sera ouverte après son installation. Enfin, "create_desktop_shortcut" doit être défini sur True si un raccourci (sur le Bureau) doit être créé sous Linux et Windows. Si le membre "default_launch_container" n'est pas défini, l'application s'ouvre par défaut dans un nouvel onglet. Quelle que soit la valeur de "default_launch_container", les utilisateurs peuvent modifier le conteneur dans lequel l'application doit s'ouvrir. Si "create_desktop_shortcut" n'est pas défini, aucun raccourci n'est créé sur le Bureau.</translation>
 <translation id="9038839118379817310">Activer le Wi-Fi</translation>
 <translation id="9039822628127365650">Lorsque cette règle est configurée, elle indique au bout de combien de temps un utilisateur est automatiquement déconnecté, ce qui met fin à la session. Un compte à rebours, qui s'affiche dans la barre d'état système, informe l'utilisateur du temps qu'il lui reste.
 

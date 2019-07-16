@@ -19,8 +19,7 @@ ImageFetcherImpl::ImageFetcherImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       image_decoder_(std::move(image_decoder)),
-      image_data_fetcher_(new ImageDataFetcher(url_loader_factory)),
-      weak_ptr_factory_(this) {}
+      image_data_fetcher_(new ImageDataFetcher(url_loader_factory)) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 

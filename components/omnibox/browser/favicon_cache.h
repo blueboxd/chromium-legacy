@@ -131,7 +131,7 @@ class FaviconCache : public history::HistoryServiceObserver {
                                           const GURL&)>::Subscription>
       favicons_changed_subscription_;
 
-  base::WeakPtrFactory<FaviconCache> weak_factory_;
+  base::WeakPtrFactory<FaviconCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
 };

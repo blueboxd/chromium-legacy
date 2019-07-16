@@ -13,10 +13,8 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1298199220304005244">Få hjälp med att använda Chromium OS</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
-<translation id="1502360822835740515">Gör Chromium till din standardwebbläsare</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="1524282610922162960">Dela en flik i Chromium</translation>
-<translation id="1585657529869845941">Klicka på <ph name="BEGIN_BOLD" />Byt ändå<ph name="END_BOLD" /> om det visas</translation>
 <translation id="1668054258064581266">När du har tagit bort kontot från Chromium kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
@@ -84,13 +82,11 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3728336900324680424">Chromium får åtkomst till din Drive så att du kan få förslag därifrån i adressfältet</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Fäst Chromium i aktivitetsfältet</translation>
 <translation id="388648406173476553">Anpassa och kontrollera Chromium. Någonting behöver ses över. Klicka här för mer information.</translation>
 <translation id="3889543394854987837">Öppna Chromium genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="3898493977366060150">Surfa smart med Google</translation>
 <translation id="4036079820698952681">Hjälp oss att förbättra Chromium genom att rapportera dina <ph name="BEGIN_LINK" />aktuella inställningar<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
-<translation id="407254336480250557">Välj <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Upptäck fantastiska appar, spel, tillägg och teman för Chromium.</translation>
 <translation id="4216212958613226427">Användargränssnittet i Chromium visas på det här språket</translation>
 <translation id="4222580632002216401">Nu är du inloggad på Chromium. Synkronisering har inaktiverats av administratören.</translation>
@@ -107,7 +103,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4677944499843243528">Profilen verkar användas av en annan Chromium-process (<ph name="PROCESS_ID" />) på en annan dator (<ph name="HOST_NAME" />). Profilen har låsts så att den inte används på otillåtet sätt. Om du är säker på att profilen inte används i några andra processer låser du upp profilen och startar om Chromium.</translation>
 <translation id="469338717132742108">Få hjälp med Chromium OS</translation>
 <translation id="4708774505295300557">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chromium-användare så att dina uppgifter hålls separat.</translation>
-<translation id="4714956846925717402">Öppna Chromium snabbare</translation>
 <translation id="4746050847053251315">Vill du avsluta Chromium ändå?</translation>
 <translation id="4748217263233248895">En särskild säkerhetsuppdatering för Chromium installerades precis. Starta om webbläsaren nu. Flikarna återställs efteråt.</translation>
 <translation id="479167709087336770">Detta använder samma stavningskontroll som Google Sök. Text som du skriver i webbläsaren skickas till Google. Du kan när som helst ändra detta i inställningarna.</translation>

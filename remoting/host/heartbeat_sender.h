@@ -15,7 +15,7 @@
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/proto/remoting/v1/directory_messages.pb.h"
-#include "remoting/signaling/muxing_signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace base {
 class TimeDelta;
@@ -61,7 +61,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
                   base::OnceClosure on_unknown_host_id_error,
                   base::OnceClosure on_auth_error,
                   const std::string& host_id,
-                  MuxingSignalStrategy* signal_strategy,
+                  SignalStrategy* signal_strategy,
                   OAuthTokenGetter* oauth_token_getter,
                   LogToServer* log_to_server);
   ~HeartbeatSender() override;
@@ -119,7 +119,7 @@ class HeartbeatSender final : public SignalStrategy::Listener {
   base::OnceClosure on_unknown_host_id_error_;
   base::OnceClosure on_auth_error_;
   std::string host_id_;
-  MuxingSignalStrategy* const signal_strategy_;
+  SignalStrategy* const signal_strategy_;
   std::unique_ptr<HeartbeatClient> client_;
   LogToServer* const log_to_server_;
   OAuthTokenGetter* const oauth_token_getter_;

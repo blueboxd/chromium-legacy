@@ -78,9 +78,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
  public:
   SSLConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),

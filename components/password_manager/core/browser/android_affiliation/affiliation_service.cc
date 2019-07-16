@@ -21,9 +21,7 @@ namespace password_manager {
 
 AffiliationService::AffiliationService(
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
-    : backend_(nullptr),
-      backend_task_runner_(backend_task_runner),
-      weak_ptr_factory_(this) {}
+    : backend_(nullptr), backend_task_runner_(backend_task_runner) {}
 
 AffiliationService::~AffiliationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

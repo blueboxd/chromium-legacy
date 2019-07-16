@@ -117,8 +117,7 @@ DownloadDriverImpl::DownloadDriverImpl(
     SimpleDownloadManagerCoordinator* download_manager_coordinator)
     : client_(nullptr),
       download_manager_coordinator_(download_manager_coordinator),
-      is_ready_(false),
-      weak_ptr_factory_(this) {
+      is_ready_(false) {
   DCHECK(download_manager_coordinator_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }

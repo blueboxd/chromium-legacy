@@ -83,7 +83,11 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   media_session::mojom::MediaSessionInfoPtr GetMediaSessionInfoInternal();
 
   // Sets |audio_focus_state_| and notifies observers about the state change.
-  void SetAudioFocusState(State audio_focus_state);
+  void set_audio_focus_state(State audio_focus_state);
+
+  // Sets |audio_focus_type_|.
+  void set_audio_focus_type(
+      media_session::mojom::AudioFocusType audio_focus_type);
 
   // Notifies mojo observers that the MediaSessionInfo has changed.
   void NotifyMediaSessionInfoChanged();
@@ -118,6 +122,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
   State audio_focus_state_ = State::INACTIVE;
+
+  media_session::mojom::AudioFocusType audio_focus_type_;
 
   base::WeakPtrFactory<AssistantMediaSession> weak_factory_;
 

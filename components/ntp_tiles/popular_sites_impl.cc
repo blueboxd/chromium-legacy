@@ -271,8 +271,7 @@ PopularSitesImpl::PopularSitesImpl(
       is_fallback_(false),
       sections_(
           ParseSites(*prefs->GetList(prefs::kPopularSitesJsonPref),
-                     prefs_->GetInteger(prefs::kPopularSitesVersionPref))),
-      weak_ptr_factory_(this) {}
+                     prefs_->GetInteger(prefs::kPopularSitesVersionPref))) {}
 
 PopularSitesImpl::~PopularSitesImpl() {}
 

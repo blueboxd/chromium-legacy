@@ -1030,16 +1030,26 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     bool is_main_frame,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
-    network::mojom::URLLoaderFactory*& out_factory) {
+    network::mojom::URLLoaderFactoryPtr* out_factory) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto proxied_request = std::move(*factory_request);
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-    *factory_request = mojo::MakeRequest(&target_factory_info);
-
-    out_factory = new android_webview::AwProxyingURLLoaderFactory(
-        0 /* process_id */, std::move(proxied_request),
-        std::move(target_factory_info), nullptr, true /* intercept_only */);
+    auto request = mojo::MakeRequest(out_factory);
+    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+      // Manages its own lifetime.
+      new android_webview::AwProxyingURLLoaderFactory(
+          0 /* process_id */, std::move(request), nullptr, nullptr,
+          true /* intercept_only */);
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::IO},
+          base::BindOnce(
+              [](network::mojom::URLLoaderFactoryRequest request) {
+                // Manages its own lifetime.
+                new android_webview::AwProxyingURLLoaderFactory(
+                    0 /* process_id */, std::move(request), nullptr, nullptr,
+                    true /* intercept_only */);
+              },
+              std::move(request)));
+    }
   } else {
     // The AwURLRequestJobFactory implementation should ensure this method never
     // gets called when Network Service is not enabled.

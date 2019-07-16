@@ -155,15 +155,14 @@ void GLSurfacePresentationHelper::Frame::Destroy(bool has_context) {
 
 GLSurfacePresentationHelper::GLSurfacePresentationHelper(
     gfx::VSyncProvider* vsync_provider)
-    : vsync_provider_(vsync_provider), weak_ptr_factory_(this) {}
+    : vsync_provider_(vsync_provider) {}
 
 GLSurfacePresentationHelper::GLSurfacePresentationHelper(
     base::TimeTicks timebase,
     base::TimeDelta interval)
     : vsync_provider_(nullptr),
       vsync_timebase_(timebase),
-      vsync_interval_(interval),
-      weak_ptr_factory_(this) {}
+      vsync_interval_(interval) {}
 
 GLSurfacePresentationHelper::~GLSurfacePresentationHelper() {
   // Discard pending frames and run presentation callback with empty

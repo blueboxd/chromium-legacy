@@ -74,9 +74,7 @@ class OpenItemRemovalOfflineContentProvider
 class OfflineContentAggregatorTest : public testing::Test {
  public:
   OfflineContentAggregatorTest()
-      : task_runner_(new base::TestMockTimeTaskRunner),
-        handle_(task_runner_),
-        weak_ptr_factory_(this) {}
+      : task_runner_(new base::TestMockTimeTaskRunner), handle_(task_runner_) {}
   ~OfflineContentAggregatorTest() override {}
 
  protected:
@@ -94,7 +92,7 @@ class OfflineContentAggregatorTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle handle_;
   OfflineContentAggregator aggregator_;
-  base::WeakPtrFactory<OfflineContentAggregatorTest> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflineContentAggregatorTest> weak_ptr_factory_{this};
 };
 
 void OfflineContentAggregatorTest::GetAllItemsAndVerify(

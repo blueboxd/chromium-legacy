@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Binalewala dahil na-override ito ng <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Ibinigay sa: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Mga Sensor ng Paggalaw</translation>
 <translation id="213826338245044447">Mga Bookmark sa Mobile</translation>
 <translation id="214556005048008348">Kanselahin ang pagbabayad</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Suriin ang signal sa iyong lugar</translation>
 <translation id="2523886232349826891">Ise-save sa device lang na ito</translation>
 <translation id="2524461107774643265">Magdagdag ng Higit Pang Impormasyon</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{at 1 pa}one{at # pa}other{at # pa}}</translation>
 <translation id="2536110899380797252">Magdagdag ng Address</translation>
 <translation id="2539524384386349900">Tukuyin</translation>
 <translation id="254947805923345898">Di-wasto ang value ng patakaran.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Tinanong mo sa iyong mga magulang kung maaari mong bisitahin ang site na ito</translation>
 <translation id="4876188919622883022">Pinasimpleng view</translation>
 <translation id="4876305945144899064">Walang username</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Wala}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">paghahanap para sa <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Awtomatiko (default)</translation>
 <translation id="4880827082731008257">History ng paghahanap</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Oo, i-store</translation>
 <translation id="6508722015517270189">I-restart ang Chrome</translation>
 <translation id="6517596291481585650">Babala: Hindi na-merge ang patakarang ito bilang listahan gaya ng tinukoy ng patakaran dahil hindi ito isang listahan.</translation>
+<translation id="6521745193039995384">Hindi aktibo</translation>
 <translation id="6529602333819889595">&amp;Gawing Muli ang Pagtanggal</translation>
 <translation id="6534179046333460208">Mga suhestyon sa Pisikal na Web</translation>
 <translation id="6545864417968258051">Pag-scan ng Bluetooth</translation>
@@ -1478,6 +1482,7 @@ Mga karagdagang detalye:
 <translation id="9076630408993835509">Hindi pinapamahalaan ng kumpanya o iba pang organisasyon ang browser na ito. Maaaring pinapamahalaan sa labas ng Chrome ang aktibidad sa device na ito. <ph name="BEGIN_LINK" />Matuto Pa<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Nangangailangan ng higit pang impormasyon</translation>
 <translation id="9080712759204168376">Buod ng Order</translation>
+<translation id="9089260154716455634">Patakaran sa Mga Off Hour:</translation>
 <translation id="9095388113577226029">Higit pang wika...</translation>
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
 <translation id="9106062320799175032">Magdagdag ng Billing Address</translation>

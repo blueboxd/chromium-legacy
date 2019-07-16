@@ -170,7 +170,7 @@ class SessionStore {
 
   SyncedSessionTracker session_tracker_;
 
-  base::WeakPtrFactory<SessionStore> weak_ptr_factory_;
+  base::WeakPtrFactory<SessionStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionStore);
 };

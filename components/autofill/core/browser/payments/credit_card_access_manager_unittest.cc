@@ -83,7 +83,7 @@ const char kTestNumber[] = "4234567890123456";  // Visa
 
 class TestAccessor : public CreditCardAccessManager::Accessor {
  public:
-  TestAccessor() : weak_ptr_factory_(this) {}
+  TestAccessor() {}
 
   base::WeakPtr<TestAccessor> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -108,7 +108,7 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
   bool did_succeed_ = false;
   // The card number returned from OnCreditCardFetched().
   base::string16 number_;
-  base::WeakPtrFactory<TestAccessor> weak_ptr_factory_;
+  base::WeakPtrFactory<TestAccessor> weak_ptr_factory_{this};
 };
 
 std::string NextYear() {

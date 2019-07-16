@@ -26,8 +26,7 @@ const int kMaxInitAttempts = 3;
 
 StrikeDatabase::StrikeDatabase(
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    base::FilePath profile_path)
-    : weak_ptr_factory_(this) {
+    base::FilePath profile_path) {
   auto strike_database_path =
       profile_path.Append(FILE_PATH_LITERAL("AutofillStrikeDatabase"));
 
@@ -90,9 +89,7 @@ void StrikeDatabase::ClearAllStrikes() {
   ClearAllProtoStrikes(base::DoNothing());
 }
 
-StrikeDatabase::StrikeDatabase()
-    : db_(nullptr),
-      weak_ptr_factory_(this) {}
+StrikeDatabase::StrikeDatabase() : db_(nullptr) {}
 
 void StrikeDatabase::OnDatabaseInit(leveldb_proto::Enums::InitStatus status) {
   bool success = status == leveldb_proto::Enums::InitStatus::kOK;

@@ -134,8 +134,7 @@ V4Database::V4Database(
     std::unique_ptr<StoreMap> store_map)
     : store_map_(std::move(store_map)),
       db_task_runner_(db_task_runner),
-      pending_store_updates_(0),
-      weak_factory_on_io_(this) {
+      pending_store_updates_(0) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 }
 

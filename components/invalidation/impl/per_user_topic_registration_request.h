@@ -113,7 +113,7 @@ class PerUserTopicRegistrationRequest {
   RequestType type_;
   std::string topic_;
 
-  base::WeakPtrFactory<PerUserTopicRegistrationRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<PerUserTopicRegistrationRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerUserTopicRegistrationRequest);
 };

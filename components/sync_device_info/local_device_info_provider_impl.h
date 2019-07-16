@@ -56,7 +56,7 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<LocalDeviceInfoProviderImpl> weak_factory_;
+  base::WeakPtrFactory<LocalDeviceInfoProviderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LocalDeviceInfoProviderImpl);
 };

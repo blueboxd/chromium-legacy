@@ -878,7 +878,7 @@ bool SequenceManagerImpl::GetAndClearSystemIsQuiescentBit() {
   return !task_was_run;
 }
 
-internal::EnqueueOrder SequenceManagerImpl::GetNextSequenceNumber() {
+EnqueueOrder SequenceManagerImpl::GetNextSequenceNumber() {
   return enqueue_order_generator_.GenerateNext();
 }
 

@@ -171,8 +171,7 @@ BrowsingHistoryService::BrowsingHistoryService(
       driver_(driver),
       local_history_(local_history),
       sync_service_(sync_service),
-      clock_(new base::DefaultClock()),
-      weak_factory_(this) {
+      clock_(new base::DefaultClock()) {
   DCHECK(driver_);
 
   // Get notifications when history is cleared.

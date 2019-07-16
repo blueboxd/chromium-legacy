@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Karte</translation>
 <translation id="2114841414352855701">Wird ignoriert, da sie von <ph name="POLICY_NAME" /> außer Kraft gesetzt wurde.</translation>
+<translation id="2119505898009119320">Ausgestellt für: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Bewegungssensoren</translation>
 <translation id="213826338245044447">Mobile Lesezeichen</translation>
 <translation id="214556005048008348">Zahlung abbrechen</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">Signal an Ihrem Standort prüfen</translation>
 <translation id="2523886232349826891">Nur auf diesem Gerät gespeichert</translation>
 <translation id="2524461107774643265">Weitere Informationen hinzufügen</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{und 1 weitere}other{und # weitere}}</translation>
 <translation id="2536110899380797252">Adresse hinzufügen</translation>
 <translation id="2539524384386349900">Erkennen</translation>
 <translation id="254947805923345898">Der Richtlinienwert ist ungültig.</translation>
@@ -712,6 +714,7 @@
 <translation id="4858792381671956233">Du hast deine Eltern gefragt, ob du diese Website besuchen darfst</translation>
 <translation id="4876188919622883022">Vereinfachte Ansicht</translation>
 <translation id="4876305945144899064">Kein Nutzername</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Keine}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">"<ph name="TEXT" />" suchen</translation>
 <translation id="4879491255372875719">Automatisch (Standard)</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
@@ -1006,6 +1009,7 @@
 <translation id="650855688985305916">Ja, speichern</translation>
 <translation id="6508722015517270189">Chrome neu starten</translation>
 <translation id="6517596291481585650">Warnung: Diese Richtlinie wurde nicht gemäß Richtlinie in einer Liste zusammengeführt, weil sie keine Liste ist.</translation>
+<translation id="6521745193039995384">Nicht aktiv</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
 <translation id="6534179046333460208">Physical Web-Vorschläge</translation>
 <translation id="6545864417968258051">Bluetooth-Suche</translation>
@@ -1467,6 +1471,7 @@ Weitere Details:
 <translation id="9076630408993835509">Dieser Browser wird nicht von einem Unternehmen oder einer anderen Organisation verwaltet. Aktivitäten auf diesem Gerät werden eventuell außerhalb von Chrome verwaltet. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Weitere Informationen erforderlich</translation>
 <translation id="9080712759204168376">Bestellübersicht</translation>
+<translation id="9089260154716455634">Richtlinie für Abwesenheitszeiten:</translation>
 <translation id="9095388113577226029">Weitere Sprachen...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="9106062320799175032">Rechnungsadresse hinzufügen</translation>

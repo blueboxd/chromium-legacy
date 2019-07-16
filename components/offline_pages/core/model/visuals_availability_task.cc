@@ -34,8 +34,7 @@ VisualsAvailabilityTask::VisualsAvailabilityTask(
     VisualsAvailableCallback exists_callback)
     : store_(store),
       offline_id_(offline_id),
-      exists_callback_(std::move(exists_callback)),
-      weak_ptr_factory_(this) {}
+      exists_callback_(std::move(exists_callback)) {}
 
 VisualsAvailabilityTask::~VisualsAvailabilityTask() = default;
 

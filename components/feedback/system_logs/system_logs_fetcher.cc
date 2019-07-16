@@ -53,8 +53,7 @@ SystemLogsFetcher::SystemLogsFetcher(bool scrub_data)
           {// User visible because this is called when the user is looking at
            // the send feedback dialog, watching a spinner.
            base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   if (scrub_data)
     anonymizer_ = std::make_unique<feedback::AnonymizerTool>();
 }

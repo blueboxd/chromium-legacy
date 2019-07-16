@@ -91,7 +91,7 @@ class X11WholeScreenMoveLoop : public X11MoveLoop,
   bool canceled_;
 
   std::unique_ptr<ui::MouseEvent> last_motion_in_screen_;
-  base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_;
+  base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(X11WholeScreenMoveLoop);
 };

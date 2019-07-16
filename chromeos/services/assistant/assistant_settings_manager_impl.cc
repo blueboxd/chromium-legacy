@@ -168,9 +168,7 @@ void AssistantSettingsManagerImpl::SyncSpeakerIdEnrollmentStatus() {
   DCHECK(service_->main_task_runner()->RunsTasksInCurrentSequence());
 
   if (service_->assistant_state()->allowed_state() !=
-          ash::mojom::AssistantAllowedState::ALLOWED ||
-      !base::FeatureList::IsEnabled(
-          assistant::features::kAssistantVoiceMatch)) {
+      ash::mojom::AssistantAllowedState::ALLOWED) {
     return;
   }
 
@@ -259,8 +257,7 @@ void AssistantSettingsManagerImpl::UpdateServerDeviceSettings() {
   device_settings_update->set_assistant_device_type(
       assistant::AssistantDevice::CROS);
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
-      service_->assistant_state()->hotword_enabled().value()) {
+  if (service_->assistant_state()->hotword_enabled().value()) {
     device_settings_update->mutable_device_settings()->set_speaker_id_enabled(
         true);
   }

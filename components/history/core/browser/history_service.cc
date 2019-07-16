@@ -165,8 +165,7 @@ HistoryService::HistoryService(std::unique_ptr<HistoryClient> history_client,
                   : new base::Thread(kHistoryThreadName)),
       history_client_(std::move(history_client)),
       visit_delegate_(std::move(visit_delegate)),
-      backend_loaded_(false),
-      weak_ptr_factory_(this) {}
+      backend_loaded_(false) {}
 
 HistoryService::~HistoryService() {
   DCHECK(thread_checker_.CalledOnValidThread());

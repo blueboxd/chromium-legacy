@@ -7,38 +7,38 @@
 #include "build/build_config.h"
 #include "media/gpu/buildflags.h"
 
-#if defined(OS_CHROMEOS)
-#include "media/gpu/chromeos/generic_dmabuf_video_frame_mapper.h"
-#endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+#include "media/gpu/linux/generic_dmabuf_video_frame_mapper.h"
+#endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
 
-#if BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
+#if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_dmabuf_video_frame_mapper.h"
-#endif  // BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
+#endif  // BUILDFLAG(USE_VAAPI)
 
 namespace media {
 
 // static
 std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
     VideoPixelFormat format) {
-#if BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
+#if BUILDFLAG(USE_VAAPI)
   return CreateMapper(format, false);
 #else
   return CreateMapper(format, true);
-#endif  // BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
+#endif  // BUILDFLAG(USE_VAAPI)
 }
 
 // static
 std::unique_ptr<VideoFrameMapper> VideoFrameMapperFactory::CreateMapper(
     VideoPixelFormat format,
     bool linear_buffer_mapper) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
   if (linear_buffer_mapper)
     return GenericDmaBufVideoFrameMapper::Create(format);
-#endif  // defined(OS_LINUX)
+#endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
 
-#if BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
+#if BUILDFLAG(USE_VAAPI)
   return VaapiDmaBufVideoFrameMapper::Create(format);
-#endif  // BUILDFLAG(USE_VAAPI) && defined(OS_LINUX)
+#endif  // BUILDFLAG(USE_VAAPI)
 
   return nullptr;
 }

@@ -306,7 +306,7 @@ class BookmarkModelAssociator : public syncer::AssociatorInterface {
   // Used to post PersistAssociation tasks to the current message loop and
   // guarantees no invocations can occur if |this| has been deleted. (This
   // allows this class to be non-refcounted).
-  base::WeakPtrFactory<BookmarkModelAssociator> weak_factory_;
+  base::WeakPtrFactory<BookmarkModelAssociator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelAssociator);
 };

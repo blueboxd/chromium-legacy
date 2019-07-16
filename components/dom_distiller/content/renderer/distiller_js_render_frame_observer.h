@@ -57,7 +57,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
 
   // Handle to "distiller" JavaScript object functionality.
   std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;
-  base::WeakPtrFactory<DistillerJsRenderFrameObserver> weak_factory_;
+  base::WeakPtrFactory<DistillerJsRenderFrameObserver> weak_factory_{this};
 };
 
 }  // namespace dom_distiller

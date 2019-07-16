@@ -152,13 +152,10 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   }
 
  protected:
-  SpdySessionTest()
-      : SpdySessionTest(base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-  }
-
   explicit SpdySessionTest(
-      base::test::ScopedTaskEnvironment::MainThreadType type)
-      : WithScopedTaskEnvironment(type),
+      base::test::ScopedTaskEnvironment::TimeSource time_source =
+          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
+      : WithScopedTaskEnvironment(time_source),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
@@ -365,6 +362,8 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
                url, session_.get()) != kNoPushedStreamFound;
   }
 
+  BoundTestNetLog log_;
+
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
   int old_max_group_sockets_;
@@ -380,14 +379,13 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   const url::SchemeHostPort test_server_;
   SpdySessionKey key_;
   SSLSocketDataProvider ssl_;
-  BoundTestNetLog log_;
 };
 
 class SpdySessionTestWithMockTime : public SpdySessionTest {
  protected:
   SpdySessionTestWithMockTime()
       : SpdySessionTest(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 };
 
 // Try to create a SPDY session that will fail during

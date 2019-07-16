@@ -1012,12 +1012,16 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!page)
     return;
 
-  double x = 0.0;
-  double y = 0.0;
-  if (scroll_to_options->hasLeft())
-    x = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left());
-  if (scroll_to_options->hasTop())
-    y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top());
+  float x = 0.0f;
+  float y = 0.0f;
+  if (scroll_to_options->hasLeft()) {
+    x = ScrollableArea::NormalizeNonFiniteScroll(
+        base::saturated_cast<float>(scroll_to_options->left()));
+  }
+  if (scroll_to_options->hasTop()) {
+    y = ScrollableArea::NormalizeNonFiniteScroll(
+        base::saturated_cast<float>(scroll_to_options->top()));
+  }
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
   FloatPoint current_position = viewport->ScrollPosition();
@@ -1068,23 +1072,25 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
     document()->UpdateStyleAndLayout();
   }
 
-  double scaled_x = 0.0;
-  double scaled_y = 0.0;
+  float scaled_x = 0.0f;
+  float scaled_y = 0.0f;
 
   PaintLayerScrollableArea* viewport = view->LayoutViewport();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();
 
-  if (scroll_to_options->hasLeft())
-    scaled_x =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->left()) *
-        GetFrame()->PageZoomFactor();
+  if (scroll_to_options->hasLeft()) {
+    scaled_x = ScrollableArea::NormalizeNonFiniteScroll(
+                   base::saturated_cast<float>(scroll_to_options->left())) *
+               GetFrame()->PageZoomFactor();
+  }
 
-  if (scroll_to_options->hasTop())
-    scaled_y =
-        ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options->top()) *
-        GetFrame()->PageZoomFactor();
+  if (scroll_to_options->hasTop()) {
+    scaled_y = ScrollableArea::NormalizeNonFiniteScroll(
+                   base::saturated_cast<float>(scroll_to_options->top())) *
+               GetFrame()->PageZoomFactor();
+  }
 
   FloatPoint new_scaled_position =
       viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));

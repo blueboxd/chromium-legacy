@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chromium</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
 <translation id="1414495520565016063">V-ați conectat la Chromium!</translation>
-<translation id="1502360822835740515">Setează Chromium ca browser prestabilit</translation>
 <translation id="151962892725702025">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="1524282610922162960">Distribuie o filă Chromium</translation>
-<translation id="1585657529869845941">Dă clic pe <ph name="BEGIN_BOLD" />Comută oricum<ph name="END_BOLD" />, dacă apare</translation>
 <translation id="1668054258064581266">După ce eliminați contul din Chromium, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
 <translation id="1688750314291223739">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Chromium de pe orice computer.</translation>
 <translation id="1708666629004767631">Chromium este disponibil într-o versiune nouă și mai sigură.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium îți va accesa spațiul de stocare Drive pentru a face sugestii în bara de adrese</translation>
 <translation id="378917192836375108">Chromium vă permite să dați clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Fixează Chromium pe bara de activități</translation>
 <translation id="388648406173476553">Personalizează și controlează Chromium. Ceva are nevoie de atenția ta – dă clic pentru detalii.</translation>
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
 <translation id="3898493977366060150">Navigare pe web cu ingeniozitatea Google</translation>
 <translation id="4036079820698952681">Contribuie la îmbunătățirea browserului Chromium raportând <ph name="BEGIN_LINK" />setările actuale<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
-<translation id="407254336480250557">Selectează <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Chromium.</translation>
 <translation id="4216212958613226427">Această limbă este folosită pentru a afișa IU Chromium</translation>
 <translation id="4222580632002216401">Acum sunteți conectat(ă) la Chromium! Sincronizarea este dezactivată de administrator.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Profilul pare să fie utilizat de alt proces Chromium (<ph name="PROCESS_ID" />), pe alt computer (<ph name="HOST_NAME" />). Chromium a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chromium.</translation>
 <translation id="469338717132742108">Obține ajutor privind sistemul de operare Chromium</translation>
 <translation id="4708774505295300557">Un alt utilizator s-a conectat anterior la Chromium pe acest computer ca <ph name="ACCOUNT_EMAIL_LAST" />. Creează un nou utilizator Chromium pentru a-ți păstra separat datele.</translation>
-<translation id="4714956846925717402">Accesează Chromium mai rapid</translation>
 <translation id="4746050847053251315">Ieși din Chromium oricum?</translation>
 <translation id="4748217263233248895">Tocmai a fost aplicată o actualizare de securitate specială pentru Chromium. Repornește acum, iar filele vor fi restabilite.</translation>
 <translation id="479167709087336770">Folosește același verificator ortografic folosit în Căutarea Google. Textul pe care îl introduci în browser este trimis la Google. Poți schimba acest comportament în setări.</translation>

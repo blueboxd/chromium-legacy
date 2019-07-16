@@ -100,8 +100,7 @@ NetworkMetricsProvider::NetworkMetricsProvider(
           std::move(network_quality_estimator_provider)),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       min_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      max_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      weak_ptr_factory_(this) {
+      max_effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   network_connection_tracker_async_getter.Run(
       base::BindOnce(&NetworkMetricsProvider::SetNetworkConnectionTracker,
                      weak_ptr_factory_.GetWeakPtr()));

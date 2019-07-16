@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">Không thể xác minh danh tính của bạn</translation>
 <translation id="1116694919640316211">Giới thiệu về</translation>
 <translation id="1116779635164066733">Cài đặt này do tiện ích "<ph name="NAME" />" thực thi.</translation>
-<translation id="1117602883390928720">Thêm Tài khoản Kerberos</translation>
 <translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
 <translation id="1118738876271697201">Hệ thống không xác định được số sê-ri hoặc kiểu thiết bị.</translation>
 <translation id="1119447706177454957">Lỗi nội bộ</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">Đã xảy ra lỗi với giấy phép thiết bị ở chế độ minh họa.</translation>
 <translation id="126710816202626562">Ngôn ngữ dịch:</translation>
 <translation id="126768002343224824">16x</translation>
-<translation id="1269405567167332785">Cấu hình nâng cao</translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1272293450992660632">Giá trị mã PIN không khớp.</translation>
 <translation id="1272978324304772054">Tài khoản người dùng này không thuộc về miền mà thiết bị được đăng ký. Nếu bạn muốn đăng ký miền khác, bạn cần tìm thiết bị trước tiên.</translation>
@@ -511,7 +509,6 @@
 <translation id="1744060673522309905">Không thể kết hợp thiết bị với miền. Hãy đảm bảo số thiết bị bạn thêm không vượt quá giới hạn.</translation>
 <translation id="1744108098763830590">trang nền</translation>
 <translation id="1745520510852184940">Luôn làm điều này</translation>
-<translation id="174617397682753897">Tài khoản Kerberos</translation>
 <translation id="1746402432151920942">Mã nhận dạng nội dung đa phương tiện được bảo vệ</translation>
 <translation id="175196451752279553">&amp;Mở lại tab đã đóng</translation>
 <translation id="1753905327828125965">Truy cập nhiều nhất</translation>
@@ -759,7 +756,6 @@
 <translation id="2135787500304447609">&amp;Tiếp tục</translation>
 <translation id="2136372518715274136">Nhập mật khẩu mới</translation>
 <translation id="2136476978468204130">Cụm mật khẩu bạn đã nhập không chính xác</translation>
-<translation id="2137068468602026500">Nhấp vào <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /> trong Trình duyệt web</translation>
 <translation id="2138398485845393913">Vẫn đang kết nối với "<ph name="DEVICE_NAME" />"</translation>
 <translation id="214169863967063661">Mở cài đặt giao diện</translation>
 <translation id="2142328300403846845">Mở liên kết dưới dạng</translation>
@@ -847,7 +843,6 @@
 <translation id="2241634353105152135">Chỉ một lần</translation>
 <translation id="2242687258748107519">Thông tin tệp</translation>
 <translation id="2246549592927364792">Tải nội dung mô tả hình ảnh từ Google?</translation>
-<translation id="2249269794707377949">Bạn có thể quản lý tất cả các Tài khoản Kerberos dùng để đăng nhập một lần vào một số ứng dụng và trang web, cũng như các mục chia sẻ tệp tại đây.</translation>
 <translation id="2249605167705922988">ví dụ: 1-5, 8, 11-13</translation>
 <translation id="2251218783371366160">Mở bằng trình xem hệ thống</translation>
 <translation id="225163402930830576">Làm mới mạng</translation>
@@ -1080,7 +1075,6 @@
 <translation id="2587922270115112871">Việc tạo người dùng được giám sát không tạo tài khoản Google cũng như các cài đặt
     và dữ liệu của họ sẽ không đồng bộ hóa với các thiết bị khác bằng Chrome Sync. Người dùng được giám sát chỉ áp dụng cho thiết bị này.</translation>
 <translation id="2588636910004461974">Thiết bị của <ph name="VENDOR_NAME" /></translation>
-<translation id="258932246702879617">Chọn <ph name="BEGIN_BOLD" />Ghim vào thanh tác vụ<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">Tìm kiếm trên Google hoặc nhập URL</translation>
 <translation id="2597521610396315071">Thêm tính năng giám sát</translation>
 <translation id="2603115962224169880">Dọn dẹp máy tính</translation>
@@ -1147,7 +1141,6 @@
 <translation id="2683638487103917598">Đẵ sắp xếp thư mục</translation>
 <translation id="2684004000387153598">Để tiếp tục, hãy nhấp vào OK, sau đó nhấp vào Thêm người để tạo hồ sơ mới cho địa chỉ email của bạn.</translation>
 <translation id="2688196195245426394">Lỗi khi đăng ký thiết bị với máy chủ: <ph name="CLIENT_ERROR" />.</translation>
-<translation id="2688477613306174402">Cấu hình</translation>
 <translation id="2690024944919328218">Hiển thị tùy chọn ngôn ngữ</translation>
 <translation id="2691385045260836588">Kiểu</translation>
 <translation id="2693176596243495071">Rất tiếc! Đã xảy ra lỗi không xác định. Vui lòng thử lại sau hoặc liên hệ với quản trị viên của bạn nếu sự cố vẫn tiếp diễn.</translation>
@@ -1534,7 +1527,6 @@
 <translation id="32939749466444286">Vùng chứa Linux không khởi động. Vui lòng thử lại.</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="329703603001918157">Không thể chỉnh sửa lối tắt</translation>
-<translation id="3297951628821704004">Xóa tài khoản khỏi thiết bị này</translation>
 <translation id="329838636886466101">Sửa</translation>
 <translation id="3298789223962368867">URL không hợp lệ được nhập.</translation>
 <translation id="32991397311664836">Thiết bị:</translation>
@@ -1595,7 +1587,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Dấu phân tách</translation>
 <translation id="3387614642886316601">Sử dụng tính năng kiểm tra lỗi chính tả nâng cao</translation>
-<translation id="3389312115541230716">Nhấp chuột phải vào biểu tượng <ph name="SMALL_PRODUCT_LOGO" /> trên thanh tác vụ</translation>
 <translation id="3393352139658145068">Kích hoạt Trợ lý khi có người nói “Ok Google”. Để tiết kiệm pin, “Ok Google” chỉ bật khi thiết bị của bạn được kết nối với nguồn điện.</translation>
 <translation id="3396800784455899911">Bằng cách nhấp vào nút "Đồng ý và tiếp tục", bạn đồng ý với quy trình xử lý mô tả ở trên cho các dịch vụ này của Google.</translation>
 <translation id="3399432415385675819">Thông báo sẽ bị tắt</translation>
@@ -1831,7 +1822,6 @@
 <translation id="3714195043138862580">Thiết bị giới thiệu này đã được đặt sang trạng thái hủy cấp phép.</translation>
 <translation id="3714633008798122362">lịch trên web</translation>
 <translation id="3719826155360621982">Trang chủ</translation>
-<translation id="3720996970802414353">Vẫn chuyển</translation>
 <translation id="3722108462506185496">Lỗi khi khởi động dịch vụ máy ảo. Vui lòng thử lại.</translation>
 <translation id="3725367690636977613">trang</translation>
 <translation id="3726137731714254362">Việc xóa thư mục từ đây sẽ dừng chia sẻ chứ không xóa tệp.</translation>
@@ -2446,7 +2436,6 @@
 <translation id="4662788913887017617">Chia sẻ dấu trang này với iPhone của bạn</translation>
 <translation id="4663373278480897665">Cho phép máy ảnh</translation>
 <translation id="4664482161435122549">Lỗi xuất PKCS #12</translation>
-<translation id="4664736447097490764">Chỉnh sửa tệp cấu hình Kerberos tại đây.</translation>
 <translation id="4665014895760275686">Nhà sản xuất</translation>
 <translation id="4665446389743427678">Tất cả dữ liệu do <ph name="SITE" /> lưu trữ sẽ bị xóa.</translation>
 <translation id="4668721319092543482">Nhấp để bật <ph name="PLUGIN_NAME" /></translation>
@@ -2561,6 +2550,7 @@
 <translation id="4850669014075537160">Cuộn</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4853020600495124913">Mở trong &amp;cửa sổ mới</translation>
+<translation id="485480310608090163">Các quyền và tùy chọn cài đặt khác</translation>
 <translation id="4856478137399998590">Dịch vụ dữ liệu di động của bạn đã được kích hoạt và sẵn sàng để sử dụng</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Mở tất cả trong &amp;cửa sổ ẩn danh}=1{Mở trong &amp;cửa sổ ẩn danh}other{Mở tất cả (#) trong cửa sổ ẩn danh}}</translation>
 <translation id="4858913220355269194">Nam cầu thủ Fritz</translation>
@@ -2863,7 +2853,6 @@
 <translation id="5319359161174645648">Google đề xuất Chrome</translation>
 <translation id="532247166573571973">Máy chủ có thể không truy cập được. Hãy thử lại sau.</translation>
 <translation id="5324780743567488672">Tự động đặt múi giờ bằng cách sử dụng vị trí của bạn</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> – được phép lưu vào tệp gốc</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5327570636534774768">Thiết bị này được một miền khác đánh dấu để quản lý. Hãy hủy cấp phép thiết bị này khỏi miền đó trước khi thiết lập chế độ minh họa.</translation>
 <translation id="532943162177641444">Nhấn vào thông báo trên <ph name="PHONE_NAME" /> của bạn để thiết lập điểm phát sóng di động mà thiết bị này có thể dùng.</translation>
@@ -3025,6 +3014,7 @@
 <translation id="55601339223879446">Điều chỉnh các ranh giới của màn hình trong vòng hiển thị</translation>
 <translation id="5562781907504170924">Tab này được kết nối với thiết bị Bluetooth.</translation>
 <translation id="5563234215388768762">Tìm kiếm trên Google hoặc nhập một URL</translation>
+<translation id="5565735124758917034">Đang hoạt động</translation>
 <translation id="5567989639534621706">Bộ nhớ đệm của ứng dụng</translation>
 <translation id="5568069709869097550">Không thể đăng nhập</translation>
 <translation id="5568144734023334204">Bộ nhớ Android</translation>
@@ -3675,7 +3665,6 @@
 <translation id="6532101170117367231">Lưu vào Google Drive</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Lưu ý:<ph name="END_BOLD" /> Chỉ bật nếu bạn biết mình đang làm gì hoặc nếu bạn đã được yêu cầu bật vì việc thu thập dữ liệu có thể giảm hiệu suất hoạt động.</translation>
 <translation id="6541638731489116978">Trang web này đã bị chặn sử dụng cảm biến chuyển động.</translation>
-<translation id="6542184058496424548">Tên người dùng không hợp lệ (phải ở định dạng user@realm.com)</translation>
 <translation id="654233263479157500">Sử dụng dịch vụ web để giúp giải quyết lỗi điều hướng</translation>
 <translation id="6544215763872433504">Trình duyệt web của Google, dành cho bạn</translation>
 <translation id="6545665334409411530">Tốc độ lặp lại</translation>
@@ -3937,7 +3926,6 @@
 <translation id="6955446738988643816">Kiểm tra cửa sổ bật lên</translation>
 <translation id="6957044667612803194">Khóa bảo mật này không hỗ trợ mã PIN</translation>
 <translation id="6957231940976260713">Tên dịch vụ</translation>
-<translation id="6957572737510023982">Rất tiếc! Đã xảy ra lỗi (mã lỗi <ph name="ERROR_CODE" />).</translation>
 <translation id="6964390816189577014">Anh hùng</translation>
 <translation id="6964760285928603117">Xóa khỏi nhóm</translation>
 <translation id="6965382102122355670">OK</translation>
@@ -4196,7 +4184,6 @@
 <translation id="7328699668338161242">Trợ lý đã có thể nhận dạng giọng nói của bạn</translation>
 <translation id="7328867076235380839">Tổ hợp phím không hợp lệ</translation>
 <translation id="7329154610228416156">Đăng nhập không thành công vì đã được định cấu hình sử dụng URL không an toàn (<ph name="BLOCKED_URL" />). Vui lòng liên hệ với quản trị viên của bạn.</translation>
-<translation id="733006820760728943">Đặt làm tài khoản đang hoạt động</translation>
 <translation id="7334190995941642545">Smart Lock hiện không khả dụng. Vui lòng thử lại sau.</translation>
 <translation id="7334274148831027933">Bật tính năng phóng to ở vị trí cố định</translation>
 <translation id="7335974957018254119">Sử dụng tính năng kiểm tra chính tả cho</translation>
@@ -4207,7 +4194,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> hiện ở chế độ toàn màn hình.</translation>
 <translation id="7340650977506865820">Trang web đang chia sẻ màn hình của bạn</translation>
 <translation id="7341834142292923918">Muốn truy cập vào trang web này</translation>
-<translation id="7344488796804562294">Cấu hình Kerberos nâng cao</translation>
 <translation id="7345706641791090287">Xác nhận mật khẩu của bạn</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="7347751611463936647">Để sử dụng tiện ích này, nhập "<ph name="EXTENSION_KEYWORD" />", sau đó nhấn TAB rồi câu lệnh hoặc tìm kiếm của bạn.</translation>
@@ -4300,7 +4286,6 @@
 <translation id="749028671485790643">Cá nhân <ph name="VALUE" /></translation>
 <translation id="7490813197707563893">Địa chỉ MAC</translation>
 <translation id="7493386493263658176">Tiện ích <ph name="EXTENSION_NAME" /> có thể thu thập tất cả nội dung bạn nhập, bao gồm dữ liệu cá nhân như mật khẩu và số thẻ tín dụng. Bạn có muốn sử dụng tiện ích này không?</translation>
-<translation id="7494065396242762445">Mở cài đặt Windows</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">Quên mật khẩu cũ của bạn?</translation>
 <translation id="7496511874649569424"><ph name="LINUX_APP_NAME" /> và dữ liệu liên kết với ứng dụng sẽ bị xóa khỏi thiết bị này.</translation>
@@ -4325,7 +4310,6 @@
 <translation id="7530016656428373557">Tốc độ phóng điện tính bằng Watt</translation>
 <translation id="7531779363494549572">Chuyển đến Cài đặt &gt; Ứng dụng và thông báo &gt; Thông báo.</translation>
 <translation id="7536220825385726660">Cho phép các ứng dụng trên Cửa hàng Play truy cập vào các ổ đĩa bên ngoài</translation>
-<translation id="7537601449003285327">Ghim vào thanh tác vụ</translation>
 <translation id="7539856059004947393">Khóa bảo mật Bluetooth</translation>
 <translation id="7540972813190816353">Đã xảy ra lỗi khi kiểm tra cập nhật: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Bật tính năng gỡ lỗi trên thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> này</translation>
@@ -4356,7 +4340,6 @@
 <translation id="7574650250151586813">Để nhập văn bản, hãy cập nhật ứng dụng Bàn phím Daydream</translation>
 <translation id="7576690715254076113">Đối chiếu</translation>
 <translation id="7576976045740938453">Đã xảy ra lỗi với tài khoản chế độ minh họa.</translation>
-<translation id="757941033127302446">Đã đăng nhập</translation>
 <translation id="7580671184200851182">Phát cùng một âm thanh qua tất cả các loa (đơn âm)</translation>
 <translation id="7581462281756524039">Công cụ làm sạch</translation>
 <translation id="7582582252461552277">Thích mạng này</translation>
@@ -4634,7 +4617,6 @@
 <translation id="7959074893852789871">Tệp có chứa nhiều chứng chỉ, một vài chứng chỉ trong đó chưa được nhập:</translation>
 <translation id="7961015016161918242">Không bao giờ</translation>
 <translation id="7963826112438303517">Trợ lý sử dụng những bản ghi âm này cũng như các lệnh thoại để tạo và cập nhật mẫu giọng nói của bạn. Mẫu này chỉ được lưu trữ trên các thiết bị đã bật tính năng Voice Match. Bạn có thể xem hoặc đào tạo lại hoạt động bằng giọng nói trong mục Cài đặt Trợ lý.</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> muốn quét tìm các thiết bị Bluetooth lân cận và đã tìm thấy các thiết bị sau đây:</translation>
 <translation id="7966241909927244760">S&amp;ao chép địa chỉ hình ảnh</translation>
 <translation id="7968742106503422125">Đọc và sửa đổi dữ liệu bạn sao chép và dán</translation>
 <translation id="7968833647796919681">Bật tính năng thu thập dữ liệu hoạt động</translation>
@@ -4791,7 +4773,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8184472985242519288">Đồng nhất</translation>
 <translation id="8185331656081929126">Hiển thị thông báo khi phát hiện thấy máy in mới trên mạng</translation>
 <translation id="8186609076106987817">Máy chủ không thể tìm thấy tệp.</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> có thể đọc tất cả các tệp trong thư mục sau đây. Trang web này chỉ có thể thấy các thay đổi đối với thư mục khi tab này đang mở.</translation>
 <translation id="8188389033983459049">Kiểm tra mục cài đặt thiết bị và bật Bluetooth để tiếp tục</translation>
 <translation id="8190193592390505034">Đang kết nối đến <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Quản lý ứng dụng, tiện ích và chủ đề của bạn</translation>
@@ -4927,7 +4908,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="839736845446313156">Đăng ký</translation>
 <translation id="8398877366907290961">Tiếp tục truy cập</translation>
 <translation id="8400146488506985033">Quản lý mọi người</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> có thể lưu trực tiếp các thay đổi vào tệp trong thư mục sau đây. Trang web này chỉ có thể lưu các thay đổi khi tab này đang mở.</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">Hỏi trước (khuyên dùng)</translation>
 <translation id="8418445294933751433">&amp;Hiển thị dưới dạng tab</translation>
@@ -5280,7 +5260,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="891365694296252935">Gửi dữ liệu chẩn đoán và dữ liệu về mức sử dụng. Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị cho Google. Những thông tin này sẽ không dùng để nhận dạng con bạn mà giúp tăng độ ổn định của hệ thống và ứng dụng cũng như cải thiện các mặt khác. Một số dữ liệu tổng hợp cũng sẽ hữu ích cho các ứng dụng và đối tác của Google, chẳng hạn như những nhà phát triển Android. Mục cài đặt này do chủ sở hữu thực thi. Nếu bạn bật mục cài đặt bổ sung Hoạt động web và ứng dụng cho con mình thì dữ liệu này có thể được lưu vào Tài khoản Google của trẻ. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Đang tải đề xuất</translation>
 <translation id="8916476537757519021">Khung ẩn danh phụ: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> – được phép đọc thư mục trên thiết bị của bạn</translation>
 <translation id="8919275547519617350">Để lấy tất cả mật khẩu của bạn trên mọi thiết bị, hãy đăng nhập rồi bật tính năng đồng bộ hóa.</translation>
 <translation id="8921366488406707015">Đang xác minh khóa bảo mật...</translation>
 <translation id="8922013791253848639">Luôn cho phép quảng cáo trên trang web này</translation>
@@ -5330,6 +5309,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="8996526648899750015">Thêm tài khoản...</translation>
 <translation id="899657321862108550">Chrome. Luôn bên bạn</translation>
+<translation id="899676909165543803">Cảm biến vân tay là phím dưới cùng bên phải của bàn phím. Hãy chạm nhẹ ngón tay bất kỳ vào đó.</translation>
 <translation id="9003647077635673607">Cho phép trên tất cả các trang web</translation>
 <translation id="9003704114456258138">Tần số</translation>
 <translation id="9004952710076978168">Đã nhận được thông báo cho máy in không xác định.</translation>
@@ -5365,7 +5345,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="9044646465488564462">Không kết nối được với mạng: <ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">Gửi cho Google địa chỉ web của trang mà bạn đang cố gắng truy cập</translation>
 <translation id="9046895021617826162">Kết nối không thành công</translation>
-<translation id="9047391224416514812">Tài khoản có tên người dùng này đã tồn tại</translation>
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
 <translation id="9052208328806230490">Bạn vừa đăng ký máy in của mình với <ph name="CLOUD_PRINT_NAME" /> bằng tài khoản <ph name="EMAIL" /></translation>
 <translation id="9052404922357793350">Tiếp tục chặn</translation>

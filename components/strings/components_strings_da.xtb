@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreret, da den blev tilsidesat af <ph name="POLICY_NAME" /> .</translation>
+<translation id="2119505898009119320">Udstedt til: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Bevægelsessensorer</translation>
 <translation id="213826338245044447">Bogmærker på mobil</translation>
 <translation id="214556005048008348">Annuller betaling</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Tjekke signalet i dit område</translation>
 <translation id="2523886232349826891">Gemmes kun på denne enhed</translation>
 <translation id="2524461107774643265">Tilføj flere oplysninger</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{og 1 mere}one{og # mere}other{og # mere}}</translation>
 <translation id="2536110899380797252">Tilføj adresse</translation>
 <translation id="2539524384386349900">Registrer</translation>
 <translation id="254947805923345898">Værdien for politikken er ikke gyldig.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Du har spurgt dine forældre, om det er i orden at besøge dette website.</translation>
 <translation id="4876188919622883022">Enkel visning</translation>
 <translation id="4876305945144899064">Intet brugernavn</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Ingen}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" />-søgning</translation>
 <translation id="4879491255372875719">Automatisk (standard)</translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Ja, gem</translation>
 <translation id="6508722015517270189">Genstart Chrome</translation>
 <translation id="6517596291481585650">Advarsel! Denne politik blev ikke flettet som angivet i politikken, da den ikke er en liste.</translation>
+<translation id="6521745193039995384">Ikke aktiv</translation>
 <translation id="6529602333819889595">&amp;Annuller fortryd slet</translation>
 <translation id="6534179046333460208">Forslag til Fysisk web</translation>
 <translation id="6545864417968258051">Bluetooth-scanning</translation>
@@ -1479,6 +1483,7 @@ Yderligere oplysninger:
 <translation id="9076630408993835509">Denne browser administreres ikke af en virksomhed eller en anden organisation. Aktivitet på denne enhed administreres muligvis uden for Chrome. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Flere oplysninger kræves</translation>
 <translation id="9080712759204168376">Bestillingsoversigt</translation>
+<translation id="9089260154716455634">Politik uden for åbningstiden:</translation>
 <translation id="9095388113577226029">Flere sprog...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="9106062320799175032">Tilføj faktureringsadresse</translation>

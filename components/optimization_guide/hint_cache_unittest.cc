@@ -569,7 +569,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   LoadHint("host.domain.org");
   // HISTOGRAM TEST!
   histogram_tester.ExpectTimeBucketCount(
-      "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+      "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
       base::TimeDelta::FromSeconds(kFetchedHintExpirationSecs), 1);
 }
 
@@ -599,7 +599,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
 
   LoadHint("host.domain.org");
   histogram_tester.ExpectTimeBucketCount(
-      "Previews.OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
+      "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
       optimization_guide::features::StoredFetchedHintsFreshnessDuration(), 1);
 }
 

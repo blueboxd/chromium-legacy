@@ -97,42 +97,6 @@
 
 #pragma mark - InfobarBadgeUIDelegate
 
-- (void)infobarBannerWasDismissed:(InfobarType)infobarType {
-  if (IsInfobarUIRebootEnabled()) {
-    // TODO(crbug.com/977340): When switching tabs, GetActiveWebState() does not
-    // return the correct WebState associated with the InfobarBadgeTabHelper
-    // that manages the infobar.
-    web::WebState* webState = self.webStateList->GetActiveWebState();
-    DCHECK(webState);
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed(infobarType);
-  }
-}
-
-- (void)infobarModalWasPresented:(InfobarType)infobarType {
-  if (IsInfobarUIRebootEnabled()) {
-    web::WebState* webState = self.webStateList->GetActiveWebState();
-    DCHECK(webState);
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarModalPresented(infobarType);
-  }
-}
-
-- (void)infobarModalWillDismiss:(InfobarType)infobarType {
-  if (IsInfobarUIRebootEnabled()) {
-    web::WebState* webState = self.webStateList->GetActiveWebState();
-    DCHECK(webState);
-    InfobarBadgeTabHelper* infobarBadgeTabHelper =
-        InfobarBadgeTabHelper::FromWebState(webState);
-    DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarModalDismissed(infobarType);
-  }
-}
-
 - (void)infobarWasAccepted:(InfobarType)infobarType {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();

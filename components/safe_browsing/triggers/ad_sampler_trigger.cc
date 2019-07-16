@@ -93,8 +93,7 @@ AdSamplerTrigger::AdSamplerTrigger(
       url_loader_factory_(url_loader_factory),
       history_service_(history_service),
       task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI})),
-      weak_ptr_factory_(this) {}
+          {content::BrowserThread::UI})) {}
 
 AdSamplerTrigger::~AdSamplerTrigger() {}
 

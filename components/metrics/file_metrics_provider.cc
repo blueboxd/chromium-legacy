@@ -190,9 +190,7 @@ FileMetricsProvider::Params::Params(const base::FilePath& path,
 FileMetricsProvider::Params::~Params() {}
 
 FileMetricsProvider::FileMetricsProvider(PrefService* local_state)
-    : task_runner_(CreateBackgroundTaskRunner()),
-      pref_service_(local_state),
-      weak_factory_(this) {
+    : task_runner_(CreateBackgroundTaskRunner()), pref_service_(local_state) {
   base::StatisticsRecorder::RegisterHistogramProvider(
       weak_factory_.GetWeakPtr());
 }

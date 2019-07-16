@@ -74,7 +74,7 @@ class OAuthMultiloginTokenFetcher : public OAuth2AccessTokenManager::Consumer {
   std::map<CoreAccountId, std::string> access_tokens_;
   std::set<CoreAccountId> retried_requests_;  // Requests are retried once.
 
-  base::WeakPtrFactory<OAuthMultiloginTokenFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<OAuthMultiloginTokenFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OAuthMultiloginTokenFetcher);
 };

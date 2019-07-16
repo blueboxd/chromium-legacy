@@ -96,7 +96,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
   // Used to handle the url request. Live and die on IO thread.
   UrlDownloadHandler::UniqueUrlDownloadHandlerPtr url_download_handler_;
 
-  base::WeakPtrFactory<DownloadWorker> weak_factory_;
+  base::WeakPtrFactory<DownloadWorker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadWorker);
 };

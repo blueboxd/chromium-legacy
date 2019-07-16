@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Google Chrome ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1469002951682717133">Chrome ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್</translation>
 <translation id="1553358976309200471">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
-<translation id="1585657529869845941">ಇದು ಕಂಡುಬಂದಲ್ಲಿ, <ph name="BEGIN_BOLD" />ಹೇಗಾದರೂ ಬದಲಿಸಿ<ph name="END_BOLD" /> ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="1587223624401073077">Google Chrome ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="1590588151039584890">ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ರನ್ ಆಗುತ್ತಿರುವ Chrome ಅನ್ನು ನಿಲ್ಲಿಸಬೇಕಾಗುತ್ತದೆ. ಇದರಿಂದಾಗಿ ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಲಾಗ್ ಇನ್ ಆಗಿರುವ ಇತರ ಬಳಕೆದಾರರು ತಮ್ಮ ಉಳಿಸಲಾಗದ ಬದಲಾವಣೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
@@ -34,7 +33,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome ವೆಬ್ ಆಧಾರಿತ ಬ್ರೌಸರ್ ಆಗಿದ್ದು, ಅದು ಮಿಂಚಿನ ವೇಗದಲ್ಲಿ ವೆಬ್ ಪುಟಗಳು ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಚಾಲನೆ ಮಾಡುತ್ತದೆ. ಅದು ವೇಗ, ದೃಢ ಮತ್ತು ಬಳಸಲು ಸುಲಭವಾಗಿದೆ. Google Chrome ನೊಳಗೆ ರಚಿತವಾಗಿರುವ ಮಾಲ್ವೇರ್ ಮತ್ತು ಫಿಶಿಂಗ್ ರಕ್ಷಣೆಯೊಂದಿಗೆ ವೆಬ್ ಅನ್ನು ಹೆಚ್ಚು ಸುರಕ್ಷಿತವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಿ.</translation>
 <translation id="1713301662689114961">{0,plural, =1{ಒಂದು ಗಂಟೆಯಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಗಂಟೆಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಗಂಟೆಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
-<translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="1734234790201236882">Chrome, ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸುತ್ತದೆ. ನೀವು ಅದನ್ನು ನೆನಪಿಡುವ ಅಗತ್ಯವಿರುವುದಿಲ್ಲ.</translation>
 <translation id="174539241580958092">ಸೈನ್ ಇನ್ ಮಾಡುವಲ್ಲಿ ದೋಷವಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Google Chrome ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -117,7 +115,6 @@
 <translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="3898493977366060150">Google ಸ್ಮಾರ್ಟ್‌ಗಳ ಮೂಲಕ ವೆಬ್‌ ಬ್ರೌಸ್‌ ಮಾಡುವಿಕೆ</translation>
-<translation id="4028693306634653894">ವೇಗವಾಗಿ Chrome ಗೆ ತೆರಳಿ</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="4053720452172726777">Google Chrome ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="4143243756087420366">Chrome ಹೆಸರು ಮತ್ತು ಚಿತ್ರ</translation>
@@ -238,7 +235,6 @@
 <translation id="7808348361785373670">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು...</translation>
 <translation id="7825851276765848807">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="7855730255114109580">Google Chrome ಅನ್ನು ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
-<translation id="7888186132678118370">ನಿಮ್ಮ ಕಾರ್ಯಪಟ್ಟಿಗೆ Chrome ಅನ್ನು ಪಿನ್ ಮಾಡಿ</translation>
 <translation id="7890208801193284374">ನೀವು ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಹಂಚಿಕೊಂಡರೆ, ಸ್ನೇಹಿತರು ಮತ್ತು ಕುಟುಂಬದವರು ಪ್ರತ್ಯೇಕವಾಗಿ ಬ್ರೌಸ್ ಮಾಡಬಹುದು ಮತ್ತು Chrome ಅನ್ನು ಅವರ ಅಗತ್ಯಕ್ಕೆ ತಕ್ಕಂತೆ ಹೊಂದಿಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="7896673875602241923">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ Chrome ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ <ph name="ACCOUNT_EMAIL_LAST" /> ಹೆಸರಿನಲ್ಲಿ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ದಯವಿಟ್ಟು ಹೊಸ Chrome ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.</translation>
 <translation id="7908168227788431038">ಬಹಳಷ್ಟು ನವೀಕೃತವಾಗಿದೆ! ಅಪ್‌ಡೇಟ್ ಮುಗಿಸಲು Google Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ.</translation>
@@ -288,6 +284,5 @@
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
 <translation id="9138603949443464873">ನಿಮ್ಮ ಬದಲಾವಣೆಗಳನ್ನು ಅನ್ವಯಿಸಲು, Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="919706545465235479">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
-<translation id="924447568950697217">Chrome ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿಸಿ</translation>
 <translation id="989369509083708165">Google Chrome ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿದೆ.</translation>
 </translationbundle>

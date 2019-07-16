@@ -39,7 +39,7 @@ class StartupMaintenanceTask : public Task {
   // owned.
   ClientPolicyController* policy_controller_;
 
-  base::WeakPtrFactory<StartupMaintenanceTask> weak_ptr_factory_;
+  base::WeakPtrFactory<StartupMaintenanceTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(StartupMaintenanceTask);
 };
 

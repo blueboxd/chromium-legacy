@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kartu</translation>
 <translation id="2114841414352855701">Diabaikan karena diganti dengan <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Diterbitkan untuk: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Sensor Gerakan</translation>
 <translation id="213826338245044447">Bookmark Seluler</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Periksa sinyal di area Anda</translation>
 <translation id="2523886232349826891">Hanya disimpan di perangkat ini</translation>
 <translation id="2524461107774643265">Tambahkan Informasi Lainnya</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{dan 1 lainnya}other{dan # lainnya}}</translation>
 <translation id="2536110899380797252">Tambahkan Alamat</translation>
 <translation id="2539524384386349900">Deteksi</translation>
 <translation id="254947805923345898">Nilai kebijakan tidak valid.</translation>
@@ -401,7 +403,7 @@
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
 <translation id="3060227939791841287">C9 (Envelope)</translation>
 <translation id="3061707000357573562">Layanan Patch</translation>
-<translation id="3064966200440839136">Keluar dari mode penyamaran untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
+<translation id="3064966200440839136">Keluar dari mode samaran untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Tambahkan Alamat Pengambilan</translation>
 <translation id="3105172416063519923">ID Aset:</translation>
@@ -414,7 +416,7 @@
 <translation id="3154506275960390542">Halaman ini berisi formulir yang mungkin tidak dikirim dengan aman. Data yang Anda kirim dapat dilihat oleh orang lain saat transit atau dapat diubah oleh penyerang untuk mengubah data yang akan diterima server.</translation>
 <translation id="3157931365184549694">Pulihkan</translation>
 <translation id="3162559335345991374">Wi-Fi yang digunakan mungkin mewajibkan Anda mengunjungi halaman masuknya.</translation>
-<translation id="3167968892399408617">Halaman yang Anda lihat di tab penyamaran tidak akan disimpan dalam histori browser, penyimpanan cookie, atau histori penelusuran setelah Anda menutup semua tab penyamaran. File apa pun yang didownload atau bookmark yang dibuat akan tetap tersimpan.</translation>
+<translation id="3167968892399408617">Halaman yang Anda lihat di tab samaran tidak akan disimpan dalam histori browser, penyimpanan cookie, atau histori penelusuran setelah Anda menutup semua tab samaran. File apa pun yang didownload atau bookmark yang dibuat akan tetap tersimpan.</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Pulau</translation>
 <translation id="3176929007561373547">Periksa setelan proxy atau hubungi administrator jaringan untuk
@@ -452,7 +454,7 @@
 <translation id="3362968246557010467">Kebijakan ini otomatis disalin dari kebijakan <ph name="OLD_POLICY" /> yang tidak digunakan lagi. Sebaiknya Anda menggunakan kebijakan ini.</translation>
 <translation id="3366477098757335611">Lihat kartu</translation>
 <translation id="3369192424181595722">Kesalahan jam</translation>
-<translation id="337363190475750230">Di-deprovision</translation>
+<translation id="337363190475750230">Dicabut aksesnya</translation>
 <translation id="3377188786107721145">Kesalahan penguraian kebijakan</translation>
 <translation id="3380365263193509176">Kesalahan tidak dikenal</translation>
 <translation id="3380864720620200369">ID Klien:</translation>
@@ -605,7 +607,7 @@
     &lt;li&gt;Buka situs yang diawali dengan &lt;code&gt;http://&lt;/code&gt;, seperti &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
     &lt;li&gt;Di halaman login yang terbuka, silakan login untuk menggunakan internet.&lt;/li&gt;
     &lt;/ol&gt;
-    &lt;h4&gt;Langkah 2: Buka halaman dalam Mode penyamaran (khusus komputer)&lt;/h4&gt;
+    &lt;h4&gt;Langkah 2: Buka halaman dalam Mode samaran (khusus komputer)&lt;/h4&gt;
     &lt;p&gt;Buka halaman yang Anda akses sebelumnya dalam Jendela samaran.&lt;/p&gt;
     &lt;p&gt;Jika halaman tersebut terbuka, ekstensi Chrome tidak berfungsi dengan baik. Untuk memperbaiki error, nonaktifkan ekstensi.&lt;/p&gt;
     &lt;h4&gt;Langkah 3: Update sistem operasi&lt;/h4&gt;
@@ -721,6 +723,7 @@
 <translation id="4858792381671956233">Kamu telah meminta izin kepada orang tua untuk mengunjungi situs ini</translation>
 <translation id="4876188919622883022">Tampilan sederhana</translation>
 <translation id="4876305945144899064">Tidak ada nama pengguna</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Tidak ada}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Penelusuran <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Otomatis (default)</translation>
 <translation id="4880827082731008257">Telusuri histori</translation>
@@ -1015,6 +1018,7 @@
 <translation id="650855688985305916">Ya, simpan</translation>
 <translation id="6508722015517270189">Buka Ulang Chrome</translation>
 <translation id="6517596291481585650">Peringatan: Kebijakan ini tidak digabung sebagai daftar sebagaimana yang ditetapkan oleh kebijakan karena bukan merupakan daftar.</translation>
+<translation id="6521745193039995384">Tidak aktif</translation>
 <translation id="6529602333819889595">&amp;Ulangi Penghapusan</translation>
 <translation id="6534179046333460208">Saran Web Fisik</translation>
 <translation id="6545864417968258051">Pemindaian Bluetooth</translation>
@@ -1270,7 +1274,7 @@
 <translation id="782886543891417279">Wi-Fi yang digunakan (<ph name="WIFI_NAME" />) mungkin mewajibkan Anda mengunjungi halaman masuknya.</translation>
 <translation id="7836231406687464395">Postfix (Envelope)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Tidak ada}=1{1 aplikasi (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikasi (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# aplikasi (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
-<translation id="785549533363645510">Namun, Anda masih dapat terlihat. Login ke mode penyamaran tidak menyembunyikan penjelajahan Anda dari atasan, penyedia layanan internet, atau situs web yang Anda kunjungi.</translation>
+<translation id="785549533363645510">Namun, Anda masih dapat terlihat. Login ke mode samaran tidak menyembunyikan penjelajahan Anda dari atasan, penyedia layanan internet, atau situs web yang Anda kunjungi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Keluar dari situs?</translation>
 <translation id="7878176543348854470">Kartu debit dan prabayar diterima.</translation>
@@ -1336,7 +1340,7 @@
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8225771182978767009">Orang yang menyiapkan komputer ini telah memilih untuk memblokir situs ini.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8238581221633243064">Buka halaman dalam tab Penyamaran baru</translation>
+<translation id="8238581221633243064">Buka halaman dalam tab Samaran baru</translation>
 <translation id="8241707690549784388">Halaman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke halaman tersebut dapat menyebabkan pengulangan tindakan apa pun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="8241712895048303527">Blokir di situs ini</translation>
 <translation id="8242426110754782860">Lanjutkan</translation>
@@ -1407,7 +1411,7 @@
 <translation id="8718314106902482036">Pembayaran belum selesai</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, saran penelusuran</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
-<translation id="8728672262656704056">Anda masuk mode penyamaran</translation>
+<translation id="8728672262656704056">Anda masuk mode samaran</translation>
 <translation id="8730621377337864115">Selesai</translation>
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak dapat ditemukan. Mendiagnosis masalah.</translation>
@@ -1473,6 +1477,7 @@
 <translation id="9076630408993835509">Browser ini tidak dikelola oleh sebuah perusahaan atau organisasi lain. Aktivitas di perangkat ini mungkin dikelola di luar Chrome. <ph name="BEGIN_LINK" />Pelajari Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Dibutuhkan informasi lebih lanjut</translation>
 <translation id="9080712759204168376">Ringkasan Pesanan</translation>
+<translation id="9089260154716455634">Kebijakan Waktu Nonaktif:</translation>
 <translation id="9095388113577226029">Bahasa lainnya...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Penagihan</translation>

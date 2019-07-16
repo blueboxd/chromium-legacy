@@ -336,12 +336,15 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void hideDialog() {
-        // Mock that the dialog is showing.
+        // Mock that the dialog is showing and animation source Rect is null.
         mModel.set(TabGridSheetProperties.IS_DIALOG_VISIBLE, true);
+        mModel.set(TabGridSheetProperties.ANIMATION_SOURCE_RECT, null);
 
         mMediator.onReset(null);
 
         assertThat(mModel.get(TabGridSheetProperties.IS_DIALOG_VISIBLE), equalTo(false));
+        // Animation source Rect should be updated with specific Rect.
+        assertThat(mModel.get(TabGridSheetProperties.ANIMATION_SOURCE_RECT), equalTo(mRect));
     }
 
     @Test

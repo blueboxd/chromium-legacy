@@ -14,8 +14,7 @@
 
 namespace viz {
 
-TestContextSupport::TestContextSupport()
-    : out_of_order_callbacks_(false), weak_ptr_factory_(this) {}
+TestContextSupport::TestContextSupport() : out_of_order_callbacks_(false) {}
 
 TestContextSupport::~TestContextSupport() = default;
 

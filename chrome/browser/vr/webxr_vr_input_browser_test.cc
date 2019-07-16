@@ -118,6 +118,16 @@ class WebXrControllerInputMock : public MockXRDeviceHookBase {
     TogglePrimaryTrigger(index);
   }
 
+  void SetControllerPose(unsigned int index,
+                         const gfx::Transform& device_to_origin,
+                         bool is_valid) {
+    auto controller_data = GetCurrentControllerData(index);
+    controller_data.pose_data.is_valid = is_valid;
+    device_to_origin.matrix().asColMajorf(
+        controller_data.pose_data.device_to_origin);
+    UpdateControllerAndWait(index, controller_data);
+  }
+
   unsigned int CreateAndConnectMinimalGamepad(
       device::XrAxisType primary_axis_type) {
     // Create a controller that only supports select and one TrackPad, i.e. it
@@ -746,6 +756,47 @@ IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestControllerInputRegistered) {
   EndTest();
 }
 
+std::string TransformToColMajorString(const gfx::Transform& t) {
+  float array[16];
+  t.matrix().asColMajorf(array);
+  std::string array_string = "[";
+  for (int i = 0; i < 16; i++) {
+    array_string += base::NumberToString(array[i]) + ",";
+  }
+  array_string.pop_back();
+  array_string.push_back(']');
+  return array_string;
+}
+
+// Test that changes in controller position are properly plumbed through to
+// WebXR.
+WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerPositionTracking) {
+  WebXrControllerInputMock my_mock;
+
+  auto controller_data = my_mock.CreateValidController(
+      device::ControllerRole::kControllerRoleRight);
+  unsigned int controller_index = my_mock.ConnectController(controller_data);
+
+  t->LoadUrlAndAwaitInitialization(
+      t->GetFileUrlForHtmlTestFile("webxr_test_controller_poses"));
+  t->EnterSessionWithUserGestureOrFail();
+
+  auto pose = gfx::Transform();
+  pose.RotateAboutXAxis(90);
+  pose.RotateAboutYAxis(45);
+  pose.RotateAboutZAxis(180);
+  pose.Translate3d(0.5f, 2, -3);
+  my_mock.SetControllerPose(controller_index, pose, true);
+
+  // Apply any offset we expect the runtime to add.
+  pose.Translate3d(t->GetControllerOffset());
+
+  t->ExecuteStepAndWait("stepWaitForMatchingPose(" +
+                        base::NumberToString(controller_index - 1) + ", " +
+                        TransformToColMajorString(pose) + ")");
+  t->AssertNoJavaScriptErrors();
+}
+
 class WebXrHeadPoseMock : public MockXRDeviceHookBase {
  public:
   void WaitGetPresentingPose(
@@ -761,18 +812,6 @@ class WebXrHeadPoseMock : public MockXRDeviceHookBase {
  private:
   gfx::Transform pose_;
 };
-
-std::string TransformToColMajorString(gfx::Transform& t) {
-  float array[16];
-  t.matrix().asColMajorf(array);
-  std::string array_string = "[";
-  for (int i = 0; i < 16; i++) {
-    array_string += base::NumberToString(array[i]) + ",";
-  }
-  array_string.pop_back();
-  array_string.push_back(']');
-  return array_string;
-}
 
 // Test that head pose changes are properly reflected in the viewer pose
 // provided by WebXR.

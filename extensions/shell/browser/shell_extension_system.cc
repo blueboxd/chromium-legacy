@@ -90,10 +90,6 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
   extension_loader_ = std::make_unique<ShellExtensionLoader>(browser_context_);
 }
 
-void ShellExtensionSystem::InitForIncognitoProfile() {
-  NOTREACHED();
-}
-
 ExtensionService* ShellExtensionSystem::extension_service() {
   return nullptr;
 }

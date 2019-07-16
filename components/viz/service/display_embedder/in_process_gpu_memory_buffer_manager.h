@@ -54,7 +54,7 @@ class VIZ_SERVICE_EXPORT InProcessGpuMemoryBufferManager
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<InProcessGpuMemoryBufferManager> weak_ptr_;
 
-  base::WeakPtrFactory<InProcessGpuMemoryBufferManager> weak_ptr_factory_;
+  base::WeakPtrFactory<InProcessGpuMemoryBufferManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuMemoryBufferManager);
 };

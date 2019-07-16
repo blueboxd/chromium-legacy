@@ -47,8 +47,6 @@
   const SCROLL_DELTA = 400;
   const MAX_SCROLLER_OFFSET = 1915;
   const PRESS_DURATION = 1000;
-  const down_arrow_x = scrollerRect.right - BUTTON_WIDTH / 2;
-  const down_arrow_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
 
   promise_test (async () => {
     await waitForCompositorCommit();
@@ -56,8 +54,10 @@
 
     // TODO(arakeri): Split the mousePressOn API calls to mouseDownAt, waitFor
     // and mouseUpAt once crbug.com/979408 is fixed.
+    const down_arrow_x = scrollerRect.right - BUTTON_WIDTH / 2;
+    const down_arrow_y = scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
     await mousePressOn(down_arrow_x, down_arrow_y, PRESS_DURATION);
-    const err = `Autoscroll down failed (scroller.scrollTop = ${scroller.scrollTop})`;
+    var err = `Autoscroll down failed (scroller.scrollTop = ${scroller.scrollTop})`;
 
     // Verify that autoscroll happened.
     assert_greater_than(scroller.scrollTop, SCROLL_DELTA, err);
@@ -68,7 +68,35 @@
 
     await waitForCompositorCommit();
     const current_offset = scroller.scrollTop;
-    await conditionHolds(() => { return parseInt(scroller.scrollTop) == parseInt(current_offset); },
-    `scroller.scrollTop = ${scroller.scrollTop} current_offset = ${current_offset}`);
+    err = `scroller.scrollTop = ${scroller.scrollTop} current_offset = ${current_offset}`;
+    await conditionHolds(() => { return scroller.scrollTop == current_offset; }, err);
   },"Test autoscroll down and autoscroll stop.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    scroller.scrollTop = 0;
+
+    // TODO(arakeri): Split the mousePressOn API calls to mouseDownAt, waitFor
+    // and mouseUpAt once crbug.com/979408 is fixed. In its current state, the
+    // test will ensure that track autoscroll happens successfully and that the
+    // autoscroll aborts when thumb reaches the pointer.
+    const trackscroll_x = scrollerRect.right - BUTTON_WIDTH / 2;
+    const trackscroll_y = scrollerRect.top + 45;
+    await mousePressOn(trackscroll_x, trackscroll_y, PRESS_DURATION);
+    var err = `Autoscroll down failed (scroller.scrollTop = ${scroller.scrollTop})`;
+
+    // Verify that track autoscroll happened.
+    assert_greater_than(scroller.scrollTop, SCROLL_DELTA, err);
+
+    // Verify that the track autoscroll actually stops as expected. Since track
+    // autoscroll in this particular case is 1480 px/sec (i.e 74 * 20), holding the
+    // pointer pressed for 1000ms (i.e PRESS_DURATION) would've continued scrolling to
+    // around 1100px. The fact it stops short even though the pointer remains pressed
+    // verifies that the track autoscroll was canceled.
+    assert_less_than(scroller.scrollTop, 800, "Track autosroll did not end.");
+
+    const current_offset = scroller.scrollTop;
+    err = `scroller.scrollTop = ${scroller.scrollTop} current_offset = ${current_offset}`;
+    await conditionHolds(() => { return scroller.scrollTop == current_offset; }, err);
+  },"Test track autoscroll down and autoscroll stop.");
 </script>

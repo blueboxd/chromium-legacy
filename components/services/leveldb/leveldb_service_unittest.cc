@@ -91,6 +91,16 @@ void DatabaseSyncGetPrefixed(mojom::LevelDBDatabase* database,
   run_loop.Run();
 }
 
+void DatabaseSyncGetMany(
+    mojom::LevelDBDatabase* database,
+    std::vector<mojom::GetManyRequestPtr>& keys_or_prefixes,
+    std::vector<mojom::GetManyResultPtr>* out_values) {
+  base::RunLoop run_loop;
+  database->GetMany(std::move(keys_or_prefixes),
+                    Capture(out_values, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
 void DatabaseSyncCopyPrefixed(mojom::LevelDBDatabase* database,
                               const std::string& source_key_prefix,
                               const std::string& destination_key_prefix,
@@ -134,6 +144,18 @@ void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
   leveldb->OpenInMemory(base::nullopt, "LevelDBSync", std::move(database),
                         Capture(out_error, run_loop.QuitClosure()));
   run_loop.Run();
+}
+
+void AddKeyToGetManyRequest(const std::string& key,
+                            std::vector<mojom::GetManyRequestPtr>* list) {
+  std::vector<uint8_t> in_arg = StdStringToUint8Vector(key);
+  list->emplace_back(mojom::GetManyRequest::NewKey(in_arg));
+}
+
+void AddKeyPrefixToGetManyRequest(const std::string& key_prefix,
+                                  std::vector<mojom::GetManyRequestPtr>* list) {
+  std::vector<uint8_t> in_arg = StdStringToUint8Vector(key_prefix);
+  list->emplace_back(mojom::GetManyRequest::NewKeyPrefix(in_arg));
 }
 
 const char kTestServiceName[] = "leveldb_service_unittests";
@@ -733,6 +755,83 @@ TEST_F(LevelDBServiceTest, RewriteDB) {
   DatabaseSyncGet(database.get(), "key2", &error, &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value2", Uint8VectorToStdString(value));
+}
+
+TEST_F(LevelDBServiceTest, GetMany) {
+  mojom::DatabaseError error;
+  mojom::LevelDBDatabaseAssociatedPtr database;
+  LevelDBSyncOpenInMemory(leveldb().get(), MakeRequest(&database), &error);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+  // Write two keys to the database.
+  error = mojom::DatabaseError::INVALID_ARGUMENT;
+  DatabaseSyncPut(database.get(), "key", "value", &error);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+  DatabaseSyncPut(database.get(), "key1", "value1", &error);
+  EXPECT_EQ(mojom::DatabaseError::OK, error);
+
+  std::vector<mojom::GetManyRequestPtr> requests;
+  std::vector<mojom::GetManyResultPtr> results;
+
+  // Test: Read keys back from the database
+  AddKeyToGetManyRequest("key", &requests);
+  AddKeyToGetManyRequest("key1", &requests);
+  AddKeyPrefixToGetManyRequest("key", &requests);
+  DatabaseSyncGetMany(database.get(), requests, &results);
+
+  ASSERT_EQ(results.size(), 3UL);
+  EXPECT_TRUE(results[0]->is_key_value());
+  EXPECT_TRUE(results[1]->is_key_value());
+  EXPECT_EQ(Uint8VectorToStdString(results[0]->get_key_value()), "value");
+  EXPECT_EQ(Uint8VectorToStdString(results[1]->get_key_value()), "value1");
+
+  // Test: the last key-prefix read should correctly return a list of KeyValue
+  EXPECT_TRUE(results[2]->is_key_prefix_values());
+  const std::vector<mojom::KeyValuePtr>& kv =
+      results[2]->get_key_prefix_values();
+  ASSERT_EQ(2UL, kv.size());
+  EXPECT_EQ("key", Uint8VectorToStdString(kv[0]->key));
+  EXPECT_EQ("value", Uint8VectorToStdString(kv[0]->value));
+  EXPECT_EQ("key1", Uint8VectorToStdString(kv[1]->key));
+  EXPECT_EQ("value1", Uint8VectorToStdString(kv[1]->value));
+
+  // Test: Read a sequence of (existing key, non-existing key,
+  // existing key), GetMany should return NOT_FOUND for the non-existing key
+  requests.clear();
+  results.clear();
+
+  AddKeyToGetManyRequest("key", &requests);
+  AddKeyToGetManyRequest("key-not-found", &requests);
+  AddKeyToGetManyRequest("key", &requests);
+  DatabaseSyncGetMany(database.get(), requests, &results);
+
+  ASSERT_EQ(results.size(), 3UL);
+  EXPECT_EQ(Uint8VectorToStdString(results[0]->get_key_value()), "value");
+  EXPECT_TRUE(results[1]->is_status());
+  EXPECT_TRUE(results[1]->get_status() == mojom::DatabaseError::NOT_FOUND);
+  EXPECT_EQ(Uint8VectorToStdString(results[2]->get_key_value()), "value");
+
+  // Test: Read a sequence of (existing key, non-existing key prefix,
+  // existing key), GetMany should return empty data for the non-existing
+  // key prefix
+  requests.clear();
+  results.clear();
+
+  AddKeyToGetManyRequest("key", &requests);
+  AddKeyPrefixToGetManyRequest("key-prefix-not-found", &requests);
+  AddKeyToGetManyRequest("key", &requests);
+  DatabaseSyncGetMany(database.get(), requests, &results);
+
+  ASSERT_EQ(results.size(), 3UL);
+  EXPECT_EQ(Uint8VectorToStdString(results[0]->get_key_value()), "value");
+  EXPECT_TRUE(results[1]->get_key_prefix_values().empty());
+  EXPECT_EQ(Uint8VectorToStdString(results[2]->get_key_value()), "value");
+
+  // Test: Read empty data
+  requests.clear();
+  results.clear();
+  DatabaseSyncGetMany(database.get(), requests, &results);
+  EXPECT_TRUE(results.empty());
 }
 
 }  // namespace

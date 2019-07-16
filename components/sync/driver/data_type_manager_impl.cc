@@ -73,8 +73,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       model_association_manager_(controllers, this),
       observer_(observer),
       encryption_handler_(encryption_handler),
-      download_started_(false),
-      weak_ptr_factory_(this) {
+      download_started_(false) {
   DCHECK(configurer_);
   DCHECK(observer_);
 

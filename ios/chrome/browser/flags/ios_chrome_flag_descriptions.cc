@@ -171,6 +171,11 @@ const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =
     "If enabled, cards from unsupported networks will not be offered upload "
     "save, and will instead be offered local save.";
 
+const char kEnableAutofillSaveCardShowNoThanksName[] =
+    "Show explicit decline option in credit card save prompts";
+const char kEnableAutofillSaveCardShowNoThanksDescription[] =
+    "If enabled, adds a [No thanks] button to credit card save prompts.";
+
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
     "Enable limit on offering to save the same credit card repeatedly";
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =

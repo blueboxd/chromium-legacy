@@ -41,8 +41,7 @@ InMemoryDownloadImpl::InMemoryDownloadImpl(
       io_task_runner_(io_task_runner),
       delegate_(delegate),
       completion_notified_(false),
-      started_(false),
-      weak_ptr_factory_(this) {
+      started_(false) {
   DCHECK(!guid_.empty());
   DCHECK(delegate_);
 }

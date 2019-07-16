@@ -26,12 +26,7 @@ PoseFrameData MojoToDevicePoseFrameData(
   PoseFrameData ret = {};
   ret.is_valid = !!pose->device_to_origin;
   if (ret.is_valid) {
-    for (int row = 0; row < 4; ++row) {
-      for (int col = 0; col < 4; ++col) {
-        ret.device_to_origin[row * 4 + col] =
-            pose->device_to_origin->matrix().getFloat(row, col);
-      }
-    }
+    pose->device_to_origin->matrix().asColMajorf(ret.device_to_origin);
   }
 
   return ret;

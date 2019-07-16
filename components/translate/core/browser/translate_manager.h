@@ -306,7 +306,7 @@ class TranslateManager {
 
   std::unique_ptr<metrics::TranslateEventProto> translate_event_;
 
-  base::WeakPtrFactory<TranslateManager> weak_method_factory_;
+  base::WeakPtrFactory<TranslateManager> weak_method_factory_{this};
 
   // By default, don't offer to translate in builds lacking an API key. For
   // testing, set to true to offer anyway.

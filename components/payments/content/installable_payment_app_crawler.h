@@ -119,7 +119,7 @@ class InstallablePaymentAppCrawler : public content::WebContentsObserver {
 
   bool ignore_port_in_origin_comparison_for_testing_ = false;
 
-  base::WeakPtrFactory<InstallablePaymentAppCrawler> weak_ptr_factory_;
+  base::WeakPtrFactory<InstallablePaymentAppCrawler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InstallablePaymentAppCrawler);
 };

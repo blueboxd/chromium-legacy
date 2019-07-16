@@ -103,7 +103,7 @@ class _BeginningToEndPlayPage(_MediaPage):
     action_runner.PlayMedia(playing_event_timeout_in_seconds=60,
                             ended_event_timeout_in_seconds=60)
     # Generate memory dump for memoryMetric.
-    if self.page_set.measure_memory:
+    if self.story_set.measure_memory:
       action_runner.MeasureMemory()
 
 
@@ -134,7 +134,7 @@ class _SeekPage(_MediaPage):
     action_runner.SeekMedia(seconds=9, timeout_in_seconds=timeout,
                             label='seek_cold')
     # Generate memory dump for memoryMetric.
-    if self.page_set.measure_memory:
+    if self.story_set.measure_memory:
       action_runner.MeasureMemory()
 
 
@@ -172,7 +172,7 @@ class _BackgroundPlaybackPage(_MediaPage):
     new_tab.Close()
     action_runner.Wait(.5)
     # Generate memory dump for memoryMetric.
-    if self.page_set.measure_memory:
+    if self.story_set.measure_memory:
       action_runner.MeasureMemory()
 
 

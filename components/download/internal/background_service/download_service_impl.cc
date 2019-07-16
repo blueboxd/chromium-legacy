@@ -22,8 +22,7 @@ DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Configuration> config,
       logger_(std::move(logger)),
       controller_(std::move(controller)),
       service_config_(config_.get()),
-      startup_completed_(false),
-      weak_ptr_factory_(this) {
+      startup_completed_(false) {
   controller_->Initialize(
       base::BindRepeating(&DownloadServiceImpl::OnControllerInitialized,
                           weak_ptr_factory_.GetWeakPtr()));

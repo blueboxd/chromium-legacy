@@ -262,14 +262,8 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
     const ComputedStyle& new_style) {
   DCHECK_NE(&old_style, &new_style);
   if (old_style.Display() != new_style.Display() &&
-      (old_style.IsDisplayFlexibleOrGridBox() ||
-       old_style.IsDisplayLayoutCustomBox() ||
-       old_style.Display() == EDisplay::kContents ||
-       new_style.IsDisplayFlexibleOrGridBox() ||
-       new_style.IsDisplayLayoutCustomBox() ||
-       new_style.Display() == EDisplay::kContents)) {
+      old_style.BlockifiesChildren() != new_style.BlockifiesChildren())
     return Difference::kDisplayAffectingDescendantStyles;
-  }
   if (!old_style.NonIndependentInheritedEqual(new_style))
     return Difference::kInherited;
   if (!old_style.LoadingCustomFontsEqual(new_style) ||

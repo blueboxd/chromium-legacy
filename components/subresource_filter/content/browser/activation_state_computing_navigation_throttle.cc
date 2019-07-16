@@ -46,8 +46,7 @@ ActivationStateComputingNavigationThrottle::
         VerifiedRuleset::Handle* ruleset_handle)
     : content::NavigationThrottle(navigation_handle),
       parent_activation_state_(parent_activation_state),
-      ruleset_handle_(ruleset_handle),
-      weak_ptr_factory_(this) {}
+      ruleset_handle_(ruleset_handle) {}
 
 ActivationStateComputingNavigationThrottle::
     ~ActivationStateComputingNavigationThrottle() = default;

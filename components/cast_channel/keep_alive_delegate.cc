@@ -32,8 +32,7 @@ KeepAliveDelegate::KeepAliveDelegate(
       liveness_timeout_(liveness_timeout),
       ping_interval_(ping_interval),
       ping_message_(CreateKeepAlivePingMessage()),
-      pong_message_(CreateKeepAlivePongMessage()),
-      weak_factory_(this) {
+      pong_message_(CreateKeepAlivePongMessage()) {
   DCHECK(ping_interval_ < liveness_timeout_);
   DCHECK(inner_delegate_);
   DCHECK(socket_);

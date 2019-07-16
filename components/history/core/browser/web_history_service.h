@@ -250,7 +250,7 @@ class WebHistoryService : public KeyedService {
   // Observers.
   base::ObserverList<WebHistoryServiceObserver, true>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
+  base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebHistoryService);
 };

@@ -24,7 +24,6 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "components/policy/policy_constants.h"
-#include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/third_party_auth_config.h"
 #include "remoting/protocol/port_range.h"
 
@@ -171,8 +170,9 @@ std::unique_ptr<base::DictionaryValue> PolicyWatcher::GetDefaultPolicies() {
               std::make_unique<base::ListValue>());
   result->Set(key::kRemoteAccessHostDomainList,
               std::make_unique<base::ListValue>());
-  result->SetString(key::kRemoteAccessHostTalkGadgetPrefix,
-                    kDefaultHostTalkGadgetPrefix);
+  // TODO(yuweih): kRemoteAccessHostTalkGadgetPrefix is not used any more. Clean
+  // this up.
+  result->SetString(key::kRemoteAccessHostTalkGadgetPrefix, std::string());
   result->SetString(key::kRemoteAccessHostTokenUrl, std::string());
   result->SetString(key::kRemoteAccessHostTokenValidationUrl, std::string());
   result->SetString(key::kRemoteAccessHostTokenValidationCertificateIssuer,

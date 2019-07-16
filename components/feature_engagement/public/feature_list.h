@@ -67,8 +67,6 @@ DEFINE_VARIATION_PARAM(kIPHContextualSearchPromotePanelOpenFeature,
                        "IPH_ContextualSearchPromotePanelOpen");
 DEFINE_VARIATION_PARAM(kIPHContextualSearchOptInFeature,
                        "IPH_ContextualSearchOptIn");
-DEFINE_VARIATION_PARAM(kIPHContextualSuggestionsFeature,
-                       "IPH_ContextualSuggestions");
 DEFINE_VARIATION_PARAM(kIPHDownloadSettingsFeature, "IPH_DownloadSettings");
 DEFINE_VARIATION_PARAM(kIPHDownloadInfoBarDownloadContinuingFeature,
                        "IPH_DownloadInfoBarDownloadContinuing");
@@ -140,7 +138,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHContextualSearchPromoteTapFeature),
         VARIATION_ENTRY(kIPHContextualSearchPromotePanelOpenFeature),
         VARIATION_ENTRY(kIPHContextualSearchOptInFeature),
-        VARIATION_ENTRY(kIPHContextualSuggestionsFeature),
         VARIATION_ENTRY(kIPHDownloadSettingsFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadContinuingFeature),
         VARIATION_ENTRY(kIPHDownloadInfoBarDownloadsAreFasterFeature),

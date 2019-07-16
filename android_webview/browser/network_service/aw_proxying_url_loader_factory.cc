@@ -719,10 +719,13 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
       weak_factory_(this) {
   // actual creation of the factory
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  target_factory_.Bind(std::move(target_factory_info));
-  target_factory_.set_connection_error_handler(
-      base::BindOnce(&AwProxyingURLLoaderFactory::OnTargetFactoryError,
-                     base::Unretained(this)));
+  DCHECK(!(intercept_only_ && target_factory_info));
+  if (target_factory_info) {
+    target_factory_.Bind(std::move(target_factory_info));
+    target_factory_.set_connection_error_handler(
+        base::BindOnce(&AwProxyingURLLoaderFactory::OnTargetFactoryError,
+                       base::Unretained(this)));
+  }
   proxy_bindings_.AddBinding(this, std::move(loader_request));
   proxy_bindings_.set_connection_error_handler(
       base::BindRepeating(&AwProxyingURLLoaderFactory::OnProxyBindingError,
@@ -753,20 +756,12 @@ void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  bool pass_through = false;
-  if (pass_through) {
-    // this is the so-called pass-through, no-op option.
-    target_factory_->CreateLoaderAndStart(
-        std::move(loader), routing_id, request_id, options, request,
-        std::move(client), traffic_annotation);
-    return;
-  }
-
   // TODO(timvolodine): handle interception, modification (headers for
   // webview), blocking, callbacks etc..
 
   network::mojom::URLLoaderFactoryPtr target_factory_clone;
-  target_factory_->Clone(MakeRequest(&target_factory_clone));
+  if (target_factory_)
+    target_factory_->Clone(MakeRequest(&target_factory_clone));
 
   bool global_cookie_policy =
       AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();

@@ -423,7 +423,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // This may be null if the compositor is run on a thread without a
   // MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
-  base::WeakPtrFactory<GLRenderer> weak_ptr_factory_;
+  base::WeakPtrFactory<GLRenderer> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

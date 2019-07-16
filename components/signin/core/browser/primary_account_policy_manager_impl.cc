@@ -20,7 +20,7 @@
 
 PrimaryAccountPolicyManagerImpl::PrimaryAccountPolicyManagerImpl(
     SigninClient* client)
-    : client_(client), weak_pointer_factory_(this) {}
+    : client_(client) {}
 
 PrimaryAccountPolicyManagerImpl::~PrimaryAccountPolicyManagerImpl() {
   local_state_pref_registrar_.RemoveAll();

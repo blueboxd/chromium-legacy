@@ -84,7 +84,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) UdpSocketClient final
   // The number of packets pending to receive.
   int num_packets_pending_receive_;
 
-  base::WeakPtrFactory<UdpSocketClient> weak_factory_;
+  base::WeakPtrFactory<UdpSocketClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UdpSocketClient);
 };

@@ -75,8 +75,7 @@ BidirectionalStream::BidirectionalStream(
       pending_write_data_(new WriteBuffers()),
       flushing_write_data_(new WriteBuffers()),
       sending_write_data_(new WriteBuffers()),
-      delegate_(delegate),
-      weak_factory_(this) {
+      delegate_(delegate) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 

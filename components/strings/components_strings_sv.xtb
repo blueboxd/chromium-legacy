@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreras eftersom den åsidosätts av <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Utfärdat till: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Rörelsesensorer</translation>
 <translation id="213826338245044447">Bokmärken i mobilen</translation>
 <translation id="214556005048008348">Avbryt betalningen</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">kontrollera mottagningen i området</translation>
 <translation id="2523886232349826891">Endast sparat på den här enheten</translation>
 <translation id="2524461107774643265">Lägg till mer information</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{och 1 till}other{och # till}}</translation>
 <translation id="2536110899380797252">Lägg till adress</translation>
 <translation id="2539524384386349900">Identifiera</translation>
 <translation id="254947805923345898">Principens värde är inte giltigt.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Du har frågat dina föräldrar om lov att besöka den här webbplatsen.</translation>
 <translation id="4876188919622883022">Förenklad visning</translation>
 <translation id="4876305945144899064">Inget användarnamn</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Inga}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Sök på <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatiskt (standard)</translation>
 <translation id="4880827082731008257">Sök i historiken</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Ja, spara</translation>
 <translation id="6508722015517270189">Starta om Chrome</translation>
 <translation id="6517596291481585650">Varning: Den här principen kombinerades inte som en lista enligt principens specifikation eftersom den inte är en lista.</translation>
+<translation id="6521745193039995384">Inte aktiv</translation>
 <translation id="6529602333819889595">&amp;Gör om Ta bort</translation>
 <translation id="6534179046333460208">Förslag från Physical Web</translation>
 <translation id="6545864417968258051">Bluetooth-sökning</translation>
@@ -1479,6 +1483,7 @@ Mer information:
 <translation id="9076630408993835509">Den här webbläsaren hanteras inte av ett företag eller en organisation. Aktiviteter på den här enheten kan hanteras utanför Chrome. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Mer information krävs</translation>
 <translation id="9080712759204168376">Sammanfattning av beställningen</translation>
+<translation id="9089260154716455634">Princip för användning utanför arbetstid:</translation>
 <translation id="9095388113577226029">Fler språk …</translation>
 <translation id="9103872766612412690">På <ph name="SITE" /> används normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="9106062320799175032">Lägg till faktureringsadress</translation>

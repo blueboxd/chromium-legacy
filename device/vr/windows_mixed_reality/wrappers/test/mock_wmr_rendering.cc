@@ -132,11 +132,11 @@ bool MockWMRCameraPose::TryGetViewTransform(
   gfx::Transform origin_to_device = device_to_origin;
   auto success = origin_to_device.GetInverse(&origin_to_device);
   DCHECK(success);
-  float row_major_transform[16];
-  origin_to_device.matrix().asRowMajorf(row_major_transform);
+  float col_major_transform[16];
+  origin_to_device.matrix().asColMajorf(col_major_transform);
 
-  CopyRowMajorFloatArrayToWindowsMatrix(row_major_transform, transform->Left);
-  CopyRowMajorFloatArrayToWindowsMatrix(row_major_transform, transform->Right);
+  CopyRowMajorFloatArrayToWindowsMatrix(col_major_transform, transform->Left);
+  CopyRowMajorFloatArrayToWindowsMatrix(col_major_transform, transform->Right);
 
   return true;
 }

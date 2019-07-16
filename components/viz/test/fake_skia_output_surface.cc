@@ -28,7 +28,7 @@ namespace viz {
 
 FakeSkiaOutputSurface::FakeSkiaOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : context_provider_(std::move(context_provider)), weak_ptr_factory_(this) {
+    : context_provider_(std::move(context_provider)) {
   texture_deleter_ =
       std::make_unique<TextureDeleter>(base::ThreadTaskRunnerHandle::Get());
 }

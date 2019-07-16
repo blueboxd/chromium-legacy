@@ -92,8 +92,7 @@ GetPagesTask::GetPagesTask(OfflinePageMetadataStore* store,
     : store_(store),
       policy_controller_(policy_controller),
       criteria_(criteria),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK(store_);
   DCHECK(!callback_.is_null());
 }

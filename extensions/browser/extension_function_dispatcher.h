@@ -169,8 +169,7 @@ class ExtensionFunctionDispatcher
   // Helper to run the response callback with an access denied error. Can be
   // called on any thread.
   static void SendAccessDenied(
-      const ExtensionFunction::ResponseCallback& callback,
-      functions::HistogramValue histogram_value);
+      const ExtensionFunction::ResponseCallback& callback);
 
   void DispatchWithCallbackInternal(
       const ExtensionHostMsg_Request_Params& params,

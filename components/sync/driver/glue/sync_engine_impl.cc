@@ -37,10 +37,7 @@ SyncEngineImpl::SyncEngineImpl(const std::string& name,
                                invalidation::InvalidationService* invalidator,
                                const base::WeakPtr<SyncPrefs>& sync_prefs,
                                const base::FilePath& sync_data_folder)
-    : name_(name),
-      sync_prefs_(sync_prefs),
-      invalidator_(invalidator),
-      weak_ptr_factory_(this) {
+    : name_(name), sync_prefs_(sync_prefs), invalidator_(invalidator) {
   backend_ = base::MakeRefCounted<SyncEngineBackend>(
       name_, sync_data_folder, weak_ptr_factory_.GetWeakPtr());
 }

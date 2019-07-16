@@ -33,7 +33,9 @@ class SharedURLLoaderFactory;
 }  // namespace network
 namespace optimization_guide {
 struct HintsComponentInfo;
+class HintsFetcher;
 class OptimizationGuideService;
+class TopHostProvider;
 namespace proto {
 class Hint;
 }  // namespace proto
@@ -41,9 +43,7 @@ class Hint;
 
 namespace previews {
 
-class HintsFetcher;
 class PreviewsHints;
-class PreviewsTopHostProvider;
 class PreviewsUserData;
 
 // A Previews optimization guide that makes decisions guided by hints received
@@ -60,7 +60,7 @@ class PreviewsOptimizationGuide
       const base::FilePath& profile_path,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
-      PreviewsTopHostProvider* previews_top_host_provider,
+      optimization_guide::TopHostProvider* top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~PreviewsOptimizationGuide() override;
@@ -126,9 +126,9 @@ class PreviewsOptimizationGuide
 
   // Set |hints_fetcher_| for testing.
   void SetHintsFetcherForTesting(
-      std::unique_ptr<previews::HintsFetcher> hints_fetcher);
+      std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher);
 
-  HintsFetcher* GetHintsFetcherForTesting();
+  optimization_guide::HintsFetcher* GetHintsFetcherForTesting();
 
   // Called when the hints store is initialized to determine when hints
   // should be fetched and schedules the |hints_fetch_timer_| to fire based on:
@@ -199,14 +199,14 @@ class PreviewsOptimizationGuide
 
   // HintsFetcher handles making the request for updated hints from the remote
   // Optimization Guide Service.
-  std::unique_ptr<HintsFetcher> hints_fetcher_;
+  std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher_;
 
   // Timer to schedule when to fetch hints from the remote Optimization Guide
   // Service.
   base::OneShotTimer hints_fetch_timer_;
 
   // TopHostProvider that this guide can query. Not owned.
-  PreviewsTopHostProvider* previews_top_host_provider_ = nullptr;
+  optimization_guide::TopHostProvider* top_host_provider_ = nullptr;
 
   // Clock used for scheduling the |hints_fetch_timer_|.
   const base::Clock* time_clock_;
@@ -218,7 +218,7 @@ class PreviewsOptimizationGuide
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
-  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
+  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };

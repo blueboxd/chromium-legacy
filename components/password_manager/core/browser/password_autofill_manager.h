@@ -147,7 +147,7 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // Used to track a requested favicon.
   base::CancelableTaskTracker favicon_tracker_;
 
-  base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_;
+  base::WeakPtrFactory<PasswordAutofillManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillManager);
 };

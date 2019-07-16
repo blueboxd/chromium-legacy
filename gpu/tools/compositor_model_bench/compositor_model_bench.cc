@@ -64,8 +64,7 @@ class Simulator {
         window_(0),
         gl_context_(nullptr),
         window_width_(WINDOW_WIDTH),
-        window_height_(WINDOW_HEIGHT),
-        weak_factory_(this) {}
+        window_height_(WINDOW_HEIGHT) {}
 
   ~Simulator() {
     // Cleanup GL.
@@ -340,7 +339,7 @@ class Simulator {
   GLXContext gl_context_;
   int window_width_;
   int window_height_;
-  base::WeakPtrFactory<Simulator> weak_factory_;
+  base::WeakPtrFactory<Simulator> weak_factory_{this};
 };
 
 int main(int argc, char* argv[]) {

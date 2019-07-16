@@ -65,8 +65,11 @@ class CORE_EXPORT WebFrameWidgetBase
   EnsureCompositorMutatorDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
 
-  // Creates or returns cached paint dispatcher.
-  scoped_refptr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher();
+  // TODO: consider merge the input and return value to be one parameter.
+  // Creates or returns cached paint dispatcher. The returned WeakPtr must only
+  // be dereferenced on the output |paint_task_runner|.
+  base::WeakPtr<PaintWorkletPaintDispatcher> EnsureCompositorPaintDispatcher(
+      scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner);
 
   // Sets the root graphics layer. |GraphicsLayer| can be null when detaching
   // the root layer.
@@ -201,7 +204,13 @@ class CORE_EXPORT WebFrameWidgetBase
   base::WeakPtr<AnimationWorkletMutatorDispatcherImpl> mutator_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
-  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+  // The |paint_dispatcher_| should only be dereferenced on the
+  // |paint_task_runner_| (in practice this is the compositor thread). We keep a
+  // copy of it here to provide to new PaintWorkletProxyClient objects (which
+  // run on the worklet thread) so that they can talk to the
+  // PaintWorkletPaintDispatcher on the compositor thread.
+  base::WeakPtr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> paint_task_runner_;
 
   friend class WebViewImpl;
 };

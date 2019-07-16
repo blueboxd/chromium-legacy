@@ -228,6 +228,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">கார்டு</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ஆல் கொள்கை மேலெழுதப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
+<translation id="2119505898009119320">வழங்கப்பட்ட நிறுவனம்: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">மோஷன் சென்சார்கள்</translation>
 <translation id="213826338245044447">மொபைல் புக்மார்க்குகள்</translation>
 <translation id="214556005048008348">பேமண்ட்டை ரத்துசெய்</translation>
@@ -311,6 +312,7 @@
 <translation id="2515629240566999685">உங்கள் பகுதியில் உள்ள சிக்னலைச் சரிபார்த்தல்</translation>
 <translation id="2523886232349826891">இந்தச் சாதனத்தில் மட்டும் சேமிக்கப்படும்</translation>
 <translation id="2524461107774643265">மேலும் தகவலைச் சேர்க்கவும்</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{மேலும் ஒன்று}other{மேலும் #}}</translation>
 <translation id="2536110899380797252">முகவரியைச் சேர்</translation>
 <translation id="2539524384386349900">கண்டறி</translation>
 <translation id="254947805923345898">கொள்கையின் மதிப்பு சரியானதில்லை.</translation>
@@ -719,6 +721,7 @@
 <translation id="4858792381671956233">இந்தத் தளத்தைப் பார்வையிடலாமா என, நீங்கள் பெற்றோரிடம் கேட்டுள்ளீர்கள்</translation>
 <translation id="4876188919622883022">எளிதாக்கப்பட்ட காட்சி</translation>
 <translation id="4876305945144899064">பயனர்பெயர் இல்லை</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{எதுவுமில்லை}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">'<ph name="TEXT" />’ குறித்த தேடல்</translation>
 <translation id="4879491255372875719">தானியங்கு (இயல்பு)</translation>
 <translation id="4880827082731008257">தேடல் வரலாறு</translation>
@@ -1012,6 +1015,7 @@
 <translation id="650855688985305916">ஆம், சேமி</translation>
 <translation id="6508722015517270189">Chromeஐ மீண்டும் தொடங்கவும்</translation>
 <translation id="6517596291481585650">எச்சரிக்கை: இது பட்டியல் இல்லை என்பதால் கொள்கையில் குறிப்பிட்டுள்ளபடி ஒன்றிணைக்கப்படவில்லை.</translation>
+<translation id="6521745193039995384">செயலில் இல்லை</translation>
 <translation id="6529602333819889595">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="6534179046333460208">இயல்நிலை இணையப் பரிந்துரைகள்</translation>
 <translation id="6545864417968258051">புளூடூத் ஸ்கேனிங்</translation>
@@ -1474,6 +1478,7 @@
 <translation id="9076630408993835509">இந்த உலாவியை ஒரு நிறுவனமோ பிற அமைப்போ நிர்வகிக்கவில்லை. இந்தச் சாதனத்தின் செயல்பாடுகளை Chromeமுக்கு வெளியிலிருந்து நிர்வகிக்கலாம். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">கூடுதல் தகவல் தேவை</translation>
 <translation id="9080712759204168376">ஆர்டர் பற்றிய சுருக்கவிவரம்</translation>
+<translation id="9089260154716455634">Off-Hours கொள்கை:</translation>
 <translation id="9095388113577226029">மேலும் மொழிகள்...</translation>
 <translation id="9103872766612412690">வழக்கமாக, <ph name="SITE" /> உங்கள் தகவலைப் பாதுகாப்பதற்காக முறைமையாக்கத்தைப் பயன்படுத்துகிறது.
 இந்த முறை <ph name="SITE" /> உடன் இணைவதற்கு Chromium முயற்சித்தபோது வழக்கத்திற்கு மாறான, தவறான நற்சான்றிதழ்களை இணையதளம் வழங்கியது. தாக்குபவர் தன்னை <ph name="SITE" /> ஆகக் காட்ட முயற்சிக்கும் போது அல்லது இணைப்பை வைஃபை உள்நுழைவுத் திரை குறுக்கிடும் போது இது ஏற்படலாம். இருப்பினும், தரவு எதுவும் பரிமாற்றப்படுவதற்கு முன் Chromium இணைப்பை நிறுத்தியதால் உங்கள் தகவல் பாதுகாப்பாகவே இருக்கிறது.</translation>

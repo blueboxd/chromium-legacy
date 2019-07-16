@@ -25,7 +25,7 @@ void FidoDeviceDiscovery::Start() {
   DCHECK_EQ(state_, State::kIdle);
   state_ = State::kStarting;
 
-  // To ensure that that NotifiyStarted() is never invoked synchronously,
+  // To ensure that that NotifyStarted() is never invoked synchronously,
   // post task asynchronously.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FidoDeviceDiscovery::StartInternal,

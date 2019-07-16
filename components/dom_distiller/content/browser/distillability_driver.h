@@ -45,7 +45,7 @@ class DistillabilityDriver
 
   service_manager::BinderRegistry frame_interfaces_;
 
-  base::WeakPtrFactory<DistillabilityDriver> weak_factory_;
+  base::WeakPtrFactory<DistillabilityDriver> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

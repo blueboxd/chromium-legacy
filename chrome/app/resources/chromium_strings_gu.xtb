@@ -13,10 +13,8 @@
 <translation id="1298199220304005244">Chromium OSનો ઉપયોગ કરવા સહાય મેળવો</translation>
 <translation id="1396446129537741364">Chromium પાસવર્ડ્સ બતાવવાનો પ્રયાસ કરી રહ્યું છે.</translation>
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
-<translation id="1502360822835740515">Chromium ને તમારું ડિફૉલ્ટ બ્રાઉઝર બનાવો</translation>
 <translation id="151962892725702025">Chromium OS તમારા ડેટાને સિંક કરી શક્યું નથી, કારણ કે તમારા ડોમેન માટે સિંક ઉપલબ્ધ નથી.</translation>
 <translation id="1524282610922162960">Chromium ટૅબ શેર કરો</translation>
-<translation id="1585657529869845941">જો <ph name="BEGIN_BOLD" />છતાં સ્વિચ કરો<ph name="END_BOLD" /> દેખાય, તો તેના પર ક્લિક કરો</translation>
 <translation id="1668054258064581266">તમારા એકાઉન્ટને Chromiumમાંથી દૂર કર્યાં પછી, અમલમાં લાવવા માટે તમારે તમારા ટૅબને ફરીથી લોડ કરવાની જરૂર પડી શકે છે.</translation>
 <translation id="1688750314291223739">તમારી વેબ પરની વ્યક્તિગત કરેલી બ્રાઉઝર સુવિધાઓને સાચવવા અને તેમને કોઈ પણ કમ્પ્યુટર પર Chromium માંથી ઍક્સેસ કરવા માટે સમન્વયન સેટ કરો.</translation>
 <translation id="1708666629004767631">Chromiumનું નવું, સુરક્ષિત વર્ઝન ઉપલબ્ધ છે.</translation>
@@ -84,13 +82,11 @@
 <translation id="3728336900324680424">ઍડ્રેસ બારમાં સૂચનો કરવા માટે, Chromium તમારી ડ્રાઇવને ઍક્સેસ કરશે</translation>
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">તમારા ટાસ્કબારમાં Chromium ને પિન કરો</translation>
 <translation id="388648406173476553">Chromiumને કસ્ટમાઇઝ અને તેનું નિયંત્રણ કરો. તમારે ક્યાંક ધ્યાન આપવાની જરૂર છે - વિગતો માટે ક્લિક કરો.</translation>
 <translation id="3889543394854987837">Chromium ને ખોલવા માટે તમારા નામને ક્લિક કરો અને બ્રાઉઝ કરવાનું પ્રારંભ કરો.</translation>
 <translation id="3898493977366060150">Google સ્માર્ટ સાથે વેબ બ્રાઉઝ કરો</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />વર્તમાન સેટિંગ્સ<ph name="END_LINK" />ની જાણ કરીને Chromium ને બહેતર બનાવવામાં સહાય કરો</translation>
 <translation id="4050175100176540509">નવીનતમ વર્ઝનમાં મહત્ત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
-<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> પસંદ કરો</translation>
 <translation id="421369550622382712">Chromium માટે શ્રેષ્ઠ એપ્લીકેશન્સ, રમતો, એક્સટેન્શન્સ અને થીમ્સ શોધો.</translation>
 <translation id="4216212958613226427">આ ભાષાનો ઉપયોગ Chromium UI પ્રદર્શિત કરવા માટે થાય છે</translation>
 <translation id="4222580632002216401">તમે હવે Chromium માં સાઇન ઇન છો! સમન્વયન તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલું છે.</translation>
@@ -107,7 +103,6 @@
 <translation id="4677944499843243528">બીજા કમ્પ્યુટર (<ph name="HOST_NAME" />) પર પ્રોફાઇલ બીજી Chromium પ્રક્રિયા (<ph name="PROCESS_ID" />) દ્વારા ઉપયોગમાં હોય એવું લાગે છે. Chromium એ પ્રોફાઇલને લૉક કરી છે જેથી તે દૂષિત ન થઈ જાય. જો તમને ખાતરી છે કે કોઈ અન્ય પ્રક્રિયાઓ આ પ્રોફાઇલનો ઉપયોગ કરી રહી નથી, તો તમે પ્રોફાઇલને અનલૉક કરી અને Chromium ને ફરીથી લોંચ કરી શકો છો.</translation>
 <translation id="469338717132742108">Chromium OS સાથે સહાય મેળવો</translation>
 <translation id="4708774505295300557">કોઈએ આ કોમ્પ્યુટર પર પહેલા <ph name="ACCOUNT_EMAIL_LAST" /> તરીકે Chromiumમાં સાઇન ઇન કર્યું છે. તમારી માહિતી અલગ રાખવા માટે કૃપા કરીને નવો Chromium વપરાશકર્તા બનાવો.</translation>
-<translation id="4714956846925717402">Chromium પર વધુ ઝડપથી જાઓ</translation>
 <translation id="4746050847053251315">છતાં પણ Chromium બંધ કરવું છે?</translation>
 <translation id="4748217263233248895">Chromium માટેનું એક વિશિષ્ટ સુરક્ષા અપડેટ હમણાં જ લાગુ કરવામાં આવ્યું. હવે ફરી શરૂ કરો અને અમે તમારાં ટૅબની પુનઃસ્થાપના કરીશું.</translation>
 <translation id="479167709087336770">આ પણ Google શોધમાં જે જોડણી તપાસનારનો ઉપયોગ થાય છે તેનો જ ઉપયોગ કરે છે. તમે બ્રાઉઝરમાં ટાઇપ કરો છો તે ટેક્સ્ટ Googleને મોકલવામાં આવે છે. તમે સેટિંગમાં આ વર્તણૂકને હંમેશાં બદલી શકો છો.</translation>

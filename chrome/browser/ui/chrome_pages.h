@@ -118,6 +118,9 @@ void ShowSearchEngineSettings(Browser* browser);
 
 #if defined(OS_CHROMEOS)
 void ShowManagementPageForProfile(Profile* profile);
+
+// Constructs an OS settings GURL for the specified |sub_page|.
+GURL GetOSSettingsUrl(const std::string& sub_page);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

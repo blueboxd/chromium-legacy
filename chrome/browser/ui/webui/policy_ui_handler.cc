@@ -174,8 +174,9 @@ void GetStatusFromCore(const policy::CloudPolicyCore* core,
   bool no_error = store->status() == policy::CloudPolicyStore::STATUS_OK &&
                   client && client->status() == policy::DM_STATUS_SUCCESS;
   dict->SetBoolean("error", !no_error);
-  dict->SetBoolean("policiesPushAvailable",
-                   refresh_scheduler->invalidations_available());
+  dict->SetBoolean(
+      "policiesPushAvailable",
+      refresh_scheduler ? refresh_scheduler->invalidations_available() : false);
   dict->SetString("status", status);
   dict->SetString("clientId", client_id);
   dict->SetString("username", username);

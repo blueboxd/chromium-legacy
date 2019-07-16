@@ -28,8 +28,7 @@ SharedImageStub::SharedImageStub(GpuChannel* channel, int32_t route_id)
               CommandBufferNamespace::GPU_IO,
               CommandBufferIdFromChannelAndRoute(channel->client_id(),
                                                  route_id),
-              sequence_)),
-      weak_factory_(this) {
+              sequence_)) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "gpu::SharedImageStub", channel_->task_runner());
 }

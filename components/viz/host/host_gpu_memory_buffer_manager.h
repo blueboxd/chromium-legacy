@@ -143,7 +143,7 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
   const gpu::GpuMemoryBufferConfigurationSet native_configurations_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<HostGpuMemoryBufferManager> weak_ptr_;
-  base::WeakPtrFactory<HostGpuMemoryBufferManager> weak_factory_;
+  base::WeakPtrFactory<HostGpuMemoryBufferManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostGpuMemoryBufferManager);
 };

@@ -101,9 +101,6 @@ declare_args() {
   # Set to true to enable wayland server
   enable_cast_wayland_server = false
 
-  # Whether to build cast for Android Things N version
-  build_for_android_things_n = false
-
   # Set to true to enable mixing in CastAudioManager. Only needed on devices
   # that do not have a mixer in the CMA backend.
   enable_cast_audio_manager_mixer =

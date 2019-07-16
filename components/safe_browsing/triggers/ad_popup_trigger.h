@@ -100,7 +100,7 @@ class AdPopupTrigger : public content::WebContentsUserData<AdPopupTrigger> {
   // UI thread, but can be overwritten for tests.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<AdPopupTrigger> weak_ptr_factory_;
+  base::WeakPtrFactory<AdPopupTrigger> weak_ptr_factory_{this};
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(AdPopupTrigger);

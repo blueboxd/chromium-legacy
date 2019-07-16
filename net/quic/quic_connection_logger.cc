@@ -10,18 +10,15 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
 #include "net/cert/x509_certificate.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_values.h"
 #include "net/quic/address_utils.h"
 #include "net/quic/quic_address_mismatch.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"

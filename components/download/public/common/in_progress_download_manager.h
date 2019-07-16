@@ -287,7 +287,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   // Connector to the service manager.
   service_manager::Connector* connector_;
 
-  base::WeakPtrFactory<InProgressDownloadManager> weak_factory_;
+  base::WeakPtrFactory<InProgressDownloadManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InProgressDownloadManager);
 };

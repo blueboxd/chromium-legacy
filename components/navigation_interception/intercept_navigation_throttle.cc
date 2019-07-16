@@ -22,8 +22,7 @@ InterceptNavigationThrottle::InterceptNavigationThrottle(
     : content::NavigationThrottle(navigation_handle),
       should_ignore_callback_(should_ignore_callback),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      mode_(async_mode),
-      weak_factory_(this) {}
+      mode_(async_mode) {}
 
 InterceptNavigationThrottle::~InterceptNavigationThrottle() = default;
 

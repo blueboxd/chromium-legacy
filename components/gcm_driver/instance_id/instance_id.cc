@@ -16,7 +16,7 @@ namespace instance_id {
 const char kGCMScope[] = "GCM";
 
 InstanceID::InstanceID(const std::string& app_id, gcm::GCMDriver* gcm_driver)
-    : gcm_driver_(gcm_driver), app_id_(app_id), weak_ptr_factory_(this) {}
+    : gcm_driver_(gcm_driver), app_id_(app_id) {}
 
 InstanceID::~InstanceID() {}
 

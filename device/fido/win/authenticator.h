@@ -57,6 +57,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   base::string16 GetDisplayName() const override;
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
+  bool RequiresBlePairingPin() const override;
   const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsWinNativeApiAuthenticator() const override;

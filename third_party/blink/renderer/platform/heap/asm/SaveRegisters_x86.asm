@@ -51,23 +51,27 @@
 %endif
 
 
-; PRIVATE makes a symbol private.
+; global_private makes a symbol a global but private to this shared library.
 %ifidn   __OUTPUT_FORMAT__,elf32
-  %define PRIVATE :hidden
+  %define global_private(x) global mangle(x) %+ :function hidden
 %elifidn __OUTPUT_FORMAT__,elf64
-  %define PRIVATE :hidden
+  %define global_private(x) global mangle(x) %+ :function hidden
 %elifidn __OUTPUT_FORMAT__,elfx32
-  %define PRIVATE :hidden
-%elif X64WIN
-  %define PRIVATE
+  %define global_private(x) global mangle(x) %+ :function hidden
+%elifidn __OUTPUT_FORMAT__,macho32
+  %define global_private(x) global mangle(x) %+ :private_extern
+%elifidn __OUTPUT_FORMAT__,macho64
+  %define global_private(x) global mangle(x) %+ :private_extern
 %else
-  %define PRIVATE :private_extern
+  %define global_private(x) global mangle(x)
 %endif
+
+section .text
 
 ;; typedef void (*PushAllRegistersCallback)(ThreadState*, intptr_t*);
 ;; extern "C" void PushAllRegisters(ThreadState*, PushAllRegistersCallback)
 
-        global mangle(PushAllRegisters) PRIVATE
+        global_private(PushAllRegisters)
 
 %if X64POSIX
 
@@ -152,7 +156,7 @@ mangle(PushAllRegisters):
 
 
 %elif ARM
-%error "Yasm does not support arm. Use SaveRegisters_arm.S on arm."
+%error "NASM does not support arm. Use SaveRegisters_arm.S on arm."
 %else
 %error "Unsupported platform."
 %endif

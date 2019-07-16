@@ -1278,6 +1278,7 @@ component("ash") {
     "//mojo/public/cpp/system",
     "//services/device/public/cpp/bluetooth",
     "//services/device/public/mojom",
+    "//services/media_session/public/cpp",
     "//services/media_session/public/mojom",
     "//services/service_manager/public/cpp",
     "//skia",

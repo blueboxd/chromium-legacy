@@ -27,8 +27,7 @@ HostCachePersistenceManager::HostCachePersistenceManager(
       delay_(delay),
       net_log_(net::NetLogWithSource::Make(
           net_log,
-          net::NetLogSourceType::HOST_CACHE_PERSISTENCE_MANAGER)),
-      weak_factory_(this) {
+          net::NetLogSourceType::HOST_CACHE_PERSISTENCE_MANAGER)) {
   DCHECK(cache_);
   DCHECK(pref_service_);
 

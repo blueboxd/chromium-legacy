@@ -34,8 +34,7 @@ InProcessGpuMemoryBufferManager::InProcessGpuMemoryBufferManager(
     : client_id_(gpu::kInProcessCommandBufferClientId),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       sync_point_manager_(sync_point_manager),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 

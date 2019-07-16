@@ -715,14 +715,6 @@ const char kDisableLoggingRedirect[] = "disable-logging-redirect";
 // installed through policy.
 const char kDisableLoginScreenApps[] = "disable-login-screen-apps";
 
-// Activates various shelf pins layout experiment, must be one from 'default',
-// '7apps', '10apps'.
-// default - [Chrome, Gmail, Docs, YouTube, Play Store].
-// 7apps   - [Chrome, Gmail, Docs, Photos, Files, YouTube, Play Store].
-// 10apps  - [Chrome, Gmail, Calendar, Docs, Sheets, Slides, Files, Camera,
-//            Photos, Play Store].
-const char kPinShelfLayout[] = "pin-shelf-layout";
-
 // Provides the name of the mojo service running in a mash utility process.
 // NOTE: Used by the Chrome OS crash_reporter to identify mash processes. If you
 // change or remove the flag please update platform2/crash_reporter.

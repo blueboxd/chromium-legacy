@@ -224,8 +224,7 @@ GLES2Implementation::GLES2Implementation(
       max_extra_transfer_buffer_size_(0),
       current_trace_stack_(0),
       aggressively_free_resources_(false),
-      cached_extension_string_(nullptr),
-      weak_ptr_factory_(this) {
+      cached_extension_string_(nullptr) {
   DCHECK(helper);
 
   std::stringstream ss;

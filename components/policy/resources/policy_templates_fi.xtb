@@ -3254,19 +3254,8 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7123160381479171745">Määrittelee luettelon käyttäjistä, joilla on oikeus kirjautua laitteelle. Luettelokohteet ovat muodossa <ph name="USER_WHITELIST_ENTRY_FORMAT" />, esimerkiksi <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Jos haluat sallia kirjautumisen verkkotunnuksen kaikille käyttäjille, lisää luettelokohteet muodossa <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Jos tätä käytäntöä ei ole määritetty, käyttäjien kirjautumisoikeutta ei rajoiteta. Huom. Uusien käyttäjien luonti edellyttää kuitenkin, että <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />-käytäntö on määritetty oikein.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> on tarkoitettu laajennusten turvalliseen päivitykseen ja asentamiseen. Joidenkin Chrome Web Storen ulkopuolella isännöityjen laajennusten sisältöä saatetaan kuitenkin suojata vain suojaamattomalla allekirjoituksella tai tiivistysalgoritmilla, kuten SHA1:llä. Jos käytäntö ei ole käytössä, Chrome ei salli tällaisten laajennusten tuoreita asennuksia ja päivityksiä (kunnes laajennuksen kehittäjät rakentavat laajennuksen uudelleen vahvemmilla algoritmeilla). Jos käytäntö on käytössä, tällaisten laajennusten asennus ja päivitys sallitaan.
-
-          Jos tätä ei ole määritetty, käytäntö on oletuksena käytössä.
-          Versiosta <ph name="PRODUCT_NAME" /> 75 alkaen käytäntö ei ole oletuksena käytössä, jos sitä ei ole määritetty.
-
-          Versiosta <ph name="PRODUCT_NAME" /> 77 alkaen käytäntö jätetään huomiotta ja sitä kohdellaan käytöstä poistettuna.</translation>
 <translation id="7126716959063786004">Ota käyttöön prosessien lopettaminen tehtävänhallinnasta</translation>
 <translation id="7127892035367404455">Palautus kohdeversioon</translation>
-<translation id="7128918109610518786">Näyttää sovellukset, jotka <ph name="PRODUCT_OS_NAME" /> näyttää kiinnitettyinä käynnistyspalkissa.
-
-      Jos käytäntö on määritetty, käyttäjä ei voi vaihtaa sovelluksia.
-
-      Jos käytäntöä ei ole määritetty, käyttäjä voi vaihtaa käynnistyspalkkiin kiinnitettyjä sovelluksia.</translation>
 <translation id="713121532817834879">Tämä käytäntö on URL-osoite, jonka kohde-XML-tiedosto käyttää samaa muotoa kuin Internet Explorerin käytäntö <ph name="IEEM_SITELIST_POLICY" />. Tällöin säännöt ladataan XML-tiedostosta, mutta niitä ei jaeta Internet Explorerille.
 
       XML-tiedoston sääntöjä sovelletaan samaan tapaan kuin käytännössä <ph name="GREYLIST_POLICY_NAME" />. Säännöt siis määrittävät, että <ph name="PRODUCT_NAME" /> ei voi avata vaihtoehtoista selainta eikä vaihtoehtoinen selain voi avata selainta <ph name="PRODUCT_NAME" />.
@@ -4101,12 +4090,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 <translation id="8759829385824155666">Sallitut Kerberos-salaustyypit</translation>
 <translation id="8764119899999036911">Määrittää, perustuuko luotu Kerberos SPN ensisijaiseen DNS-nimeen vai annettuun alkuperäiseen nimeen. Jos otat tämän asetuksen käyttöön, CNAME-haku ohitetaan, ja palvelimen nimeä käytetään sen annetussa muodossa. Jos poistat asetuksen käytöstä tai et määritä sitä, palvelimen ensisijainen nimi määritetään CNAME-haun kautta.</translation>
 <translation id="8764477907716150749"><ph name="PRODUCT_NAME" /> käyttää tätä käytäntöä vain omiin sisäisiin toimintoihinsa.</translation>
-<translation id="8765776988041674792">Määritä URL-osoite salasanan vaihtamista varten (vain HTTP- ja HTTPS-mallit). Kun selain on näyttänyt käyttäjälle varoituksen, salasanojen suojauspalvelu siirtää käyttäjän tässä määritettyyn URL-osoitteeseen salasanan vaihtamista varten.
-      Jotta <ph name="PRODUCT_NAME" /> voi tallentaa vaihtosivullasi määritetyn uuden salasanan tunnisteen oikein, varmista, että sivu seuraa täällä olevia ohjeita: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jos tämä asetus on käytössä ja selain näyttää käyttäjälle varoituksen, salasanojen suojauspalvelu siirtää käyttäjän tässä määritettyyn URL-osoitteeseen salasanan vaihtamista varten.
-      Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, salasanojen suojauspalvelu siirtää käyttäjän osoitteeseen https://myaccounts.google.com salasanan vaihtamista varten.
-      Tämä käytäntö on käytettävissä vain Windows-esiintymissä, jotka on yhdistetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen, tai Windows 10 Pro- ja Enterprise ‑esiintymissä, jotka on rekisteröity laitteiden hallinnointiohjelmaan.</translation>
 <translation id="8798099450830957504">Oletus</translation>
 <translation id="8800453707696044281">Määritä akun latauksen lopetus tietyn latausprosentin täytyttyä</translation>
 <translation id="8801680448782904838">Ilmoita käyttäjälle, että selaimen tai laitteen uudelleenkäynnistystä suositellaan tai vaaditaan</translation>
@@ -4245,9 +4228,6 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
 
       Määritä käytännön arvo sekunteina.</translation>
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
-<translation id="9038058011835642205">Määrittää luettelon verkkosivustoista, jotka asennetaan huomaamattomasti ilman käyttäjän toimenpiteitä ja joita käyttäjä ei voi poistaa käytöstä tai kokonaan.
-
-      Käytännön jokainen luettelokohde on olio, jossa on pakollinen osa, "url", ja kaksi valinnaista osaa, "default_launch_container" ja "create_desktop_shortcut". "url" on asennettavan verkkosovelluksen URL-osoite ja "launch_container" joko "window" tai "tab", mikä kertoo verkkosovelluksen avaamistavan sen asentamisen jälkeen. "create_desktop_shortcut"-arvon tulee olla tosi, jos Linuxilla tai Windowsilla on tarkoitus luoda työpöydän pikakuvake. Jos "default_launch_container"-arvo jätetään pois, sovellus avautuu oletuksena välilehdellä. "default_launch_container"-arvosta huolimatta käyttäjä voi vaihtaa sovelluksen avaavaa säilöä. Jos "create_desktop_shortcut"-arvo jätetään pois, työpöydän pikakuvakkeita ei luoda.</translation>
 <translation id="9038839118379817310">Ota Wi-Fi käyttöön</translation>
 <translation id="9039822628127365650">Jos tämä käytäntö on määritetty, se asettaa aikarajan, jonka jälkeen käyttäjä kirjataan automaattisesti ulos ja istunto lopetetaan. Käyttäjä voi tarkistaa jäljellä olevan ajan ilmaisinalueella näkyvästä laskurista.
 
@@ -4261,6 +4241,16 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Jos käytännön arvo on Quick Fix ‑versioon yhdistettävä tunnus, laite päivitetään vastaavaan Quick Fix ‑versioon, ellei toinen käytäntö estä päivittämistä.
 
       Jos tätä käytäntöä ei ole määritetty tai sen arvoa ei voi yhdistää Quick Fix ‑versioon, laitetta ei päivitetä Quick Fix ‑versioon. Jos laitteella on jo käytössä Quick Fix ‑versio eikä käytännöllä ole enää arvoa tai sen arvoa ei voi enää yhdistää Quick Fix ‑versioon, laite päivitetään tavalliseen versioon, ellei toinen käytäntö estä päivittämistä.</translation>
+<translation id="9054012305936267950">Tällä käytännöllä hallitaan selaimen kirjautumiskäyttäytymistä. Sillä voit valita, voiko käyttäjä suorittaa <ph name="PRODUCT_NAME" /> ‑kirjautumisen tilillään ja käyttää tähän liittyviä palveluita, kuten Chromen synkronointia.
+
+      Jos käytännön arvo on Estä kirjautuminen selaimelle, käyttäjä ei voi kirjautua selaimelle tai käyttää tilipohjaisia palveluita. Tällöin selaintason palvelut kuten Chromen synkronointi eivät ole käytettävissä. Jos käyttäjä oli kirjautuneena, kun käytännön arvoksi valittiin Estä, hänet kirjataan ulos seuraavalla Chromen suorituskerralla. Paikallinen profiilidata, esimerkiksi kirjanmerkit ja salasanat, säilytetään silti. Käyttäjä voi kirjautua Googlen verkkopalveluihin (esim. Gmail) ja käyttää niitä.
+
+      Jos käytännön arvo on Salli kirjautuminen selaimelle, käyttäjä voi kirjautua selaimelle, ja hänet kirjataan automaattisesti selaimelle Gmailiin tai muihin Googlen verkkopalveluihin kirjautumisen yhteydessä. Kun käyttäjä on kirjautunut selaimelle, se tallentaa hänen tilitietonsa. Chromen synkronointi ei kuitenkaan ole käytössä oletuksena, vaan käyttäjän on otettava tämä ominaisuus käyttöön erikseen. Tämän käytännön voimaantulo estää käyttäjää kytkemästä päälle asetusta, joka sallii selaimelle kirjautumisen. Voit päättää Chromen synkronoinnin saatavuudesta SyncDisabled-käytännöllä.
+
+      Jos käytännön arvo on Pakota kirjautumaan selaimelle, käyttäjälle näytetään tilinvalintaikkuna, ja hänen täytyy valita tili ja kirjautua sisään käyttääkseen selainta. Näin varmistetaan, että tilin käytäntöjä noudatetaan hallinnoiduilla tileillä. Samalla Chromen synkronointi otetaan oletuksena käyttöön tilillä, paitsi jos synkronointi on verkkotunnuksen 
+ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-käytännön arvoksi asetetaan Epätosi. Aiemmin luodut profiilit, joilla ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on voimassa. Lisätietoja on artikkelissa https://support.google.com/chrome/a/answer/7572556. Tämä vaihtoehto ei tue Linuxia ja käyttää silloin Salli kirjautuminen selaimelle -arvoa.
+
+      Jos tälle käytännölle ei määritetä arvoa, käyttäjä voi valita, otetaan selaimelle kirjautuminen käyttöön, ja käyttää ominaisuutta haluamallaan tavalla.</translation>
 <translation id="9072600218500597787">Määrittää pakolliset verkkotunnukset, joiden käyttöä edellytetään etäkäytön isänniltä, ja estää käyttäjiä muuttamasta niitä.
 
           Jos tämä asetus on käytössä, isäntien jakamiseen voidaan käyttää vain tilejä, jotka on rekisteröity johonkin määritetyistä verkkotunnuksista.

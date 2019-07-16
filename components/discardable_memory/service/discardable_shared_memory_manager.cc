@@ -227,9 +227,7 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       // Current thread might not have a task runner in tests.
       enforce_memory_policy_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       enforce_memory_policy_pending_(false),
-      mojo_thread_message_loop_(base::MessageLoopCurrent::GetNull()),
-      weak_ptr_factory_(this),
-      mojo_thread_weak_ptr_factory_(this) {
+      mojo_thread_message_loop_(base::MessageLoopCurrent::GetNull()) {
   DCHECK(!g_instance)
       << "A DiscardableSharedMemoryManager already exists in this process.";
   g_instance = this;

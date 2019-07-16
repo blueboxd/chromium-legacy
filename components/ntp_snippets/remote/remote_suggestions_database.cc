@@ -55,8 +55,7 @@ RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
     : database_(std::move(database)),
       database_initialized_(false),
       image_database_(std::move(image_database)),
-      image_database_initialized_(false),
-      weak_ptr_factory_(this) {
+      image_database_initialized_(false) {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.reuse_logs = false;  // Consumes less RAM over time.
   options.write_buffer_size = kDatabaseWriteBufferSizeBytes;

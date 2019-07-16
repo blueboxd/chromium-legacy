@@ -1029,22 +1029,6 @@ Status ExecuteTouchScroll(Session* session,
       location.x, location.y, xoffset, yoffset);
 }
 
-Status ExecuteTouchPinch(Session* session,
-                         WebView* web_view,
-                         const base::DictionaryValue& params,
-                         std::unique_ptr<base::Value>* value,
-                         Timeout* timeout) {
-  WebPoint location;
-  if (!params.GetInteger("x", &location.x))
-    return Status(kInvalidArgument, "'x' must be an integer");
-  if (!params.GetInteger("y", &location.y))
-    return Status(kInvalidArgument, "'y' must be an integer");
-  double scale_factor;
-  if (!params.GetDouble("scale", &scale_factor))
-    return Status(kInvalidArgument, "'scale' must be an integer");
-  return web_view->SynthesizePinchGesture(location.x, location.y, scale_factor);
-}
-
 Status ProcessInputActionSequence(
     Session* session,
     const base::DictionaryValue* action_sequence,

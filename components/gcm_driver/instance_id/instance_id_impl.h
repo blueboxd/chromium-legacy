@@ -88,7 +88,7 @@ class InstanceIDImpl : public InstanceID {
   // The time when the Instance ID has been generated.
   base::Time creation_time_;
 
-  base::WeakPtrFactory<InstanceIDImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<InstanceIDImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InstanceIDImpl);
 };

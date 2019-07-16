@@ -71,7 +71,7 @@ void AssistantMediaSession::Suspend(SuspendType suspend_type) {
   if (!IsActive())
     return;
 
-  SetAudioFocusState(State::SUSPENDED);
+  set_audio_focus_state(State::SUSPENDED);
   assistant_manager_service_->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPause);
 }
@@ -80,7 +80,7 @@ void AssistantMediaSession::Resume(SuspendType suspend_type) {
   if (!IsSuspended())
     return;
 
-  SetAudioFocusState(State::ACTIVE);
+  set_audio_focus_state(State::ACTIVE);
   assistant_manager_service_->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPlay);
 }
@@ -122,7 +122,7 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE)
     return;
 
-  SetAudioFocusState(State::INACTIVE);
+  set_audio_focus_state(State::INACTIVE);
 
   if (!request_client_ptr_.is_bound())
     return;
@@ -149,7 +149,8 @@ void AssistantMediaSession::FinishAudioFocusRequest(
     AudioFocusType audio_focus_type) {
   DCHECK(request_client_ptr_.is_bound());
 
-  SetAudioFocusState(State::ACTIVE);
+  set_audio_focus_type(audio_focus_type);
+  set_audio_focus_state(State::ACTIVE);
 }
 
 void AssistantMediaSession::FinishInitialAudioFocusRequest(
@@ -158,12 +159,20 @@ void AssistantMediaSession::FinishInitialAudioFocusRequest(
   FinishAudioFocusRequest(audio_focus_type);
 }
 
-void AssistantMediaSession::SetAudioFocusState(State audio_focus_state) {
+void AssistantMediaSession::set_audio_focus_state(State audio_focus_state) {
   if (audio_focus_state == audio_focus_state_)
     return;
 
   audio_focus_state_ = audio_focus_state;
   NotifyMediaSessionInfoChanged();
+}
+
+void AssistantMediaSession::set_audio_focus_type(
+    AudioFocusType audio_focus_type) {
+  if (audio_focus_type == audio_focus_type_)
+    return;
+
+  audio_focus_type_ = audio_focus_type;
 }
 
 void AssistantMediaSession::NotifyMediaSessionMetadataChanged(
@@ -202,7 +211,7 @@ AssistantMediaSession::GetMediaSessionInfoInternal() {
       break;
   }
   if (audio_focus_state_ != State::INACTIVE &&
-      current_track_ == assistant_client::TrackType::MEDIA_TRACK_CONTENT) {
+      audio_focus_type_ != AudioFocusType::kGainTransient) {
     info->is_controllable = true;
   }
   return info;

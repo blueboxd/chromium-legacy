@@ -119,7 +119,7 @@ class ActivationStateComputingNavigationThrottle
   bool will_send_activation_to_renderer_ = false;
 
   base::WeakPtrFactory<ActivationStateComputingNavigationThrottle>
-      weak_ptr_factory_;
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActivationStateComputingNavigationThrottle);
 };

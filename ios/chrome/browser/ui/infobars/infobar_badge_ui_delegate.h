@@ -12,16 +12,6 @@ enum class InfobarType;
 // Delegate that handles any followup actions to Infobar UI events.
 @protocol InfobarBadgeUIDelegate
 
-// Called whenever an InfobarBanner of type |infobarType| was dismissed.
-- (void)infobarBannerWasDismissed:(InfobarType)infobarType;
-
-// Called whenever an InfobarModal of type |infobarType| was presented.
-- (void)infobarModalWasPresented:(InfobarType)infobarType;
-
-// Called whenever an InfobarModal of type |infobarType| is about to be
-// dismissed.
-- (void)infobarModalWillDismiss:(InfobarType)infobarType;
-
 // Called whenever an Infobar of type |infobarType| accept/confirm button was
 // tapped. It is triggered by either the banner or modal button.
 - (void)infobarWasAccepted:(InfobarType)infobarType;

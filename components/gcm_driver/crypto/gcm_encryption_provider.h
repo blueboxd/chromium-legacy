@@ -141,7 +141,7 @@ class GCMEncryptionProvider {
 
   std::unique_ptr<GCMKeyStore> key_store_;
 
-  base::WeakPtrFactory<GCMEncryptionProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMEncryptionProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMEncryptionProvider);
 };

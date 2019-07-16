@@ -243,7 +243,7 @@ void FidoRequestHandlerBase::PowerOnBluetoothAdapter() {
 
 void FidoRequestHandlerBase::InitiatePairingWithDevice(
     std::string authenticator_id,
-    std::string pin_code,
+    base::Optional<std::string> pin_code,
     base::OnceClosure success_callback,
     base::OnceClosure error_callback) {
   if (!bluetooth_adapter_manager_)

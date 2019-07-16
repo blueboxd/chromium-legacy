@@ -525,7 +525,7 @@ T* MakeGarbageCollected(Args&&... args) {
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->MarkFullyConstructed();
+  header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
   return object;
 }
 
@@ -546,7 +546,7 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->MarkFullyConstructed();
+  header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
   return object;
 }
 

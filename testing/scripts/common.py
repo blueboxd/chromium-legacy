@@ -299,7 +299,7 @@ class BaseIsolatedScriptArgsAdapter(object):
     raise RuntimeError('this method is not yet implemented')
 
   def generate_isolated_script_cmd(self):
-    isolated_script_cmd = [sys.executable] + self._rest_args
+    isolated_script_cmd = [sys.executable] + self.rest_args
 
     isolated_script_cmd += self.generate_test_output_args(
         self.options.isolated_script_test_output)

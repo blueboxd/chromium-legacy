@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -37,56 +38,49 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
 @RetryOnFailure
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class UsbChooserDialogTest {
-    /**
-     * Works like the UsbChooserDialog class, but records calls to native methods instead of
-     * calling back to C++.
-     */
-
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
 
-    static class UsbChooserDialogWithFakeNatives extends UsbChooserDialog {
-        String mSelectedDeviceId = "";
+    @Rule
+    public JniMocker mocker = new JniMocker();
 
-        UsbChooserDialogWithFakeNatives() {
-            super(42 /* nativeUsbChooserDialogPtr */);
-        }
+    private String mSelectedDeviceId = "";
 
+    private UsbChooserDialog mChooserDialog;
+
+    private class TestUsbChooserDialogJni implements UsbChooserDialog.Natives {
         @Override
-        void nativeOnItemSelected(long nativeUsbChooserDialogAndroid, String deviceId) {
+        public void onItemSelected(
+                UsbChooserDialog self, long nativeUsbChooserDialogAndroid, String deviceId) {
             mSelectedDeviceId = deviceId;
         }
 
         @Override
-        void nativeOnDialogCancelled(long nativeUsbChooserDialogAndroid) {}
+        public void onDialogCancelled(UsbChooserDialog self, long nativeUsbChooserDialogAndroid) {}
 
         @Override
-        void nativeLoadUsbHelpPage(long nativeUsbChooserDialogAndroid) {}
+        public void loadUsbHelpPage(UsbChooserDialog self, long nativeUsbChooserDialogAndroid) {}
     }
-
-    private UsbChooserDialogWithFakeNatives mChooserDialog;
 
     @Before
     public void setUp() throws Exception {
+        mocker.mock(UsbChooserDialogJni.TEST_HOOKS, new TestUsbChooserDialogJni());
         mActivityTestRule.startMainActivityOnBlankPage();
         mChooserDialog = createDialog();
     }
 
-    private UsbChooserDialogWithFakeNatives createDialog() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> {
-                    UsbChooserDialogWithFakeNatives dialog =
-                            new UsbChooserDialogWithFakeNatives();
-                    dialog.show(mActivityTestRule.getActivity(), "https://origin.example.com/",
-                            ConnectionSecurityLevel.SECURE);
-                    return dialog;
-                });
+    private UsbChooserDialog createDialog() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            UsbChooserDialog dialog = new UsbChooserDialog(/*nativeUsbChooserDialogPtr=*/42);
+            dialog.show(mActivityTestRule.getActivity(), "https://origin.example.com/",
+                    ConnectionSecurityLevel.SECURE);
+            return dialog;
+        });
     }
 
-    private static void selectItem(final UsbChooserDialogWithFakeNatives chooserDialog,
-            int position) {
-        final Dialog dialog = chooserDialog.mItemChooserDialog.getDialogForTesting();
+    private void selectItem(int position) {
+        final Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
 
@@ -113,7 +107,7 @@ public class UsbChooserDialogTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !chooserDialog.mSelectedDeviceId.equals("");
+                return !mSelectedDeviceId.equals("");
             }
         });
     }
@@ -146,7 +140,7 @@ public class UsbChooserDialogTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mChooserDialog.mSelectedDeviceId.equals("");
+                return mSelectedDeviceId.equals("");
             }
         });
     }
@@ -180,8 +174,8 @@ public class UsbChooserDialogTest {
         Assert.assertFalse(button.isEnabled());
         Assert.assertEquals(View.VISIBLE, items.getVisibility());
 
-        selectItem(mChooserDialog, position);
+        selectItem(position);
 
-        Assert.assertEquals("device_id_1", mChooserDialog.mSelectedDeviceId);
+        Assert.assertEquals("device_id_1", mSelectedDeviceId);
     }
 }

@@ -344,4 +344,11 @@ bool IsUPIVirtualPaymentAddress(const base::string16& value) {
   return MatchesPattern(value, base::ASCIIToUTF16(kUPIVirtualPaymentAddressRe));
 }
 
+bool IsInternationalBankAccountNumber(const base::string16& value) {
+  base::string16 no_spaces;
+  base::RemoveChars(value, base::ASCIIToUTF16(" "), &no_spaces);
+  return MatchesPattern(no_spaces,
+                        base::ASCIIToUTF16(kInternationalBankAccountNumberRe));
+}
+
 }  // namespace autofill

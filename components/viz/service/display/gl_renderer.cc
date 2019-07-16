@@ -349,8 +349,7 @@ GLRenderer::GLRenderer(
                        output_surface_->context_provider()
                            ->ContextCapabilities()
                            .texture_half_float_linear),
-      current_task_runner_(std::move(current_task_runner)),
-      weak_ptr_factory_(this) {
+      current_task_runner_(std::move(current_task_runner)) {
   DCHECK(gl_);
   DCHECK(context_support_);
 

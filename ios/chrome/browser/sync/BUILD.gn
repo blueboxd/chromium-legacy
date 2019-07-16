@@ -65,6 +65,7 @@ source_set("sync") {
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/complex_tasks",
     "//ios/chrome/browser/dom_distiller",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/gcm",

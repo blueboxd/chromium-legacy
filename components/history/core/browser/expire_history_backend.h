@@ -302,7 +302,7 @@ class ExpireHistoryBackend {
 
   // Used to generate runnable methods to do timers on this class. They will be
   // automatically canceled when this class is deleted.
-  base::WeakPtrFactory<ExpireHistoryBackend> weak_factory_;
+  base::WeakPtrFactory<ExpireHistoryBackend> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExpireHistoryBackend);
 };

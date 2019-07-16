@@ -25,6 +25,8 @@ import android.view.View;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JCaller;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -115,7 +117,8 @@ public class BluetoothChooserDialog
             }
             if (checkLocationServicesAndPermission()) {
                 mItemChooserDialog.clear();
-                nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
+                Natives jni = BluetoothChooserDialogJni.get();
+                jni.restartSearch(BluetoothChooserDialog.this, mNativeBluetoothChooserDialogPtr);
             }
         }
     };
@@ -235,7 +238,8 @@ public class BluetoothChooserDialog
         }
 
         if (mNativeBluetoothChooserDialogPtr != 0) {
-            nativeOnDialogFinished(mNativeBluetoothChooserDialogPtr, resultCode, id);
+            Natives jni = BluetoothChooserDialogJni.get();
+            jni.onDialogFinished(this, mNativeBluetoothChooserDialogPtr, resultCode, id);
         }
     }
 
@@ -257,7 +261,8 @@ public class BluetoothChooserDialog
             if (permissions[i].equals(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                 if (checkLocationServicesAndPermission()) {
                     mItemChooserDialog.clear();
-                    nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
+                    Natives jni = BluetoothChooserDialogJni.get();
+                    jni.restartSearch(this, mNativeBluetoothChooserDialogPtr);
                 }
                 return;
             }
@@ -325,11 +330,13 @@ public class BluetoothChooserDialog
     private void onBluetoothLinkClick(View view, @LinkType int linkType) {
         if (mNativeBluetoothChooserDialogPtr == 0) return;
 
+        Natives jni = BluetoothChooserDialogJni.get();
+
         switch (linkType) {
             case LinkType.EXPLAIN_BLUETOOTH:
                 // No need to close the dialog here because
                 // ShowBluetoothOverviewLink will close it.
-                nativeShowBluetoothOverviewLink(mNativeBluetoothChooserDialogPtr);
+                jni.showBluetoothOverviewLink(this, mNativeBluetoothChooserDialogPtr);
                 break;
             case LinkType.ADAPTER_OFF:
                 if (mAdapter != null && mAdapter.enable()) {
@@ -341,7 +348,7 @@ public class BluetoothChooserDialog
                 }
                 break;
             case LinkType.ADAPTER_OFF_HELP:
-                nativeShowBluetoothAdapterOffLink(mNativeBluetoothChooserDialogPtr);
+                jni.showBluetoothAdapterOffLink(this, mNativeBluetoothChooserDialogPtr);
                 break;
             case LinkType.REQUEST_LOCATION_PERMISSION:
                 mItemChooserDialog.setIgnorePendingWindowFocusChangeForClose(true);
@@ -355,11 +362,11 @@ public class BluetoothChooserDialog
                         LocationUtils.getInstance().getSystemLocationSettingsIntent());
                 break;
             case LinkType.NEED_LOCATION_PERMISSION_HELP:
-                nativeShowNeedLocationPermissionLink(mNativeBluetoothChooserDialogPtr);
+                jni.showNeedLocationPermissionLink(this, mNativeBluetoothChooserDialogPtr);
                 break;
             case LinkType.RESTART_SEARCH:
                 mItemChooserDialog.clear();
-                nativeRestartSearch(mNativeBluetoothChooserDialogPtr);
+                jni.restartSearch(this, mNativeBluetoothChooserDialogPtr);
                 break;
             default:
                 assert false;
@@ -448,16 +455,18 @@ public class BluetoothChooserDialog
         }
     }
 
-    @VisibleForTesting
-    native void nativeOnDialogFinished(
-            long nativeBluetoothChooserAndroid, int eventType, String deviceId);
-    @VisibleForTesting
-    native void nativeRestartSearch(long nativeBluetoothChooserAndroid);
-    // Help links.
-    @VisibleForTesting
-    native void nativeShowBluetoothOverviewLink(long nativeBluetoothChooserAndroid);
-    @VisibleForTesting
-    native void nativeShowBluetoothAdapterOffLink(long nativeBluetoothChooserAndroid);
-    @VisibleForTesting
-    native void nativeShowNeedLocationPermissionLink(long nativeBluetoothChooserAndroid);
+    @NativeMethods
+    interface Natives {
+        void onDialogFinished(@JCaller BluetoothChooserDialog self,
+                long nativeBluetoothChooserAndroid, int eventType, String deviceId);
+        void restartSearch(
+                @JCaller BluetoothChooserDialog self, long nativeBluetoothChooserAndroid);
+        // Help links.
+        void showBluetoothOverviewLink(
+                @JCaller BluetoothChooserDialog self, long nativeBluetoothChooserAndroid);
+        void showBluetoothAdapterOffLink(
+                @JCaller BluetoothChooserDialog self, long nativeBluetoothChooserAndroid);
+        void showNeedLocationPermissionLink(
+                @JCaller BluetoothChooserDialog self, long nativeBluetoothChooserAndroid);
+    }
 }

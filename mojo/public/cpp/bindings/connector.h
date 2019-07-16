@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
@@ -153,6 +154,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return message_pipe_.is_valid();
   }
+
+  // Adds this object to a ConnectionGroup identified by |ref|. All receiving
+  // pipe endpoints decoded from inbound messages on this MultiplexRouter will
+  // be added to the same group.
+  void SetConnectionGroup(ConnectionGroup::Ref ref);
 
   // Waits for the next message on the pipe, blocking until one arrives,
   // |deadline| elapses, or an error happens. Returns |true| if a message has
@@ -319,6 +325,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 #if defined(ENABLE_IPC_FUZZER)
   std::unique_ptr<MessageReceiver> message_dumper_;
 #endif
+
+  // A reference to the ConnectionGroup to which this Connector belongs, if any.
+  ConnectionGroup::Ref connection_group_;
 
   // Create a single weak ptr and use it everywhere, to avoid the malloc/free
   // cost of creating a new weak ptr whenever it is needed.

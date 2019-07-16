@@ -48,7 +48,7 @@ void LogMachineIdState(MachineIdState state) {
 
 }  // namespace
 
-ClonedInstallDetector::ClonedInstallDetector() : weak_ptr_factory_(this) {}
+ClonedInstallDetector::ClonedInstallDetector() {}
 
 ClonedInstallDetector::~ClonedInstallDetector() {
 }

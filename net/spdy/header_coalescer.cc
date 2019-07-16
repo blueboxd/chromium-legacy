@@ -8,16 +8,13 @@
 #include <string>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
-#include "net/base/escape.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 
 namespace net {
 namespace {

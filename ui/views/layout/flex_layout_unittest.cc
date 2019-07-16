@@ -988,6 +988,30 @@ TEST_F(FlexLayoutTest, Layout_AddDroppedMargins) {
   EXPECT_EQ(Rect(15, 5, 10, 10), child3->bounds());
 }
 
+TEST_F(FlexLayoutTest, Layout_VerticalAlign_WiderThanTall) {
+  // This test ensures we do not regress http://crbug.com/983941
+  // Previously, the width of the host view was erroneously used when
+  // calculating excess main-axis size, causing center-alignment in vertical
+  // layouts in host views that were much wider than tall to be incorrect.
+  layout_->SetOrientation(LayoutOrientation::kVertical);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(kLayoutInsets);
+  layout_->SetMainAxisAlignment(LayoutAlignment::kCenter);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(3));
+  View* child1 = AddChild(kChild1Size);
+  View* child2 = AddChild(kChild2Size);
+  View* child3 = AddChild(kChild3Size);
+  child1->SetProperty(views::kMarginsKey, Insets(20, 21, 22, 23));
+  child2->SetProperty(views::kMarginsKey, Insets(1, 1, 1, 1));
+  child3->SetProperty(views::kMarginsKey, Insets(2, 2, 2, 2));
+  host_->SetSize(Size(1000, 100));
+  host_->Layout();
+  std::vector<Rect> expected{Rect(21, 27, 12, 10), Rect(6, 59, 13, 11),
+                             Rect(6, 72, 17, 13)};
+  EXPECT_EQ(expected, GetChildBounds());
+}
+
 // Flex Tests ------------------------------------------------------------------
 
 TEST_F(FlexLayoutTest, Layout_IgnoreMinimumSize_DropViews) {

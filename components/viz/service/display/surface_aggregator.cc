@@ -86,8 +86,8 @@ SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
       provider_(provider),
       next_render_pass_id_(1),
       aggregate_only_damaged_(aggregate_only_damaged),
-      needs_surface_occluding_damage_rect_(needs_surface_occluding_damage_rect),
-      weak_factory_(this) {
+      needs_surface_occluding_damage_rect_(
+          needs_surface_occluding_damage_rect) {
   DCHECK(manager_);
 }
 

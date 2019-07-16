@@ -82,9 +82,7 @@ SqlStoreBase::SqlStoreBase(
     : background_task_runner_(background_task_runner),
       histogram_tag_(histogram_tag),
       db_file_path_(file_path),
-      db_(nullptr, base::OnTaskRunnerDeleter(background_task_runner_)),
-      weak_ptr_factory_(this),
-      closing_weak_ptr_factory_(this) {}
+      db_(nullptr, base::OnTaskRunnerDeleter(background_task_runner_)) {}
 
 SqlStoreBase::~SqlStoreBase() = default;
 

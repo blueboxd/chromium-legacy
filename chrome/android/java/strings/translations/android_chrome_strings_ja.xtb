@@ -9,7 +9,6 @@
 <translation id="10614374240317010">常に保存しない</translation>
 <translation id="1067922213147265141">他の Google サービス</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />のページを翻訳しない</translation>
-<translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> により管理されているアカウントからログアウトします。このデバイスに保存されている Chrome データは削除されますが、Google アカウントではデータが保持されます。</translation>
 <translation id="1100066534610197918">新しいタブをグループで開く</translation>
 <translation id="1105960400813249514">画面キャプチャ</translation>
 <translation id="1111673857033749125">他のデバイスに保存されているブックマークがここに表示されます。</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
 <translation id="1373696734384179344">選択したコンテンツをダウンロードするにはメモリが不足しています。</translation>
 <translation id="1376578503827013741">計算中...</translation>
-<translation id="138361230106469022">こんにちは、<ph name="FULL_NAME" /> さん</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1384959399684842514">ダウンロードを一時停止しました</translation>
 <translation id="1386674309198842382">最終同期: <ph name="LAST_UPDATED" /> 日前</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">サイトから近くにある Bluetooth デバイスの検出を求められたときに確認する（推奨）</translation>
 <translation id="230115972905494466">対応デバイスが見つかりませんでした</translation>
 <translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
+<translation id="2318045970523081853">タップして電話をかける</translation>
 <translation id="2321086116217818302">パスワードを準備しています…</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
 <translation id="2323763861024343754">サイトのストレージ</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">ダウンロードが完了しました<ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">位置情報へのアクセス</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> のダウンロードをやり直してもよろしいですか？</translation>
-<translation id="2476578072172137802">サイトの設定</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> で管理</translation>
 <translation id="2494974097748878569">Chrome の Google アシスタント</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="3443221991560634068">現在のページを再読み込みする</translation>
 <translation id="3445014427084483498">たった今</translation>
-<translation id="3452612588551937789">Google アカウントでログインすると、どのデバイスからでも同じブックマーク、履歴、パスワードなどの設定を利用できるようになります。</translation>
 <translation id="3478363558367712427">検索エンジンを選択できます</translation>
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3493531032208478708">詳しくは、<ph name="BEGIN_LINK" />おすすめのコンテンツ<ph name="END_LINK" />についての説明をご覧ください</translation>
 <translation id="3513704683820682405">拡張現実（AR）</translation>
 <translation id="3518985090088779359">同意して続行</translation>
 <translation id="3522247891732774234">アップデートが見つかりました。その他のオプション</translation>
+<translation id="3524138585025253783">デベロッパー管理画面</translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB の空き</translation>
 <translation id="3549657413697417275">履歴を検索</translation>
-<translation id="3552151358455404883">Chrome の同期とカスタマイズを [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で管理</translation>
 <translation id="3557336313807607643">連絡先に追加</translation>
 <translation id="3566923219790363270">Chrome はまだ VR の準備中です。しばらく待ってから Chrome を再起動してください。</translation>
 <translation id="3568688522516854065">他のデバイスと同じタブを使用するには、ログインして同期を有効にします</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">データを統合する</translation>
 <translation id="393697183122708255">有効な音声検索がありません</translation>
-<translation id="3950820424414687140">ログイン</translation>
 <translation id="395206256282351086">検索とサイトの候補の表示が無効</translation>
 <translation id="3955193568934677022">保護されたコンテンツの再生をサイトに許可する（推奨）</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{準備ができると Chrome でページが読み込まれます}other{準備ができると Chrome でページが読み込まれます}}</translation>
@@ -458,7 +454,6 @@
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
 <translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
 <translation id="4479972344484327217">Chrome 用の <ph name="MODULE" /> をインストールしています…</translation>
-<translation id="4482194545587547824">検索やその他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="4487967297491345095">Chrome のすべてのアプリデータを完全に削除します。削除されるデータには、すべてのファイル、設定、アカウント、データベースなどが含まれます。</translation>
 <translation id="4493497663118223949">ライトモードはオンです</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 日前}other{# 日前}}</translation>
@@ -469,7 +464,6 @@
 <translation id="4532845899244822526">フォルダの選択</translation>
 <translation id="4538018662093857852">ライトモードをオンにする</translation>
 <translation id="4550003330909367850">ここでパスワードを表示またはコピーするには、このデバイスに画面ロックを設定してください。</translation>
-<translation id="4556110439722119938">ブックマーク、履歴、パスワード、その他の設定が Google アカウントに同期され、どのデバイスでも利用できるようになります</translation>
 <translation id="4558311620361989323">ウェブページのショートカット</translation>
 <translation id="4561979708150884304">接続されていません</translation>
 <translation id="4565377596337484307">パスワードを表示しない</translation>
@@ -616,7 +610,6 @@
 <translation id="5527111080432883924">サイトがクリップボードのテキストや画像を読み取る前に確認する（推奨）</translation>
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
 <translation id="5534640966246046842">サイトがコピーされました</translation>
-<translation id="5537099431952529648">あなたとあなたの保護者が [<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] で Chrome 同期とパーソナライズを管理できます</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5561549206367097665">ネットワーク接続を待機しています…</translation>
 <translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
@@ -712,7 +705,6 @@
 たとえば一部のウェブサイトでは、このリクエストに対して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告が表示されます。トラッキングを拒否しても、実際のところ多くのウェブサイトではユーザーの閲覧データが収集され利用されています。その用途としては、セキュリティの強化や、コンテンツ、サービス、広告、おすすめの表示、レポート統計情報の作成などが挙げられます。</translation>
 <translation id="624789221780392884">アップデート準備完了</translation>
 <translation id="6255999984061454636">おすすめのコンテンツ</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> が近くの Bluetooth デバイスのスキャンを求めています。検出済みのデバイスは次のとおりです。</translation>
 <translation id="6277522088822131679">ページの印刷中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="629730747756840877">アカウント</translation>
@@ -774,6 +766,7 @@
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" />で開く</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
+<translation id="6676840375528380067">Chrome データをこのデバイスから削除しますか？</translation>
 <translation id="6697492270171225480">ページが見つからない場合に類似のページを候補として表示する</translation>
 <translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
@@ -792,7 +785,6 @@
 <translation id="6803423358608456383">開いているタブは画面の半分の高さで表示されています</translation>
 <translation id="6811034713472274749">ページを表示できます</translation>
 <translation id="6818926723028410516">アイテムを選択</translation>
-<translation id="6820607729870073286">保存したウェブサイト設定はありません。</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6845325883481699275">Chrome のセキュリティ改善に協力する</translation>
@@ -815,7 +807,6 @@
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">翻訳設定をリセット</translation>
 <translation id="6979737339423435258">全期間</translation>
-<translation id="6980462514016882061">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が閲覧履歴を使用することがあります</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="6989267951144302301">ダウンロードできませんでした</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@
 <translation id="7180611975245234373">更新</translation>
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
-<translation id="722055596168483966">Google サービスのカスタマイズ</translation>
 <translation id="723171743924126238">画像を選択</translation>
 <translation id="7233236755231902816">お使いの言語でウェブを表示するには、Chrome の最新バージョンを入手してください</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
@@ -962,6 +952,7 @@
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を削除して、このウェブサイトに指定したすべての権限をリセットしてもよろしいですか？</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
+<translation id="8013372441983637696">Chrome データもこのデバイスから削除する</translation>
 <translation id="8015452622527143194">ページ上のすべての要素をデフォルトのサイズに戻す</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8026334261755873520">閲覧履歴データの削除</translation>
@@ -1078,7 +1069,6 @@
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8901170036886848654">ブックマークが見つかりません</translation>
-<translation id="8904976895050290827">Chrome の同期</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>

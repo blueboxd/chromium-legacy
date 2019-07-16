@@ -69,6 +69,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1849,6 +1850,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectUnsafeDownload) {
 
 // Test that content length mismatch errors are handled properly.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ContentLengthMismatch) {
+  // TODO(http://crbug.com/984097): Fix this with network service disabled.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
   GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
   // Server response doesn't contain strong validators.

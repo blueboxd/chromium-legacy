@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
@@ -64,6 +65,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // on the current system transform. So the OS presentation engine can
     // present buffers onto the screen directly.
     bool supports_pre_transform = false;
+    // Whether this OutputSurface should skip DrawAndSwap(). This is true for
+    // the unified display on Chrome OS. All drawing is handled by the physical
+    // displays so the unified display should skip that work.
+    bool skips_draw = false;
   };
 
   // Constructor for skia-based compositing.

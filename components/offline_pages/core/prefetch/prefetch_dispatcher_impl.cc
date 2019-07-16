@@ -72,7 +72,7 @@ PrefetchURL SuggestionToPrefetchURL(PrefetchSuggestion suggestion) {
 }  // namespace
 
 PrefetchDispatcherImpl::PrefetchDispatcherImpl(PrefService* pref_service)
-    : pref_service_(pref_service), task_queue_(this), weak_factory_(this) {}
+    : pref_service_(pref_service), task_queue_(this) {}
 
 PrefetchDispatcherImpl::~PrefetchDispatcherImpl() = default;
 

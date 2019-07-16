@@ -353,6 +353,13 @@ static void AdjustOverflow(ComputedStyle& style) {
 static void AdjustStyleForDisplay(ComputedStyle& style,
                                   const ComputedStyle& layout_parent_style,
                                   Document* document) {
+  // Blockify the children of flex, grid or LayoutCustom containers.
+  if (layout_parent_style.BlockifiesChildren()) {
+    style.SetIsInBlockifyingDisplay();
+    if (style.Display() != EDisplay::kContents)
+      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+  }
+
   if (style.Display() == EDisplay::kBlock && !style.IsFloating())
     return;
 
@@ -413,7 +420,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
 
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
     style.SetFloating(EFloat::kNone);
-    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     // We want to count vertical percentage paddings/margins on flex items
     // because our current behavior is different from the spec and we want to
@@ -427,9 +433,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
         style.MarginAfter().IsPercentOrCalc()) {
       UseCounter::Count(document, WebFeature::kFlexboxPercentageMarginVertical);
     }
-  } else if (layout_parent_style.IsDisplayLayoutCustomBox()) {
-    // Blockify the children of a LayoutCustom.
-    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
   }
 }
 

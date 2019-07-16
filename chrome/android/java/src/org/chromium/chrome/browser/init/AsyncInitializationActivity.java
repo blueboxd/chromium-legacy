@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
+import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -64,8 +65,8 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     private final ActivityLifecycleDispatcherImpl mLifecycleDispatcher =
             new ActivityLifecycleDispatcherImpl();
-    private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher =
-            new MultiWindowModeStateDispatcher(this);
+    private final MultiWindowModeStateDispatcherImpl mMultiWindowModeStateDispatcher =
+            new MultiWindowModeStateDispatcherImpl(this);
 
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;
@@ -496,6 +497,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @Override
     public final void onCreateWithNative() {
+        mLifecycleDispatcher.onCreateWithNative();
         try {
             ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(true, this);
         } catch (ProcessInitException e) {
@@ -536,6 +538,12 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mLifecycleDispatcher.dispatchOnConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean inMultiWindowMode) {
+        super.onMultiWindowModeChanged(inMultiWindowMode);
+        mMultiWindowModeStateDispatcher.dipatchMultiWindowModeChanged(inMultiWindowMode);
     }
 
     @Override

@@ -63,14 +63,15 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
       watched_thread_handle_(0),
       arm_cpu_time_(),
 #endif
-      suspension_counter_(this),
+      suspension_counter_(this)
 #if defined(USE_X11)
+      ,
       display_(nullptr),
       window_(0),
       atom_(x11::None),
-      host_tty_(-1),
+      host_tty_(-1)
 #endif
-      weak_factory_(this) {
+{
   base::subtle::NoBarrier_Store(&awaiting_acknowledge_, false);
 
 #if defined(OS_WIN)

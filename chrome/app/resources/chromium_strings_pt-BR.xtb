@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Obter ajuda para usar o Chromium OS</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
-<translation id="1502360822835740515">Tornar o Chromium seu navegador padrão</translation>
 <translation id="151962892725702025">O Chromium OS não pôde sincronizar seus dados porque a sincronização não está disponível para seu domínio.</translation>
 <translation id="1524282610922162960">Compartilhar uma guia do Chromium</translation>
-<translation id="1585657529869845941">Clique em <ph name="BEGIN_BOLD" />Alterar mesmo assim<ph name="END_BOLD" />, se essa opção for exibida</translation>
 <translation id="1668054258064581266">Depois de remover sua conta do Chromium, pode ser necessário recarregar as guias abertas para que a alteração entre em vigor.</translation>
 <translation id="1688750314291223739">Configure a sincronização para salvar suas características de navegador personalizadas na web e acessá-las do Chromium em qualquer computador.</translation>
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
@@ -80,13 +78,11 @@
 <translation id="3728336900324680424">O Chromium acessará seu Drive para fazer sugestões na barra de endereço</translation>
 <translation id="378917192836375108">O Chromium permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Fixar o Chromium na barra de tarefas</translation>
 <translation id="388648406173476553">Personalize e controle o Chromium. Algo precisa da sua atenção. Clique para ver mais detalhes.</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="3898493977366060150">Navegação na Web com a tecnologia do Google</translation>
 <translation id="4036079820698952681">Ajude a melhorar o Chromium informando as <ph name="BEGIN_LINK" />configurações atuais<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
-<translation id="407254336480250557">Selecione o <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Descubra ótimos aplicativos, jogos, extensões e temas para o Chromium.</translation>
 <translation id="4216212958613226427">Este idioma é usado para exibir a IU do Chromium</translation>
 <translation id="4222580632002216401">Agora, você está conectado ao Chromium. A sincronização está desativada por seu administrador.</translation>
@@ -103,7 +99,6 @@
 <translation id="4677944499843243528">O perfil parece estar em uso por outro processo do Chromium (<ph name="PROCESS_ID" />) em outro computador (<ph name="HOST_NAME" />). O Chromium bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chromium.</translation>
 <translation id="469338717132742108">Ajuda com o Chromium OS</translation>
 <translation id="4708774505295300557">Anteriormente, alguém fez login no Chromium neste computador como <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo usuário do Chromium para manter suas informações separadas.</translation>
-<translation id="4714956846925717402">Acessar o Chromium mais rapidamente</translation>
 <translation id="4746050847053251315">Sair do Chromium mesmo assim?</translation>
 <translation id="4748217263233248895">Uma atualização de segurança especial para o Chromium acabou de ser aplicada. Reinicie agora, e suas guias serão restauradas.</translation>
 <translation id="479167709087336770">Esta opção usa o mesmo corretor ortográfico usado na Pesquisa Google. O texto digitado no navegador é enviado para o Google. É possível alterar esse comportamento nas configurações a qualquer momento.</translation>

@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -55,6 +56,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
@@ -622,9 +624,22 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, InsecureNavigation) {
   delegate()->VerifyAndClearExpectations();
 }
 
+class ClearSiteDataHandlerBrowserTestWithAutoupgradesDisabled
+    : public ClearSiteDataHandlerBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ClearSiteDataHandlerBrowserTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Tests that the Clear-Site-Data header is honored for secure resource loads
 // and ignored for insecure ones.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTestWithAutoupgradesDisabled,
                        SecureAndInsecureResourceLoad) {
   GURL insecure_image =
       embedded_test_server()->GetURL("example.com", "/image.png");

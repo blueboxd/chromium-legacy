@@ -36,6 +36,8 @@ const char kWebDriverWindowCommand[] = "window";
 const char kWebDriverWindowHandlesCommand[] = "handles";
 const char kWebDriverSyncScriptCommand[] = "sync";
 const char kWebDriverAsyncScriptCommand[] = "async";
+const char kWebDriverScreenshotCommand[] = "screenshot";
+const char kWebDriverWindowRectCommand[] = "rect";
 
 // WebDriver error codes.
 const char kWebDriverInvalidArgumentError[] = "invalid argument";
@@ -139,6 +141,9 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
     if (command == kWebDriverWindowHandlesCommand)
       return GetAllTabIds();
 
+    if (command == kWebDriverScreenshotCommand)
+      return GetSnapshot();
+
     return base::nullopt;
   }
 
@@ -178,6 +183,9 @@ base::Optional<base::Value> CWTRequestHandler::ProcessCommand(
       return ExecuteScript(content->FindKey(kWebDriverScriptRequestField),
                            /*is_async_function=*/true);
     }
+
+    if (command == kWebDriverWindowRectCommand)
+      return SetWindowRect(*content);
 
     return base::nullopt;
   }
@@ -399,4 +407,19 @@ base::Value CWTRequestHandler::ExecuteScript(const base::Value* script,
       base::JSONReader::Read(base::SysNSStringToUTF8(result_as_json));
   DCHECK(result);
   return std::move(*result);
+}
+
+base::Value CWTRequestHandler::GetSnapshot() {
+  NSString* snapshot_image = [CWTWebDriverAppInterface
+      takeSnapshotOfTabWithID:base::SysUTF8ToNSString(target_tab_id_)];
+  if (!snapshot_image) {
+    return CreateErrorValue(kWebDriverNoSuchWindowError,
+                            kWebDriverNoMatchingWindowMessage);
+  }
+
+  return base::Value(base::SysNSStringToUTF8(snapshot_image));
+}
+
+base::Value CWTRequestHandler::SetWindowRect(const base::Value& rect) {
+  return base::Value();
 }

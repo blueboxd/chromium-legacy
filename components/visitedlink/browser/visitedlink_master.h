@@ -475,7 +475,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // will be false in production.
   bool suppress_rebuild_ = false;
 
-  base::WeakPtrFactory<VisitedLinkMaster> weak_ptr_factory_;
+  base::WeakPtrFactory<VisitedLinkMaster> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkMaster);
 };

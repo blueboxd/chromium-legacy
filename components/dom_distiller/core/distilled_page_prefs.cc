@@ -17,7 +17,7 @@
 namespace dom_distiller {
 
 DistilledPagePrefs::DistilledPagePrefs(PrefService* pref_service)
-    : pref_service_(pref_service), weak_ptr_factory_(this) {}
+    : pref_service_(pref_service) {}
 
 DistilledPagePrefs::~DistilledPagePrefs() {}
 

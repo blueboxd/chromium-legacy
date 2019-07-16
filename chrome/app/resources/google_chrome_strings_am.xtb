@@ -23,7 +23,6 @@
 <translation id="1457721931618994305">Google Chromeን በማዘመን ላይ...</translation>
 <translation id="1469002951682717133">Chrome የመተግበሪያ አስጀማሪ</translation>
 <translation id="1553358976309200471">Chromeን አዘምን</translation>
-<translation id="1585657529869845941"><ph name="BEGIN_BOLD" />ለማንኛውም ቀይር<ph name="END_BOLD" /> ከመጣ ጠቅ ያድርጉት</translation>
 <translation id="1587223624401073077">Google Chrome ካሜራዎን እየተጠቀመ ነው።</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> አደገኛ ነው፣ ስለዚህ Chrome አግዶታል።</translation>
 <translation id="1590588151039584890">ለማዘመን Chrome በዚህ ኮምፒውተር ላይ መሥራቱን ማቆም አለበት። ይህ በዚህ ኮምፒውተር ላይ በመለያ የገቡ የሌሎች ተጠቃሚዎች ያልተቀመጡ ለውጦች ሊያጠፋባቸው ይችላል።</translation>
@@ -36,7 +35,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome ድረ-ገፆችን እና መተግበሪያዎችን በሚገርም ፍጥነት ማሄድ የሚችል የድር አሳሽ ነው። ፈጣን፣ የረጋ እና ለመጠቀም ቀላል ነው። Google Chrome ውስጥ አብሮት በተሰራ የአስጋሪና ተንኮል-አዘል ሶፍትዌር መከላከያ አማካኝነት ደህንነትዎ በበለጠ ሁኔታ ተጠብቆ ድሩን ያስሱ።</translation>
 <translation id="1713301662689114961">{0,plural, =1{በአንድ ሰዓት ውስጥ Chrome ዳግም ይጀመራል}one{በ# ሰዓቶች ውስጥ Chrome ዳግም ይጀመራል}other{በ# ሰዓቶች ውስጥ Chrome ዳግም ይጀመራል}}</translation>
-<translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> ይምረጡ</translation>
 <translation id="1734234790201236882">Chrome ይህን የይለፍ ቃል በእርስዎ የGoogle መለያ ውስጥ ያስቀምጠዋል። ማስታወስ አይኖርብዎትም።</translation>
 <translation id="174539241580958092">በመለያ ሲገባ በነበረ ስህተት ምክንያት Google Chrome ውሂብዎን ማመሳሰል አልቻለም።</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@
 <translation id="3873044882194371212">አገናኝ በChrome ማንነት የ&amp;ማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="3889417619312448367">Google Chromeን አራግፍ</translation>
 <translation id="3898493977366060150">የድር አሰሳ በGoogle ዘመናዊ ይሆናል</translation>
-<translation id="4028693306634653894">ወደ Chrome በፍጥነት ይግቡ</translation>
 <translation id="4050175100176540509">አስፈላጊ የደህንነት ማሻሻያዎች እና አዲስ ባህሪያት በቅርብ ጊዜው ስሪቱ ላይ ይገኛሉ።</translation>
 <translation id="4053720452172726777">Google Chromeን ያብጁ እና ይቆጣጠሩ</translation>
 <translation id="4143243756087420366">Chrome ስም እና ሥዕል</translation>
@@ -244,7 +241,6 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7808348361785373670">ከChrome አስወግድ...</translation>
 <translation id="7825851276765848807">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="7855730255114109580">Google Chrome የተዘመነ ነው</translation>
-<translation id="7888186132678118370">ወደ የእርስዎ የተግባር አሞሌ Chromeን ያያይዙ</translation>
 <translation id="7890208801193284374">ኮምፒውተር የሚጋሩ ከሆኑ ጓደኛዎች እና ቤተሰብ ተለይተው ሊያስሱ እና Chromeን በሚፈልጉበት መንገድ ማዋቀር ይችላሉ።</translation>
 <translation id="7896673875602241923">የሆነ ሰው ከዚህ ቀደም በዚህ ኮምፒውተር ላይ እንደ <ph name="ACCOUNT_EMAIL_LAST" /> ሆነው ወደ Chrome ገብተዋል። የእርስዎን መረጃ ለይተው ለማስቀመጥ እባክዎ አዲስ የChrome ተጠቃሚ ይፍጠሩ።</translation>
 <translation id="7908168227788431038">የተዘመነ ለመሆን ጥቂት ብቻ ቀርቷል! ዝማኔውን ለማጠናቀቅ Google Chromeን ዳግም ያስጀምሩት።</translation>
@@ -293,6 +289,5 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="911206726377975832">የአሰሳ ውሂብዎም ይሰረዝ?</translation>
 <translation id="9138603949443464873">የእርስዎን ለውጦች ተፈጻሚ ለማድረግ፣ Chromeን ዳግም ያስጀምሩ</translation>
 <translation id="919706545465235479">ስምረትን ለመጀመር Chromeን ያዘምኑ</translation>
-<translation id="924447568950697217">Chromeን የእርስዎ ነባሪ አሳሽ ያድርጉት</translation>
 <translation id="989369509083708165">Google Chrome ነባሪ አሳሽዎ ነው</translation>
 </translationbundle>

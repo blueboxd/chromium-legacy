@@ -81,8 +81,7 @@ CachedImageFetcher::CachedImageFetcher(ImageFetcher* image_fetcher,
                                        bool read_only)
     : image_fetcher_(image_fetcher),
       image_cache_(image_cache),
-      read_only_(read_only),
-      weak_ptr_factory_(this) {
+      read_only_(read_only) {
   DCHECK(image_fetcher_);
   DCHECK(image_cache_);
 }

@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
-#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
@@ -166,8 +165,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  FakeEncryptor fake_encryptor;
-  Cryptographer cryptographer(&fake_encryptor);
+  Cryptographer cryptographer;
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
   CommitRequestDataList requests_data;
@@ -228,8 +226,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked observers;
   DataTypeDebugInfoEmitter debug_info_emitter(PASSWORDS, &observers);
 
-  FakeEncryptor fake_encryptor;
-  Cryptographer cryptographer(&fake_encryptor);
+  Cryptographer cryptographer;
   cryptographer.AddKey({KeyDerivationParams::CreateForPbkdf2(), "dummy"});
 
   CommitRequestDataList requests_data;

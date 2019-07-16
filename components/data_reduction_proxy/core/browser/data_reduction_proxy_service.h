@@ -265,7 +265,7 @@ class DataReductionProxyService
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<DataReductionProxyService> weak_factory_;
+  base::WeakPtrFactory<DataReductionProxyService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyService);
 };

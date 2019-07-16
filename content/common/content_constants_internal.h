@@ -40,11 +40,6 @@ CONTENT_EXPORT extern const int kTraceEventRendererMainThreadSortIndex;
 // HTTP header set in requests to indicate they should be marked DoNotTrack.
 extern const char kDoNotTrackHeader[];
 
-#if defined(OS_MACOSX)
-// Name of Mach port used for communication between parent and child processes.
-CONTENT_EXPORT extern const char kMachBootstrapName[];
-#endif
-
 } // namespace content
 
 #endif  // CONTENT_COMMON_CONTENT_CONSTANTS_INTERNAL_H_

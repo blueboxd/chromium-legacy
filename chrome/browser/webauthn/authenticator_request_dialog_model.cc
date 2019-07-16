@@ -278,7 +278,17 @@ void AuthenticatorRequestDialogModel::InitiatePairingDevice(
   SetCurrentStep(Step::kBleVerifying);
   DispatchRequestAsync(selected_authenticator);
 #else
-  SetCurrentStep(Step::kBlePinEntry);
+  if (selected_authenticator->requires_ble_pairing_pin()) {
+    SetCurrentStep(Step::kBlePinEntry);
+    return;
+  }
+  ble_pairing_callback_.Run(
+      *selected_authenticator_id(), base::nullopt,
+      base::BindOnce(&AuthenticatorRequestDialogModel::OnPairingSuccess,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AuthenticatorRequestDialogModel::OnPairingFailure,
+                     weak_factory_.GetWeakPtr()));
+  SetCurrentStep(Step::kBleVerifying);
 #endif
 }
 
@@ -532,7 +542,7 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
   AuthenticatorReference authenticator_reference(
       authenticator.GetId(), authenticator.GetDisplayName(),
       *authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode(),
-      authenticator.IsPaired());
+      authenticator.IsPaired(), authenticator.RequiresBlePairingPin());
 
   if (authenticator_reference.is_paired() &&
       authenticator_reference.transport() ==

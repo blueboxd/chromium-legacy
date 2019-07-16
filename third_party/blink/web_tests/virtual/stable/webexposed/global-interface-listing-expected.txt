@@ -737,6 +737,7 @@ interface CanvasPattern
 interface CanvasRenderingContext2D
     attribute @@toStringTag
     getter canvas
+    getter direction
     getter fillStyle
     getter filter
     getter font
@@ -798,6 +799,7 @@ interface CanvasRenderingContext2D
     method strokeText
     method transform
     method translate
+    setter direction
     setter fillStyle
     setter filter
     setter font
@@ -6800,6 +6802,10 @@ interface TextEvent : UIEvent
     method initTextEvent
 interface TextMetrics
     attribute @@toStringTag
+    getter actualBoundingBoxAscent
+    getter actualBoundingBoxDescent
+    getter actualBoundingBoxLeft
+    getter actualBoundingBoxRight
     getter width
     method constructor
 interface TextTrack : EventTarget

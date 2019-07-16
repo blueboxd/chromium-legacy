@@ -77,7 +77,7 @@ class MockAutofillClient : public TestAutofillClient {
 class MockSuggestionsHandler
     : public AutocompleteHistoryManager::SuggestionsHandler {
  public:
-  MockSuggestionsHandler() : weak_ptr_factory_(this) {}
+  MockSuggestionsHandler() {}
 
   MOCK_METHOD3(OnSuggestionsReturned,
                void(int query_id,
@@ -89,7 +89,7 @@ class MockSuggestionsHandler
   }
 
  private:
-  base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockSuggestionsHandler);
 };

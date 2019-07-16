@@ -107,7 +107,7 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<SimpleDownloadManagerCoordinator> weak_factory_;
+  base::WeakPtrFactory<SimpleDownloadManagerCoordinator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SimpleDownloadManagerCoordinator);
 };

@@ -40,10 +40,7 @@ PrefetchDownloaderImpl::PrefetchDownloaderImpl(
     download::DownloadService* download_service,
     version_info::Channel channel,
     PrefService* prefs)
-    : download_service_(download_service),
-      channel_(channel),
-      prefs_(prefs),
-      weak_ptr_factory_(this) {
+    : download_service_(download_service), channel_(channel), prefs_(prefs) {
   DCHECK(download_service);
 }
 

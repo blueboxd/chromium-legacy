@@ -127,8 +127,7 @@ std::unique_ptr<network::SimpleURLLoader> BuildURLLoader(
 
 WebPushSender::WebPushSender(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)),
-      weak_ptr_factory_(this) {}
+    : url_loader_factory_(std::move(url_loader_factory)) {}
 
 WebPushSender::~WebPushSender() = default;
 

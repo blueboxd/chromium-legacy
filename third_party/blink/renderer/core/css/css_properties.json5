@@ -395,6 +395,15 @@
     visited_property_for: {
       valid_type: "str",
     },
+
+    // - affected_by_forced_colors
+    // The property value will be overridden with the default value defined in
+    // the forced colors UA style sheet when forced colors mode is enabled and
+    // forced-color-adjust is set to auto.
+    affected_by_forced_colors: {
+      default: false,
+      valid_type: "bool",
+    },
   },
 
   // Members in the data objects should appear in the same order as in the
@@ -588,6 +597,7 @@
       priority: "High",
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      affected_by_forced_colors: true,
     },
     {
       name: "direction",
@@ -983,6 +993,7 @@
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
+      affected_by_forced_colors: true,
     },
     {
       name: "background-image",
@@ -1075,6 +1086,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      affected_by_forced_colors: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1200,6 +1212,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      affected_by_forced_colors: true,
     },
     {
       name: "border-left-style",
@@ -1242,6 +1255,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      affected_by_forced_colors: true,
     },
     {
       name: "border-right-style",
@@ -1284,6 +1298,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      affected_by_forced_colors: true,
     },
     {
       name: "border-top-left-radius",
@@ -1361,6 +1376,7 @@
       converter: "ConvertShadowList",
       keywords: ["none"],
       typedom_types: ["Keyword"],
+      affected_by_forced_colors: true,
     },
     {
       name: "box-sizing",
@@ -2396,6 +2412,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      affected_by_forced_colors: true,
     },
     {
       name: "outline-offset",
@@ -3233,7 +3250,8 @@
       type_name: "ShadowList",
       converter: "ConvertShadowList",
       keywords: ["none"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      affected_by_forced_colors: true,
     },
     {
       name: "text-size-adjust",
@@ -3617,6 +3635,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      affected_by_forced_colors: true,
     },
     {
       name: "column-rule-style",
@@ -3916,6 +3935,7 @@
       field_template: "<color>",
       default_value: "LayoutTheme::TapHighlightColor()",
       converter: "ConvertColor",
+      affected_by_forced_colors: true,
     },
     {
       name: "-webkit-text-combine",

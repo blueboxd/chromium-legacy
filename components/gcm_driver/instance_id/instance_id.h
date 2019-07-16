@@ -159,7 +159,7 @@ class InstanceID {
   std::string app_id_;
   TokenRefreshCallback token_refresh_callback_;
 
-  base::WeakPtrFactory<InstanceID> weak_ptr_factory_;
+  base::WeakPtrFactory<InstanceID> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InstanceID);
 };

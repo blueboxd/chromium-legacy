@@ -243,7 +243,7 @@ class PasswordProtectionRequest
   // PasswordProtection.DomFeatureExtractionDuration.
   base::TimeTicks dom_feature_start_time_;
 
-  base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
+  base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);
 };
 

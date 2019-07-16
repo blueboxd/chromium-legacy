@@ -3341,19 +3341,8 @@ loendist, desinstallib rakendus <ph name="PRODUCT_NAME" /> selle automaatselt.
 <translation id="7123160381479171745">Määratleb loendi kasutajatest, kellel on luba seadmesse sisse logida. Kirjete vorming on <ph name="USER_WHITELIST_ENTRY_FORMAT" />, näiteks <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Kui soovite juhukasutajaid domeeni lubada, kasutage kirjete vormingut <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
 Kui jätate selle reegli määramata, ei ole kasutajate sisselogimine piiratud. Pidage meeles, et uute kasutajate loomisel on siiski vaja reegel <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />asjakohaselt seadistada.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> tagab turvalise värskendamise ja laienduste installimise. Kuid osade laienduste, mida ei hosti Chrome'i veebipood, sisu võib olla kaistud ainult ebaturvalise sisselogimise või räsialgoritmidega (näiteks SHA1). Kui see reegel on keelatud, ei luba Chrome selliste laienduste installimist ega värskendamist (kuni laienduse arendajad loovad laienduse uuesti tugevamate algoritmidega). Kui see reegel on lubatud, on selliste laienduste installimine ja värskendamine lubatud.
-
-          Kui see on seadistamata, käsitletakse seda vaikimisi kui lubatud.
-          Alates tootest <ph name="PRODUCT_NAME" /> 75: kui see on seadistamata, käsitletakse seda vaikimisi kui keelatud.
-
-          Alates tootest <ph name="PRODUCT_NAME" /> 77: seda reeglit ignoreeritakse ja käsitletakse nagu see oleks keelatud.</translation>
 <translation id="7126716959063786004">Lõpetamisprotsesside lubamine tegumihalduris</translation>
 <translation id="7127892035367404455">Tagasiminek sihtversioonile</translation>
-<translation id="7128918109610518786">Loetleb rakenduste identifikaatorid, mida <ph name="PRODUCT_OS_NAME" /> näitab käivitusribal kinnitatud rakendustena.
-
-      Kui eeskiri on seadistatud, on rakenduste kogum fikseeritud ja kasutaja ei saa seda muuta.
-
-      Kui jätate eeskirja määramata, siis võib kasutaja käivitis kinnitatud rakenduste loendit muuta.</translation>
 <translation id="713121532817834879">Reegel on URL, mis viitab XML-failile, mis on Internet Exploreri reegliga <ph name="IEEM_SITELIST_POLICY" /> samas vormingus. See laadib reeglid XML-failist ega jaga reegleid Internet Exploreriga.
 
       XML-failis olevad reeglid rakendatakse samal viisil kui reegel <ph name="GREYLIST_POLICY_NAME" />. See tähendab, et need reeglid takistavad teenusel <ph name="PRODUCT_NAME" /> avamast alternatiivset brauserit. Samuti takistavad need alternatiivsel brauseril avamast teenust <ph name="PRODUCT_NAME" />.
@@ -4212,12 +4201,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
           Kui keelate seade või jätate selle määramata, siis määratakse serveri tavapärane nimi CNAME-i abil.</translation>
 <translation id="8764477907716150749">Reegel on mõeldud rakenduse <ph name="PRODUCT_NAME" /> jaoks siseseks kasutamiseks.</translation>
-<translation id="8765776988041674792">Seadistage parooli muutmise URL (ainult HTTP- ja HTTPS-skeemid). Kui kasutaja näeb brauseris hoiatust, saadab paroolikaitseteenus ta sellele URL-ile, et ta saaks oma parooli muuta.
-      Selleks et <ph name="PRODUCT_NAME" /> talletaks parooli muutmise lehel uue parooli sõrmejälje õigesti, peab teie parooli muutmise leht järgima aadressil https://www.chromium.org/developers/design-documents/create-amazing-password-forms olevaid juhiseid.
-
-      Kui see seade on lubatud, saadab paroolikaitseteenus brauseris hoiatust näinud kasutajad sellele URL-ile, et nad saaksid oma parooli muuta.
-      Kui see seade on keelatud või määramata, saadab paroolikaitseteenus kasutajad parooli muutmiseks saidile https://myaccounts.google.com.
-      Reegel on saadaval ainult Windowsi eksemplarides, mis on liidetud domeeniga <ph name="MS_AD_NAME" />, ja Windows 10 Pro või Enterprise'i eksemplaridega, mis on registreeritud seadmehalduse teenuses.</translation>
 <translation id="8798099450830957504">Vaikimisi</translation>
 <translation id="8800453707696044281">Aku laadimise katkestamise kohandatud taseme määramine protsentides</translation>
 <translation id="8801680448782904838">Kasutaja teavitamine brauseri või seadme soovitatavast või kohustuslikust taaskäivitamisest</translation>
@@ -4356,9 +4339,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 
       Reegli väärtus tuleb määrata sekundites.</translation>
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
-<translation id="9038058011835642205">Määrab loendi veebisaitidest, mis installitakse märkamatult, ilma et kasutaja peaks sekkuma, ning mida kasutaja ei saa desinstallida ega keelata.
-
-      Reegli iga loendiüksus on kohustusliku liikmega objekt: „url” ja kaks valikulist liiget: „default_launch_container” ja „create_desktop_shortcut”. Väärtus „url” peab olema installitava veebirakenduse URL ja „launch_container” peab olema „window” või „tab”, mis näitab, kuidas veebirakendus pärast installimist avatakse. Reegel „create_desktop_shortcut” peab olema tõene, kui töölaua otsetee tuleb luua Linuxis ja Windowsis. Kui reegel „default_launch_container" jäetakse tühjaks, avaneb rakendus vaikimisi vahelehel. Olenemata reegli „default_launch_container” väärtusest, saavad kasutajad muuta, millises konteineris rakendus avaneb. Kui reegel „create_desktop_shortcuts” jäetakse tühjaks, siis töölaua otseteid ei looda.</translation>
 <translation id="9038839118379817310">WiFi lubamine</translation>
 <translation id="9039822628127365650">Kui reegel on seadistatud, määrab see ajavahemiku, mille möödudes logitakse kasutaja automaatselt välja ja seanss lõpetatakse. Süsteemisalves olev taimer näitab kasutajale järelejäänud aega.
 

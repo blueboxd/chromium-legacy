@@ -28,7 +28,7 @@ class URLRequestAboutJob : public net::URLRequestJob {
 
   void StartAsync();
 
-  base::WeakPtrFactory<URLRequestAboutJob> weak_factory_;
+  base::WeakPtrFactory<URLRequestAboutJob> weak_factory_{this};
 };
 
 }  // namespace about_handler

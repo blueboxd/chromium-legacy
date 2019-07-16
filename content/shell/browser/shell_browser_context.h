@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
-#include "content/public/browser/sms_service.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -65,7 +64,6 @@ class ShellBrowserContext : public BrowserContext {
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;
   net::URLRequestContextGetter* CreateMediaRequestContext() override;
-  SmsService* GetSmsService() override;
 
  protected:
   // Contains URLRequestContextGetter required for resource loading.
@@ -112,7 +110,6 @@ class ShellBrowserContext : public BrowserContext {
   std::map<base::FilePath, scoped_refptr<ShellURLRequestContextGetter>>
       isolated_url_request_getters_;
   std::unique_ptr<SimpleFactoryKey> key_;
-  std::unique_ptr<content::SmsService> sms_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };

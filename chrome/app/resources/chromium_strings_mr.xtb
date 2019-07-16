@@ -12,10 +12,8 @@
 <translation id="1298199220304005244">Chromium OS वापरून मदत मिळवा</translation>
 <translation id="1396446129537741364">Chromium पासवर्ड दर्शविण्याचा प्रयत्न करत आहे.</translation>
 <translation id="1414495520565016063">तुम्ही Chromium मध्ये साइन इन केले आहे!</translation>
-<translation id="1502360822835740515">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
 <translation id="151962892725702025">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chromium OS तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="1524282610922162960">Chromium टॅब शेअर करा</translation>
-<translation id="1585657529869845941">ते दिसल्यास <ph name="BEGIN_BOLD" />कसेही स्विच करा<ph name="END_BOLD" /> वर क्लिक करा</translation>
 <translation id="1668054258064581266">Chromium वरून तुमचे खाते काढल्यानंतर, प्रभावी होण्यासाठी तुम्हाला तुमचे उघडे टॅब रीलोड करण्याची आवश्यकता असू शकते.</translation>
 <translation id="1688750314291223739">वेबवर तुमची पर्सनलाइझ केलेली ब्राउझर वैशिष्ट्ये सेव्ह करण्यासाठी सिंक सेट करा आणि कोणत्याही कॉंप्युटरवरील Chromium वरून ते अॅक्सेस करा.</translation>
 <translation id="1708666629004767631">Chromium ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
@@ -83,13 +81,11 @@
 <translation id="3728336900324680424">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chromium तुमची ड्राइव्ह ॲक्सेस करेल</translation>
 <translation id="378917192836375108">Chromium तुम्हाला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Chromium ला आपल्या टास्कबारवर पिन करा</translation>
 <translation id="388648406173476553">Chromium कस्टमाइझ करा आणि नियंत्रित करा. एका गोष्टीवर तुम्ही लक्ष द्यायला हवे - तपशिलांसाठी क्लिक करा.</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी तुमचे नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="3898493977366060150">Google smarts सह वेब ब्राउझिंग</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chromium उत्कृष्ट बनव‍िण्यात मदत करा</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
-<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> निवडा</translation>
 <translation id="421369550622382712">Chromium साठी उत्कृष्ट ॲप्स, गेम, विस्तार आणि थीम शोधा</translation>
 <translation id="4216212958613226427">ही भाषा Chromium UI दाखवण्यासाठी वापरली जाते</translation>
 <translation id="4222580632002216401">तुम्ही आता Chromium वर साइन इन केले आहे! तुमच्या अॅडमिनिस्ट्रेटरद्वारे सिंक अक्षम केले गेले आहे.</translation>
@@ -106,7 +102,6 @@
 <translation id="4677944499843243528">प्रोफाइल दुसर्‍या कॉंप्युटरवरील (<ph name="HOST_NAME" />) दुसर्‍या Chromium प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. प्रोफाइल लॉक होऊ नये यासाठी Chromium ने ती लॉक केली आहे. कोणतीही अन्य प्रक्रिया हे प्रोफाइल वापरत नाही याची तुम्हाला खात्री असल्यास, तुम्ही प्रोफाइल अनलॉक करू शकता आणि Chromium पुन्हा एकदा लॉंच करू शकता.</translation>
 <translation id="469338717132742108">Chromium OS सह मदत मिळवा</translation>
 <translation id="4708774505295300557">कोणीतरी यापूर्वी या कॉंप्युटरवरील Chromium मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून साइन इन केले. कृपया तुमची माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chromium वापरकर्ता तयार करा.</translation>
-<translation id="4714956846925717402">Chromium वर अधिक जलद या</translation>
 <translation id="4746050847053251315">तरीही Chromium बंद करायचे?</translation>
 <translation id="4748217263233248895">Chromium साठी एक विशिष्ट सुरक्षितता अपडेट आत्ताच लागू केले. आता रीस्टार्ट करा आणि मग आम्ही तुमचे टॅब रिस्टोअर करू.</translation>
 <translation id="479167709087336770">Google शोध मध्ये वापरत असेलेले समान स्पेल चेकर हे वापरते. तुम्ही ब्राउझरमध्ये टाइप करत असलेला मजकूर Google कडे पाठवला जातो. तुम्ही हे वर्तन कधीही सेटिंग्ज मध्ये बदलू शकता.</translation>

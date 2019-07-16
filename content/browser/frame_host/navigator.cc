@@ -19,7 +19,6 @@ NavigationController* Navigator::GetController() {
 
 bool Navigator::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url,
     mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
   return false;
 }

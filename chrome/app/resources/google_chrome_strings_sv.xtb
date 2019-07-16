@@ -23,7 +23,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1457721931618994305">Uppdaterar Google Chrome ...</translation>
 <translation id="1469002951682717133">Startprogrammet för appar i Chrome</translation>
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
-<translation id="1585657529869845941">Klicka på <ph name="BEGIN_BOLD" />Byt ändå<ph name="END_BOLD" /> om det visas</translation>
 <translation id="1587223624401073077">Google Chrome använder din kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chrome.</translation>
 <translation id="1590588151039584890">Chrome måste avslutas på datorn före uppdateringen. Detta kan leda till att andra användare som är inloggade på datorn förlorar ändringar som inte har sparats.</translation>
@@ -36,7 +35,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Den är snabb, stabil och lätt att använda. Surfa säkrare med Google Chrome, som har inbyggt skydd mot skadlig programvara och nätfiske.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Om en timme startas Chrome om}other{Om # timmar startas Chrome om}}</translation>
-<translation id="1718131156967340976">Välj <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Det här lösenordet sparas i ditt Google-konto. Du behöver inte komma ihåg det.</translation>
 <translation id="174539241580958092">Google Chrome kunde inte synkronisera data på grund av ett fel vid inloggningen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="3873044882194371212">Öppna länken i ett inko&amp;gnitofönster i Chrome</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="3898493977366060150">Surfa smart med Google</translation>
-<translation id="4028693306634653894">Öppna Chrome snabbare</translation>
 <translation id="4050175100176540509">Den senaste versionen har viktiga säkerhetsförbättringar och nya funktioner.</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
 <translation id="4143243756087420366">Namn och bild i Chrome</translation>
@@ -244,7 +241,6 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7808348361785373670">Ta bort från Chrome …</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="7855730255114109580">Google Chrome behöver inte uppdateras</translation>
-<translation id="7888186132678118370">Fästa Chrome i aktivitetsfältet</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
 <translation id="7896673875602241923">Någon har tidigare loggat in i Chrome som <ph name="ACCOUNT_EMAIL_LAST" /> på den här datorn. Skapa en ny Chrome-användare så att dina uppgifter hålls separat.</translation>
 <translation id="7908168227788431038">Nästan klart! Slutför uppdateringen genom att starta om Google Chrome.</translation>
@@ -293,6 +289,5 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="9138603949443464873">Ändringarna tillämpas när du startar om Chrome</translation>
 <translation id="919706545465235479">Du måste uppdatera Chrome innan synkroniseringen kan starta</translation>
-<translation id="924447568950697217">Använda Chrome som standardwebbläsare</translation>
 <translation id="989369509083708165">Google Chrome är din standardwebbläsare</translation>
 </translationbundle>

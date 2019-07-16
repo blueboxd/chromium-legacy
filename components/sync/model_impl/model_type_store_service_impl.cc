@@ -96,8 +96,7 @@ ModelTypeStoreServiceImpl::ModelTypeStoreServiceImpl(
       leveldb_path_(sync_path_.Append(base::FilePath(kLevelDBFolderName))),
       backend_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      store_backend_(ModelTypeStoreBackend::CreateUninitialized()),
-      weak_ptr_factory_(this) {
+      store_backend_(ModelTypeStoreBackend::CreateUninitialized()) {
   DCHECK(backend_task_runner_);
   backend_task_runner_->PostTask(
       FROM_HERE,

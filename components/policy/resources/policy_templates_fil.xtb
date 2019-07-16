@@ -3339,19 +3339,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7123160381479171745">Tinutukoy ang listahan ng mga user na pinapayagang mag-log in sa device. Ang mga entry ay nasa anyo ng <ph name="USER_WHITELIST_ENTRY_FORMAT" />, gaya ng <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para payagan ang mga arbitrary na user sa isang domain, gumamit ng mga entry na may anyong <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Kung hindi naka-configure ang patakarang ito, walang paghihigpit kung saan pinapayagang mag-sign in ang mga user. Tandaang kapag gumawa ng mga bagong user, kinakailangan pa ring wastong naka-configure ang patakarang <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785">Binibigyang-daan ng <ph name="PRODUCT_NAME" /> ang secure na pag-update at pag-install ng mga extension. Gayunpaman, ang content ng ilang extension na naka-host sa labas ng Chrome Web Store ay maaari lang protektahan ng mga hindi secure na signing o hashing algorithm gaya ng SHA1. Kapag naka-disable ang patakarang ito, ang bagong pag-install at mga update sa ganoong mga extension ay hindi papayagan ng Chrome (hanggang sa muling i-build ng mga developer ng extension ang extension gamit ang mas mahuhusay na algorithm). Kapag naka-enable ang patakarang ito, papayagan ang pag-install at mga update para sa ganoong mga extension.
-
-          Ito ay babalik sa default na pagkilos na naka-enable kapag hindi nakatakda.
-          Simula sa <ph name="PRODUCT_NAME" /> 75, ito ay babalik sa default na pagkilos na naka-disable kapag hindi nakatakda.
-
-          Simula sa <ph name="PRODUCT_NAME" /> 77, babalewalain ang patakarang ito at ituturing itong naka-disable.</translation>
 <translation id="7126716959063786004">I-enable ang pagtapos ng mga proseso sa Task Manager</translation>
 <translation id="7127892035367404455">Pag-roll back sa target na bersyon</translation>
-<translation id="7128918109610518786">Nililista ang mga tagatukoy ng application na ipinapakita ng <ph name="PRODUCT_OS_NAME" /> bilang mga na-pin na app sa bar ng launcher
-
-      Kung na-configure ang patakarang ito, permanente at hindi mababago ng user ang hanay ng mga application.
-
-      Kung hindi naitakda ang patakarang ito, maaaring baguhin ng user ang listahan ng mga na-pin na app sa launcher.</translation>
 <translation id="713121532817834879">Ang patakarang ito ay URL na tumutukoy sa isang XML file na nasa parehong format ng patakarang <ph name="IEEM_SITELIST_POLICY" /> ng Internet Explorer. Naglo-load ito ng mga panuntunan mula sa isang XML file nang hindi ibinabahagi ang mga panuntunang iyon sa Internet Explorer.
 
       Ang mga panuntunan sa XML file na ito ay nalalapat sa parehong paraan ng <ph name="GREYLIST_POLICY_NAME" />. Iyon ay, pinipigilan ng mga panuntunang ito ang <ph name="PRODUCT_NAME" /> na buksan ang alternatibong browser, at pinipigilan din ang alternatibong browser na buksan ang <ph name="PRODUCT_NAME" />.
@@ -4210,12 +4199,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
           Kung hindi mo pinagana ang setting na ito o hinayaan itong hindi nakatakda, tutukuyin sa pamamagitan ng paghahanap ng CNAME ang canonical na pangalan ng server.</translation>
 <translation id="8764477907716150749">Ang patakarang ito ay para sa internal na paggamit ng mismong <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Nagko-configure sa URL ng pagpapalit ng password (mga HTTP at HTTPS na scheme lang). Dadalhin ng serbisyo ng proteksyon sa password sa URL na ito ang mga user para mapalitan nila ang kanilang password pagkatapos makakita ng babala sa browser.
-      Para makuha nang wasto ng <ph name="PRODUCT_NAME" /> ang bagong fingerprint ng password sa page ng pagpapalit ng password na ito, pakitiyak na sumusunod ang iyong page ng pagpapalit ng password sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Kung naka-enable ang setting na ito, dadalhin ng serbisyo ng proteksyon sa password sa URL na ito ang mga user para mapalitan nila ang kanilang password pagkatapos makakita ng babala sa browser.
-      Kung naka-disable o hindi nakatakda ang setting na ito, dadalhin ng serbisyo ng proteksyon sa password sa https://myaccounts.google.com ang mga user para mapalitan nila ang kanbilang password.
-      Available lang ang patakarang ito sa mga instance ng Windows na kasama sa domain ng<ph name="MS_AD_NAME" />. O kaya, sa mga instance ng Windows 10 Pro o Enterprise na naka-enroll para sa pamamahala sa device.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8800453707696044281">Itakda ang custom na paghinto ng pag-charge ng baterya sa porsyento.</translation>
 <translation id="8801680448782904838">Abisuhan ang user na inirerekomenda o kinakailangang muling ilunsad ang browser o i-restart ang device</translation>
@@ -4356,9 +4339,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 
       Dapat ay nakasaad ang value ng patakaran sa pamamagitan ng segundo.</translation>
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
-<translation id="9038058011835642205">Tumutukoy ng listahan ng mga website na na-install nang silent, nang walang pakikipag-ugnayan sa user, at hindi maa-uninstall o madi-disable ng user.
-
-      Ang bawat item sa listahan ng patakaran ay isang object na may kinakailangang miyembro: "url" at dalawang opsyonal na miyembro: "default_launch_container" at "create_desktop_shortcut". Ang "url" ay dapat URL ng web app na ii-install, ang "launch_container" ay dapat "window" o "tab" para isaad kung paano bubuksan ang Web App kapag na-install, at ang "create_desktop_shortcut" ay dapat true kung dapat gawin ang isang desktop shortcut sa Linux at Windows. Kung aalisin ang "default_launch_container," bubukas ang app sa isang tab bilang default. Anuman ang value ng "default_launch_container," mababago ng mga user kung saang container bubukas ang app. Kung aalisin ang "create_desktop_shortcuts," hindi gagawa ng mga desktop shortcut.</translation>
 <translation id="9038839118379817310">I-enable ang Wi-Fi</translation>
 <translation id="9039822628127365650">Kapag nakatakda ang patakarang ito, isinasaad nito ang haba ng oras kung kailan awtomatikong mala-log out ang user pagkatapos nito, at matatapos ang session. Ipapaalam sa user ang tungkol sa natitirang oras sa pamamagitan ng timer ng countdown na ipapakita sa system tray.
 

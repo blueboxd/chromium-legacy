@@ -203,7 +203,7 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   // Sequenced task runner where file I/O operations will be performed at.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
-  base::WeakPtrFactory<BookmarkStorage> weak_factory_;
+  base::WeakPtrFactory<BookmarkStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };

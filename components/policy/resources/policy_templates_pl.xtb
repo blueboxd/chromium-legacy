@@ -2608,7 +2608,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
       Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
       </translation>
 <translation id="5832274826894536455">Wycofane zasady</translation>
-<translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z Kluczy bezpieczeństwa Google. Oprócz tego do Klucza bezpieczeństwa Google będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie Kluczy bezpieczeństwa Google.
+<translation id="5835124959204887277">Określa adresy URL i domeny, w przypadku których nie będzie wyświetlać się monit podczas przesyłania prośby o certyfikaty poświadczenia z kluczy bezpieczeństwa. Oprócz tego do klucza bezpieczeństwa będzie wysyłany sygnał wskazujący, że można użyć poświadczenia indywidualnego. Jeśli zasada ta nie będzie ustawiona, użytkownicy Chrome w wersji 65 lub nowszej zobaczą monit, gdy strony będą prosić o poświadczenie kluczy bezpieczeństwa.
 
       Adresy URL (takie jak https://example.com/jakaś/ścieżka) będą dopasowywane tylko jako identyfikatory appID typu U2F. Domeny (takie jak example.com) będą dopasowane tylko jako identyfikatory RP typu webauthn. Dlatego jeśli w przypadku danej witryny mają zostać uwzględnione zarówno interfejsy API U2F, jak i webauthn, na liście muszą znajdować się zarówno URL identyfikatora appID, jak i domena.</translation>
 <translation id="5836064773277134605">Ogranicz zakres portów UDP używanych przez host zdalnego dostępu</translation>
@@ -2808,7 +2808,7 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 
       Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować dane, lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="6221175752766085998">Zezwól na certyfikaty bez rozszerzenia subjectAlternativeName wydane przez lokalne kotwice zaufania</translation>
-<translation id="6224304369267200483">Adresy URL / domeny automatycznie uprawnione do bezpośredniego poświadczania Kluczy bezpieczeństwa Google</translation>
+<translation id="6224304369267200483">Adresy URL / domeny automatycznie uprawnione do bezpośredniego poświadczania kluczy bezpieczeństwa</translation>
 <translation id="6233173491898450179">Ustaw katalog pobierania</translation>
 <translation id="6244210204546589761">Adresy URL otwierane po uruchomieniu</translation>
 <translation id="6255387031094435995">Zezwala na scalanie wybranych zasad, które pochodzą z różnych źródeł, a mają te same zakresy i poziom.
@@ -3222,19 +3222,8 @@ Do odwzorowania sekwencji dowolnych znaków można używać symboli wieloznaczny
 <translation id="7123160381479171745">Służy do określenia listy użytkowników, którzy mogą logować się na urządzeniu. Pozycje na liście mają postać <ph name="USER_WHITELIST_ENTRY_FORMAT" />, np. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Aby zezwolić na logowanie się dowolnym użytkownikom z danej domeny, użyj wpisów w postaci <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
 Jeśli ta zasada nie zostanie skonfigurowana, nie będą obowiązywały żadne ograniczenia dotyczące użytkowników, którzy mogą się logować. Pamiętaj, że tworzenie użytkowników nadal wymaga właściwego skonfigurowania zasady <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> dba o bezpieczne aktualizowanie i instalowanie rozszerzeń. Zawartość niektórych rozszerzeń pochodzących spoza sklepu Chrome Web Store może być jednak chroniona tylko przy użyciu niezabezpieczonego podpisu lub algorytmów haszujących, takich jak SHA1. Kiedy ta zasada jest wyłączona, nowe instalacje takich rozszerzeń oraz ich aktualizacje są niedozwolone w Chrome (dopóki twórca rozszerzenia nie przebuduje go przy użyciu silniejszych algorytmów). Kiedy ta zasada jest włączona, instalowanie i aktualizowanie takich rozszerzeń jest dozwolone.
-
-          Nieskonfigurowanie tej zasady jest równoznaczne z jej domyślnym włączeniem.
-          Od wersji 75 przeglądarki <ph name="PRODUCT_NAME" /> domyślnie zasada ta będzie wyłączona, jeśli nie zostanie skonfigurowana.
-
-          Od wersji 77 przeglądarki <ph name="PRODUCT_NAME" /> zasada ta będzie ignorowana i traktowana jako wyłączona.</translation>
 <translation id="7126716959063786004">Zezwalaj na kończenie procesów w Menedżerze zadań</translation>
 <translation id="7127892035367404455">Cofnij do wersji docelowej</translation>
-<translation id="7128918109610518786">Lista identyfikatorów aplikacji pokazywanych przez <ph name="PRODUCT_OS_NAME" /> jako aplikacje przypięte na pasku programu uruchamiającego.
-
-      Jeśli ta zasada jest skonfigurowana, zestaw aplikacji jest ustalony i nie może być zmieniany przez użytkownika.
-
-      Jeśli zasada nie jest ustawiona, użytkownik może zmieniać listę aplikacji przypiętych w programie uruchamiającym.</translation>
 <translation id="713121532817834879">Ta zasada jest adresem URL, który wskazuje plik XML w formacie zgodnym z zasadą <ph name="IEEM_SITELIST_POLICY" /> w Internet Explorerze. Powoduje wczytanie reguł z pliku XML bez udostępniania ich Internet Explorerowi.
 
       Reguły z tego pliku XML są stosowane w taki sam sposób jak zasada <ph name="GREYLIST_POLICY_NAME" />. Oznacza to, że uniemożliwiają one <ph name="PRODUCT_NAME" /> otwieranie alternatywnej przeglądarki, a także uniemożliwiają alternatywnej przeglądarce otwieranie <ph name="PRODUCT_NAME" />.
@@ -4072,12 +4061,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8759829385824155666">Dozwolone typy szyfrowania Kerberos</translation>
 <translation id="8764119899999036911">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos jest tworzona na podstawie kanonicznej nazwy DNS, czy też wpisanej, oryginalnej nazwy. Włączenie tego ustawienia powoduje pominięcie wyszukiwania rekordu CNAME i użycie wprowadzonej nazwy serwera. Jeśli wyłączysz ustawienie lub nie skonfigurujesz go, nazwa kanoniczna serwera będzie określana za pomocą wyszukiwania rekordu CNAME.</translation>
 <translation id="8764477907716150749">Ta zasada jest przeznaczona do użytku wewnętrznego w <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Służy do konfigurowania adresu URL (tylko schematy HTTP i HTTPS) strony umożliwiającej zmianę hasła. Po wyświetleniu ostrzeżenia w przeglądarce usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło.
-      Jeśli <ph name="PRODUCT_NAME" /> ma prawidłowo rejestrować odciski cyfrowe nowych haseł na stronie zmiany hasła, strona powinna być zgodna z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
-
-      Jeśli to ustawienie jest włączone, po wyświetleniu ostrzeżenia w przeglądarce usługa ochrony haseł kieruje użytkowników na stronę pod tym adresem URL, by zmienili hasło.
-      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł kieruje użytkowników na stronę https://myaccounts.google.com, by zmienili hasło.
-      Ta zasada jest dostępna tylko w wystąpieniach systemu Windows, które należą do domeny <ph name="MS_AD_NAME" />, oraz w wystąpieniach systemu Windows 10 Pro lub Enterprise zarejestrowanych w funkcji zarządzania urządzeniami.</translation>
 <translation id="8798099450830957504">Domyślny</translation>
 <translation id="8800453707696044281">Ustaw niestandardowy poziom zatrzymania ładowania baterii w procentach</translation>
 <translation id="8801680448782904838">Powiadamiaj użytkownika o tym, że zalecane lub wymagane jest ponowne uruchomienie przeglądarki lub urządzenia</translation>
@@ -4215,9 +4198,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 
       Wartość zasady należy podać w sekundach.</translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
-<translation id="9038058011835642205">Służy do określenia listy witryn, które są instalowane dyskretnie (bez interakcji z użytkownikiem) i których użytkownik nie może odinstalować ani wyłączyć.
-
-      Wartością tej zasady jest lista, której pozycje są obiektami o obowiązkowej składowej: „url” oraz dwóch opcjonalnych składowych: „default_launch_container” i „create_desktop_shortcut”. „url” to URL aplikacji internetowej do zainstalowania. „launch_container” może mieć wartość „window” (okno) lub „tab” (karta) wskazującą sposób otwierania zainstalowanej aplikacji. Natomiast „create_desktop_shortcut” musi mieć wartość „prawda”, jeśli skrót na pulpicie ma być utworzony w systemie Linux i Windows. Jeśli składowa „default_launch_container” zostanie pominięta, aplikacja będzie domyślnie otwierać się na karcie. Niezależnie od wartości składowej „default_launch_container” użytkownicy mogą zmieniać kontener, w którym otwiera się aplikacja. Pominięcie składowej „create_desktop_shortcuts” spowoduje, że skrót na pulpicie nie zostanie utworzony.</translation>
 <translation id="9038839118379817310">Włącz Wi-Fi</translation>
 <translation id="9039822628127365650">Gdy ta zasada jest skonfigurowana, określa czas, po którego upływie użytkownik jest automatycznie wylogowywany, a jego sesja przerywana. Użytkownik jest informowany o pozostałym czasie przez licznik widoczny w obszarze powiadomień.
 
@@ -4231,6 +4211,15 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Jeśli jako wartość zasady zostanie ustawiony token mapujący kompilację Quick Fix, urządzenie zostanie zaktualizowane pod kątem odpowiedniej kompilacji Quick Fix, chyba że inna zasada zablokuje aktualizację.
 
       Jeśli zasada nie zostanie ustawiona lub jej wartość nie będzie mapować kompilacji Quick Fix, urządzenie nie zostanie zaktualizowane pod kątem kompilacji Quick Fix. Jeśli urządzenie ma już kompilację Quick Fix, a zasada nie będzie dłużej ustawiona lub jej wartość nie będzie już mapować kompilacji Quick Fix, urządzenie zostanie zaktualizowane pod kątem standardowej kompilacji, chyba że inna zasada zablokuje aktualizację.</translation>
+<translation id="9054012305936267950">Ta zasada kontroluje mechanizm logowania w przeglądarce. Umożliwia określenie, czy użytkownik może zalogować się w <ph name="PRODUCT_NAME" /> przy użyciu swojego konta i używać usług związanych z kontem, na przykład synchronizacji Chrome.
+
+      Jeśli zasada ma wartość „Wyłącz logowanie w przeglądarce”, użytkownik nie może zalogować się w przeglądarce ani używać usług związanych z kontem. Funkcje przeglądarki, takie jak synchronizacja Chrome, będą niedostępne. Jeśli użytkownik był wcześniej zalogowany, a zasada jest wyłączona, zostanie on wylogowany po najbliższym uruchomieniu Chrome, ale dane z jego profilu lokalnego, takie jak zakładki, hasła itd., zostaną zachowane. Użytkownik nadal będzie mógł logować się w usługach internetowych Google takich jak Gmail i ich używać.
+
+      Jeśli zasada ma wartość „Włącz logowanie w przeglądarce”, użytkownik może zalogować się w przeglądarce i jest logowany w niej automatycznie po zalogowaniu się w usługach internetowych Google takich jak Gmail. Zalogowanie w przeglądarce oznacza, że będzie ona przechowywać dane z konta użytkownika. Nie oznacza to jednak, że domyślnie włączona zostanie synchronizacja Chrome – użytkownik musi zgodzić się na jej używanie oddzielnie. Jeśli zasada zostanie włączona, użytkownik nie będzie mógł wyłączyć logowania w przeglądarce w ustawieniach. Do określania dostępności synchronizacji Chrome służy zasada „SyncDisabled”.
+
+      Jeśli zasada ma wartość „Wymuś logowanie w przeglądarce”, użytkownikowi wyświetlane jest okno wyboru konta i musi on wybrać konto oraz zalogować się na nie, by używać przeglądarki. Jest to gwarancją, że na kontach zarządzanych będą stosowane i egzekwowane zasady. Domyślnie powoduje to włączenie dla tego konta synchronizacji Chrome – o ile synchronizacja nie została wyłączona przez administratora domeny lub za pomocą zasady „SyncDisabled”. Domyślnie wartość zasady BrowserGuestModeEnabled zostanie ustawiona na fałsz. Uwaga: po włączeniu tej zasady istniejące niepodpisane profile zostaną zablokowane i będą niedostępne. Więcej informacji znajdziesz w tym artykule w Centrum pomocy: https://support.google.com/chrome/a/answer/7572556. Ta opcja nie działa w systemie Linux. W razie zmiany zasada ponownie przyjmie wartość „Włącz logowanie w przeglądarce”.
+
+      Jeśli zasada jest nieskonfigurowana, użytkownik może samodzielnie włączyć lub wyłączyć logowanie w przeglądarce i korzystać z tej funkcji według własnego uznania.</translation>
 <translation id="9072600218500597787">Służy do skonfigurowania wymaganej nazwy domeny hosta, która będzie stosowana do hostów zdalnego dostępu, oraz blokuje użytkownikom jej zmianę.
 
           Jeśli to ustawienie jest włączone, udostępnianie hostów jest możliwe tylko za pomocą kont zarejestrowanych w jednej ze wskazanych domen.

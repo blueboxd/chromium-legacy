@@ -112,7 +112,7 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
   const std::string app_id_;
 
   FCMNetworkHandlerDiagnostic diagnostic_info_;
-  base::WeakPtrFactory<FCMNetworkHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<FCMNetworkHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FCMNetworkHandler);
 };

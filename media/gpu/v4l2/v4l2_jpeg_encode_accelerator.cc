@@ -15,7 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "third_party/libyuv/include/libyuv.h"

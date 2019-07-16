@@ -3221,19 +3221,8 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7123160381479171745">Definiert eine Liste mit Nutzern, die sich auf dem Gerät anmelden dürfen. Die Einträge haben das Format "<ph name="USER_WHITELIST_ENTRY_FORMAT" />", zum Beispiel "<ph name="USER_WHITELIST_ENTRY_EXAMPLE" />". Wenn allen Nutzern in einer Domain die Anmeldung erlaubt werden soll, verwenden Sie Einträge im Format "<ph name="USER_WHITELIST_ENTRY_WILDCARD" />".
 
       Falls diese Richtlinie nicht konfiguriert ist, gibt es keine Einschränkungen im Hinblick auf die Nutzer, die sich anmelden dürfen. Zum Erstellen neuer Nutzer muss aber weiterhin die Richtlinie "<ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />" entsprechend konfiguriert werden.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> bietet eine sichere Aktualisierung und Installation von Erweiterungen. Der Inhalt einiger Erweiterungen wird jedoch außerhalb des Chrome Web Store gehostet und kann nur durch unsichere Signatur- oder Hash-Algorithmen wie SHA1 geschützt werden. Wenn diese Richtlinie deaktiviert wird, wird eine Neuinstallation und Aktualisierung solcher Erweiterungen von Chrome nicht erlaubt (bis die Entwickler der Erweiterung diese mit stärkeren Algorithmen neu erstellen). Wenn diese Richtlinie aktiviert ist, ist die Installation und Aktualisierung solcher Erweiterungen zulässig.
-
-          Ist diese Richtlinie nicht konfiguriert, wird sie standardmäßig aktiviert.
-          Ist diese Richtlinie ab <ph name="PRODUCT_NAME" /> 75 nicht konfiguriert, wird sie standardmäßig deaktiviert.
-
-          Ab <ph name="PRODUCT_NAME" /> 77 wird diese Richtlinie ignoriert und als deaktiviert eingestuft.</translation>
 <translation id="7126716959063786004">Beenden von Prozessen im Task-Manager erlauben</translation>
 <translation id="7127892035367404455">Rollback auf die Zielversion</translation>
-<translation id="7128918109610518786">Listet die App-IDs auf, die unter <ph name="PRODUCT_OS_NAME" /> in der Übersichtsleiste als in der Übersicht angezeigte Apps erscheinen.
-
-      Wenn diese Richtlinie konfiguriert wird, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
-
-      Wird diese Richtlinie nicht konfiguriert, können Nutzer die Liste der in der Übersicht angezeigten Apps ändern.</translation>
 <translation id="713121532817834879">Diese Richtlinie ist eine URL, die auf eine XML-Datei im selben Format wie die Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer verweist. Dabei werden Regeln aus einer XML-Datei geladen, ohne diese Regeln mit Internet Explorer zu teilen.
 
       Die Regeln in dieser XML-Datei gelten genauso wie "<ph name="GREYLIST_POLICY_NAME" />". Das bedeutet: Diese Regeln verhindern, dass <ph name="PRODUCT_NAME" /> einen alternativen Browser öffnet und <ph name="PRODUCT_NAME" /> von einem alternativen Browser geöffnet wird.
@@ -3726,7 +3715,7 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
 
           Bitte sehen Sie sich auch die Richtlinien "CookiesAllowedForUrls" und "CookiesSessionOnlyForUrls" an. Beachten Sie, dass es keine in Konflikt stehenden URL-Muster zwischen diesen drei Richtlinien geben darf. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.</translation>
 <translation id="8099880303030573137">Inaktivitätsverzögerung im Akkubetrieb</translation>
-<translation id="8101381354936029836">Richtlinien-Atomic-Gruppe:</translation>
+<translation id="8101381354936029836">Atomische Richtlinien-Gruppe:</translation>
 <translation id="8102913158860568230">Standardeinstellung für MediaStream</translation>
 <translation id="8104186956182795918">Hiermit kann festgelegt werden, ob Websites Bilder anzeigen dürfen. Das Anzeigen von Bildern kann entweder allen Websites gestattet oder für alle unterbunden werden.
 
@@ -4049,12 +4038,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8759829385824155666">Erlaubte Kerberos-Verschlüsselungstypen</translation>
 <translation id="8764119899999036911">Gibt an, ob der generierte Kerberos-SPN auf dem kanonischen DNS-Namen oder dem ursprünglich eingegebenen Namen basiert. Wenn Sie diese Einstellung aktivieren, wird die CNAME-Suche übersprungen und der Servername so wie eingegeben verwendet. Sollten Sie die Einstellung deaktivieren oder nicht konfigurieren, wird der kanonische Name des Servers per CNAME-Suche ermittelt.</translation>
 <translation id="8764477907716150749">Diese Richtlinie ist zur internen Nutzung in <ph name="PRODUCT_NAME" /> vorgesehen.</translation>
-<translation id="8765776988041674792">Hiermit wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
-      Ihre Passwortänderungsseite muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, in deren Browser eine Warnung angezeigt wurde, an diese URL weiter, damit sie ihr Passwort ändern können.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
@@ -4193,9 +4176,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Der Wert sollte in Sekunden angegeben werden.</translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
-<translation id="9038058011835642205">Hierdurch wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
-
-      Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen Komponente "url" und den beiden optionalen Komponenten "default_launch_container" und "create_desktop_shortcut" besteht. Bei "url" handelt es sich um die URL der Web-App, die installiert werden soll. Der "launch_container" sollte entweder ein Fenster oder ein Tab sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird, und für "create_desktop_shortcut" sollte "true" festgelegt sein, wenn unter Linux und Windows eine Desktopverknüpfung erstellt werden soll. Wenn "default_launch_container" weggelassen wird, wird die App standardmäßig in einem Tab geöffnet. Unabhängig vom Wert von "default_launch_container" können Nutzer ändern, in welchem Container die App geöffnet wird. Wird "create_desktop_shortcuts" weggelassen, werden keine Desktopverknüpfungen erstellt.</translation>
 <translation id="9038839118379817310">WLAN aktivieren</translation>
 <translation id="9039822628127365650">Wenn diese Richtlinie konfiguriert ist, wird damit die Zeitdauer festgelegt, nach der ein Nutzer automatisch abgemeldet und die Sitzung beendet wird. Der Nutzer erfährt über einen Countdown-Timer in der Taskleiste, wie viel Zeit er noch hat.
 
@@ -4209,6 +4189,15 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn als Richtlinienwert ein Token festgelegt ist, das mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf den entsprechenden Build aktualisiert, sofern eine solche Aktualisierung nicht durch eine andere Richtlinie blockiert wird.
 
       Falls die Richtlinie nicht konfiguriert oder der Wert nicht mit einem Quick-Fix-Build verknüpft ist, wird das Gerät nicht auf einen Quick-Fix-Build aktualisiert. Wenn auf dem Gerät bereits ein Quick-Fix-Build installiert ist und die Richtlinie nicht mehr konfiguriert oder der Wert nicht mehr mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf einen regulären Build aktualisiert, sofern die Aktualisierung nicht durch eine andere Richtlinie blockiert wird.</translation>
+<translation id="9054012305936267950">Diese Richtlinie steuert die Anmeldung bei diesem Browser. Sie können damit festlegen, ob sich der Nutzer bei <ph name="PRODUCT_NAME" /> über sein Konto anmelden und zugehörige Dienste nutzen kann, beispielsweise die Chrome-Synchronisierung.
+
+Wenn die Richtlinie auf "Browseranmeldung deaktivieren" gesetzt ist, kann der Nutzer sich nicht im Browser anmelden und keine kontobasierten Dienste nutzen. In diesem Fall können Funktionen auf Browserebene wie die Chrome-Synchronisierung nicht verwendet werden und sind auch nicht verfügbar. Falls ein Nutzer angemeldet ist, wenn die Richtlinie auf "Deaktiviert" gesetzt wird, wird er beim nächsten Ausführen von Chrome automatisch abgemeldet. Seine lokalen Profildaten wie Lesezeichen und Passwörter bleiben jedoch erhalten. Der Nutzer kann sich auch weiterhin bei Google-Webdiensten wie Gmail anmelden und diese verwenden.
+
+Wenn die Richtlinie auf "Browseranmeldung aktivieren" gesetzt ist, kann der Nutzer sich im Browser anmelden und wird auch automatisch im Browser angemeldet, sobald er sich in Google-Webdiensten wie Gmail anmeldet. Durch die Anmeldung im Browser werden die Kontodaten des Nutzers im Browser gespeichert. Das bedeutet aber nicht, dass die Chrome-Synchronisierung standardmäßig aktiviert wird. Der Nutzer muss diese Funktion explizit aktivieren. Durch das Aktivieren dieser Richtlinie kann der Nutzer die Einstellung für die Browseranmeldung nicht mehr deaktivieren. Die Chrome-Synchronisierung lässt sich mithilfe der Richtlinie "SyncDisabled" steuern.
+
+Wenn die Richtlinie auf "Browseranmeldung erzwingen" gesetzt ist, wird dem Nutzer ein Dialogfeld zur Kontoauswahl angezeigt. Er muss dann ein Konto auswählen und sich anmelden, um den Browser verwenden zu können. So wird bei verwalteten Konten garantiert, dass die zu diesem Konto gehörigen Richtlinien erzwungen und angewendet werden. Standardmäßig wird hierbei die Chrome-Synchronisierung für das Konto aktiviert, es sei denn, sie wurde vom Administrator der Domain oder über die Richtlinie "SyncDisabled" deaktiviert. Der Standardwert für "BrowserGuestModeEnabled" wird außerdem auf "false" gesetzt. Beachten Sie, dass unsignierte Profile gesperrt werden und dass auf sie nach dem Aktivieren dieser Richtlinie nicht mehr zugegriffen werden kann. Weitere Informationen finden Sie in der Hilfe unter https://support.google.com/chrome/a/answer/7572556. Unter Linux wird diese Option nicht unterstützt. Sie wird stattdessen auf "Browseranmeldung aktivieren" eingestellt, sofern sie verwendet wird.
+
+Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer selbst entscheiden, ob er die Anmeldeoption des Browsers aktivieren und verwenden möchte.</translation>
 <translation id="9072600218500597787">Konfiguriert die erforderlichen Domainnamen der Hosts für den Remotezugriff und verhindert, dass diese von Nutzern geändert werden können.
 
           Wenn diese Einstellung aktiviert ist, können Hosts nur über solche Konten gemeinsam genutzt werden, die unter einem der angegebenen Domainnamen registriert sind.

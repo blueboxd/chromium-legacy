@@ -155,7 +155,7 @@ public class MultiWindowUtils implements ActivityStateListener {
 
     /**
      * Generate the activity options used when handling "open in other window" or "move to other
-     * window" on a multi-display capable device.
+     * window" on a multi-instance capable device.
      *
      * This should be used in combination with
      * {@link #setOpenInOtherWindowIntentExtras(Intent, Activity, Class)}.
@@ -270,14 +270,6 @@ public class MultiWindowUtils implements ActivityStateListener {
 
         // 6. Default to regular ChromeTabbedActivity.
         return ChromeTabbedActivity.class;
-    }
-
-    /**
-     * Should be called when multi-instance mode is started. This method is responsible for
-     * notifying classes that are multi-instance aware.
-     */
-    public static void onMultiInstanceModeStarted() {
-        ChromeTabbedActivity.onMultiInstanceModeStarted();
     }
 
     /**

@@ -813,7 +813,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   const bool should_print_selection_only_;
   bool is_printing_started_ = false;
 
-  base::WeakPtrFactory<PrepareFrameAndViewForPrint> weak_ptr_factory_;
+  base::WeakPtrFactory<PrepareFrameAndViewForPrint> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrepareFrameAndViewForPrint);
 };
@@ -826,8 +826,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
     : frame_(frame),
       node_to_print_(node),
       should_print_backgrounds_(params.should_print_backgrounds),
-      should_print_selection_only_(params.selection_only),
-      weak_ptr_factory_(this) {
+      should_print_selection_only_(params.selection_only) {
   PrintMsg_Print_Params print_params = params;
   bool source_is_pdf = IsPrintingNodeOrPdfFrame(frame, node_to_print_);
   if (!should_print_selection_only_) {
@@ -1048,8 +1047,7 @@ PrintRenderFrameHelper::PrintRenderFrameHelper(
     std::unique_ptr<Delegate> delegate)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<PrintRenderFrameHelper>(render_frame),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {
+      delegate_(std::move(delegate)) {
   if (!delegate_->IsPrintPreviewEnabled())
     DisablePreview();
 }

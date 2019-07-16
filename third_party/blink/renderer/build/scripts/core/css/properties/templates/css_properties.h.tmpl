@@ -39,6 +39,7 @@ namespace {{namespace}} {
   (property.inherited and 'kInherited' or ''),
   (property.visited and 'kVisited' or ''),
   (property.is_internal and 'kInternal' or ''),
+  (property.affected_by_forced_colors and 'kIsAffectedByForcedColors' or ''),
 ] | reject('==', '') | join(' | ') %}
 {% set ctor_args = (not is_alias and [property_id, flags, separator] or []) %}
 // {{property.name}}

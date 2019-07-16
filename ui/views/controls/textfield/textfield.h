@@ -666,7 +666,7 @@ class VIEWS_EXPORT Textfield : public View,
                               base::Unretained(this)));
 
   // Used to bind callback functions to this object.
-  base::WeakPtrFactory<Textfield> weak_ptr_factory_;
+  base::WeakPtrFactory<Textfield> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

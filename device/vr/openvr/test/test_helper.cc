@@ -105,9 +105,13 @@ namespace {
 vr::TrackedDevicePose_t TranslatePose(device::PoseFrameData pose) {
   vr::TrackedDevicePose_t ret = {};
 
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      ret.mDeviceToAbsoluteTracking.m[j][i] = pose.device_to_origin[j * 4 + i];
+  // We're given the pose in column-major order, with the translation component
+  // in the 4th column. OpenVR uses a 3x4 matrix instead of a 4x4, so copying
+  // as-is will chop off the translation. So, transpose while copying.
+  for (int col = 0; col < 4; ++col) {
+    for (int row = 0; row < 3; ++row) {
+      ret.mDeviceToAbsoluteTracking.m[row][col] =
+          pose.device_to_origin[col * 4 + row];
     }
   }
 

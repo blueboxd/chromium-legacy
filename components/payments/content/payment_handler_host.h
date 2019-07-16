@@ -74,7 +74,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // Not null and outlives this object. Owns this object.
   Delegate* delegate_;
 
-  base::WeakPtrFactory<PaymentHandlerHost> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentHandlerHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentHandlerHost);
 };

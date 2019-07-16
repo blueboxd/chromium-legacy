@@ -184,7 +184,7 @@ class ModelTypeRegistry : public ModelTypeConnector,
   base::ObserverList<TypeDebugInfoObserver>::Unchecked
       type_debug_info_observers_;
 
-  base::WeakPtrFactory<ModelTypeRegistry> weak_ptr_factory_;
+  base::WeakPtrFactory<ModelTypeRegistry> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeRegistry);
 };

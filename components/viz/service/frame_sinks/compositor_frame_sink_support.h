@@ -338,7 +338,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // The set of surfaces owned by this frame sink that have pending frame.
   base::flat_set<Surface*> pending_surfaces_;
 
-  base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
+  base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupport);
 };

@@ -49,7 +49,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #if defined(OS_MACOSX)
   bool ProcessRegistersWithSystemProcess(
       const std::string& process_type) override;
-  bool ShouldSendMachPort(const std::string& process_type) override;
   bool DelaySandboxInitialization(const std::string& process_type) override;
 #elif defined(OS_LINUX)
   void ZygoteStarting(

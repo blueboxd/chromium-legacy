@@ -71,8 +71,7 @@ void SyncLogger::SetSystemResources(invalidation::SystemResources* resources) {
 SyncInvalidationScheduler::SyncInvalidationScheduler()
     : created_on_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       is_started_(false),
-      is_stopped_(false),
-      weak_factory_(this) {
+      is_stopped_(false) {
   CHECK(!!created_on_task_runner_);
 }
 

@@ -19,7 +19,7 @@ VulkanFenceHelper::FenceHandle& VulkanFenceHelper::FenceHandle::operator=(
     const FenceHandle& other) = default;
 
 VulkanFenceHelper::VulkanFenceHelper(VulkanDeviceQueue* device_queue)
-    : device_queue_(device_queue), weak_factory_(this) {}
+    : device_queue_(device_queue) {}
 
 VulkanFenceHelper::~VulkanFenceHelper() {
   DCHECK(tasks_pending_fence_.empty());

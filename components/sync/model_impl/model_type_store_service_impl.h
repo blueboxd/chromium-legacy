@@ -54,7 +54,7 @@ class ModelTypeStoreServiceImpl : public ModelTypeStoreService {
 
   SEQUENCE_CHECKER(ui_sequence_checker_);
 
-  base::WeakPtrFactory<ModelTypeStoreServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ModelTypeStoreServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeStoreServiceImpl);
 };

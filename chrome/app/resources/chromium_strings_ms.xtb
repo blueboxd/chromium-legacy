@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Dapatkan bantuan untuk menggunakan Chromium OS</translation>
 <translation id="1396446129537741364">Chromium sedang cuba memaparkan kata laluan.</translation>
 <translation id="1414495520565016063">Anda log masuk ke Chromium!</translation>
-<translation id="1502360822835740515">Jadikan Chromium penyemak imbas lalai anda</translation>
 <translation id="151962892725702025">OS Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="1524282610922162960">Kongsi tab Chromium</translation>
-<translation id="1585657529869845941">Klik <ph name="BEGIN_BOLD" />Tukar juga<ph name="END_BOLD" />, jika dipaparkan</translation>
 <translation id="1668054258064581266">Selepas mengalih keluar akaun anda daripada Chromium, anda mungkin perlu memuatkan semula tab yang dibuka untuk memberi kesan.</translation>
 <translation id="1688750314291223739">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas yang diperibadikan di web dan aksesnya dari Chromium pada mana-mana komputer.</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium akan mengakses Drive anda untuk membuat cadangan dalam bar alamat</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Sematkan Chromium pada bar tugas anda</translation>
 <translation id="388648406173476553">Sesuaikan dan kawal Chromium. Perhatian anda diperlukan - klik untuk mendapatkan butiran.</translation>
 <translation id="3889543394854987837">Klik nama anda untuk membuka Chromium dan mula menyemak imbas.</translation>
 <translation id="3898493977366060150">Penyemakan imbas web dengan Google smarts</translation>
 <translation id="4036079820698952681">Bantu jadikan Chromium lebih baik dengan melaporkan <ph name="BEGIN_LINK" />tetapan semasa<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
-<translation id="407254336480250557">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Temui apl, permainan, sambungan dan tema yang hebat untuk Chromium.</translation>
 <translation id="4216212958613226427">Bahasa ini digunakan untuk memaparkan UI Chromium</translation>
 <translation id="4222580632002216401">Anda kini sedang log masuk ke Chromium! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Nampaknya profil digunakan oleh proses Chromium lain (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chromium telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chromium.</translation>
 <translation id="469338717132742108">Dapatkan bantuan berkenaan Chromium OS</translation>
 <translation id="4708774505295300557">Sebelum ini, seseorang telah log masuk ke Chromium pada komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST" />. Sila buat pengguna Chromium baharu untuk mengasingkan maklumat anda.</translation>
-<translation id="4714956846925717402">Akses Chromium dengan lebih cepat</translation>
 <translation id="4746050847053251315">Keluar daripada Chromium juga?</translation>
 <translation id="4748217263233248895">Kemas kini keselamatan khas untuk Chromium baru sahaja dilakukan. Mulakan semula sekarang dan kami akan memulihkan tab anda.</translation>
 <translation id="479167709087336770">Ini menggunakan penyemak ejaan yang sama seperti yang digunakan dalam carian Google. Teks yang anda taip dalam penyemak imbas akan dihantar kepada Google. Anda boleh menukar gelagat ini dalam tetapan pada bila-bila masa.</translation>

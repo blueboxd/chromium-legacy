@@ -1414,8 +1414,8 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
 
 void QuicChromiumClientSession::CloseStream(quic::QuicStreamId stream_id) {
   most_recent_stream_close_time_ = tick_clock_->NowTicks();
-  auto it = dynamic_streams().find(stream_id);
-  if (it != dynamic_streams().end()) {
+  auto it = stream_map().find(stream_id);
+  if (it != stream_map().end()) {
     logger_->UpdateReceivedFrameCounts(
         stream_id, it->second->num_frames_received(),
         it->second->num_duplicate_frames_received());
@@ -1433,8 +1433,8 @@ void QuicChromiumClientSession::SendRstStream(
     quic::QuicStreamOffset bytes_written) {
   if (quic::QuicUtils::IsServerInitiatedStreamId(
           connection()->transport_version(), id)) {
-    auto it = dynamic_streams().find(id);
-    if (it != dynamic_streams().end()) {
+    auto it = stream_map().find(id);
+    if (it != stream_map().end()) {
       bytes_pushed_count_ += it->second->stream_bytes_read();
     }
   }
@@ -2418,7 +2418,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
 void QuicChromiumClientSession::CloseAllStreams(int net_error) {
     quic::QuicSmallMap<quic::QuicStreamId, quic::QuicStream*, 10>
         non_static_streams;
-    for (const auto& stream : dynamic_streams()) {
+    for (const auto& stream : stream_map()) {
       if (!stream.second->is_static()) {
         non_static_streams[stream.first] = stream.second.get();
       }
@@ -2632,9 +2632,9 @@ bool QuicChromiumClientSession::CheckIdleTimeExceedsIdleMigrationPeriod() {
 void QuicChromiumClientSession::ResetNonMigratableStreams() {
   // TODO(zhongyi): may close non-migratable draining streams as well to avoid
   // sending additional data on alternate networks.
-  auto it = dynamic_streams().begin();
+  auto it = stream_map().begin();
   // Stream may be deleted when iterating through the map.
-  while (it != dynamic_streams().end()) {
+  while (it != stream_map().end()) {
     if (it->second->is_static()) {
       it++;
       continue;
@@ -2758,8 +2758,8 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
                  QuicVersionToString(connection()->transport_version()));
   dict.SetInteger("open_streams", GetNumOpenOutgoingStreams());
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
-  for (DynamicStreamMap::const_iterator it = dynamic_streams().begin();
-       it != dynamic_streams().end(); ++it) {
+  for (StreamMap::const_iterator it = stream_map().begin();
+       it != stream_map().end(); ++it) {
     if (it->second->is_static()) {
       continue;
     }

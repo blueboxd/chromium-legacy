@@ -350,8 +350,7 @@ WebHistoryService::WebHistoryService(
     identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
-      url_loader_factory_(std::move(url_loader_factory)),
-      weak_ptr_factory_(this) {}
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 WebHistoryService::~WebHistoryService() {
 }

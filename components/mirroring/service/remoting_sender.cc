@@ -33,8 +33,7 @@ RemotingSender::RemotingSender(
       binding_(this, std::move(request)),
       input_queue_discards_remaining_(0),
       is_reading_(false),
-      flow_restart_pending_(true),
-      weak_factory_(this) {
+      flow_restart_pending_(true) {
   binding_.set_connection_error_handler(base::BindOnce(
       &RemotingSender::OnRemotingDataStreamError, base::Unretained(this)));
 }

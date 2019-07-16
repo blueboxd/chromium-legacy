@@ -97,8 +97,7 @@ GenericChangeProcessor::GenericChangeProcessor(
       type_(type),
       local_service_(local_service),
       merge_result_(merge_result),
-      share_handle_(user_share),
-      weak_ptr_factory_(this) {
+      share_handle_(user_share) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK_NE(type_, UNSPECIFIED);
 }

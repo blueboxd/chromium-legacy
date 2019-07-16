@@ -120,7 +120,7 @@ void DbusMenu::ScopedMethodResponse::EnsureResponse() {
 
 DbusMenu::DbusMenu(dbus::ExportedObject* exported_object,
                    InitializedCallback callback)
-    : menu_(exported_object), weak_factory_(this) {
+    : menu_(exported_object) {
   SetModel(nullptr, false);
 
   static constexpr struct {

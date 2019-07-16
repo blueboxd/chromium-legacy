@@ -100,7 +100,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
   base::TimeTicks suppress_non_key_input_until_ = base::TimeTicks::UnixEpoch();
 
   // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodAuraLinux> weak_ptr_factory_;
+  base::WeakPtrFactory<InputMethodAuraLinux> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodAuraLinux);
 };

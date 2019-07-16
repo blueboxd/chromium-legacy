@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Włącz Bluetooth, by wykryć urządzenia w pobliżu</translation>
 <translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
-<translation id="2912823482158781027">ODŚWIEŻ BILET</translation>
-<translation id="3511655281162215899">Jak najszybciej zmień hasło</translation>
-<translation id="3562817605261346876">W najbliższym czasie odśwież bilet dla: <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Nowe hasło</translation>
 <translation id="445059817448385655">Stare hasło</translation>
 <translation id="467510802200863975">Hasła nie są zgodne</translation>
@@ -23,16 +20,12 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5457599981699367932">Przeglądaj jako gość</translation>
 <translation id="54609108002486618">Zarządzany</translation>
-<translation id="5733345267661125295">Już teraz zmień hasło</translation>
-<translation id="5743581760404859096">Twój bilet Kerberos wkrótce straci ważność</translation>
 <translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="6058625436358447366">Aby zakończyć, wpisz stare i nowe hasło</translation>
 <translation id="6106186594183574873">Aby zakończyć, wpisz stare hasło</translation>
 <translation id="6146993107019042706">Aby zakończyć, wpisz nowe hasło</translation>
 <translation id="6574601967010742428">Administrator urządzenia może monitorować Twoją aktywność.</translation>
-<translation id="7280705187789120111">Bilet Kerberos wkrótce straci ważność</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Twoje obecne hasło wygasło.}=1{Twoje obecne hasło wygasa za mniej niż dzień.}few{Twoje obecne hasło wygasa za mniej niż # dni.}many{Twoje obecne hasło wygasa za mniej niż # dni.}other{Twoje obecne hasło wygasa za mniej niż # dni.}}</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7690294790491645610">Potwierdź nowe hasło</translation>
 <translation id="808894953321890993">Zmień hasło</translation>

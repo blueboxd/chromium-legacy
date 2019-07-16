@@ -113,13 +113,7 @@ void SettingsWindowManager::ShowOSSettings(Profile* profile) {
 
 void SettingsWindowManager::ShowOSSettings(Profile* profile,
                                            const std::string& sub_page) {
-  DCHECK(sub_page.empty() || chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
-  std::string url =
-      base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-          ? kChromeUIOSSettingsURL
-          : kChromeUISettingsURL;
-  url += sub_page;
-  ShowChromePageForProfile(profile, GURL(url));
+  ShowChromePageForProfile(profile, chrome::GetOSSettingsUrl(sub_page));
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {

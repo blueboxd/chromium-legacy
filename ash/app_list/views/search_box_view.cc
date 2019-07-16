@@ -114,6 +114,11 @@ void SearchBoxView::Init(bool is_tablet_mode) {
 }
 
 void SearchBoxView::ResetForShow() {
+  // Avoid clearing an already inactive SearchBox in tablet mode because this
+  // causes suggested chips to flash (http://crbug.com/979594).
+  if (!is_search_box_active() && is_tablet_mode())
+    return;
+
   ClearSearch();
   SetSearchBoxBackgroundCornerRadius(
       GetSearchBoxBorderCornerRadiusForState(contents_view_->GetActiveState()));

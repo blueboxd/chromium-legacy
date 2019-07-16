@@ -49,8 +49,7 @@ SharedContextState::SharedContextState(
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
-      surface_(std::move(surface)),
-      weak_ptr_factory_(this) {
+      surface_(std::move(surface)) {
   raster::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes_, &glyph_cache_max_texture_bytes_);
   if (GrContextIsVulkan()) {

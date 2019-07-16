@@ -90,8 +90,7 @@ ModelTypeWorker::ModelTypeWorker(
       cryptographer_(std::move(cryptographer)),
       passphrase_type_(passphrase_type),
       nudge_handler_(nudge_handler),
-      cancelation_signal_(cancelation_signal),
-      weak_ptr_factory_(this) {
+      cancelation_signal_(cancelation_signal) {
   DCHECK(model_type_processor_);
   DCHECK(type_ != PASSWORDS || cryptographer_);
 

@@ -348,7 +348,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   bool oopd_enabled_ = false;
 
   base::WeakPtr<GpuServiceImpl> weak_ptr_;
-  base::WeakPtrFactory<GpuServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GpuServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceImpl);
 };

@@ -561,8 +561,7 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       renderer_settings_(renderer_settings),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
-      context_lost_callback_(context_lost_callback),
-      weak_ptr_factory_(this) {
+      context_lost_callback_(context_lost_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 #if defined(USE_OZONE)
@@ -734,7 +733,6 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
   if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
 
-  gfx::SwapResponse response;
   if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
     // TODO(https://crbug.com/898680): Maybe do something for overlays here.
     // This codepath was added in https://codereview.chromium.org/1489153002
@@ -743,20 +741,13 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     if (!capabilities().flipped_output_surface)
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
                                    frame.sub_buffer_rect->height());
-    response = output_device_->PostSubBuffer(*frame.sub_buffer_rect,
-                                             buffer_presented_callback_);
+    output_device_->PostSubBuffer(*frame.sub_buffer_rect,
+                                  buffer_presented_callback_,
+                                  std::move(frame.latency_info));
   } else {
-    response = output_device_->SwapBuffers(buffer_presented_callback_);
+    output_device_->SwapBuffers(buffer_presented_callback_,
+                                std::move(frame.latency_info));
   }
-
-  for (auto& latency : frame.latency_info) {
-    latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, response.timings.swap_start);
-    latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
-        response.timings.swap_end);
-  }
-  latency_tracker_.OnGpuSwapBuffersCompleted(frame.latency_info);
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(

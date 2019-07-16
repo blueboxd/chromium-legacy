@@ -1,5 +1,12 @@
 # Perf bot health sheriff rotation
 
+## Warning
+
+**Note that Sheriff-O-Matic currently doesn't work for the perf waterfall
+[crbug.com/984159](https://crbug.com/984159).
+Please use [Milo chrome.perf
+console](https://ci.chromium.org/p/chrome/g/chrome.perf/console) instead.**
+
 ## Goal
 
 The goal of the perf bot health sheriff rotation is to ensure that the benchmarks running on our perf waterfall continue to produce data and catch regressions quickly. This is also known as "keeping the bots green" and is primarily achieved by triaging incoming alerts.

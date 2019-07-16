@@ -196,6 +196,8 @@ std::string GetAPIKeyForUrl(version_info::Channel channel) {
 ValuePatternsMetric GetValuePattern(const base::string16& value) {
   if (IsUPIVirtualPaymentAddress(value))
     return ValuePatternsMetric::kUpiVpa;
+  if (IsInternationalBankAccountNumber(value))
+    return ValuePatternsMetric::kIban;
   return ValuePatternsMetric::kNoPatternFound;
 }
 
@@ -1358,8 +1360,7 @@ AutofillManager::AutofillManager(
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
-      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())),
-      weak_ptr_factory_(this) {
+      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())) {
   DCHECK(driver);
   DCHECK(client_);
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {

@@ -145,7 +145,7 @@ class ProtoLevelDBWrapper {
   // LevelDB calls, likely the database client name.
   std::string metrics_id_ = "Default";
 
-  base::WeakPtrFactory<ProtoLevelDBWrapper> weak_ptr_factory_;
+  base::WeakPtrFactory<ProtoLevelDBWrapper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProtoLevelDBWrapper);
 };

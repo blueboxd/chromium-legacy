@@ -155,8 +155,7 @@ DownloadArchivesTask::DownloadArchivesTask(
     PrefService* prefs)
     : prefetch_store_(prefetch_store),
       prefetch_downloader_(prefetch_downloader),
-      prefs_(prefs),
-      weak_ptr_factory_(this) {
+      prefs_(prefs) {
   DCHECK(prefetch_store_);
   DCHECK(prefetch_downloader_);
   DCHECK(prefs_);

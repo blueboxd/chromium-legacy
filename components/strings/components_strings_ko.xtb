@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">카드</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" />이(가) 우선 적용되었기 때문에 무시됩니다.</translation>
+<translation id="2119505898009119320">발급 대상: <ph name="ORGANIZATION" />[<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">움직임 감지 센서</translation>
 <translation id="213826338245044447">모바일 북마크</translation>
 <translation id="214556005048008348">결제 취소</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">현재 지역의 신호 확인</translation>
 <translation id="2523886232349826891">이 기기에만 저장됨</translation>
 <translation id="2524461107774643265">자세한 정보 추가</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{외 1개}other{외 #개}}</translation>
 <translation id="2536110899380797252">주소 추가</translation>
 <translation id="2539524384386349900">감지</translation>
 <translation id="254947805923345898">정책 값이 유효하지 않습니다.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">이 사이트를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
 <translation id="4876188919622883022">간단히 보기</translation>
 <translation id="4876305945144899064">사용자 이름 없음</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{없음}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> 검색</translation>
 <translation id="4879491255372875719">자동(기본값)</translation>
 <translation id="4880827082731008257">기록 검색</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">예, 저장합니다</translation>
 <translation id="6508722015517270189">Chrome 다시 시작하기</translation>
 <translation id="6517596291481585650">경고: 이 정책은 목록이 아니므로 정책에 명시된 대로 목록으로 병합되지 않았습니다.</translation>
+<translation id="6521745193039995384">활성화되지 않음</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6534179046333460208">피지컬 웹 제안</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
@@ -1477,6 +1481,7 @@
 <translation id="9076630408993835509">이 브라우저는 회사 또는 다른 조직에서 관리하지 않습니다. 이 기기의 활동은 Chrome 외부에서 관리될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">자세한 정보 필요</translation>
 <translation id="9080712759204168376">주문 요약</translation>
+<translation id="9089260154716455634">제한 완화 시간 정책:</translation>
 <translation id="9095388113577226029">다른 언어...</translation>
 <translation id="9103872766612412690"><ph name="SITE" />에서는 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. 이번에 Chromium에서 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 이는 공격자가 <ph name="SITE" />인 것처럼 가장하려고 하거나 Wi-Fi 로그인 화면이 연결을 방해했기 때문일 수 있습니다. 데이터 교환이 발생하기 전에 Chromium에서 연결을 중단했으므로 사용자 정보는 안전합니다.</translation>
 <translation id="9106062320799175032">청구서 주소 추가</translation>

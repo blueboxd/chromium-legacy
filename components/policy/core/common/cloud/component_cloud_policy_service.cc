@@ -277,8 +277,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       delegate_(delegate),
       schema_registry_(schema_registry),
       core_(core),
-      backend_task_runner_(backend_task_runner),
-      weak_ptr_factory_(this) {
+      backend_task_runner_(backend_task_runner) {
   DCHECK(policy_type == dm_protocol::kChromeExtensionPolicyType ||
          policy_type ==
              dm_protocol::kChromeMachineLevelExtensionCloudPolicyType ||

@@ -72,7 +72,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
-  base::Optional<SupportedVideoDecoderConfigs> chromeos_supported_configs_;
+  base::Optional<SupportedVideoDecoderConfigs> cros_supported_configs_;
 #endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);

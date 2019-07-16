@@ -31,7 +31,7 @@ GCMDriver::GCMDriver(
     const base::FilePath& store_path,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : web_push_sender_(std::move(url_loader_factory)), weak_ptr_factory_(this) {
+    : web_push_sender_(std::move(url_loader_factory)) {
   // The |blocking_task_runner| can be nullptr for tests that do not need the
   // encryption capabilities of the GCMDriver class.
   if (blocking_task_runner)

@@ -500,7 +500,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.
-  base::WeakPtrFactory<GuestViewBase> weak_ptr_factory_;
+  base::WeakPtrFactory<GuestViewBase> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GuestViewBase);
 };

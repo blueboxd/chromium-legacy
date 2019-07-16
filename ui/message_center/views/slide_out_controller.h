@@ -126,7 +126,7 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // Last opacity set by SetOpacityIfNecessary.
   float opacity_ = 1.0;
 
-  base::WeakPtrFactory<SlideOutController> weak_ptr_factory_;
+  base::WeakPtrFactory<SlideOutController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SlideOutController);
 };

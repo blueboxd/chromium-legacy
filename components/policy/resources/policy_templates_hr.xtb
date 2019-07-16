@@ -3242,19 +3242,8 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7123160381479171745">Definira popis korisnika kojima je dopuštena prijava na uređaj. Unosi su u obliku <ph name="USER_WHITELIST_ENTRY_FORMAT" />, primjerice <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Da biste slučajnim korisnicima dopustili pristup domeni, upotrijebite unose u obliku <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Ako se to pravilo ne konfigurira, nema ograničenja za prijavu korisnika. Napominjemo da je za izradu novih korisnika još uvijek potrebna odgovarajuća konfiguracija pravila <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> pruža sigurno ažuriranje i instaliranje proširenja. No sadržaj nekih proširenja hostiranih izvan Chrome web-trgovine možda je zaštićen samo nesigurnim algoritmima za potpisivanje ili hashiranje kao što je SHA1. Kad se to pravilo onemogući, Chrome neće dopuštati instaliranja i ažuriranja takvih proširenja (dok razvojni programeri ponovo ne razviju to proširenje sa snažnijim algoritmima). Kad se to pravilo omogući, instaliranja i ažuriranja takvih proširenja bit će dopuštena.
-
-          Ako se ne postavi, zadano će ponašanje biti da je značajka omogućena.
-          Za <ph name="PRODUCT_NAME" /> 75 i novije verzije zadano će ponašanje biti da je značajka omogućena ako se ne postavi.
-
-          Za <ph name="PRODUCT_NAME" /> 77 i novije verzije to će se pravilo zanemariti i tretirat će se kao onemogućeno.</translation>
 <translation id="7126716959063786004">Omogući završavanje postupaka u Upravitelju zadataka</translation>
 <translation id="7127892035367404455">Vraćanje na ciljnu verziju</translation>
-<translation id="7128918109610518786">Navodi identifikatore aplikacija koje sustav <ph name="PRODUCT_OS_NAME" /> prikazuje kao prikvačene aplikacije u traci pokretača.
-
-      Ako se to pravilo konfigurira, utvrđuje se skupina aplikacija i korisnik ih ne može mijenjati.
-
-      Ako se to pravilo ne postavi, korisnik može mijenjati popis prikvačenih aplikacija u pokretaču.</translation>
 <translation id="713121532817834879">To je pravilo URL koji usmjerava na XML datoteku u istom formatu kao i pravilo <ph name="IEEM_SITELIST_POLICY" /> u Internet Exploreru. Ono učitava pravila iz XML datoteke i pritom ih ne dijeli s Internet Explorerom.
 
       Pravila u toj XML datoteci primjenjuju se na isti način kao i pravilo <ph name="GREYLIST_POLICY_NAME" />. To znači da ta pravila onemogućuju pregledniku <ph name="PRODUCT_NAME" /> otvaranje nekog drugog preglednika, kao i drugom pregledniku da otvori preglednik <ph name="PRODUCT_NAME" />.
@@ -4088,12 +4077,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8759829385824155666">Dopuštene vrste enkripcije Kerberos</translation>
 <translation id="8764119899999036911">Određuje temelji li se generirani Kerberos SPN na kanonskom DNS imenu ili unesenom izvornom imenu. Ako omogućite ovu postavku, CNAME pretraživanje bit će preskočeno, a upotrijebit će se uneseni naziv poslužitelja. Ako onemogućite ovu postavku ili ju ne postavite, kanonski naziv poslužitelja bit će utvrđen putem CNAME pretraživanja.</translation>
 <translation id="8764477907716150749">To je pravilo za internu upotrebu preglednika <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Konfigurira URL za promjenu zaporke (samo sheme HTTP i HTTPS). Usluga za zaštitu zaporke slat će korisnike na taj URL da promijene zaporku nakon što se u pregledniku prikaže upozorenje.
-      Da bi <ph name="PRODUCT_NAME" /> pravilno snimio otisak prsta nove zaporke na toj stranici za promjenu zaporke, stranica za promjenu zaporke mora slijediti smjernice na stranici https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ako se ta postavka omogući, usluga za zaštitu zaporke slat će korisnike na taj URL da promijene zaporku nakon što se u pregledniku prikaže upozorenje.
-      Ako se ta postavka onemogući ili ne postavi, usluga za zaštitu zaporke slat će korisnike na https://myaccounts.google.com da promijene zaporku.
-      Pravilo je dostupno samo na instancama Windowsa koje su pridružene domeni <ph name="MS_AD_NAME" /> ili instancama Windowsa 10 Pro ili Enterprise prijavljenim za upravljanje uređajima.</translation>
 <translation id="8798099450830957504">Zadano</translation>
 <translation id="8800453707696044281">Postavi prilagođeno zaustavljanje punjenja baterije u postocima</translation>
 <translation id="8801680448782904838">Obavijesti korisnika o obaveznom ili preporučenom ponovnom pokretanju preglednika ili uređaja</translation>
@@ -4219,9 +4202,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 
       Vrijednost pravila navodi se u sekundama.</translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
-<translation id="9038058011835642205">Određuje popis web-lokacija koje se instaliraju u pozadini bez interakcije korisnika i koje korisnik ne može deinstalirati ni onemogućiti.
-
-      Svaka stavka na popisu pravila objekt je s obaveznim članom: "url" i dva izborna člana: "default_launch_container" i "create_desktop_shortcut". "url" je URL web-aplikacije koja će se instalirati, za "launch_container" je potrebno odabrati postavku "window" ili "tab" kako bi se naznačilo hoće li se web-aplikacija nakon instalacije otvarati u prozoru ili na kartici, a "create_desktop_shortcut" treba biti postavljen na true ako je potrebno izraditi prečac na radnoj površini na Linuxu i Windowsima. Ako se izostavi "default_launch_container", aplikacija će se prema zadanim postavkama otvarati u kartici. Neovisno o vrijednosti parametra "default_launch_container", korisnici mogu promijeniti spremnik u kojem će se aplikacija otvarati. Ako se "create_desktop_shortcuts" izostavi, prečac na radnoj površini neće se izraditi.</translation>
 <translation id="9038839118379817310">Omogući Wi-Fi</translation>
 <translation id="9039822628127365650">Ako se postavi, to pravilo određuje vremensko razdoblje nakon kojeg se korisnik automatski odjavljuje, a sesija prekida. Korisnik može vidjeti preostalo vrijeme na tajmeru za odbrojavanje prikazanom na traci sustava.
 
@@ -4235,6 +4215,15 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
       Ako se vrijednost pravila postavi na token koji mapira na međuverziju za brzi popravak, uređaj će se ažurirati na odgovarajuću međuverziju ako ažuriranje nije blokirano drugim pravilom.
 
       Ako se pravilo ne postavi ili njegova vrijednost ne mapira na međuverziju za brzi popravak, uređaj se neće ažurirati na međuverziju za brzi popravak. Ako je na uređaju već instalirana međuverzija za brzi popravak i pravilo više nije postavljeno ili njegova vrijednost više ne mapira na međuverziju za brzi popravak, uređaj će se ažurirati na regularnu međuverziju ako ažuriranje nije blokirano drugim pravilom.</translation>
+<translation id="9054012305936267950">To pravilo upravlja ponašanjem prijave putem preglednika. Omogućuje vam da odredite može li se korisnik prijaviti u preglednik <ph name="PRODUCT_NAME" /> svojim računom i upotrebljavati usluge povezane s računom kao što je Chrome sinkronizacija.
+
+      Ako se to pravilo postavi na "Onemogući prijavu putem preglednika", korisnik se ne može prijaviti u preglednik i upotrebljavati usluge računa. U tom se slučaju značajke na razini preglednika kao što je Chrome sinkronizacija ne mogu upotrebljavati i neće biti dostupne. Ako je korisnik bio prijavljen i pravilo se postavi na "Onemogućeno", korisnik će se odjaviti sljedeći put kad pokrene Chrome, no zadržat će se lokalni podaci profila kao što su oznake, zaporke itd. Korisnik će se i dalje moći prijaviti na Googleove web-usluge kao što je Gmail i moći će ih upotrebljavati.
+
+      Ako se to pravilo postavi na "Omogući prijavu putem preglednika", korisnik se može prijaviti u preglednik i automatski se prijavljuje u preglednik kad se prijavi na Googleove web-usluge kao što je Gmail. Kad je korisnik prijavljen u pregledniku, to znači da preglednik sprema podatke o korisnikovom računu. No to ne znači da će Chrome sinkronizacija biti uključena prema zadanim postavkama; da bi upotrebljavao tu značajku, korisnik se mora uključiti zasebno. Ako se to pravilo omogući, korisnik neće moći isključiti postavku koja omogućuje prijavu u preglednik. Da biste kontrolirali dostupnost Chrome sinkronizacije, upotrijebite pravilo "SyncDisabled".
+
+      Ako se pravilo postavi na "Nametni prijavu putem preglednika", korisniku se prikazuje dijaloški okvir za odabir računa i on mora odabrati račun i prijaviti se da bi upotrebljavao preglednik. Na taj se način za upravljane račune osigurava primjena i provedba pravila povezanih s računom. Prema zadanim postavkama time se uključuje Chrome sinkronizacija za račun, osim kad je sinkronizaciju onemogućio administrator domene ili kad je onemogućena putem pravila "SyncDisabled". Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na "netočno". Postojeći neprijavljeni profili zaključat će se i neće biti dostupni nakon što se to pravilo omogući. Više informacija potražite u članku centra za pomoć: https://support.google.com/chrome/a/answer/7572556. Ova opcija ne podržava Linux i, ako se koristi, vratit će se na "Omogući prijavu putem preglednika".
+
+      Ako se to pravilo ne postavi, korisnik može odlučiti hoće li omogućiti opciju prijave putem preglednika i može je upotrebljavati kako želi.</translation>
 <translation id="9072600218500597787">Konfigurira tražene nazive domena hosta koji će se nametnuti za hostove daljinskog pristupa i onemogućuje korisnicima da to promijene.
 
           Ako se ta postavka omogući, hostovi se mogu dijeliti samo putem računa registriranih na navedenom nazivu domene.

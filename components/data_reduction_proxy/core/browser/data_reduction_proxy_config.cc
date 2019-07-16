@@ -192,8 +192,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       network_connection_tracker_(network_connection_tracker),
       configurator_(configurator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
-      network_properties_manager_(nullptr),
-      weak_factory_(this) {
+      network_properties_manager_(nullptr) {
   DCHECK(io_task_runner_);
   DCHECK(network_connection_tracker_);
   DCHECK(configurator);

@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Prepis (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Zobrazenie snímky</translation>
 <translation id="1045157690796831147">Prepis (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Zadávanie japončiny (americká klávesnica)</translation>
 <translation id="1047956942837015229">Prebieha odstraňovanie <ph name="COUNT" /> položiek...</translation>
 <translation id="1049926623896334335">Dokument aplikácie Word</translation>
 <translation id="1062407476771304334">Nahradiť</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Priečinok</translation>
 <translation id="3549797760399244642">Prejsť na adresu drive.google.com...</translation>
 <translation id="357479282490346887">Litovčina</translation>
+<translation id="3583509704582854624">Zadávanie alfanumerických znakov (japonská klávesnica)</translation>
 <translation id="3603385196401704894">Kanadská francúzska klávesnica</translation>
 <translation id="3606220979431771195">Turecká (typ F)</translation>
 <translation id="3609785682760573515">Prebieha synchronizácia...</translation>
@@ -432,6 +434,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5911887972742538906">Pri inštalácii aplikácie pre Linux sa vyskytla chyba.</translation>
 <translation id="5912396950572065471">Formát</translation>
 <translation id="5913638992615760742">Kopírovanie zlyhalo, neočakávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Zadávanie japončiny (japonská klávesnica)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Udeľte aplikáciám pre systém Linux povolenie meniť súbory na Disku Google. Zmeny sa budú synchronizovať do vašich ďalších zariadení.</translation>
 <translation id="5982621672636444458">Usporiadať možnosti</translation>

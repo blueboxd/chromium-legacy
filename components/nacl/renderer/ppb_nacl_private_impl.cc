@@ -1590,8 +1590,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
         stream_handler_(stream_handler),
         stream_handler_user_data_(stream_handler_user_data),
         success_(false),
-        expected_content_length_(-1),
-        weak_factory_(this) {}
+        expected_content_length_(-1) {}
 
   void Load(const blink::WebURLRequest& request) {
     url_loader_->LoadAsynchronously(request, this);
@@ -1699,7 +1698,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
   void* stream_handler_user_data_;
   bool success_;
   int64_t expected_content_length_;
-  base::WeakPtrFactory<PexeDownloader> weak_factory_;
+  base::WeakPtrFactory<PexeDownloader> weak_factory_{this};
 };
 
 }  // namespace

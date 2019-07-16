@@ -8,9 +8,6 @@
 
 #include "base/system/sys_info.h"
 #include "media/base/video_types.h"
-#if defined(OS_CHROMEOS)
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
-#endif  // defined(OS_CHROMEOS)
 #include "media/gpu/test/video_player/video.h"
 
 namespace media {

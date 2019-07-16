@@ -1159,6 +1159,14 @@ interface TextEncoderStream
     getter readable
     getter writable
     method constructor
+interface TextMetrics
+    attribute @@toStringTag
+    getter actualBoundingBoxAscent
+    getter actualBoundingBoxDescent
+    getter actualBoundingBoxLeft
+    getter actualBoundingBoxRight
+    getter width
+    method constructor
 interface TransformStream
     attribute @@toStringTag
     getter readable

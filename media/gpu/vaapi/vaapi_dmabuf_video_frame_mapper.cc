@@ -9,15 +9,12 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "media/gpu/format_utils.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/video/picture.h"
-
-#if defined(OS_CHROMEOS)
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace media {
 
@@ -147,9 +144,7 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   }
 
   gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_CHROMEOS)
   gmb_handle = CreateGpuMemoryBufferHandle(video_frame.get());
-#endif
   if (gmb_handle.is_null()) {
     VLOGF(1) << "Failed to CreateGMBHandleFromVideoFrame.";
     return nullptr;

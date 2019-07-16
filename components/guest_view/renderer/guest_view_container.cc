@@ -56,8 +56,7 @@ GuestViewContainer::GuestViewContainer(content::RenderFrame* render_frame)
       render_frame_(render_frame),
       in_destruction_(false),
       destruction_isolate_(nullptr),
-      element_resize_isolate_(nullptr),
-      weak_ptr_factory_(this) {
+      element_resize_isolate_(nullptr) {
   render_frame_lifetime_observer_.reset(
       new RenderFrameLifetimeObserver(this, render_frame_));
 }

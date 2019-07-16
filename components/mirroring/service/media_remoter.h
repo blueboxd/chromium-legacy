@@ -140,7 +140,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) MediaRemoter final
     STOPPING_REMOTING,  // Stopping the remoting session.
   } state_;
 
-  base::WeakPtrFactory<MediaRemoter> weak_factory_;
+  base::WeakPtrFactory<MediaRemoter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRemoter);
 };

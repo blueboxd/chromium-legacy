@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">‏יש להפעיל את Bluetooth כדי לאתר מכשירים קרובים</translation>
 <translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2872961005593481000">כיבוי</translation>
-<translation id="2912823482158781027">רענון הכרטיס</translation>
-<translation id="3511655281162215899">יש לבחור מיד סיסמה חדשה</translation>
-<translation id="3562817605261346876">יש לרענן בקרוב את הכרטיס של <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">סיסמה חדשה</translation>
 <translation id="445059817448385655">סיסמה ישנה</translation>
 <translation id="467510802200863975">הסיסמאות אינן תואמות</translation>
@@ -23,16 +20,12 @@
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5457599981699367932">גלוש כאורח</translation>
 <translation id="54609108002486618">מנוהל</translation>
-<translation id="5733345267661125295">צריך לבחור עכשיו סיסמה חדשה</translation>
-<translation id="5743581760404859096">‏תוקף כרטיס ה-Kerberos שלך עומד לפוג</translation>
 <translation id="5832805196449965646">הוספת משתמש</translation>
 <translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="6058625436358447366">כדי לסיים יש להזין את הסיסמה הישנה והחדשה</translation>
 <translation id="6106186594183574873">כדי לסיים יש להזין את הסיסמה הישנה</translation>
 <translation id="6146993107019042706">כדי לסיים, יש להזין את הסיסמה החדשה</translation>
 <translation id="6574601967010742428">למנהל המכשיר תהיה יכולת לעקוב אחרי הפעילות שלך.</translation>
-<translation id="7280705187789120111">‏התוקף של כרטיס Kerberos עומד לפוג</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{פג התוקף של הסיסמה הנוכחית!}=1{התוקף של הסיסמה הנוכחית יפוג תוך פחות מיום!}two{התוקף של הסיסמה הנוכחית יפוג תוך פחות מיומיים!}many{התוקף של הסיסמה הנוכחית יפוג תוך פחות מ-# ימים!}other{התוקף של הסיסמה הנוכחית יפוג תוך פחות מ-# ימים!}}</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7690294790491645610">אישור הסיסמה החדשה</translation>
 <translation id="808894953321890993">שינוי הסיסמה</translation>

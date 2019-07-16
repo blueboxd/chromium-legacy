@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">文字変換（vanakkam → வணக்கம்）</translation>
 <translation id="1035094536595558507">スライド モード</translation>
 <translation id="1045157690796831147">文字変換（namaskar → നമസ്കാരം）</translation>
+<translation id="1046068652463704410">日本語入力（US キーボード用）</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> 件の項目を削除しています...</translation>
 <translation id="1049926623896334335">Word ドキュメント</translation>
 <translation id="1062407476771304334">置換</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3549797760399244642">drive.google.com にアクセスします...</translation>
 <translation id="357479282490346887">リトアニア語</translation>
+<translation id="3583509704582854624">英数入力（日本語キーボード用）</translation>
 <translation id="3603385196401704894">フランス語（カナダ）</translation>
 <translation id="3606220979431771195">トルコ語-F</translation>
 <translation id="3609785682760573515">同期しています...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Linux アプリケーションのインストール中にエラーが発生しました。</translation>
 <translation id="5912396950572065471">形式</translation>
 <translation id="5913638992615760742">コピーできませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">日本語入力（日本語キーボード用）</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux アプリに対して、Google ドライブのファイルの編集を許可します。変更が加えられた場合は他のデバイスに同期されます。</translation>
 <translation id="5982621672636444458">並べ替え方法</translation>

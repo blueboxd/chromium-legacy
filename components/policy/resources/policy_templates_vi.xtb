@@ -3332,19 +3332,8 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7123160381479171745">Xác định danh sách những người dùng được phép đăng nhập vào thiết bị. Các mục nhập sẽ có dạng <ph name="USER_WHITELIST_ENTRY_FORMAT" />, chẳng hạn như <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Để cho phép người dùng bất kỳ trên một miền, hãy sử dụng các mục nhập có dạng <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Nếu bạn không định cấu hình chính sách này, sẽ không có hạn chế đối với việc người dùng nào được phép đăng nhập. Lưu ý rằng việc tạo người dùng mới sẽ vẫn yêu cầu phải định cấu hình chính sách <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> một cách phù hợp.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> cung cấp bản cập nhật và cài đặt an toàn cho tiện ích. Tuy nhiên, bạn chỉ có thể bảo vệ nội dung của một số tiện ích lưu trữ bên ngoài Cửa hàng Chrome trực tuyến bằng các thuật toán ký hoặc băm không an toàn như SHA1. Nếu bạn tắt chính sách này, thì Chrome sẽ không cho phép thực hiện quá trình cài đặt và cập nhật mới đối với những tiện ích đó (cho đến khi nhà phát triển tiện ích tạo lại tiện ích có thuật toán mạnh hơn). Khi bạn bật chính sách này, thì Chrome sẽ cho phép thực hiện quá trình cài đặt và cập nhật đối với những tiện ích đó.
-
-          Chính sách này sẽ bật theo mặc định khi không được đặt.
-          Bắt đầu từ <ph name="PRODUCT_NAME" /> 75, chính sách này sẽ tắt theo mặc định khi không được đặt.
-
-          Bắt đầu từ <ph name="PRODUCT_NAME" /> 77, chính sách này sẽ bị bỏ qua và coi như là đã tắt.</translation>
 <translation id="7126716959063786004">Cho phép kết thúc các quá trình trong Trình quản lý tác vụ</translation>
 <translation id="7127892035367404455">Khôi phục về phiên bản đích</translation>
-<translation id="7128918109610518786">Liệt kê số nhận dạng ứng dụng mà <ph name="PRODUCT_OS_NAME" /> hiển thị dưới dạng ứng dụng được ghim trong thanh trình chạy.
-
-      Nếu chính sách này được định cấu hình, bộ ứng dụng sẽ được cố định và người dùng không thể thay đổi được.
-
-      Nếu chính sách này không được đặt, người dùng có thể thay đổi danh sách các ứng dụng được ghim trong trình chạy.</translation>
 <translation id="713121532817834879">Chính sách này là một URL trỏ tới tệp XML có cùng định dạng với chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer. URL này sẽ tải các quy tắc từ một tệp XML nhưng không chia sẻ những quy tắc đó với Internet Explorer.
 
       Các quy tắc trong tệp XML này được áp dụng giống như <ph name="GREYLIST_POLICY_NAME" />. Tức là, các quy tắc này không cho phép <ph name="PRODUCT_NAME" /> mở trình duyệt thay thế, đồng thời ngăn trình duyệt thay thế mở <ph name="PRODUCT_NAME" />.
@@ -4192,12 +4181,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Nếu bạn tắt hoặc không thiết lập cài đặt này, tên chuẩn của máy chủ sẽ được xác định thông qua tra cứu CNAME.</translation>
 <translation id="8764477907716150749">Chính sách này được <ph name="PRODUCT_NAME" /> sử dụng nội bộ.</translation>
-<translation id="8765776988041674792">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho giao thức HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng đến URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trên trình duyệt.
-      Để <ph name="PRODUCT_NAME" /> ghi lại chính xác vân tay số của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân thủ các nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng tới URL này để thay đổi mật khẩu của họ sau khi thấy cảnh báo trong trình duyệt.
-      Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ chuyển hướng người dùng tới trang web https://myaccounts.google.com để thay đổi mật khẩu của họ.
-      Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="8800453707696044281">Đặt mức phần trăm ngừng sạc pin tùy chỉnh</translation>
 <translation id="8801680448782904838">Thông báo cho người dùng biết họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị</translation>
@@ -4337,9 +4320,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Bạn nên chỉ định giá trị tính bằng giây cho chính sách này.</translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
-<translation id="9038058011835642205">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
-
-      Mỗi mục trong danh sách của chính sách này là một đối tượng có một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "cửa sổ" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa nơi mở ứng dụng bất kể "default_launch_container"có giá trị nào. Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo.</translation>
 <translation id="9038839118379817310">Bật Wi-Fi</translation>
 <translation id="9039822628127365650">Khi bạn đặt chính sách này, chính sách sẽ chỉ định thời lượng mà sau đó một người dùng tự động bị đăng xuất, chấm dứt phiên. Người dùng được thông báo về thời gian còn lại bằng đồng hồ đếm ngược hiển thị trong khay hệ thống.
 

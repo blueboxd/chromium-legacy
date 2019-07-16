@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignorert fordi det ble overstyrt av <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Utstedt til: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Bevegelsessensorer</translation>
 <translation id="213826338245044447">Bokmerker for mobil</translation>
 <translation id="214556005048008348">Avbryt betalingen</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Sjekk signalet i området ditt</translation>
 <translation id="2523886232349826891">Kun lagret på denne enheten</translation>
 <translation id="2524461107774643265">Legg til mer informasjon</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{og 1 til}other{og # til}}</translation>
 <translation id="2536110899380797252">Legg til adresse</translation>
 <translation id="2539524384386349900">Oppdag</translation>
 <translation id="254947805923345898">Regelverdien er ikke gyldig.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Du har spurt foreldrene dine om det er greit å besøke dette nettstedet</translation>
 <translation id="4876188919622883022">Forenklet visning</translation>
 <translation id="4876305945144899064">Uten brukernavn</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Ingen}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" />-søk</translation>
 <translation id="4879491255372875719">Automatisk (standard)</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Ja, lagre</translation>
 <translation id="6508722015517270189">Start Chrome på nytt</translation>
 <translation id="6517596291481585650">Advarsel: Denne regelen ble ikke sammenslått som en regelspesifisert liste fordi den ikke er en liste.</translation>
+<translation id="6521745193039995384">Ikke aktiv</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6534179046333460208">Fysisk nett-forslag</translation>
 <translation id="6545864417968258051">Bluetooth-skanning</translation>
@@ -1477,6 +1481,7 @@ Mer informasjon:
 <translation id="9076630408993835509">Denne nettleseren administreres ikke av et selskap eller en annen organisasjon. Aktiviteten på denne enheten kan administreres utenfor Chrome. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Mer informasjon er nødvendig</translation>
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
+<translation id="9089260154716455634">Regler for bruk utenom arbeidstiden:</translation>
 <translation id="9095388113577226029">Flere språk</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>

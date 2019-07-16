@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Obtén ajuda per a l'ús de Chromium OS</translation>
 <translation id="1396446129537741364">Chromium està provant de mostrar les contrasenyes.</translation>
 <translation id="1414495520565016063">Teniu la sessió iniciada a Chromium.</translation>
-<translation id="1502360822835740515">Estableix Chromium com a navegador predeterminat</translation>
 <translation id="151962892725702025">Chromium OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="1524282610922162960">Comparteix una pestanya de Chromium</translation>
-<translation id="1585657529869845941">Si es mostra l'opció <ph name="BEGIN_BOLD" />Canvia igualment<ph name="END_BOLD" />, fes-hi clic</translation>
 <translation id="1668054258064581266">Després de suprimir el vostre compte de Chromium, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium accedirà a Drive per fer suggeriments a la barra d'adreces</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" />: Chromium</translation>
-<translation id="3852700440713538496">Ancora Chromium a la barra de tasques</translation>
 <translation id="388648406173476553">Personalitza i controla Chromium. Cal la teva intervenció. Fes clic per obtenir més informació.</translation>
 <translation id="3889543394854987837">Feu clic al vostre nom per obrir Chromium i començar a navegar.</translation>
 <translation id="3898493977366060150">Navegació web amb les eines intel·ligents de Google</translation>
 <translation id="4036079820698952681">Informa de la <ph name="BEGIN_LINK" />configuració actual<ph name="END_LINK" /> per ajudar-nos a millorar Chromium</translation>
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
-<translation id="407254336480250557">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Descobriu aplicacions, jocs, extensions i temes genials per a Chromium.</translation>
 <translation id="4216212958613226427">És l'idioma en què es mostra la IU de Chromium</translation>
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">Sembla que un altre procés de Chromium (<ph name="PROCESS_ID" />) està fent servir el perfil en un altre ordinador (<ph name="HOST_NAME" />). Chromium ha bloquejat el perfil perquè no es malmeti. Si esteu segur que no hi ha cap altre procés que utilitzi el perfil, podeu desbloquejar-lo i tornar a iniciar Chromium.</translation>
 <translation id="469338717132742108">Obtén ajuda per a Chromium OS</translation>
 <translation id="4708774505295300557">Algú ha iniciat anteriorment la sessió a Chromium en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuari de Chromium per mantenir la informació separada.</translation>
-<translation id="4714956846925717402">Accedeix a Chromium més de pressa</translation>
 <translation id="4746050847053251315">Vols sortir de Chromium igualment?</translation>
 <translation id="4748217263233248895">S'acaba d'aplicar una actualització de seguretat especial per a Chromium. Reinicia el navegador i restaurarem les pestanyes.</translation>
 <translation id="479167709087336770">Fa servir el mateix corrector ortogràfic que s'utilitza a la Cerca de Google. El text que escrius al navegador s'envia a Google. Pots canviar aquest comportament sempre que vulguis a la configuració.</translation>

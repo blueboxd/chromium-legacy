@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">Chromium OS ব্যবহারে সাহায্য পেতে</translation>
 <translation id="1396446129537741364">Chromium পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
 <translation id="1414495520565016063">আপনি Chromium এ প্রবেশ করেছেন!</translation>
-<translation id="1502360822835740515">Chromium-কে আপনার ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="151962892725702025">আপনার ডোমেনে সিঙ্ক উপলভ্য না থাকার কারণে Chromium OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
 <translation id="1524282610922162960">একটি Chromium ট্যাব শেয়ার করুন</translation>
-<translation id="1585657529869845941">এটি দেখানো হলে <ph name="BEGIN_BOLD" />যেকোনওভাবে পরিবর্তন করতে<ph name="END_BOLD" /> ক্লিক করুন</translation>
 <translation id="1668054258064581266">Chromium থেকে আপনার অ্যাকাউন্ট সরানোর পরে, কার্যকর করতে আপনাকে খোলা ট্যাবগুলিকে রিলোড করার প্রয়োজন হতে পারে।</translation>
 <translation id="1688750314291223739">ওয়েবে আপনার নিজের মতো করে ব্রাউজার ফিচার সেভ করতে সিঙ্ক সেট করুন এবং যেকোনো কম্পিউটারে Chromium থেকে সেগুলিতে অ্যাক্সেস করুন৷</translation>
 <translation id="1708666629004767631">Chromium-এর একটি নতুন, নিরাপদ ভার্সন উপলভ্য আছে৷</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">অ্যাড্রেস বারে সাজেশন দেওয়ার জন্য Chromium আপনার ড্রাইভ অ্যাক্সেস করবে</translation>
 <translation id="378917192836375108">Chromium আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Chromium কে আপনার টাস্কবারে পিন করুন</translation>
 <translation id="388648406173476553">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন। একটি বিষয়ে আপনার নজর দেওয়া দরকার - বিস্তারিত বিবরণের জন্য ক্লিক করুন।</translation>
 <translation id="3889543394854987837">Chromium খোলার জন্য আপনার নামের উপরে ক্লিক করুন এবং ব্রাউজ করা শুরু করুন৷</translation>
 <translation id="3898493977366060150">Google স্মার্ট ব্যবহার করে ওয়েব ব্রাউজিং</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />বর্তমান সেটিংস<ph name="END_LINK" />-এর রিপোর্ট করে Chromium-কে আরও ভালো করে তুলতে সাহায্য করুন</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ ভার্সনে উপলভ্য।</translation>
-<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> বেছে নিন</translation>
 <translation id="421369550622382712">Chromium-এর জন্য খুব ভালো অ্যাপ্লিকেশান, গেম, এক্সটেনশন এবং থিমসমূহ আবিষ্কার করুন৷</translation>
 <translation id="4216212958613226427">Chromium UI-এ দেখানোর জন্য এই ভাষা ব্যবহার করা হয়</translation>
 <translation id="4222580632002216401">আপনি এখন Chromium এ প্রবেশ করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">অন্য একটি কম্পিউটারে (<ph name="HOST_NAME" />) প্রোফাইলটি অন্য Chromium প্রক্রিয়া (<ph name="PROCESS_ID" />) দ্বারা ব্যবহৃত হচ্ছে বলে মনে হচ্ছে৷ Chromium প্রোফাইলটিকে লক করেছে যাতে এটি বিকৃত না হয়ে যায়৷ যদি আপনি নিশ্চিত হন যে আর কোনো প্রক্রিয়া এই প্রোফাইলটিকে ব্যবহার করছে না, তবে আপনি প্রোফাইলটিকে আনলক করতে পারেন এবং Chromium কে পুনরায় লঞ্চ করতে পারেন৷</translation>
 <translation id="469338717132742108">Chromium OS বিষয়ে সাহায্য পান</translation>
 <translation id="4708774505295300557">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST" /> হিসাবে Chromium-এ সাইন-ইন করেছেন। আপনার তথ্য পৃথক রাখার জন্য অনুগ্রহ করে একটি Chromium ব্যবহারকারী তৈরি করুন।</translation>
-<translation id="4714956846925717402">Chromium এ আরও দ্রুত যান</translation>
 <translation id="4746050847053251315">তা স্বত্তেও Chromium বন্ধ করবেন?</translation>
 <translation id="4748217263233248895">Chromium-এর জন্য একটি বিশেষ নিরাপত্তা আপডেট এইমাত্র প্রয়োগ করা হয়েছে। এখনি রিস্টার্ট করুন এবং আপনার ট্যাব আমরা রিস্টোর করব।</translation>
 <translation id="479167709087336770">এটি Google সার্চ-এ যে বানান পরীক্ষা করার টুল ব্যবহার করা হয় সেটিই ব্যবহার করে। আপনি ব্রাউজারে যে টেক্সট লেখেন, সেটি Google-এ পাঠানো হয়। সেটিংস থেকে আপনি এটি পরিবর্তন করতে পারেন।</translation>

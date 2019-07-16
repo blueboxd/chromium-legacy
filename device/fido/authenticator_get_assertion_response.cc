@@ -97,27 +97,4 @@ AuthenticatorGetAssertionResponse::SetNumCredentials(uint8_t num_credentials) {
   return *this;
 }
 
-std::vector<uint8_t> GetSerializedCtapDeviceResponse(
-    const AuthenticatorGetAssertionResponse& response) {
-  cbor::Value::MapValue response_map;
-  if (response.credential()) {
-    response_map.emplace(1, AsCBOR(*response.credential()));
-  }
-
-  response_map.emplace(2, response.auth_data().SerializeToByteArray());
-  response_map.emplace(3, response.signature());
-
-  if (response.user_entity()) {
-    response_map.emplace(4, AsCBOR(*response.user_entity()));
-  }
-  if (response.num_credentials()) {
-    response_map.emplace(5, response.num_credentials().value());
-  }
-
-  auto encoded_response =
-      cbor::Writer::Write(cbor::Value(std::move(response_map)));
-  DCHECK(encoded_response);
-  return *encoded_response;
-}
-
 }  // namespace device

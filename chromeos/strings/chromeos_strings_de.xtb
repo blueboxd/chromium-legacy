@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
-<translation id="2912823482158781027">TICKET AKTUALISIEREN</translation>
-<translation id="3511655281162215899">Bitte wählen Sie sofort ein neues Passwort aus</translation>
-<translation id="3562817605261346876">Bitte aktualisieren Sie das Ticket für <ph name="PRINCIPAL_NAME" /> möglichst bald</translation>
 <translation id="3838338534323494292">Neues Passwort</translation>
 <translation id="445059817448385655">Altes Passwort</translation>
 <translation id="467510802200863975">Die Passwörter stimmen nicht überein</translation>
@@ -23,16 +20,12 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="54609108002486618">Verwaltet</translation>
-<translation id="5733345267661125295">Bitte wählen Sie jetzt ein neues Passwort</translation>
-<translation id="5743581760404859096">Ihr Kerberos-Ticket läuft ab</translation>
 <translation id="5832805196449965646">Person hinzufügen</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="6058625436358447366">Geben Sie zum Schluss Ihr altes und Ihr neues Passwort ein</translation>
 <translation id="6106186594183574873">Geben Sie zum Schluss Ihr altes Passwort ein</translation>
 <translation id="6146993107019042706">Geben Sie zum Schluss Ihr neues Passwort ein</translation>
 <translation id="6574601967010742428">Der Geräteadministrator kann Ihre Aktivitäten möglicherweise überwachen.</translation>
-<translation id="7280705187789120111">Kerberos-Ticket läuft ab</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Ihr aktuelles Passwort ist abgelaufen.}=1{Ihr aktuelles Passwort läuft in weniger als einem Tag ab.}other{Ihr aktuelles Passwort läuft in weniger als # Tagen ab.}}</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
 <translation id="808894953321890993">Passwort ändern</translation>

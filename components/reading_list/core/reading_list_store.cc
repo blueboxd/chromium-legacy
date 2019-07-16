@@ -24,8 +24,7 @@ ReadingListStore::ReadingListStore(
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : ReadingListModelStorage(std::move(change_processor)),
       create_store_callback_(std::move(create_store_callback)),
-      pending_transaction_count_(0),
-      weak_ptr_factory_(this) {}
+      pending_transaction_count_(0) {}
 
 ReadingListStore::~ReadingListStore() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

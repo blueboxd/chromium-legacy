@@ -122,7 +122,7 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<InterprocessFramePool> weak_factory_;
+  base::WeakPtrFactory<InterprocessFramePool> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterprocessFramePool);
 };

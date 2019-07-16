@@ -104,8 +104,7 @@ AllowlistCheckerClient::AllowlistCheckerClient(
     bool default_does_match_allowlist)
     : callback_for_result_(callback_for_result),
       database_manager_(database_manager),
-      default_does_match_allowlist_(default_does_match_allowlist),
-      weak_factory_(this) {
+      default_does_match_allowlist_(default_does_match_allowlist) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Set a timer to fail open, i.e. call it "whitelisted", if the full

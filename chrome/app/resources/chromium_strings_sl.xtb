@@ -13,10 +13,8 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1298199220304005244">Pomoč pri uporabi sistema Chromium OS</translation>
 <translation id="1396446129537741364">Chromium poskuša prikazati gesla.</translation>
 <translation id="1414495520565016063">Prijavljeni ste v Chromium.</translation>
-<translation id="1502360822835740515">Nastavitev Chromiuma kot privzetega brskalnika</translation>
 <translation id="151962892725702025">Chromium OS ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="1524282610922162960">Deljenje zavihka v Chromiumu</translation>
-<translation id="1585657529869845941">Kliknite <ph name="BEGIN_BOLD" />Vseeno preklopi<ph name="END_BOLD" />, če se prikaže</translation>
 <translation id="1668054258064581266">Ko odstranite račun iz Chromiuma, boste morali morda znova naložiti odprte zavihke, če želite uveljaviti spremembo.</translation>
 <translation id="1688750314291223739">Nastavite sinhronizacijo, da prilagojene funkcije brskalnika shranite v spletu in do njih v Chromiumu dostopate v katerem koli računalniku.</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
@@ -85,13 +83,11 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="3728336900324680424">Chromium bo dostopal do Googla Drive zaradi ponujanja predlogov v naslovni vrstici</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Pripenjanje Chromiuma v opravilno vrstico</translation>
 <translation id="388648406173476553">Prilagajanje in nadziranje Chromiuma. Nekaj morate preveriti – kliknite za podrobnosti.</translation>
 <translation id="3889543394854987837">Kliknite ime, da odprete Chromium in začnete brskati.</translation>
 <translation id="3898493977366060150">Brskanje po spletu z Googlovimi pametnimi rešitvami</translation>
 <translation id="4036079820698952681">Pomagajte izboljšati Chromium s poročanjem o <ph name="BEGIN_LINK" />trenutnih nastavitvah<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
-<translation id="407254336480250557">Izberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Odkrijte zanimive aplikacije, igre, razširitve in teme za Chromium.</translation>
 <translation id="4216212958613226427">Ta jezik se uporablja za prikaz uporabniškega vmesnika v Chromiumu</translation>
 <translation id="4222580632002216401">Zdaj ste prijavljeni v Chromium. Sinhronizacijo je onemogočil skrbnik.</translation>
@@ -108,7 +104,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="4677944499843243528">Videti je, da profil uporablja drug Chromiumov proces (<ph name="PROCESS_ID" />) v drugem računalniku (<ph name="HOST_NAME" />). Chromium je zaklenil profil, da se ne poškoduje. Če ste prepričani, da tega profila ne uporabljajo nobeni drugi procesi, ga lahko odklenete in znova zaženete Chromium.</translation>
 <translation id="469338717132742108">Pomoč za OS Chromium</translation>
 <translation id="4708774505295300557">Nekdo se je prijavil v Chromium v tem računalniku kot <ph name="ACCOUNT_EMAIL_LAST" />. Ustvarite nov uporabniški profil za Chromium, če želite, da bodo vaši podatki ločeni.</translation>
-<translation id="4714956846925717402">Hitrejši dostop do Chromiuma</translation>
 <translation id="4746050847053251315">Želite vseeno zapreti Chromium?</translation>
 <translation id="4748217263233248895">Pravkar je bila nameščena posebna varnostna posodobitev za Chromium. Znova ga zaženite (vaše zavihke bomo obnovili).</translation>
 <translation id="479167709087336770">Uporabljeno je isto preverjanje črkovanja kot v Iskanju Google. Besedilo, ki ga vnesete v brskalniku, je poslano Googlu. To lahko kadar koli spremenite v nastavitvah.</translation>

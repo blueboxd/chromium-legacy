@@ -453,6 +453,9 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
 TEST_F(FrameFetchContextModifyRequestTest,
        DoNotUpgradeInsecureResourceRequests) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(blink::features::kMixedContentAutoupgrade);
+
   RecreateFetchContext(KURL("https://secureorigin.test/image.png"));
   document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
 

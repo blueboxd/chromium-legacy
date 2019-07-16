@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
@@ -108,7 +109,7 @@ public class TabDelegate extends TabCreator {
 
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, activity, targetActivity);
         IntentHandler.addTrustedIntentExtras(intent);
-        MultiWindowUtils.onMultiInstanceModeStarted();
+        MultiInstanceManager.onMultiInstanceModeStarted();
         activity.startActivity(
                 intent, MultiWindowUtils.getOpenInOtherWindowActivityOptions(activity));
     }

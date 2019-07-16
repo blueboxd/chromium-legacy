@@ -255,7 +255,7 @@ class ModelTypeWorker : public UpdateHandler,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
+  base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeWorker);
 };

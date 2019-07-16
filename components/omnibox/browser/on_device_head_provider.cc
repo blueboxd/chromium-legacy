@@ -77,8 +77,7 @@ OnDeviceHeadProvider::OnDeviceHeadProvider(
       serving_(nullptr),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       on_device_search_request_id_(0),
-      observer_(this),
-      weak_ptr_factory_(this) {
+      observer_(this) {
   if (client_ != nullptr) {
     auto* component_update_service = client_->GetComponentUpdateService();
     if (component_update_service != nullptr) {

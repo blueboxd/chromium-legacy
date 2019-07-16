@@ -102,7 +102,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
 
   display::DisplayChangeNotifier change_notifier_;
 
-  base::WeakPtrFactory<DesktopScreenX11> weak_factory_;
+  base::WeakPtrFactory<DesktopScreenX11> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
 };

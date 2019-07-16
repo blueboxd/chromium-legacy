@@ -161,7 +161,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
 
   // Creates weak pointers used to postpone reporting tokens. See
   // ScheduleReportTokens.
-  base::WeakPtrFactory<GCMAccountTracker> reporting_weak_ptr_factory_;
+  base::WeakPtrFactory<GCMAccountTracker> reporting_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMAccountTracker);
 };

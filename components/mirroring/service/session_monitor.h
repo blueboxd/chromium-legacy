@@ -138,7 +138,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) SessionMonitor {
   base::Time error_time_;
   base::Optional<mojom::SessionError> error_;
 
-  base::WeakPtrFactory<SessionMonitor> weak_factory_;
+  base::WeakPtrFactory<SessionMonitor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionMonitor);
 };

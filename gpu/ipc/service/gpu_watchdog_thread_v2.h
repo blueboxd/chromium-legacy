@@ -94,7 +94,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
 
   base::WeakPtr<GpuWatchdogThreadImplV2> weak_ptr_;
-  base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_;
+  base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuWatchdogThreadImplV2);
 };

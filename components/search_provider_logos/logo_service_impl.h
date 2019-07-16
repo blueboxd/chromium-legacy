@@ -228,7 +228,7 @@ class LogoServiceImpl : public LogoService,
   // Clock used to determine current time. Can be overridden in tests.
   base::Clock* clock_ = nullptr;
 
-  base::WeakPtrFactory<LogoServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<LogoServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LogoServiceImpl);
 };

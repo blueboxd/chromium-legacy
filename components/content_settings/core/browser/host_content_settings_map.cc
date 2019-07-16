@@ -250,8 +250,7 @@ HostContentSettingsMap::HostContentSettingsMap(
 #endif
       prefs_(prefs),
       is_off_the_record_(is_off_the_record),
-      store_last_modified_(store_last_modified),
-      weak_ptr_factory_(this) {
+      store_last_modified_(store_last_modified) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
 
   content_settings::PolicyProvider* policy_provider =

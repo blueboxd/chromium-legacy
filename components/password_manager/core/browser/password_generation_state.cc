@@ -192,8 +192,7 @@ PasswordGenerationState::PasswordGenerationState(FormSaver* form_saver,
                                                  PasswordManagerClient* client)
     : form_saver_(form_saver),
       client_(client),
-      clock_(new base::DefaultClock),
-      weak_factory_(this) {}
+      clock_(new base::DefaultClock) {}
 
 PasswordGenerationState::~PasswordGenerationState() = default;
 

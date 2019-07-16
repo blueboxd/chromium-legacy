@@ -3339,19 +3339,8 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7123160381479171745">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Si no se configura esta política, no se aplicarán restricciones sobre los usuarios que pueden iniciar sesión. Ten en cuenta que sigue siendo necesario configurar adecuadamente la política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> para crear nuevos usuarios.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> se ocupa de la instalación y las actualizaciones de seguridad de las extensiones. Sin embargo, el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo lo pueden proteger algoritmos de hash o de firma no seguros, como SHA1. Si esta política no está habilitada, Chrome no permitirá la instalación ni las actualizaciones de esas extensiones hasta que sus desarrolladores modifiquen su diseño e incluyan algoritmos más seguros. Si esta política está habilitada, se permitirá la instalación y las actualizaciones de esas extensiones.
-
-          Si esta política no está configurada, el comportamiento será como si estuviera habilitada.
-          A partir de la versión 75 de <ph name="PRODUCT_NAME" />, si la política no está configurada, el comportamiento será como si no estuviera habilitada.
-
-          A partir de la versión 77 de <ph name="PRODUCT_NAME" />, esta política se ignorará y se tratará como si estuviera inhabilitada.</translation>
 <translation id="7126716959063786004">Habilitar la finalización de procesos en el administrador de tareas</translation>
 <translation id="7127892035367404455">Vuelve a instalar la versión de destino</translation>
-<translation id="7128918109610518786">Presenta una relación de los identificadores de aplicaciones que muestra <ph name="PRODUCT_OS_NAME" /> como aplicaciones fijadas en la barra de aplicaciones.
-
-      Si se configura esta política, se fija el conjunto de aplicaciones y el usuario no puede cambiarlo.
-
-      Si no se establece la política, el usuario puede cambiar la lista de aplicaciones fijadas de la barra de aplicaciones.</translation>
 <translation id="713121532817834879">Esta política es una URL que señala a un archivo XML con el mismo formato que la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer. Con esta política se cargan las reglas de un archivo XML, pero sin compartirlas con Internet Explorer.
 
       Las reglas de este archivo XML se aplican de la misma forma que <ph name="GREYLIST_POLICY_NAME" />. Es decir, estas reglas evitan que <ph name="PRODUCT_NAME" /> se abra en un navegador alternativo y también que un navegador alternativo abra <ph name="PRODUCT_NAME" />.
@@ -4194,12 +4183,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
           Si inhabilitas esta opción, se hará una consulta de nombre canónico para determinar el nombre canónico del servidor.</translation>
 <translation id="8764477907716150749">Esta polí­tica solo está destinada a uso interno de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseña enviará a los usuarios a esta URL para cambiar sus contraseñas cuando se les haya mostrado una advertencia en el navegador.
-      Para que <ph name="PRODUCT_NAME" /> capture correctamente la nueva huella digital de la contraseña en esta página de cambio de contraseña, la página debe seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si se habilita esta opción, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien su contraseña después de que se les haya mostrado una advertencia en el navegador.
-      Si se inhabilita esta opción o no se define, el servicio de protección de contraseñas enviará a los usuarios a la página https://myaccounts.google.com para que cambien su contraseña.
-      Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Define un porcentaje personalizado de la parada de carga de la batería</translation>
 <translation id="8801680448782904838">Informar al usuario de que es necesario o recomendable reiniciar el navegador o el dispositivo</translation>
@@ -4338,9 +4321,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
       El valor de la política se debe especificar en segundos.</translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
-<translation id="9038058011835642205">Permite especificar una lista de sitios web que se instalan de forma automática sin la intervención del usuario, que no podrá desinstalarlos ni inhabilitarlos.
-
-      Cada elemento de la política incluido en la lista es un objeto con un componente "url" obligatorio y dos componentes opcionales, "default_launch_container" y "create_desktop_shortcut". El valor de "url" es la URL de la aplicación web que se va a instalar, mientras que el valor de "launch_container" debe ser "window" o "tab", e indica cómo se abrirá la aplicación web una vez instalada. Además, si hay que crear un acceso directo en el escritorio con Linux y Windows, el valor de "create_desktop_shortcut" debe ser "True". Si se omite "default_launch_container", la aplicación se abrirá en una pestaña de forma predeterminada. Independientemente del valor de "default_launch_container", los usuarios pueden cambiar el contenedor en el que se abrirá la aplicación. Si se omite "create_desktop_shortcuts", no se crearán accesos directos del escritorio.</translation>
 <translation id="9038839118379817310">Habilitar Wi‑Fi</translation>
 <translation id="9039822628127365650">Cuando se asigna un valor a esta política, permite especificar el tiempo transcurrido hasta que se cerrará automáticamente la sesión de un usuario. Se informa al usuario del tiempo restante mediante un temporizador de cuenta atrás que aparece en la bandeja del sistema.
 

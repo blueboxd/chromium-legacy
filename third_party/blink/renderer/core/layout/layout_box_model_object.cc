@@ -1047,6 +1047,9 @@ FloatRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {
 }
 
 PhysicalOffset LayoutBoxModelObject::StickyPositionOffset() const {
+  // TODO(chrishtr): StickyPositionOffset depends on compositing at present,
+  // but there are callsites within Layout for it.
+
   const PaintLayer* ancestor_overflow_layer = Layer()->AncestorOverflowLayer();
   // TODO: Force compositing input update if we ask for offset before
   // compositing inputs have been computed?

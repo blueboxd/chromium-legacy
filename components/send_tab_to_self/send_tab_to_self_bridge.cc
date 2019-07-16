@@ -156,8 +156,7 @@ SendTabToSelfBridge::SendTabToSelfBridge(
       clock_(clock),
       history_service_(history_service),
       device_info_tracker_(device_info_tracker),
-      mru_entry_(nullptr),
-      weak_ptr_factory_(this) {
+      mru_entry_(nullptr) {
   DCHECK(clock_);
   DCHECK(device_info_tracker_);
   if (history_service) {

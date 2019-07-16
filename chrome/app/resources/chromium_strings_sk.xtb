@@ -13,10 +13,8 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1298199220304005244">Získajte pomoc pri používaní systému Chromium OS</translation>
 <translation id="1396446129537741364">Prehliadač Chromium sa snaží zobraziť heslá.</translation>
 <translation id="1414495520565016063">Ste prihlásený/-á do prehliadača Chromium.</translation>
-<translation id="1502360822835740515">Nastavenie prehliadača Chromium ako predvoleného prehliadača</translation>
 <translation id="151962892725702025">Systému OS Chromium sa nepodarilo synchronizovať vaše údaje, pretože možnosť synchronizácie nie je pre vašu doménu k dispozícii.</translation>
 <translation id="1524282610922162960">Zdieľajte kartu prehliadača Chromium</translation>
-<translation id="1585657529869845941">Kliknite na možnosť <ph name="BEGIN_BOLD" />Napriek tomu prepnúť<ph name="END_BOLD" /> (ak sa zobrazí)</translation>
 <translation id="1668054258064581266">Po odstránení účtu z prehliadača Chromium možno budete musieť znova načítať otvorené karty, aby sa zmena uplatnila.</translation>
 <translation id="1688750314291223739">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Chromium v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
 <translation id="1708666629004767631">K dispozícii je nová bezpečnejšia verzia prehliadača Chromium.</translation>
@@ -84,13 +82,11 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3728336900324680424">Chromium bude mať prístup na váš Disk, aby mohol v paneli s adresou zobrazovať návrhy</translation>
 <translation id="378917192836375108">Prehliadač Chromium vám umožňuje vybrať telefónne číslo na webe a zavolať naň pomocou aplikácie Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
-<translation id="3852700440713538496">Pripnutie prehliadača Chromium na panel úloh</translation>
 <translation id="388648406173476553">Prispôsobte a ovládajte Chromium. Vyžaduje sa vaša pozornosť. Podrobnosti získate kliknutím.</translation>
 <translation id="3889543394854987837">Ak chcete otvoriť prehliadač Chromium a začať prehliadať, kliknite na svoje meno.</translation>
 <translation id="3898493977366060150">Prehliadanie webu pomocou inteligentných doplnkov Googlu</translation>
 <translation id="4036079820698952681">Nahláste <ph name="BEGIN_LINK" />aktuálne nastavenia<ph name="END_LINK" /> a pomôžte tak zlepšiť prehliadač Chromium</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
-<translation id="407254336480250557">Vyberte <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Objavte skvelé aplikácie, hry, rozšírenia a motívy pre prehliadač Chromium.</translation>
 <translation id="4216212958613226427">V tomto jazyku sa zobrazuje používateľské rozhranie prehliadača Chromium.</translation>
 <translation id="4222580632002216401">Prihlásili ste sa do prehliadača Chromium. Synchronizácia je zakázaná administrátorom.</translation>
@@ -107,7 +103,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4677944499843243528">Zdá sa, že profil používa ďalší proces prehliadača Chromium (<ph name="PROCESS_ID" />) na inom počítači (<ph name="HOST_NAME" />). Prehliadač Chromium daný profil uzamkol, aby sa nepoškodil. Ak s istotou viete, že tento profil nepoužívajú žiadne iné procesy, môžete ho odomknúť a prehliadač Chromium znova spustiť.</translation>
 <translation id="469338717132742108">Pomoc so systémom Chromium OS</translation>
 <translation id="4708774505295300557">Do prehliadača Chromium sa už na tomto počítači niekto prihlásil pomocou účtu <ph name="ACCOUNT_EMAIL_LAST" />. Ak chcete ponechať svoje informácie oddelené, vytvorte v prehliadači Chromium nového používateľa.</translation>
-<translation id="4714956846925717402">Prechádzajte do prehliadača Chromium rýchlejšie</translation>
 <translation id="4746050847053251315">Chcete Chromium napriek tomu ukončiť?</translation>
 <translation id="4748217263233248895">Práve bola použitá mimoriadna bezpečnostná aktualizácia pre prehliadač Chromium. Zmeny sa prejavia až po jeho reštartovaní (vaše karty sa automaticky obnovia).</translation>
 <translation id="479167709087336770">Využíva rovnaký nástroj na kontrolu pravopisu, aký sa používa vo Vyhľadávaní Google. Text zadaný do prehliadača sa odošle Googlu. Toto správanie môžete zmeniť v nastaveniach.</translation>

@@ -33,9 +33,7 @@ leveldb_env::Options GetDownloadDBOptions() {
 
 DownloadStore::DownloadStore(
     std::unique_ptr<leveldb_proto::ProtoDatabase<protodb::Entry>> db)
-    : db_(std::move(db)),
-      is_initialized_(false),
-      weak_factory_(this) {}
+    : db_(std::move(db)), is_initialized_(false) {}
 
 DownloadStore::~DownloadStore() = default;
 

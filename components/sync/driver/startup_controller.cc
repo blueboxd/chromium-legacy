@@ -64,8 +64,7 @@ StartupController::StartupController(
     : get_preferred_data_types_callback_(std::move(get_preferred_data_types)),
       should_start_callback_(std::move(should_start)),
       start_engine_callback_(std::move(start_engine)),
-      bypass_deferred_startup_(false),
-      weak_factory_(this) {}
+      bypass_deferred_startup_(false) {}
 
 StartupController::~StartupController() {}
 

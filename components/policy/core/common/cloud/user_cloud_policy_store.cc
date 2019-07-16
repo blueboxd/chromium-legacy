@@ -178,8 +178,7 @@ DesktopCloudPolicyStore::DesktopCloudPolicyStore(
                                policy_scope,
                                policy_source),
       policy_path_(policy_path),
-      key_path_(key_path),
-      weak_factory_(this) {}
+      key_path_(key_path) {}
 
 DesktopCloudPolicyStore::~DesktopCloudPolicyStore() {}
 

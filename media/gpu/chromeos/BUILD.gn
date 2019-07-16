@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
-import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
 
 assert(is_chromeos)
@@ -16,12 +14,12 @@ source_set("chromeos") {
   ]
 
   deps = [
-    ":common",
     "//base",
     "//media",
     "//media/gpu:buildflags",
     "//media/gpu:command_buffer_helper",
     "//media/gpu:common",
+    "//media/gpu/linux:common",
   ]
 
   if (use_vaapi) {
@@ -31,62 +29,4 @@ source_set("chromeos") {
   if (use_v4l2_codec) {
     deps += [ "//media/gpu/v4l2" ]
   }
-}
-
-source_set("common") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "dmabuf_video_frame_pool.cc",
-    "dmabuf_video_frame_pool.h",
-    "mailbox_video_frame_converter.cc",
-    "mailbox_video_frame_converter.h",
-    "platform_video_frame_pool.cc",
-    "platform_video_frame_pool.h",
-    "platform_video_frame_utils.cc",
-    "platform_video_frame_utils.h",
-  ]
-
-  deps = [
-    "//base",
-    "//media",
-    "//media/gpu:command_buffer_helper",
-    "//media/gpu:common",
-    "//ui/gfx:buffer_types",
-    "//ui/gfx:memory_buffer",
-    "//ui/gl",
-  ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
-}
-
-source_set("video_frame_mapper") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "generic_dmabuf_video_frame_mapper.cc",
-    "generic_dmabuf_video_frame_mapper.h",
-  ]
-
-  deps = [
-    "//base",
-    "//media",
-    "//media/gpu:command_buffer_helper",
-    "//media/gpu:common",
-    "//media/gpu:video_frame_mapper_common",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "platform_video_frame_pool_unittest.cc",
-  ]
-  deps = [
-    ":common",
-    "//base",
-    "//base/test:test_support",
-    "//skia",
-    "//testing/gtest",
-  ]
 }

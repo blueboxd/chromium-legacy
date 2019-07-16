@@ -59,8 +59,7 @@ OAuthMultiloginHelper::OAuthMultiloginHelper(
       token_service_(token_service),
       accounts_(accounts),
       external_cc_result_(external_cc_result),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK(signin_client_);
   DCHECK(token_service_);
   DCHECK(!accounts_.empty());

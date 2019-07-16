@@ -122,8 +122,7 @@ SharedProtoDatabaseClient::SharedProtoDatabaseClient(
     const scoped_refptr<SharedProtoDatabase>& parent_db)
     : UniqueProtoDatabase(std::move(db_wrapper)),
       prefix_(PrefixForDatabase(db_type)),
-      parent_db_(parent_db),
-      weak_ptr_factory_(this) {
+      parent_db_(parent_db) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

@@ -1037,9 +1037,7 @@ void AssistantManagerServiceImpl::PostInitAssistant(
     is_first_init = false;
     // Only sync status at the first init to prevent unexpected corner cases.
     // This still does not handle browser restart.
-    if (base::FeatureList::IsEnabled(
-            assistant::features::kAssistantVoiceMatch) &&
-        service_->assistant_state()->hotword_enabled().value()) {
+    if (service_->assistant_state()->hotword_enabled().value()) {
       assistant_settings_manager_->SyncSpeakerIdEnrollmentStatus();
     }
   }
@@ -1186,8 +1184,7 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
         assistant_client::InternalOptions::UserCredentialMode::SIGNED_OUT);
   }
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch) &&
-      assistant_settings_manager_->speaker_id_enrollment_done()) {
+  if (assistant_settings_manager_->speaker_id_enrollment_done()) {
     internal_options->EnableRequireVoiceMatchVerification();
   }
 

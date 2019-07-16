@@ -75,9 +75,7 @@ ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     : type_(type),
       bridge_(nullptr),
       dump_stack_(dump_stack),
-      commit_only_(commit_only),
-      weak_ptr_factory_for_controller_(this),
-      weak_ptr_factory_for_worker_(this) {
+      commit_only_(commit_only) {
   ResetState(CLEAR_METADATA);
 }
 

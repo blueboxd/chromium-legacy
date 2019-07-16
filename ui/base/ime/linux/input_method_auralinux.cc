@@ -26,8 +26,7 @@ InputMethodAuraLinux::InputMethodAuraLinux(
     : InputMethodBase(delegate),
       text_input_type_(TEXT_INPUT_TYPE_NONE),
       is_sync_mode_(false),
-      composition_changed_(false),
-      weak_ptr_factory_(this) {
+      composition_changed_(false) {
   DCHECK(LinuxInputMethodContextFactory::instance())
       << "Trying to initialize InputMethodAuraLinux, but "
          "LinuxInputMethodContextFactory is not initialized yet.";

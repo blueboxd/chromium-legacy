@@ -217,7 +217,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   std::vector<media::cast::FrameEvent> recent_frame_events_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<CastRemotingSender> weak_factory_;
+  base::WeakPtrFactory<CastRemotingSender> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CastRemotingSender);
 };

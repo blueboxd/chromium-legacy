@@ -3221,7 +3221,6 @@ crbug.com/983157 virtual/scalefactor200/external/wpt/css/filter-effects/animatio
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-content/quotes-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Failure ]

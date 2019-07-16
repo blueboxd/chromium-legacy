@@ -174,6 +174,7 @@ class AudioOutputStreamWrapper {
     AudioParameters preferred_params;
     EXPECT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
         AudioDeviceDescription::kDefaultDeviceId, true, &preferred_params)));
+    channels_ = preferred_params.channels();
     channel_layout_ = preferred_params.channel_layout();
     sample_rate_ = preferred_params.sample_rate();
     samples_per_packet_ = preferred_params.frames_per_buffer();
@@ -202,22 +203,27 @@ class AudioOutputStreamWrapper {
   }
 
   AudioParameters::Format format() const { return format_; }
-  int channels() const { return ChannelLayoutToChannelCount(channel_layout_); }
+  int channels() const { return channels_; }
   int sample_rate() const { return sample_rate_; }
   int samples_per_packet() const { return samples_per_packet_; }
 
  private:
   AudioOutputStream* CreateOutputStream() {
+    AudioParameters params(format_, channel_layout_, sample_rate_,
+                           samples_per_packet_);
+    if (channel_layout_ == CHANNEL_LAYOUT_DISCRETE) {
+      params.set_channels_for_discrete(channels_);
+    }
+    DVLOG(1) << params.AsHumanReadableString();
     AudioOutputStream* aos = audio_man_->MakeAudioOutputStream(
-        AudioParameters(format_, channel_layout_, sample_rate_,
-                        samples_per_packet_),
-        std::string(), AudioManager::LogCallback());
+        params, std::string(), AudioManager::LogCallback());
     EXPECT_TRUE(aos);
     return aos;
   }
 
   AudioManager* audio_man_;
   AudioParameters::Format format_;
+  int channels_;
   ChannelLayout channel_layout_;
   int sample_rate_;
   int samples_per_packet_;

@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Nie speichern für…</translation>
 <translation id="1067922213147265141">Weitere Google-Dienste</translation>
 <translation id="1068672505746868501">Seiten auf <ph name="SOURCE_LANGUAGE" /> nie übersetzen</translation>
-<translation id="1080790410959514870">Sie melden sich von einem Konto ab, das von <ph name="DOMAIN_NAME" /> verwaltet wird. Dadurch werden die auf diesem Gerät gespeicherten Chrome-Daten gelöscht. Die Daten verbleiben jedoch weiterhin in Ihrem Google-Konto.</translation>
 <translation id="1100066534610197918">In neuem Tab in Gruppe öffnen</translation>
 <translation id="1105960400813249514">Bildschirmaufnahme</translation>
 <translation id="1111673857033749125">Hier werden die Lesezeichen angezeigt, die auf Ihren anderen Geräten gespeichert sind.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">Website "<ph name="SITE_NAME" />" hinzugefügt</translation>
 <translation id="1373696734384179344">Der Speicher reicht nicht aus, um den ausgewählten Inhalt herunterzuladen.</translation>
 <translation id="1376578503827013741">Berechnung läuft...</translation>
-<translation id="138361230106469022">Hallo <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1384959399684842514">Download angehalten</translation>
 <translation id="1386674309198842382">Vor <ph name="LAST_UPDATED" /> Tagen aktiv</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte (empfohlen)</translation>
 <translation id="230115972905494466">Keine kompatiblen Geräte gefunden</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
+<translation id="2318045970523081853">Zum Anrufen tippen</translation>
 <translation id="2321086116217818302">Passwörter werden zum Exportieren vorbereitet…</translation>
 <translation id="2321958826496381788">Ziehen Sie den Schieberegler, bis Sie diesen Text problemlos lesen können. Nach dem Doppeltippen auf einen Abschnitt sollte der Text mindestens so groß sein.</translation>
 <translation id="2323763861024343754">Websitespeicher</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">Download abgeschlossen <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Standortzugriff</translation>
 <translation id="2450083983707403292">Möchten Sie den Download von <ph name="FILE_NAME" /> noch einmal starten?</translation>
-<translation id="2476578072172137802">Website-Einstellungen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2490684707762498678">Verwaltet von <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google Assistant für Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="3443221991560634068">Aktuelle Seite neu laden</translation>
 <translation id="3445014427084483498">Gerade eben</translation>
-<translation id="3452612588551937789">Melden Sie sich mit Ihrem Google-Konto an, um Ihre Lesezeichen, Ihren Verlauf, Ihre Passwörter und Ihre anderen Einstellungen auf allen Geräten abrufen zu können.</translation>
 <translation id="3478363558367712427">Sie können Ihre Suchmaschine auswählen</translation>
 <translation id="3492207499832628349">Neuer Inkognito-Tab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu vorgeschlagenen Inhalten</translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
 <translation id="3522247891732774234">Update verfügbar. Weitere Optionen</translation>
+<translation id="3524138585025253783">Benutzeroberfläche für Entwickler</translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB verfügbar</translation>
 <translation id="3549657413697417275">Im Verlauf suchen</translation>
-<translation id="3552151358455404883">Chrome-Synchronisierung und -Personalisierung in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
 <translation id="3557336313807607643">Zu Kontakten hinzufügen</translation>
 <translation id="3566923219790363270">VR ist noch nicht bereit. Starten Sie Chrome später neu.</translation>
 <translation id="3568688522516854065">Melden Sie sich an und aktivieren Sie die Synchronisierung, um Ihre Tabs von Ihren anderen Geräten abzurufen</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Serifenlose Schrift</translation>
 <translation id="3928666092801078803">Daten zusammenführen</translation>
 <translation id="393697183122708255">Keine aktivierte Sprachsuche verfügbar</translation>
-<translation id="3950820424414687140">Anmelden</translation>
 <translation id="395206256282351086">Vorschläge für Suchbegriffe und Websites deaktiviert</translation>
 <translation id="3955193568934677022">Wiedergabe geschützter Inhalte auf Websites zulassen (empfohlen)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome lädt Ihre Seite, sobald diese bereit ist}other{Chrome lädt Ihre Seiten, sobald diese bereit sind}}</translation>
@@ -458,7 +454,6 @@ Wenn Sie den Suchbegriff anpassen möchten, halten Sie den entsprechenden Begrif
 <translation id="447252321002412580">Helfen, die Funktionen und die Leistung von Chrome zu verbessern</translation>
 <translation id="4479647676395637221">Nachfragen, bevor Websites Zugriff auf Ihre Kamera erhalten (empfohlen)</translation>
 <translation id="4479972344484327217"><ph name="MODULE" /> für Chrome wird installiert…</translation>
-<translation id="4482194545587547824">Google kann die Suche und andere Google-Dienste anhand Ihres Browserverlaufs für Sie personalisieren.</translation>
 <translation id="4487967297491345095">Alle App-Daten in Chrome werden dauerhaft gelöscht. Hierzu gehören alle Dateien, Einstellungen, Konten, Datenbanken.</translation>
 <translation id="4493497663118223949">Lite-Modus ist aktiviert</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Vor # Tag}other{Vor # Tagen}}</translation>
@@ -469,7 +464,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4532845899244822526">Ordner auswählen</translation>
 <translation id="4538018662093857852">Lite-Modus aktivieren</translation>
 <translation id="4550003330909367850">Um Ihr Passwort hier anzeigen zu lassen oder zu kopieren, legen Sie eine Displaysperre für dieses Gerät fest.</translation>
-<translation id="4556110439722119938">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf all Ihren Geräten nutzen können.</translation>
 <translation id="4558311620361989323">Tastenkombinationen für Webseiten</translation>
 <translation id="4561979708150884304">Keine Verbindung</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
@@ -616,7 +610,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5527111080432883924">Nachfragen, bevor einer Website erlaubt wird, Texte und Bilder aus der Zwischenablage abzurufen (empfohlen)</translation>
 <translation id="5530766185686772672">Inkognito-Tabs schließen</translation>
 <translation id="5534640966246046842">Website kopiert</translation>
-<translation id="5537099431952529648">Kinder und deren Eltern können die Chrome-Synchronisierung und -Personalisierung in den <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5561549206367097665">Warten auf Netzwerk…</translation>
 <translation id="557283862590186398">Chrome benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen.</translation>
@@ -712,7 +705,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht darauf basiert, welche Websites Sie zuvor besucht haben. Viele Websites erfassen weiterhin Ihre Browserdaten und verwenden sie, um beispielsweise die Sicherheit zu verbessern oder Inhalte, Werbeanzeigen und Empfehlungen bereitzustellen und Statistiken für Berichte zu erstellen.</translation>
 <translation id="624789221780392884">Update bereit</translation>
 <translation id="6255999984061454636">Inhaltsvorschläge</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> möchte nach Bluetooth-Geräten in der Nähe suchen. Die folgenden Geräte wurden gefunden:</translation>
 <translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="629730747756840877">Konto</translation>
@@ -774,6 +766,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666731172850799929">In <ph name="APP_NAME" /> öffnen</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
+<translation id="6676840375528380067">Ihre Chrome-Daten von diesem Gerät löschen?</translation>
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
@@ -792,7 +785,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6803423358608456383">Geöffnete Tabs halb geöffnet</translation>
 <translation id="6811034713472274749">Seitenansicht bereit</translation>
 <translation id="6818926723028410516">Einträge auswählen</translation>
-<translation id="6820607729870073286">Sie haben keine Website-Einstellungen gespeichert.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6845325883481699275">Zur Verbesserung der Sicherheit von Chrome beitragen</translation>
@@ -815,7 +807,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6965382102122355670">Ok</translation>
 <translation id="6978479750597523876">Übersetzungseinstellungen zurücksetzen</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
-<translation id="6980462514016882061">Mithilfe Ihres Browserverlaufs kann Google die Suche, Werbung und andere Google-Dienste personalisieren</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6989267951144302301">Fehler beim Download</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7180611975245234373">Aktualisieren</translation>
 <translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
-<translation id="722055596168483966">Google-Dienste personalisieren</translation>
 <translation id="723171743924126238">Bilder auswählen</translation>
 <translation id="7233236755231902816">Das Web in Ihrer Sprache – mit der aktuellen Version von Chrome</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
@@ -962,6 +952,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7999064672810608036">Möchten Sie wirklich alle lokalen Daten einschließlich Cookies löschen und alle Berechtigungen für diese Website zurücksetzen?</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
+<translation id="8013372441983637696">Auch meine Chrome-Daten von diesem Gerät löschen</translation>
 <translation id="8015452622527143194">Gesamten Seiteninhalt auf Standardgröße zurücksetzen</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
@@ -1078,7 +1069,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Speicher</translation>
 <translation id="8901170036886848654">Keine Lesezeichen gefunden</translation>
-<translation id="8904976895050290827">Google Chrome Sync</translation>
 <translation id="8909135823018751308">Teilen...</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8920114477895755567">Warten auf Details zu den Eltern</translation>

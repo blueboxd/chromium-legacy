@@ -8,6 +8,8 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "net/url_request/url_request.h"
 
 namespace net {
 
@@ -43,6 +45,13 @@ void NetworkCongestionAnalyzer::NotifyRequestCompleted(
   base::Optional<base::TimeDelta> peak_observed_delay =
       TrackPeakQueueingDelayEnd(&request);
   if (peak_observed_delay.has_value()) {
+    // Records the peak queueing delay keyed by the request priority.
+    base::UmaHistogramMediumTimes(
+        "ResourceScheduler.PeakObservedQueueingDelay.Priority" +
+            base::NumberToString(request.priority()),
+        peak_observed_delay.value());
+
+    // Records the peak queueing delay for all types of requests.
     UMA_HISTOGRAM_MEDIUM_TIMES("ResourceScheduler.PeakObservedQueueingDelay",
                                peak_observed_delay.value());
   }

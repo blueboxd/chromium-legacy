@@ -48,7 +48,8 @@ class MODULES_EXPORT PaintWorkletProxyClient
   PaintWorkletProxyClient(
       int worklet_id,
       PaintWorklet*,
-      scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
+      base::WeakPtr<PaintWorkletPaintDispatcher> compositor_paintee,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue);
   ~PaintWorkletProxyClient() override = default;
 
   // PaintWorkletPainter implementation.
@@ -100,7 +101,11 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // non-worklet threads to the correct PaintWorkletProxyClient on its worklet
   // thread. PaintWorkletProxyClient requires a reference to the dispatcher in
   // order to register and unregister itself.
-  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+  //
+  // PaintWorkletPaintDispatcher is only accessed on the compositor, so we store
+  // a base::SingleThreadTaskRunner to post to it.
+  base::WeakPtr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue_;
 
   // The unique id for the PaintWorklet that this class is a proxy client for.
   const int worklet_id_;

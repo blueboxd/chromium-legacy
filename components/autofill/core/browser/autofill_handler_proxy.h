@@ -72,7 +72,7 @@ class AutofillHandlerProxy : public AutofillHandler {
 
  private:
   AutofillProvider* provider_;
-  base::WeakPtrFactory<AutofillHandlerProxy> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillHandlerProxy> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillHandlerProxy);
 };

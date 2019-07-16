@@ -159,17 +159,44 @@ void LevelDBDatabaseImpl::Get(const std::vector<uint8_t>& key,
                           StdStringToUint8Vector(value));
 }
 
+void LevelDBDatabaseImpl::GetMany(
+    std::vector<mojom::GetManyRequestPtr> keys_or_prefixes,
+    GetManyCallback callback) {
+  std::vector<mojom::GetManyResultPtr> data;
+
+  for (const auto& request : keys_or_prefixes) {
+    mojom::GetManyResultPtr result = mojom::GetManyResult::New();
+    Status status;
+
+    if (request->is_key()) {
+      const std::vector<uint8_t>& key = request->get_key();
+      std::string value;
+      status = db_->Get(leveldb::ReadOptions(), GetSliceFor(key), &value);
+      if (status.ok())
+        result->set_key_value(StdStringToUint8Vector(value));
+      else
+        result->set_status(LeveldbStatusToError(status));
+    } else {
+      const std::vector<uint8_t>& key_prefix = request->get_key_prefix();
+      std::vector<mojom::KeyValuePtr> values;
+      std::tie(status, values) = GetPrefixedHelper(key_prefix);
+      if (status.ok())
+        result->set_key_prefix_values(std::move(values));
+      else
+        result->set_status(LeveldbStatusToError(status));
+    }
+
+    data.push_back(std::move(result));
+  }
+
+  std::move(callback).Run(std::move(data));
+}
+
 void LevelDBDatabaseImpl::GetPrefixed(const std::vector<uint8_t>& key_prefix,
                                       GetPrefixedCallback callback) {
   std::vector<mojom::KeyValuePtr> data;
-  Status status =
-      ForEachWithPrefix(db_.get(), GetSliceFor(key_prefix),
-                        [&data](const Slice& key, const Slice& value) {
-                          mojom::KeyValuePtr kv = mojom::KeyValue::New();
-                          kv->key = GetVectorFor(key);
-                          kv->value = GetVectorFor(value);
-                          data.push_back(std::move(kv));
-                        });
+  Status status;
+  std::tie(status, data) = GetPrefixedHelper(key_prefix);
   std::move(callback).Run(LeveldbStatusToError(status), std::move(data));
 }
 
@@ -356,6 +383,20 @@ void LevelDBDatabaseImpl::ReplyToIteratorMessage(
 
   std::move(callback).Run(true, LeveldbStatusToError(it->status()),
                           GetVectorFor(it->key()), GetVectorFor(it->value()));
+}
+
+LevelDBDatabaseImpl::StatusAndKeyValues LevelDBDatabaseImpl::GetPrefixedHelper(
+    const std::vector<uint8_t>& key_prefix) {
+  std::vector<mojom::KeyValuePtr> data;
+  Status status =
+      ForEachWithPrefix(db_.get(), GetSliceFor(key_prefix),
+                        [&data](const Slice& key, const Slice& value) {
+                          mojom::KeyValuePtr kv = mojom::KeyValue::New();
+                          kv->key = GetVectorFor(key);
+                          kv->value = GetVectorFor(value);
+                          data.push_back(std::move(kv));
+                        });
+  return std::make_tuple(status, std::move(data));
 }
 
 Status LevelDBDatabaseImpl::DeletePrefixedHelper(const Slice& key_prefix,

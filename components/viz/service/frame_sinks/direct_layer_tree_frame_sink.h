@@ -149,7 +149,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
   base::HistogramBase* const submit_begin_frame_histogram_;
 
-  base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_;
+  base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DirectLayerTreeFrameSink);
 };

@@ -54,7 +54,10 @@ DownloadDBImpl::DownloadDBImpl(DownloadNamespace download_namespace,
           leveldb_proto::ProtoDatabaseProvider::CreateUniqueDB<
               download_pb::DownloadDBEntry>(
               base::CreateSequencedTaskRunnerWithTraits(
-                  {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+                  {base::MayBlock(),
+                   // USER_VISIBLE because it is required to display
+                   // chrome://downloads. https://crbug.com/976223
+                   base::TaskPriority::USER_VISIBLE,
                    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}))) {}
 
 DownloadDBImpl::DownloadDBImpl(
@@ -66,8 +69,7 @@ DownloadDBImpl::DownloadDBImpl(
       db_(std::move(db)),
       is_initialized_(false),
       download_namespace_(download_namespace),
-      num_initialize_attempts_(0),
-      weak_factory_(this) {}
+      num_initialize_attempts_(0) {}
 
 DownloadDBImpl::~DownloadDBImpl() = default;
 

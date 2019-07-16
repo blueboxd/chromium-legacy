@@ -44,6 +44,9 @@ class CORE_EXPORT ProfilerGroup
  private:
   friend class Profiler;
 
+  void InitV8Profiler();
+  void TeardownV8Profiler();
+
   void StopProfiler(ScriptState*, Profiler*, ScriptPromiseResolver*);
 
   // Cancels a profiler, discarding its associated trace.
@@ -55,6 +58,7 @@ class CORE_EXPORT ProfilerGroup
   v8::Isolate* const isolate_;
   v8::CpuProfiler* cpu_profiler_;
   int next_profiler_id_;
+  int num_active_profilers_;
 
   HeapHashSet<WeakMember<Profiler>> profilers_;
 

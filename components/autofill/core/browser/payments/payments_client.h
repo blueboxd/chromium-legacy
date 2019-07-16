@@ -285,7 +285,7 @@ class PaymentsClient {
   // server.
   bool has_retried_authorization_;
 
-  base::WeakPtrFactory<PaymentsClient> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentsClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentsClient);
 };

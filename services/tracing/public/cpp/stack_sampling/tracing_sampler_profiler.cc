@@ -275,14 +275,20 @@ TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit(
       if (info.dli_fname)
         module_name = info.dli_fname;
     }
-    // If no module is available, then name it unknown. Adding PC would be
-    // useless anyway.
-    if (frame_name.empty())
-      frame_name = "Unknown";
+
     if (frame.module) {
       module_id = frame.module->GetId();
       if (module_name.empty())
         module_name = frame.module->GetDebugBasename().MaybeAsASCII();
+    }
+
+    // If no module is available, then name it unknown. Adding PC would be
+    // useless anyway.
+    if (module_name.empty()) {
+      DCHECK(!base::trace_event::CFIBacktraceAndroid::is_chrome_address(
+          frame.instruction_pointer));
+      frame_name = "Unknown";
+      rel_pc = 0;
     }
 #else
     if (frame.module) {

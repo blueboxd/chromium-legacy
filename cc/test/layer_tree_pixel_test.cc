@@ -56,9 +56,11 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
     compositor_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+    // With vulkan, OOPR has to be enabled.
     worker_context_provider =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_oop_rasterization=*/false, /*support_locking=*/true);
+            /*enable_oop_rasterization=*/use_vulkan(),
+            /*support_locking=*/true);
     // Bind worker context to main thread like it is in production. This is
     // needed to fully initialize the context. Compositor context is bound to
     // the impl thread in LayerTreeFrameSink::BindToCurrentThread().
@@ -198,6 +200,7 @@ void LayerTreePixelTest::EndTest() {
 
 void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
   settings->layer_transforms_should_scale_layer_contents = true;
+  settings->gpu_rasterization_forced = use_vulkan();
 }
 
 void LayerTreePixelTest::TryEndTest() {

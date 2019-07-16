@@ -189,8 +189,6 @@ WebInputEventResult GestureManager::HandleGestureTap(
   // note that the position of the frame may have changed, so we need to
   // recompute the content co-ordinates (updating layout/style as
   // hitTestResultAtPoint normally would).
-  // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
-  // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (!main_frame.View() ||
@@ -254,8 +252,6 @@ WebInputEventResult GestureManager::HandleGestureTap(
     frame_->GetChromeClient().OnMouseDown(*result.InnerNode());
   }
 
-  // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
-  // http://crbug.com/398920
   if (current_hit_test.InnerNode()) {
     LocalFrame& main_frame = frame_->LocalFrameRoot();
     if (main_frame.View()) {

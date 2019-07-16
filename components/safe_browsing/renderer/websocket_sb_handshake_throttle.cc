@@ -26,8 +26,7 @@ WebSocketSBHandshakeThrottle::WebSocketSBHandshakeThrottle(
     int render_frame_id)
     : render_frame_id_(render_frame_id),
       safe_browsing_(safe_browsing),
-      result_(Result::UNKNOWN),
-      weak_factory_(this) {}
+      result_(Result::UNKNOWN) {}
 
 WebSocketSBHandshakeThrottle::~WebSocketSBHandshakeThrottle() {
   // ThrottleHandshake() should always be called, but since that is done all the

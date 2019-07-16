@@ -17,13 +17,13 @@ namespace viz {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
+    : OutputSurface(std::move(context_provider)) {
   DCHECK(OutputSurface::context_provider());
 }
 
 FakeOutputSurface::FakeOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
+    : OutputSurface(std::move(software_device)) {
   DCHECK(OutputSurface::software_device());
 }
 

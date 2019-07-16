@@ -52,9 +52,8 @@ struct KeyParams {
 // delayed until after it can be decrypted.
 class Cryptographer {
  public:
-  // Does not take ownership of |encryptor|.
-  explicit Cryptographer(Encryptor* encryptor);
-  explicit Cryptographer(const Cryptographer& other);
+  Cryptographer();
+  Cryptographer(const Cryptographer& other);
   ~Cryptographer();
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
@@ -66,7 +65,8 @@ class Cryptographer {
   // passphrase.
   // It is an error to call this if is_ready() == true, though it is fair to
   // never call Bootstrap at all.
-  void Bootstrap(const std::string& restored_bootstrap_token);
+  void Bootstrap(const Encryptor& encryptor,
+                 const std::string& restored_bootstrap_token);
 
   // Returns whether we can decrypt |encrypted| using the keys we currently know
   // about.
@@ -121,7 +121,8 @@ class Cryptographer {
   // Updates the default key.
   // Will decrypt the pending keys and install them if possible (pending key
   // will not overwrite default).
-  bool AddKeyFromBootstrapToken(const std::string& restored_bootstrap_token);
+  bool AddKeyFromBootstrapToken(const Encryptor& encryptor,
+                                const std::string& restored_bootstrap_token);
 
   // Creates a new Nigori instance using |params|. If successful, |params|
   // will be added to the nigori keybag, but will not be the default encryption
@@ -169,9 +170,7 @@ class Cryptographer {
   // Obtain a token that can be provided on construction to a future
   // Cryptographer instance to bootstrap itself.  Returns false if such a token
   // can't be created (i.e. if this Cryptograhper doesn't have valid keys).
-  bool GetBootstrapToken(std::string* token) const;
-
-  Encryptor* encryptor() const { return encryptor_; }
+  bool GetBootstrapToken(const Encryptor& encryptor, std::string* token) const;
 
   // Returns true if |keybag| is decryptable and either is a subset of
   // |key_bag_| and/or has a different default key.
@@ -199,9 +198,8 @@ class Cryptographer {
   bool AddKeyImpl(std::unique_ptr<Nigori> nigori, bool set_as_default);
 
   // Helper to unencrypt a bootstrap token into a serialized sync_pb::NigoriKey.
-  std::string UnpackBootstrapToken(const std::string& token) const;
-
-  Encryptor* const encryptor_;
+  std::string UnpackBootstrapToken(const Encryptor& encryptor,
+                                   const std::string& token) const;
 
   // The actual keys we know about.
   NigoriKeyBag key_bag_;

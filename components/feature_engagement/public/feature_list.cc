@@ -30,7 +30,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHContextualSearchPromoteTapFeature,
     &kIPHContextualSearchPromotePanelOpenFeature,
     &kIPHContextualSearchOptInFeature,
-    &kIPHContextualSuggestionsFeature,
     &kIPHDownloadSettingsFeature,
     &kIPHDownloadInfoBarDownloadContinuingFeature,
     &kIPHDownloadInfoBarDownloadsAreFasterFeature,

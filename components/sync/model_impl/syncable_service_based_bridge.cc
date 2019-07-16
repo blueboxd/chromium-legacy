@@ -283,8 +283,7 @@ SyncableServiceBasedBridge::SyncableServiceBasedBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       type_(type),
       syncable_service_(syncable_service),
-      syncable_service_started_(false),
-      weak_ptr_factory_(this) {
+      syncable_service_started_(false) {
   DCHECK(syncable_service_);
 
   std::move(store_factory)

@@ -89,7 +89,7 @@ class AllowlistCheckerClient : public SafeBrowsingDatabaseManager::Client {
   // b) If the list is unavailable.
   bool default_does_match_allowlist_;
 
-  base::WeakPtrFactory<AllowlistCheckerClient> weak_factory_;
+  base::WeakPtrFactory<AllowlistCheckerClient> weak_factory_{this};
 };
 
 }  // namespace safe_browsing

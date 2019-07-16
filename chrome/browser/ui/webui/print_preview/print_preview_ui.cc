@@ -292,9 +292,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   AddLocalizedStringsBulk(source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
-  source->AddString(
-      "settingsPrintingPage",
-      chrome::GetSettingsUrl(chrome::kPrintingSettingsSubPage).spec());
   source->AddString("gcpCertificateErrorLearnMoreURL",
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
 

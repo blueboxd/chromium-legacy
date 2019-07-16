@@ -79,8 +79,7 @@ DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
       is_paused_(false),
       is_canceled_(false),
       is_user_cancel_(false),
-      url_download_handler_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
-      weak_factory_(this) {
+      url_download_handler_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
   DCHECK(delegate_);
 }
 

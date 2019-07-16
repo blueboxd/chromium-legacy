@@ -322,9 +322,7 @@ DisplayManager::BeginEndNotifier::~BeginEndNotifier() {
 }
 
 DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
-    : screen_(std::move(screen)),
-      layout_store_(new DisplayLayoutStore),
-      weak_ptr_factory_(this) {
+    : screen_(std::move(screen)), layout_store_(new DisplayLayoutStore) {
 #if defined(OS_CHROMEOS)
   configure_displays_ = chromeos::IsRunningAsSystemCompositor();
   change_display_upon_host_resize_ = !configure_displays_;

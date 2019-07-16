@@ -70,7 +70,7 @@ class DirectOutputSurface : public viz::OutputSurface {
  public:
   explicit DirectOutputSurface(
       scoped_refptr<InProcessContextProvider> context_provider)
-      : viz::OutputSurface(context_provider), weak_ptr_factory_(this) {
+      : viz::OutputSurface(context_provider) {
     capabilities_.flipped_output_surface = true;
   }
 
@@ -139,7 +139,7 @@ class DirectOutputSurface : public viz::OutputSurface {
   }
 
   viz::OutputSurfaceClient* client_ = nullptr;
-  base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
 };

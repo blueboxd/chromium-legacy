@@ -165,7 +165,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
 
   SurfaceId root_surface_id_;
 
-  base::WeakPtrFactory<DisplayScheduler> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayScheduler> weak_ptr_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayScheduler);

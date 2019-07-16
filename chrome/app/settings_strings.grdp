@@ -3035,6 +3035,9 @@
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT" desc="Name of the settings page for Google Assistant.">
     Google Assistant
   </message>
+  <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD" desc="Title for a toggle that lets the assistant detect hotword.">
+    "Ok Google"
+  </message>
   <message name="IDS_SETTINGS_GOOGLE_ASSISTANT_ENABLE_HOTWORD_DESCRIPTION" desc="Sub label for hotword-enable toggle.">
     Access your Assistant any time you say "Ok Google"
   </message>

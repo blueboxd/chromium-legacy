@@ -226,6 +226,7 @@
 <translation id="2111256659903765347">సూపర్-A</translation>
 <translation id="2113977810652731515">కార్డ్</translation>
 <translation id="2114841414352855701">ఇది <ph name="POLICY_NAME" /> ద్వారా భర్తీ చేయబడినందున విస్మరించబడింది.</translation>
+<translation id="2119505898009119320">వీరికి జారీ చేయబడింది: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">మోషన్ సెన్సార్‌లు</translation>
 <translation id="213826338245044447">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="214556005048008348">చెల్లింపును రద్దు చేయి</translation>
@@ -304,6 +305,7 @@
 <translation id="2515629240566999685">మీ ప్రాంతంలో సిగ్నల్‌ను తనిఖీ చేయడం</translation>
 <translation id="2523886232349826891">ఈ పరికరంలో మాత్రమే సేవ్ చేయబడి ఉంటుంది</translation>
 <translation id="2524461107774643265">మరింత సమాచారాన్ని జోడించండి</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{మరియు మరో 1}other{మరియు మరో #}}</translation>
 <translation id="2536110899380797252">చిరునామాను జోడించు</translation>
 <translation id="2539524384386349900">గుర్తించు</translation>
 <translation id="254947805923345898">విధానం విలువ చెల్లుబాటు కాదు.</translation>
@@ -716,6 +718,7 @@
 <translation id="4858792381671956233">ఈ సైట్‌ను సందర్శించడానికి అనుమతించమని కోరుతూ మీ తల్లిదండ్రులకు అభ్యర్థన పంపారు</translation>
 <translation id="4876188919622883022">సరళీకృత వీక్షణ</translation>
 <translation id="4876305945144899064">వినియోగదారు పేరు లేదు</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{ఏవీ లేవు}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> శోధన</translation>
 <translation id="4879491255372875719">ఆటోమేటిక్ (డిఫాల్ట్)</translation>
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
@@ -1010,6 +1013,7 @@
 <translation id="650855688985305916">అవును, నిల్వ చేయి</translation>
 <translation id="6508722015517270189">Chromeను పునఃప్రారంభించండి</translation>
 <translation id="6517596291481585650">హెచ్చరిక: ఈ విధానం ఒక జాబితా కానందున, విధానంలో పేర్కొన్నట్లుగా ఇది జాబితా రూపంలో విలీనం చేయబడలేదు.</translation>
+<translation id="6521745193039995384">యాక్టివ్‌గా లేదు</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="6534179046333460208">ప్రత్యక్ష వెబ్ సూచనలు</translation>
 <translation id="6545864417968258051">బ్లూటూత్ స్కానింగ్</translation>
@@ -1469,6 +1473,7 @@
 <translation id="9076630408993835509">ఈ బ్రౌజర్‌ను కంపెనీ లేదా సంస్థ నిర్వహించట్లేదు. ఈ పరికరంలోని కార్యకలాపం Chrome వెలుపల నిర్వహిస్తుండవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">మరింత సమాచారం ఆవశ్యకం</translation>
 <translation id="9080712759204168376">ఆర్డర్ సారాంశం</translation>
+<translation id="9089260154716455634">తీరిక వేళల విధానం:</translation>
 <translation id="9095388113577226029">మరిన్ని భాషలు...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> సాధారణంగా మీ సమాచారాన్ని రక్షించడానికి ఎన్‌క్రిప్ష‌న్‌ను ఉపయోగిస్తుంది. Chromium ఈసారి <ph name="SITE" />కు కనెక్ట్ చేయడానికి ప్రయత్నించినప్పుడు, వెబ్‌సైట్ అసాధారణ మరియు తప్పు ఆధారాలు అని ప్రతిస్పందించింది. దాడి చేసే వ్యక్తి <ph name="SITE" />గా వ్యవహరించి మోసగించడానికి ప్రయత్నిస్తున్నప్పుడు లేదా Wi-Fi సైన్-ఇన్ స్క్రీన్ కనెక్షన్‌కు అంతరాయం కలిగించినప్పుడు ఇలా జరగవచ్చు. Chromium ఎలాంటి డేటా వినిమయం జ‌ర‌గ‌క ముందే కనెక్షన్‌ను ఆపివేసినందున మీ సమాచారం ఇప్పటికీ సురక్షితంగానే ఉంది.</translation>
 <translation id="9106062320799175032">బిల్లింగ్ చిరునామాను జోడించండి</translation>

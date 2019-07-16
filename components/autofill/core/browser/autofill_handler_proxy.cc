@@ -12,7 +12,7 @@ using base::TimeTicks;
 
 AutofillHandlerProxy::AutofillHandlerProxy(AutofillDriver* driver,
                                            AutofillProvider* provider)
-    : AutofillHandler(driver), provider_(provider), weak_ptr_factory_(this) {}
+    : AutofillHandler(driver), provider_(provider) {}
 
 AutofillHandlerProxy::~AutofillHandlerProxy() {}
 

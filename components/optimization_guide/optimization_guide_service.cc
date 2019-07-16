@@ -11,7 +11,7 @@ namespace optimization_guide {
 
 OptimizationGuideService::OptimizationGuideService(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_task_runner)
-    : ui_thread_task_runner_(ui_thread_task_runner), weak_ptr_factory_(this) {
+    : ui_thread_task_runner_(ui_thread_task_runner) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 

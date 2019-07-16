@@ -88,7 +88,7 @@ class StartupController {
   // non-null, then |start_engine_| shouldn't be called again.
   base::Time start_engine_time_;
 
-  base::WeakPtrFactory<StartupController> weak_factory_;
+  base::WeakPtrFactory<StartupController> weak_factory_{this};
 };
 
 }  // namespace syncer

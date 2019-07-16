@@ -74,7 +74,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadJob {
   // If the download progress is paused by the user.
   bool is_paused_;
 
-  base::WeakPtrFactory<DownloadJob> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadJob> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadJob);
 };

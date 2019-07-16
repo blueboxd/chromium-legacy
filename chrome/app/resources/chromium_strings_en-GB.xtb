@@ -13,10 +13,8 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1298199220304005244">Get help with using Chromium OS</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
 <translation id="1414495520565016063">You're signed in to Chromium!</translation>
-<translation id="1502360822835740515">Make Chromium your default browser</translation>
 <translation id="151962892725702025">Chromium OS could not sync your data because Sync is not available for your domain.</translation>
 <translation id="1524282610922162960">Share a Chromium tab</translation>
-<translation id="1585657529869845941">Click <ph name="BEGIN_BOLD" />Switch anyway<ph name="END_BOLD" />, if it appears</translation>
 <translation id="1668054258064581266">After removing your account from Chromium, you may need to reload your open tabs to take effect.</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
@@ -84,13 +82,11 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3728336900324680424">Chromium will access your Drive to make suggestions in the address bar</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">Pin Chromium to your taskbar</translation>
 <translation id="388648406173476553">Customise and control Chromium. Something needs your attention – click for details.</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="3898493977366060150">Web browsing with Google smarts</translation>
 <translation id="4036079820698952681">Help make Chromium better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
-<translation id="407254336480250557">Select <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Discover great apps, games, extensions and themes for Chromium.</translation>
 <translation id="4216212958613226427">This language is used to display the Chromium UI</translation>
 <translation id="4222580632002216401">You're now signed in to Chromium! Sync is disabled by your administrator.</translation>
@@ -107,7 +103,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4677944499843243528">The profile appears to be in use by another Chromium process (<ph name="PROCESS_ID" />) on another computer (<ph name="HOST_NAME" />). Chromium has locked the profile so that it doesn't get corrupted. If you are sure that no other processes are using this profile, you can unlock the profile and relaunch Chromium.</translation>
 <translation id="469338717132742108">Get help with Chromium OS</translation>
 <translation id="4708774505295300557">Someone previously signed in to Chromium on this computer as <ph name="ACCOUNT_EMAIL_LAST" />. Please create a new Chromium user to keep your information separate.</translation>
-<translation id="4714956846925717402">Get to Chromium faster</translation>
 <translation id="4746050847053251315">Quit Chromium anyway?</translation>
 <translation id="4748217263233248895">A special security update for Chromium was just applied. Restart now and we'll restore your tabs.</translation>
 <translation id="479167709087336770">This uses the same spell checker that's used in Google search. Text that you type in the browser is sent to Google. You can always change this behaviour in settings.</translation>

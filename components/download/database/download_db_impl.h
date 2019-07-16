@@ -81,7 +81,7 @@ class DownloadDBImpl : public DownloadDB {
   // Number of initialize attempts.
   int num_initialize_attempts_;
 
-  base::WeakPtrFactory<DownloadDBImpl> weak_factory_;
+  base::WeakPtrFactory<DownloadDBImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDBImpl);
 };

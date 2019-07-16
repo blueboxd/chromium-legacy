@@ -60,8 +60,7 @@ PaymentRequestState::PaymentRequestState(
       selected_instrument_(nullptr),
       number_of_pending_sw_payment_instruments_(0),
       payment_request_delegate_(payment_request_delegate),
-      profile_comparator_(app_locale, *spec),
-      weak_ptr_factory_(this) {
+      profile_comparator_(app_locale, *spec) {
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     DCHECK(web_contents);
     get_all_instruments_finished_ = false;

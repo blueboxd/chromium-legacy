@@ -161,9 +161,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       network_resources_(std::make_unique<HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
-      is_stopping_and_clearing_(false),
-      sync_enabled_weak_factory_(this),
-      weak_factory_(this) {
+      is_stopping_and_clearing_(false) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_client_);
   DCHECK(IsLocalSyncEnabled() || identity_manager_ != nullptr);

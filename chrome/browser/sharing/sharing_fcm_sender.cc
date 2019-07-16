@@ -4,13 +4,13 @@
 
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 
+#include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "chrome/browser/sharing/fcm_constants.h"
-#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/local_device_info_provider.h"
 
 SharingFCMSender::SharingFCMSender(
     gcm::GCMDriver* gcm_driver,
@@ -37,15 +37,40 @@ void SharingFCMSender::SendMessageToDevice(
     return;
   }
 
-  const syncer::DeviceInfo* local_device_info =
-      device_info_provider_->GetLocalDeviceInfo();
-  if (!local_device_info) {
-    LOG(ERROR) << "Unable to find local device info";
-    std::move(callback).Run(base::nullopt);
+  auto send_message_closure =
+      base::BindOnce(&SharingFCMSender::DoSendMessageToDevice,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(iter->second),
+                     time_to_live, std::move(message), std::move(callback));
+
+  if (device_info_provider_->GetLocalDeviceInfo()) {
+    std::move(send_message_closure).Run();
     return;
   }
 
-  message.set_sender_guid(local_device_info->guid());
+  if (!local_device_info_ready_subscription_) {
+    local_device_info_ready_subscription_ =
+        device_info_provider_->RegisterOnInitializedCallback(
+            base::AdaptCallbackForRepeating(
+                base::BindOnce(&SharingFCMSender::OnLocalDeviceInfoInitialized,
+                               weak_ptr_factory_.GetWeakPtr())));
+  }
+
+  send_message_queue_.emplace_back(std::move(send_message_closure));
+}
+
+void SharingFCMSender::OnLocalDeviceInfoInitialized() {
+  for (auto& closure : send_message_queue_)
+    std::move(closure).Run();
+  send_message_queue_.clear();
+  local_device_info_ready_subscription_.reset();
+}
+
+void SharingFCMSender::DoSendMessageToDevice(
+    SharingSyncPreference::Device target,
+    base::TimeDelta time_to_live,
+    chrome_browser_sharing::SharingMessage message,
+    SendMessageCallback callback) {
+  message.set_sender_guid(device_info_provider_->GetLocalDeviceInfo()->guid());
 
   gcm::WebPushMessage web_push_message;
   web_push_message.time_to_live = time_to_live.InSeconds();
@@ -53,8 +78,7 @@ void SharingFCMSender::SendMessageToDevice(
 
   gcm_driver_->SendWebPushMessage(
       kSharingFCMAppID,
-      /* authorized_entity= */ "", iter->second.p256dh,
-      iter->second.auth_secret, iter->second.fcm_token,
-      vapid_key_manager_->GetOrCreateKey(), std::move(web_push_message),
-      std::move(callback));
+      /* authorized_entity= */ std::string(), target.p256dh, target.auth_secret,
+      target.fcm_token, vapid_key_manager_->GetOrCreateKey(),
+      std::move(web_push_message), std::move(callback));
 }

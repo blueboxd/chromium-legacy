@@ -81,7 +81,7 @@ class CompositingModeReporterImpl;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 class ServerSharedBitmapManager;
-}
+}  // namespace viz
 
 namespace content {
 class BrowserMainParts;
@@ -93,6 +93,7 @@ class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SaveFileManager;
 class ScreenlockMonitor;
+class SmsService;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
 class TracingControllerImpl;
@@ -228,6 +229,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
 #endif
 
+  SmsService* GetSmsService();
+
   BrowserMainParts* parts() { return parts_.get(); }
 
  private:
@@ -293,6 +296,14 @@ class CONTENT_EXPORT BrowserMainLoop {
   // before content is entered.
   std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
       scoped_execution_fence_;
+
+  // BEST_EFFORT tasks are not allowed to run between //content initialization
+  // and startup completion.
+  //
+  // TODO(fdoray): Move this to a more elaborate class that prevents BEST_EFFORT
+  // tasks from running when resources are needed to respond to user actions.
+  base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
+      scoped_best_effort_execution_fence_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
 
@@ -367,6 +378,8 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Must be deleted on the IO thread.
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+
+  std::unique_ptr<SmsService> sms_service_;
 
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;

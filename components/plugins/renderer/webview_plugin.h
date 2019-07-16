@@ -198,7 +198,7 @@ class WebViewPlugin : public blink::WebPlugin,
   WebViewHelper web_view_helper_;
 
   // Should be invalidated when destroy() is called.
-  base::WeakPtrFactory<WebViewPlugin> weak_factory_;
+  base::WeakPtrFactory<WebViewPlugin> weak_factory_{this};
 };
 
 #endif  // COMPONENTS_PLUGINS_RENDERER_WEBVIEW_PLUGIN_H_

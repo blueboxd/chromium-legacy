@@ -97,8 +97,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       has_user_gesture_(has_user_gesture),
       web_contents_getter_(web_contents_getter),
       url_checker_delegate_(std::move(url_checker_delegate)),
-      database_manager_(url_checker_delegate_->GetDatabaseManager()),
-      weak_factory_(this) {}
+      database_manager_(url_checker_delegate_->GetDatabaseManager()) {}
 
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);

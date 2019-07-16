@@ -1010,6 +1010,8 @@ void LocalNtpSource::StartDataRequest(
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_3PT_THEME_DESC);
     replacements["uninstallButton"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL);
+    replacements["backLabel"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_BACK_LABEL);
 
     replacements["bgPreloader"] = "";
     GURL custom_background_url = GetCustomBackgroundURL(profile_->GetPrefs());

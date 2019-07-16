@@ -3151,19 +3151,8 @@
 <translation id="7123160381479171745">指定可以登录此设备的用户名单。条目格式为 <ph name="USER_WHITELIST_ENTRY_FORMAT" />，例如 <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />。要允许某个网域的任意用户，请使用以下条目格式：<ph name="USER_WHITELIST_ENTRY_WILDCARD" />。
 
       如果未配置此政策，则不限制哪些用户可以登录此设备。请注意，创建新用户时仍需适当配置 <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> 政策。</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> 可确保扩展程序的安全更新和安装。不过，对于某些在 Chrome 网上应用店外部托管的扩展程序而言，它们的内容可能只会受到不安全的签名或哈希算法（例如 SHA1）的保护。当此政策处于停用状态时，Chrome 会禁止对这类扩展程序进行全新安装或更新（除非相应开发者使用更强大的算法重新构建了这些扩展程序）。当此政策处于启用状态时，Chrome 会允许安装和更新这类扩展程序。
-
-          当此政策未设置时，Chrome 的行为将会默认是此政策处于启用状态时的行为。
-          从 <ph name="PRODUCT_NAME" /> 75 开始，当此政策未设置时，Chrome 的行为将会默认是此政策处于停用状态时的行为。
-
-          从 <ph name="PRODUCT_NAME" /> 77 开始，此政策将会被忽略并会被视为已停用。</translation>
 <translation id="7126716959063786004">允许在任务管理器中结束进程</translation>
 <translation id="7127892035367404455">回滚到目标版本</translation>
-<translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME" />在启动程序栏中显示为固定应用的应用标识符。
-
-      如果配置此政策，系统将会固定该组应用且不允许用户进行更改。
-
-      如果未设置此政策，用户就可以在启动程序中更改固定应用的列表。</translation>
 <translation id="713121532817834879">此政策是一个网址，它指向一个与 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策采用相同格式的 XML 文件。此政策会加载 XML 文件中的规则，但不会与 Internet Explorer 共享这些规则。
 
       此 XML 文件中规则的应用方式与 <ph name="GREYLIST_POLICY_NAME" /> 相同。也就是说，这些规则会阻止 <ph name="PRODUCT_NAME" /> 打开备用浏览器，同时还会阻止备用浏览器打开 <ph name="PRODUCT_NAME" />。
@@ -3974,12 +3963,6 @@
 <translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="8764477907716150749">此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
-<translation id="8765776988041674792">配置用于更改密码的网址（仅限 HTTP 和 HTTPS 方案）。当在浏览器中向用户发出警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
-      为了使 <ph name="PRODUCT_NAME" /> 能够正确捕获这一用于更改密码的页面中的新密码指纹，请务必确保该页面遵循了 https://www.chromium.org/developers/design-documents/create-amazing-password-forms 上所述的准则。
-
-      如果启用了此设置，当在浏览器中向用户发出警告后，密码保护服务即会将用户转到此网址，以便其更改密码。
-      如果停用或未设置，则密码保护服务会将用户转到 https://myaccounts.google.com，以便其更改密码。
-      此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="8798099450830957504">默认</translation>
 <translation id="8800453707696044281">设置电池充电自定义停止充电值（以百分比表示）</translation>
 <translation id="8801680448782904838">系统建议或要求重新启动浏览器或重启设备时，通知用户</translation>
@@ -4100,9 +4083,6 @@
 
       此政策的值应以秒为单位。</translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
-<translation id="9038058011835642205">以列表形式指定一系列无需用户干预即会静默安装且无法由用户卸载或停用的网站。
-
-      此政策的每个列表项都是一个包含以下必要成员的对象：“url”，以及 2 个可选成员：“default_launch_container”和“create_desktop_shortcut”。“url”应该是要安装的网络应用的网址，“launch_container”应该是“窗口”或“标签页”（用于指明网络应用在安装后的打开方式）；如果应该在 Linux 和 Windows 上创建桌面快捷方式，则应该将“create_desktop_shortcut”设为 true。如果省略“default_launch_container”，应用将默认在标签页中打开。无论“default_launch_container”的值是什么，用户都能更改用于打开应用的容器。如果省略“create_desktop_shortcuts”，则系统不会创建任何桌面快捷方式。</translation>
 <translation id="9038839118379817310">启用 Wi-Fi</translation>
 <translation id="9039822628127365650">设置此政策后，它将指定多久之后用户将自动退出，同时终止会话。用户可以通过系统任务栏中显示的倒数定时器来了解剩余的时间。
 

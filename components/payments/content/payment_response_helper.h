@@ -82,7 +82,7 @@ class PaymentResponseHelper
   std::string method_name_;
   std::string stringified_details_;
 
-  base::WeakPtrFactory<PaymentResponseHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentResponseHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentResponseHelper);
 };

@@ -30,8 +30,7 @@ GpuClient::GpuClient(std::unique_ptr<GpuClientDelegate> delegate,
     : delegate_(std::move(delegate)),
       client_id_(client_id),
       client_tracing_id_(client_tracing_id),
-      task_runner_(std::move(task_runner)),
-      weak_factory_(this) {
+      task_runner_(std::move(task_runner)) {
   DCHECK(delegate_);
   gpu_bindings_.set_connection_error_handler(
       base::BindRepeating(&GpuClient::OnError, base::Unretained(this),

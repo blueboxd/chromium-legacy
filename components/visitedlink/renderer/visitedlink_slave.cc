@@ -15,7 +15,7 @@ using blink::WebView;
 
 namespace visitedlink {
 
-VisitedLinkSlave::VisitedLinkSlave() : binding_(this), weak_factory_(this) {}
+VisitedLinkSlave::VisitedLinkSlave() : binding_(this) {}
 
 VisitedLinkSlave::~VisitedLinkSlave() {
   FreeTable();

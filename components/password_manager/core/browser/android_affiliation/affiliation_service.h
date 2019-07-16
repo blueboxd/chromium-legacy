@@ -162,7 +162,7 @@ class AffiliationService : public KeyedService {
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<AffiliationService> weak_ptr_factory_;
+  base::WeakPtrFactory<AffiliationService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationService);
 };

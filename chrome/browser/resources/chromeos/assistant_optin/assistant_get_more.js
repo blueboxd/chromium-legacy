@@ -47,13 +47,6 @@ Polymer({
   screenShown_: false,
 
   /**
-   * Whether voice match has been enabled.
-   * @type {boolean}
-   * @private
-   */
-  voiceMatchEnabled_: false,
-
-  /**
    * On-tap event handler for next button.
    *
    * @private
@@ -64,10 +57,6 @@ Polymer({
     }
     this.buttonsDisabled = true;
 
-    if (!this.voiceMatchEnabled_) {
-      var hotword = this.$$('#toggle-hotword').hasAttribute('checked');
-      chrome.send('login.AssistantOptInFlowScreen.hotwordResult', [hotword]);
-    }
     var screenContext = this.$$('#toggle-context').hasAttribute('checked');
     var toggleEmail = this.$$('#toggle-email');
     var emailOptedIn =
@@ -91,8 +80,6 @@ Polymer({
    * Reload the page with the given consent string text data.
    */
   reloadContent: function(data) {
-    this.voiceMatchEnabled_ = data['voiceMatchEnabled'];
-
     this.consentStringLoaded_ = true;
     if (this.settingZippyLoaded_) {
       this.onPageLoaded();

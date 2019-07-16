@@ -296,8 +296,7 @@ VariationsService::VariationsService(
                                MaybeImportFirstRunSeed(local_state),
                                base::BindOnce(&OnInitialSeedStored)),
                            ui_string_overrider),
-      last_request_was_http_retry_(false),
-      weak_ptr_factory_(this) {
+      last_request_was_http_retry_(false) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
 }
@@ -401,7 +400,7 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
                                                   GetPlatformString());
 
   // Add channel to the request URL.
-  version_info::Channel channel = client_->GetChannel();
+  version_info::Channel channel = client_->GetChannelForVariations();
   if (channel != version_info::Channel::UNKNOWN) {
     server_url = net::AppendOrReplaceQueryParameter(
         server_url, "channel", version_info::GetChannelString(channel));

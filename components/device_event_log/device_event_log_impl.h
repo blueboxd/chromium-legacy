@@ -98,7 +98,7 @@ class DEVICE_EVENT_LOG_EXPORT DeviceEventLogImpl {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   size_t max_entries_;
   LogEntryList entries_;
-  base::WeakPtrFactory<DeviceEventLogImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceEventLogImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceEventLogImpl);
 };

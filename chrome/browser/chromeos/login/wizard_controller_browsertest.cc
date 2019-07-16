@@ -1263,11 +1263,8 @@ class WizardControllerDeviceStateExplicitRequirementTest
 // explicitly required, and that the user may not enter a guest session if FRE
 // was explicitly required. Then, a retyr is performed and FRE indicates that
 // the device should be enrolled.
-//
-// TODO(https://crbug.com/911154) Flaky time outs on Linux Chromium OS ASan
-// LSan bot.
 IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
-                       DISABLED_ControlFlowForcedReEnrollment) {
+                       ControlFlowForcedReEnrollment) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);

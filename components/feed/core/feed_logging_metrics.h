@@ -123,7 +123,7 @@ class FeedLoggingMetrics {
   // Used to access current time, injected for testing.
   base::Clock* clock_;
 
-  base::WeakPtrFactory<FeedLoggingMetrics> weak_ptr_factory_;
+  base::WeakPtrFactory<FeedLoggingMetrics> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FeedLoggingMetrics);
 };

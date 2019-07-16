@@ -53,8 +53,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefs_(prefs),
       suggested_articles_observer_(std::move(suggested_articles_observer)),
       thumbnail_fetcher_(std::move(thumbnail_fetcher)),
-      image_fetcher_(image_fetcher),
-      weak_ptr_factory_(this) {
+      image_fetcher_(image_fetcher) {
   prefetch_dispatcher_->SetService(this);
   prefetch_downloader_->SetPrefetchService(this);
   if (suggested_articles_observer_)

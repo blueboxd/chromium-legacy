@@ -159,7 +159,7 @@ class StrikeDatabase : public KeyedService {
   // Extracts per-project prefix from |key|.
   std::string GetPrefixFromKey(const std::string& key);
 
-  base::WeakPtrFactory<StrikeDatabase> weak_ptr_factory_;
+  base::WeakPtrFactory<StrikeDatabase> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

@@ -41,7 +41,7 @@ const ConsentStatus = {
 Polymer({
   is: 'settings-google-assistant-page',
 
-  behaviors: [I18nBehavior, PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @private */
@@ -124,6 +124,15 @@ Polymer({
     this.browserProxy_ = settings.GoogleAssistantBrowserProxyImpl.getInstance();
   },
 
+  /** @override */
+  ready: function() {
+    this.addWebUIListener('hotwordDeviceUpdated', (hasHotword) => {
+      this.hotwordDspAvailable_ = hasHotword;
+    });
+
+    chrome.send('initializeGoogleAssistantPage');
+  },
+
   /**
    * @param {boolean} toggleValue
    * @return {string}
@@ -196,7 +205,6 @@ Polymer({
     this.refreshDspHotwordState_();
 
     this.shouldShowVoiceMatchSettings_ =
-        loadTimeData.getBoolean('voiceMatchEnabled') &&
         this.getPref('settings.voice_interaction.hotword.enabled.value') &&
         (this.getPref(
           'settings.voice_interaction.activity_control.consent_status.value') ==

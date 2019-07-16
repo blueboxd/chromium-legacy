@@ -56,7 +56,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                    bool was_within_same_document) override;
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client) override;
   void Navigate(std::unique_ptr<NavigationRequest> request,
                 ReloadType reload_type,

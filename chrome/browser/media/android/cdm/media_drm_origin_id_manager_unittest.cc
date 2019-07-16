@@ -139,8 +139,7 @@ class MediaDrmOriginIdManagerTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   MediaDrmOriginIdManager* origin_id_manager_;

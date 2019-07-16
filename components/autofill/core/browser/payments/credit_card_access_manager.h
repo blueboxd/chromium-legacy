@@ -198,7 +198,7 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // The object attempting to access a card.
   base::WeakPtr<Accessor> accessor_;
 
-  base::WeakPtrFactory<CreditCardAccessManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CreditCardAccessManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardAccessManager);
 };

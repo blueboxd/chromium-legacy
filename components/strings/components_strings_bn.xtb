@@ -230,6 +230,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">কার্ড</translation>
 <translation id="2114841414352855701">এড়িয়ে যাওয়া হয়েছে কারণ এটি <ph name="POLICY_NAME" />-দ্বারা ওভাররাইড করা হয়েছিল৷</translation>
+<translation id="2119505898009119320">এই সংস্থাকে ইস্যু করা হয়েছিল: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">মোশন সেন্সর</translation>
 <translation id="213826338245044447">মোবাইল বুকমার্ক</translation>
 <translation id="214556005048008348">পেমেন্ট বাতিল করুন</translation>
@@ -311,6 +312,7 @@
 <translation id="2515629240566999685">আপনার এলাকায় সংকেত পরীক্ষা করে দেখুন</translation>
 <translation id="2523886232349826891">শুধুমাত্র এই ডিভাইসে সেভ করা যাবে</translation>
 <translation id="2524461107774643265">আরও তথ্য যোগ করুন</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{এবং আরও ১টি}one{এবং আরও #টি}other{এবং আরও #টি}}</translation>
 <translation id="2536110899380797252">ঠিকানা যোগ করুন</translation>
 <translation id="2539524384386349900">শনাক্ত করুন</translation>
 <translation id="254947805923345898">নীতির মান সঠিক নয়।</translation>
@@ -723,6 +725,7 @@
 <translation id="4858792381671956233">এই পৃষ্ঠাটি দেখার জন্য উপযুক্ত কিনা তা আপনি আপনার অভিভাবককে জিজ্ঞাসা করেছেন</translation>
 <translation id="4876188919622883022">সরলীকৃত ভিউ</translation>
 <translation id="4876305945144899064">কোনও ব্যবহারকারীর নাম নেই</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{একটিও নয়}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> সার্চ</translation>
 <translation id="4879491255372875719">অটোমেটিক (ডিফল্ট)</translation>
 <translation id="4880827082731008257">সার্চের ইতিহাস</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">হ্যাঁ, সেভ করুন</translation>
 <translation id="6508722015517270189">Chrome পুনরায় চালু করুন</translation>
 <translation id="6517596291481585650">সতর্কতা: এই নীতি কোনও তালিকা নয় বলে সেটি নীতি অনুযায়ী তালিকা হিসেবে মার্জ করা হয়নি।</translation>
+<translation id="6521745193039995384">অ্যাক্টিভ নয়</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে আবার করুন</translation>
 <translation id="6534179046333460208">বাস্তবিক ওয়েব প্রস্তাবনাগুলি</translation>
 <translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
@@ -1478,6 +1482,7 @@
 <translation id="9076630408993835509">কোনও কোম্পানি বা অন্য কোনও সংস্থা এই ব্রাউজারটি ম্যানেজ করে না। এই ডিভাইসের অ্যাক্টিভিটি Chrome-এর বাইরে থেকে ম্যানেজ করা হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">আরও তথ্য প্রয়োজন</translation>
 <translation id="9080712759204168376">অর্ডারের সারসংক্ষেপ</translation>
+<translation id="9089260154716455634">Off-Hours সংক্রান্ত নীতি:</translation>
 <translation id="9095388113577226029">আরও ভাষা...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> সাধারণত আপনার তথ্য সুরক্ষিত রাখতে এনক্রিপশন ব্যবহার করে। এবার Chromium, <ph name="SITE" />-এর সাথে কানেক্ট করার চেষ্টা করলে ওয়েবসাইটটি অস্বাভাবিক এবং ভুল ক্রেডেনশিয়াল পাঠিয়ে দেয়। হয় একজন আক্রমণকারী <ph name="SITE" /> হতে চাইছে অথবা একটি ওয়াই-ফাই সাইন-ইন স্ক্রিন কানেকশনকে বাধা দিয়েছে। আপনার তথ্য এখনো নিরাপদ আছে কারণ কোনো ডেটা আদানপ্রদানের আগেই Chromium কানেকশন বন্ধ করে দিয়েছে।</translation>
 <translation id="9106062320799175032">বিলিংয়ের ঠিকানা যোগ করুন</translation>

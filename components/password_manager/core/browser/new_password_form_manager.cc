@@ -809,8 +809,7 @@ NewPasswordFormManager::NewPasswordFormManager(
       form_saver_(std::move(form_saver)),
       // TODO(https://crbug.com/831123): set correctly
       // |is_possible_change_password_form| in |votes_uploader_| constructor
-      votes_uploader_(client, false /* is_possible_change_password_form */),
-      weak_ptr_factory_(this) {
+      votes_uploader_(client, false /* is_possible_change_password_form */) {
   if (!metrics_recorder_) {
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
         client_->IsMainFrameSecure(), client_->GetUkmSourceId());

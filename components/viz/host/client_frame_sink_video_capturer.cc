@@ -21,9 +21,7 @@ constexpr base::TimeDelta kReEstablishConnectionDelay =
 
 ClientFrameSinkVideoCapturer::ClientFrameSinkVideoCapturer(
     EstablishConnectionCallback callback)
-    : establish_connection_callback_(callback),
-      consumer_binding_(this),
-      weak_factory_(this) {
+    : establish_connection_callback_(callback), consumer_binding_(this) {
   EstablishConnection();
 }
 

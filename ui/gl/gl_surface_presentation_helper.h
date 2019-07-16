@@ -107,7 +107,7 @@ class GL_EXPORT GLSurfacePresentationHelper {
   bool gl_fence_supported_ = false;
   EGLTimestampClient* egl_timestamp_client_ = nullptr;
 
-  base::WeakPtrFactory<GLSurfacePresentationHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<GLSurfacePresentationHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GLSurfacePresentationHelper);
 };

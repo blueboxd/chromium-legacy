@@ -183,8 +183,7 @@ GuestViewBase::GuestViewBase(WebContents* owner_web_contents)
       guest_host_(nullptr),
       auto_size_enabled_(false),
       is_full_page_plugin_(false),
-      guest_proxy_routing_id_(MSG_ROUTING_NONE),
-      weak_ptr_factory_(this) {
+      guest_proxy_routing_id_(MSG_ROUTING_NONE) {
   SetOwnerHost();
 }
 

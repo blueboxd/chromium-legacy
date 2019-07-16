@@ -16,7 +16,6 @@
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
-<translation id="123828989343052515">Nuova scrivania</translation>
 <translation id="1247372569136754018">Microfono (interno)</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Che tempo fa?</translation>
@@ -113,7 +112,6 @@
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="2575685495496069081">L'accesso simultaneo è stato disattivato</translation>
 <translation id="2582112259361606227">Riavvia per aggiornare</translation>
-<translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
 <translation id="2651765386227849097">L'Assistente Google è disattivato su questo dispositivo.</translation>
 <translation id="2653659639078652383">Invia</translation>
@@ -438,7 +436,7 @@
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifica}other{# notifiche}}</translation>
-<translation id="7749443890790263709">Numero massimo di scrivanie raggiunto.</translation>
+<translation id="7749443890790263709">Numero massimo di desktop raggiunto.</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>
 <translation id="7780159184141939021">Ruota lo schermo</translation>
 <translation id="7796353162336583443">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare l'Assistente Google, il puntatore laser o la lente d'ingrandimento.</translation>
@@ -482,7 +480,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crea nota</translation>
 <translation id="8375916635258623388">Questo dispositivo <ph name="DEVICE_NAME" /> e il telefono si connetteranno automaticamente</translation>
-<translation id="8388750414311082622">Impossibile rimuovere l'ultima scrivania.</translation>
+<translation id="8388750414311082622">Impossibile rimuovere l'ultimo desktop.</translation>
 <translation id="8392451568018454956">Menu Opzioni per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Uno dei tuoi genitori ha bloccato questo dispositivo</translation>
 <translation id="8406981827175133772">Lente d'ingrandimento a schermo intero</translation>

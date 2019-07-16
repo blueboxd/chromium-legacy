@@ -264,7 +264,7 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   mojo::InterfacePtrSet<mojom::DataReductionProxyThrottleConfigObserver>
       drp_throttle_config_observers_;
 
-  base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_;
+  base::WeakPtrFactory<DataReductionProxyIOData> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyIOData);
 };

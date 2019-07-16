@@ -125,8 +125,7 @@ StoreVisualsTask::StoreVisualsTask(OfflinePageMetadataStore* store,
       offline_id_(offline_id),
       thumbnail_(std::move(thumbnail)),
       favicon_(std::move(favicon)),
-      complete_callback_(std::move(complete_callback)),
-      weak_ptr_factory_(this) {}
+      complete_callback_(std::move(complete_callback)) {}
 
 StoreVisualsTask::~StoreVisualsTask() = default;
 

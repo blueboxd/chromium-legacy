@@ -29,9 +29,8 @@ class TabAnimationTest : public testing::Test {
   }
 
   TabAnimationTest()
-      : env_(base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-             base::test::ScopedTaskEnvironment::NowSource::
-                 MAIN_THREAD_MOCK_TIME) {}
+      : env_(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {
+  }
 
   float PinnednessOf(TabAnimationState state) { return state.pinnedness_; }
 

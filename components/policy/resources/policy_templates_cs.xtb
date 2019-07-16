@@ -3246,19 +3246,8 @@ Pokud je tato zásada ponechána nenastavená, režim na pozadí je ve výchozí
 <translation id="7123160381479171745">Určuje seznam uživatelů, kteří se do zařízení mohou přihlásit. Položky jsou ve tvaru <ph name="USER_WHITELIST_ENTRY_FORMAT" />, například <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Chcete-li povolit všechny uživatele v doméně, použijte položky ve tvaru <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
 Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat všichni uživatelé. K vytváření nových uživatelů je však i v tomto případě potřeba správné nastavení zásady <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785">Prohlížeč <ph name="PRODUCT_NAME" /> zajišťuje bezpečnou aktualizaci a instalaci rozšíření. Obsah některých rozšíření hostovaných mimo Internetový obchod Chrome však může být chráněn jen nedostatečně bezpečnými podepisovacími nebo hašovacími algoritmy, jako je například SHA1. Pokud je tato zásada vypnutá, Chrome nové instalace a aktualizace takových rozšíření nebude povolovat (dokud vývojáři do rozšíření neimplementují bezpečnější algoritmy). Pokud je tato zásada zapnutá, instalace a aktualizace takových rozšíření jsou povoleny.
-
-          Pokud tato zásada není nastavená, prohlížeč se chová, jako kdyby byla zapnutá.
-          Od verze <ph name="PRODUCT_NAME" /> 75 se jako výchozí bude používat chování odpovídající vypnuté zásadě.
-
-          Od verze <ph name="PRODUCT_NAME" /> 77 tato zásada bude ignorována a prohlížeč se bude chovat, jako kdyby byla vypnutá.</translation>
 <translation id="7126716959063786004">Umožnit ukončování procesů ve Správci úloh</translation>
 <translation id="7127892035367404455">Vrátit se k cílové verzi</translation>
-<translation id="7128918109610518786">Seznam identifikátorů aplikací, které se v <ph name="PRODUCT_OS_NAME" /> zobrazují jako připnuté na liště spouštěče.
-
-      Když je zásada nakonfigurována, jsou tyto aplikace pevně dány a uživatel je nemůže změnit.
-
-      Pokud zásada nastavena není, uživatel seznam aplikací ve spouštěči změnit může.</translation>
 <translation id="713121532817834879">Tato zásada je adresa URL souboru XML ve stejném formátu jako zásady <ph name="IEEM_SITELIST_POLICY" /> prohlížeče Internet Explorer. Pravidla ze souboru XML se načtou, aniž by se sdílela s prohlížečem Internet Explorer.
 
       Pravidla v tomto souboru XML se používají stejně jako pravidla v zásadě <ph name="GREYLIST_POLICY_NAME" />. Tato pravidla tedy prohlížeči <ph name="PRODUCT_NAME" /> brání v otevření alternativního prohlížeče a také alternativnímu prohlížeči brání v otevření prohlížeče <ph name="PRODUCT_NAME" />.
@@ -4089,12 +4078,6 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
        
         Pokud toto nastavení deaktivujete nebo nenastavíte, určí se kanonický název serveru prostřednictvím vyhledávání záznamů CNAME.</translation>
 <translation id="8764477907716150749">Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Konfiguruje adresu URL pro změnu hesla (pouze schémata HTTP a HTTPS). Po zobrazení upozornění v prohlížeči bude služba pro ochranu hesel odesílat uživatele na tuto adresu URL, aby si změnili heslo.
-      Aby prohlížeč <ph name="PRODUCT_NAME" /> na stránce pro změnu hesla mohl správně pořídit otisk nového hesla, měla by odpovídat pokynům na stránce https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Pokud je toto nastavení zapnuté, bude služba pro ochranu hesel uživatele po zobrazení upozornění v prohlížeči odesílat na tuto adresu URL, aby si změnili heslo.
-      Pokud je toto nastavení vypnuté nebo není nastavené, bude služba pro ochranu hesel uživatele za účelem změny hesla odesílat na adresu https://myaccounts.google.com.
-      Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="8798099450830957504">Výchozí</translation>
 <translation id="8800453707696044281">Nastavit vlastní procento nabití baterie, při němž se má zastavit nabíjení</translation>
 <translation id="8801680448782904838">Oznamovat uživateli, že je doporučen nebo vyžadován restart prohlížeče nebo zařízení</translation>
@@ -4217,9 +4200,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 
       Hodnota zásady se zadává v sekundách.</translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
-<translation id="9038058011835642205">Určuje seznam webových stránek, které se instalují na pozadí bez zásahu uživatele a které uživatel nemůže odinstalovat ani deaktivovat.
-
-      Každá položka v seznamu zásady je objekt s jedním povinným členem: „url“ a dvěma volitelnými členy: „default_launch_container“ a „create_desktop_shortcut“. „url“ by měla být adresa URL webové aplikace, která se má nainstalovat. „launch_container“ určuje, jak se webová aplikace po nainstalování otevře, a může mít buď hodnotu „window“, nebo „tab“. Člen „create_desktop_shortcut“ nastavte na hodnotu true v případě, že v systému Linux nebo Windows chcete vytvořit zástupce na ploše. Pokud člen „default_launch_container“ vynecháte, bude se aplikace ve výchozím nastavení otevírat na kartě. Kontejner, ve kterém se aplikace bude otevírat, mohou uživatelé změnit bez ohledu na hodnotu „default_launch_container“. Pokud vynecháte člen „create_desktop_shortcuts“, zástupci na ploše se nevytvoří.</translation>
 <translation id="9038839118379817310">Zapnout Wi-Fi</translation>
 <translation id="9039822628127365650">Když je tato zásada nastavená, udává dobu, po jejímž uplynutí bude uživatel automaticky odhlášen a relace ukončena. O zbývajícím čase uživatele informuje odpočítávání na hlavním panelu systému.
 
@@ -4233,6 +4213,15 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Pokud je hodnota zásady nastavená na token, který je namapován k sestavení Quick Fix Build, aktualizuje se zařízení na odpovídající sestavení Quick Fix Build (jestliže aktualizaci neblokuje jiná zásada).
 
       Pokud tato zásada není nastavená nebo její hodnota není namapována k sestavení Quick Fix Build, zařízení se na sestavení Quick Fix Build neaktualizuje. Pokud je v zařízení již spuštěno sestavení Quick Fix Build a tato zásada již není nastavená nebo její hodnota již není namapována k sestavení Quick Fix Build, aktualizuje se zařízení na běžné sestavení (jestliže aktualizaci neblokuje jiná zásada).</translation>
+<translation id="9054012305936267950">Tato zásada ovládá chování prohlížeče při přihlašování. Umožňuje zadat, zda se uživatel do prohlížeče <ph name="PRODUCT_NAME" /> může přihlásit pomocí svého účtu a používat služby související s účtem, jako je například synchronizace Chromu.
+
+      Pokud je tato zásada nastavena na hodnotu Zakázat přihlášení do prohlížeče, uživatel se přihlásit do prohlížeče a používat služby založené na účtu nemůže. V tomto případě funkce na úrovni prohlížeče, jako je synchronizace Chromu, nelze používat a nebudou k dispozici. Pokud byl uživatel přihlášen a zásada je nastavena na hodnotu Zakázáno, bude při příštím spuštění Chromu odhlášen, ale data v jeho místním profilu, jako jsou záložky, hesla apod., zůstanou zachována. Uživatel se i nadále bude moci přihlásit do webových služeb Google, jako je Gmail, a používat je.
+
+      Pokud je tato zásada nastavena na hodnotu Povolit přihlášení do prohlížeče, uživatel má povoleno přihlásit se do prohlížeče, a když se přihlásí do webových služeb Google, jako je Gmail, bude do prohlížeče přihlášen automaticky. Přihlášení do prohlížeče znamená, že prohlížeč bude uchovávat informace o účtu uživatele. Neznamená to však, že bude ve výchozím nastavení zapnuta synchronizace Chromu. K použití této funkce se uživatel musí přihlásit samostatně. Aktivací této zásady uživateli znemožníte vypnout nastavení, které povoluje přihlášení do prohlížeče. Chcete-li nastavit dostupnost synchronizace Chromu, použijte zásadu SyncDisabled.
+
+      Pokud je tato zásada nastavena na hodnotu Vynutit přihlášení do prohlížeče, zobrazí se uživateli dialogové okno k výběru účtu, v němž před použitím prohlížeče musí vybrat účet a přihlásit se k němu. Zajistí se tím, aby u spravovaných účtů byly použity a vynuceny zásady přidružené k účtu. Ve výchozím nastavení tato možnost pro účet zapne synchronizaci Chromu. Výjimkou jsou případy, kdy synchronizace byla zakázána administrátorem nebo prostřednictvím zásady SyncDisabled. Výchozí hodnota zásady BrowserGuestModeEnabled bude nastavena na hodnotu false. Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny a přestanou být přístupné. Další informace najdete v tomto článku v centru nápovědy: https://support.google.com/chrome/a/answer/7572556. V systému Linux tato zásada není podporována. Pokud v něm bude nastavena, použije se vždy nastavení „Povolit přihlášení do prohlížeče“.
+
+      Pokud tato zásada není nastavena, může se uživatel podle svého uvážení rozhodnout, zda chce možnost přihlášení do prohlížeče zapnout a používat.</translation>
 <translation id="9072600218500597787">Slouží ke konfiguraci názvů domén, které budou vyžadovány u hostitelů vzdáleného přístupu, a znemožňuje uživatelům změnit je.
 
           Pokud je toto nastavení aktivované, lze hostitele sdílet jen pomocí účtů zaregistrovaných pomocí některého ze zadaných názvů domén.

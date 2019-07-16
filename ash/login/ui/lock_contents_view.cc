@@ -1242,6 +1242,8 @@ void LockContentsView::CreateMediaControlsLayout() {
       media_controls_view_->GetMiddleSpacingView(), media_controls_view_.get(),
       kDistanceBetweenAuthUserAndMediaControlsLandscapeDp,
       kDistanceBetweenAuthUserAndMediaControlsPortraitDp));
+
+  Layout();
 }
 
 void LockContentsView::CreateLowDensityLayout(

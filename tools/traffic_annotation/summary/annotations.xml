@@ -8,7 +8,6 @@ Refer to README.md for content description and update process.
 -->
 
 <annotations>
- <item id="CRD_dns_blackhole_checker" hash_code="7634838" type="0" content_hash_code="86431305" os_list="linux,windows" file_path="remoting/host/dns_blackhole_checker.cc"/>
  <item id="CRD_ice_config_request" hash_code="49825319" type="0" content_hash_code="8740825" os_list="linux,windows" file_path="remoting/protocol/http_ice_config_request.cc"/>
  <item id="CRD_relay_session_request" hash_code="24058523" type="0" content_hash_code="36997811" os_list="linux,windows" file_path="remoting/protocol/port_allocator.cc"/>
  <item id="accounts_image_fetcher" hash_code="98658519" type="0" content_hash_code="45432230" os_list="linux,windows" file_path="components/signin/core/browser/account_fetcher_service.cc"/>
@@ -129,7 +128,7 @@ Refer to README.md for content description and update process.
  <item id="geo_language_provider" hash_code="52821843" type="1" second_id="96590038" content_hash_code="65327456" os_list="linux,windows" semantics_fields="1" policy_fields="3,4" file_path="components/language/content/browser/geo_language_provider.cc"/>
  <item id="google_url_tracker" hash_code="5492492" type="0" content_hash_code="54474899" os_list="linux,windows" file_path="components/google/core/browser/google_url_tracker.cc"/>
  <item id="headless_url_request" hash_code="29865866" type="0" deprecated="2018-07-10" content_hash_code="76700151" file_path=""/>
- <item id="hintsfetcher_gethintsrequest" hash_code="34557599" type="0" content_hash_code="57003380" os_list="linux,windows" file_path="components/previews/content/hints_fetcher.cc"/>
+ <item id="hintsfetcher_gethintsrequest" hash_code="34557599" type="0" content_hash_code="57003380" os_list="linux,windows" file_path="components/optimization_guide/hints_fetcher.cc"/>
  <item id="history_notice_utils_notice" hash_code="102595701" type="1" second_id="110307337" content_hash_code="130829410" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="4" file_path="components/browsing_data/core/history_notice_utils.cc"/>
  <item id="history_notice_utils_popup" hash_code="80832574" type="1" second_id="110307337" content_hash_code="30618510" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="4" file_path="components/browsing_data/core/history_notice_utils.cc"/>
  <item id="http_server_error_response" hash_code="32197336" type="0" content_hash_code="61082230" os_list="linux,windows" file_path="net/server/http_server.cc"/>

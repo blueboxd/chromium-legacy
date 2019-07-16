@@ -7,7 +7,6 @@
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/base/system_encryptor.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/nigori/cryptographer.h"
@@ -34,7 +33,6 @@ using syncer::ModelTypeSet;
 using syncer::PassphraseType;
 using syncer::ProtoPassphraseInt32ToEnum;
 using syncer::SyncService;
-using syncer::SystemEncryptor;
 
 class DatatypeCommitCountingFakeServerObserver : public FakeServer::Observer {
  public:
@@ -144,7 +142,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
     EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
     EXPECT_EQ(ProtoPassphraseInt32ToEnum(nigori.passphrase_type()),
               PassphraseType::CUSTOM_PASSPHRASE);
-    auto cryptographer = std::make_unique<Cryptographer>(&system_encryptor_);
+    auto cryptographer = std::make_unique<Cryptographer>();
     InitCustomPassphraseCryptographerFromNigori(nigori, cryptographer.get(),
                                                 passphrase);
     return cryptographer;
@@ -155,7 +153,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   // does not depend on external info.
   std::unique_ptr<Cryptographer> CreateCryptographerWithKeyParams(
       const KeyParams& key_params) {
-    auto cryptographer = std::make_unique<Cryptographer>(&system_encryptor_);
+    auto cryptographer = std::make_unique<Cryptographer>();
     cryptographer->AddKey(key_params);
     return cryptographer;
   }
@@ -171,8 +169,6 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   }
 
  private:
-  SystemEncryptor system_encryptor_;
-
   DISALLOW_COPY_AND_ASSIGN(SingleClientCustomPassphraseSyncTest);
 };
 

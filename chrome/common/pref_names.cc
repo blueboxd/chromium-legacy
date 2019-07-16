@@ -1558,8 +1558,9 @@ const char kDefaultTasksBySuffix[] =
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 
-// Dictionary of schemes used by the external protocol handler.
-// The value is true if the scheme must be ignored.
+// Dictionary of schemes used by the external protocol handler. If a scheme
+// is present with value |false|, the protocol may be launched without first
+// prompting the user.
 const char kExcludedSchemes[] = "protocol_handler.excluded_schemes";
 
 // String containing the last known intranet redirect URL, if any.  See

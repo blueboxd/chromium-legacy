@@ -106,8 +106,7 @@ AutocompleteHistoryManager::AutocompleteHistoryManager()
            {AUTOFILL_CLEANUP_RESULT,
             base::BindRepeating(
                 &AutocompleteHistoryManager::OnAutofillCleanupReturned,
-                base::Unretained(this))}}),
-      weak_ptr_factory_(this) {}
+                base::Unretained(this))}}) {}
 
 AutocompleteHistoryManager::~AutocompleteHistoryManager() {
   CancelAllPendingQueries();

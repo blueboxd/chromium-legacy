@@ -273,7 +273,7 @@ class ThreatDetails : public content::WebContentsObserver {
   std::vector<content::RenderFrameHost*> pending_render_frame_hosts_;
 
   // Used for references to |this| bound in callbacks.
-  base::WeakPtrFactory<ThreatDetails> weak_factory_;
+  base::WeakPtrFactory<ThreatDetails> weak_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HistoryServiceUrls);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HttpsResourceSanitization);

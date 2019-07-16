@@ -54,8 +54,7 @@ GCMAccountTracker::GCMAccountTracker(
     : account_tracker_(account_tracker.release()),
       identity_manager_(identity_manager),
       driver_(driver),
-      shutdown_called_(false),
-      reporting_weak_ptr_factory_(this) {}
+      shutdown_called_(false) {}
 
 GCMAccountTracker::~GCMAccountTracker() {
   DCHECK(shutdown_called_);

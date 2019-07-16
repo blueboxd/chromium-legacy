@@ -323,7 +323,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
-  base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
+  base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAura);
 };

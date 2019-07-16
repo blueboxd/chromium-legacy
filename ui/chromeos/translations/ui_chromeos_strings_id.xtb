@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliterasi (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Tampilan slide</translation>
 <translation id="1045157690796831147">Transliterasi (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Masukan bahasa Jepang (untuk keyboard AS)</translation>
 <translation id="1047956942837015229">Menghapus <ph name="COUNT" /> item...</translation>
 <translation id="1049926623896334335">Dokumen Word</translation>
 <translation id="1062407476771304334">Ganti</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549797760399244642">Buka drive.google.com...</translation>
 <translation id="357479282490346887">Lithuania</translation>
+<translation id="3583509704582854624">Masukan alfanumerik (untuk keyboard bahasa Jepang)</translation>
 <translation id="3603385196401704894">Prancis Kanada</translation>
 <translation id="3606220979431771195">Turki-F</translation>
 <translation id="3609785682760573515">Menyinkronkan...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Terjadi error saat menginstal aplikasi Linux.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Operasi penyalinan gagal, terjadi error: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Masukan bahasa Jepang (untuk keyboard bahasa Jepang)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Beri Linux izin aplikasi untuk mengubah file di Google Drive Anda. Perubahan akan disinkronkan ke perangkat Anda lainnya.</translation>
 <translation id="5982621672636444458">Sortir opsi</translation>

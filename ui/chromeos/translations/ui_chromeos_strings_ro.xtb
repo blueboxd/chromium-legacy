@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Transliterație (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Vizualizare slide-uri</translation>
 <translation id="1045157690796831147">Transliterație (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Tastare în japoneză (pentru tastatură SUA)</translation>
 <translation id="1047956942837015229">Se șterg <ph name="COUNT" /> elemente...</translation>
 <translation id="1049926623896334335">Document Word</translation>
 <translation id="1062407476771304334">Înlocuiți</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3549797760399244642">Accesați drive.google.com...</translation>
 <translation id="357479282490346887">Lituaniană</translation>
+<translation id="3583509704582854624">Tastare alfanumerică (pentru tastatură japoneză)</translation>
 <translation id="3603385196401704894">Franceză canadiană</translation>
 <translation id="3606220979431771195">Turcă-F</translation>
 <translation id="3609785682760573515">Se sincronizează...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">A apărut o eroare în timpul instalării aplicației Linux.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Nu s-a putut copia, eroare neprevăzută: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Tastare în japoneză (pentru tastatură japoneză)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Acordă aplicațiilor Linux permisiunea de a modifica fișiere în Google Drive. Modificările se vor sincroniza cu celelalte dispozitive care îți aparțin.</translation>
 <translation id="5982621672636444458">Opțiuni de sortare</translation>

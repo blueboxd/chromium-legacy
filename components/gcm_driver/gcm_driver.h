@@ -394,7 +394,7 @@ class GCMDriver {
   // Sender for Web Push messages.
   WebPushSender web_push_sender_;
 
-  base::WeakPtrFactory<GCMDriver> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMDriver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriver);
 };

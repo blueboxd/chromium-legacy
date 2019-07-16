@@ -137,7 +137,7 @@ class SpellCheckProvider
   // Dictionary updated observer.
   std::unique_ptr<DictionaryUpdateObserverImpl> dictionary_update_observer_;
 
-  base::WeakPtrFactory<SpellCheckProvider> weak_factory_;
+  base::WeakPtrFactory<SpellCheckProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckProvider);
 };

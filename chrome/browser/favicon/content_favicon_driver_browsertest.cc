@@ -16,6 +16,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -38,6 +39,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/url_constants.h"
 
@@ -695,8 +697,21 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 }
 #endif
 
+class ContentFaviconDriverTestWithAutoupgradesDisabled
+    : public ContentFaviconDriverTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentFaviconDriverTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Checks that a favicon loaded over HTTP is blocked on a secure page.
-IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
                        MixedContentInsecureFaviconBlocked) {
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
   ssl_server.AddDefaultHandlers(GetChromeTestDataDir());
@@ -730,7 +745,7 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
 }
 
 // Checks that a favicon loaded over HTTPS is allowed on a secure page.
-IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
                        MixedContentSecureFaviconAllowed) {
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
   ssl_server.AddDefaultHandlers(GetChromeTestDataDir());

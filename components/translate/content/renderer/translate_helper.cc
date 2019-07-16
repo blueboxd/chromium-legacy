@@ -76,8 +76,7 @@ TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
     : content::RenderFrameObserver(render_frame),
       world_id_(world_id),
       extension_scheme_(extension_scheme),
-      binding_(this),
-      weak_method_factory_(this) {
+      binding_(this) {
   translate_task_runner_ = this->render_frame()->GetTaskRunner(
       blink::TaskType::kInternalTranslation);
 }

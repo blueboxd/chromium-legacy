@@ -962,14 +962,6 @@ Status WebViewImpl::SynthesizeScrollGesture(int x,
   return client_->SendCommand("Input.synthesizeScrollGesture", params);
 }
 
-Status WebViewImpl::SynthesizePinchGesture(int x, int y, double scale_factor) {
-  base::DictionaryValue params;
-  params.SetInteger("x", x);
-  params.SetInteger("y", y);
-  params.SetDouble("scaleFactor", scale_factor);
-  return client_->SendCommand("Input.synthesizePinchGesture", params);
-}
-
 Status WebViewImpl::CallAsyncFunctionInternal(
     const std::string& frame,
     const std::string& function,

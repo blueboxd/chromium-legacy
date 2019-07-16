@@ -373,9 +373,29 @@ bool InstantService::ToggleMostVisitedOrCustomLinks() {
       !pref_service_->GetBoolean(prefs::kNtpUseMostVisitedTiles);
   pref_service_->SetBoolean(prefs::kNtpUseMostVisitedTiles, use_most_visited);
   most_visited_info_->use_most_visited = use_most_visited;
+  bool was_initialized = most_visited_sites_->IsCustomLinksInitialized();
 
   // Custom links is enabled if Most Visited is disabled.
+  // Note: This will eventually call |NotifyAboutMostVisitedInfo|, except in the
+  // case below.
   most_visited_sites_->EnableCustomLinks(!use_most_visited);
+
+  // If custom links is enabled but not initialized, MostVisitedSites will not
+  // notify |OnURLsAvailable| and |NotifyAboutMostVisitedInfo| will not be
+  // called.
+  //
+  // This is because custom links are considered Most Visited items before
+  // initialization. As such their NTPTile metadata is the same, and observers
+  // are not notified if the list of NTPTiles was not changed.
+  //
+  // Therefore, we need to manually call |NotifyAboutMostVisitedInfo| if the
+  // user has never customized their shortcuts.
+  //
+  // For more details, see custom_links_mananger.h and most_visited_sites.h.
+  if (!was_initialized && !most_visited_sites_->IsCustomLinksInitialized()) {
+    NotifyAboutMostVisitedInfo();
+  }
+
   return true;
 }
 

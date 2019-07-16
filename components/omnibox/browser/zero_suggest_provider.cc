@@ -275,8 +275,7 @@ ZeroSuggestProvider::ZeroSuggestProvider(
     : BaseSearchProvider(AutocompleteProvider::TYPE_ZERO_SUGGEST, client),
       history_url_provider_(history_url_provider),
       listener_(listener),
-      result_type_running_(NONE),
-      weak_ptr_factory_(this) {
+      result_type_running_(NONE) {
   // Record whether remote zero suggest is possible for this user / profile.
   const TemplateURLService* template_url_service =
       client->GetTemplateURLService();

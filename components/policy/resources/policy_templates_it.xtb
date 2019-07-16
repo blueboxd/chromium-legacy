@@ -3193,19 +3193,8 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7123160381479171745">Determina l'elenco di utenti autorizzati ad accedere al dispositivo. Le voci sono nel formato <ph name="USER_WHITELIST_ENTRY_FORMAT" />, ad esempio <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Per autorizzare utenti arbitrari su un dominio, le voci devono essere nel formato <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Se questa norma non è configurata, non esistono limitazioni su quali utenti sono autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione della norma <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> garantisce la sicurezza degli aggiornamenti e dell'installazione delle estensioni. Tuttavia, i contenuti di alcune estensioni ospitate al di fuori del Chrome Web Store potrebbero essere protetti solo dagli accessi non sicuri o da algoritmi di hashing, ad esempio SHA1. Quando questa norma è disattivata, la nuova installazione o gli aggiornamenti di tali estensioni non verranno consentiti da Chrome (finché gli sviluppatori delle estensioni non ricreano le estensioni con algoritmi più efficaci). Se questa norma viene attivata, l'installazione e gli aggiornamenti di queste estensioni saranno concessi.
-
-          Se la norma non è impostata, viene applicato per impostazione predefinita il comportamento previsto dalla norma attiva.
-          A partire dalla versione 75 di <ph name="PRODUCT_NAME" />, qualora la norma non fosse impostata, verrà invece applicato per impostazione predefinita il comportamento previsto in caso di norma non attiva.
-
-          A partire dalla versione 77 di <ph name="PRODUCT_NAME" />, questa norma verrà ignorata e considerata come disattivata.</translation>
 <translation id="7126716959063786004">Consenti di terminare i processi in Task Manager</translation>
 <translation id="7127892035367404455">Rollback alla versione target</translation>
-<translation id="7128918109610518786">Consente di elencare gli ID delle applicazioni da visualizzare in <ph name="PRODUCT_OS_NAME" /> sotto forma di applicazioni bloccate nella barra Avvio applicazioni.
-
-Se questa norma viene configurata, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
-
-Se questa norma non viene impostata gli utenti possono modificare l'elenco di applicazioni bloccate in Avvio applicazioni.</translation>
 <translation id="713121532817834879">Questo criterio è un URL che rimanda a un file XML nello stesso formato del criterio <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer. Se viene impostato, le regole vengono caricate da un file XML senza essere condivise con Internet Explorer.
 
       Le regole in questo file XML si applicano come nel criterio <ph name="GREYLIST_POLICY_NAME" />. Significa che queste regole impediscono a <ph name="PRODUCT_NAME" /> di aprire un browser alternativo ed evitano inoltre che il browser alternativo apra <ph name="PRODUCT_NAME" />.
@@ -4019,12 +4008,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
 <translation id="8764477907716150749">Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Consente di configurare l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser per modificare la loro password.
-      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che tale pagina rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccounts.google.com per modificare la loro password.
-      Questa norma è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="8798099450830957504">Predefinito</translation>
 <translation id="8800453707696044281">Imposta il valore percentuale personalizzato raggiunto il quale viene interrotta la ricarica della batteria</translation>
 <translation id="8801680448782904838">Invia a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo
@@ -4149,9 +4132,6 @@ https://www.w3.org/TR/secure-contexts/
 
       Il valore della norma deve essere specificato in secondi.</translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
-<translation id="9038058011835642205">Consente di specificare un elenco di siti web che vengono installati automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallati né disattivati dall'utente.
-
-      Ogni voce dell'elenco della norma è un oggetto con un componente obbligatorio: "url" e due componenti facoltativi: "default_launch_container" e "create_desktop_shortcut". "url" deve essere l'URL dell'applicazione web da installare, "launch_container" deve essere "window" o "tab" a indicare che l'applicazione web verrà aperta una volta installata, e "create_desktop_shortcut" deve essere "true" se è necessario creare un collegamento sul desktop su Linux e Windows. Se "default_launch_container" viene omesso, l'applicazione si aprirà in una scheda per impostazione predefinita. A prescindere dal valore di "default_launch_container", gli utenti possono modificare il contenitore in cui si aprirà l'applicazione. Se "create_desktop_shortcuts" viene omesso, non verranno creati collegamenti sul desktop.</translation>
 <translation id="9038839118379817310">Consente di attivare la rete Wi-Fi</translation>
 <translation id="9039822628127365650">Quando questa norma viene impostata, consente di specificare il periodo di tempo trascorso il quale un utente viene automaticamente disconnesso, terminando così la sessione. Un timer conto alla rovescia nella barra delle applicazioni informa l'utente del tempo restante.
 
@@ -4165,6 +4145,15 @@ https://www.w3.org/TR/secure-contexts/
       Se il valore della norma viene impostato su un token associato a una build di correzione rapida, il dispositivo verrà aggiornato alla build di correzione rapida corrispondente se l'aggiornamento non è bloccato da un'altra norma.
 
       Se questa norma non è impostata o se il valore non è associato a una build di correzione rapida, il dispositivo non verrà aggiornato a una build di correzione rapida. Se il dispositivo esegue già una build di correzione rapida e la norma non è più impostata o il suo valore non è più associato a una build di correzione rapida, il dispositivo verrà aggiornato a una normale build se l'aggiornamento non è bloccato da un'altra norma.</translation>
+<translation id="9054012305936267950">Questo criterio consente di stabilire il comportamento di accesso del browser. Ti consente di specificare se l'utente può accedere a <ph name="PRODUCT_NAME" /> con il proprio account e usare i servizi correlati all'account come Sincronizzazione Chrome.
+
+      Se il criterio viene impostato su "Disattiva accesso al browser", l'utente non potrà accedere al browser e usare i servizi basati sull'account. In questo caso, le funzionalità a livello di browser come la Sincronizzazione Chrome non potranno essere usate e non saranno disponibili. Se il criterio viene impostato su "Disattivata" dopo che l'utente ha eseguito l'accesso, l'utente verrà scollegato alla successiva esecuzione di Chrome, ma i dati locali del profilo, come preferiti, password ecc., verranno mantenuti. L'utente potrà comunque accedere e usare i servizi web di Google come Gmail.
+
+      Se il criterio viene impostato su "Attiva accesso al browser", l'utente potrà accedere al browser e verrà collegato automaticamente al browser se accederà a servizi web di Google come Gmail. Se viene eseguito l'accesso al browser, i dati dell'account dell'utente vengono memorizzati dal browser, ma la funzione Sincronizzazione Chrome non viene attivata per impostazione predefinita; per poter utilizzare questa funzione, l'utente deve attivarla separatamente. Se attivi questo criterio, l'utente non potrà disattivare l'impostazione che consente l'accesso al browser. Per gestire la disponibilità della funzione Sincronizzazione Chrome, usa il criterio "SyncDisabled".
+
+      Se il criterio viene impostato su "Forza accesso al browser", all'utente verrà mostrata una finestra di dialogo di selezione dell'account, da cui dovrà scegliere un account a cui accedere per usare il browser. Questa misura garantisce l'applicazione, nell'ambito degli account gestiti, dei criteri associati all'account. La funzione Sincronizzazione Chrome viene attivata per impostazione predefinita per l'account, ad eccezione del caso in cui la sincronizzazione sia stata disattivata dall'amministratore di dominio o tramite il criterio "SyncDisabled". Il valore predefinito del criterio BrowserGuestModeEnabled sarà false. Tieni presente che i profili esistenti a cui non viene eseguito l'accesso saranno bloccati e inaccessibili dopo l'attivazione di questo criterio. Per ulteriori informazioni, leggi il seguente articolo del Centro assistenza: https://support.google.com/chrome/a/answer/7572556. Questa opzione non supporta Linux e, se utilizzata in tale ambiente, imposterà "Attiva accesso al browser".
+
+      Se questo criterio non è impostato, l'utente potrà decidere se attivare o meno l'opzione di accesso al browser e di usarla in base alle necessità.</translation>
 <translation id="9072600218500597787">Consente di configurare i nomi di dominio dell'host che verranno imposti sugli host di accesso remoto e impedisce agli utenti di modificarli.
 
           Se questa impostazione è attiva, allora è possibile condividere gli host solo utilizzando gli account registrati su uno dei nomi di dominio specificati.

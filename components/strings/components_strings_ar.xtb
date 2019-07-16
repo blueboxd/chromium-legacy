@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">البطاقة</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">تم الإصدار إلى: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">مستشعرات الحركة</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوّال</translation>
 <translation id="214556005048008348">إلغاء الدفع</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">التحقّق من اتصال الإنترنت في منطقتك</translation>
 <translation id="2523886232349826891">سيتم حفظ البطاقة على هذا الجهاز فقط</translation>
 <translation id="2524461107774643265">إضافة مزيد من المعلومات</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{وكلمة مرور واحدة أخرى}zero{و# كلمة مرور أخرى}two{وكلمتا مرور أخريان}few{و# كلمات مرور أخرى}many{و# كلمة مرور أخرى}other{و# كلمة مرور أخرى}}</translation>
 <translation id="2536110899380797252">إضافة عنوان</translation>
 <translation id="2539524384386349900">اكتشاف</translation>
 <translation id="254947805923345898">قيمة السياسة غير صحيحة.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>
 <translation id="4876188919622883022">العرض المبسَّط</translation>
 <translation id="4876305945144899064">ليس هناك اسم مستخدم</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{ما من أسماء نطاقات.}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاقات أخرى}many{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاقًا آخر}other{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاق آخر}}</translation>
 <translation id="4877422487531841831">البحث عن <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">الإعداد التلقائي (تلقائي)</translation>
 <translation id="4880827082731008257">سجلّ البحث</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">نعم، حفظ</translation>
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
 <translation id="6517596291481585650">تحذير: لم يتم دمج هذه السياسة كقائمة كما هو موضح بموجب السياسة؛ لأنها ليست قائمة.</translation>
+<translation id="6521745193039995384">غير مفعلة</translation>
 <translation id="6529602333819889595">إعادة الح&amp;ذف</translation>
 <translation id="6534179046333460208">اقتراحات الشبكة المادية</translation>
 <translation id="6545864417968258051">البحث عن بلوتوث</translation>
@@ -1479,6 +1483,7 @@
 <translation id="9076630408993835509">‏لا تتم إدارة هذا المتصفِّح من خلال شركة أو مؤسسة أخرى. قد تتم إدارة النشاط على هذا الجهاز خارج Chrome. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">مطلوب مزيد من المعلومات</translation>
 <translation id="9080712759204168376">ملخص الطلبات</translation>
+<translation id="9089260154716455634">سياسة "التوقف عن العمل":</translation>
 <translation id="9095388113577226029">مزيد من اللغات...</translation>
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>

@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.SynchronousInitializationActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.glue.OfflineContentProviderGlue;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.touchless.R;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -45,16 +44,14 @@ public class TouchlessDownloadActivity extends SynchronousInitializationActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Profile lastUsedProfile = Profile.getLastUsedProfile();
-
         // Hard-code setIsOffTheRecord to false since incognito is unsupported in touchless mode.
         DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder()
                                                  .setIsOffTheRecord(false)
                                                  .setIsSeparateActivity(true)
                                                  .build();
 
-        OfflineContentProviderGlue downloadGlue = new OfflineContentProviderGlue(
-                OfflineContentAggregatorFactory.forProfile(lastUsedProfile), config);
+        OfflineContentProviderGlue downloadGlue =
+                new OfflineContentProviderGlue(OfflineContentAggregatorFactory.get(), config);
 
         final ContentId id = DownloadBroadcastManager.getContentIdFromIntent(getIntent());
 

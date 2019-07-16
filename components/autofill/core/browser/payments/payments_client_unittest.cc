@@ -80,8 +80,7 @@ struct CardUnmaskOptions {
 
 class PaymentsClientTest : public testing::Test {
  public:
-  PaymentsClientTest()
-      : result_(AutofillClient::NONE), weak_ptr_factory_(this) {}
+  PaymentsClientTest() : result_(AutofillClient::NONE) {}
   ~PaymentsClientTest() override {}
 
   void SetUp() override {
@@ -305,7 +304,7 @@ class PaymentsClientTest : public testing::Test {
   net::HttpRequestHeaders intercepted_headers_;
   bool has_variations_header_;
   std::string intercepted_body_;
-  base::WeakPtrFactory<PaymentsClientTest> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentsClientTest> weak_ptr_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentsClientTest);

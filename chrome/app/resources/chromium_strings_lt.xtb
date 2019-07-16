@@ -13,10 +13,8 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1298199220304005244">Gauti su „Chromium“ OS naudojimu susijusios pagalbos</translation>
 <translation id="1396446129537741364">„Chromium“ bando parodyti slaptažodžius.</translation>
 <translation id="1414495520565016063">Esate prisijungę prie „Chromium“.</translation>
-<translation id="1502360822835740515">Nustatymas „Chromium“ numatytąja naršykle</translation>
 <translation id="151962892725702025">„Chromium“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="1524282610922162960">„Chromium“ skirtuko bendrinimas</translation>
-<translation id="1585657529869845941">Jei bus rodomas, spustelėkite mygtuką <ph name="BEGIN_BOLD" />Vis tiek perjungti<ph name="END_BOLD" /></translation>
 <translation id="1668054258064581266">Pašalinus paskyrą iš „Chromium“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
 <translation id="1688750314291223739">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Chromium“ bet kuriuo kompiuteriu.</translation>
 <translation id="1708666629004767631">Pasiekiama nauja, saugesnė „Chromium“ versija.</translation>
@@ -84,13 +82,11 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3728336900324680424">„Chromium“ turės prieigą prie Disko, kad galėtų teikti pasiūlymus adreso juostoje</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE" />“ – „Chromium“</translation>
-<translation id="3852700440713538496">„Chromium“ prisegimas prie užduočių juostos</translation>
 <translation id="388648406173476553">Tinkinkite ir valdykite „Chromium“. Reikia atkreipti dėmesį – spustelėkite ir peržiūrėkite išsamią informaciją.</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="3898493977366060150">Žiniatinklio naršymas naudojant „Google“ išmaniąsias funkcijas</translation>
 <translation id="4036079820698952681">Padėkite tobulinti „Chromium“ pateikę ataskaitą apie <ph name="BEGIN_LINK" />dabartinius nustatymus<ph name="END_LINK" />.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
-<translation id="407254336480250557">Pasirinkite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">Atraskite puikių „Chromium“ programų, žaidimų, plėtinių ir temų.</translation>
 <translation id="4216212958613226427">Ši kalba vartojama „Chromium“ NS pateikti</translation>
 <translation id="4222580632002216401">Dabar esate prisijungę prie „Chromium“. Administratorius neleidžia sinchronizuoti.</translation>
@@ -107,7 +103,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4677944499843243528">Atrodo, kad profilį naudoja kitas „Chromium“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chromium“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chromium“.</translation>
 <translation id="469338717132742108">Gaukite pagalbos dėl „Chromium“ OS</translation>
 <translation id="4708774505295300557">Kažkas anksčiau prisijungė prie „Chromium“ šiame kompiuteryje kaip <ph name="ACCOUNT_EMAIL_LAST" />. Sukurkite naują „Chromium“ naudotoją, kad apsaugotumėte savo informaciją.</translation>
-<translation id="4714956846925717402">Greičiau pasiekite „Chromium“</translation>
 <translation id="4746050847053251315">Vis tiek išeiti iš „Chromium“?</translation>
 <translation id="4748217263233248895">Ką tik pritaikytas specialus „Chromium“ skirtas saugos naujinys. Paleiskite naršyklę iš naujo ir atkursime visus skirtukus.</translation>
 <translation id="479167709087336770">Naudojamas tas pats rašybos tikrinimas kaip ir „Google“ paieškoje. Tekstas, kurį įvedate naršyklėje, nusiunčiamas „Google“. Šį veikimą visada galite pakeisti nustatymuose.</translation>

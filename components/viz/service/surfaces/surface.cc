@@ -52,8 +52,7 @@ Surface::Surface(const SurfaceInfo& surface_info,
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      allocation_group_(allocation_group),
-      weak_factory_(this) {
+      allocation_group_(allocation_group) {
   TRACE_EVENT_ASYNC_BEGIN1(TRACE_DISABLED_BY_DEFAULT("viz.surface_lifetime"),
                            "Surface", this, "surface_info",
                            surface_info.ToString());

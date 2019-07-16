@@ -16,15 +16,15 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_switches.h"
@@ -141,7 +141,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
     const base::FilePath& profile_path,
     PrefService* pref_service,
     leveldb_proto::ProtoDatabaseProvider* database_provider,
-    PreviewsTopHostProvider* previews_top_host_provider,
+    optimization_guide::TopHostProvider* top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : optimization_guide_service_(optimization_guide_service),
       ui_task_runner_(ui_task_runner),
@@ -152,11 +152,10 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
               profile_path,
               pref_service,
               background_task_runner_))),
-      previews_top_host_provider_(previews_top_host_provider),
+      top_host_provider_(top_host_provider),
       time_clock_(base::DefaultClock::GetInstance()),
       pref_service_(pref_service),
-      url_loader_factory_(url_loader_factory),
-      ui_weak_ptr_factory_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
       ShouldPurgeHintCacheStoreOnStartup(),
@@ -329,7 +328,7 @@ void PreviewsOptimizationGuide::FetchHints() {
   base::Optional<std::vector<std::string>> top_hosts =
       ParseHintsFetchOverrideFromCommandLine();
   if (!top_hosts) {
-    top_hosts = previews_top_host_provider_->GetTopHosts(
+    top_hosts = top_host_provider_->GetTopHosts(
         optimization_guide::features::
             MaxHostsForOptimizationGuideServiceHintsFetch());
   }
@@ -338,7 +337,7 @@ void PreviewsOptimizationGuide::FetchHints() {
             top_hosts->size());
 
   if (!hints_fetcher_) {
-    hints_fetcher_ = std::make_unique<HintsFetcher>(
+    hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
         optimization_guide::features::GetOptimizationGuideServiceURL());
   }
@@ -495,11 +494,12 @@ void PreviewsOptimizationGuide::SetTimeClockForTesting(
 }
 
 void PreviewsOptimizationGuide::SetHintsFetcherForTesting(
-    std::unique_ptr<previews::HintsFetcher> hints_fetcher) {
+    std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher) {
   hints_fetcher_ = std::move(hints_fetcher);
 }
 
-HintsFetcher* PreviewsOptimizationGuide::GetHintsFetcherForTesting() {
+optimization_guide::HintsFetcher*
+PreviewsOptimizationGuide::GetHintsFetcherForTesting() {
   return hints_fetcher_.get();
 }
 

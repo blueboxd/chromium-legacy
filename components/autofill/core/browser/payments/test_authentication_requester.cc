@@ -9,8 +9,7 @@
 
 namespace autofill {
 
-TestAuthenticationRequester::TestAuthenticationRequester()
-    : weak_ptr_factory_(this) {}
+TestAuthenticationRequester::TestAuthenticationRequester() {}
 
 TestAuthenticationRequester::~TestAuthenticationRequester() {}
 

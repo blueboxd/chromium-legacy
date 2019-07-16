@@ -58,7 +58,7 @@ class GetPagesTask : public Task {
   PageCriteria criteria_;
   MultipleOfflinePageItemCallback callback_;
 
-  base::WeakPtrFactory<GetPagesTask> weak_ptr_factory_;
+  base::WeakPtrFactory<GetPagesTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GetPagesTask);
 };
 

@@ -126,7 +126,7 @@ class FakeOutputSurface : public OutputSurface {
  private:
   void SwapBuffersAck();
 
-  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeOutputSurface> weak_ptr_factory_{this};
 };
 
 }  // namespace viz

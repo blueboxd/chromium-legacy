@@ -33,7 +33,8 @@ auto CombineWithLayerMaskTypes(
       ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK));
 }
 
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
+// TODO(penghuang): Fix vulkan with one copy or zero copy
+// https://crbug.com/979703
 std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
     {LayerTreeTest::RENDERER_GL, GPU},
@@ -42,13 +43,9 @@ std::vector<PixelResourceTestCase> const kTestCases = {
     {LayerTreeTest::RENDERER_SKIA_GL, GPU},
     {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
     {LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
-};
-
-std::vector<PixelResourceTestCase> const kTestCasesNonSkia = {
-    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
-    {LayerTreeTest::RENDERER_GL, GPU},
-    {LayerTreeTest::RENDERER_GL, ONE_COPY},
-    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    {LayerTreeTest::RENDERER_SKIA_VK, GPU},
+#endif
 };
 
 using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
@@ -116,13 +113,17 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask.get());
 
+  pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
+
   RunPixelResourceTest(background,
                        base::FilePath(FILE_PATH_LITERAL("mask_of_layer.png")));
 }
 
 class LayerTreeHostLayerListPixelTest : public ParameterizedPixelResourceTest {
+ protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->use_layer_lists = true;
+    settings->gpu_rasterization_forced = use_vulkan();
   }
 };
 
@@ -181,6 +182,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   mask->SetScrollTreeIndex(1);
   mask->SetTransformTreeIndex(1);
   root_layer->AddChild(mask);
+
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   RunPixelResourceTestWithLayerList(
       root_layer, base::FilePath(FILE_PATH_LITERAL("mask_with_effect.png")),
@@ -508,25 +512,10 @@ TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
   mask->SetTransformTreeIndex(2);
   root_layer->AddChild(mask);
 
-  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 100.0f;
-  int large_error_allowed = 256;
-  int small_error_allowed = 0;
-
-  // Skia has a larger number of pixels that are off by one.
-  if (renderer_type() == RENDERER_SKIA_GL)
-    percentage_pixels_large_error = 3.8f;
-
-  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed);
-
   RunPixelResourceTestWithLayerList(
       root_layer,
-      base::FilePath(FILE_PATH_LITERAL("scaled_mask_with_effect.png")),
+      base::FilePath(FILE_PATH_LITERAL("scaled_mask_with_effect_.png"))
+          .InsertBeforeExtensionASCII(GetRendererSuffix()),
       &property_trees);
 }
 
@@ -581,6 +570,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectDifferentSize) {
   mask->SetScrollTreeIndex(1);
   mask->SetTransformTreeIndex(1);
   root_layer->AddChild(mask);
+
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   // The mask is half the size of thing it's masking. In layer-list mode,
   // the mask is not automatically scaled to match the other layer.
@@ -656,6 +648,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, ImageMaskWithEffect) {
                  SkMatrix::I(), false);
   root_layer->AddChild(mask);
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   // The mask is half the size of thing it's masking. In layer-list mode,
   // the mask is not automatically scaled to match the other layer.
   RunPixelResourceTestWithLayerList(
@@ -695,6 +690,9 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   green->SetMaskLayer(mask.get());
   background->AddChild(green);
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   RunPixelResourceTest(
       background, base::FilePath(FILE_PATH_LITERAL("image_mask_of_layer.png")));
 }
@@ -722,6 +720,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask.get());
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   RunPixelResourceTest(
       background,
       base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
@@ -743,6 +744,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
   mask->SetLayerMaskType(mask_type_);
   mask->set_fixed_tile_size(gfx::Size(173, 135));
   green->SetMaskLayer(mask.get());
+
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   RunPixelResourceTest(background,
                        base::FilePath(FILE_PATH_LITERAL(
@@ -880,6 +884,26 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
       (raster_type() == GPU)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
+
+  if (renderer_type() == RENDERER_SKIA_VK) {
+    if (raster_type() == GPU) {
+      // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
+      // slight different).
+      float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
+      float percentage_pixels_small_error = 0.0f;
+      float average_error_allowed_in_bad_pixels = 182.f;
+      int large_error_allowed = 182;
+      int small_error_allowed = 0;
+      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+          true /* discard_alpha */, percentage_pixels_large_error,
+          percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
+          large_error_allowed, small_error_allowed);
+    } else if (raster_type() == ZERO_COPY) {
+      pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(
+          true /* discard_alpha  */);
+    }
+  }
+
   RunPixelResourceTest(background, image_name);
 }
 
@@ -1340,20 +1364,14 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   mask->SetLayerMaskType(mask_type_);
   picture_horizontal->SetMaskLayer(mask.get());
 
-  float percentage_pixels_large_error = 0.062f;  // 0.062%, ~10px / (128*128)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 200.0f;
-  int large_error_allowed = 256;
-  int small_error_allowed = 0;
-  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed);
-
-  RunPixelResourceTest(background,
-                       base::FilePath(FILE_PATH_LITERAL(
-                           "mask_of_backdrop_filter_and_blend.png")));
+  base::FilePath result_path(
+      FILE_PATH_LITERAL("mask_of_backdrop_filter_and_blend_.png"));
+  if (raster_type() != GPU) {
+    result_path = result_path.InsertBeforeExtensionASCII("sw");
+  } else {
+    result_path = result_path.InsertBeforeExtensionASCII(GetRendererSuffix());
+  }
+  RunPixelResourceTest(background, result_path);
 }
 
 }  // namespace

@@ -157,7 +157,7 @@ class MockModelTypeWorker : public CommitQueue {
   std::map<const std::string, int64_t> server_versions_;
 
   // WeakPtrFactory for this worker which will be sent to sync thread.
-  base::WeakPtrFactory<MockModelTypeWorker> weak_ptr_factory_;
+  base::WeakPtrFactory<MockModelTypeWorker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeWorker);
 };

@@ -15,6 +15,7 @@
 #include "content/public/common/content_features.h"
 #include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
@@ -32,6 +33,8 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
       content::WebContents* web_contents) override;
   void EndSession(content::WebContents* web_contents) override;
   void EndSessionOrFail(content::WebContents* web_contents) override;
+
+  virtual gfx::Vector3dF GetControllerOffset() const;
 
   // Necessary to use the WebContents-less versions of functions.
   using WebXrBrowserTestBase::XrDeviceFound;
@@ -79,6 +82,7 @@ class WebXrVrOpenVrBrowserTestBase : public WebXrVrBrowserTestBase {
 #endif
   }
   XrBrowserTestBase::RuntimeType GetRuntimeType() const override;
+  gfx::Vector3dF GetControllerOffset() const override;
 };
 
 // WMR-specific subclass of WebXrVrBrowserTestBase.

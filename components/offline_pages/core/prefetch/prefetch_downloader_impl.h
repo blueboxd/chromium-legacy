@@ -95,7 +95,7 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
 
   PrefService* prefs_;
 
-  base::WeakPtrFactory<PrefetchDownloaderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrefetchDownloaderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchDownloaderImpl);
 };

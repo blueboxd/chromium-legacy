@@ -799,6 +799,33 @@ bool IsRunningUnderDesktopName(StringPiece16 desktop_name) {
   return EqualsCaseInsensitiveASCII(current_desktop_name, desktop_name);
 }
 
+// This method is used to detect whether current session is a remote session.
+// See:
+// https://docs.microsoft.com/en-us/windows/desktop/TermServ/detecting-the-terminal-services-environment
+bool IsCurrentSessionRemote() {
+  if (::GetSystemMetrics(SM_REMOTESESSION))
+    return true;
+
+  DWORD current_session_id = 0;
+
+  if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &current_session_id))
+    return false;
+
+  static constexpr wchar_t kRdpSettingsKeyName[] =
+      L"SYSTEM\\CurrentControlSet\\Control\\Terminal Server";
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, kRdpSettingsKeyName, KEY_READ);
+  if (!key.Valid())
+    return false;
+
+  static constexpr wchar_t kGlassSessionIdValueName[] = L"GlassSessionId";
+  DWORD glass_session_id = 0;
+  if (key.ReadValueDW(kGlassSessionIdValueName, &glass_session_id) !=
+      ERROR_SUCCESS)
+    return false;
+
+  return current_session_id != glass_session_id;
+}
+
 ScopedDomainStateForTesting::ScopedDomainStateForTesting(bool state)
     : initial_state_(IsEnrolledToDomain()) {
   *GetDomainEnrollmentStateStorage() = state;

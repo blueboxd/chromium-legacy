@@ -762,10 +762,8 @@ void OverviewGrid::OnWindowDestroying(aura::Window* window) {
   tmp.reset();
 
   if (empty()) {
-    // If the grid is now empty, notify |overview_session_| so that it erases us
-    // from its grid list.
     if (overview_session_)
-      overview_session_->OnGridEmpty(this);
+      overview_session_->OnGridEmpty();
     return;
   }
 

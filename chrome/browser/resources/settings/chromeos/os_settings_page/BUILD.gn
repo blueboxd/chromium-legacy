@@ -16,7 +16,6 @@ js_library("os_settings_page") {
     "../..:route",
     "../..:search_settings",
     "../../android_apps_page:android_apps_browser_proxy",
-    "../../change_password_page:change_password_browser_proxy",
     "../../chrome_cleanup_page:chrome_cleanup_proxy",
     "../../settings_page:main_page_behavior",
     "//ui/webui/resources/js:load_time_data",

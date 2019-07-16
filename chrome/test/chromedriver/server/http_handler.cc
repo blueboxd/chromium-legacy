@@ -854,10 +854,6 @@ HttpHandler::HttpHandler(
       //
 
       CommandMapping(
-          kPost, "session/:sessionId/element/:id/hover",
-          WrapToCommand("HoverElement",
-                        base::BindRepeating(&ExecuteHoverOverElement))),
-      CommandMapping(
           kGet, "session/:sessionId/autoreport",
           WrapToCommand("IsAutoReporting",
                         base::BindRepeating(&ExecuteIsAutoReporting))),
@@ -865,9 +861,6 @@ HttpHandler::HttpHandler(
           kPost, "session/:sessionId/autoreport",
           WrapToCommand("SetAutoReporting",
                         base::BindRepeating(&ExecuteSetAutoReporting))),
-      CommandMapping(
-          kPost, "session/:sessionId/touch/pinch",
-          WrapToCommand("TouchPinch", base::BindRepeating(&ExecuteTouchPinch))),
   };
   command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }

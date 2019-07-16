@@ -633,7 +633,7 @@ class Directory {
   // are deleted in native models as well.
   std::unique_ptr<DeleteJournal> delete_journal_;
 
-  base::WeakPtrFactory<Directory> weak_ptr_factory_;
+  base::WeakPtrFactory<Directory> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Directory);
 };

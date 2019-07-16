@@ -80,8 +80,8 @@ public class GridTabSwitcherCoordinator
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
-                    tabContentManager, tabCreatorManager, new CompositorViewHolder(context), this,
-                    mMediator, this::getTabGridCardPosition);
+                    tabContentManager, tabCreatorManager, compositorViewHolder, this, mMediator,
+                    this::getTabGridCardPosition);
 
             mUndoGroupSnackbarController =
                     new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
@@ -175,7 +175,7 @@ public class GridTabSwitcherCoordinator
     }
 
     private Rect getTabGridCardPosition(int index) {
-        return mTabGridCoordinator.getContainerView().getTabPosition(index);
+        return mTabGridCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
     }
 
     @Override

@@ -25,17 +25,17 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
+#include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/previews/content/hints_fetcher.h"
 #include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_top_host_provider.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/bloom_filter.h"
 #include "components/previews/core/previews_experiments.h"
@@ -95,7 +95,7 @@ class TestOptimizationGuideService
 };
 
 // A mock class implementation for unittesting previews_optimization_guide.
-class MockPreviewsTopHostProvider : public PreviewsTopHostProvider {
+class MockTopHostProvider : public optimization_guide::TopHostProvider {
  public:
   MOCK_METHOD1(GetTopHosts, std::vector<std::string>(size_t max_sites));
 };
@@ -118,7 +118,7 @@ std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
 
 // A mock class implementation of HintsFetcher for unittesting
 // previews_optimization_guide.
-class TestHintsFetcher : public HintsFetcher {
+class TestHintsFetcher : public optimization_guide::HintsFetcher {
   using HintsFetchedCallback = base::OnceCallback<void(
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>)>;
@@ -169,7 +169,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
       const base::FilePath& profile_path,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
-      PreviewsTopHostProvider* previews_top_host_provider,
+      optimization_guide::TopHostProvider* optimization_guide_top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
       : PreviewsOptimizationGuide(optimization_guide_service,
                                   ui_task_runner,
@@ -177,7 +177,7 @@ class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
                                   profile_path,
                                   pref_service,
                                   database_provider,
-                                  previews_top_host_provider,
+                                  optimization_guide_top_host_provider,
                                   url_loader_factory) {}
 
   bool fetched_hints_stored() { return fetched_hints_stored_; }
@@ -222,8 +222,8 @@ class PreviewsOptimizationGuideTest
 
   PreviewsOptimizationGuide* guide() { return guide_.get(); }
 
-  MockPreviewsTopHostProvider* top_host_provider() {
-    return previews_top_host_provider_.get();
+  MockTopHostProvider* top_host_provider() {
+    return optimization_guide_top_host_provider_.get();
   }
 
   TestOptimizationGuideService* optimization_guide_service() {
@@ -267,9 +267,9 @@ class PreviewsOptimizationGuideTest
     url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
-    if (!previews_top_host_provider_) {
-      previews_top_host_provider_ =
-          std::make_unique<MockPreviewsTopHostProvider>();
+    if (!optimization_guide_top_host_provider_) {
+      optimization_guide_top_host_provider_ =
+          std::make_unique<MockTopHostProvider>();
     }
     optimization_guide_service_ =
         std::make_unique<TestOptimizationGuideService>(
@@ -286,7 +286,7 @@ class PreviewsOptimizationGuideTest
         scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner(), temp_dir(),
         pref_service_.get(), db_provider_.get(),
-        previews_top_host_provider_.get(), url_loader_factory_);
+        optimization_guide_top_host_provider_.get(), url_loader_factory_);
 
     guide_->SetTimeClockForTesting(scoped_task_environment_.GetMockClock());
 
@@ -395,7 +395,7 @@ class PreviewsOptimizationGuideTest
 
   std::unique_ptr<TestPreviewsOptimizationGuide> guide_;
   std::unique_ptr<TestOptimizationGuideService> optimization_guide_service_;
-  std::unique_ptr<MockPreviewsTopHostProvider> previews_top_host_provider_;
+  std::unique_ptr<MockTopHostProvider> optimization_guide_top_host_provider_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

@@ -176,21 +176,23 @@ class MediaPipelineBackend {
     // FrameDisplayInfoDelegate methods must be called on the main CMA thread.
     class FrameDisplayInfoDelegate {
      public:
-      // Called when the screen is refreshed with a valid frame. If no valid
-      // frame is available at the time a screen refresh is due and
-      // implementation decides to make up a frame to display or repeat
-      // previously displayed frames, such methods shall not be called. It
-      // notifies FrameDisplayInfoDelegate about the frame that's displayed on
-      // the screen.
+      // OnFrameDisplayed is called either when the frame is displayed
+      // successfully (with valid |display_time|), or when the frame is dropped
+      // but it's meant to displayed(with |display_time|==INT64_MIN).
+      // If a pushed frame is repeated on screen, OnFrameDisplayed() is called
+      // only once.
       // For this API to work properly, the pts fields in CastDecoderBuffer must
       // be unique.
       virtual void OnFrameDisplayed(
           int64_t push_time,     // Time when the frame is pushed to backend,
                                  // in microseconds, relative to
                                  // CLOCK_MONOTONIC or CLOCK_MONOTONIC_RAW.
+                                 // When it's not available it's INT64_MIN.
           int64_t display_time,  // Time when the frame is displayed on screen,
                                  // in microseconds, relative to
                                  // CLOCK_MONOTONIC or CLOCK_MONOTONIC_RAW.
+                                 // If it's INT64_MIN, the frame is not
+                                 // displayed but dropped.
           int64_t pts  // The |timestamp| within the CastDecoderBuffer that's
                        // pushed to backend, in microseconds.
           ) = 0;

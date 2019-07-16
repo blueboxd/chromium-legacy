@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">A Google Chrome frissítése...</translation>
 <translation id="1469002951682717133">Chrome Alkalmazásindító</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
-<translation id="1585657529869845941">Ha megjelenik, kattintson a <ph name="BEGIN_BOLD" />Váltás mindenképpen<ph name="END_BOLD" /> lehetőségre</translation>
 <translation id="1587223624401073077">A Google Chrome használja a kamerát.</translation>
 <translation id="1587325591171447154">A(z) <ph name="FILE_NAME" /> veszélyes, ezért a Chrome letiltotta.</translation>
 <translation id="1590588151039584890">A frissítéshez le kell állítani a Chrome-ot ezen a számítógépen. Ennek következményeként a számítógépen bejelentkezett további felhasználók elveszthetik a nem mentett módosításokat.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">A Chrome nem tudja olvasni és írni az adatkönyvtárát: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">A Google Chrome olyan böngésző, amely villámgyorsan futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és a kártékony programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
 <translation id="1713301662689114961">{0,plural, =1{A Chrome 1 órán belül újraindul}other{A Chrome # órán belül újraindul}}</translation>
-<translation id="1718131156967340976">Válassza a <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> alkalmazást</translation>
 <translation id="1734234790201236882">A Chrome ezt a jelszót Google-fiókjába menti. Nem kell megjegyeznie.</translation>
 <translation id="174539241580958092">A Google Chrome egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="3873044882194371212">Link megnyitása Chrome-inko&amp;gnitóablakban</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
 <translation id="3898493977366060150">Webes böngészés Google-okostelefonokkal</translation>
-<translation id="4028693306634653894">A Chrome gyorsabb elérése</translation>
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
 <translation id="4053720452172726777">A Google Chrome személyre szabása és beállításai</translation>
 <translation id="4143243756087420366">Chrome-név és -kép</translation>
@@ -236,7 +233,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="7808348361785373670">Eltávolítás a Chrome-ból…</translation>
 <translation id="7825851276765848807">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Google Chrome-ot.</translation>
 <translation id="7855730255114109580">A Google Chrome naprakész</translation>
-<translation id="7888186132678118370">Rögzítse a Chrome-ot a tálcán</translation>
 <translation id="7890208801193284374">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chrome-ot.</translation>
 <translation id="7896673875602241923">Valaki korábban <ph name="ACCOUNT_EMAIL_LAST" /> néven bejelentkezett a Chrome-ba erről a számítógépről. Az adatai elkülönítéséhez hozzon létre új Chrome-felhasználót.</translation>
 <translation id="7908168227788431038">Már majdnem naprakész! Indítsa újra a Google Chrome-ot a frissítés befejezéséhez.</translation>
@@ -285,6 +281,5 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="9138603949443464873">A módosítások alkalmazásához indítsa újra a Chrome-ot</translation>
 <translation id="919706545465235479">Frissítse a Chrome-ot a szinkronizálás megkezdéséhez</translation>
-<translation id="924447568950697217">A Chrome beállítása alapértelmezett böngészőként</translation>
 <translation id="989369509083708165">A Google Chrome az alapértelmezett böngésző</translation>
 </translationbundle>

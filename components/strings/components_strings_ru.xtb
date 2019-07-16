@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Игнорируется, так как правило <ph name="POLICY_NAME" /> имеет приоритет.</translation>
+<translation id="2119505898009119320">Кому выдан: <ph name="ORGANIZATION" /> (<ph name="JURISDICTION" />)</translation>
 <translation id="2129079103035905234">Датчики движения</translation>
 <translation id="213826338245044447">Закладки на мобильном</translation>
 <translation id="214556005048008348">Отменить оплату</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">Проверьте уровень сигнала сети.</translation>
 <translation id="2523886232349826891">Карта будет сохранена только на этом устройстве</translation>
 <translation id="2524461107774643265">Укажите дополнительную информацию</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{и ещё 1}one{и ещё #}few{и ещё #}many{и ещё #}other{и ещё #}}</translation>
 <translation id="2536110899380797252">Добавить адрес</translation>
 <translation id="2539524384386349900">Определять</translation>
 <translation id="254947805923345898">Недопустимое значение правила.</translation>
@@ -713,6 +715,7 @@
 <translation id="4858792381671956233">Запрос на просмотр сайта отправлен вашим родителям</translation>
 <translation id="4876188919622883022">Упрощенный просмотр</translation>
 <translation id="4876305945144899064">Имя пользователя не указано</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Нет}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> и <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Поиск по запросу "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Автоматически (по умолчанию)</translation>
 <translation id="4880827082731008257">Искать в истории</translation>
@@ -1007,6 +1010,7 @@
 <translation id="650855688985305916">Да</translation>
 <translation id="6508722015517270189">Перезапустите Google Chrome.</translation>
 <translation id="6517596291481585650">Внимание! Это правило не объединено, так как оно не является списком.</translation>
+<translation id="6521745193039995384">Не выбрано</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
 <translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
 <translation id="6545864417968258051">Поиск Bluetooth-устройств</translation>
@@ -1466,6 +1470,7 @@
 <translation id="9076630408993835509">Компания или организация не управляет этим браузером. Действиями на этом устройстве можно управлять вне браузера Chrome. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Информации недостаточно</translation>
 <translation id="9080712759204168376">Информация о заказе</translation>
+<translation id="9089260154716455634">Время, когда правила не действуют:</translation>
 <translation id="9095388113577226029">Другие языки</translation>
 <translation id="9103872766612412690">На сайте <ph name="SITE" /> для защиты ваших данных обычно используется шифрование. Однако учетные данные, которые мы получили от сайта <ph name="SITE" /> сейчас, отличаются от тех, которые он отправляет обычно. Вероятно, вредоносный сайт пытается выдать себя за <ph name="SITE" />, либо страница подключения к сети Wi-Fi прервала соединение. Ваша информация по-прежнему в безопасности, так как браузер Chromium разорвал соединение до того, как произошел обмен данными.</translation>
 <translation id="9106062320799175032">Добавьте платежный адрес</translation>

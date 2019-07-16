@@ -138,8 +138,7 @@ ResourceDownloader::ResourceDownloader(
       tab_referrer_url_(tab_referrer_url),
       delegate_task_runner_(task_runner),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
-      url_security_policy_(url_security_policy),
-      weak_ptr_factory_(this) {
+      url_security_policy_(url_security_policy) {
   RequestWakeLock(connector.get());
 }
 

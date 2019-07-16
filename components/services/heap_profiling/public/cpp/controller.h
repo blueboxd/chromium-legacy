@@ -72,7 +72,7 @@ class Controller {
   const mojom::StackMode stack_mode_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<Controller> weak_factory_;
+  base::WeakPtrFactory<Controller> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 

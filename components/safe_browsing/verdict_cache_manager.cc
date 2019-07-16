@@ -149,8 +149,7 @@ VerdictCacheManager::VerdictCacheManager(
     : stored_verdict_count_password_on_focus_(base::nullopt),
       stored_verdict_count_password_entry_(base::nullopt),
       history_service_observer_(this),
-      content_settings_(content_settings),
-      weak_factory_(this) {
+      content_settings_(content_settings) {
   if (history_service)
     history_service_observer_.Add(history_service);
 }

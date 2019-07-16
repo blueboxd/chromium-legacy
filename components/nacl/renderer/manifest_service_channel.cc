@@ -35,8 +35,7 @@ ManifestServiceChannel::ManifestServiceChannel(
           base::ThreadTaskRunnerHandle::Get(),
           true,
           waitable_event)),
-      peer_pid_(base::kNullProcessId),
-      weak_ptr_factory_(this) {}
+      peer_pid_(base::kNullProcessId) {}
 
 ManifestServiceChannel::~ManifestServiceChannel() {
   if (!connected_callback_.is_null())

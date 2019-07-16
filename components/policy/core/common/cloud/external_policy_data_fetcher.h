@@ -110,7 +110,7 @@ class POLICY_EXPORT ExternalPolicyDataFetcher {
   typedef std::set<Job*> JobSet;
   JobSet jobs_;
 
-  base::WeakPtrFactory<ExternalPolicyDataFetcher> weak_factory_;
+  base::WeakPtrFactory<ExternalPolicyDataFetcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyDataFetcher);
 };
@@ -147,7 +147,7 @@ class POLICY_EXPORT ExternalPolicyDataFetcherBackend {
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  base::WeakPtrFactory<ExternalPolicyDataFetcherBackend> weak_factory_;
+  base::WeakPtrFactory<ExternalPolicyDataFetcherBackend> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPolicyDataFetcherBackend);
 };

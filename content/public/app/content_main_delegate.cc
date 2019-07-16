@@ -33,10 +33,6 @@ bool ContentMainDelegate::ProcessRegistersWithSystemProcess(
   return false;
 }
 
-bool ContentMainDelegate::ShouldSendMachPort(const std::string& process_type) {
-  return true;
-}
-
 bool ContentMainDelegate::DelaySandboxInitialization(
     const std::string& process_type) {
   return false;

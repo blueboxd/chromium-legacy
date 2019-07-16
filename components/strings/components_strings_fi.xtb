@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kortti</translation>
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
+<translation id="2119505898009119320">Myönnetty: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Liiketunnistimet</translation>
 <translation id="213826338245044447">Mobiilikirjanmerkit</translation>
 <translation id="214556005048008348">Peruuta maksu</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Tarkista alueesi mobiilisignaali.</translation>
 <translation id="2523886232349826891">Tallennetaan vain tälle laitteelle</translation>
 <translation id="2524461107774643265">Lisää tietoja</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{ja 1 muu}other{ja # muuta}}</translation>
 <translation id="2536110899380797252">Lisää osoite</translation>
 <translation id="2539524384386349900">Tunnista</translation>
 <translation id="254947805923345898">Käytännön arvo ei kelpaa.</translation>
@@ -723,6 +725,7 @@
 <translation id="4858792381671956233">Pyysit vanhemmiltasi lupaa käydä tällä sivustolla.</translation>
 <translation id="4876188919622883022">Yksinkertaistettu näkymä</translation>
 <translation id="4876305945144899064">Ei käyttäjänimeä</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Ei mitään}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Haku <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automaattinen (oletus)</translation>
 <translation id="4880827082731008257">Haku historiasta</translation>
@@ -1017,6 +1020,7 @@
 <translation id="650855688985305916">Kyllä, tallenna</translation>
 <translation id="6508722015517270189">Käynnistä Chrome uudelleen.</translation>
 <translation id="6517596291481585650">Varoitus: tätä käytäntöä ei yhdistetty käytännössä kuvatulla tavalla luettelona, sillä se ei ole luettelo.</translation>
+<translation id="6521745193039995384">Ei aktiivinen</translation>
 <translation id="6529602333819889595">&amp;Toista poisto</translation>
 <translation id="6534179046333460208">Fyysisen webin ehdotukset</translation>
 <translation id="6545864417968258051">Bluetooth-haku</translation>
@@ -1480,6 +1484,7 @@ Lisätietoja:
 <translation id="9076630408993835509">Yritys tai muu organisaatio ei ylläpidä selainta. Laitteen toimintaa saatetaan ylläpitää muualta kuin Chromesta käsin. <ph name="BEGIN_LINK" />Lue lisää<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Lisätietoja tarvitaan</translation>
 <translation id="9080712759204168376">Tilauksen yhteenveto</translation>
+<translation id="9089260154716455634">Ei-aktiivisen ajan käytäntö:</translation>
 <translation id="9095388113577226029">Lisää kieliä…</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9106062320799175032">Lisää laskutusosoite</translation>

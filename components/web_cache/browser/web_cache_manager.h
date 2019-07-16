@@ -242,7 +242,7 @@ class WebCacheManager : public content::NotificationObserver {
   // Maps every renderer_id with its corresponding mojom::WebCachePtr.
   WebCacheServicesMap web_cache_services_;
 
-  base::WeakPtrFactory<WebCacheManager> weak_factory_;
+  base::WeakPtrFactory<WebCacheManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebCacheManager);
 };

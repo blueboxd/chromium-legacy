@@ -84,11 +84,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // process looks up the corresponding FrameNavigationEntry for the new frame
   // navigates it in the correct process. Returns false if the
   // FrameNavigationEntry can't be found or the navigation fails.
-  // TODO(creis): Remove |default_url| once we have collected UMA stats on the
-  // cases that we use a different URL from history than the frame's src.
   virtual bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client);
 
   // Navigation requests -------------------------------------------------------

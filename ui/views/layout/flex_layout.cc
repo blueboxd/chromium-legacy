@@ -407,8 +407,12 @@ void FlexLayout::InitializeChildData(
 void FlexLayout::CalculateChildBounds(const SizeBounds& size_bounds,
                                       FlexLayoutData* data) const {
   // Apply main axis alignment (we've already done cross-axis alignment above).
-  int available_main = (size_bounds.width() ? *size_bounds.width()
-                                            : data->layout.host_size.width());
+  const NormalizedSizeBounds normalized_bounds =
+      Normalize(orientation(), size_bounds);
+  const NormalizedSize normalized_host_size =
+      Normalize(orientation(), data->layout.host_size);
+  int available_main = (normalized_bounds.main() ? *normalized_bounds.main()
+                                                 : normalized_host_size.main());
   available_main = std::max(0, available_main - data->host_insets.main_size());
   const int excess_main = available_main - data->total_size.main();
   NormalizedPoint start(data->host_insets.main_leading(),

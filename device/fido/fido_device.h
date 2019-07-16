@@ -79,6 +79,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual FidoTransportProtocol DeviceTransport() const = 0;
   virtual bool IsInPairingMode() const;
   virtual bool IsPaired() const;
+
+  // Returns false for FIDO Bluetooth devices that do not have the service bit
+  // set to require a PIN or passkey to pair. Returns true otherwise.
+  virtual bool RequiresBlePairingPin() const;
+
   virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
 
   // Sends a speculative AuthenticatorGetInfo request to determine whether the

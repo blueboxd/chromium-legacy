@@ -111,8 +111,7 @@ SessionSyncBridge::SessionSyncBridge(
           sessions_client->GetLocalSessionEventRouter()),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
-                     kMaxSyncFavicons),
-      weak_ptr_factory_(this) {
+                     kMaxSyncFavicons) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
 }

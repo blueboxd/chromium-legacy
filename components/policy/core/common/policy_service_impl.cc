@@ -93,8 +93,7 @@ std::set<std::string> GetStringListPolicyItems(const PolicyBundle& bundle,
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl(Providers providers)
-    : update_task_ptr_factory_(this) {
+PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
   providers_ = std::move(providers);
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;

@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Google Chrome を更新しています...</translation>
 <translation id="1469002951682717133">Chrome アプリ ランチャー</translation>
 <translation id="1553358976309200471">Chrome を更新</translation>
-<translation id="1585657529869845941">[<ph name="BEGIN_BOLD" />切り替える<ph name="END_BOLD" />] をクリックします（表示された場合）</translation>
 <translation id="1587223624401073077">Google Chrome がカメラを使用しています。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> は危険なファイルであるため、Chrome でブロックしました。</translation>
 <translation id="1590588151039584890">更新するには、このパソコン上の Chrome を終了する必要があります。このパソコンにログインしているユーザーが他にいる場合、保存していない変更が失われる可能性があります。</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome はこのデータ ディレクトリへの読み書きを実行できません: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome は 1 時間後に再起動されます}other{Chrome は # 時間後に再起動されます}}</translation>
-<translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> を選択します</translation>
 <translation id="1734234790201236882">このパスワードは Google アカウントに保存されるため、覚えておく必要はありません。</translation>
 <translation id="174539241580958092">ログイン時にエラーが発生したため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@
 <translation id="3873044882194371212">Chrome のシークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
 <translation id="3898493977366060150">Google の最先端技術を活用したウェブ ブラウジング</translation>
-<translation id="4028693306634653894">Chrome をより迅速に起動</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
 <translation id="4143243756087420366">Chrome の名前と画像</translation>
@@ -236,7 +233,6 @@
 <translation id="7808348361785373670">Chrome から削除...</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
 <translation id="7855730255114109580">Google Chrome は最新版です</translation>
-<translation id="7888186132678118370">Chrome をタスクバーにピン留めする</translation>
 <translation id="7890208801193284374">パソコンを共有している場合、友だちや家族はそれぞれ Chrome を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="7896673875602241923">前回このパソコンで別のユーザー（<ph name="ACCOUNT_EMAIL_LAST" />）が Chrome にログインしました。情報を個別に保持するには、新しい Chrome ユーザーを作成してください。</translation>
 <translation id="7908168227788431038">Google Chrome を再起動して更新を完了してください。</translation>
@@ -285,6 +281,5 @@
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="9138603949443464873">変更を適用するには Chrome を再起動してください</translation>
 <translation id="919706545465235479">同期を開始するには、Chrome を更新します</translation>
-<translation id="924447568950697217">Google Chrome をデフォルトのブラウザにする</translation>
 <translation id="989369509083708165">既定のブラウザは Google Chrome です</translation>
 </translationbundle>

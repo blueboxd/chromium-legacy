@@ -3255,19 +3255,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7123160381479171745">Define a lista de utilizadores com permissão para iniciar sessão no dispositivo. As entradas são as do formulário <ph name="USER_WHITELIST_ENTRY_FORMAT" />, como <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para permitir utilizadores arbitrários num domínio, utilize entradas do formulário <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Se esta política não estiver configurada, não existem restrições em relação a quais os utilizadores autorizados a iniciar sessão. Tenha em atenção que, para criar novos utilizadores, continua a ser necessário que a política <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> seja configurada de forma adequada.</translation>
-<translation id="7123266440503901785">O <ph name="PRODUCT_NAME" /> trata de atualizar e instalar extensões com segurança. No entanto, o conteúdo de algumas extensões alojadas fora da Web Store do Chrome apenas pode ser protegido por assinaturas inseguras ou algoritmos de hash como o SHA1. Quando esta política está desativada, o Chrome não permite a nova instalação nem atualizações dessas extensões (até os programadores da extensão voltarem a compilar a extensão com algoritmos mais seguros). Quando esta política está ativada, é permitida a instalação e atualizações dessas extensões.
-
-          Quando a política não está definida, o comportamento predefinido é de ativação.
-          A partir do <ph name="PRODUCT_NAME" /> 75, o comportamento predefinido será a desativação quando a política não estiver definida.
-
-          A partir do <ph name="PRODUCT_NAME" /> 77, esta política será ignorada e tratada como desativada.</translation>
 <translation id="7126716959063786004">Ativar a conclusão de processos no Gestor de tarefas</translation>
 <translation id="7127892035367404455">Reverter para a versão de destino</translation>
-<translation id="7128918109610518786">Lista os identificadores das aplicações que o <ph name="PRODUCT_OS_NAME" /> mostra como aplicações fixadas na barra do iniciador.
-
-      Se esta política estiver configurada, o conjunto de aplicações está fixado e não pode ser alterado pelo utilizador.
-
-      Se esta política não for configurada, o utilizador pode alterar a lista de aplicações fixadas no iniciador.</translation>
 <translation id="713121532817834879">Esta política é um URL que aponta para um ficheiro XML no mesmo formato da política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer. São carregadas regras de um ficheiro XML, sem as partilhar com o Internet Explorer.
 
       As regras neste ficheiro XML são aplicadas da mesma forma que a política <ph name="GREYLIST_POLICY_NAME" />. Isto significa que estas regras impedem o <ph name="PRODUCT_NAME" /> de abrir o navegador alternativo e este de abrir o <ph name="PRODUCT_NAME" />.
@@ -4098,12 +4087,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8759829385824155666">Tipos de encriptação Kerberos permitidos.</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos gerado é baseado no nome de DNS canónico ou no nome introduzido originalmente. Se ativar esta definição, a procura de CNAME será ignorada e será utilizado o nome do servidor introduzido. Se desativar esta definição ou não a definir, o nome canónico do servidor será determinado através da procura de CNAME.</translation>
 <translation id="8764477907716150749">Esta política destina-se a utilização interna pelo próprio <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Configure o URL de alteração da palavra-passe (apenas esquemas HTTP e HTTPS). O serviço de proteção por palavra-passe envia os utilizadores para este URL para que alterem as respetivas palavras-passe depois de ser apresentado um aviso no navegador.
-      Para que o <ph name="PRODUCT_NAME" /> capture a pegada digital da nova palavra-passe corretamente nesta página de alteração da palavra-passe, certifique-se de que a sua página de alteração da palavra-passe segue as diretrizes apresentadas em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se esta definição estiver ativada, o serviço de proteção por palavra-passe envia os utilizadores para este URL para que alterem as respetivas palavras-passe depois de ser apresentado um aviso no navegador.
-      Se esta definição estiver desativada ou não estiver configurada, o serviço de proteção por palavra-passe envia os utilizadores para https://myaccounts.google.com para que alterem as respetivas palavras-passe.
-      Esta política está apenas disponível em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou em instâncias do Windows 10 Pro ou Enterprise inscritas para gestão de dispositivos.</translation>
 <translation id="8798099450830957504">Predefinição</translation>
 <translation id="8800453707696044281">Defina a interrupção de carregamento personalizada em percentagem</translation>
 <translation id="8801680448782904838">Notificar um utilizador de que é recomendado ou necessário reiniciar o navegador ou o dispositivo</translation>
@@ -4246,9 +4229,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 
       O valor da política deve ser especificado em segundos.</translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
-<translation id="9038058011835642205">Especifica uma lista de Websites que são instalados em silêncio, sem interação do utilizador, e que não podem ser desinstalados nem desativados por aquele.
-
-      Cada item de lista da política é um objeto com um membro obrigatório: "url" e dois membros opcionais: "default_launch_container" e "create_desktop_shortcut". "url" deverá ser o URL da aplicação Web a instalar, "launch_container" deverá ser "janela" ou "separador", para indicar de que forma é que a aplicação Web vai ser aberta após a instalação, e "create_desktop_shortcut" deverá ser "verdadeiro", caso deva ser criado um atalho no ambiente de trabalho em Linux e Windows. Se "default_launch_container" for omitido, a aplicação será aberta num separador, por predefinição. Independentemente do valor de "default_launch_container", os utilizadores podem alterar o contentor no qual a aplicação será aberta. Se "create_desktop_shortcuts" for omitido, não serão criados atalhos no ambiente de trabalho.</translation>
 <translation id="9038839118379817310">Ativar o Wi-Fi</translation>
 <translation id="9039822628127365650">Quando esta política está definida, especifica a duração após a qual a sessão de um utilizador é automaticamente terminada, encerrando a sessão. O utilizador é informado sobre o tempo restante através de um temporizador de contagem decrescente mostrado no tabuleiro do sistema.
 
@@ -4262,6 +4242,15 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se o valor da política for definido como um token que mapeia para uma Compilação de correção rápida, o dispositivo será atualizado para a Compilação de correção rápida correspondente, caso a atualização não seja bloqueada por nenhuma outra política.
 
       Se esta política não for definida ou se o respetivo valor não mapear para uma Compilação de correção rápida, o dispositivo não será atualizado para uma Compilação de correção rápida. Se o dispositivo já estiver a executar uma Compilação de correção rápida e a política já não estiver definida ou o respetivo valor já não mapear para uma Compilação de correção rápida, o dispositivo será atualizado para uma compilação normal, caso a atualização não seja bloqueada por nenhuma outra política.</translation>
+<translation id="9054012305936267950">Esta política controla o comportamento de início de sessão do navegador. Permite-lhe especificar se o utilizador pode iniciar sessão no <ph name="PRODUCT_NAME" /> com a respetiva conta e utilizar serviços relacionados com a conta, como a Sincronização do Chrome.
+
+      Se a política estiver definida como "Desativar o início de sessão no navegador", o utilizador não pode iniciar sessão no navegador nem utilizar os serviços baseados na conta. Neste caso, as funcionalidades ao nível do navegador, como a Sincronização do Chrome, não podem ser utilizadas e estão indisponíveis. Se o utilizador tiver sessão iniciada e a política for definida como "Desativada", a sessão do utilizador é terminada da próxima vez que este executar o Chrome, mas os respetivos dados locais do perfil, como marcadores, palavras-passe, etc., mantêm-se guardados. O utilizador ainda poderá iniciar sessão e utilizar os serviços Web Google como o Gmail.
+
+      Se a política estiver definida como "Ativar o início de sessão no navegador", o utilizador tem autorização para iniciar sessão no navegador e a respetiva sessão é iniciada automaticamente no mesmo quando tem sessão iniciada nos serviços Web Google como o Gmail. Ter sessão iniciada no navegador significa que as informações da conta do utilizador são guardadas pelo navegador. Contudo, tal não significa que a Sincronização do Chrome estará ativa por predefinição; o utilizador tem de ativar separadamente a utilização desta funcionalidade. A ativação desta política impede que o utilizador desative a definição que permite o início de sessão no navegador. Para controlar a disponibilidade da Sincronização do Chrome, utilize a política "SyncDisabled".
+
+      Se a política estiver definida como "Forçar início de sessão no navegador", é apresentada ao utilizador uma caixa de diálogo de seleção de conta e este tem de optar e iniciar sessão para utilizar o navegador. Isto garante que, para as contas geridas, as políticas associadas à conta sejam aplicadas e implementadas. Por predefinição, esta opção ativa a Sincronização do Chrome para a conta, exceto no caso em que a sincronização tenha sido desativada pelo administrador do domínio ou através da política "SyncDisabled". O valor predefinido de BrowserGuestModeEnabled vai ser definido como falso. Tenha em atenção que os perfis não assinados existentes serão bloqueados e estarão inacessíveis após a ativação desta política. Para mais informações, consulte o artigo do Centro de Ajuda: https://support.google.com/chrome/a/answer/7572556. Esta opção não é compatível com o Linux e, se for utilizada, utilizará "Ativar o início de sessão no navegador" como alternativa.
+
+      Se esta política não for definida, o utilizador pode decidir se pretende ativar a opção de início de sessão no navegador e utilizá-la conforme entender.</translation>
 <translation id="9072600218500597787">Configura os nomes de domínio do anfitrião obrigatórios que são impostos aos anfitriões de acesso remoto e impede os utilizadores de os alterarem.
 
           Se esta definição estiver ativada, os anfitriões apenas podem ser partilhados através de contas registadas num dos nomes de domínio especificados.

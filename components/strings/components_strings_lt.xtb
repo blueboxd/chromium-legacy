@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kortelė</translation>
 <translation id="2114841414352855701">Nepaisoma, nes buvo pakeista taikant „<ph name="POLICY_NAME" />“.</translation>
+<translation id="2119505898009119320">Išdavė „<ph name="ORGANIZATION" />“ [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Judesio jutikliai</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
 <translation id="214556005048008348">Atšaukti mokėjimą</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Patikrinti signalo stiprumą savo srityje</translation>
 <translation id="2523886232349826891">Išsaugota tik šiame įrenginyje</translation>
 <translation id="2524461107774643265">Daugiau informacijos pridėjimas</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{ir dar 1}one{ir dar #}few{ir dar #}many{ir dar #}other{ir dar #}}</translation>
 <translation id="2536110899380797252">Pridėti adresą</translation>
 <translation id="2539524384386349900">Aptikti</translation>
 <translation id="254947805923345898">Politikos vertė netinkama.</translation>
@@ -723,6 +725,7 @@
 <translation id="4858792381671956233">Paprašėte tėvų leidimo apsilankyti šiame puslapyje</translation>
 <translation id="4876188919622883022">Supaprastintas rodinys</translation>
 <translation id="4876305945144899064">Nėra naudotojo vardo</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Nėra}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">„<ph name="TEXT" />“ paieška</translation>
 <translation id="4879491255372875719">Automatinis (numatytasis)</translation>
 <translation id="4880827082731008257">Ieškoti istorijoje</translation>
@@ -1017,6 +1020,7 @@
 <translation id="650855688985305916">Taip, saugoti</translation>
 <translation id="6508722015517270189">Iš naujo paleiskite „Chrome“</translation>
 <translation id="6517596291481585650">Įspėjimas: ši politika nebuvo sujungta kaip sąrašas, kaip nurodyta politikoje, nes ji nėra sąrašas.</translation>
+<translation id="6521745193039995384">Neaktyvi</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6534179046333460208">Fizinio žiniatinklio pasiūlymai</translation>
 <translation id="6545864417968258051">„Bluetooth“ nuskaitymas</translation>
@@ -1480,6 +1484,7 @@ Papildoma išsami informacija:
 <translation id="9076630408993835509">Šios naršyklės netvarko įmonė ar kita organizacija. Veiklą šiame įrenginyje galima tvarkyti ne naršyklėje „Chrome“. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Būtina pateikti daugiau informacijos</translation>
 <translation id="9080712759204168376">Užsakymų suvestinė</translation>
+<translation id="9089260154716455634">Nenaudojimo valandų politika:</translation>
 <translation id="9095388113577226029">Daugiau kalbų...</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9106062320799175032">Atsiskaitymo adreso pridėjimas</translation>

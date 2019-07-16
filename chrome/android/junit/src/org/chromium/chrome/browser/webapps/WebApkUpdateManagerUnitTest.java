@@ -1109,7 +1109,7 @@ public class WebApkUpdateManagerUnitTest {
         onGotDifferentData(updateManager);
         assertTrue(updateManager.updateRequested());
         tryCompletingUpdate(updateManager, storage, WebApkInstallResult.SUCCESS);
-        assertEquals(false, storage.shouldForceUpdate());
+        assertFalse(storage.shouldForceUpdate());
     }
 
     /**
@@ -1125,7 +1125,7 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(updateManager.updateCheckStarted());
         onGotManifestData(updateManager, defaultManifestData());
         assertFalse(updateManager.updateRequested());
-        assertEquals(false, storage.shouldForceUpdate());
+        assertFalse(storage.shouldForceUpdate());
     }
 
     /**
@@ -1141,7 +1141,7 @@ public class WebApkUpdateManagerUnitTest {
         onGotDifferentData(updateManager);
         assertTrue(updateManager.updateRequested());
         tryCompletingUpdate(updateManager, storage, WebApkInstallResult.FAILURE);
-        assertEquals(false, storage.shouldForceUpdate());
+        assertFalse(storage.shouldForceUpdate());
     }
 
     /**
@@ -1156,6 +1156,30 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(updateManager.updateCheckStarted());
         onGotManifestData(updateManager, null);
         assertFalse(updateManager.updateRequested());
-        assertEquals(false, storage.shouldForceUpdate());
+        assertFalse(storage.shouldForceUpdate());
+    }
+
+    /**
+     * Test that WebappDataStorage#setShouldForceUpdate() is a no-op for unbound WebAPKs.
+     */
+    @Test
+    public void testForceUpdateUnboundWebApk() throws Exception {
+        registerWebApk(UNBOUND_WEBAPK_PACKAGE_NAME, defaultManifestData(),
+                REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
+        WebappRegistry.getInstance().register(getWebApkId(UNBOUND_WEBAPK_PACKAGE_NAME),
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
+                });
+        WebappDataStorage storage = getStorage(UNBOUND_WEBAPK_PACKAGE_NAME);
+        storage.updateWebApkPackageNameForTests(UNBOUND_WEBAPK_PACKAGE_NAME);
+        // Should no-op for an unbound WebAPK.
+        storage.setShouldForceUpdate(true);
+        assertFalse(storage.shouldForceUpdate());
+
+        TestWebApkUpdateManager updateManager = new TestWebApkUpdateManager(storage);
+        updateIfNeeded(UNBOUND_WEBAPK_PACKAGE_NAME, updateManager);
+        assertFalse(updateManager.updateCheckStarted());
+        assertFalse(updateManager.updateRequested());
     }
 }

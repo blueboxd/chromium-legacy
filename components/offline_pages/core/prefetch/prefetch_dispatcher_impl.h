@@ -145,7 +145,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   bool needs_pipeline_processing_ = false;
   bool suspended_ = false;
   std::unique_ptr<PrefetchBackgroundTask> background_task_;
-  base::WeakPtrFactory<PrefetchDispatcherImpl> weak_factory_;
+  base::WeakPtrFactory<PrefetchDispatcherImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchDispatcherImpl);
 };

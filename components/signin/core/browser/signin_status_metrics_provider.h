@@ -96,7 +96,7 @@ class SigninStatusMetricsProvider : public SigninStatusMetricsProviderBase,
   // Whether the instance is for testing or not.
   bool is_test_;
 
-  base::WeakPtrFactory<SigninStatusMetricsProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<SigninStatusMetricsProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SigninStatusMetricsProvider);
 };

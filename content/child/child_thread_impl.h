@@ -145,6 +145,9 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // mojom::ChildControl
   void ProcessShutdown() override;
+#if defined(OS_MACOSX)
+  void GetTaskPort(GetTaskPortCallback callback) override;
+#endif
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabled(bool enable) override;
 #endif

@@ -25,7 +25,7 @@ class PLATFORM_EXPORT PlatformPaintWorkletLayerPainter
     : public cc::PaintWorkletLayerPainter {
  public:
   explicit PlatformPaintWorkletLayerPainter(
-      scoped_refptr<PaintWorkletPaintDispatcher>);
+      std::unique_ptr<PaintWorkletPaintDispatcher>);
   ~PlatformPaintWorkletLayerPainter() override;
 
   // cc::PaintWorkletLayerPainter
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT PlatformPaintWorkletLayerPainter
   bool HasOngoingDispatch() const override;
 
  private:
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;
+  std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher_;
 };
 
 }  // namespace blink

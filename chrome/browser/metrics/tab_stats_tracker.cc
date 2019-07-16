@@ -40,7 +40,7 @@ namespace {
 // The interval at which the DailyEvent::CheckInterval function should be
 // called.
 constexpr base::TimeDelta kDailyEventIntervalTimeDelta =
-    base::TimeDelta::FromMilliseconds(60 * 30);
+    base::TimeDelta::FromMinutes(30);
 
 // The intervals at which we report the number of unused tabs. This is used for
 // all the tab usage histograms listed below.

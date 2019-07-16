@@ -3280,19 +3280,8 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7123160381479171745">Definerer listen over brukere som kan logge på enheten. Oppføringer er i formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" />, for eksempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. For å tillate vilkårlige brukere på et domene, bruk oppføringer i formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Hvis denne regelen ikke er konfigurert, finnes det ingen begrensninger for hvilke brukere som kan logge på. Vær oppmerksom på at oppretting av nye brukere fortsatt krever at <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />-regelen er konfigurert på riktig måte.</translation>
-<translation id="7123266440503901785">Med <ph name="PRODUCT_NAME" /> kan du installere og oppdatere utvidelser på en sikker måte. Men det kan hende at innholdet i noen utvidelser som tilbys utenfor Chrome Nettmarked, bare er beskyttet av usikre signaturer eller hashing-algoritmer, for eksempel SHA1. Når denne regelen er slått av, tillater ikke Chrome at slike utvidelser installeres eller oppdateres (frem til utviklerne av utvidelsen lager en utgave med sterkere algoritmer). Når denne regelen er slått på, tillates det at slike utvidelser installeres og oppdateres.
-
-          Når regelen ikke er angitt, fungerer den som om den er slått på.
-          Fra og med <ph name="PRODUCT_NAME" /> 75 fungerer regelen som om den er slått av når den ikke er angitt.
-
-          Fra og med <ph name="PRODUCT_NAME" /> 77 ignoreres denne regelen og behandles som om den er slått av.</translation>
 <translation id="7126716959063786004">Slå på muligheten for å avslutte prosesser i oppgavebehandlingen</translation>
 <translation id="7127892035367404455">Rollback til målversjon</translation>
-<translation id="7128918109610518786">Viser en liste over programidentifikatorene <ph name="PRODUCT_OS_NAME" /> viser som festede programmer i programlisteraden.
-
-      Hvis denne innstillingen er konfigurert, blir programsettet festet og kan ikke endres av brukeren.
-
-      Hvis denne innstillingen ikke angis, kan brukeren endre listen over programmer som er festet i programlisten.</translation>
 <translation id="713121532817834879">Denne regelen er en nettadresse som peker til en XML-fil med samme format som Internet Explorer-regelen <ph name="IEEM_SITELIST_POLICY" />. Denne laster inn regler fra en XML-fil – uten at reglene deles med Internet Explorer.
 
       Reglene i denne XML-filen gjelder på samme måte som <ph name="GREYLIST_POLICY_NAME" />. Det vil si at disse reglene forhindrer <ph name="PRODUCT_NAME" /> fra å åpne den alternative nettleseren og samtidig forhindrer den alternative nettleseren fra å åpne <ph name="PRODUCT_NAME" />.
@@ -4137,12 +4126,6 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8759829385824155666">Tillatte Kerberos-krypteringstyper</translation>
 <translation id="8764119899999036911">Angir om generert Kerberos-SPN er basert på det kanoniske DNS-navnet eller på det angitte originalnavnet. Hvis du aktiverer denne innstillingen, droppes CNAME-oppslag, og tjenernavnet brukes som angitt. Hvis du deaktiverer denne innstillingen eller ikke angir den, bestemmes tjenerens kanoniske navn ved hjelp av CNAME-oppslag.</translation>
 <translation id="8764477907716150749">Denne regelen er for intern bruk av <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Konfigurer nettadressen for passordendring (bare HTTP og HTTPS). Tjenesten for passordbeskyttelse sender brukerne til denne siden for å endre passordet etter at de har sett en advarsel i nettleseren.
-      For at <ph name="PRODUCT_NAME" /> skal kunne fange opp fingeravtrykket til det nye passordet på denne nettsiden for endring av passord, må du passe på at siden for endring av passord følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Hvis denne innstillingen er slått på, sender tjenesten for passordbeskyttelse brukerne til denne nettadressen for å endre passordet etter at de har sett en advarsel i nettleseren.
-      Hvis denne innstillingen er slått av eller ikke er angitt, sender tjenesten for passordbeskyttelse brukerne til https://myaccounts.google.com for å endre passordet.
-      Denne regelen er bare tilgjengelig på Windows-forekomster som er tilknyttet <ph name="MS_AD_NAME" />-domener, eller Windows 10 Pro- eller Enterprise-forekomster som er registrert for enhetsadministrering.</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8800453707696044281">Angi egendefinert stoppverdi for batterilading i prosent</translation>
 <translation id="8801680448782904838">Varsle en bruker om at nettleseren eller enheten bør eller må startes på nytt</translation>
@@ -4267,9 +4250,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 
       Regelverdien skal angis i sekunder.</translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
-<translation id="9038058011835642205">Spesifiserer en liste over nettsteder som installeres stille (uten brukerinteraksjon) og ikke kan avinstalleres eller deaktiveres av brukeren.
-
-      Hvert listeelement i regelen er et objekt med en obligatorisk komponent: «url» og to valgfrie komponenter: «default_launch_container» og «create_desktop_shortcut». «url» skal være nettadressen for nettprogrammet som skal installeres, «launch_container» skal være enten «window» (vindu) eller «tab» (fane) for å avgjøre hvordan nettprogrammet skal åpnes når det er installert, og «create_desktop_shortcut» skal være «true» (sann) hvis det skal opprettes en snarvei på skrivebordet i Linux og Windows. Hvis «default_launch_container» utelates, åpnes nettprogrammet i en fane som standard. Uavhengig av verdien til «default_launch_container» kan brukere endre hvilken beholder nettprogrammet skal åpnes i. Hvis «create_desktop_shortcuts» utelates, opprettes det ingen snarveier på skrivebordet.</translation>
 <translation id="9038839118379817310">Slå på Wi-Fi</translation>
 <translation id="9039822628127365650">Når denne regelen er angitt, spesifiserer den hvor lang tid det tar før brukerne automatisk logges av og økten avsluttes. Brukerne ser den gjenværende tiden som en nedtelling i systemfeltet.
 

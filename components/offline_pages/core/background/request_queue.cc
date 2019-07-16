@@ -38,7 +38,7 @@ void GetRequestsDone(RequestQueue::GetRequestsCallback callback,
 }  // namespace
 
 RequestQueue::RequestQueue(std::unique_ptr<RequestQueueStore> store)
-    : store_(std::move(store)), task_queue_(this), weak_ptr_factory_(this) {
+    : store_(std::move(store)), task_queue_(this) {
   Initialize();
 }
 

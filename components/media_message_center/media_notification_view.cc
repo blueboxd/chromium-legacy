@@ -57,15 +57,6 @@ constexpr int kMediaNotificationHeaderInset = 0;
 constexpr gfx::Size kMediaNotificationButtonRowSize =
     gfx::Size(124, kMediaButtonSize.height());
 
-// The action buttons in order of preference. If there is not enough space to
-// show all the action buttons then this is used to determine which will be
-// shown.
-constexpr MediaSessionAction kMediaNotificationPreferredActions[] = {
-    MediaSessionAction::kPlay,          MediaSessionAction::kPause,
-    MediaSessionAction::kPreviousTrack, MediaSessionAction::kNextTrack,
-    MediaSessionAction::kSeekBackward,  MediaSessionAction::kSeekForward,
-};
-
 void RecordMetadataHistogram(MediaNotificationView::Metadata metadata) {
   UMA_HISTOGRAM_ENUMERATION(MediaNotificationView::kMetadataHistogramName,
                             metadata);
@@ -94,6 +85,11 @@ const gfx::VectorIcon* GetVectorIconForMediaAction(MediaSessionAction action) {
   }
 
   return nullptr;
+}
+
+size_t GetMaxNumActions(bool expanded) {
+  return expanded ? kMediaNotificationExpandedActionsCount
+                  : kMediaNotificationActionsCount;
 }
 
 }  // namespace
@@ -263,8 +259,7 @@ void MediaNotificationView::ButtonPressed(views::Button* sender,
 
   if (sender->parent() == button_row_) {
     if (item_) {
-      item_->OnMediaSessionActionButtonPressed(
-          static_cast<MediaSessionAction>(sender->tag()));
+      item_->OnMediaSessionActionButtonPressed(GetActionFromButtonTag(*sender));
     }
     return;
   }
@@ -346,13 +341,17 @@ void MediaNotificationView::UpdateWithMediaArtwork(
 }
 
 void MediaNotificationView::UpdateActionButtonsVisibility() {
+  std::set<MediaSessionAction> ignored_actions = {
+      GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
+
   std::set<MediaSessionAction> visible_actions =
-      CalculateVisibleActions(IsActuallyExpanded());
+      GetTopVisibleActions(enabled_actions_, ignored_actions,
+                           GetMaxNumActions(IsActuallyExpanded()));
 
   for (auto* view : button_row_->children()) {
     views::Button* action_button = views::Button::AsButton(view);
-    bool should_show = base::Contains(
-        visible_actions, static_cast<MediaSessionAction>(action_button->tag()));
+    bool should_show =
+        base::Contains(visible_actions, GetActionFromButtonTag(*action_button));
     bool should_invalidate = should_show != action_button->GetVisible();
 
     action_button->SetVisible(should_show);
@@ -422,40 +421,18 @@ MediaNotificationView::GetMediaNotificationBackground() {
 }
 
 bool MediaNotificationView::IsExpandable() const {
+  std::set<MediaSessionAction> ignored_actions = {
+      GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};
+
   // If we can show more notifications if we were expanded then we should be
   // expandable.
-  return CalculateVisibleActions(true).size() > kMediaNotificationActionsCount;
+  return GetTopVisibleActions(enabled_actions_, ignored_actions,
+                              GetMaxNumActions(true))
+             .size() > kMediaNotificationActionsCount;
 }
 
 bool MediaNotificationView::IsActuallyExpanded() const {
   return expanded_ && IsExpandable();
-}
-
-std::set<MediaSessionAction> MediaNotificationView::CalculateVisibleActions(
-    bool expanded) const {
-  size_t max_actions = expanded ? kMediaNotificationExpandedActionsCount
-                                : kMediaNotificationActionsCount;
-  std::set<MediaSessionAction> visible_actions;
-
-  for (auto& action : kMediaNotificationPreferredActions) {
-    if (visible_actions.size() >= max_actions)
-      break;
-
-    // If the action is play or pause then we should only make it visible if the
-    // current play pause button has that action.
-    if ((action == MediaSessionAction::kPlay ||
-         action == MediaSessionAction::kPause) &&
-        static_cast<MediaSessionAction>(play_pause_button_->tag()) != action) {
-      continue;
-    }
-
-    if (!base::Contains(enabled_actions_, action))
-      continue;
-
-    visible_actions.insert(action);
-  }
-
-  return visible_actions;
 }
 
 void MediaNotificationView::UpdateForegroundColor() {
@@ -495,9 +472,7 @@ void MediaNotificationView::UpdateForegroundColor() {
     views::ImageButton* button = static_cast<views::ImageButton*>(child);
 
     views::SetImageFromVectorIcon(
-        button,
-        *GetVectorIconForMediaAction(
-            static_cast<MediaSessionAction>(button->tag())),
+        button, *GetVectorIconForMediaAction(GetActionFromButtonTag(*button)),
         kMediaButtonIconSize, foreground);
 
     button->SchedulePaint();

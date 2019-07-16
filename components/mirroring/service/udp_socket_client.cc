@@ -56,8 +56,7 @@ UdpSocketClient::UdpSocketClient(const net::IPEndPoint& remote_endpoint,
       binding_(this),
       bytes_sent_(0),
       allow_sending_(false),
-      num_packets_pending_receive_(0),
-      weak_factory_(this) {
+      num_packets_pending_receive_(0) {
   DCHECK(network_context_);
 }
 

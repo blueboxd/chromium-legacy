@@ -116,8 +116,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
 }
 
 IdentityTestEnvironment::IdentityTestEnvironment(
-    IdentityManager* identity_manager)
-    : weak_ptr_factory_(this) {
+    IdentityManager* identity_manager) {
   DCHECK(identity_manager);
   raw_identity_manager_ = identity_manager;
   Initialize();
@@ -138,8 +137,7 @@ void IdentityTestEnvironment::Initialize() {
 IdentityTestEnvironment::IdentityTestEnvironment(
     std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
     network::TestURLLoaderFactory* test_url_loader_factory,
-    signin::AccountConsistencyMethod account_consistency)
-    : weak_ptr_factory_(this) {
+    signin::AccountConsistencyMethod account_consistency) {
   dependencies_owner_ = std::move(dependencies_owner);
   TestSigninClient* test_signin_client = dependencies_owner_->signin_client();
   if (test_url_loader_factory)

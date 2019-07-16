@@ -75,7 +75,7 @@ class SystemLogsFetcher {
   std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_for_anonymizer_;
 
-  base::WeakPtrFactory<SystemLogsFetcher> weak_ptr_factory_;
+  base::WeakPtrFactory<SystemLogsFetcher> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SystemLogsFetcher);
 };

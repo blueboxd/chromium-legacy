@@ -51,8 +51,7 @@ PrefetchNetworkRequestFactoryImpl::PrefetchNetworkRequestFactoryImpl(
     : url_loader_factory_(std::move(url_loader_factory)),
       channel_(channel),
       user_agent_(user_agent),
-      prefs_(prefs),
-      weak_factory_(this) {}
+      prefs_(prefs) {}
 
 PrefetchNetworkRequestFactoryImpl::~PrefetchNetworkRequestFactoryImpl() =
     default;

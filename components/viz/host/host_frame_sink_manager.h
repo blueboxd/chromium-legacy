@@ -303,7 +303,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   uint32_t next_cache_back_buffer_id_ = 1;
   uint32_t min_valid_cache_back_buffer_id_ = 1;
 
-  base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_;
+  base::WeakPtrFactory<HostFrameSinkManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HostFrameSinkManager);
 };

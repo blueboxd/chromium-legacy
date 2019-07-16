@@ -46,8 +46,7 @@ const char kGCMAccountMapperAppId[] = "com.google.android.gms";
 GCMAccountMapper::GCMAccountMapper(GCMDriver* gcm_driver)
     : gcm_driver_(gcm_driver),
       clock_(base::DefaultClock::GetInstance()),
-      initialized_(false),
-      weak_ptr_factory_(this) {}
+      initialized_(false) {}
 
 GCMAccountMapper::~GCMAccountMapper() {
 }

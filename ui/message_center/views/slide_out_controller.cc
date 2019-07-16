@@ -20,9 +20,7 @@ gfx::Tween::Type kSwipeTweenType = gfx::Tween::EASE_IN;
 
 SlideOutController::SlideOutController(ui::EventTarget* target,
                                        Delegate* delegate)
-    : target_handling_(target, this),
-      delegate_(delegate),
-      weak_ptr_factory_(this) {}
+    : target_handling_(target, this), delegate_(delegate) {}
 
 SlideOutController::~SlideOutController() {}
 

@@ -145,9 +145,7 @@ std::string ComputeServerDefinedUniqueTagForDebugging(
 
 BookmarkModelTypeProcessor::BookmarkModelTypeProcessor(
     BookmarkUndoService* bookmark_undo_service)
-    : bookmark_undo_service_(bookmark_undo_service),
-      weak_ptr_factory_for_controller_(this),
-      weak_ptr_factory_for_worker_(this) {}
+    : bookmark_undo_service_(bookmark_undo_service) {}
 
 BookmarkModelTypeProcessor::~BookmarkModelTypeProcessor() {
   if (bookmark_model_ && bookmark_model_observer_) {

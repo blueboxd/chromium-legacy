@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">‏دریافت راهنمایی برای استفاده از سیستم عامل Chromium </translation>
 <translation id="1396446129537741364">‏Chromium می‌خواهد گذرواژه‌ها را نشان دهد.</translation>
 <translation id="1414495520565016063">‏شما وارد سیستم Chromium شدید!</translation>
-<translation id="1502360822835740515">‏Chromium مرورگر پیش‌فرض شود</translation>
 <translation id="151962892725702025">‏سیستم‌عامل Chromium قادر به همگام‌سازی داده‌های شما نبود زیرا همگام‌سازی برای دامنه شما قابل دسترسی نیست.</translation>
 <translation id="1524282610922162960">‏هم‌رسانی برگه Chromium</translation>
-<translation id="1585657529869845941">درصورتی‌که نمایان شد، روی <ph name="BEGIN_BOLD" />به‌هرصورت جابه‌جایی<ph name="END_BOLD" /> کلیک کنید</translation>
 <translation id="1668054258064581266">‏پس از حذف حسابتان از Chromium، ممکن است لازم باشد برای اعمال تغییرات، برگه‌های بازتان را تازه‌سازی کنید.</translation>
 <translation id="1688750314291223739">‏برای ذخیره ویژگی‌های مرورگر سفارشی شده خود در وب و دسترسی به آن‌ها از Chromium از هر رایانه دیگری، همگام‌سازی را راه‌اندازی کنید.</translation>
 <translation id="1708666629004767631">‏نسخه جدید و امن‌تری از Chromium موجود است.</translation>
@@ -81,13 +79,11 @@
 <translation id="3728336900324680424">‏Chromium برای ارائه پیشنهاد در نوار نشانی، به Drive شما دسترسی خواهد داشت</translation>
 <translation id="378917192836375108">‏Chromium به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">‏Chromium به نوار وظیفه شما پین شود</translation>
 <translation id="388648406173476553">‏Chromium را سفارشی و کنترل کنید. چیزی نیاز به رسیدگی دارد، برای اطلاعات بیشتر کلیک کنید.</translation>
 <translation id="3889543394854987837">‏برای باز کردن Chromium و شروع به مرور، روی نامتان کلیک کنید.</translation>
 <translation id="3898493977366060150">‏مرور وب با هوشمندی‌های Google</translation>
 <translation id="4036079820698952681">‏با گزارش <ph name="BEGIN_LINK" />تنظیمات کنونی<ph name="END_LINK" />، به بهتر شدن Chromium کمک کنید</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
-<translation id="407254336480250557">‏<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> را انتخاب کنید</translation>
 <translation id="421369550622382712">‏برنامه‌ها، بازی‌ها، افزونه‌ها و طرح‌های زمینه Chromium را کشف کنید.</translation>
 <translation id="4216212958613226427">‏از این زبان برای نمایش رابط کاربری Chromium استفاده می‌شود</translation>
 <translation id="4222580632002216401">‏اکنون وارد Chromium شدید! سرپرست سیستم شما همگام‌سازی را از کار انداخته است.</translation>
@@ -104,7 +100,6 @@
 <translation id="4677944499843243528">‏ظاهراً نمایه توسط فرآیند Chromium دیگری (<ph name="PROCESS_ID" />) در رایانه‌ای دیگر (<ph name="HOST_NAME" />) در حال استفاده است. Chromium نمایه را قفل کرده است تا خراب نشود. اگر مطمئنید فرآیندهای دیگری از این نمایه استفاده نمی‌کنند، می‌توانید قفل نمایه را باز کنید و Chromium را مجدداً راه‌اندازی نمایید.</translation>
 <translation id="469338717132742108">‏دریافت کمک برای سیستم عامل Chromium</translation>
 <translation id="4708774505295300557">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chromium در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
-<translation id="4714956846925717402">‏دسترسی سریع‌تر به Chromium</translation>
 <translation id="4746050847053251315">‏درهرصورت از Chromium خارج می‌شوید؟</translation>
 <translation id="4748217263233248895">‏لحظاتی پیش به‌روزرسانی امنیتی ویژه‌ای برای Chromium اعمال شد. هم‌اکنون بازراه‌اندازی کنید و ما برگه‌هایتان را بازیابی خواهیم کرد.</translation>
 <translation id="479167709087336770">‏از همان غلط‌گیر املایی استفاده می‌کند که در جستجوی Google استفاده می‌شود. نوشتاری که در مرورگر تایپ کرده‌اید برای Google ارسال می‌شود. هروقت بخواهید می‌توانید این رفتار را در تنظیمات تغییر دهید.</translation>

@@ -83,8 +83,7 @@ class FakeAudioWorkerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   AudioParameters params_;
   FakeAudioWorker fake_worker_;
   base::TimeDelta time_between_callbacks_;

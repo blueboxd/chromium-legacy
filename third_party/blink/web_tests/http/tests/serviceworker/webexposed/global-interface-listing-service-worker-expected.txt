@@ -1309,6 +1309,20 @@ interface TextEncoderStream
     getter readable
     getter writable
     method constructor
+interface TextMetrics
+    attribute @@toStringTag
+    getter actualBoundingBoxAscent
+    getter actualBoundingBoxDescent
+    getter actualBoundingBoxLeft
+    getter actualBoundingBoxRight
+    getter advances
+    getter emHeightAscent
+    getter emHeightDescent
+    getter fontBoundingBoxAscent
+    getter fontBoundingBoxDescent
+    getter width
+    method constructor
+    method getBaselines
 interface TimestampTrigger
     attribute @@toStringTag
     getter timestamp

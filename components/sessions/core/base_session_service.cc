@@ -56,8 +56,7 @@ BaseSessionService::BaseSessionService(SessionType type,
       commands_since_reset_(0),
       delegate_(delegate),
       backend_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-      weak_factory_(this) {
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   backend_ = new SessionBackend(type, path);
   DCHECK(backend_);
 }

@@ -62,8 +62,7 @@ FeedContentDatabase::FeedContentDatabase(
     std::unique_ptr<leveldb_proto::ProtoDatabase<ContentStorageProto>>
         storage_database)
     : database_status_(InitStatus::kNotInitialized),
-      storage_database_(std::move(storage_database)),
-      weak_ptr_factory_(this) {
+      storage_database_(std::move(storage_database)) {
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.write_buffer_size = base::SysInfo::IsLowEndDevice()
                                   ? kDatabaseWriteBufferSizeBytesForLowEndDevice

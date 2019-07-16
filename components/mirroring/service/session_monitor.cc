@@ -117,8 +117,7 @@ SessionMonitor::SessionMonitor(
       receiver_address_(receiver_address),
       session_tags_(std::move(session_tags)),
       url_loader_factory_(std::move(loader_factory)),
-      stored_snapshots_bytes_(0),
-      weak_factory_(this) {
+      stored_snapshots_bytes_(0) {
   QueryReceiverSetupInfo();
 }
 

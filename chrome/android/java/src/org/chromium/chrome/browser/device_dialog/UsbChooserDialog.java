@@ -10,6 +10,8 @@ import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JCaller;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -72,7 +74,8 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
                         new NoUnderlineClickableSpan(activity.getResources(), (view) -> {
                             if (mNativeUsbChooserDialogPtr == 0) return;
 
-                            nativeLoadUsbHelpPage(mNativeUsbChooserDialogPtr);
+                            Natives jni = UsbChooserDialogJni.get();
+                            jni.loadUsbHelpPage(this, mNativeUsbChooserDialogPtr);
 
                             // Get rid of the highlight background on selection.
                             view.invalidate();
@@ -90,10 +93,11 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
     @Override
     public void onItemSelected(String id) {
         if (mNativeUsbChooserDialogPtr != 0) {
+            Natives jni = UsbChooserDialogJni.get();
             if (id.isEmpty()) {
-                nativeOnDialogCancelled(mNativeUsbChooserDialogPtr);
+                jni.onDialogCancelled(this, mNativeUsbChooserDialogPtr);
             } else {
-                nativeOnItemSelected(mNativeUsbChooserDialogPtr, id);
+                jni.onItemSelected(this, mNativeUsbChooserDialogPtr, id);
             }
         }
     }
@@ -131,10 +135,11 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
         mItemChooserDialog.dismiss();
     }
 
-    @VisibleForTesting
-    native void nativeOnItemSelected(long nativeUsbChooserDialogAndroid, String deviceId);
-    @VisibleForTesting
-    native void nativeOnDialogCancelled(long nativeUsbChooserDialogAndroid);
-    @VisibleForTesting
-    native void nativeLoadUsbHelpPage(long nativeUsbChooserDialogAndroid);
+    @NativeMethods
+    interface Natives {
+        void onItemSelected(@JCaller UsbChooserDialog self, long nativeUsbChooserDialogAndroid,
+                String deviceId);
+        void onDialogCancelled(@JCaller UsbChooserDialog self, long nativeUsbChooserDialogAndroid);
+        void loadUsbHelpPage(@JCaller UsbChooserDialog self, long nativeUsbChooserDialogAndroid);
+    }
 }

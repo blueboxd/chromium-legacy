@@ -883,8 +883,7 @@ PaymentsClient::PaymentsClient(
       identity_manager_(identity_manager),
       account_info_getter_(account_info_getter),
       is_off_the_record_(is_off_the_record),
-      has_retried_authorization_(false),
-      weak_ptr_factory_(this) {}
+      has_retried_authorization_(false) {}
 
 PaymentsClient::~PaymentsClient() {}
 

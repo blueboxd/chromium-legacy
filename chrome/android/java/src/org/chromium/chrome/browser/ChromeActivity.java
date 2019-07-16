@@ -236,6 +236,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private C mComponent;
 
+    protected ObservableSupplierImpl<TabModelSelector> mTabModelSelectorSupplier =
+            new ObservableSupplierImpl<>();
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabCreatorManager.TabCreator mRegularTabCreator;
@@ -664,6 +666,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mTabModelsInitialized) return;
 
         mTabModelSelector = createTabModelSelector();
+        mTabModelSelectorSupplier.set(mTabModelSelector);
         mActivityTabProvider.setTabModelSelector(mTabModelSelector);
         mTabThemeColorProvider = new TabThemeColorProvider(this);
         mTabThemeColorProvider.setActivityTabProvider(mActivityTabProvider);
@@ -1151,8 +1154,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * be called from #onDeferredStartup() if the activity is in multi-window mode.
      */
     protected void onDeferredStartupForMultiWindowMode() {
-        // If the Activity was launched in multi-window mode, record a user action and the screen
-        // width.
+        // If the Activity was launched in multi-window mode, record a user action.
         recordMultiWindowModeChangedUserAction(true);
     }
 
@@ -1984,8 +1986,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         // If native is not initialized, the multi-window user action will be recorded in
-        // #onDeferredStartupForMultiWindowMode() and FeatureUtilities#setIsInMultiWindowMode()
-        // will be called in #onResumeWithNative(). Both of these methods require native to be
+        // #onDeferredStartupForMultiWindowMode() and FeatureUtilities#setIsInMultiWindowMode() will
+        // be called in #onResumeWithNative(). Both of these methods require native to be
         // initialized, so do not call here to avoid crashing. See https://crbug.com/797921.
         if (mNativeInitialized) {
             recordMultiWindowModeChangedUserAction(isInMultiWindowMode);

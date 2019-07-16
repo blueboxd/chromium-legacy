@@ -28,13 +28,12 @@ const char kNigoriNonUniqueName[] = "Nigori";
 // serialized Nigori key if successful and base::nullopt otherwise.
 base::Optional<std::string> DecryptKeystoreDecryptor(
     const std::vector<std::string>& keystore_keys,
-    const sync_pb::EncryptedData& keystore_decryptor_token,
-    Encryptor* const encryptor) {
+    const sync_pb::EncryptedData& keystore_decryptor_token) {
   if (keystore_decryptor_token.blob().empty()) {
     return base::nullopt;
   }
 
-  Cryptographer cryptographer(encryptor);
+  Cryptographer cryptographer;
   for (const std::string& key : keystore_keys) {
     KeyParams key_params = {KeyDerivationParams::CreateForPbkdf2(), key};
     // TODO(crbug.com/922900): possible behavioral change. Old implementation
@@ -56,8 +55,7 @@ base::Optional<std::string> DecryptKeystoreDecryptor(
   return serialized_nigori_key;
 }
 
-// Creates keystore Nigori specifics given |keystore_keys|. |encryptor| is used
-// only to initialize the cryptographer.
+// Creates keystore Nigori specifics given |keystore_keys|.
 // Returns new NigoriSpecifics if successful and base::nullopt otherwise. If
 // successful the result will contain:
 // 1. passphrase_type = KEYSTORE_PASSPHRASE.
@@ -69,12 +67,10 @@ base::Optional<std::string> DecryptKeystoreDecryptor(
 // 5. keystore_migration_time is current time.
 // 6. Other fields are default.
 base::Optional<NigoriSpecifics> MakeDefaultKeystoreNigori(
-    const std::vector<std::string>& keystore_keys,
-    Encryptor* encryptor) {
-  DCHECK(encryptor);
+    const std::vector<std::string>& keystore_keys) {
   DCHECK(!keystore_keys.empty());
 
-  Cryptographer cryptographer(encryptor);
+  Cryptographer cryptographer;
   // The last keystore key will become default.
   for (const std::string& key : keystore_keys) {
     // This check and checks below theoretically should never fail, but in case
@@ -344,10 +340,8 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
 }  // namespace
 
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
-    std::unique_ptr<NigoriLocalChangeProcessor> processor,
-    Encryptor* encryptor)
+    std::unique_ptr<NigoriLocalChangeProcessor> processor)
     : processor_(std::move(processor)),
-      cryptographer_(encryptor),
       passphrase_type_(NigoriSpecifics::UNKNOWN),
       encrypt_everything_(false) {
   processor_->ModelReadyToSync(this, NigoriMetadataBatch());
@@ -584,7 +578,7 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
   // We received uninitialized Nigori and need to initialize it as default
   // keystore Nigori.
   base::Optional<NigoriSpecifics> initialized_specifics =
-      MakeDefaultKeystoreNigori(keystore_keys_, cryptographer_.encryptor());
+      MakeDefaultKeystoreNigori(keystore_keys_);
   if (!initialized_specifics) {
     return ModelError(FROM_HERE, "Failed to initialize keystore Nigori.");
   }
@@ -714,8 +708,7 @@ NigoriSyncBridgeImpl::UpdateCryptographerFromKeystoreNigori(
   // performed by another client.
   cryptographer_.SetPendingKeys(encryption_keybag);
   base::Optional<std::string> serialized_keystore_decryptor =
-      DecryptKeystoreDecryptor(keystore_keys_, keystore_decryptor_token,
-                               cryptographer_.encryptor());
+      DecryptKeystoreDecryptor(keystore_keys_, keystore_decryptor_token);
   if (!serialized_keystore_decryptor ||
       !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
       !cryptographer_.is_ready()) {

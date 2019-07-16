@@ -201,6 +201,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
       const = 0;
   virtual bool IsInPairingMode() const = 0;
   virtual bool IsPaired() const = 0;
+  virtual bool RequiresBlePairingPin() const = 0;
 #if defined(OS_WIN)
   virtual bool IsWinNativeApiAuthenticator() const = 0;
 #endif  // defined(OS_WIN)

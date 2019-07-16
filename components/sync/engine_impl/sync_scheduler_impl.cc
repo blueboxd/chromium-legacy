@@ -119,8 +119,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       syncer_(syncer),
       cycle_context_(context),
       next_sync_cycle_job_priority_(NORMAL_PRIORITY),
-      ignore_auth_credentials_(ignore_auth_credentials),
-      weak_ptr_factory_(this) {}
+      ignore_auth_credentials_(ignore_auth_credentials) {}
 
 SyncSchedulerImpl::~SyncSchedulerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

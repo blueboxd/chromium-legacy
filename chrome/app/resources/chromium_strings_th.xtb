@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">รับความช่วยเหลือเกี่ยวกับการใช้ Chromium OS</translation>
 <translation id="1396446129537741364">Chromium กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="1414495520565016063">คุณลงชื่อเข้าใช้ Chromium แล้ว!</translation>
-<translation id="1502360822835740515">กำหนดให้ Chromium เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="151962892725702025">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="1524282610922162960">แชร์แท็บ Chromium</translation>
-<translation id="1585657529869845941">คลิก<ph name="BEGIN_BOLD" />สลับ<ph name="END_BOLD" /> หากเห็นปุ่มดังกล่าว</translation>
 <translation id="1668054258064581266">เมื่อลบบัญชีของคุณออกจาก Chromium แล้ว คุณต้องโหลดแท็บที่เปิดอยู่ซ้ำเพื่อให้มีผล</translation>
 <translation id="1688750314291223739">ตั้งค่าการซิงค์เพื่อบัน​​ทึกฟีเจอร์เบราว์เซอร์ในแบบของคุณไปยังเว็บและเข้าถึงได้จาก Chromium บนคอมพิวเตอร์เครื่องใดก็ได้</translation>
 <translation id="1708666629004767631">Chromium รุ่นใหม่ที่ปลอดภัยกว่าเดิมพร้อมให้ใช้งานแล้ว</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium จะเข้าถึงไดรฟ์ของคุณเพื่อแสดงคำแนะนำในแถบที่อยู่</translation>
 <translation id="378917192836375108">Chromium ช่วยให้คุณสามารถคลิกหมายเลขโทรศัพท์บนเว็บและโทรออกด้วย Skype ได้!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">ตรึง Chromium กับแถบงาน</translation>
 <translation id="388648406173476553">ปรับแต่งและควบคุม Chromium มีสิ่งที่คุณจำเป็นต้องทราบ โปรดคลิกเพื่อดูรายละเอียด</translation>
 <translation id="3889543394854987837">คลิกชื่อของคุณเพื่อเปิด Chromium และเริ่มท่องเว็บ</translation>
 <translation id="3898493977366060150">การท่องเว็บพร้อมฟีเจอร์เจ๋งๆ จาก Google</translation>
 <translation id="4036079820698952681">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงาน<ph name="BEGIN_LINK" />การตั้งค่าปัจจุบัน<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและฟีเจอร์ใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
-<translation id="407254336480250557">เลือก <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">พบกับแอป เกม ส่วนขยาย และธีมเด็ดๆ สำหรับ Chromium</translation>
 <translation id="4216212958613226427">นี่เป็นภาษาที่ใช้ในการแสดง UI ของ Chromium</translation>
 <translation id="4222580632002216401">ขณะนี้คุณลงชื่อเข้าใช้ Chromium แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">ดูเหมือนว่าโปรไฟล์กำลังถูกใช้งานโดยกระบวนการอื่นของ Chromium (<ph name="PROCESS_ID" />) บนคอมพิวเตอร์อีกเครื่อง (<ph name="HOST_NAME" />) Chromium ล็อกโปรไฟล์ไว้เพื่อไม่ให้โปรไฟล์เกิดความเสียหาย หากคุณมั่นใจว่าไม่มีกระบวนการอื่นใดกำลังใช้โปรไฟล์นี้อยู่ คุณสามารถปลดล็อกโปรไฟล์และเปิด Chromium ใหม่</translation>
 <translation id="469338717132742108">รับความช่วยเหลือเกี่ยวกับ Chromium OS</translation>
 <translation id="4708774505295300557">ก่อนหน้านี้มีผู้ลงชื่อเข้าใช้ Chromium ในคอมพิวเตอร์นี้ด้วยชื่อ <ph name="ACCOUNT_EMAIL_LAST" /> โปรดสร้างผู้ใช้ Chromium ใหม่เพื่อเก็บข้อมูลแยก</translation>
-<translation id="4714956846925717402">ใช้ Chromium ได้เร็วขึ้น</translation>
 <translation id="4746050847053251315">ปิด Chromium ใช่ไหม</translation>
 <translation id="4748217263233248895">ระบบเพิ่งนำการอัปเดตความปลอดภัยพิเศษไปใช้กับ Chromium รีสตาร์ทเลย แล้วเราจะคืนค่าแท็บให้คุณ</translation>
 <translation id="479167709087336770">การดำเนินการนี้จะใช้โปรแกรมตรวจตัวสะกดแบบเดียวกับใน Google Search ข้อความที่คุณพิมพ์ในเบราว์เซอร์จะส่งไปยัง Google คุณปรับเปลี่ยนลักษณะการทำงานนี้ได้ทุกเมื่อในการตั้งค่า</translation>

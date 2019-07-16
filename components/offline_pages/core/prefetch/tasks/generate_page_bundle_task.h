@@ -43,7 +43,7 @@ class GeneratePageBundleTask : public Task {
   PrefetchNetworkRequestFactory* request_factory_;
   PrefetchRequestFinishedCallback callback_;
 
-  base::WeakPtrFactory<GeneratePageBundleTask> weak_factory_;
+  base::WeakPtrFactory<GeneratePageBundleTask> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(GeneratePageBundleTask);
 };
 

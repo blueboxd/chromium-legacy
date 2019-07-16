@@ -1052,7 +1052,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
   }
   {
     // Create a new cryptographer, independent of the one in the cycle.
-    Cryptographer other_cryptographer(cryptographer->encryptor());
+    Cryptographer other_cryptographer;
     KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "bazqux"};
     other_cryptographer.AddKey(params);
 

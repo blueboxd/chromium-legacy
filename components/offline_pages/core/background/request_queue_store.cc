@@ -579,8 +579,7 @@ UpdateRequestsResult RemoveRequestsIfSync(
 RequestQueueStore::RequestQueueStore(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : background_task_runner_(std::move(background_task_runner)),
-      state_(StoreState::NOT_LOADED),
-      weak_ptr_factory_(this) {}
+      state_(StoreState::NOT_LOADED) {}
 
 RequestQueueStore::RequestQueueStore(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,

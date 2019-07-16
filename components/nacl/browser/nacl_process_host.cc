@@ -229,8 +229,7 @@ NaClProcessHost::NaClProcessHost(
       off_the_record_(off_the_record),
       process_type_(process_type),
       profile_directory_(profile_directory),
-      render_view_id_(render_view_id),
-      weak_factory_(this) {
+      render_view_id_(render_view_id) {
   process_.reset(content::BrowserChildProcessHost::Create(
       static_cast<content::ProcessType>(PROCESS_TYPE_NACL_LOADER), this,
       kNaClLoaderServiceName));

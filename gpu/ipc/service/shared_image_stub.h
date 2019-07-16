@@ -92,7 +92,7 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   base::ReadOnlySharedMemoryRegion upload_memory_;
   base::ReadOnlySharedMemoryMapping upload_memory_mapping_;
 
-  base::WeakPtrFactory<SharedImageStub> weak_factory_;
+  base::WeakPtrFactory<SharedImageStub> weak_factory_{this};
 };
 
 }  // namespace gpu

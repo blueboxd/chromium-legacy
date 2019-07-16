@@ -183,7 +183,7 @@ class TestContextProvider
 
   base::ObserverList<ContextLostObserver>::Unchecked observers_;
 
-  base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<TestContextProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestContextProvider);
 };

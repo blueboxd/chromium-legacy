@@ -90,6 +90,14 @@ struct SyncConfigInfo {
   bool set_new_passphrase;
 };
 
+bool IsSyncSubpage(const GURL& current_url) {
+  return (current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)
+#if defined(OS_CHROMEOS)
+          || current_url == chrome::GetOSSettingsUrl(chrome::kSyncSetupSubPage)
+#endif  // defined(OS_CHROMEOS)
+  );
+}
+
 SyncConfigInfo::SyncConfigInfo()
     : encrypt_all(false),
       sync_everything(false),
@@ -908,13 +916,15 @@ void PeopleHandler::CloseSyncSetup() {
 void PeopleHandler::InitializeSyncBlocker() {
   DCHECK(web_ui());
   WebContents* web_contents = web_ui()->GetWebContents();
-  if (web_contents) {
-    syncer::SyncService* service = GetSyncService();
-    const GURL current_url = web_contents->GetVisibleURL();
-    if (service &&
-        current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)) {
-      sync_blocker_ = service->GetSetupInProgressHandle();
-    }
+  if (!web_contents)
+    return;
+
+  syncer::SyncService* service = GetSyncService();
+  if (!service)
+    return;
+
+  if (IsSyncSubpage(web_contents->GetVisibleURL())) {
+    sync_blocker_ = service->GetSetupInProgressHandle();
   }
 }
 

@@ -172,16 +172,21 @@ class LayerTreeHostTilesTestPartialInvalidation
   scoped_refptr<PictureLayer> picture_layer_;
 };
 
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostTilesTestPartialInvalidation,
-    ::testing::Values(TilesTestConfig{LayerTreeTest::RENDERER_SOFTWARE, BITMAP},
-                      TilesTestConfig{LayerTreeTest::RENDERER_GL, ONE_COPY},
-                      TilesTestConfig{LayerTreeTest::RENDERER_GL, GPU},
-                      TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL,
-                                      ONE_COPY},
-                      TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL, GPU}));
+std::vector<TilesTestConfig> const kTestCases = {
+    {LayerTreeTest::RENDERER_SOFTWARE, BITMAP},
+    {LayerTreeTest::RENDERER_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_GL, GPU},
+    {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
+    {LayerTreeTest::RENDERER_SKIA_VK, GPU},
+#endif
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostTilesTestPartialInvalidation,
+                         ::testing::ValuesIn(kTestCases));
 
 TEST_P(LayerTreeHostTilesTestPartialInvalidation, PartialRaster) {
   use_partial_raster_ = true;
@@ -196,16 +201,20 @@ TEST_P(LayerTreeHostTilesTestPartialInvalidation, FullRaster) {
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
+std::vector<TilesTestConfig> const kTestCasesMultiThread = {
+    {LayerTreeTest::RENDERER_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    {LayerTreeTest::RENDERER_SKIA_VK, ONE_COPY},
+#endif
+};
+
 using LayerTreeHostTilesTestPartialInvalidationMultiThread =
     LayerTreeHostTilesTestPartialInvalidation;
 
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostTilesTestPartialInvalidationMultiThread,
-    ::testing::Values(TilesTestConfig{LayerTreeTest::RENDERER_GL, ONE_COPY},
-                      TilesTestConfig{LayerTreeTest::RENDERER_SKIA_GL,
-                                      ONE_COPY}));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostTilesTestPartialInvalidationMultiThread,
+                         ::testing::ValuesIn(kTestCasesMultiThread));
 
 // Flaky on Linux TSAN. https://crbug.com/707711
 #if defined(OS_LINUX) && defined(THREAD_SANITIZER)

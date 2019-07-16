@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">前往 Chromium 作業系統說明頁面</translation>
 <translation id="1396446129537741364">Chromium 即將顯示密碼。</translation>
 <translation id="1414495520565016063">你已登入 Chromium！</translation>
-<translation id="1502360822835740515">將 Chromium 設為預設瀏覽器</translation>
 <translation id="151962892725702025">你的網域無法使用「同步功能」，因此 Chromium 作業系統無法同步處理你的資料。</translation>
 <translation id="1524282610922162960">分享 Chromium 分頁</translation>
-<translation id="1585657529869845941">請點選 [確定切換] (如有顯示)<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="1668054258064581266">將你的帳戶從 Chromium 移除後，可能需要重新載入開啟的分頁，這項操作才會生效。</translation>
 <translation id="1688750314291223739">設定同步處理功能，即可在網路上儲存你的個人化瀏覽器功能，並且透過任何電腦從 Chromium 使用這些功能。</translation>
 <translation id="1708666629004767631">新版 Chromium 現已推出，安全更上一層樓。</translation>
@@ -82,13 +80,11 @@
 <translation id="3728336900324680424">Chromium 將存取你的雲端硬碟，並在網址列提供建議</translation>
 <translation id="378917192836375108">透過 Chromium，你只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">將 Chromium 固定至工作列</translation>
 <translation id="388648406173476553">自訂及管理 Chromium。重要注意事項 - 按這裡瞭解詳情。</translation>
 <translation id="3889543394854987837">按一下你的名稱即可開啟 Chromium 並開始瀏覽。</translation>
 <translation id="3898493977366060150">採用 Google 技術的網路瀏覽體驗</translation>
 <translation id="4036079820698952681">只要回報<ph name="BEGIN_LINK" />目前的設定<ph name="END_LINK" />，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
-<translation id="407254336480250557">選取 [<ph name="SMALL_PRODUCT_LOGO" /> Chromium]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">探索 Chromium 專用的優質應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="4216212958613226427">這是 Chromium UI 的顯示語言</translation>
 <translation id="4222580632002216401">你現在已登入 Chromium！但管理員已關閉同步功能。</translation>
@@ -105,7 +101,6 @@
 <translation id="4677944499843243528">另一台電腦 (<ph name="HOST_NAME" />) 的 Chromium 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chromium 已鎖定此設定檔，確保其不致受損。如果你確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chromium。</translation>
 <translation id="469338717132742108">前往 Chromium 作業系統說明頁面</translation>
 <translation id="4708774505295300557">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這部電腦上登入 Chromium。請建立新的 Chromium 使用者，以便另行保存你的資訊。</translation>
-<translation id="4714956846925717402">更快存取 Chromium</translation>
 <translation id="4746050847053251315">確定要關閉 Chromium 嗎？</translation>
 <translation id="4748217263233248895">Chromium 剛才套用了特殊的安全性更新。請立即重新啟動，系統會恢復你原先開啟的分頁。</translation>
 <translation id="479167709087336770">這會使用與 Google 搜尋相同的拼字檢查工具。系統會將你在瀏覽器中輸入的文字傳送給 Google。你隨時可以在設定中變更這項行為。</translation>

@@ -86,7 +86,7 @@ cc::PaintWorkletInput* AddPaintWorkletInputToMap(cc::PaintWorkletJobMap& map,
 }  // namespace
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchedWorkletIsPainted) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   const int worklet_id = 4;
   MockPaintWorkletPainter* mock_painter =
@@ -112,7 +112,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchedWorkletIsPainted) {
 }
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchCompletesWithNoPainters) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   cc::PaintWorkletJobMap job_map;
   AddPaintWorkletInputToMap(job_map, /*worklet_id=*/2);
@@ -128,7 +128,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchCompletesWithNoPainters) {
 }
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchHandlesEmptyInput) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   const int worklet_id = 4;
   auto* mock_painter =
@@ -148,7 +148,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchHandlesEmptyInput) {
 }
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchSelectsCorrectPainter) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   const int first_worklet_id = 2;
   auto* first_mock_painter =
@@ -182,7 +182,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchSelectsCorrectPainter) {
 }
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchIgnoresNonMatchingInput) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   const int worklet_id = 2;
   auto* mock_painter =
@@ -207,7 +207,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest, DispatchIgnoresNonMatchingInput) {
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest,
        DispatchCorrectlyAssignsInputsToMultiplePainters) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   const int first_worklet_id = 5;
   auto* first_mock_painter =
@@ -240,7 +240,7 @@ TEST_F(PaintWorkletPaintDispatcherAsyncTest,
 
 TEST_F(PaintWorkletPaintDispatcherAsyncTest,
        HasOngoingDispatchIsTrackedCorrectly) {
-  auto dispatcher = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   const int first_worklet_id = 2;
   auto* first_mock_painter =

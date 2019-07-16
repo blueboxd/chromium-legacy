@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
@@ -168,6 +167,19 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
 }  // namespace
 
 const char kPinnedAppsPrefAppIDKey[] = "id";
+
+const base::Feature kEnableExtendedShelfLayout{
+    "EnableExtendedShelfLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Parameter for the finch experiment with number of default apps on the shelf.
+// Possible values:
+// 7 - activates |kDefaultPinnedApps7Apps|, see cc file.
+// 10 - activates |kDefaultPinnedApps10Apps|, see cc file.
+// 0 - by default.
+constexpr base::FeatureParam<int> kEnableExtendedShelfLayoutParam(
+    &kEnableExtendedShelfLayout,
+    "app_count",
+    0);
 
 void RegisterChromeLauncherUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -409,18 +421,23 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // Apply default apps in case profile syncing is done. Otherwise there is a
   // risk that applied default apps would be overwritten by sync once it is
   // completed. prefs::kPolicyPinnedLauncherApps overrides any default layout.
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
   std::string shelf_layout = kDefaultPinnedAppsKey;
-  if (command_line->HasSwitch(switches::kPinShelfLayout)) {
-    const std::string forced_shelf_layout =
-        command_line->GetSwitchValueASCII(switches::kPinShelfLayout);
-    if (forced_shelf_layout == kDefaultPinnedAppsKey ||
-        forced_shelf_layout == kDefaultPinnedApps7AppsKey ||
-        forced_shelf_layout == kDefaultPinnedApps10AppsKey) {
-      shelf_layout = forced_shelf_layout;
-    } else {
-      LOG(ERROR) << "Wrong default shelf pin layout " << forced_shelf_layout;
+  if (base::FeatureList::IsEnabled(kEnableExtendedShelfLayout)) {
+    const int forced_shelf_layout_app_count =
+        kEnableExtendedShelfLayoutParam.Get();
+    switch (forced_shelf_layout_app_count) {
+      case 0:
+        shelf_layout = kDefaultPinnedAppsKey;
+        break;
+      case 7:
+        shelf_layout = kDefaultPinnedApps7AppsKey;
+        break;
+      case 10:
+        shelf_layout = kDefaultPinnedApps10AppsKey;
+        break;
+      default:
+        LOG(ERROR) << "Wrong default shelf pin layout "
+                   << forced_shelf_layout_app_count;
     }
   }
 

@@ -79,9 +79,12 @@ void PressAndReleasePowerButton() {
       PowerButtonController::kIgnoreRepeatedButtonUpDelay, false /*down*/);
 }
 
-void SimulateMediaSessionInfoChanged(
+void SimulateMediaSessionChanged(
     LockScreenMediaControlsView* media_controls,
     media_session::mojom::MediaPlaybackState playback_state) {
+  // Simulate media session change.
+  media_controls->MediaSessionChanged(base::UnguessableToken::Create());
+
   // Create media session information.
   media_session::mojom::MediaSessionInfoPtr session_info(
       media_session::mojom::MediaSessionInfo::New());
@@ -2424,7 +2427,7 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsShownIfMediaPlaying) {
   LockContentsView::TestApi lock_contents(contents);
 
   // Simulate playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
@@ -2454,17 +2457,17 @@ TEST_F(LockContentsViewUnitTest, LockScreenMediaControlsHiddenAfterDelay) {
       std::move(mock_timer_unique));
 
   // Simulate playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session stopping and delay.
-  lock_contents.media_controls_view()->MediaSessionInfoChanged(nullptr);
+  lock_contents.media_controls_view()->MediaSessionChanged(base::nullopt);
   mock_timer->Fire();
   base::RunLoop().RunUntilIdle();
 
   // Simulate playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
@@ -2489,7 +2492,7 @@ TEST_F(LockContentsViewUnitTest,
   LockContentsView::TestApi lock_contents(contents);
 
   // Simulate paused media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPaused);
 
@@ -2513,15 +2516,15 @@ TEST_F(LockContentsViewUnitTest, KeepMediaControlsShownWithinDelay) {
   LockContentsView::TestApi lock_contents(contents);
 
   // Simulate playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session stopping.
-  lock_contents.media_controls_view()->MediaSessionInfoChanged(nullptr);
+  lock_contents.media_controls_view()->MediaSessionChanged(base::nullopt);
 
-  // Simulate playing media session.
-  SimulateMediaSessionInfoChanged(
+  // Simulate new media session starting within timer delay.
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
@@ -2567,12 +2570,12 @@ TEST_F(LockContentsViewUnitTest, ShowMediaControlsIfPausedAndAlreadyShowing) {
   LockContentsView::TestApi lock_contents(contents);
 
   // Simulate playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
   // Simulate media session paused.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPaused);
 
@@ -2602,7 +2605,7 @@ TEST_F(LockContentsViewUnitTest,
   LockContentsView::TestApi lock_contents(contents);
 
   // Simulate active and playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 
@@ -2626,7 +2629,7 @@ TEST_F(LockContentsViewUnitTest, MediaControlsHiddenOnLoginScreen) {
   LockContentsView::TestApi lock_contents(contents);
 
   // Simulate active and playing media session.
-  SimulateMediaSessionInfoChanged(
+  SimulateMediaSessionChanged(
       lock_contents.media_controls_view(),
       media_session::mojom::MediaPlaybackState::kPlaying);
 

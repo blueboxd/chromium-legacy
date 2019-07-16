@@ -228,8 +228,7 @@ FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
     : favicon_service_(favicon_service),
       history_service_(history_service),
       max_sync_favicon_limit_(max_sync_favicon_limit),
-      history_service_observer_(this),
-      weak_ptr_factory_(this) {
+      history_service_observer_(this) {
   if (history_service)
     history_service_observer_.Add(history_service);
   DVLOG(1) << "Setting favicon limit to " << max_sync_favicon_limit;

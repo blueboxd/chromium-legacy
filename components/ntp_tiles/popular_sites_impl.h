@@ -100,7 +100,7 @@ class PopularSitesImpl : public PopularSites {
   GURL pending_url_;
   int version_in_pending_url_;
 
-  base::WeakPtrFactory<PopularSitesImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PopularSitesImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PopularSitesImpl);
 };

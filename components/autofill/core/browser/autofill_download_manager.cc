@@ -535,8 +535,7 @@ AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
       autofill_server_url_(GetAutofillServerURL()),
       throttle_reset_period_(GetThrottleResetPeriod()),
       max_form_cache_size_(kAutofillDownloadManagerMaxFormCacheSize),
-      loader_backoff_(&kAutofillBackoffPolicy),
-      weak_factory_(this) {
+      loader_backoff_(&kAutofillBackoffPolicy) {
   DCHECK(observer_);
 }
 

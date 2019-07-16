@@ -59,8 +59,7 @@ namespace views {
 DesktopScreenX11::DesktopScreenX11()
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
-      xrandr_version_(ui::GetXrandrVersion(xdisplay_)),
-      weak_factory_(this) {
+      xrandr_version_(ui::GetXrandrVersion(xdisplay_)) {
   if (views::LinuxUI::instance())
     views::LinuxUI::instance()->AddDeviceScaleFactorObserver(this);
   float scale = GetDeviceScaleFactor();
@@ -237,8 +236,7 @@ DesktopScreenX11::DesktopScreenX11(
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       xrandr_version_(ui::GetXrandrVersion(xdisplay_)),
-      displays_(test_displays),
-      weak_factory_(this) {
+      displays_(test_displays) {
   if (views::LinuxUI::instance())
     views::LinuxUI::instance()->AddDeviceScaleFactorObserver(this);
 }

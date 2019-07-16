@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1067922213147265141">Altri servizi Google</translation>
 <translation id="1068672505746868501">Non tradurre mai le pagine in <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="1080790410959514870">Stai per uscire da un account gestito da <ph name="DOMAIN_NAME" />. Verranno eliminati i dati di Chrome memorizzati su questo dispositivo, ma i dati rimarranno nel tuo Account Google.</translation>
 <translation id="1100066534610197918">Apri in nuova scheda in gruppo</translation>
 <translation id="1105960400813249514">Acquisizione schermo</translation>
 <translation id="1111673857033749125">I preferiti salvati sugli altri dispositivi verranno visualizzati qui.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
 <translation id="1373696734384179344">Memoria non sufficiente per scaricare i contenuti selezionati.</translation>
 <translation id="1376578503827013741">Elaborazione...</translation>
-<translation id="138361230106469022">Ciao <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">Download sospeso</translation>
 <translation id="1386674309198842382">Attivo <ph name="LAST_UPDATED" /> giorni fa</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">Chiedi conferma quando un sito vuole rilevare i dispositivi Bluetooth nelle vicinanze (opzione consigliata)</translation>
 <translation id="230115972905494466">Nessun dispositivo compatibile trovato</translation>
 <translation id="2315043854645842844">La selezione del certificato lato client non è supportata dal sistema operativo.</translation>
+<translation id="2318045970523081853">Tocca per chiamare</translation>
 <translation id="2321086116217818302">Preparazione delle password…</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
 <translation id="2323763861024343754">Memoria utilizzata dai siti</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">Download completato: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Accesso alla posizione</translation>
 <translation id="2450083983707403292">Vuoi avviare di nuovo il download di <ph name="FILE_NAME" />?</translation>
-<translation id="2476578072172137802">Impostazioni sito</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="2490684707762498678">Gestite da <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Assistente Google in Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="3443221991560634068">Ricarica la pagina corrente</translation>
 <translation id="3445014427084483498">In questo momento</translation>
-<translation id="3452612588551937789">Accedi con il tuo Account Google per avere preferiti, cronologia, password e altre impostazioni su tutti i tuoi dispositivi.</translation>
 <translation id="3478363558367712427">Puoi scegliere il motore di ricerca</translation>
 <translation id="3492207499832628349">Nuova scheda in incognito</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /> sui contenuti suggeriti</translation>
 <translation id="3513704683820682405">Realtà aumentata</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
 <translation id="3522247891732774234">Aggiornamento disponibile. Altre opzioni</translation>
+<translation id="3524138585025253783">Sviluppatore UI</translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> kB disponibili</translation>
 <translation id="3549657413697417275">Cerca nella cronologia</translation>
-<translation id="3552151358455404883">Gestisci la funzione Sincronizzazione Chrome e la personalizzazione nelle <ph name="BEGIN_LINK1" />Impostazioni<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Aggiungi ai contatti</translation>
 <translation id="3566923219790363270">La modalità VR è ancora nella fase preparatoria in Chrome. Riavvia Chrome più tardi.</translation>
 <translation id="3568688522516854065">Accedi e attiva la sincronizzazione per trovare le tue schede degli altri dispositivi</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Unisci i miei dati</translation>
 <translation id="393697183122708255">Nessuna ricerca vocale attiva disponib.</translation>
-<translation id="3950820424414687140">Accedi</translation>
 <translation id="395206256282351086">Suggerimenti di ricerche e siti disattivati</translation>
 <translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome caricherà la tua pagina quando sarà pronta}other{Chrome caricherà le tue pagine quando saranno pronte}}</translation>
@@ -458,7 +454,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="447252321002412580">Contribuisci a migliorare le funzioni e le prestazioni di Chrome</translation>
 <translation id="4479647676395637221">Chiedi conferma prima di consentire ai siti di utilizzare la videocamera (opzione consigliata)</translation>
 <translation id="4479972344484327217">Installazione di <ph name="MODULE" /> per Chrome…</translation>
-<translation id="4482194545587547824">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca e altri servizi Google</translation>
 <translation id="4487967297491345095">Tutti i dati delle app di Chrome saranno eliminati definitivamente. Sono inclusi tutti i file, le impostazioni, gli account, i database e così via.</translation>
 <translation id="4493497663118223949">La modalità Lite è attiva</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# giorno fa}other{# giorni fa}}</translation>
@@ -469,7 +464,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4532845899244822526">Scegli cartella</translation>
 <translation id="4538018662093857852">Attiva la modalità Lite</translation>
 <translation id="4550003330909367850">Per visualizzare o copiare la password qui, imposta il blocco schermo sul dispositivo.</translation>
-<translation id="4556110439722119938">I tuoi preferiti, la cronologia, le password e altre impostazioni verranno sincronizzati con il tuo Account Google per consentirti di utilizzarli su tutti i tuoi dispositivi</translation>
 <translation id="4558311620361989323">Scorciatoie delle pagine web</translation>
 <translation id="4561979708150884304">Nessuna connessione</translation>
 <translation id="4565377596337484307">Nascondi password</translation>
@@ -616,7 +610,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5527111080432883924">Chiedi conferma prima di consentire ai siti di leggere testo e immagini negli appunti (opzione consigliata)</translation>
 <translation id="5530766185686772672">Chiudi schede in incognito</translation>
 <translation id="5534640966246046842">Sito copiato</translation>
-<translation id="5537099431952529648">Tu e i tuoi genitori potete gestire la funzione Sincronizzazione Chrome e la personalizzazione nelle <ph name="BEGIN_LINK1" />Impostazioni<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="5561549206367097665">In attesa della rete…</translation>
 <translation id="557283862590186398">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono.</translation>
@@ -712,7 +705,6 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
 <translation id="624789221780392884">Aggiornamento pronto</translation>
 <translation id="6255999984061454636">Contenuti suggeriti</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> richiede di eseguire la scansione per rilevare dispositivi Bluetooth nelle vicinanze; sono stati rilevati i seguenti dispositivi:</translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="629730747756840877">Account</translation>
@@ -774,6 +766,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6659594942844771486">TAB</translation>
 <translation id="666731172850799929">Apri in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Informativa sulla privacy di Chrome</translation>
+<translation id="6676840375528380067">Eliminare i dati di Chrome dal dispositivo?</translation>
 <translation id="6697492270171225480">Mostra suggerimenti per pagine simili quando una pagina non viene trovata</translation>
 <translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
 <translation id="6698801883190606802">Gestisci dati sincronizzati</translation>
@@ -792,7 +785,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6803423358608456383">Foglio Schede aperte nella metà inferiore dello schermo</translation>
 <translation id="6811034713472274749">La pagina è pronta per essere visualizzata</translation>
 <translation id="6818926723028410516">Seleziona elementi</translation>
-<translation id="6820607729870073286">Nessuna impostazione di siti web salvata.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6845325883481699275">Contribuisci a migliorare la sicurezza di Chrome</translation>
@@ -815,7 +807,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Reimposta impostazioni traduzione</translation>
 <translation id="6979737339423435258">Tutto</translation>
-<translation id="6980462514016882061">Google può utilizzare la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
 <translation id="6981982820502123353">Accessibilità</translation>
 <translation id="6989267951144302301">Download non riuscito</translation>
 <translation id="6990079615885386641">Scarica l'app dal Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7180611975245234373">Aggiorna</translation>
 <translation id="7189372733857464326">In attesa che Google Play Services termini l'aggiornamento</translation>
 <translation id="7191430249889272776">Scheda aperta in background.</translation>
-<translation id="722055596168483966">Personalizza i servizi Google</translation>
 <translation id="723171743924126238">Seleziona immagini</translation>
 <translation id="7233236755231902816">Per navigare sul Web nella tua lingua, scarica l'ultima versione di Chrome</translation>
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
@@ -962,6 +952,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="7999064672810608036">Vuoi cancellare tutti i dati locali, inclusi i cookie, e reimpostare tutte le autorizzazioni relative al sito web?</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
+<translation id="8013372441983637696">Cancella i tuoi dati di Chrome anche dal dispositivo</translation>
 <translation id="8015452622527143194">Ripristina le dimensioni predefinite della pagina</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
@@ -1078,7 +1069,6 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, scheda</translation>
 <translation id="885701979325669005">Dati memorizzati dai siti</translation>
 <translation id="8901170036886848654">Nessun preferito trovato</translation>
-<translation id="8904976895050290827">Sincronizzazione Google Chrome</translation>
 <translation id="8909135823018751308">Condividi…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>

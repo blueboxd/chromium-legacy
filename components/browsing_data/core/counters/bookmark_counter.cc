@@ -67,7 +67,7 @@ const char BookmarkCounter::kPrefName[] =
     "browser.clear_data.fake.pref.bookmarks";
 
 BookmarkCounter::BookmarkCounter(bookmarks::BookmarkModel* bookmark_model)
-    : bookmark_model_(bookmark_model), weak_ptr_factory_(this) {
+    : bookmark_model_(bookmark_model) {
   DCHECK(bookmark_model);
 }
 

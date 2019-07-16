@@ -216,7 +216,7 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   // Checks that we're on the same thread this was constructed on (UI thread).
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncEngineImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEngineImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineImpl);
 };

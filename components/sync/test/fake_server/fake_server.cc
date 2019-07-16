@@ -36,8 +36,7 @@ namespace fake_server {
 FakeServer::FakeServer()
     : error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
-      request_counter_(0),
-      weak_ptr_factory_(this) {
+      request_counter_(0) {
   base::ThreadRestrictions::SetIOAllowed(true);
   loopback_server_storage_ = std::make_unique<base::ScopedTempDir>();
   if (!loopback_server_storage_->CreateUniqueTempDir()) {
@@ -51,8 +50,7 @@ FakeServer::FakeServer()
 FakeServer::FakeServer(const base::FilePath& user_data_dir)
     : error_type_(sync_pb::SyncEnums::SUCCESS),
       alternate_triggered_errors_(false),
-      request_counter_(0),
-      weak_ptr_factory_(this) {
+      request_counter_(0) {
   base::ThreadRestrictions::SetIOAllowed(true);
   base::FilePath loopback_server_path =
       user_data_dir.AppendASCII("FakeSyncServer");

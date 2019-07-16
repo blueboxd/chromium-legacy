@@ -64,8 +64,7 @@ ContentTranslateDriver::ContentTranslateDriver(
       translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       next_page_seq_no_(0),
-      language_histogram_(url_language_histogram),
-      weak_pointer_factory_(this) {
+      language_histogram_(url_language_histogram) {
   DCHECK(navigation_controller_);
 }
 

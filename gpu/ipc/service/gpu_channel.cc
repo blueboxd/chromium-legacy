@@ -393,8 +393,7 @@ GpuChannel::GpuChannel(
       io_task_runner_(io_task_runner),
       share_group_(share_group),
       image_manager_(new gles2::ImageManager()),
-      is_gpu_host_(is_gpu_host),
-      weak_factory_(this) {
+      is_gpu_host_(is_gpu_host) {
   DCHECK(gpu_channel_manager_);
   DCHECK(client_id_);
   filter_ = new GpuChannelMessageFilter(

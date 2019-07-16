@@ -36,13 +36,13 @@ class AutoSignal {
 // static
 std::unique_ptr<PlatformPaintWorkletLayerPainter>
 PaintWorkletPaintDispatcher::CreateCompositorThreadPainter(
-    scoped_refptr<PaintWorkletPaintDispatcher>& paint_dispatcher) {
+    base::WeakPtr<PaintWorkletPaintDispatcher>* paint_dispatcher) {
   DCHECK(IsMainThread());
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher =
-      base::MakeRefCounted<PaintWorkletPaintDispatcher>();
-  paint_dispatcher = dispatcher;
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
+  *paint_dispatcher = dispatcher->GetWeakPtr();
 
-  return std::make_unique<PlatformPaintWorkletLayerPainter>(dispatcher);
+  return std::make_unique<PlatformPaintWorkletLayerPainter>(
+      std::move(dispatcher));
 }
 
 PaintWorkletPaintDispatcher::PaintWorkletPaintDispatcher() {
@@ -55,21 +55,21 @@ PaintWorkletPaintDispatcher::PaintWorkletPaintDispatcher() {
 void PaintWorkletPaintDispatcher::RegisterPaintWorkletPainter(
     PaintWorkletPainter* painter,
     scoped_refptr<base::SingleThreadTaskRunner> painter_runner) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("cc",
                "PaintWorkletPaintDispatcher::RegisterPaintWorkletPainter");
 
   int worklet_id = painter->GetWorkletId();
-  MutexLocker lock(painter_map_mutex_);
   DCHECK(painter_map_.find(worklet_id) == painter_map_.end());
   painter_map_.insert(worklet_id, std::make_pair(painter, painter_runner));
 }
 
 void PaintWorkletPaintDispatcher::UnregisterPaintWorkletPainter(
     int worklet_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("cc",
                "PaintWorkletPaintDispatcher::"
                "UnregisterPaintWorkletPainter");
-  MutexLocker lock(painter_map_mutex_);
   DCHECK(painter_map_.find(worklet_id) != painter_map_.end());
   painter_map_.erase(worklet_id);
 }
@@ -94,14 +94,14 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       Thread::Current()->GetTaskRunner();
   WTF::CrossThreadClosure on_done = CrossThreadBindRepeating(
-      [](scoped_refptr<PaintWorkletPaintDispatcher> dispatcher,
+      [](base::WeakPtr<PaintWorkletPaintDispatcher> dispatcher,
          scoped_refptr<base::SingleThreadTaskRunner> runner) {
         PostCrossThreadTask(
             *runner, FROM_HERE,
             CrossThreadBindOnce(&PaintWorkletPaintDispatcher::AsyncPaintDone,
                                 dispatcher));
       },
-      WrapRefCounted(this), WTF::Passed(std::move(runner)));
+      weak_factory_.GetWeakPtr(), WTF::Passed(std::move(runner)));
 
   // Use a base::RepeatingClosure to make sure that AsyncPaintDone is only
   // called once, once all the worklets are done. If there are no inputs
@@ -113,7 +113,6 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
   // Now dispatch the calls to the registered painters. For each input, we match
   // the id to a registered worklet and dispatch a cross-thread call to it,
   // using the above-created base::RepeatingClosure.
-  PaintWorkletPainterToTaskRunnerMap copied_painter_map = GetPainterMapCopy();
   for (auto& job : ongoing_jobs_) {
     int worklet_id = job.first;
     scoped_refptr<cc::PaintWorkletJobVector> jobs = job.second;
@@ -123,8 +122,8 @@ void PaintWorkletPaintDispatcher::DispatchWorklets(
     auto on_done_runner =
         std::make_unique<base::ScopedClosureRunner>(repeating_on_done);
 
-    auto it = copied_painter_map.find(worklet_id);
-    if (it == copied_painter_map.end())
+    auto it = painter_map_.find(worklet_id);
+    if (it == painter_map_.end())
       continue;
 
     PaintWorkletPainter* painter = it->value.first;
@@ -156,12 +155,6 @@ void PaintWorkletPaintDispatcher::AsyncPaintDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("cc", "PaintWorkletPaintDispatcher::AsyncPaintDone");
   std::move(on_async_paint_complete_).Run(std::move(ongoing_jobs_));
-}
-
-PaintWorkletPaintDispatcher::PaintWorkletPainterToTaskRunnerMap
-PaintWorkletPaintDispatcher::GetPainterMapCopy() {
-  MutexLocker lock(painter_map_mutex_);
-  return painter_map_;
 }
 
 }  // namespace blink

@@ -65,7 +65,7 @@ class ScreenshotGrabber::ScopedCursorHider {
 };
 #endif
 
-ScreenshotGrabber::ScreenshotGrabber() : factory_(this) {}
+ScreenshotGrabber::ScreenshotGrabber() {}
 
 ScreenshotGrabber::~ScreenshotGrabber() {
 }

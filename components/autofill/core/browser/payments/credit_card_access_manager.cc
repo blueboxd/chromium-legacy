@@ -61,8 +61,7 @@ CreditCardAccessManager::CreditCardAccessManager(
       form_event_logger_(form_event_logger),
       ready_to_start_authentication_(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
-          base::WaitableEvent::InitialState::NOT_SIGNALED),
-      weak_ptr_factory_(this) {}
+          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 CreditCardAccessManager::~CreditCardAccessManager() {}
 

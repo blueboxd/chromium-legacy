@@ -246,8 +246,7 @@ StorageMonitorLinux::StorageMonitorLinux(const base::FilePath& path)
     : mtab_path_(path),
       get_device_info_callback_(base::Bind(&GetDeviceInfo)),
       mtab_watcher_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-      weak_ptr_factory_(this) {}
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})) {}
 
 StorageMonitorLinux::~StorageMonitorLinux() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

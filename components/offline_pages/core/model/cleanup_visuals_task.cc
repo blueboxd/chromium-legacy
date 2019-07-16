@@ -43,8 +43,7 @@ CleanupVisualsTask::CleanupVisualsTask(OfflinePageMetadataStore* store,
                                        CleanupVisualsCallback complete_callback)
     : store_(store),
       now_(now),
-      complete_callback_(std::move(complete_callback)),
-      weak_ptr_factory_(this) {}
+      complete_callback_(std::move(complete_callback)) {}
 
 CleanupVisualsTask::~CleanupVisualsTask() = default;
 

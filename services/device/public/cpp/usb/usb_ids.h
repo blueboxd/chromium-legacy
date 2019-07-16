@@ -18,10 +18,10 @@ struct UsbProduct {
 };
 
 struct UsbVendor {
-  const uint16_t id;
   const char* name;
-  const size_t product_size;
   const UsbProduct* products;
+  const uint16_t id;
+  const uint16_t product_size;
 };
 
 // UsbIds provides a static mapping from a vendor ID to a name, as well as a

@@ -9,7 +9,6 @@
 <translation id="10614374240317010">ક્યારેય ન સચવાયેલું</translation>
 <translation id="1067922213147265141">અન્ય Google સેવાઓ</translation>
 <translation id="1068672505746868501">પેજનો ક્યારેય પણ <ph name="SOURCE_LANGUAGE" />માં અનુવાદ કરશો નહીં</translation>
-<translation id="1080790410959514870">તમે <ph name="DOMAIN_NAME" /> દ્વારા મેનેજ એકાઉન્ટથી સાઇન આઉટ કરી રહ્યાં છો. આ ડિવાઇસ પર સ્ટોર કરેલા Chrome ડેટાને આ ડિલીટ કરશે, પરંતુ ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
 <translation id="1100066534610197918">ગ્રૂપમાં નવા ટૅબમાં ખોલો</translation>
 <translation id="1105960400813249514">સ્ક્રીન કૅપ્ચર</translation>
 <translation id="1111673857033749125">તમારા અન્ય ઉપકરણો પર સાચવેલા બુકમાર્ક્સ અહીં દેખાશે.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">સાઈટ <ph name="SITE_NAME" /> ઉમેરવામાં આવી</translation>
 <translation id="1373696734384179344">પસંદ કરેલ કન્ટેન્ટ ડાઉનલોડ કરવા માટે મેમરી અપૂરતી છે.</translation>
 <translation id="1376578503827013741">ગણતરી કરી રહ્યાં છે…</translation>
-<translation id="138361230106469022">હાય, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1384959399684842514">ડાઉનલોડ થોભાવ્યું</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> દિવસ પહેલાં સક્રિય હતું</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">જ્યારે કોઈ સાઇટ નજીકના બ્લૂટૂથ ડિવાઇસને શોધવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="230115972905494466">કોઈ સુસંગત ઉપકરણો મળ્યા નથી</translation>
 <translation id="2315043854645842844">ઓપરેટિંગ સિસ્ટમ દ્વારા ક્લાઇન્ટ તરફની પ્રમાણપત્ર પસંદગી સપોર્ટ કરતી નથી.</translation>
+<translation id="2318045970523081853">કૉલ કરવા માટે ટૅપ કરો</translation>
 <translation id="2321086116217818302">પાસવર્ડ તૈયાર કરી રહ્યાં છીએ…</translation>
 <translation id="2321958826496381788">જ્યાં સુધી તમે આ અનુકૂળ રીતે વાંચી ન શકો ત્યાં સુધી સ્લાઇડર ખેંચો. ફકરા પર ડબલ-ટેપિંગ પછી ટેક્સ્ટ ઓછામાં ઓછી આટલી મોટી દેખાવી જોઈએ.</translation>
 <translation id="2323763861024343754">સાઇટ સ્ટોરેજ</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">ડાઉનલોડ પૂર્ણ <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">સ્થાન ઍક્સેસ</translation>
 <translation id="2450083983707403292">શું તમે <ph name="FILE_NAME" />ને ફરી ડાઉનલોડ કરવાનું શરૂ કરવા માગો છો?</translation>
-<translation id="2476578072172137802">સાઇટ સેટિંગ્સ</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> દ્વારા સંચાલિત</translation>
 <translation id="2494974097748878569">Chromeમાં Google આસિસ્ટંટ</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">કદ:</translation>
 <translation id="3443221991560634068">વર્તમાન પૃષ્ઠ ફરીથી લોડ કરો</translation>
 <translation id="3445014427084483498">હમણાં જ</translation>
-<translation id="3452612588551937789">તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગને તમારા તમામ ડિવાઇસ પર મેળવવા માટે તમારા Google એકાઉન્ટ સાથે સાઇન ઇન કરો.</translation>
 <translation id="3478363558367712427">તમે તમારું શોધ એન્જિન પસંદ કરી શકો છો</translation>
 <translation id="3492207499832628349">નવી છુપી ટેબ</translation>
 <translation id="3493531032208478708">સૂચવેલ કન્ટેન્ટ વિશે <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="3513704683820682405">ઑગ્મેન્ટેડ રિયાલિટી</translation>
 <translation id="3518985090088779359">સ્વીકારો અને ચાલુ રાખો</translation>
 <translation id="3522247891732774234">અપડેટ ઉપલબ્ધ છે. વધુ વિકલ્પો</translation>
+<translation id="3524138585025253783">ડેવલપર UI</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB ઉપલબ્ધ</translation>
 <translation id="3549657413697417275">તમારો ઇતિહાસ શોધો</translation>
-<translation id="3552151358455404883">Chrome સમન્વયન અને વૈયક્તિકરણને <ph name="BEGIN_LINK1" />સેટિંગ્સ<ph name="END_LINK1" />માં સંચાલિત કરો</translation>
 <translation id="3557336313807607643">સંપર્કોમાં ઉમેરો</translation>
 <translation id="3566923219790363270">Chrome હજી પણ VR માટે તૈયારી કરી રહ્યું છે. Chromeને પછી ફરી શરૂ કરો.</translation>
 <translation id="3568688522516854065">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ મેળવવા માટે, સાઇન ઇન કરો અને સિંક કરવાનું ચાલુ કરો.</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">મારા ડેટાને સંયોજિત કરો</translation>
 <translation id="393697183122708255">કોઈ સક્ષમ વૉઇસ શોધ ઉપલબ્ધ નથી</translation>
-<translation id="3950820424414687140">સાઇન ઇન</translation>
 <translation id="395206256282351086">શોધ અને સાઇટ સૂચનો બંધ છે</translation>
 <translation id="3955193568934677022">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{તૈયાર હશે ત્યારે Chrome તમારું પેજ લોડ કરશે}one{તૈયાર હશે ત્યારે Chrome તમારાં પેજ લોડ કરશે}other{તૈયાર હશે ત્યારે Chrome તમારાં પેજ લોડ કરશે}}</translation>
@@ -458,7 +454,6 @@
 <translation id="447252321002412580">Chromeની સુવિધાઓ અને પ્રદર્શનને સુધારવામાં સહાય કરો</translation>
 <translation id="4479647676395637221">સાઇટ્સને તમારા કૅમેરાના ઉપયોગની મંજૂરી આપતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="4479972344484327217">Chrome માટે <ph name="MODULE" /> ઇન્સ્ટૉલ કરી રહ્યાં છે…</translation>
-<translation id="4482194545587547824">Google, શોધ અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે</translation>
 <translation id="4487967297491345095">Chrome નો તમામ ઍપ્લિકેશન ડેટા કાયમીરૂપે કાઢી નાખવામાં આવશે. આમાં તમામ ફાઇલો, સેટિંગ્સ, એકાઉન્ટ, ડેટાબેઝ, વગેરેનો સમાવેશ થાય છે.</translation>
 <translation id="4493497663118223949">લાઇટ મોડ ચાલુ છે</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# દિવસ પહેલાં}one{# દિવસ પહેલાં}other{# દિવસ પહેલાં}}</translation>
@@ -469,7 +464,6 @@
 <translation id="4532845899244822526">ફોલ્ડર પસંદ કરો</translation>
 <translation id="4538018662093857852">લાઇટ મોડ ચાલુ કરો</translation>
 <translation id="4550003330909367850">અહીં તમારો પાસવર્ડ જોવા અથવા કૉપિ કરવા માટે, આ ડિવાઇસ પર સ્ક્રીન લૉક સેટ કરો.</translation>
-<translation id="4556110439722119938">તમારા Google એકાઉન્ટ પર તમારા બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને બીજા સેટિંગ સિંક કરવામાં આવશે, જેથી કરીને તમે તમારા બધા ડિવાઇસ પર એનો ઉપયોગ કરી શકો.</translation>
 <translation id="4558311620361989323">વેબ પેજના શૉર્ટકટ</translation>
 <translation id="4561979708150884304">કોઈ કનેક્શન નથી</translation>
 <translation id="4565377596337484307">પાસવર્ડ છુપાવો</translation>
@@ -616,7 +610,6 @@
 <translation id="5527111080432883924">સાઇટને ક્લિપબોર્ડ પરની ટેક્સ્ટ અને છબીઓને વાંચવાની મંજૂરી આપતાં પહેલાં પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="5530766185686772672">છુપા ટેબ્સ બંધ કરો</translation>
 <translation id="5534640966246046842">સાઇટ કૉપિ કરી</translation>
-<translation id="5537099431952529648">તમે અને તમારા માતાપિતા Chrome સમન્વયન અને વૈયક્તિકરણને <ph name="BEGIN_LINK1" />સેટિંગ્સ<ph name="END_LINK1" />માં સંચાલિત કરી શકે છે</translation>
 <translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5561549206367097665">નેટવર્કની રાહ જોઈ રહ્યાં છે…</translation>
 <translation id="557283862590186398">Chromeને આ સાઇટ માટે તમારા માઇક્રોફોનના ઍક્સેસની પરવાનગીની જરૂર પડે છે.</translation>
@@ -712,7 +705,6 @@
 ઉદાહરણ તરીકે, કેટલીક વેબસાઇટ, તમે મુલાકાત લીધેલી બીજા વેબસાઇટ પર આધારિત ન હોય તેવી જાહેરાતો તમને બતાવીને આ વિનંતી પર પ્રતિસાદ આપી શકે છે. ઘણી વેબસાઇટ હજી પણ તમારા બ્રાઉઝિંગ ડેટાને ભેગો કરશે અને ઉપયોગ કરશે — ઉદાહરણ તરીકે સુરક્ષાને બહેતર બનાવવા, કન્ટેન્ટ, જાહેરાતો અને ભલામણો આપવા અને રિપોર્ટિંગ આંકડા જનરેટ કરવા માટે.</translation>
 <translation id="624789221780392884">અપડેટ તૈયાર</translation>
 <translation id="6255999984061454636">કન્ટેન્ટ માટેના સૂચનો</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> નજીકના બ્લૂટૂથ ડિવાઇસ માટે સ્કૅન કરવા માગે છે, નીચે મુજબના ડિવાઇસ મળ્યાં છે:</translation>
 <translation id="6277522088822131679">પૃષ્ઠને છાપવામાં સમસ્યા હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="6295158916970320988">બધી સાઇટ્સ</translation>
 <translation id="629730747756840877">એકાઉન્ટ</translation>
@@ -774,6 +766,7 @@
 <translation id="6659594942844771486">ટૅબ</translation>
 <translation id="666731172850799929"><ph name="APP_NAME" /> માં ખોલો</translation>
 <translation id="666981079809192359">Chrome ગોપનીયતા સૂચના</translation>
+<translation id="6676840375528380067">આ ડિવાઇસમાંથી તમારા Chrome ડેટાને સાફ કરીએ?</translation>
 <translation id="6697492270171225480">જ્યારે કોઈ પેજ ન મળે ત્યારે તેના જેવા પેજ માટે સૂચનો બતાવો</translation>
 <translation id="6697947395630195233">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6698801883190606802">સમન્વયિત ડેટા સંચાલિત કરો</translation>
@@ -792,7 +785,6 @@
 <translation id="6803423358608456383">અડધી ઊંચાઈએ ખોલેલા ટૅબ</translation>
 <translation id="6811034713472274749">પેજ જોવા માટે તૈયાર છે</translation>
 <translation id="6818926723028410516">આઇટમ પસંદ કરો</translation>
-<translation id="6820607729870073286">તમારી પાસે સાચવેલી વેબસાઇટ સેટિંગ્સ નથી.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6845325883481699275">Chrome સુરક્ષાને વધુ સારી બનાવવામાં સહાય કરો</translation>
@@ -815,7 +807,6 @@
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="6978479750597523876">અનુવાદ સેટિંગ્સને ફરીથી સેટ કરો</translation>
 <translation id="6979737339423435258">હંમેશાં</translation>
-<translation id="6980462514016882061">શોધ, જાહેરાતો અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે Google, તમારા બ્રાઉઝિંગ ઇતિહાસનો ઉપયોગ કરી શકે છે</translation>
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="6989267951144302301">ડાઉનલોડ ન કરી શક્યા</translation>
 <translation id="6990079615885386641">Google Play Store માંથી ઍપ્લિકેશન મેળવો: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@
 <translation id="7180611975245234373">રિફ્રેશ કરો</translation>
 <translation id="7189372733857464326">Google Play સેવાઓ દ્વારા અપડેટ થવાનું સમાપ્ત કરવાની રાહ જોવામાં આવી રહી છે</translation>
 <translation id="7191430249889272776">ટેબ પૃષ્ઠભૂમિમાં ખોલવામાં આવ્યું છે.</translation>
-<translation id="722055596168483966">Google સેવાઓને મનગમતી બનાવો</translation>
 <translation id="723171743924126238">છબીઓ પસંદ કરો</translation>
 <translation id="7233236755231902816">વેબ તમારી ભાષામાં જોવા માટે Chromeનું એકદમ નવું વર્ઝન મેળવો</translation>
 <translation id="7243308994586599757">સ્ક્રીનના તળિયા નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
@@ -962,6 +952,7 @@
 <translation id="7999064672810608036">શું તમે ખરેખર કૂકીઝ સહિત આ વેબસાઇટ માટેનો બધો ડેટા સાફ કરી અને આ વેબસાઇટ માટેની બધી પરવાનગીઓ ફરીથી સેટ કરવા માગો છો?</translation>
 <translation id="8004582292198964060">બ્રાઉઝર</translation>
 <translation id="8007176423574883786">આ ઉપકરણ માટે બંધ કર્યું</translation>
+<translation id="8013372441983637696">આ ડિવાઇસમાંથી તમારો Chrome ડેટા પણ સાફ કરો</translation>
 <translation id="8015452622527143194">પેજ પરનું બધું કન્ટેન્ટ પાછું ડિફૉલ્ટ કદમાં બદલો</translation>
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
@@ -1078,7 +1069,6 @@
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ટેબ</translation>
 <translation id="885701979325669005">સ્ટોરેજ</translation>
 <translation id="8901170036886848654">કોઇ બુકમાર્ક્સ મળ્યાં નથી</translation>
-<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">શેર કરો…</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
 <translation id="8920114477895755567">માતાપિતાની વિગતોની રાહ જોઈ રહ્યાં છે.</translation>

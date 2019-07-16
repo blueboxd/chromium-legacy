@@ -55,7 +55,7 @@ class DomDistillerHandler : public content::WebUIMessageHandler {
   std::string article_scheme_;
 
   // Factory for the creating refs in callbacks.
-  base::WeakPtrFactory<DomDistillerHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DomDistillerHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerHandler);
 };

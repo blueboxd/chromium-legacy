@@ -435,8 +435,7 @@ LargeIconServiceImpl::LargeIconServiceImpl(
     FaviconService* favicon_service,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher)
     : favicon_service_(favicon_service),
-      image_fetcher_(std::move(image_fetcher)),
-      weak_ptr_factory_(this) {
+      image_fetcher_(std::move(image_fetcher)) {
   large_icon_types_.push_back({favicon_base::IconType::kWebManifestIcon});
   large_icon_types_.push_back({favicon_base::IconType::kFavicon});
   large_icon_types_.push_back({favicon_base::IconType::kTouchIcon});

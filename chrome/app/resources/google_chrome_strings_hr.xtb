@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Ažuriranje preglednika Google Chrome...</translation>
 <translation id="1469002951682717133">Pokretač aplikacija sustava Chrome</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
-<translation id="1585657529869845941">Kliknite <ph name="BEGIN_BOLD" />Svejedno promijeni<ph name="END_BOLD" />, ako ste ta opcija pojavi</translation>
 <translation id="1587223624401073077">Google Chrome upotrebljava vašu kameru.</translation>
 <translation id="1587325591171447154">Datoteka <ph name="FILE_NAME" /> opasna je, pa ju je Chrome blokirao.</translation>
 <translation id="1590588151039584890">Chrome se radi ažuriranja mora zaustaviti na ovom računalu. Drugi korisnici koji su prijavljeni na računalu mogli bi zbog toga izgubiti promjene koje nisu spremljene.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome ne može čitati iz svojeg podatkovnog direktorija niti u njega pisati: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome jest web-preglednik koji web-stranice i aplikacije pokreće brzinom svjetlosti. Brz je, stabilan i jednostavan za upotrebu. Sigurnije pregledavajte web uz zaštitu protiv zlonamjernog i špijunskog softvera koja je ugrađena u Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome će se ponovo pokrenuti za sat vremena}one{Chrome će se ponovo pokrenuti za # h}few{Chrome će se ponovo pokrenuti za # h}other{Chrome će se ponovo pokrenuti za # h}}</translation>
-<translation id="1718131156967340976">Odaberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome će spremiti tu zaporku na vaš Google račun. Ne morate je pamtiti.</translation>
 <translation id="174539241580958092">Google Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="3873044882194371212">Otvori vezu u ano&amp;nimnom prozoru Chromea</translation>
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
 <translation id="3898493977366060150">Pregledavanje weba uz pametne Googleove značajke</translation>
-<translation id="4028693306634653894">Otvorite Chrome brže</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="4053720452172726777">Prilagodite Google Chrome i upravljajte njime</translation>
 <translation id="4143243756087420366">Ime i slika Chrome profila</translation>
@@ -236,7 +233,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7808348361785373670">Ukloni iz Chromea...</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome ažuriran je</translation>
-<translation id="7888186132678118370">Prikvačite Chrome na programsku traku</translation>
 <translation id="7890208801193284374">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama.</translation>
 <translation id="7896673875602241923">Netko se prethodno prijavio u Chrome na ovom računalu kao <ph name="ACCOUNT_EMAIL_LAST" />. Izradite novog korisnika Chromea kako bi vaši podaci bili odvojeni.</translation>
 <translation id="7908168227788431038">Ažuriranje će uskoro biti gotovo. Za dovršetak ponovo pokrenite Google Chrome.</translation>
@@ -285,6 +281,5 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="9138603949443464873">Da bi se vaše promjene primijenile, ponovo pokrenite Chrome</translation>
 <translation id="919706545465235479">Ažurirajte Chrome da bi se pokrenula sinkronizacija</translation>
-<translation id="924447568950697217">Postavljanje Chromea kao zadanog preglednika</translation>
 <translation id="989369509083708165">Google Chrome vaš je zadani preglednik</translation>
 </translationbundle>

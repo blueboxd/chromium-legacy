@@ -57,7 +57,8 @@ class CredentialManagerPasswordFormManager : public NewPasswordFormManager {
 
   CredentialManagerPasswordFormManagerDelegate* delegate_;
 
-  base::WeakPtrFactory<CredentialManagerPasswordFormManager> weak_factory_;
+  base::WeakPtrFactory<CredentialManagerPasswordFormManager> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPasswordFormManager);
 };

@@ -191,7 +191,7 @@ class SpellCheck : public base::SupportsWeakPtr<SpellCheck>,
   base::ObserverList<DictionaryUpdateObserver>::Unchecked
       dictionary_update_observers_;
 
-  base::WeakPtrFactory<SpellCheck> weak_factory_;
+  base::WeakPtrFactory<SpellCheck> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheck);
 };

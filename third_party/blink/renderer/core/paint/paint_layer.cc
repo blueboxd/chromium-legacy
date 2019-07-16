@@ -326,31 +326,26 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
   }
 }
 
-void PaintLayer::UpdateLayerPositionRecursive(
-    UpdateLayerPositionBehavior behavior,
-    bool dirty_compositing_if_needed) {
+void PaintLayer::UpdateLayerPositionRecursive() {
   auto old_location = location_;
-  switch (behavior) {
-    case AllLayers:
-      UpdateLayerPosition();
-      break;
-    case OnlyStickyLayers:
-      if (GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
-        UpdateLayerPosition();
-      if (PaintLayerScrollableArea* scroller = GetScrollableArea()) {
-        if (!scroller->HasStickyDescendants())
-          return;
-      }
-      break;
-    default:
-      NOTREACHED();
+  auto old_offset_for_in_flow_rel_position =
+      rare_data_ ? rare_data_->offset_for_in_flow_rel_position
+                 : PhysicalOffset();
+  UpdateLayerPosition();
+
+  if (location_ != old_location) {
+    SetNeedsCompositingInputsUpdate();
+  } else {
+    // TODO(chrishtr): compute this invalidation in layout instead of here.
+    auto offset_for_in_flow_rel_position =
+        rare_data_ ? rare_data_->offset_for_in_flow_rel_position
+                   : PhysicalOffset();
+    if (offset_for_in_flow_rel_position != old_offset_for_in_flow_rel_position)
+      SetNeedsCompositingInputsUpdate();
   }
 
-  if (dirty_compositing_if_needed && location_ != old_location)
-    SetNeedsCompositingInputsUpdate();
-
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->UpdateLayerPositionRecursive(behavior, dirty_compositing_if_needed);
+    child->UpdateLayerPositionRecursive();
 }
 
 bool PaintLayer::SticksToScroller() const {
@@ -394,28 +389,6 @@ bool PaintLayer::IsAffectedByScrollOf(const PaintLayer* ancestor) const {
     current_layer = container;
   }
   return current_layer == ancestor;
-}
-
-void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
-  if (IsRootLayer()) {
-    // The root PaintLayer (i.e. the LayoutView) is special, in that scroll
-    // offset is not included in clip rects. Therefore, we do not need to clear
-    // them when that PaintLayer is scrolled. We also don't need to update layer
-    // positions, because they also do not depend on the root's scroll offset.
-    if (GetScrollableArea()->HasStickyDescendants()) {
-      UpdateLayerPositionRecursive(OnlyStickyLayers,
-                                   /* dirty_compositing */ false);
-    }
-    return;
-  }
-
-  // Scrolling affects the unclipped_absolute_bounding_box and
-  // clipped_absolute_bounding_box fields of AncestorDependentCompositingInputs
-  // for all descendants.
-  SetNeedsCompositingInputsUpdate();
-
-  ClearClipRects();
-  UpdateLayerPositionRecursive(AllLayers, /* dirty_compositing */ false);
 }
 
 void PaintLayer::UpdateTransformationMatrix() {
@@ -845,9 +818,14 @@ void PaintLayer::UpdateLayerPosition() {
     }
   }
 
-  if (GetLayoutObject().IsInFlowPositioned())
-    local_point += GetLayoutObject().OffsetForInFlowPosition();
-
+  if (GetLayoutObject().IsInFlowPositioned() &&
+      GetLayoutObject().IsRelPositioned()) {
+    auto new_offset = GetLayoutObject().OffsetForInFlowPosition();
+    if (rare_data_ || !new_offset.IsZero())
+      EnsureRareData().offset_for_in_flow_rel_position = new_offset;
+  } else if (rare_data_) {
+    rare_data_->offset_for_in_flow_rel_position = PhysicalOffset();
+  }
   location_ = local_point;
 
 #if DCHECK_IS_ON()

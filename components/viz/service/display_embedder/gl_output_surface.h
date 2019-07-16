@@ -98,7 +98,7 @@ class GLOutputSurface : public OutputSurface {
   // Whether to send OutputSurfaceClient::DidSwapWithSize notifications.
   bool needs_swap_size_notifications_ = false;
 
-  base::WeakPtrFactory<GLOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<GLOutputSurface> weak_ptr_factory_{this};
 };
 
 }  // namespace viz

@@ -85,8 +85,7 @@ SpellCheckProvider::SpellCheckProvider(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
       spellcheck_(spellcheck),
-      embedder_provider_(embedder_provider),
-      weak_factory_(this) {
+      embedder_provider_(embedder_provider) {
   DCHECK(spellcheck_);
   DCHECK(embedder_provider);
   if (render_frame)  // NULL in unit tests.

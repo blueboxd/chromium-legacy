@@ -377,7 +377,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
 
-  base::WeakPtrFactory<V4LocalDatabaseManager> weak_factory_;
+  base::WeakPtrFactory<V4LocalDatabaseManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
 };  // class V4LocalDatabaseManager

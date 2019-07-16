@@ -450,6 +450,8 @@ const DataResource kDataResources[] = {
      true},
     {"controls_refresh.css", IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS,
      ui::SCALE_FACTOR_NONE, true},
+    {"forced_colors.css", IDR_UASTYLE_THEME_FORCED_COLORS_CSS,
+     ui::SCALE_FACTOR_NONE, true},
     {"svg.css", IDR_UASTYLE_SVG_CSS, ui::SCALE_FACTOR_NONE, true},
     {"mathml.css", IDR_UASTYLE_MATHML_CSS, ui::SCALE_FACTOR_NONE, true},
     {"fullscreen.css", IDR_UASTYLE_FULLSCREEN_CSS, ui::SCALE_FACTOR_NONE, true},

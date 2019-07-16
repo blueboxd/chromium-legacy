@@ -6,10 +6,9 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/values.h"
 #include "net/base/ip_endpoint.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {

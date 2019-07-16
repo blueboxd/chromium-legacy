@@ -43,8 +43,7 @@ class RemotingLogToServerTest : public testing::Test {
       RemotingLogToServer::CreateLogEntryResponseCallback;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
 
   base::MockCallback<RemotingLogToServer::CreateLogEntryCallback>
       mock_create_log_entry_;

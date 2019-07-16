@@ -158,7 +158,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
 
   // Enables destroying FullCardRequest while CVC prompt is showing or a server
   // communication is pending.
-  base::WeakPtrFactory<FullCardRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<FullCardRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FullCardRequest);
 };

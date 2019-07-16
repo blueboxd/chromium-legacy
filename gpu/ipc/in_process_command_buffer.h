@@ -399,8 +399,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Don't use |client_thread_weak_ptr_factory_| on GPU thread.  Use the cached
   // |client_thread_weak_ptr_| instead.
-  base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
-  base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
+  base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_{
+      this};
+  base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
 };

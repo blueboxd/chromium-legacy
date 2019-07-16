@@ -390,8 +390,7 @@ Session::Session(mojom::SessionParametersPtr session_params,
                           base::BindRepeating(&Session::OnResponseParsingError,
                                               base::Unretained(this))),
       gpu_(std::move(gpu)),
-      gpu_channel_host_(nullptr),
-      weak_factory_(this) {
+      gpu_channel_host_(nullptr) {
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionContraints(max_resolution.width(),
                                            max_resolution.height());

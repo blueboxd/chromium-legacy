@@ -525,8 +525,6 @@ jumbo_static_library("extensions") {
     "extension_commands_global_registry.h",
     "extension_context_menu_model.cc",
     "extension_context_menu_model.h",
-    "extension_cookie_notifier.cc",
-    "extension_cookie_notifier.h",
     "extension_disabled_ui.cc",
     "extension_disabled_ui.h",
     "extension_error_controller.cc",

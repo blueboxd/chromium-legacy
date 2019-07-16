@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">സൂപ്പർ-A</translation>
 <translation id="2113977810652731515">കാർഡ്</translation>
 <translation id="2114841414352855701"> <ph name="POLICY_NAME" /> എന്നതിനാൽ മറികടന്നതിനാൽ ഇത് അവഗണിച്ചു.</translation>
+<translation id="2119505898009119320">ഇതിന് നല്‍‌കി: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">ചലന സെൻസറുകൾ</translation>
 <translation id="213826338245044447">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="214556005048008348">പേയ്‌മെന്‍റ് റദ്ദാക്കുക</translation>
@@ -302,6 +303,7 @@
 <translation id="2515629240566999685">നിങ്ങളുടെ ഏരിയയിലെ സിഗ്‌നൽ പരിശോധിക്കുന്നു</translation>
 <translation id="2523886232349826891">ഈ ഉപകരണത്തിൽ മാത്രം സംരക്ഷിക്കപ്പെടും</translation>
 <translation id="2524461107774643265">കൂടുതൽ വിവരങ്ങൾ ചേർക്കുക</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{എന്നതും മറ്റൊരെണ്ണവും}other{എന്നതും മറ്റ് # എണ്ണവും}}</translation>
 <translation id="2536110899380797252">വിലാസം ചേർക്കുക</translation>
 <translation id="2539524384386349900">കണ്ടെത്തുക</translation>
 <translation id="254947805923345898">നയത്തിൻ്റെ മൂല്യം അസാധുവാണ്.</translation>
@@ -713,6 +715,7 @@
 <translation id="4858792381671956233">ഈ സൈറ്റ് സന്ദർശിക്കുന്നതിന് നിങ്ങൾ രക്ഷിതാക്കളോട് അനുമതി ആവശ്യപ്പെട്ടു</translation>
 <translation id="4876188919622883022">ലളിതവൽക്കരിച്ച കാഴ്ച്ച</translation>
 <translation id="4876305945144899064">ഉപയോക്തൃനാമമില്ല</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{ഒന്നുമില്ല}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> തിരയുക</translation>
 <translation id="4879491255372875719">സ്വമേധയാ (ഡിഫോൾട്ട്)</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
@@ -1007,6 +1010,7 @@
 <translation id="650855688985305916">വേണം, സംഭരിക്കൂ</translation>
 <translation id="6508722015517270189">Chrome റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
 <translation id="6517596291481585650">മുന്നറിയിപ്പ്: ഈ നയം ഒരു ലിസ്‌റ്റ് അല്ലാത്തതിനാലാണ് നയത്തിൽ വ്യക്തമാക്കിയിരിക്കുന്നത് പോലെ ഒരു ലിസ്‌റ്റായി ലയിപ്പിക്കാത്തത്.</translation>
+<translation id="6521745193039995384">സജീവമല്ല</translation>
 <translation id="6529602333819889595">&amp;ഇല്ലാതാക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="6534179046333460208">ഫിസിക്കൽ വെബ് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="6545864417968258051">Bluetooth സ്‌കാനിംഗ്</translation>
@@ -1464,6 +1468,7 @@
 <translation id="9076630408993835509">ഈ ബ്രൗസർ ഒരു കമ്പനിയോ മറ്റേതെങ്കിലും സ്ഥാപനമോ മാനേജ് ചെയ്യുന്നില്ല. ഈ ഉപകരണത്തിലെ ആക്‌റ്റിവിറ്റി Chrome-ന് പുറത്ത് മാനേജ് ചെയ്യുന്നുണ്ടാകാം. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">കൂടുതൽ വിവരങ്ങൾ ആവശ്യമാണ്</translation>
 <translation id="9080712759204168376">ഓർഡർ സംഗ്രഹം</translation>
+<translation id="9089260154716455634">ഓഫ് അവേഴ്‌സ് നയം:</translation>
 <translation id="9095388113577226029">കൂടുതൽ ഭാഷകൾ...</translation>
 <translation id="9103872766612412690">നിങ്ങളുടെ വിവരങ്ങൾ പരിരക്ഷിക്കാൻ സാധാരണയായി <ph name="SITE" />, എൻക്രിപ്‌ഷൻ ഉപയോഗിക്കുന്നു. ഇപ്പോൾ <ph name="SITE" /> സൈറ്റിലേക്ക് കണക്‌റ്റ് ചെയ്യാൻ Chromium ശ്രമിച്ചപ്പോൾ, അസാധാരണമായതും തെറ്റായതുമായ ക്രെഡൻഷ്യലുകൾ വെബ്‌സൈറ്റ് തിരികെ അയച്ചു. ഒരു ആക്രമണകാരി <ph name="SITE" /> എന്നതായി ഭാവിക്കാൻ ശ്രമിക്കുമ്പോഴോ Wi-Fi സൈൻ ഇൻ സ്‌ക്രീൻ, കണക്ഷനെ തടസ്സപ്പെടുത്തുമ്പോഴോ ആണ് ഇങ്ങനെ സംഭവിക്കാനിടയുള്ളത്. ഏതെങ്കിലും ഡാറ്റ കൈമാറുന്നതിനുമുമ്പ് Chromium കണക്ഷൻ അവസാനിപ്പിച്ചതിനാൽ, നിങ്ങളുടെ വിവരങ്ങൾ തുടർന്നും സുരക്ഷിതമായിരിക്കും.</translation>
 <translation id="9106062320799175032">ബില്ലിംഗ് വിലാസം ചേർക്കുക</translation>

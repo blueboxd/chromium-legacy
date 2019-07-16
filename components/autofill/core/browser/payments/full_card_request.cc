@@ -35,8 +35,7 @@ FullCardRequest::FullCardRequest(RiskDataLoader* risk_data_loader,
       result_delegate_(nullptr),
       ui_delegate_(nullptr),
       should_unmask_card_(false),
-      form_parsed_timestamp_(form_parsed_timestamp),
-      weak_ptr_factory_(this) {
+      form_parsed_timestamp_(form_parsed_timestamp) {
   DCHECK(risk_data_loader_);
   DCHECK(payments_client_);
   DCHECK(personal_data_manager_);

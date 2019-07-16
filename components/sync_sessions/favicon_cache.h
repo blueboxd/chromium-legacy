@@ -239,7 +239,7 @@ class FaviconCache : public syncer::SyncableService,
       history_service_observer_;
 
   // Weak pointer factory for favicon loads.
-  base::WeakPtrFactory<FaviconCache> weak_ptr_factory_;
+  base::WeakPtrFactory<FaviconCache> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
 };

@@ -54,8 +54,7 @@ ContentPageAnnotatorDriver::ContentPageAnnotatorDriver(
     : RenderFrameObserver(render_frame),
       RenderFrameObserverTracker<ContentPageAnnotatorDriver>(render_frame),
       next_node_id_(1),
-      page_annotator_(RequestAnnotator(render_frame)),
-      weak_ptr_factory_(this) {}
+      page_annotator_(RequestAnnotator(render_frame)) {}
 
 ContentPageAnnotatorDriver::~ContentPageAnnotatorDriver() {}
 

@@ -140,7 +140,7 @@ class VULKAN_EXPORT VulkanFenceHelper {
   };
   base::circular_deque<TasksForFence> cleanup_tasks_;
 
-  base::WeakPtrFactory<VulkanFenceHelper> weak_factory_;
+  base::WeakPtrFactory<VulkanFenceHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VulkanFenceHelper);
 };

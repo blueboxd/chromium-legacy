@@ -323,7 +323,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
 
   bool allocation_groups_need_garbage_collection_ = false;
 
-  base::WeakPtrFactory<SurfaceManager> weak_factory_;
+  base::WeakPtrFactory<SurfaceManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

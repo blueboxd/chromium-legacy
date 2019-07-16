@@ -41,7 +41,7 @@ static void PostTaskFromMainToImplThread(
 
 TextureDeleter::TextureDeleter(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : impl_task_runner_(std::move(task_runner)), weak_ptr_factory_(this) {}
+    : impl_task_runner_(std::move(task_runner)) {}
 
 TextureDeleter::~TextureDeleter() {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i)

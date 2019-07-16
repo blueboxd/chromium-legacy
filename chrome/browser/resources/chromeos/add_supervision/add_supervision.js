@@ -28,8 +28,12 @@ const ALLOWED_HOSTS = [
  */
 function isAllowedRequest(requestDetails) {
   const requestUrl = new URL(requestDetails.url);
-  return requestUrl.protocol == 'https' &&
-      ALLOWED_HOSTS.includes(requestUrl.host);
+
+  // Only allow HTTPS and hosts that are in the list (or subdomains).
+  return requestUrl.protocol == 'https:' &&
+      ALLOWED_HOSTS.some(
+          (allowedHost) => requestUrl.host == allowedHost ||
+              requestUrl.host.endsWith('.' + allowedHost));
 }
 
 let server = null;

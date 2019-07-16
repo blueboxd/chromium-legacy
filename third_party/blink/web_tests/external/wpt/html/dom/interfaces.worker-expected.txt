@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 660 tests; 619 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 660 tests; 634 PASS, 26 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -145,24 +145,24 @@ PASS CanvasPattern interface: existence and properties of interface prototype ob
 PASS CanvasPattern interface: existence and properties of interface prototype object's "constructor" property
 PASS CanvasPattern interface: existence and properties of interface prototype object's @@unscopables property
 PASS CanvasPattern interface: operation setTransform(DOMMatrix2DInit)
-FAIL TextMetrics interface: existence and properties of interface object assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface object length assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface object name assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: existence and properties of interface prototype object assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute width assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute actualBoundingBoxLeft assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute actualBoundingBoxRight assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute fontBoundingBoxAscent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute fontBoundingBoxDescent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute actualBoundingBoxAscent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute actualBoundingBoxDescent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute emHeightAscent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute emHeightDescent assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute hangingBaseline assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute alphabeticBaseline assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
-FAIL TextMetrics interface: attribute ideographicBaseline assert_own_property: self does not have own property "TextMetrics" expected property "TextMetrics" missing
+PASS TextMetrics interface: existence and properties of interface object
+PASS TextMetrics interface object length
+PASS TextMetrics interface object name
+PASS TextMetrics interface: existence and properties of interface prototype object
+PASS TextMetrics interface: existence and properties of interface prototype object's "constructor" property
+PASS TextMetrics interface: existence and properties of interface prototype object's @@unscopables property
+PASS TextMetrics interface: attribute width
+PASS TextMetrics interface: attribute actualBoundingBoxLeft
+PASS TextMetrics interface: attribute actualBoundingBoxRight
+PASS TextMetrics interface: attribute fontBoundingBoxAscent
+PASS TextMetrics interface: attribute fontBoundingBoxDescent
+PASS TextMetrics interface: attribute actualBoundingBoxAscent
+PASS TextMetrics interface: attribute actualBoundingBoxDescent
+PASS TextMetrics interface: attribute emHeightAscent
+PASS TextMetrics interface: attribute emHeightDescent
+FAIL TextMetrics interface: attribute hangingBaseline assert_true: The prototype object must have a property "hangingBaseline" expected true got false
+FAIL TextMetrics interface: attribute alphabeticBaseline assert_true: The prototype object must have a property "alphabeticBaseline" expected true got false
+FAIL TextMetrics interface: attribute ideographicBaseline assert_true: The prototype object must have a property "ideographicBaseline" expected true got false
 PASS ImageData interface: existence and properties of interface object
 PASS ImageData interface object length
 PASS ImageData interface object name

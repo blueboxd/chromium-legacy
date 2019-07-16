@@ -32,8 +32,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_
 
 #include <stdint.h>
+#include <atomic>
 
 #include "base/bits.h"
+#include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
@@ -150,10 +152,13 @@ uint32_t ComputeRandomMagic();
 // object that has the following layout:
 //
 // | random magic value (32 bits) | Only present on 64-bit platforms.
+//
 // | gc_info_index (14 bits)      |
-// | in construction (1 bit)      | bit not set: true; bit set: false
+// | unused (1 bit)               |
+// | in construction (1 bit)      | true: bit not set; false bit set
+//
 // | size (14 bits)               | Actually 17 bits because sizes are aligned.
-// | unused (2 bits)              |
+// | unused (1 bit)               |
 // | mark bit (1 bit)             |
 //
 // Notes:
@@ -164,16 +169,22 @@ uint32_t ComputeRandomMagic();
 //   always 8 byte aligned (see kAllocationGranularity).
 // - |size| for large objects is encoded as 0. The size of a large object is
 //   stored in |LargeObjectPage::PayloadSize()|.
-constexpr uint32_t kHeaderMarkBitMask = 1;
-constexpr uint32_t kHeaderSizeMask = ((uint32_t{1} << 14) - 1) << 3;
-constexpr uint32_t kHeaderIsInConstructionMask = uint32_t{1} << 17;
-constexpr uint32_t kHeaderGCInfoIndexShift = 18;
-constexpr uint32_t kHeaderGCInfoSize = uint32_t{1} << 14;
-constexpr uint32_t kHeaderGCInfoIndexMask = (kHeaderGCInfoSize - 1)
-                                            << kHeaderGCInfoIndexShift;
+// - |mark bit| and |in construction| bits are located in separate variables and
+//   therefore can be accessed concurrently. Since tsan works with word-size
+//   objects they still should be accessed atomically.
+constexpr uint16_t kHeaderMarkBitMask = 1;
+constexpr uint16_t kHeaderSizeShift = 2;
+constexpr uint16_t kHeaderSizeMask =
+    static_cast<uint16_t>(((1 << 14) - 1) << kHeaderSizeShift);
 
-constexpr uint32_t kLargeObjectSizeInHeader = 0;
-constexpr uint32_t kGcInfoIndexForFreeListHeader = 0;
+constexpr uint16_t kHeaderIsInConstructionMask = 1;
+constexpr uint16_t kHeaderGCInfoIndexShift = 2;
+constexpr uint16_t kHeaderGCInfoSize = static_cast<uint16_t>(1 << 14);
+constexpr uint16_t kHeaderGCInfoIndexMask =
+    static_cast<uint16_t>((kHeaderGCInfoSize - 1) << kHeaderGCInfoIndexShift);
+
+constexpr uint16_t kLargeObjectSizeInHeader = 0;
+constexpr uint16_t kGcInfoIndexForFreeListHeader = 0;
 constexpr size_t kNonLargeObjectPageSizeMax = 1 << kBlinkPageSizeLog2;
 
 static_assert(kHeaderGCInfoSize == GCInfoTable::kMaxIndex,
@@ -183,11 +194,50 @@ static_assert(
     kNonLargeObjectPageSizeMax >= kBlinkPageSize,
     "max size supported by HeapObjectHeader must at least be kBlinkPageSize");
 
+namespace internal {
+
+// This is needed due to asan complaining deep from std::atomic<>::load/store
+// stacktraces.
+class AsanUnpoisonScope {
+ public:
+  AsanUnpoisonScope(const void* addr, size_t size)
+      : addr_(addr), size_(size), was_poisoned_(false) {
+    if (!ASAN_REGION_IS_POISONED(const_cast<void*>(addr_), size_))
+      return;
+    ASAN_UNPOISON_MEMORY_REGION(addr_, size_);
+    was_poisoned_ = true;
+  }
+  ~AsanUnpoisonScope() {
+    if (was_poisoned_)
+      ASAN_POISON_MEMORY_REGION(addr_, size_);
+  }
+
+ private:
+  const void* addr_;
+  size_t size_;
+  bool was_poisoned_;
+};
+
+NO_SANITIZE_ADDRESS constexpr uint16_t EncodeSize(size_t size) {
+  // Essentially, gets optimized to >> 1.
+  return static_cast<uint16_t>((size << kHeaderSizeShift) /
+                               kAllocationGranularity);
+}
+
+NO_SANITIZE_ADDRESS constexpr size_t DecodeSize(uint16_t encoded) {
+  // Essentially, gets optimized to << 1.
+  return ((encoded & kHeaderSizeMask) >> kHeaderSizeShift) *
+         kAllocationGranularity;
+}
+
+}  // namespace internal
+
 class PLATFORM_EXPORT HeapObjectHeader {
   DISALLOW_NEW();
 
  public:
-  enum HeaderLocation { kNormalPage, kLargePage };
+  enum HeaderLocation : uint8_t { kNormalPage, kLargePage };
+  enum class AccessMode : uint8_t { kNonAtomic, kAtomic };
 
   // The following values are used when zapping free list entries.
   // Regular zapping value.
@@ -206,12 +256,15 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // If |gc_info_index| is 0, this header is interpreted as a free list header.
   HeapObjectHeader(size_t, size_t, HeaderLocation);
 
+  template <AccessMode mode = AccessMode::kNonAtomic>
   NO_SANITIZE_ADDRESS bool IsFree() const {
-    return GcInfoIndex() == kGcInfoIndexForFreeListHeader;
+    return GcInfoIndex<mode>() == kGcInfoIndexForFreeListHeader;
   }
 
+  template <AccessMode mode = AccessMode::kNonAtomic>
   NO_SANITIZE_ADDRESS uint32_t GcInfoIndex() const {
-    return (encoded_ & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
+    const uint16_t encoded = LoadEncoded<mode, EncodedHalf::kHigh>();
+    return (encoded & kHeaderGCInfoIndexMask) >> kHeaderGCInfoIndexShift;
   }
 
   size_t size() const;
@@ -219,12 +272,18 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
   bool IsLargeObject() const;
 
+  template <AccessMode = AccessMode::kNonAtomic>
   bool IsMarked() const;
+  template <AccessMode = AccessMode::kNonAtomic>
   void Mark();
+  template <AccessMode = AccessMode::kNonAtomic>
   void Unmark();
+  template <AccessMode = AccessMode::kNonAtomic>
   bool TryMark();
 
+  template <AccessMode = AccessMode::kNonAtomic>
   bool IsInConstruction() const;
+  template <AccessMode = AccessMode::kNonAtomic>
   void MarkFullyConstructed();
 
   // The payload starts directly after the HeapObjectHeader, and the payload
@@ -256,13 +315,21 @@ class PLATFORM_EXPORT HeapObjectHeader {
  private:
   void CheckHeader() const;
 
+  enum class EncodedHalf : uint8_t { kLow, kHigh };
+
+  template <AccessMode, EncodedHalf>
+  uint16_t LoadEncoded() const;
+  template <AccessMode mode, EncodedHalf>
+  void StoreEncoded(uint16_t bits, uint16_t mask);
+
 #if defined(ARCH_CPU_64_BITS)
   // Returns a random magic value.
   static uint32_t GetMagic();
   uint32_t magic_;
 #endif  // defined(ARCH_CPU_64_BITS)
 
-  uint32_t encoded_;
+  uint16_t encoded_high_;
+  uint16_t encoded_low_;
 };
 
 class FreeListEntry final : public HeapObjectHeader {
@@ -1035,7 +1102,7 @@ inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
 }
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
-  size_t result = encoded_ & kHeaderSizeMask;
+  const size_t result = internal::DecodeSize(encoded_low_);
   // Large objects should not refer to header->size() but use
   // LargeObjectPage::PayloadSize().
   DCHECK(result != kLargeObjectSizeInHeader);
@@ -1046,20 +1113,25 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::SetSize(size_t size) {
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   CheckHeader();
-  encoded_ = static_cast<uint32_t>(size) | (encoded_ & ~kHeaderSizeMask);
+  encoded_low_ = static_cast<uint16_t>(internal::EncodeSize(size) |
+                                       (encoded_low_ & ~kHeaderSizeMask));
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsLargeObject() const {
-  return (encoded_ & kHeaderSizeMask) == kLargeObjectSizeInHeader;
+  return internal::DecodeSize(encoded_low_) == kLargeObjectSizeInHeader;
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsInConstruction() const {
-  return (encoded_ & kHeaderIsInConstructionMask) == 0;
+  return (LoadEncoded<mode, EncodedHalf::kHigh>() &
+          kHeaderIsInConstructionMask) == 0;
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::MarkFullyConstructed() {
   DCHECK(IsInConstruction());
-  encoded_ |= kHeaderIsInConstructionMask;
+  StoreEncoded<mode, EncodedHalf::kHigh>(kHeaderIsInConstructionMask,
+                                         kHeaderIsInConstructionMask);
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsValid() const {
@@ -1097,7 +1169,7 @@ inline Address HeapObjectHeader::PayloadEnd() const {
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
   CheckHeader();
-  size_t size = encoded_ & kHeaderSizeMask;
+  const size_t size = internal::DecodeSize(encoded_low_);
   if (UNLIKELY(size == kLargeObjectSizeInHeader)) {
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
     return static_cast<LargeObjectPage*>(PageFromObject(this))->PayloadSize();
@@ -1106,29 +1178,48 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
   return size - sizeof(HeapObjectHeader);
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsMarked() const {
   CheckHeader();
-  return encoded_ & kHeaderMarkBitMask;
+  const uint16_t encoded = LoadEncoded<mode, EncodedHalf::kLow>();
+  return encoded & kHeaderMarkBitMask;
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Mark() {
   CheckHeader();
-  DCHECK(!IsMarked());
-  encoded_ = encoded_ | kHeaderMarkBitMask;
+  DCHECK(!IsMarked<mode>());
+  StoreEncoded<mode, EncodedHalf::kLow>(kHeaderMarkBitMask, kHeaderMarkBitMask);
 }
 
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::Unmark() {
   CheckHeader();
   DCHECK(IsMarked());
-  encoded_ &= ~kHeaderMarkBitMask;
+  StoreEncoded<mode, EncodedHalf::kLow>(0u, kHeaderMarkBitMask);
 }
 
+// The function relies on size bits being unmodified when the function is
+// called, i.e. SetSize() and TryMark() can't be called concurrently.
+template <HeapObjectHeader::AccessMode mode>
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::TryMark() {
   CheckHeader();
-  if (encoded_ & kHeaderMarkBitMask)
+  if (mode == AccessMode::kNonAtomic) {
+    if (encoded_low_ & kHeaderMarkBitMask)
+      return false;
+    encoded_low_ |= kHeaderMarkBitMask;
+    return true;
+  }
+  internal::AsanUnpoisonScope unpoison_scope(
+      static_cast<const void*>(&encoded_low_), sizeof(encoded_low_));
+  auto* atomic_encoded = reinterpret_cast<std::atomic<uint16_t>*>(encoded_low_);
+  uint16_t old_value = atomic_encoded->load(std::memory_order_relaxed);
+  if (old_value & kHeaderMarkBitMask)
     return false;
-  encoded_ |= kHeaderMarkBitMask;
-  return true;
+  const uint16_t new_value = old_value | kHeaderMarkBitMask;
+  return atomic_encoded->compare_exchange_strong(old_value, new_value,
+                                                 std::memory_order_acq_rel,
+                                                 std::memory_order_relaxed);
 }
 
 NO_SANITIZE_ADDRESS inline bool BasePage::IsValid() const {
@@ -1232,8 +1323,9 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
   DCHECK_LT(gc_info_index, GCInfoTable::kMaxIndex);
   DCHECK_LT(size, kNonLargeObjectPageSizeMax);
   DCHECK_EQ(0u, size & kAllocationMask);
-  encoded_ =
-      static_cast<uint32_t>((gc_info_index << kHeaderGCInfoIndexShift) | size);
+  encoded_high_ =
+      static_cast<uint16_t>(gc_info_index << kHeaderGCInfoIndexShift);
+  encoded_low_ = internal::EncodeSize(size);
   if (header_location == kNormalPage) {
     DCHECK(!PageFromObject(this)->IsLargeObjectPage());
     static_cast<NormalPage*>(PageFromObject(this))
@@ -1243,6 +1335,39 @@ NO_SANITIZE_ADDRESS inline HeapObjectHeader::HeapObjectHeader(
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
   }
   DCHECK(IsInConstruction());
+}
+
+template <HeapObjectHeader::AccessMode mode, HeapObjectHeader::EncodedHalf part>
+NO_SANITIZE_ADDRESS inline uint16_t HeapObjectHeader::LoadEncoded() const {
+  const uint16_t& half =
+      (part == EncodedHalf::kLow ? encoded_low_ : encoded_high_);
+  internal::AsanUnpoisonScope unpoison_scope(static_cast<const void*>(&half),
+                                             sizeof(half));
+  if (mode == AccessMode::kNonAtomic)
+    return half;
+  return reinterpret_cast<const std::atomic<uint16_t>&>(half).load(
+      std::memory_order_acquire);
+}
+
+// Sets bits selected by the mask to the given value. Please note that atomicity
+// of the whole operation is not guaranteed.
+template <HeapObjectHeader::AccessMode mode, HeapObjectHeader::EncodedHalf part>
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::StoreEncoded(uint16_t bits,
+                                                               uint16_t mask) {
+  DCHECK_EQ(static_cast<uint16_t>(0u), bits & ~mask);
+  uint16_t* half = (part == EncodedHalf::kLow ? &encoded_low_ : &encoded_high_);
+  internal::AsanUnpoisonScope unpoison_scope(static_cast<void*>(half),
+                                             sizeof(&half));
+  if (mode == AccessMode::kNonAtomic) {
+    *half = (*half & ~mask) | bits;
+    return;
+  }
+  // We don't perform CAS loop here assuming that the data is constant and no
+  // one except for us can change this half concurrently.
+  auto* atomic_encoded = reinterpret_cast<std::atomic<uint16_t>*>(half);
+  uint16_t value = atomic_encoded->load(std::memory_order_relaxed);
+  value = (value & ~mask) | bits;
+  atomic_encoded->store(value, std::memory_order_release);
 }
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 <translation id="1023220960495960452">Pengalihan huruf (vanakkam → வணக்கம்)</translation>
 <translation id="1035094536595558507">Paparan slaid</translation>
 <translation id="1045157690796831147">Pengalihan huruf (namaskar → നമസ്കാരം)</translation>
+<translation id="1046068652463704410">Input Jepun (untuk papan kekunci AS)</translation>
 <translation id="1047956942837015229">Memadamkan <ph name="COUNT" /> item...</translation>
 <translation id="1049926623896334335">Dokumen Word</translation>
 <translation id="1062407476771304334">Gantikan</translation>
@@ -210,6 +211,7 @@
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3549797760399244642">Pergi ke drive.google.com...</translation>
 <translation id="357479282490346887">Bahasa Lithuania</translation>
+<translation id="3583509704582854624">Input abjad angka (untuk papan kekunci Jepun)</translation>
 <translation id="3603385196401704894">Bahasa Perancis Kanada</translation>
 <translation id="3606220979431771195">Turki-F</translation>
 <translation id="3609785682760573515">Menyegerakkan...</translation>
@@ -432,6 +434,7 @@
 <translation id="5911887972742538906">Ralat telah berlaku semasa pemasangan aplikasi Linux anda.</translation>
 <translation id="5912396950572065471">Format</translation>
 <translation id="5913638992615760742">Operasi salin gagal, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5923484009666796948">Input Jepun (untuk papan kekunci Jepun)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Beri Linux kebenaran apl untuk mengubah fail dalam Google Drive anda. Perubahan akan disegerakkan ke peranti anda yang lain.</translation>
 <translation id="5982621672636444458">Pilihan isihan</translation>

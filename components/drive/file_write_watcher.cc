@@ -77,15 +77,14 @@ class FileWriteWatcher::FileWriteWatcherImpl {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<FileWriteWatcherImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<FileWriteWatcherImpl> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FileWriteWatcherImpl);
 };
 
 FileWriteWatcher::FileWriteWatcherImpl::FileWriteWatcherImpl(
     base::SequencedTaskRunner* blocking_task_runner)
     : delay_(base::TimeDelta::FromSeconds(kWriteEventDelayInSeconds)),
-      blocking_task_runner_(blocking_task_runner),
-      weak_ptr_factory_(this) {}
+      blocking_task_runner_(blocking_task_runner) {}
 
 void FileWriteWatcher::FileWriteWatcherImpl::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());

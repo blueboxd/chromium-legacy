@@ -286,8 +286,7 @@ RequestCoordinator::RequestCoordinator(
       scheduler_callback_(base::DoNothing()),
       internal_start_processing_callback_(base::DoNothing()),
       pending_state_updater_(this),
-      active_tab_info_(std::move(active_tab_info)),
-      weak_ptr_factory_(this) {
+      active_tab_info_(std::move(active_tab_info)) {
   DCHECK(policy_ != nullptr);
   DCHECK(network_quality_tracker_);
   offliner_client_ = std::make_unique<OfflinerClient>(

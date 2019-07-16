@@ -535,6 +535,12 @@ void StyleResolver::MatchUARules(ElementRuleCollector& collector) {
   if (GetDocument().IsViewSource())
     MatchRuleSet(collector, default_style_sheets.DefaultViewSourceStyle());
 
+  // If the system is in forced colors mode, match rules from the forced colors
+  // style sheet.
+  if (blink::RuntimeEnabledFeatures::ForcedColorsEnabled() &&
+      GetDocument().GetSettings()->GetForcedColors() != ForcedColors::kNone)
+    MatchRuleSet(collector, default_style_sheets.DefaultForcedColorStyle());
+
   collector.FinishAddingUARules();
   collector.SetMatchingUARules(false);
 }

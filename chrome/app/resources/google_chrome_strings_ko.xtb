@@ -23,7 +23,6 @@
 <translation id="1457721931618994305">Chrome 업데이트 중...</translation>
 <translation id="1469002951682717133">Chrome 앱 런처</translation>
 <translation id="1553358976309200471">Chrome 업데이트</translation>
-<translation id="1585657529869845941"><ph name="BEGIN_BOLD" />전환하기<ph name="END_BOLD" /> 버튼이 표시되면 클릭하세요</translation>
 <translation id="1587223624401073077">Chrome에서 카메라를 사용 중입니다.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" />은(는) 위험하므로 Chrome에서 차단했습니다.</translation>
 <translation id="1590588151039584890">업데이트하려면 이 컴퓨터에서 Chrome 실행을 중단해야 합니다. 중단하면 이 컴퓨터에 로그인한 다른 사용자가 저장하지 않은 변경 사항을 잃을 수 있습니다.</translation>
@@ -36,7 +35,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Chrome은 웹페이지와 애플리케이션을 빠르게 실행하는 웹 브라우저입니다. 또한 빠르고 안정적이며 사용하기 쉽습니다. Chrome에 기본적으로 제공되는 악성코드 및 피싱 방지 기능으로 웹을 더 안전하게 탐색하세요.</translation>
 <translation id="1713301662689114961">{0,plural, =1{1시간 후 Chrome이 다시 시작됩니다}other{#시간 후 Chrome이 다시 시작됩니다}}</translation>
-<translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /><ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /> 선택</translation>
 <translation id="1734234790201236882">Chrome에서 내 Google 계정에 이 비밀번호를 저장하므로 기억하지 않아도 됩니다.</translation>
 <translation id="174539241580958092">로그인 중 오류가 발생하여 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -119,7 +117,6 @@
 <translation id="3873044882194371212">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
 <translation id="3898493977366060150">Google과 스마트하게 웹을 탐색하세요</translation>
-<translation id="4028693306634653894">Chrome을 더 빠르게 사용해 보세요.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="4143243756087420366">Chrome 이름 및 사진</translation>
@@ -244,7 +241,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7808348361785373670">Chrome에서 삭제...</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="7855730255114109580">Chrome이 최신 버전입니다.</translation>
-<translation id="7888186132678118370">작업 표시줄에 Chrome 고정</translation>
 <translation id="7890208801193284374">컴퓨터를 공유하는 경우 친구와 가족이 개별적으로 탐색하고 원하는 대로 Chrome을 설정할 수 있습니다.</translation>
 <translation id="7896673875602241923">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST" />(으)로 Chrome에 로그인했습니다. 새 Chrome 사용자를 만들어 정보를 별도로 관리하세요.</translation>
 <translation id="7908168227788431038">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chrome을 다시 시작하세요.</translation>
@@ -293,6 +289,5 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="911206726377975832">인터넷 사용 기록도 삭제하시겠습니까?</translation>
 <translation id="9138603949443464873">변경사항을 적용하려면 Chrome을 다시 실행하세요.</translation>
 <translation id="919706545465235479">동기화를 시작하려면 Chrome을 업데이트하세요.</translation>
-<translation id="924447568950697217">Chrome을 기본 브라우저로 지정</translation>
 <translation id="989369509083708165">Chrome이 기본 브라우저로 설정되어 있습니다.</translation>
 </translationbundle>

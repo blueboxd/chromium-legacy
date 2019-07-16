@@ -98,8 +98,7 @@ void DeleteFile(const base::FilePath& file_path) {
 
 }  // namespace
 
-BaseFile::BaseFile(uint32_t download_id)
-    : download_id_(download_id), weak_factory_(this) {
+BaseFile::BaseFile(uint32_t download_id) : download_id_(download_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 

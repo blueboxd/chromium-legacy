@@ -146,7 +146,7 @@ class WebResourceService : public ResourceRequestAllowedNotifier::Observer {
 
   // So that we can delay our start so as not to affect start-up time; also,
   // so that we can schedule future cache updates.
-  base::WeakPtrFactory<WebResourceService> weak_ptr_factory_;
+  base::WeakPtrFactory<WebResourceService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebResourceService);
 };

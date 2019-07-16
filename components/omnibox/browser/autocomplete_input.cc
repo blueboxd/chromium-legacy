@@ -493,11 +493,12 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   *host = parts.host;
 
   int after_scheme_and_colon = parts.scheme.end() + 1;
-  // For the view-source scheme, we should emphasize the scheme and host of the
-  // URL qualified by the view-source prefix.
-  if (base::LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) &&
+  // For the view-source and blob schemes, we should emphasize the host of the
+  // URL qualified by the view-source or blob prefix.
+  if ((base::LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) ||
+       base::LowerCaseEqualsASCII(scheme_str, url::kBlobScheme)) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
-    // Obtain the URL prefixed by view-source and parse it.
+    // Obtain the URL prefixed by view-source or blob and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
     url::Parsed real_parts;
     AutocompleteInput::Parse(real_url, std::string(), scheme_classifier,

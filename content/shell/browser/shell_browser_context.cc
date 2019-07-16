@@ -22,7 +22,6 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/sms_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
@@ -240,12 +239,6 @@ BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
 BrowsingDataRemoverDelegate*
 ShellBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
-}
-
-SmsService* ShellBrowserContext::GetSmsService() {
-  if (!sms_service_)
-    sms_service_ = content::SmsService::Create();
-  return sms_service_.get();
 }
 
 }  // namespace content

@@ -165,10 +165,11 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
 
   // WeakPtrFactory for this processor for ModelTypeController.
   base::WeakPtrFactory<BookmarkModelTypeProcessor>
-      weak_ptr_factory_for_controller_;
+      weak_ptr_factory_for_controller_{this};
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
-  base::WeakPtrFactory<BookmarkModelTypeProcessor> weak_ptr_factory_for_worker_;
+  base::WeakPtrFactory<BookmarkModelTypeProcessor> weak_ptr_factory_for_worker_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelTypeProcessor);
 };

@@ -162,10 +162,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // (RP ID, user ID) pair, or for the same credential ID. Otherwise returns
     // true.
     bool InjectResidentKey(base::span<const uint8_t> credential_id,
+                           device::PublicKeyCredentialRpEntity rp,
+                           device::PublicKeyCredentialUserEntity user);
+
+    // Version of InjectResidentKey that takes values for constructing an RP and
+    // user entity.
+    bool InjectResidentKey(base::span<const uint8_t> credential_id,
                            const std::string& relying_party_id,
                            base::span<const uint8_t> user_id,
-                           const std::string& name,
-                           const std::string& display_name);
+                           const std::string& user_name,
+                           const std::string& user_display_name);
 
    private:
     friend class base::RefCounted<State>;

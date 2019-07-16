@@ -64,7 +64,8 @@ class PersistentPageConsistencyCheckTask : public Task {
   // The callback for the task.
   PersistentPageConsistencyCheckCallback callback_;
 
-  base::WeakPtrFactory<PersistentPageConsistencyCheckTask> weak_ptr_factory_;
+  base::WeakPtrFactory<PersistentPageConsistencyCheckTask> weak_ptr_factory_{
+      this};
   DISALLOW_COPY_AND_ASSIGN(PersistentPageConsistencyCheckTask);
 };
 

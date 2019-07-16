@@ -626,7 +626,7 @@ class POLICY_EXPORT CloudPolicyClient {
   std::string reregistration_dm_token_;
 
   // Used to create tasks which run delayed on the UI thread.
-  base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_;
+  base::WeakPtrFactory<CloudPolicyClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyClient);
 };

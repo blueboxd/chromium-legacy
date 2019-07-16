@@ -587,7 +587,20 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbar) {
       app_browser_, https_server()->GetURL("foo.com", "/simple.html"), true);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarMixedContent) {
+class HostedAppTestWithAutoupgradesDisabled : public HostedAppTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HostedAppTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
+                       ShouldShowToolbarMixedContent) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/");
@@ -603,7 +616,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarMixedContent) {
       true);
 }
 
-IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowToolbarDynamicMixedContent) {
+IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
+                       ShouldShowToolbarDynamicMixedContent) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -762,7 +776,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, PermissionBubble) {
 
 // Tests that regular Hosted Apps and Bookmark Apps can still load mixed
 // content.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, MixedContentInBookmarkApp) {
+IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
+                       MixedContentInBookmarkApp) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1128,6 +1143,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppBadgingTest,
 #endif  // !defined(OS_CHROMEOS)
 
 using HostedAppPWAOnlyTest = HostedAppTest;
+using HostedAppPWAOnlyTestWithAutoupgradesDisabled =
+    HostedAppTestWithAutoupgradesDisabled;
 
 // Tests that the command for popping a tab out to a PWA window is disabled in
 // incognito.
@@ -1557,7 +1574,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentInPWA) {
 
 // Tests that when calling OpenInChrome, mixed content can be loaded in the new
 // tab.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentOpenInChrome) {
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
+                       MixedContentOpenInChrome) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1594,7 +1612,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentOpenInChrome) {
 
 // Tests that when calling ReparentWebContentsIntoAppBrowser, mixed content
 // cannot be loaded in the new app window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
                        MixedContentReparentWebContentsIntoAppBrowser) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1646,7 +1664,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, IFrameMixedContentInPWA) {
 // Tests that iframes can't dynamically load mixed content in a PWA window, when
 // the iframe was created in a regular tab.
 IN_PROC_BROWSER_TEST_P(
-    HostedAppPWAOnlyTest,
+    HostedAppPWAOnlyTestWithAutoupgradesDisabled,
     IFrameDynamicMixedContentInPWAReparentWebContentsIntoAppBrowser) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1671,7 +1689,7 @@ IN_PROC_BROWSER_TEST_P(
 
 // Tests that iframes can dynamically load mixed content in a regular browser
 // tab, when the iframe was created in a PWA window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
                        IFrameDynamicMixedContentInPWAOpenInChrome) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());

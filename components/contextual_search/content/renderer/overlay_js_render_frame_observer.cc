@@ -21,7 +21,7 @@ namespace contextual_search {
 OverlayJsRenderFrameObserver::OverlayJsRenderFrameObserver(
     content::RenderFrame* render_frame,
     service_manager::BinderRegistry* registry)
-    : RenderFrameObserver(render_frame), weak_factory_(this) {}
+    : RenderFrameObserver(render_frame) {}
 
 OverlayJsRenderFrameObserver::~OverlayJsRenderFrameObserver() {}
 

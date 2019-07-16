@@ -112,7 +112,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) RemotingSender final
   bool flow_restart_pending_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<RemotingSender> weak_factory_;
+  base::WeakPtrFactory<RemotingSender> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RemotingSender);
 };

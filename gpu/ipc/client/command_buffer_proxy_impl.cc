@@ -53,8 +53,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       stream_id_(stream_id),
       command_buffer_id_(
           CommandBufferIdFromChannelAndRoute(channel_id_, route_id_)),
-      callback_thread_(std::move(task_runner)),
-      weak_ptr_factory_(this) {
+      callback_thread_(std::move(task_runner)) {
   DCHECK(route_id_);
 }
 

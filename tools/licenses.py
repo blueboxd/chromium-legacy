@@ -14,8 +14,10 @@ Commands:
 
 (You can also import this as a module.)
 """
+from __future__ import print_function
 
 import argparse
+import codecs
 import cgi
 import json
 import os
@@ -403,14 +405,14 @@ def ParseDir(path, root, require_license_file=True, optional_keys=None):
             line = line.strip()
             if not line:
                 break
-            for key in metadata.keys() + optional_keys:
+            for key in list(metadata.keys()) + optional_keys:
                 field = key + ": "
                 if line.startswith(field):
                     metadata[key] = line[len(field):]
 
     # Check that all expected metadata is present.
     errors = []
-    for key, value in metadata.iteritems():
+    for key, value in metadata.items():
         if not value:
             errors.append("couldn't find '" + key + "' line "
                           "in README.chromium or licences.py "
@@ -512,7 +514,7 @@ def FindThirdPartyDirsWithFiles(root):
 # //buildtools.
 def _GnBinary():
     exe = 'gn'
-    if sys.platform == 'linux2':
+    if sys.platform.startswith('linux'):
         subdir = 'linux64'
     elif sys.platform == 'darwin':
         subdir = 'mac'
@@ -571,6 +573,8 @@ def FindThirdPartyDeps(gn_out_dir, gn_target, target_os):
         gn_deps = subprocess.check_output([
             _GnBinary(), "desc", tmp_dir, gn_target,
             "deps", "--as=buildfile", "--all"])
+        if isinstance(gn_deps, bytes):
+            gn_deps = gn_deps.decode("utf-8")
     finally:
         if tmp_dir and os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
@@ -588,12 +592,12 @@ def ScanThirdPartyDirs(root=None):
     for path in sorted(third_party_dirs):
         try:
             metadata = ParseDir(path, root)
-        except LicenseError, e:
+        except LicenseError as e:
             errors.append((path, e.args[0]))
             continue
 
     for path, error in sorted(errors):
-        print path + ": " + error
+        print(path + ": " + error)
 
     return len(errors) == 0
 
@@ -694,7 +698,7 @@ def GenerateCredits(
         with open(output_file, 'w') as output:
           output.write(template_contents)
     else:
-      print template_contents
+      print(template_contents)
 
     if depfile:
       assert output_file
@@ -720,7 +724,7 @@ def _ReadFile(path):
     Returns:
       The contents of the file as a string.
     """
-    with open(os.path.join(_REPOSITORY_ROOT, path), 'rb') as f:
+    with codecs.open(os.path.join(_REPOSITORY_ROOT, path), 'r', 'utf-8') as f:
         return f.read()
 
 
@@ -751,10 +755,10 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
     content_text = '\n'.join(content)
 
     if output_file:
-        with open(output_file, 'w') as output:
+        with codecs.open(output_file, 'w', 'utf-8') as output:
             output.write(content_text)
     else:
-        print content_text
+        print(content_text)
 
 
 
@@ -793,7 +797,7 @@ def main():
             print("Failed to parse README.chromium: {}".format(e))
             return 1
     else:
-        print __doc__
+        print(__doc__)
         return 1
 
 

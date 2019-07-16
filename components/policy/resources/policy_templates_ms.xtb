@@ -3340,19 +3340,8 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7123160381479171745">Mentakrifkan senarai pengguna yang dibenarkan untuk log masuk ke peranti. Masukan adalah dalam bentuk <ph name="USER_WHITELIST_ENTRY_FORMAT" />, seperti <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Untuk membolehkan pengguna rambang pada domain, gunakan masukan dalam bentuk <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Jika dasar ini tidak dikonfigurasikan, tiada pengehadan terhadap pengguna yang dibenarkan untuk log masuk. Sila ambil perhatian bahawa pengguna baharu masih memerlukan dasar <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> dikonfigurasikan sewajarnya.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> menyediakan kemas kini dan pemasangan sambungan yang selamat. Walau bagaimanapun, kandungan sesetengah sambungan yang dihoskan di luar Gedung Web Chrome mungkin hanya dilindungi oleh algoritma penandatanganan atau pencincangan tidak selamat seperti SHA1. Apabila dasar ini dilumpuhkan, pemasangan dan pengemaskinian baharu bagi sambungan tersebut tidak akan diizinkan oleh Chrome (sehinggalah pembangun sambungan membina semula sambungan tersebut dengan algoritma yang lebih kukuh). Apabila dasar ini didayakan, pemasangan dan pengemaskinian bagi sambungan tersebut akan diizinkan.
-
-          Apabila tidak ditetapkan, dasar ini akan dikendalikan sebagai didayakan.
-          Bermula daripada <ph name="PRODUCT_NAME" /> 75, apabila tidak ditetapkan, dasar ini akan dikendalikan sebagai dilumpuhkan.
-
-          Bermula daripada <ph name="PRODUCT_NAME" /> 77, dasar ini akan diabaikan dan dikendalikan sebagai dilumpuhkan.</translation>
 <translation id="7126716959063786004">Dayakan penamatan proses dalam Pengurus Tugas</translation>
 <translation id="7127892035367404455">Undur kepada versi sasaran</translation>
-<translation id="7128918109610518786">Menyenaraikan pengecam aplikasi <ph name="PRODUCT_OS_NAME" /> yang dipaparkan sebagai apl berpin dalam bar pelancar.
-
-      Jika dasar ini dikonfigurasi, set aplikasi akan ditetapkan dan tidak boleh diubah oleh pengguna.
-
-      Jika dasar ini tidak ditetapkan, pengguna boleh menukar senarai apl berpin dalam pelancar.</translation>
 <translation id="713121532817834879">Dasar ini ialah URL, yang mengarah ke fail XML dalam format yang sama dengan dasar <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer. Dasar ini memuatkan peraturan daripada fail XML, tanpa berkongsi peraturan tersebut dengan Internet Explorer.
 
       Peraturan dalam fail XML ini digunakan dengan cara yang sama seperti <ph name="GREYLIST_POLICY_NAME" />. Iaitu, peraturan ini menghalang <ph name="PRODUCT_NAME" /> daripada membuka penyemak imbas alternatif dan juga menghalang penyemak imbas alternatif daripada membuka <ph name="PRODUCT_NAME" />.
@@ -4211,12 +4200,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
           Jika anda melumpuhkan tetapan ini atau membiarkannya tanpa ditetapkan, nama berkanun pelayan akan ditentukan melalui carian CNAME.</translation>
 <translation id="8764477907716150749">Dasar ini adalah untuk kegunaan dalaman oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
-<translation id="8765776988041674792">Mengkonfigurasi URL tukar kata laluan (skema HTTP dan HTTPS sahaja). Perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka selepas melihat amaran dalam penyemak imbas.
-      Untuk membolehkan <ph name="PRODUCT_NAME" /> menangkap cap jari kata laluan baharu itu dengan betul di halaman tukar kata laluan ini, sila pastikan halaman tukar kata laluan anda mematuhi garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka selepas melihat amaran dalam penyemak imbas.
-      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com untuk menukar kata laluan mereka.
-      Dasar ini hanya tersedia pada tika Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" /> atau tika Windows 10 Pro atau Enterprise yang didaftarkan untuk pengurusan peranti.</translation>
 <translation id="8798099450830957504">Lalai</translation>
 <translation id="8800453707696044281">Menetapkan pemberhentian pengecasan tersuai dalam peratus bagi pengecasan bateri</translation>
 <translation id="8801680448782904838">Maklumi pengguna bahawa pelancaran semula penyemak imbas atau mula semula peranti disyorkan atau diperlukan</translation>
@@ -4358,9 +4341,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 
       Nilai dasar harus dinyatakan dalam saat.</translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
-<translation id="9038058011835642205">Menentukan senarai tapak web yang dipasang secara senyap tanpa interaksi pengguna dan tapak web tersebut tidak boleh dinyahpasang atau dilumpuhkan oleh pengguna.
-
-      Setiap item senarai dasar ialah objek yang mengandungi ahli mandatori: "url" dan dua ahli pilihan: "default_launch_container" dan "create_desktop_shortcut". "url" ialah URL apl web yang hendak dipasang, "launch_container" ialah "tetingkap" atau "tab" untuk menunjukkan cara Apl Web akan dibuka setelah dipasang dan "create_desktop_shortcut" mestilah benar jika pintasan desktop dibuat pada Linux dan Windows. Jika "default_launch_container" ditinggalkan, apl akan dibuka dalam tab secara lalai. Tanpa mengambil kira nilai "default_launch_container", pengguna dapat menukar jenis bekas tempat apl akan dibuka. Jika "create_desktop_shortcuts" ditinggalkan, pintasan desktop tidak akan dibuat.</translation>
 <translation id="9038839118379817310">Dayakan Wi-Fi</translation>
 <translation id="9039822628127365650">Apabila dasar ini ditetapkan, dasar ini menyatakan tempoh masa yang apabila tamat, pengguna akan dilog keluar secara automatik dan sesi akan ditamatkan. Pengguna diberitahu tentang masa yang tinggal oleh pemasa hitung detik yang ditunjukkan dalam dulang sistem.
 
@@ -4374,6 +4354,15 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika nilai dasar ditetapkan kepada token yang dipetakan kepada Quick Fix Build, peranti akan dikemas kini kepada Quick Fix Build yang sepadan jika kemas kini tidak disekat oleh dasar lain.
 
       Jika dasar ini tidak ditetapkan, atau jika nilainya tidak dipetakan kepada Quick Fix Build, maka peranti tidak akan dikemas kini kepada Quick Fix Build. Jika peranti telah pun menjalankan Quick Fix Build dan dasar tidak ditetapkan lagi atau nilainya tidak dipetakan kepada Quick Fix Build lagi, maka peranti akan dikemas kini kepada binaan biasa jika kemas kini tidak disekat oleh dasar lain.</translation>
+<translation id="9054012305936267950">Dasar ini mengawal gelagat log masuk penyemak imbas. Dasar ini membolehkan anda menentukan sama ada pengguna boleh log masuk ke <ph name="PRODUCT_NAME" /> dengan akaun mereka dan menggunakan perkhidmatan yang berkaitan dengan akaun, seperti penyegerakan Chrome.
+
+      Jika dasar ini ditetapkan kepada "Lumpuhkan log masuk penyemak imbas", maka pengguna tidak boleh log masuk ke penyemak imbas dan menggunakan perkhidmatan yang berkaitan dengan akaun. Dalam keadaan ini, ciri tahap penyemak imbas, seperti penyegerakan Chrome, tidak boleh digunakan dan tidak akan tersedia. Jika pengguna telah log masuk dan dasar ini ditetapkan kepada "Dilumpuhkan", mereka akan dilog keluar apabila mereka menjalankan Chrome selepas ini tetapi data profil setempat mereka, seperti penanda halaman, kata laluan dan sebagainya, tidak akan berubah. Pengguna masih boleh log masuk dan menggunakan perkhidmatan web Google, seperti Gmail.
+
+      Jika dasar ini ditetapkan kepada "Dayakan log masuk penyemak imbas", maka pengguna dibenarkan untuk log masuk ke penyemak imbas dan dilog masuk ke penyemak imbas secara automatik apabila mengelog masuk ke perkhidmatan web Google, seperti Gmail. Tindakan log masuk ke penyemak imbas bermakna maklumat akaun pengguna akan disimpan oleh penyemak imbas. Walau bagaimanapun, ini tidak bermakna penyegerakan Chrome akan dihidupkan secara lalai; pengguna mesti ikut serta menggunakan ciri ini secara berasingan. Tindakan mendayakan dasar ini akan menghalang pengguna daripada mematikan tetapan yang membenarkan log masuk penyemak imbas. Untuk mengawal ketersediaan penyegerakan Chrome, gunakan dasar "SyncDisabled".
+
+      Jika dasar ini ditetapkan kepada "Paksa log masuk penyemak imbas", pengguna akan melihat dialog pemilihan akaun dan perlu memilih serta log masuk ke akaun untuk menggunakan penyemak imbas. Langkah ini memastikan bahawa bagi akaun terurus, dasar yang dikaitkan dengan akaun tersebut akan diterapkan dan dikuatkuasakan. Secara lalai, dasar ini menghidupkan penyegerakan Chrome untuk akaun tersebut, kecuali dalam keadaan apabila penyegerakan dilumpuhkan oleh pentadbir domain atau melalui dasar "SyncDisabled". Nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Sila ambil perhatian bahawa profil tidak bertandatangan yang sedia ada akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan: https://support.google.com/chrome/a/answer/7572556. Pilihan ini tidak menyokong Linux dan akan berbalik kepada "Dayakan log masuk penyemak imbas" jika digunakan.
+
+      Jika dasar ini tidak ditetapkan, maka pengguna boleh menentukan sama ada mereka mahu mendayakan pilihan log masuk penyemak imbas dan menggunakannya mengikut kesesuaian mereka.</translation>
 <translation id="9072600218500597787">Mengkonfigurasikan nama domain hos yang diperlukan, yang akan dikenakan pada hos akses jauh dan menghalang pengguna daripada menukarnya.
 
           Jika tetapan ini didayakan, maka hos boleh dikongsi hanya menggunakan akaun yang berdaftar dengan salah satu nama domain yang dinyatakan.

@@ -568,13 +568,15 @@ EVRCompositorError TestVRCompositor::WaitGetPoses(TrackedDevicePose_t* poses1,
                                                   unsigned int count1,
                                                   TrackedDevicePose_t* poses2,
                                                   unsigned int count2) {
-  TrackedDevicePose_t pose = g_test_helper.GetPose(true /* presenting pose */);
+  TrackedDevicePose_t pose;
   for (unsigned int i = 0; i < count1; ++i) {
     if (i != vr::k_unTrackedDeviceIndex_Hmd) {
       VRControllerState_t controller_state;
+      g_test_helper.GetControllerPose(i, &pose);
       pose.bDeviceIsConnected =
           g_test_helper.GetControllerState(i, &controller_state);
     } else {
+      pose = g_test_helper.GetPose(true /* presenting pose */);
       pose.bDeviceIsConnected = true;
     }
     poses1[i] = pose;
@@ -583,9 +585,11 @@ EVRCompositorError TestVRCompositor::WaitGetPoses(TrackedDevicePose_t* poses1,
   for (unsigned int i = 0; i < count2; ++i) {
     if (i != vr::k_unTrackedDeviceIndex_Hmd) {
       VRControllerState_t controller_state;
+      g_test_helper.GetControllerPose(i, &pose);
       pose.bDeviceIsConnected =
           g_test_helper.GetControllerState(i, &controller_state);
     } else {
+      pose = g_test_helper.GetPose(true /* presenting pose */);
       pose.bDeviceIsConnected = true;
     }
     poses2[i] = pose;

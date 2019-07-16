@@ -494,9 +494,9 @@ class ProfileSyncService : public SyncService,
   bool is_stopping_and_clearing_;
 
   // This weak factory invalidates its issued pointers when Sync is disabled.
-  base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_;
+  base::WeakPtrFactory<ProfileSyncService> sync_enabled_weak_factory_{this};
 
-  base::WeakPtrFactory<ProfileSyncService> weak_factory_;
+  base::WeakPtrFactory<ProfileSyncService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

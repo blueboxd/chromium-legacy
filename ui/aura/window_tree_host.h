@@ -373,7 +373,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Set to true if this WindowTreeHost is currently holding pointer moves.
   bool holding_pointer_moves_ = false;
 
-  base::WeakPtrFactory<WindowTreeHost> weak_factory_;
+  base::WeakPtrFactory<WindowTreeHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

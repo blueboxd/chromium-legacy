@@ -571,8 +571,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       gpu_debug_commands_(false),
       context_lost_(false),
       reset_by_robustness_extension_(false),
-      lose_context_when_out_of_memory_(false),
-      weak_ptr_factory_(this) {
+      lose_context_when_out_of_memory_(false) {
   DCHECK(client);
   DCHECK(group);
 }

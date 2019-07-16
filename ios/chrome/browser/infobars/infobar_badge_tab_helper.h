@@ -37,15 +37,6 @@ class InfobarBadgeTabHelper
   // |delegate_|.
   void SetLegacyDelegate(
       id<LegacyInfobarBadgeTabHelperDelegate> legacy_delegate);
-  // Updates Infobar badge for the case where an Infobar banner of
-  // |infobar_type| was dismissed.
-  void UpdateBadgeForInfobarBannerDismissed(InfobarType infobar_type);
-  // Updates Infobar badge for the case where an Infobar modal of |infobar_type|
-  // was presented.
-  void UpdateBadgeForInfobarModalPresented(InfobarType infobar_type);
-  // Updates Infobar badge for the case where an Infobar modal of |infobar_type|
-  // was dismissed.
-  void UpdateBadgeForInfobarModalDismissed(InfobarType infobar_type);
   // Updates Infobar badge for the case where Infobar of |infobar_type| was
   // accepted.
   void UpdateBadgeForInfobarAccepted(InfobarType infobar_type);

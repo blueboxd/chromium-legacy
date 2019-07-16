@@ -1969,6 +1969,18 @@ This file contains the strings for ash.
       </message>
 
         <!-- Lock Screen Media Controls -->
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK" desc="The button to trigger media playback to go to the previous track.">
+        Previous Track
+      </message>
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PLAY" desc="The button to trigger media playback to start.">
+        Play
+      </message>
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE" desc="The button to trigger media playback to pause.">
+        Pause
+      </message>
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK" desc="The button to trigger media playback to go to the next track.">
+        Next Track
+      </message>
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACCESSIBLE_NAME" desc="The accessible name for the lock screen media controls view.">
         Media Controls
       </message>

@@ -144,7 +144,7 @@ if (use_v4l2_codec || use_vaapi) {
       "//media:test_support",
       "//media/capture:chromeos_test_utils",
       "//media/gpu:buildflags",
-      "//media/gpu/chromeos:video_frame_mapper",
+      "//media/gpu/linux:video_frame_mapper",
       "//media/gpu/test:helpers",
       "//media/parsers",
       "//mojo/core/embedder",

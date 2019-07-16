@@ -390,6 +390,15 @@ public class WebappDataStorage {
     }
 
     /**
+     * Update the package name of the WebAPK. Used for testing.
+     * @param webApkPackageName The package name of the WebAPK.
+     */
+    @VisibleForTesting
+    void updateWebApkPackageNameForTests(String webApkPackageName) {
+        mPreferences.edit().putString(KEY_WEBAPK_PACKAGE_NAME, webApkPackageName).apply();
+    }
+
+    /**
      * Updates the last used time of this object.
      */
     void updateLastUsedTime() {
@@ -530,9 +539,18 @@ public class WebappDataStorage {
         return mPreferences.getBoolean(KEY_UPDATE_SCHEDULED, false);
     }
 
+    /** Whether a WebAPK is unbound. */
+    private boolean isUnboundWebApk() {
+        String webApkPackageName = getWebApkPackageName();
+        return (webApkPackageName != null
+                && !webApkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX));
+    }
+
     /** Sets whether an update should be forced. */
     public void setShouldForceUpdate(boolean forceUpdate) {
-        mPreferences.edit().putBoolean(KEY_SHOULD_FORCE_UPDATE, forceUpdate).apply();
+        if (!isUnboundWebApk()) {
+            mPreferences.edit().putBoolean(KEY_SHOULD_FORCE_UPDATE, forceUpdate).apply();
+        }
     }
 
     /** Whether to force an update. */
@@ -542,6 +560,7 @@ public class WebappDataStorage {
 
     /** Returns the update status. */
     public String getUpdateStatus() {
+        if (isUnboundWebApk()) return "Not updatable";
         if (isUpdateScheduled()) return "Scheduled";
         if (shouldForceUpdate()) return "Pending";
         return didPreviousUpdateSucceed() ? "Succeeded" : "Failed";

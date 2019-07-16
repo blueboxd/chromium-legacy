@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">برای کاوش دستگاه‌های همین اطراف، بلوتوث را روشن کنید</translation>
 <translation id="2805756323405976993">برنامه‌ها</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
-<translation id="2912823482158781027">بازخوانی بلیت</translation>
-<translation id="3511655281162215899">لطفاً گذرواژه جدیدی را فوراً انتخاب کنید</translation>
-<translation id="3562817605261346876">لطفاً فوراً بلیت را برای <ph name="PRINCIPAL_NAME" /> بازخوانی کنید</translation>
 <translation id="3838338534323494292">گذرواژه جدید</translation>
 <translation id="445059817448385655">گذرواژه قدیمی</translation>
 <translation id="467510802200863975">گذرواژه‌ها با هم مطابقت ندارند</translation>
@@ -23,16 +20,12 @@
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5457599981699367932">مرور کردن به‌عنوان یک مهمان</translation>
 <translation id="54609108002486618">مدیریت شده</translation>
-<translation id="5733345267661125295">لطفاً اکنون گذرواژه جدیدی انتخاب کنید</translation>
-<translation id="5743581760404859096">‏بلیت Kerberos شما درحال منقضی شدن است</translation>
 <translation id="5832805196449965646">افزودن شخص</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="6058625436358447366">برای تکمیل کار، گذرواژه‌های قدیمی و جدیدتان را وارد کنید</translation>
 <translation id="6106186594183574873">برای تکمیل کار، گذرواژه قدیمی‌تان را وارد کنید</translation>
 <translation id="6146993107019042706">برای تکمیل کار،‌ گذرواژه جدیدتان را وارد کنید</translation>
 <translation id="6574601967010742428">سرپرست دستگاه ممکن است بر فعالیتتان نظارت داشته باشد.</translation>
-<translation id="7280705187789120111">‏بلیت Kerberos درحال منقضی شدن است</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{گذرواژه کنونی‌تان منقضی شده است!}=1{گذرواژه کنونی‌تان کمتر از یک روز دیگر منقضی خواهد شد!}one{گذرواژه کنونی‌تان کمتر از # روز دیگر منقضی خواهد شد!}other{گذرواژه کنونی‌تان کمتر از # روز دیگر منقضی خواهد شد!}}</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7690294790491645610">تأیید گذرواژه جدید</translation>
 <translation id="808894953321890993">تغییر گذرواژه</translation>

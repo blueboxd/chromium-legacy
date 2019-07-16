@@ -8,8 +8,7 @@
 
 namespace password_manager {
 
-PasswordStoreConsumer::PasswordStoreConsumer() : weak_ptr_factory_(this) {
-}
+PasswordStoreConsumer::PasswordStoreConsumer() {}
 
 PasswordStoreConsumer::~PasswordStoreConsumer() {
 }

@@ -509,7 +509,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   const char* trace_environment_name_;
 
-  base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_;
+  base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
 };

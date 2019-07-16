@@ -170,7 +170,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   // Timer to abort the SafeBrowsing check if it takes too long.
   base::OneShotTimer timer_;
 
-  base::WeakPtrFactory<SafeBrowsingUrlCheckerImpl> weak_factory_;
+  base::WeakPtrFactory<SafeBrowsingUrlCheckerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUrlCheckerImpl);
 };

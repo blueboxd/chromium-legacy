@@ -67,6 +67,8 @@ import java.util.List;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class GridTabSwitcherLayoutTest {
     private static final String TAG = "GTSLayoutTest";
+    private static final String BASE_PARAMS = "force-fieldtrial-params="
+            + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false";
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -78,9 +80,8 @@ public class GridTabSwitcherLayoutTest {
     private String mUrl;
     private int mRepeat;
     private List<WeakReference<Bitmap>> mAllBitmaps = new LinkedList<>();
-    private Callback<Bitmap> mBitmapListener = (bitmap) -> {
-        mAllBitmaps.add(new WeakReference<>(bitmap));
-    };
+    private Callback<Bitmap> mBitmapListener =
+            (bitmap) -> mAllBitmaps.add(new WeakReference<>(bitmap));
 
     @Before
     public void setUp() throws InterruptedException {
@@ -106,9 +107,13 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
+        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
+        GridTabSwitcherMediator mediator = (GridTabSwitcherMediator) gts.getGridController();
+        assertEquals(0, mediator.getSoftCleanupDelayForTesting());
+        assertEquals(0, mediator.getCleanupDelayForTesting());
+
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
         assertThumbnailsAreReleased();
@@ -118,8 +123,7 @@ public class GridTabSwitcherLayoutTest {
     @MediumTest
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @CommandLineFlags.
-            Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -129,9 +133,13 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
+        GridTabSwitcher gts = mGtsLayout.getGridTabSwitcherForTesting();
+        GridTabSwitcherMediator mediator = (GridTabSwitcherMediator) gts.getGridController();
+        assertEquals(10000, mediator.getSoftCleanupDelayForTesting());
+        assertEquals(10000, mediator.getCleanupDelayForTesting());
+
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -140,8 +148,7 @@ public class GridTabSwitcherLayoutTest {
     @MediumTest
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -150,8 +157,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
@@ -161,8 +167,7 @@ public class GridTabSwitcherLayoutTest {
     @MediumTest
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @CommandLineFlags.
-            Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -171,8 +176,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromNtp() throws InterruptedException {
         prepareTabs(2, NTP_URL);
         testTabToGrid(NTP_URL);
@@ -334,8 +338,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testRestoredTabsDontFetch() throws Exception {
         prepareTabs(2, mUrl);
         GridTabSwitcherCoordinator coordinator =
@@ -358,8 +361,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/0"})
+    @CommandLineFlags.Add({BASE_PARAMS})
     public void testInvisibleTabsDontFetch() throws InterruptedException {
         // Open a few new tabs.
         final int count = mAllBitmaps.size();
@@ -376,8 +378,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testInvisibleTabsDontFetchWarm() throws InterruptedException {
         // Get the GTS in the warm state.
         prepareTabs(2, NTP_URL);
@@ -401,8 +402,7 @@ public class GridTabSwitcherLayoutTest {
 
     @Test
     @MediumTest
-    @CommandLineFlags.
-    Add({"force-fieldtrial-params=Study.Group:soft-cleanup-delay/0/cleanup-delay/10000"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testInvisibleTabsDontFetchSoft() throws InterruptedException {
         // Get the GTS in the soft cleaned up state.
         prepareTabs(2, NTP_URL);

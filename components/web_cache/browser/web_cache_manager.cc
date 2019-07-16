@@ -61,8 +61,7 @@ WebCacheManager* WebCacheManager::GetInstance() {
 }
 
 WebCacheManager::WebCacheManager()
-    : global_size_limit_(GetDefaultGlobalSizeLimit()),
-      weak_factory_(this) {
+    : global_size_limit_(GetDefaultGlobalSizeLimit()) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,

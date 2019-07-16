@@ -538,7 +538,7 @@ class PrintRenderFrameHelper
   // parameters so that it can be invoked after DidStopLoading.
   base::OnceClosure on_stop_loading_closure_;
 
-  base::WeakPtrFactory<PrintRenderFrameHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintRenderFrameHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintRenderFrameHelper);
 };

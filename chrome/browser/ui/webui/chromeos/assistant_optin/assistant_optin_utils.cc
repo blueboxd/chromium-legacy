@@ -47,16 +47,6 @@ bool IsScreenContextToggleDisabled(PrefService* prefs) {
       arc::prefs::kVoiceInteractionContextEnabled);
 }
 
-bool IsHotwordDefaultEnabled(PrefService* prefs) {
-  return IsPreferenceDefaultEnabled(
-      prefs, arc::prefs::kVoiceInteractionHotwordEnabled);
-}
-
-bool IsHotwordToggleDisabled(PrefService* prefs) {
-  return prefs->IsManagedPreference(
-      arc::prefs::kVoiceInteractionHotwordEnabled);
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -150,27 +140,6 @@ base::Value CreateGetMoreData(bool email_optin_needed,
                               const assistant::EmailOptInUi& email_optin_ui,
                               PrefService* prefs) {
   base::Value get_more_data(base::Value::Type::LIST);
-
-  if (!IsVoiceMatchEnabled(prefs)) {
-    // Process hotword data.
-    base::Value hotword_data(base::Value::Type::DICTIONARY);
-    hotword_data.SetKey("id", base::Value("hotword"));
-    hotword_data.SetKey(
-        "title",
-        base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_TITLE)));
-    hotword_data.SetKey(
-        "description",
-        base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_HOTWORD_DESC)));
-    hotword_data.SetKey("defaultEnabled",
-                        base::Value(IsHotwordDefaultEnabled(prefs)));
-    hotword_data.SetKey("toggleDisabled",
-                        base::Value(IsHotwordToggleDisabled(prefs)));
-    hotword_data.SetKey(
-        "iconUri",
-        base::Value("https://www.gstatic.com/images/icons/material/system/"
-                    "2x/mic_none_grey600_48dp.png"));
-    get_more_data.GetList().push_back(std::move(hotword_data));
-  }
 
   // Process screen context data.
   base::Value context_data(base::Value::Type::DICTIONARY);
@@ -271,16 +240,12 @@ bool IsHotwordDspAvailable() {
   return chromeos::CrasAudioHandler::Get()->HasHotwordDevice();
 }
 
-bool IsVoiceMatchEnabled(const PrefService* prefs) {
-  if (!base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch))
-    return false;
-
-  // If the hotword preference is managed, then we should not do Voice Match
-  // if the administrator has disabled the hotword.
-  if (prefs->IsManagedPreference(arc::prefs::kVoiceInteractionHotwordEnabled))
-    return prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled);
-
-  return true;
+bool IsVoiceMatchEnforcedOff(const PrefService* prefs) {
+  // If the hotword preference is managed to always disabled, then we should not
+  // show Voice Match flow.
+  return prefs->IsManagedPreference(
+             arc::prefs::kVoiceInteractionHotwordEnabled) &&
+         !prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled);
 }
 
 }  // namespace chromeos

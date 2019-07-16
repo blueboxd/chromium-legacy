@@ -154,7 +154,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   mojom::FrameSinkVideoCapturerPtr capturer_;
   mojo::Binding<mojom::FrameSinkVideoConsumer> consumer_binding_;
 
-  base::WeakPtrFactory<ClientFrameSinkVideoCapturer> weak_factory_;
+  base::WeakPtrFactory<ClientFrameSinkVideoCapturer> weak_factory_{this};
 };
 
 }  // namespace viz

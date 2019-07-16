@@ -71,7 +71,7 @@ class LayerTreeHostBlendingPixelTest
  public:
   LayerTreeHostBlendingPixelTest()
       : force_antialiasing_(false), force_blending_with_shaders_(false) {
-    pixel_comparator_.reset(new FuzzyPixelOffByOneComparator(true));
+    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
   }
 
   PixelResourceTestCase resource_type() const {
@@ -244,13 +244,25 @@ class LayerTreeHostBlendingPixelTest
       // The average error is still close to 1.
       float average_error_allowed_in_bad_pixels = 1.4f;
 
-      pixel_comparator_.reset(
-          new FuzzyPixelComparator(false,  // discard_alpha
-                                   percentage_pixels_error,
-                                   percentage_pixels_small_error,
-                                   average_error_allowed_in_bad_pixels,
-                                   large_error_allowed,
-                                   small_error_allowed));
+      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+          false,  // discard_alpha
+          percentage_pixels_error, percentage_pixels_small_error,
+          average_error_allowed_in_bad_pixels, large_error_allowed,
+          small_error_allowed);
+    } else if (renderer_type() == RENDERER_SKIA_VK) {
+      // TODO(penghuang): maybe need a new baseline for vulkan.
+      // https://crbug.com/963446
+      int large_error_allowed = 5;
+      int small_error_allowed = 5;
+      float percentage_pixels_small_error = 100.0f;
+      float percentage_pixels_error = 100.0f;
+      float average_error_allowed_in_bad_pixels = 2.6f;
+
+      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+          false,  // discard_alpha
+          percentage_pixels_error, percentage_pixels_small_error,
+          average_error_allowed_in_bad_pixels, large_error_allowed,
+          small_error_allowed);
     }
 
     RunPixelResourceTest(root, CreateBlendingWithRenderPassExpected(
@@ -271,25 +283,10 @@ std::vector<PixelResourceTestCase> const kTestCases = {
 #endif
 };
 
-std::vector<PixelResourceTestCase> const kTestCasesNonVulkan = {
-    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
-    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
-    {LayerTreeTest::RENDERER_SKIA_GL, GPU},
-};
-
 INSTANTIATE_TEST_SUITE_P(B,
                          LayerTreeHostBlendingPixelTest,
                          ::testing::Combine(::testing::ValuesIn(kTestCases),
                                             ::testing::ValuesIn(kBlendModes)));
-
-using LayerTreeHostBlendingPixelTestNonVulkan = LayerTreeHostBlendingPixelTest;
-
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
-INSTANTIATE_TEST_SUITE_P(
-    B,
-    LayerTreeHostBlendingPixelTestNonVulkan,
-    ::testing::Combine(::testing::ValuesIn(kTestCasesNonVulkan),
-                       ::testing::ValuesIn(kBlendModes)));
 
 TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRoot) {
   const int kRootWidth = 2;
@@ -358,7 +355,7 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithBackdropFilter) {
   RunPixelResourceTest(background, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithTransparent) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
   const int kRootWidth = 2;
   const int kRootHeight = 2;
   InitializeFromTestCase(resource_type());
@@ -390,43 +387,55 @@ TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithTransparent) {
   paint.setColor(kCSSGreen);
   canvas.drawRect(SkRect::MakeWH(kRootWidth, kRootHeight), paint);
 
+  if (renderer_type() == RENDERER_SKIA_VK) {
+    // TODO(penghuang): maybe need a new baseline for vulkan.
+    // https://crbug.com/963446
+    int large_error_allowed = 2;
+    int small_error_allowed = 2;
+    float percentage_pixels_small_error = 100.0f;
+    float percentage_pixels_error = 100.0f;
+    float average_error_allowed_in_bad_pixels = 2.6f;
+
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        false,  // discard_alpha
+        percentage_pixels_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed);
+  }
+
   RunPixelResourceTest(root, expected);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithRenderPass) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPass) {
   RunBlendingWithRenderPass(0);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan, BlendingWithRenderPassAA) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassAA) {
   RunBlendingWithRenderPass(kUseAntialiasing);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
-       BlendingWithRenderPassColorMatrix) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrix) {
   RunBlendingWithRenderPass(kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
-       BlendingWithRenderPassWithMask) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMask) {
   RunBlendingWithRenderPass(kUseMasks);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
-       BlendingWithRenderPassColorMatrixAA) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrixAA) {
   RunBlendingWithRenderPass(kUseAntialiasing | kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
-       BlendingWithRenderPassWithMaskAA) {
+TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMaskAA) {
   RunBlendingWithRenderPass(kUseMasks | kUseAntialiasing);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
+TEST_P(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrix) {
   RunBlendingWithRenderPass(kUseMasks | kUseColorMatrix);
 }
 
-TEST_P(LayerTreeHostBlendingPixelTestNonVulkan,
+TEST_P(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrixAA) {
   RunBlendingWithRenderPass(kUseMasks | kUseAntialiasing | kUseColorMatrix);
 }

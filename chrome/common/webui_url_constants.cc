@@ -412,7 +412,8 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
                                           kSmartLockSettingsSubPage,
                                           kSmbSharesSubPage,
                                           kStorageSubPage,
-                                          kStylusSubPage};
+                                          kStylusSubPage,
+                                          kSyncSetupSubPage};
   // Sub-pages may have query parameters, e.g. networkDetail?guid=123456.
   std::string sub_page_without_query = sub_page;
   std::string::size_type index = sub_page.find('?');

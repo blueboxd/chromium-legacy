@@ -17,7 +17,6 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE, FeatureConstants.DOWNLOAD_HOME_FEATURE,
         FeatureConstants.CHROME_DUET_FEATURE, FeatureConstants.CHROME_HOME_EXPAND_FEATURE,
         FeatureConstants.CHROME_HOME_PULL_TO_REFRESH_FEATURE,
-        FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE,
         FeatureConstants.DATA_SAVER_PREVIEW_FEATURE, FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
         FeatureConstants.NTP_BUTTON_FEATURE, FeatureConstants.PREVIEWS_OMNIBOX_UI_FEATURE,
         FeatureConstants.HOMEPAGE_TILE_FEATURE, FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE,
@@ -43,7 +42,6 @@ public @interface FeatureConstants {
     String CHROME_DUET_FEATURE = "IPH_ChromeDuet";
     String CHROME_HOME_EXPAND_FEATURE = "IPH_ChromeHomeExpand";
     String CHROME_HOME_PULL_TO_REFRESH_FEATURE = "IPH_ChromeHomePullToRefresh";
-    String CONTEXTUAL_SUGGESTIONS_FEATURE = "IPH_ContextualSuggestions";
     String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
     String DATA_SAVER_MILESTONE_PROMO_FEATURE = "IPH_DataSaverMilestonePromo";

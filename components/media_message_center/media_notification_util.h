@@ -8,6 +8,10 @@
 #include "base/component_export.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
+namespace views {
+class Button;
+}
+
 namespace media_message_center {
 
 // Creates a string describing media session metadata intended to be read out by
@@ -15,6 +19,28 @@ namespace media_message_center {
 COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
 base::string16 GetAccessibleNameFromMetadata(
     media_session::MediaMetadata session_metadata);
+
+// Returns actions that can be displayed as buttons in the media controller UI
+// from the set (|enabled_actions| - |ignored_actions|). This will return at
+// most |max_actions| - if needed, the actions will the least priority will be
+// dropped.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
+std::set<media_session::mojom::MediaSessionAction> GetTopVisibleActions(
+    const std::set<media_session::mojom::MediaSessionAction>& enabled_actions,
+    const std::set<media_session::mojom::MediaSessionAction>& ignored_actions,
+    size_t max_actions);
+
+// Returns the |MediaSessionAction| corresponding to playback action |button|.
+// |button| is expected to be tagged with a |MediaSessionAction|.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
+media_session::mojom::MediaSessionAction GetActionFromButtonTag(
+    const views::Button& button);
+
+// Returns the action on the play/pause toggle button that should be
+// ignored when calculating the visible actions.
+COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER)
+media_session::mojom::MediaSessionAction GetPlayPauseIgnoredAction(
+    media_session::mojom::MediaSessionAction current_action);
 
 }  // namespace media_message_center
 

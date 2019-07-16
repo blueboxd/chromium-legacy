@@ -224,6 +224,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kad</translation>
 <translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Dikeluarkan kepada: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Penderia Gerakan</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
@@ -303,6 +304,7 @@
 <translation id="2515629240566999685">Semak isyarat di kawasan anda</translation>
 <translation id="2523886232349826891">Disimpan pada peranti ini sahaja</translation>
 <translation id="2524461107774643265">Tambahkan Maklumat Lanjut</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{dan 1 lagi}other{dan # lagi}}</translation>
 <translation id="2536110899380797252">Tambahkan Alamat</translation>
 <translation id="2539524384386349900">Kesan</translation>
 <translation id="254947805923345898">Nilai dasar tidak sah.</translation>
@@ -716,6 +718,7 @@
 <translation id="4858792381671956233">Anda telah bertanya kepada ibu bapa anda sama ada OK untuk melawat tapak ini</translation>
 <translation id="4876188919622883022">Paparan ringkas</translation>
 <translation id="4876305945144899064">Tiada nama pengguna</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Tiada}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Carian <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatik (lalai)</translation>
 <translation id="4880827082731008257">Sejarah carian</translation>
@@ -1010,6 +1013,7 @@
 <translation id="650855688985305916">Ya, simpan</translation>
 <translation id="6508722015517270189">Mulakan semula Chrome</translation>
 <translation id="6517596291481585650">Amaran: Dasar ini tidak digabungkan sebagai senarai seperti yang dinyatakan oleh dasar kerana dasar ini bukan senarai.</translation>
+<translation id="6521745193039995384">Tidak aktif</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6534179046333460208">Cadangan Web Fizikal</translation>
 <translation id="6545864417968258051">Pengimbasan Bluetooth</translation>
@@ -1470,6 +1474,7 @@ Butiran tambahan:
 <translation id="9076630408993835509">Penyemak imbas ini tidak diurus oleh syarikat atau organisasi lain. Aktiviti pada peranti ini mungkin diurus di luar Chrome. <ph name="BEGIN_LINK" />Ketahui Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Maklumat lanjut diperlukan</translation>
 <translation id="9080712759204168376">Ringkasan Pesanan</translation>
+<translation id="9089260154716455634">Dasar Luar Waktu:</translation>
 <translation id="9095388113577226029">Lagi bahasa...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Pengebilan</translation>

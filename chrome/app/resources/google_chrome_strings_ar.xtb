@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">‏جارٍ تحديث Google Chrome...</translation>
 <translation id="1469002951682717133">‏مشغل تطبيقات Chrome</translation>
 <translation id="1553358976309200471">‏تحديث Chrome‏</translation>
-<translation id="1585657529869845941">النقر على زر <ph name="BEGIN_BOLD" />التبديل على أي حال<ph name="END_BOLD" /> في حال ظهوره</translation>
 <translation id="1587223624401073077">‏يستخدم Google Chrome الكاميرا.</translation>
 <translation id="1587325591171447154">‏ملف <ph name="FILE_NAME" /> ضار، لذلك فقد حظره Chrome.</translation>
 <translation id="1590588151039584890">‏يجب إيقاف تشغيل Chrome على جهاز الكمبيوتر هذا لإجراء التحديث. وجرّاء ذلك، إنّ المستخدمين الآخرين الذين سجَّلوا الدخول إلى جهاز الكمبيوتر هذا قد يفقدون التغييرات غير المحفوظة.</translation>
@@ -34,7 +33,6 @@
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏إن Google Chrome هو متصفح ويب يشغّل صفحات الويب والتطبيقات بسرعة خاطفة. فهذا المتصفح سريع ويتميز بالثبات وسهولة الاستخدام، ويمكنك من خلاله تصفح الويب بقدر أكبر من الأمان من خلال وجود حماية مضمنة داخله ضد البرامج الضارة والتصيّد.</translation>
 <translation id="1713301662689114961">{0,plural, =1{‏ستتم إعادة تشغيل Chrome في غضون ساعة واحدة}zero{‏ستتم إعادة تشغيل Chrome في غضون # ساعة}two{‏ستتم إعادة تشغيل Chrome في غضون ساعتين}few{‏ستتم إعادة تشغيل Chrome في غضون # ساعات}many{‏ستتم إعادة تشغيل Chrome في غضون # ساعةً}other{‏ستتم إعادة تشغيل Chrome في غضون # ساعة}}</translation>
-<translation id="1718131156967340976">‏تحديد <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">‏سيحفظ Chrome كلمة المرور هذه في حسابك على Google ولن تحتاج إلى تذكُّرها.</translation>
 <translation id="174539241580958092">‏تعذر على Google Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -117,7 +115,6 @@
 <translation id="3873044882194371212">‏فتح الرابط في نافذة تصفح متخفٍ في Chrome</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
 <translation id="3898493977366060150">‏تصفُح الويب من خلال ميزات Google الذكية</translation>
-<translation id="4028693306634653894">‏الوصول إلى Chrome بشكلٍ أسرع</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
 <translation id="4143243756087420366">‏الاسم والصورة على Chrome</translation>
@@ -240,7 +237,6 @@
 <translation id="7808348361785373670">‏جارٍ الإزالة من Chrome...</translation>
 <translation id="7825851276765848807">‏فشل التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="7855730255114109580">‏Google Chrome محدّث</translation>
-<translation id="7888186132678118370">‏تثبيت Chrome على شريط المهام</translation>
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>
 <translation id="7896673875602241923">‏سجّل شخص ما الدخول من قبل إلى Chrome على جهاز الكمبيوتر هذا باسم <ph name="ACCOUNT_EMAIL_LAST" />. يُرجى إنشاء حساب مستخدم جديد في Chrome للإبقاء على معلوماتك بشكلٍ منفصل.</translation>
 <translation id="7908168227788431038">‏أوشك التحديث على الانتهاء! أعِد تشغيل Google Chrome لإنهاء التحديث.</translation>
@@ -289,6 +285,5 @@
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="9138603949443464873">‏لتطبيق التغييرات، يُرجى إعادة تشغيل Chrome</translation>
 <translation id="919706545465235479">‏تحديث Chrome لبدء المزامنة</translation>
-<translation id="924447568950697217">‏جعل Chrome المتصفح التلقائي</translation>
 <translation id="989369509083708165">‏Google Chrome هو متصفحك التلقائي</translation>
 </translationbundle>

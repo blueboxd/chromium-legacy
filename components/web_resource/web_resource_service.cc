@@ -57,8 +57,7 @@ WebResourceService::WebResourceService(
       cache_update_delay_ms_(cache_update_delay_ms),
       url_loader_factory_(url_loader_factory),
       parse_json_callback_(parse_json_callback),
-      traffic_annotation_(traffic_annotation),
-      weak_ptr_factory_(this) {
+      traffic_annotation_(traffic_annotation) {
   resource_request_allowed_notifier_->Init(this, false /* leaky */);
   DCHECK(prefs);
 }

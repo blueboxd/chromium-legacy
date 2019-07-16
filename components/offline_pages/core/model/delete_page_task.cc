@@ -216,10 +216,7 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskDeletingForPageLimit(
 DeletePageTask::DeletePageTask(OfflinePageMetadataStore* store,
                                DeleteFunction func,
                                DeletePageTaskCallback callback)
-    : store_(store),
-      func_(std::move(func)),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+    : store_(store), func_(std::move(func)), callback_(std::move(callback)) {
   DCHECK(store_);
   DCHECK(!callback_.is_null());
 }

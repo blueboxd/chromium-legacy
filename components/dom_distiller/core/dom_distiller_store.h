@@ -130,7 +130,7 @@ class DomDistillerStore : public DomDistillerStoreInterface {
 
   DomDistillerModel model_;
 
-  base::WeakPtrFactory<DomDistillerStore> weak_ptr_factory_;
+  base::WeakPtrFactory<DomDistillerStore> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerStore);
 };

@@ -351,7 +351,7 @@ class CreditCardSaveManager {
   // May be null.
   ObserverForTest* observer_for_testing_ = nullptr;
 
-  base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardSaveManagerTest,

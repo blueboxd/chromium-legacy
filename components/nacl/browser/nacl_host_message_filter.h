@@ -87,7 +87,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   bool off_the_record_;
   base::FilePath profile_directory_;
 
-  base::WeakPtrFactory<NaClHostMessageFilter> weak_ptr_factory_;
+  base::WeakPtrFactory<NaClHostMessageFilter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NaClHostMessageFilter);
 };

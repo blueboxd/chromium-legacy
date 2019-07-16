@@ -172,7 +172,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // download to be interrupted.
   device::mojom::WakeLockPtr wake_lock_;
 
-  base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
+  base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDownloader);
 };

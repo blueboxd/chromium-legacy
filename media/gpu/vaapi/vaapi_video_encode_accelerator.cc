@@ -32,6 +32,7 @@
 #include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
@@ -40,10 +41,6 @@
 #include "media/gpu/vaapi/vp9_encoder.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
 #include "media/gpu/vp9_reference_frame_vector.h"
-
-#if defined(OS_CHROMEOS)
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
-#endif  // defined(OS_CHROMEOS)
 
 #define NOTIFY_ERROR(error, msg)                        \
   do {                                                  \
@@ -557,10 +554,8 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     va_picture = vaapi_picture_factory_->Create(
         vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
         PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
-    gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_CHROMEOS)
-    gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
-#endif
+    gfx::GpuMemoryBufferHandle gmb_handle =
+        CreateGpuMemoryBufferHandle(frame.get());
     if (gmb_handle.is_null()) {
       NOTIFY_ERROR(kPlatformFailureError,
                    "Failed to create GMB handle from video frame");

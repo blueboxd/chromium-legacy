@@ -186,7 +186,7 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // If we are being carpet bombed, block the request.
+  // If we are being flooded with requests, block the request.
   if (!g_accept_requests)
     return BLOCK;
 

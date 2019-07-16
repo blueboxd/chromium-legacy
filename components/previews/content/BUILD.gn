@@ -4,15 +4,12 @@
 
 static_library("content") {
   sources = [
-    "hints_fetcher.cc",
-    "hints_fetcher.h",
     "previews_decider_impl.cc",
     "previews_decider_impl.h",
     "previews_hints.cc",
     "previews_hints.h",
     "previews_optimization_guide.cc",
     "previews_optimization_guide.h",
-    "previews_top_host_provider.h",
     "previews_ui_service.cc",
     "previews_ui_service.h",
     "previews_user_data.cc",
@@ -38,7 +35,6 @@ static_library("content") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "hints_fetcher_unittest.cc",
     "previews_decider_impl_unittest.cc",
     "previews_hints_unittest.cc",
     "previews_optimization_guide_unittest.cc",

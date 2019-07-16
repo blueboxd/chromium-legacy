@@ -5,9 +5,24 @@
 #include "components/media_message_center/media_notification_util.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/views/controls/button/button.h"
 
 namespace media_message_center {
+
+using media_session::mojom::MediaSessionAction;
+
+namespace {
+
+// The action buttons in order of preference. If there is not enough space to
+// show all the action buttons then this is used to determine which will be
+// shown.
+constexpr MediaSessionAction kPreferredActions[] = {
+    MediaSessionAction::kPlay,          MediaSessionAction::kPause,
+    MediaSessionAction::kPreviousTrack, MediaSessionAction::kNextTrack,
+    MediaSessionAction::kSeekBackward,  MediaSessionAction::kSeekForward,
+};
+
+}  // namespace
 
 base::string16 GetAccessibleNameFromMetadata(
     media_session::MediaMetadata session_metadata) {
@@ -25,6 +40,37 @@ base::string16 GetAccessibleNameFromMetadata(
   base::string16 accessible_name =
       base::JoinString(text, base::ASCIIToUTF16(" - "));
   return accessible_name;
+}
+
+std::set<MediaSessionAction> GetTopVisibleActions(
+    const std::set<MediaSessionAction>& enabled_actions,
+    const std::set<MediaSessionAction>& ignored_actions,
+    size_t max_actions) {
+  std::set<MediaSessionAction> visible_actions;
+
+  for (auto& action : kPreferredActions) {
+    if (visible_actions.size() >= max_actions)
+      break;
+
+    if (!base::Contains(enabled_actions, action) ||
+        base::Contains(ignored_actions, action))
+      continue;
+
+    visible_actions.insert(action);
+  }
+
+  return visible_actions;
+}
+
+MediaSessionAction GetActionFromButtonTag(const views::Button& button) {
+  return static_cast<MediaSessionAction>(button.tag());
+}
+
+MediaSessionAction GetPlayPauseIgnoredAction(
+    MediaSessionAction current_action) {
+  return current_action == MediaSessionAction::kPlay
+             ? MediaSessionAction::kPause
+             : MediaSessionAction::kPlay;
 }
 
 }  // namespace media_message_center

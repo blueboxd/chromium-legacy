@@ -141,7 +141,7 @@ class FCMInvalidationListener : public InvalidationListener,
   // requested registration for topics.
   bool ids_update_requested_ = false;
 
-  base::WeakPtrFactory<FCMInvalidationListener> weak_factory_;
+  base::WeakPtrFactory<FCMInvalidationListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FCMInvalidationListener);
 };

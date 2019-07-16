@@ -87,7 +87,7 @@ class RendererURLLoaderThrottle : public content::URLLoaderThrottle,
 
   GURL original_url_;
 
-  base::WeakPtrFactory<RendererURLLoaderThrottle> weak_factory_;
+  base::WeakPtrFactory<RendererURLLoaderThrottle> weak_factory_{this};
 };
 
 }  // namespace safe_browsing

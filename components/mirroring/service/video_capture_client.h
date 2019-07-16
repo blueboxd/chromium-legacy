@@ -104,7 +104,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) VideoCaptureClient
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<VideoCaptureClient> weak_factory_;
+  base::WeakPtrFactory<VideoCaptureClient> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureClient);
 };

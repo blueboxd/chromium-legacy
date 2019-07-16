@@ -20,7 +20,7 @@ using ::testing::_;
 
 class CryptographerTest : public ::testing::Test {
  protected:
-  CryptographerTest() : cryptographer_(&encryptor_) {}
+  CryptographerTest() = default;
 
   FakeEncryptor encryptor_;
   Cryptographer cryptographer_;
@@ -145,7 +145,7 @@ TEST_F(CryptographerTest, EncryptExportDecrypt) {
   original.set_password_value("hunter2");
 
   {
-    Cryptographer cryptographer(&encryptor_);
+    Cryptographer cryptographer;
 
     KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "dummy"};
     cryptographer.AddKey(params);
@@ -156,7 +156,7 @@ TEST_F(CryptographerTest, EncryptExportDecrypt) {
   }
 
   {
-    Cryptographer cryptographer(&encryptor_);
+    Cryptographer cryptographer;
     EXPECT_FALSE(cryptographer.CanDecrypt(nigori));
 
     cryptographer.SetPendingKeys(nigori);
@@ -179,11 +179,11 @@ TEST_F(CryptographerTest, Bootstrap) {
   cryptographer_.AddKey(params);
 
   std::string token;
-  EXPECT_TRUE(cryptographer_.GetBootstrapToken(&token));
+  EXPECT_TRUE(cryptographer_.GetBootstrapToken(encryptor_, &token));
   EXPECT_TRUE(base::IsStringUTF8(token));
 
-  Cryptographer other_cryptographer(&encryptor_);
-  other_cryptographer.Bootstrap(token);
+  Cryptographer other_cryptographer;
+  other_cryptographer.Bootstrap(encryptor_, token);
   EXPECT_TRUE(other_cryptographer.is_ready());
 
   const char secret[] = "secret";
@@ -280,10 +280,10 @@ TEST_F(CryptographerTest, GetKeysThenInstall) {
   EXPECT_TRUE(cryptographer_.Encrypt(original, &encrypted_k2));
 
   // Then construct second cryptographer and bootstrap it from the first one.
-  Cryptographer another_cryptographer(cryptographer_.encryptor());
+  Cryptographer another_cryptographer;
   std::string bootstrap_token;
-  EXPECT_TRUE(cryptographer_.GetBootstrapToken(&bootstrap_token));
-  another_cryptographer.Bootstrap(bootstrap_token);
+  EXPECT_TRUE(cryptographer_.GetBootstrapToken(encryptor_, &bootstrap_token));
+  another_cryptographer.Bootstrap(encryptor_, bootstrap_token);
 
   // Before key installation, the second cryptographer should only be able
   // to decrypt using the last key.

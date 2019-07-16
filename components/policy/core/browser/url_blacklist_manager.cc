@@ -427,9 +427,7 @@ bool URLBlacklist::FilterTakesPrecedence(const FilterComponents& lhs,
 }
 
 URLBlacklistManager::URLBlacklistManager(PrefService* pref_service)
-    : pref_service_(pref_service),
-      blacklist_(new URLBlacklist),
-      ui_weak_ptr_factory_(this) {
+    : pref_service_(pref_service), blacklist_(new URLBlacklist) {
   // This class assumes that it is created on the same thread that
   // |pref_service_| lives on.
   ui_task_runner_ = base::SequencedTaskRunnerHandle::Get();

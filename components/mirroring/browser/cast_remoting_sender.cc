@@ -98,8 +98,7 @@ CastRemotingSender::CastRemotingSender(
       duplicate_ack_counter_(0),
       input_queue_discards_remaining_(0),
       is_reading_(false),
-      flow_restart_pending_(true),
-      weak_factory_(this) {
+      flow_restart_pending_(true) {
   // Confirm this constructor is running on the IO BrowserThread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

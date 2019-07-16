@@ -286,9 +286,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mTabSaver.loadState(ignoreIncognitoFiles);
     }
 
-    /**
-     * Merges the tab states from two tab models.
-     */
+    @Override
     public void mergeState() {
         mTabSaver.mergeState();
     }

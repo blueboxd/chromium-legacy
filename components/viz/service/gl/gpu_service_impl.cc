@@ -164,8 +164,7 @@ GpuServiceImpl::GpuServiceImpl(
       vulkan_implementation_(vulkan_implementation),
 #endif
       exit_callback_(std::move(exit_callback)),
-      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
-      weak_ptr_factory_(this) {
+      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(exit_callback_);
 

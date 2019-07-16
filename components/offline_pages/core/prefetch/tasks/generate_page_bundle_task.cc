@@ -151,8 +151,7 @@ GeneratePageBundleTask::GeneratePageBundleTask(
       prefetch_store_(prefetch_store),
       gcm_token_(gcm_token),
       request_factory_(request_factory),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GeneratePageBundleTask::~GeneratePageBundleTask() {}
 

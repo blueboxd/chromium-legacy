@@ -87,7 +87,6 @@
 <translation id="1116639326869298217">无法验证您的身份</translation>
 <translation id="1116694919640316211">关于</translation>
 <translation id="1116779635164066733">此设置是由“<ph name="NAME" />”这一扩展程序强制指定的。</translation>
-<translation id="1117602883390928720">添加 Kerberos 帐号</translation>
 <translation id="111844081046043029">确定要离开此页吗？</translation>
 <translation id="1118738876271697201">系统未能确定设备型号或序列号。</translation>
 <translation id="1119447706177454957">内部错误</translation>
@@ -190,7 +189,6 @@
 <translation id="126156426083987769">演示模式设备许可出问题了。</translation>
 <translation id="126710816202626562">翻译语言：</translation>
 <translation id="126768002343224824">16 倍</translation>
-<translation id="1269405567167332785">高级配置</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272293450992660632">PIN 码的值不一致。</translation>
 <translation id="1272978324304772054">此用户帐号不属于设备所注册的域。如果想注册其他域，那么您首先需要执行设备恢复。</translation>
@@ -508,7 +506,6 @@
 <translation id="1744060673522309905">无法将此设备加入到该网域中。请确保您未超出可添加的设备数量上限。</translation>
 <translation id="1744108098763830590">背景页</translation>
 <translation id="1745520510852184940">一律进行此翻译</translation>
-<translation id="174617397682753897">Kerberos 帐号</translation>
 <translation id="1746402432151920942">受保护的媒体标识符</translation>
 <translation id="175196451752279553">重新打开关闭的标签页(&amp;E)</translation>
 <translation id="1753905327828125965">常去网站</translation>
@@ -756,7 +753,6 @@
 <translation id="2135787500304447609">继续(&amp;R)</translation>
 <translation id="2136372518715274136">输入新密码</translation>
 <translation id="2136476978468204130">您输入的密码不正确</translation>
-<translation id="2137068468602026500">点击“网络浏览器”下的 <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" /></translation>
 <translation id="2138398485845393913">仍在连接“<ph name="DEVICE_NAME" />”</translation>
 <translation id="214169863967063661">打开外观设置</translation>
 <translation id="2142328300403846845">以其他身份打开链接</translation>
@@ -844,7 +840,6 @@
 <translation id="2241634353105152135">仅一次</translation>
 <translation id="2242687258748107519">文件信息</translation>
 <translation id="2246549592927364792">要从 Google 获取图片说明吗？</translation>
-<translation id="2249269794707377949">您可以在此处集中管理用于单点登录特定应用和网站以及文件共享操作的所有 Kerberos 帐号。</translation>
 <translation id="2249605167705922988">例如：1-5、8、11-13</translation>
 <translation id="2251218783371366160">使用系统查看器打开</translation>
 <translation id="225163402930830576">刷新网络</translation>
@@ -1075,7 +1070,6 @@
 <translation id="2586672484245266891">请输入一个较短的网址</translation>
 <translation id="2587922270115112871">创建受监管用户不会随之创建 Google 帐号，因此这些受监管用户无法借助 Chrome 同步功能将其设置和数据同步到其他设备。受监管用户的设置只能应用于此设备。</translation>
 <translation id="2588636910004461974">来自<ph name="VENDOR_NAME" />的设备</translation>
-<translation id="258932246702879617">选择<ph name="BEGIN_BOLD" />固定在任务栏上<ph name="END_BOLD" /></translation>
 <translation id="2594999711683503743">使用 Google 执行搜索，或者输入网址</translation>
 <translation id="2597521610396315071">添加监管设置</translation>
 <translation id="2603115962224169880">清理计算机</translation>
@@ -1142,7 +1136,6 @@
 <translation id="2683638487103917598">文件夹内容已排序</translation>
 <translation id="2684004000387153598">要想继续，请点击“确定”，然后点击“添加用户”为您的电子邮件地址创建一份新个人资料。</translation>
 <translation id="2688196195245426394">向服务器注册设备时出错：<ph name="CLIENT_ERROR" />。</translation>
-<translation id="2688477613306174402">配置</translation>
 <translation id="2690024944919328218">显示语言选项</translation>
 <translation id="2691385045260836588">型号</translation>
 <translation id="2693176596243495071">糟糕！发生了未知错误。请稍后重试；如果问题依然存在，请与您的管理员联系。</translation>
@@ -1529,7 +1522,6 @@
 <translation id="32939749466444286">无法启动 Linux 容器。请重试。</translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="329703603001918157">无法修改快捷方式</translation>
-<translation id="3297951628821704004">从此设备上移除帐号</translation>
 <translation id="329838636886466101">修复</translation>
 <translation id="3298789223962368867">输入的网址无效。</translation>
 <translation id="32991397311664836">设备：</translation>
@@ -1588,7 +1580,6 @@
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔符</translation>
 <translation id="3387614642886316601">使用增强的“拼写检查”功能</translation>
-<translation id="3389312115541230716">右键点击任务栏中的 <ph name="SMALL_PRODUCT_LOGO" /> 图标</translation>
 <translation id="3393352139658145068">只要有人说“Ok Google”，就能启动 Google 助理。为了省电，“Ok Google”仅在您的设备连接至电源时可用。</translation>
 <translation id="3396800784455899911">点击“接受并继续”按钮，即表示您同意上述针对这些 Google 服务的处理方式。</translation>
 <translation id="3399432415385675819">通知将被停用</translation>
@@ -1824,7 +1815,6 @@
 <translation id="3714195043138862580">此演示设备目前处于“已取消配置”状态。</translation>
 <translation id="3714633008798122362">网络日历</translation>
 <translation id="3719826155360621982">首页</translation>
-<translation id="3720996970802414353">确定切换</translation>
 <translation id="3722108462506185496">启动虚拟机服务时出错。请重试。</translation>
 <translation id="3725367690636977613">页码</translation>
 <translation id="3726137731714254362">从此处移除文件夹会停止共享但不会删除相应文件。</translation>
@@ -2438,7 +2428,6 @@
 <translation id="4662788913887017617">将此书签共享给您的 iPhone</translation>
 <translation id="4663373278480897665">已允许使用摄像头</translation>
 <translation id="4664482161435122549">PKCS #12 导出错误</translation>
-<translation id="4664736447097490764">请在此处修改 Kerberos 配置文件。</translation>
 <translation id="4665014895760275686">制造商</translation>
 <translation id="4665446389743427678">即将删除 <ph name="SITE" /> 存储的所有数据。</translation>
 <translation id="4668721319092543482">点击即可启用 <ph name="PLUGIN_NAME" /></translation>
@@ -2553,6 +2542,7 @@
 <translation id="4850669014075537160">滚动</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4853020600495124913">在新窗口中打开(&amp;O)</translation>
+<translation id="485480310608090163">更多设置和权限</translation>
 <translation id="4856478137399998590">您的移动数据服务已激活，可以立即使用</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{在无痕式窗口中打开全部网址(&amp;I)}=1{在无痕式窗口中打开 1 个网址(&amp;I)}other{在无痕式窗口中打开全部（# 个）网址(&amp;I)}}</translation>
 <translation id="4858913220355269194">足球</translation>
@@ -2855,7 +2845,6 @@
 <translation id="5319359161174645648">Google 推荐使用 Chrome</translation>
 <translation id="532247166573571973">可能无法连接到服务器，请稍后重试。</translation>
 <translation id="5324780743567488672">使用您的位置信息自动设置时区</translation>
-<translation id="5327129740973624286"><ph name="WINDOW_TITLE" /> - 可以将更改保存到原始文件</translation>
 <translation id="5327248766486351172">名称</translation>
 <translation id="5327570636534774768">此设备已被标记为受另一网域管理。您需要取消此设备在该网域中的配置，然后才能设置演示模式。</translation>
 <translation id="532943162177641444">请点按您的 <ph name="PHONE_NAME" /> 设备上的通知，以设置可供此设备使用的移动热点。</translation>
@@ -3017,6 +3006,7 @@
 <translation id="55601339223879446">调整您的桌面在显示屏内的边界</translation>
 <translation id="5562781907504170924">此标签页已连接到蓝牙设备。</translation>
 <translation id="5563234215388768762">在 Google 上搜索，或者输入一个网址</translation>
+<translation id="5565735124758917034">主动</translation>
 <translation id="5567989639534621706">应用缓存</translation>
 <translation id="5568069709869097550">无法登录</translation>
 <translation id="5568144734023334204">Android 存储空间</translation>
@@ -3667,7 +3657,6 @@
 <translation id="6532101170117367231">保存到 Google 云端硬盘</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非您有意这么做或被要求这样做，否则请不要随意启用这项功能，因为收集数据可能会降低性能。</translation>
 <translation id="6541638731489116978">此网站已被禁止使用您的动态传感器。</translation>
-<translation id="6542184058496424548">用户名无效（应为 user@realm.com）</translation>
 <translation id="654233263479157500">使用网络服务帮助解决导航错误</translation>
 <translation id="6544215763872433504">Google 为您开发的网络浏览器</translation>
 <translation id="6545665334409411530">重复速度</translation>
@@ -3929,7 +3918,6 @@
 <translation id="6955446738988643816">审查弹出内容</translation>
 <translation id="6957044667612803194">此安全密钥不支持 PIN 码</translation>
 <translation id="6957231940976260713">服务名称</translation>
-<translation id="6957572737510023982">糟糕！出现问题（错误代码：<ph name="ERROR_CODE" />）。</translation>
 <translation id="6964390816189577014">英雄</translation>
 <translation id="6964760285928603117">从组中移除</translation>
 <translation id="6965382102122355670">确定</translation>
@@ -4188,7 +4176,6 @@
 <translation id="7328699668338161242">Google 助理已能识别出您的语音</translation>
 <translation id="7328867076235380839">无效的组合</translation>
 <translation id="7329154610228416156">由于已配置为使用不安全的网址 (<ph name="BLOCKED_URL" />)，因此登录失败了。请与管理员联系。</translation>
-<translation id="733006820760728943">设为当前所用帐号</translation>
 <translation id="7334190995941642545">目前无法使用 Smart Lock，请稍后重试。</translation>
 <translation id="7334274148831027933">启用停靠的放大镜</translation>
 <translation id="7335974957018254119">支持拼写检查的语言</translation>
@@ -4199,7 +4186,6 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> 现处于全屏模式。</translation>
 <translation id="7340650977506865820">该网站正在共享您的屏幕</translation>
 <translation id="7341834142292923918">想要访问此网站</translation>
-<translation id="7344488796804562294">高级 Kerberos 配置</translation>
 <translation id="7345706641791090287">确认您的密码</translation>
 <translation id="7346909386216857016">知道了</translation>
 <translation id="7347751611463936647">要使用该扩展程序，请依次键入“<ph name="EXTENSION_KEYWORD" />”和 TAB，然后键入您的命令或搜索。</translation>
@@ -4292,7 +4278,6 @@
 <translation id="749028671485790643">用户<ph name="VALUE" /></translation>
 <translation id="7490813197707563893">MAC 地址</translation>
 <translation id="7493386493263658176">扩展程序“<ph name="EXTENSION_NAME" />”可能会收集您输入的所有内容（包括密码和信用卡号等个人数据）。要使用此扩展程序吗？</translation>
-<translation id="7494065396242762445">打开 Windows 设置</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495778526395737099">忘了旧密码？</translation>
 <translation id="7496511874649569424">系统将会从此设备上移除“<ph name="LINUX_APP_NAME" />”以及与其相关的数据。</translation>
@@ -4317,7 +4302,6 @@
 <translation id="7530016656428373557">电池放电率（瓦）</translation>
 <translation id="7531779363494549572">依次转到“设置”&gt;“应用和通知”&gt;“通知”。</translation>
 <translation id="7536220825385726660">允许 Play 商店中的应用访问外接式存储盘</translation>
-<translation id="7537601449003285327">固定在任务栏上</translation>
 <translation id="7539856059004947393">蓝牙安全密钥</translation>
 <translation id="7540972813190816353">检查更新时出错：<ph name="ERROR" /></translation>
 <translation id="7543104066686362383">在此<ph name="IDS_SHORT_PRODUCT_NAME" />设备上启用调试功能</translation>
@@ -4346,7 +4330,6 @@
 <translation id="7574650250151586813">要输入文字，请更新“Daydream 键盘”应用</translation>
 <translation id="7576690715254076113">自动分页</translation>
 <translation id="7576976045740938453">演示模式帐号出问题了。</translation>
-<translation id="757941033127302446">已登录</translation>
 <translation id="7580671184200851182">在所有音响设备上播放相同的音频（单声道音频）</translation>
 <translation id="7581462281756524039">清理工具</translation>
 <translation id="7582582252461552277">首选此网络</translation>
@@ -4624,7 +4607,6 @@
 <translation id="7959074893852789871">该文件包含多个证书，其中部分证书未导入：</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7963826112438303517">Google 助理会使用这些录音以及您的语音请求来创建和更新您的语音模型，语音模型仅会存储在已开启 Voice Match 的设备上。您可在 Google 助理的“设置”中查看或重新调校语音活动。</translation>
-<translation id="796416202355062143"><ph name="ORIGIN" /> 想要扫描附近的蓝牙设备，发现了以下设备：</translation>
 <translation id="7966241909927244760">复制图片地址(&amp;O)</translation>
 <translation id="7968742106503422125">读取和修改您复制和粘贴的数据</translation>
 <translation id="7968833647796919681">启用性能数据收集</translation>
@@ -4780,7 +4762,6 @@
 <translation id="8184472985242519288">均匀</translation>
 <translation id="8185331656081929126">在网络中检测到新打印机时显示通知</translation>
 <translation id="8186609076106987817">服务器找不到该文件。</translation>
-<translation id="8187950680397073878"><ph name="ORIGIN" /> 可以读取以下文件夹中的所有文件。只有在此标签页处于打开状态时，该网站才能查看更改。</translation>
 <translation id="8188389033983459049">请检查您的设备设置，并开启蓝牙以继续</translation>
 <translation id="8190193592390505034">正在连接到<ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
@@ -4916,7 +4897,6 @@
 <translation id="839736845446313156">注册</translation>
 <translation id="8398877366907290961">仍然继续</translation>
 <translation id="8400146488506985033">管理用户</translation>
-<translation id="8400444932218572097"><ph name="ORIGIN" /> 可以将您所做的更改直接保存到以下文件夹中的文件。只有在此标签页处于打开状态时，该网站才能保存更改。</translation>
 <translation id="8410775397654368139">Google Play</translation>
 <translation id="8413385045638830869">先询问（推荐）</translation>
 <translation id="8418445294933751433">显示为标签页(&amp;S)</translation>
@@ -5269,7 +5249,6 @@
 <translation id="891365694296252935">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据不会被用来辨识您孩子的身份，而是会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">正在加载建议</translation>
 <translation id="8916476537757519021">隐身辅助框架：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917541523214115780"><ph name="WINDOW_TITLE" /> - 可以读取您设备上的某个文件夹</translation>
 <translation id="8919275547519617350">要想将您的所有密码同步到您的所有设备上，请登录您的帐号并开启同步功能。</translation>
 <translation id="8921366488406707015">正在验证您的安全密钥…</translation>
 <translation id="8922013791253848639">在此网站上始终允许显示广告</translation>
@@ -5319,6 +5298,7 @@
 <translation id="8995603266996330174">由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="8996526648899750015">添加帐号…</translation>
 <translation id="899657321862108550">您的“专属”Chrome 浏览器，走到哪带到哪</translation>
+<translation id="899676909165543803">指纹传感器就是键盘右下角的那个按键。请用任一手指轻触该按键。</translation>
 <translation id="9003647077635673607">允许在所有网站上运行脚本</translation>
 <translation id="9003704114456258138">频率</translation>
 <translation id="9004952710076978168">收到了与未知打印机相关的通知。</translation>
@@ -5354,7 +5334,6 @@
 <translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS" /></translation>
 <translation id="9045430190527754450">将您尝试访问的网页的网址发送至 Google</translation>
 <translation id="9046895021617826162">连接失败</translation>
-<translation id="9047391224416514812">已存在使用此用户名的帐号</translation>
 <translation id="9050666287014529139">密码</translation>
 <translation id="9052208328806230490">您已使用帐号 <ph name="EMAIL" /> 将您的打印机注册为<ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9052404922357793350">继续拦截</translation>

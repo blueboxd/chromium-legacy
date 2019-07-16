@@ -97,10 +97,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Starts a navigation in a newly created subframe as part of a history
   // navigation. Returns true if the history navigation could start, false
   // otherwise.  If this returns false, the caller should do a regular
-  // navigation to |default_url| should be done instead.
+  // navigation to the default src URL for the frame instead.
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client);
 
   // Navigates to a specified offset from the "current entry". Currently records

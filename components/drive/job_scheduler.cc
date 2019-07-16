@@ -181,8 +181,7 @@ JobScheduler::JobScheduler(
       uploader_(new DriveUploader(drive_service,
                                   blocking_task_runner,
                                   std::move(wake_lock_provider))),
-      pref_service_(pref_service),
-      weak_ptr_factory_(this) {
+      pref_service_(pref_service) {
   for (int i = 0; i < NUM_QUEUES; ++i)
     queue_[i] = std::make_unique<JobQueue>(kMaxJobCount[i], NUM_CONTEXT_TYPES,
                                            kMaxBatchCount, kMaxBatchSize);

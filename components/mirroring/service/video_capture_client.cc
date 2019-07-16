@@ -18,10 +18,7 @@ constexpr int kDeviceId = 0;
 
 VideoCaptureClient::VideoCaptureClient(const media::VideoCaptureParams& params,
                                        media::mojom::VideoCaptureHostPtr host)
-    : params_(params),
-      video_capture_host_(std::move(host)),
-      binding_(this),
-      weak_factory_(this) {
+    : params_(params), video_capture_host_(std::move(host)), binding_(this) {
   DCHECK(video_capture_host_);
 }
 

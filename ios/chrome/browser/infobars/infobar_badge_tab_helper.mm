@@ -38,33 +38,6 @@ void InfobarBadgeTabHelper::SetLegacyDelegate(
   legacy_delegate_ = legacy_delegate;
 }
 
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
-    InfobarType infobar_type) {
-  if (legacy_delegate_) {
-    legacy_delegate_.badgeState &= ~InfobarBadgeStateSelected;
-  } else {
-    [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
-  }
-}
-
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalPresented(
-    InfobarType infobar_type) {
-  if (legacy_delegate_) {
-    legacy_delegate_.badgeState |= InfobarBadgeStateSelected;
-  } else {
-    [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
-  }
-}
-
-void InfobarBadgeTabHelper::UpdateBadgeForInfobarModalDismissed(
-    InfobarType infobar_type) {
-  if (legacy_delegate_) {
-    legacy_delegate_.badgeState &= ~InfobarBadgeStateSelected;
-  } else {
-    [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
-  }
-}
-
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
     InfobarType infobar_type) {
   if (legacy_delegate_) {

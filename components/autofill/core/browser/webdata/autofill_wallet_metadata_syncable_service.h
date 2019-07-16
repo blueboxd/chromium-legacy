@@ -151,7 +151,8 @@ class AutofillWalletMetadataSyncableService
   // ourselves.
   bool ignore_multiple_changed_notification_;
 
-  base::WeakPtrFactory<AutofillWalletMetadataSyncableService> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillWalletMetadataSyncableService> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletMetadataSyncableService);
 };

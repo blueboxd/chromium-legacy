@@ -214,6 +214,7 @@
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-chromeos-oobe-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
+      'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',
 
       'Linux Builder Goma Canary': 'release_bot',
       'Linux Builder Goma Latest Client': 'release_bot',
@@ -651,6 +652,8 @@
       'gpu-fyi-try-android-p-pixel-2-skv-32': 'gpu_tests_android_release_trybot',
       'linux_android_dbg_ng': 'android_debug_trybot',
       'try-nougat-phone-tester': 'android_debug_trybot_arm64',
+      'android-oreo-arm64-dbg': 'android_debug_trybot_arm64',
+      'android-pie-arm64-dbg': 'android_debug_trybot_arm64',
     },
 
     'tryserver.chromium.angle': {

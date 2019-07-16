@@ -317,8 +317,7 @@ void FidoDeviceAuthenticator::EnumerateCredentials(
       base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
                      weak_factory_.GetWeakPtr(), std::move(state)),
       base::BindOnce(&EnumerateRPsResponse::Parse, /*expect_rp_count=*/true),
-      // TODO(martinkr): implement utf-8 fixup and add a test for it.
-      /*string_fixup_predicate=*/nullptr);
+      &EnumerateRPsResponse::StringFixupPredicate);
 }
 
 // TaskClearProxy interposes |callback| and resets |task_| before it runs.
@@ -421,8 +420,7 @@ void FidoDeviceAuthenticator::OnEnumerateRPsDone(
                      weak_factory_.GetWeakPtr(), std::move(state)),
       base::BindOnce(&EnumerateCredentialsResponse::Parse,
                      /*expect_credential_count=*/true),
-      // TODO(martinkr): implement utf-8 fixup and add a test for it.
-      /*string_fixup_predicate=*/nullptr);
+      &EnumerateCredentialsResponse::StringFixupPredicate);
 }
 
 void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
@@ -450,8 +448,7 @@ void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
                        weak_factory_.GetWeakPtr(), std::move(state)),
         base::BindOnce(&EnumerateCredentialsResponse::Parse,
                        /*expect_credential_count=*/false),
-        // TODO(martinkr): implement utf-8 fixup and add a test for it.
-        /*string_fixup_predicate=*/nullptr);
+        &EnumerateCredentialsResponse::StringFixupPredicate);
     return;
   }
 
@@ -465,8 +462,7 @@ void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
                        weak_factory_.GetWeakPtr(), std::move(state)),
         base::BindOnce(&EnumerateRPsResponse::Parse,
                        /*expect_rp_count=*/false),
-        // TODO(martinkr): implement utf-8 fixup and add a test for it.
-        /*string_fixup_predicate=*/nullptr);
+        &EnumerateRPsResponse::StringFixupPredicate);
     return;
   }
 
@@ -654,6 +650,10 @@ bool FidoDeviceAuthenticator::IsInPairingMode() const {
 
 bool FidoDeviceAuthenticator::IsPaired() const {
   return device_->IsPaired();
+}
+
+bool FidoDeviceAuthenticator::RequiresBlePairingPin() const {
+  return device_->RequiresBlePairingPin();
 }
 
 #if defined(OS_WIN)

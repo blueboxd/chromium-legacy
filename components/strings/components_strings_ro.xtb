@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Politica este ignorată, deoarece a fost înlocuită de <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Emis către: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Senzori de mișcare</translation>
 <translation id="213826338245044447">Marcaje mobile</translation>
 <translation id="214556005048008348">Anulează plata</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">să verifici semnalul din zona ta.</translation>
 <translation id="2523886232349826891">Salvat numai pe acest dispozitiv</translation>
 <translation id="2524461107774643265">Adaugă mai multe informații</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{și încă una}few{și încă #}other{și încă #}}</translation>
 <translation id="2536110899380797252">Adaugă o adresă</translation>
 <translation id="2539524384386349900">Detectează</translation>
 <translation id="254947805923345898">Valoarea politicii nu este validă.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Ți-ai întrebat părinții dacă poți accesa acest site</translation>
 <translation id="4876188919622883022">Afișare simplificată</translation>
 <translation id="4876305945144899064">Niciun nume de utilizator</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Niciuna}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Căutare <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automat (prestabilit)</translation>
 <translation id="4880827082731008257">Caută în istoric</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Da, stochează</translation>
 <translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6517596291481585650">Atenție: această politică nu a fost îmbinată ca listă așa cum este indicat de politică, deoarece nu este o listă.</translation>
+<translation id="6521745193039995384">Inactivă</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="6534179046333460208">Sugestii pentru Webul material</translation>
 <translation id="6545864417968258051">Căutare Bluetooth</translation>
@@ -1479,6 +1483,7 @@ Detalii suplimentare:
 <translation id="9076630408993835509">Browserul nu este gestionat de o companie sau o altă organizație. Este posibil ca activitatea de pe acest dispozitiv să fie gestionată în afara Chrome. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Sunt necesare mai multe informații</translation>
 <translation id="9080712759204168376">Rezumatul comenzii</translation>
+<translation id="9089260154716455634">Politica privind intervalele de inactivitate:</translation>
 <translation id="9095388113577226029">Mai multe limbi...</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9106062320799175032">Adaugă o adresă de facturare</translation>

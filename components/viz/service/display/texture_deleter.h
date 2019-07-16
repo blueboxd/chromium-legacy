@@ -52,7 +52,7 @@ class VIZ_SERVICE_EXPORT TextureDeleter {
 
   scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   std::vector<std::unique_ptr<SingleReleaseCallback>> impl_callbacks_;
-  base::WeakPtrFactory<TextureDeleter> weak_ptr_factory_;
+  base::WeakPtrFactory<TextureDeleter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TextureDeleter);
 };

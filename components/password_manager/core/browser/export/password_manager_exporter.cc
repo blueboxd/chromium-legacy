@@ -72,8 +72,7 @@ PasswordManagerExporter::PasswordManagerExporter(
       set_permissions_function_(
           base::BindRepeating([](const base::FilePath&, int) { return true; })),
 #endif
-      task_runner_(g_task_runner.Get()),
-      weak_factory_(this) {
+      task_runner_(g_task_runner.Get()) {
 }
 
 PasswordManagerExporter::~PasswordManagerExporter() {}

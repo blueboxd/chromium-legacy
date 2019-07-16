@@ -8,7 +8,6 @@
 <link rel="import" href="../os_people_page/os_people_page.html">
 <link rel="import" href="../os_search_page/os_search_page.html">
 <link rel="import" href="../personalization_page/personalization_page.html">
-<link rel="import" href="../../change_password_page/change_password_page.html">
 <link rel="import" href="../../controls/settings_idle_load.html">
 <link rel="import" href="../../settings_page/main_page_behavior.html">
 <link rel="import" href="../../settings_page/settings_section.html">
@@ -22,7 +21,6 @@
 <link rel="import" href="../../device_page/device_page.html">
 <link rel="import" href="../../internet_page/internet_page.html">
 <link rel="import" href="../../multidevice_page/multidevice_page.html">
-<link rel="import" href="../../parental_controls_page/parental_controls_page.html">
 
 <dom-module id="os-settings-page">
   <template>
@@ -121,24 +119,12 @@
             </settings-multidevice-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showChangePassword]]" restamp>
-          <settings-section section="changePassword">
-            <settings-change-password-page></settings-change-password-page>
-          </settings-section>
-        </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.people)]]" restamp>
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
             <os-settings-people-page prefs="{{prefs}}"
                 page-visibility="[[pageVisibility]]">
             </os-settings-people-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showParentalControls]]" restamp>
-          <settings-section page-title="$i18n{parentalControlsPageTitle}"
-              section="parentalControls">
-            <settings-parental-controls-page prefs="{{prefs}}">
-            </settings-parental-controls-page>
           </settings-section>
         </template>
         <!-- TODO(hsuregan): Change from appearance to personalization once

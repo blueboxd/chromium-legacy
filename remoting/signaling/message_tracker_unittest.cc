@@ -15,8 +15,7 @@ class MessageTrackerTest : public testing::Test {
   static constexpr base::TimeDelta GetCleanupInterval();
 
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
   MessageTracker message_tracker_;
 };
 

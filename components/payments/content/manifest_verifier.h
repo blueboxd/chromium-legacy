@@ -159,7 +159,7 @@ class ManifestVerifier final : public WebDataServiceConsumer {
   // rejecting the promise returned from PaymentRequest.show().
   std::string first_error_message_;
 
-  base::WeakPtrFactory<ManifestVerifier> weak_ptr_factory_;
+  base::WeakPtrFactory<ManifestVerifier> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ManifestVerifier);
 };

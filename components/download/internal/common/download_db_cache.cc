@@ -92,9 +92,7 @@ bool IsInProgressEntry(base::Optional<DownloadDBEntry> entry) {
 }  // namespace
 
 DownloadDBCache::DownloadDBCache(std::unique_ptr<DownloadDB> download_db)
-    : initialized_(false),
-      download_db_(std::move(download_db)),
-      weak_factory_(this) {
+    : initialized_(false), download_db_(std::move(download_db)) {
   DCHECK(download_db_);
 }
 

@@ -99,7 +99,7 @@ class TestAutoSetUkmRecorder : public TestUkmRecorder {
   ~TestAutoSetUkmRecorder() override;
 
  private:
-  base::WeakPtrFactory<TestAutoSetUkmRecorder> self_ptr_factory_;
+  base::WeakPtrFactory<TestAutoSetUkmRecorder> self_ptr_factory_{this};
 };
 
 }  // namespace ukm

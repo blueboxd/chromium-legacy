@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">‏به‌روزرسانی Google Chrome…</translation>
 <translation id="1469002951682717133">‏را‌ه‌انداز برنامه Chrome</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
-<translation id="1585657529869845941">درصورتی‌که نمایان شد، روی <ph name="BEGIN_BOLD" />به‌هرصورت جابه‌جایی<ph name="END_BOLD" /> کلیک کنید</translation>
 <translation id="1587223624401073077">‏Google Chrome درحال استفاده از دوربین شما است.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک است، بنابراین Chrome آن را مسدود کرده ست.</translation>
 <translation id="1590588151039584890">‏برای به‌روزرسانی، Chrome باید در این رایانه متوقف شود. شاید با این کار، تغییرات ذخیره‌نشده کاربرانی که در این رایانه به سیستم وارد شده‌اند، از دست برود.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">‏Google Chrome نمی‌تواند مسیر داده‌های خود را بخواند یا در آن بنویسد: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏Google Chrome یک مرورگر وب است که برنامه‌های کاربردی و صفحات وب را در یک چشم به هم زدن اجرا و باز می‌کند. استفاده از آن سریع و آسان است و همیشه در دسترس است. با برنامه‌های حفاظت در برابر فیشینگ و بدافزار تعبیه شده در Google Chrome، وب را با امنیت بیشتر مرور کنید.</translation>
 <translation id="1713301662689114961">{0,plural, =1{‏Chrome یک ساعت دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome # ساعت دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome # ساعت دیگر راه‌اندازی مجدد می‌شود}}</translation>
-<translation id="1718131156967340976">‏انتخاب <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">‏Chrome این گذرواژه را در حساب Google شما ذخیره می‌کند. لازم نیست آن را به خاطر بسپارید.</translation>
 <translation id="174539241580958092">‏به دلیل وجود خطا در ورود به سیستم، Google Chrome قادر به همگام‌سازی داده‌های شما نبود.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@
 <translation id="3873044882194371212">‏باز کردن پیوند در پنجره &amp;ناشناس Chrome</translation>
 <translation id="3889417619312448367">‏حذف نصب Google Chrome</translation>
 <translation id="3898493977366060150">‏مرور وب با هوشمندی‌های Google</translation>
-<translation id="4028693306634653894">‏دسترسی سریع‌تر به Chrome</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
 <translation id="4143243756087420366">‏نام و تصویر Chrome</translation>
@@ -237,7 +234,6 @@
 <translation id="7808348361785373670">‏حذف از Chrome...</translation>
 <translation id="7825851276765848807">‏بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="7855730255114109580">‏Google Chrome به‌روز است</translation>
-<translation id="7888186132678118370">‏پین کردن Chrome به نوار وظیفه شما</translation>
 <translation id="7890208801193284374">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chrome را به صورتی که مایلند تنظیم کنند.</translation>
 <translation id="7896673875602241923">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chrome در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
 <translation id="7908168227788431038">‏تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، Google Chrome را راه‌اندازی مجدد کنید.</translation>
@@ -286,6 +282,5 @@
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
 <translation id="9138603949443464873">‏برای اعمال تغییراتتان، Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="919706545465235479">‏به‌روزرسانی Chrome برای شروع همگام‌سازی</translation>
-<translation id="924447568950697217">‏تنظیم Chrome به‌عنوان مرورگر پیش‌فرض</translation>
 <translation id="989369509083708165">‏Google Chrome مرورگر پیش‌فرضتان است</translation>
 </translationbundle>

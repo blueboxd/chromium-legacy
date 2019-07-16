@@ -99,7 +99,7 @@ class DeletePageTask : public Task {
   DeleteFunction func_;
   DeletePageTaskCallback callback_;
 
-  base::WeakPtrFactory<DeletePageTask> weak_ptr_factory_;
+  base::WeakPtrFactory<DeletePageTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DeletePageTask);
 };
 

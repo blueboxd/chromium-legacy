@@ -60,7 +60,7 @@ class ImageDataStoreDisk : public ImageDataStore {
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<ImageDataStoreDisk> weak_ptr_factory_;
+  base::WeakPtrFactory<ImageDataStoreDisk> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataStoreDisk);
 };

@@ -139,9 +139,7 @@ std::unique_ptr<std::string> RemoteCommandJob::GetResultPayload() const {
   return result_payload_->Serialize();
 }
 
-RemoteCommandJob::RemoteCommandJob()
-    : status_(NOT_INITIALIZED), weak_factory_(this) {
-}
+RemoteCommandJob::RemoteCommandJob() : status_(NOT_INITIALIZED) {}
 
 bool RemoteCommandJob::ParseCommandPayload(const std::string& command_payload) {
   return true;

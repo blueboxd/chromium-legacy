@@ -19,8 +19,7 @@
 
 namespace viz {
 
-HostFrameSinkManager::HostFrameSinkManager()
-    : binding_(this), weak_ptr_factory_(this) {}
+HostFrameSinkManager::HostFrameSinkManager() : binding_(this) {}
 
 HostFrameSinkManager::~HostFrameSinkManager() = default;
 

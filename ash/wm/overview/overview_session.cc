@@ -347,35 +347,14 @@ void OverviewSession::Shutdown() {
   }
 }
 
-void OverviewSession::OnGridEmpty(OverviewGrid* grid) {
-  size_t index = 0;
-  // If there are no longer any items on any of the grids, shutdown,
-  // otherwise the empty grids will remain blurred but will have no items.
-  if (IsEmpty()) {
-    // Shutdown all grids if no grids have any items and split view mode is
-    // not active. Set |index| to -1 so that it does not attempt to select any
-    // items.
-    index = -1;
-    if (!Shell::Get()->split_view_controller()->InTabletSplitViewMode()) {
-      for (const auto& grid : grid_list_)
-        grid->Shutdown();
-      grid_list_.clear();
-    } else {
-      UpdateNoWindowsWidget();
-    }
-  } else {
-    for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
-      if (grid == (*iter).get()) {
-        index = iter - grid_list_.begin();
-        break;
-      }
-    }
-  }
+void OverviewSession::OnGridEmpty() {
+  if (!IsEmpty())
+    return;
 
-  if (grid_list_.empty())
-    EndOverview();
+  if (Shell::Get()->split_view_controller()->InTabletSplitViewMode())
+    UpdateNoWindowsWidget();
   else
-    PositionWindows(/*animate=*/false);
+    EndOverview();
 }
 
 void OverviewSession::IncrementSelection(int increment) {

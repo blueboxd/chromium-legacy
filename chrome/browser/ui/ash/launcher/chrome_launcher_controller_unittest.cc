@@ -749,7 +749,15 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
           } else if (app == extensionYoutubeApp_->id()) {
             result += "youtube";
           } else {
-            result += "unknown";
+            const auto* extension = extension_service_->GetExtensionById(
+                app, /*include_disabled=*/true);
+            if (extension && !extension->name().empty()) {
+              std::string name = extension->name();
+              name[0] = std::tolower(name[0]);
+              result += name;
+            } else {
+              result += "unknown";
+            }
           }
           break;
         }
@@ -793,8 +801,17 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                 break;
               }
             }
-            if (!arc_app_found)
-              result += "unknown";
+            if (!arc_app_found) {
+              const auto* extension = extension_service_->GetExtensionById(
+                  app, /*include_disabled=*/true);
+              if (extension && !extension->name().empty()) {
+                std::string name = extension->name();
+                name[0] = std::toupper(name[0]);
+                result += name;
+              } else {
+                result += "Unknown";
+              }
+            }
           }
           break;
         }
@@ -1015,6 +1032,55 @@ class ChromeLauncherControllerWithArcTest
   std::unique_ptr<apps::ArcApps> arc_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
+};
+
+class ChromeLauncherControllerExtendedSheflTest
+    : public ChromeLauncherControllerWithArcTest {
+ protected:
+  ChromeLauncherControllerExtendedSheflTest() = default;
+  ~ChromeLauncherControllerExtendedSheflTest() override = default;
+
+  void SetUp() override {
+    ChromeLauncherControllerWithArcTest::SetUp();
+
+    StartPrefSyncService(syncer::SyncDataList());
+
+    extension_service_->AddExtension(extensionGmailApp_.get());
+    extension_service_->AddExtension(extensionDocApp_.get());
+    extension_service_->AddExtension(extensionYoutubeApp_.get());
+    extension_service_->AddExtension(arc_support_host_.get());
+
+    std::string error;
+    base::DictionaryValue manifest;
+    manifest.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
+    manifest.SetString(extensions::manifest_keys::kDescription,
+                       "for testing pinned apps");
+
+    const std::vector<std::pair<std::string, std::string>> extra_extensions = {
+        {extension_misc::kCalendarAppId, "Calendar"},
+        {extension_misc::kGoogleSheetsAppId, "Sheets"},
+        {extension_misc::kGoogleSlidesAppId, "Slides"},
+        {extension_misc::kFilesManagerAppId, "Files"},
+        {app_list::kInternalAppIdCamera, "Camera"},
+        {extension_misc::kGooglePhotosAppId, "Photos"},
+    };
+
+    for (const auto& extension_id_name : extra_extensions) {
+      manifest.SetString(extensions::manifest_keys::kName,
+                         extension_id_name.second);
+      scoped_refptr<Extension> extension = Extension::Create(
+          base::FilePath(), Manifest::UNPACKED, manifest, Extension::NO_FLAGS,
+          extension_id_name.first, &error);
+      extension_service_->AddExtension(extension.get());
+      extra_extensions_.emplace_back(extension);
+    }
+  }
+
+ private:
+  std::vector<scoped_refptr<Extension>> extra_extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerExtendedSheflTest);
 };
 
 // Watches WebContents and blocks until it is destroyed. This is needed for
@@ -1283,6 +1349,40 @@ TEST_F(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_EQ("Chrome, Doc, Youtube, App1", GetPinnedAppStatus());
   extension_service_->AddExtension(extensionGmailApp_.get());
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, App1", GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShefDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kEnableExtendedShelfLayout,
+      {std::pair<std::string, std::string>("app_count", "0")});
+
+  InitLauncherController();
+  EXPECT_EQ("Chrome, Gmail, Doc, Youtube, Play Store", GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef7Apps) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kEnableExtendedShelfLayout,
+      {std::pair<std::string, std::string>("app_count", "7")});
+
+  InitLauncherController();
+  EXPECT_EQ("Chrome, Gmail, Doc, Photos, Files, Youtube, Play Store",
+            GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef10Apps) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kEnableExtendedShelfLayout,
+      {std::pair<std::string, std::string>("app_count", "10")});
+
+  InitLauncherController();
+  EXPECT_EQ(
+      "Chrome, Gmail, Calendar, Doc, Sheets, Slides, Files, Camera, Photos, "
+      "Play Store",
+      GetPinnedAppStatus());
 }
 
 TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {

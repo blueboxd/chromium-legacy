@@ -23,16 +23,14 @@ namespace net {
 // PlatformTest at the same time).
 class WithScopedTaskEnvironment {
  protected:
-  WithScopedTaskEnvironment()
+  // Always uses MainThreadType::IO, |time_source| may optionally be provided
+  // to mock time.
+  explicit WithScopedTaskEnvironment(
+      base::test::ScopedTaskEnvironment::TimeSource time_source =
+          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
-  WithScopedTaskEnvironment(
-      base::test::ScopedTaskEnvironment::MainThreadType type)
-      : scoped_task_environment_(type) {}
-  WithScopedTaskEnvironment(
-      base::test::ScopedTaskEnvironment::MainThreadType type,
-      base::test::ScopedTaskEnvironment::NowSource now_source)
-      : scoped_task_environment_(type, now_source) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            time_source) {}
 
   bool MainThreadIsIdle() const WARN_UNUSED_RESULT {
     return scoped_task_environment_.MainThreadIsIdle();
@@ -71,10 +69,7 @@ class WithScopedTaskEnvironment {
 class TestWithScopedTaskEnvironment : public ::testing::Test,
                                       public WithScopedTaskEnvironment {
  protected:
-  TestWithScopedTaskEnvironment() = default;
-  TestWithScopedTaskEnvironment(
-      base::test::ScopedTaskEnvironment::MainThreadType type)
-      : WithScopedTaskEnvironment(type) {}
+  using WithScopedTaskEnvironment::WithScopedTaskEnvironment;
 
   DISALLOW_COPY_AND_ASSIGN(TestWithScopedTaskEnvironment);
 };

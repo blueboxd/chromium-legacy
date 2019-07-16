@@ -94,7 +94,7 @@ class VIEWS_EXPORT MenuRunnerImpl : public MenuRunnerImplInterface,
   base::TimeTicks closing_event_time_;
 
   // Used to detect deletion of |this| when notifying delegate of success.
-  base::WeakPtrFactory<MenuRunnerImpl> weak_factory_;
+  base::WeakPtrFactory<MenuRunnerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MenuRunnerImpl);
 };

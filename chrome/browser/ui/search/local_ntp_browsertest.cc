@@ -643,7 +643,69 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
   EXPECT_EQ(new_title, title);
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleMostVisitedAndCustomLinks) {
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       ToggleShortcutType_WithoutCustomLinksInitialized) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+
+  // Assert that custom links is enabled (which should be by default). If so,
+  // the tiles will have an edit menu.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  ASSERT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  ASSERT_TRUE(result);
+
+  // Enable Most Visited sites and disable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+
+  // Check that custom links is disabled. The tiles should not have an edit
+  // menu.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+
+  // Disable Most Visited sites and enable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+
+  // Check if custom links is enabled. The tiles should have an edit menu.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       ToggleShortcutType_WithCustomLinksInitialized) {
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
@@ -662,7 +724,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleMostVisitedAndCustomLinks) {
   // Confirm that there are the correct number of custom link tiles.
   observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
 
-  // Check if custom links is enabled. If so, the tiles will have an edit menu.
+  // Assert that custom links is enabled (which should be by default). If so,
+  // the tiles will have an edit menu.
   bool result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",

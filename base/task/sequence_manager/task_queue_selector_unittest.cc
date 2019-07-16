@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/enqueue_order_generator.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/test/mock_time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
@@ -70,7 +71,7 @@ class TaskQueueSelectorTestBase : public testing::Test {
   ~TaskQueueSelectorTestBase() override = default;
 
   void PushTasks(const size_t queue_indices[], size_t num_tasks) {
-    EnqueueOrder::Generator enqueue_order_generator;
+    EnqueueOrderGenerator enqueue_order_generator;
     for (size_t i = 0; i < num_tasks; i++) {
       task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
           Task(PostedTask(test_closure_, FROM_HERE), TimeTicks(),

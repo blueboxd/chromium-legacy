@@ -43,11 +43,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-#if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
-#include "chrome/browser/ui/webui/settings/change_password_handler.h"
-#endif
-
 namespace chromeos {
 namespace settings {
 
@@ -88,22 +83,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<::settings::ProtocolHandlersHandler>());
-
-  bool password_protection_available = false;
-#if defined(FULL_SAFE_BROWSING)
-  safe_browsing::ChromePasswordProtectionService* password_protection =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(profile);
-  password_protection_available = !!password_protection;
-  if (password_protection) {
-    AddSettingsPageUIHandler(
-        std::make_unique<::settings::ChangePasswordHandler>(
-            profile, password_protection));
-  }
-#endif
-
-  html_source->AddBoolean("passwordProtectionAvailable",
-                          password_protection_available);
 
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());

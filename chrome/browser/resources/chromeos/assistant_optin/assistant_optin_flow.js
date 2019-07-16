@@ -81,7 +81,7 @@ Polymer({
    * @param {!Object} data New dictionary with i18n values.
    */
   reloadContent: function(data) {
-    this.voiceMatchEnabled = data['voiceMatchEnabled'];
+    this.voiceMatchEnforcedOff = data['voiceMatchEnforcedOff'];
     data['flowType'] = this.flowType;
     this.$['value-prop'].reloadContent(data);
     this.$['third-party'].reloadContent(data);
@@ -118,10 +118,10 @@ Polymer({
         this.showScreen(this.$['third-party']);
         break;
       case this.$['third-party']:
-        if (this.voiceMatchEnabled) {
-          this.showScreen(this.$['voice-match']);
-        } else {
+        if (this.voiceMatchEnforcedOff) {
           this.showScreen(this.$['get-more']);
+        } else {
+          this.showScreen(this.$['voice-match']);
         }
         break;
       case this.$['voice-match']:

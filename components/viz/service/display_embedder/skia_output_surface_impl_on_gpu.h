@@ -27,7 +27,6 @@
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
-#include "ui/latency/latency_tracker.h"
 
 class SkDeferredDisplayList;
 
@@ -229,8 +228,6 @@ class SkiaOutputSurfaceImplOnGpu {
   };
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
 
-  ui::LatencyTracker latency_tracker_;
-
   scoped_refptr<base::SingleThreadTaskRunner> context_current_task_runner_;
   scoped_refptr<DirectContextProvider> context_provider_;
   std::unique_ptr<TextureDeleter> texture_deleter_;
@@ -244,7 +241,7 @@ class SkiaOutputSurfaceImplOnGpu {
   THREAD_CHECKER(thread_checker_);
 
   base::WeakPtr<SkiaOutputSurfaceImplOnGpu> weak_ptr_;
-  base::WeakPtrFactory<SkiaOutputSurfaceImplOnGpu> weak_ptr_factory_;
+  base::WeakPtrFactory<SkiaOutputSurfaceImplOnGpu> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceImplOnGpu);
 };

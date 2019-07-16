@@ -249,52 +249,6 @@
       },
       {
         "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "android",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
           "screenshot_sync",
           "--show-stdout",
           "--browser=android-chromium",
@@ -706,50 +660,6 @@
       },
       {
         "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "linux",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
-        }
-      },
-      {
-        "args": [
           "screenshot_sync",
           "--show-stdout",
           "--browser=debug",
@@ -1146,50 +1056,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "linux",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
         }
       },
       {
@@ -1604,51 +1470,6 @@
       },
       {
         "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "linux",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_coverage_data": true,
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "linux-nvidia-stable",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
-        }
-      },
-      {
-        "args": [
           "screenshot_sync",
           "--show-stdout",
           "--browser=release",
@@ -2036,49 +1857,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "mac",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
-            }
-          ],
-          "idempotent": false
         }
       },
       {
@@ -2492,49 +2270,6 @@
       },
       {
         "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "mac",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "mac-intel-stable"
-            }
-          ],
-          "idempotent": false
-        }
-      },
-      {
-        "args": [
           "screenshot_sync",
           "--show-stdout",
           "--browser=release",
@@ -2936,51 +2671,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "mac",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "mac-amd-stable",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
         }
       },
       {
@@ -3418,51 +3108,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "mac",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:6821",
-              "hidpi": "1",
-              "os": "mac-amd-stable",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
         }
       },
       {
@@ -3933,50 +3578,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=debug",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "win",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
         }
       },
       {
@@ -4586,59 +4187,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "win",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-win10-stable",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
         },
         "trigger_script": {
           "args": [

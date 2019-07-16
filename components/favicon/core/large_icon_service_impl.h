@@ -98,7 +98,7 @@ class LargeIconServiceImpl : public LargeIconService {
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
-  base::WeakPtrFactory<LargeIconServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<LargeIconServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconServiceImpl);
 };

@@ -39,9 +39,7 @@ class NotificationTriggerSchedulerTest : public testing::Test {
  protected:
   NotificationTriggerSchedulerTest()
       : thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
 
   class ProfileTestData {
    public:

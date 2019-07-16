@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">Oppdaterer Google Chrome …</translation>
 <translation id="1469002951682717133">Chrome Appvelger</translation>
 <translation id="1553358976309200471">Oppdater Chrome</translation>
-<translation id="1585657529869845941">Klikk på <ph name="BEGIN_BOLD" />Bytt likevel<ph name="END_BOLD" /> (hvis knappen vises)</translation>
 <translation id="1587223624401073077">Google Chrome bruker kameraet ditt.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er farlig, så Chrome har blokkert den.</translation>
 <translation id="1590588151039584890">For å oppdateres må Chrome slutte å kjøre på denne datamaskinen. Dette kan medføre at andre brukere som er logget på datamaskinen, mister endringer som ikke er lagret.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">Google Chrome kan ikke lese og skrive til sin egen datakatalog: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome er en nettleser som kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du surfer på nettet.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome startes på nytt om én time}other{Chrome startes på nytt om # timer}}</translation>
-<translation id="1718131156967340976">Velg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome lagrer passordet i Google-kontoen din, så du trenger ikke å huske det.</translation>
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dataene dine på grunn av en påloggingsfeil.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="3873044882194371212">Åpne linken i et inko&amp;gnitovindu i Chrome</translation>
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
 <translation id="3898493977366060150">Surfing med Googles smarte funksjoner</translation>
-<translation id="4028693306634653894">Kom deg raskere på Chrome</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
 <translation id="4053720452172726777">Tilpass og kontrollér Google Chrome</translation>
 <translation id="4143243756087420366">Navn og bilde for Chrome</translation>
@@ -236,7 +233,6 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="7808348361785373670">Fjern fra Chrome</translation>
 <translation id="7825851276765848807">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Google Chrome på nytt.</translation>
 <translation id="7855730255114109580">Google Chrome er oppdatert</translation>
-<translation id="7888186132678118370">Fest Chrome til oppgavelinjen</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
 <translation id="7896673875602241923">Noen har tidligere logget på Chrome på denne datamaskinen som <ph name="ACCOUNT_EMAIL_LAST" />. Opprett en ny Chrome-bruker for å holde informasjonen din atskilt.</translation>
 <translation id="7908168227788431038">Nå er oppdateringen snart ferdig! Start Google Chrome på nytt for å fullføre oppdateringen.</translation>
@@ -285,6 +281,5 @@ Vi har sendt deg (<ph name="ACCOUNT_EMAIL" />) en e-post med nærmere instruksjo
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="9138603949443464873">For å bruke endringene dine må du starte Chrome på nytt</translation>
 <translation id="919706545465235479">Oppdater Chrome for å starte synkroniseringen</translation>
-<translation id="924447568950697217">Bruk Chrome som standard nettleser</translation>
 <translation id="989369509083708165">Google Chrome er standardnettleseren din</translation>
 </translationbundle>

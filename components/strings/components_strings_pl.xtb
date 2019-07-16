@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Wystawiony dla: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Czujniki ruchu</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
 <translation id="214556005048008348">Anuluj płatność</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">Sprawdź sygnał w swojej okolicy</translation>
 <translation id="2523886232349826891">Zapisana tylko na tym urządzeniu</translation>
 <translation id="2524461107774643265">Dodaj więcej informacji</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{i jeszcze 1}few{i jeszcze #}many{i jeszcze #}other{i jeszcze #}}</translation>
 <translation id="2536110899380797252">Dodaj adres</translation>
 <translation id="2539524384386349900">Wykrywaj</translation>
 <translation id="254947805923345898">Wartość zasady jest nieprawidłowa.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Zapytałeś rodziców, czy możesz wejść na tę stronę</translation>
 <translation id="4876188919622883022">Widok uproszczony</translation>
 <translation id="4876305945144899064">Brak nazwy użytkownika</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Brak}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Wyszukiwanie ciągu <ph name="TEXT" /></translation>
 <translation id="4879491255372875719">Automatycznie (domyślnie)</translation>
 <translation id="4880827082731008257">Przeszukaj historię</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Tak, zapisz</translation>
 <translation id="6508722015517270189">Uruchom ponownie Chrome</translation>
 <translation id="6517596291481585650">Ostrzeżenie: ta zasada nie została scalona jako lista na podstawie zasady, ponieważ nie jest listą.</translation>
+<translation id="6521745193039995384">Nieaktywna</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
@@ -1478,6 +1482,7 @@ Dodatkowe informacje:
 <translation id="9076630408993835509">Ta przeglądarka nie jest zarządzana przez firmę ani inną organizację. Aktywność na tym urządzeniu może być zarządzana poza Chrome. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Potrzebujemy więcej informacji</translation>
 <translation id="9080712759204168376">Podsumowanie zamówienia</translation>
+<translation id="9089260154716455634">Zasada „po godzinach”:</translation>
 <translation id="9095388113577226029">Więcej języków…</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9106062320799175032">Dodaj adres rozliczeniowy</translation>

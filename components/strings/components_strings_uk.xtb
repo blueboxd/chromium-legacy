@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Картка</translation>
 <translation id="2114841414352855701">Правило ігнорується, оскільки його замінено правилом <ph name="POLICY_NAME" />.</translation>
+<translation id="2119505898009119320">Кому видано: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Датчики руху</translation>
 <translation id="213826338245044447">Закладки на мобільному</translation>
 <translation id="214556005048008348">Скасувати оплату</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">перевірити сигнал у своїй місцевості</translation>
 <translation id="2523886232349826891">Збережено лише на цьому пристрої</translation>
 <translation id="2524461107774643265">Додайте більше інформації</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{і ще 1}one{і ще #}few{і ще #}many{і ще #}other{і ще #}}</translation>
 <translation id="2536110899380797252">Додати адресу</translation>
 <translation id="2539524384386349900">Визначити</translation>
 <translation id="254947805923345898">Недійсне значення правила.</translation>
@@ -722,6 +724,7 @@
 <translation id="4858792381671956233">Ви надіслали батькам запит на перегляд цього сайту</translation>
 <translation id="4876188919622883022">Спрощений перегляд</translation>
 <translation id="4876305945144899064">Немає імені користувача</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Немає}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831">Пошук за запитом "<ph name="TEXT" />"</translation>
 <translation id="4879491255372875719">Автоматично (за умовчанням)</translation>
 <translation id="4880827082731008257">Пошук в історії</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">Так, зберігати</translation>
 <translation id="6508722015517270189">Перезапустіть Chrome</translation>
 <translation id="6517596291481585650">Застереження: це правило не об'єднано в список, як указано в правилі, оскільки це не список.</translation>
+<translation id="6521745193039995384">Неактивне</translation>
 <translation id="6529602333819889595">&amp;Повторити видалення</translation>
 <translation id="6534179046333460208">Пропозиції сервісу "Інтернет навколо нас"</translation>
 <translation id="6545864417968258051">Пошук пристроїв Bluetooth</translation>
@@ -1479,6 +1483,7 @@
 <translation id="9076630408993835509">Цим веб-переглядачем не керує адміністратор компанії чи іншої організації. Діями на цьому пристрої можна керувати за межами Chrome. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Потрібно більше інформації</translation>
 <translation id="9080712759204168376">Підсумок замовлення</translation>
+<translation id="9089260154716455634">Правило неробочого часу:</translation>
 <translation id="9095388113577226029">Інші мови…</translation>
 <translation id="9103872766612412690">Веб-сайт <ph name="SITE" /> зазвичай використовує шифрування для захисту вашої інформації. Під час цієї спроби Chromium під’єднатися до сторінки <ph name="SITE" /> з неї отримано незвичні й неправильні облікові дані. Це може статися, коли зловмисник намагається видавати себе за веб-сайт <ph name="SITE" /> або з’єднання перервано екраном входу Wi-Fi. Ваша інформація залишається захищеною, оскільки Chromium припинив з’єднання до того, як почався обмін будь-якими даними.</translation>
 <translation id="9106062320799175032">Додайте платіжну адресу</translation>

@@ -85,10 +85,7 @@ public class TouchlessNavigationRecorderTest {
 
         ChromeTabUtils.waitForTabPageLoaded(mInitialTab, (String) null);
 
-        // This will cause the existing tab to be destroyed and replaced with a new tab, because we
-        // are running in a SingleTabActivity (which NoTouchActivity extends). This test verifies
-        // that the NavigationRecorder correctly cleans up observers when this happens, see
-        // https://crbug.com/959230 for an example of when this didn't happen correctly.
+        // This will trigger an intent and use PageTransition.FROM_API.
         mActivityTestRule.getActivity().getTabCreator(false).launchNTP();
         callback.waitForCallback(0);
     }

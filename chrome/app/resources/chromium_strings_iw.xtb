@@ -11,10 +11,8 @@
 <translation id="1298199220304005244">‏עזרה באמצעות מערכת ההפעלה של Chromium</translation>
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
 <translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
-<translation id="1502360822835740515">‏הגדר את Chromium בתור דפדפן ברירת המחדל</translation>
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="1524282610922162960">‏שיתוף כרטיסיית Chromium</translation>
-<translation id="1585657529869845941">אם הלחצן <ph name="BEGIN_BOLD" />אני רוצה להחליף בכל מקרה<ph name="END_BOLD" /> מופיע, צריך ללחוץ עליו</translation>
 <translation id="1668054258064581266">‏לאחר הסרת החשבון שלך מ-Chromeium, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="1688750314291223739">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Chromium בכל מחשב.</translation>
 <translation id="1708666629004767631">‏גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
@@ -80,13 +78,11 @@
 <translation id="3728336900324680424">‏Chromium ייגש ל-Drive שלך כדי להציג הצעות בשורת כתובת האתר</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
-<translation id="3852700440713538496">‏הצמד את Chromium לשורת המשימות</translation>
 <translation id="388648406173476553">‏התאמה אישית וניהול של Chromium נחוצה פעולה שלך - יש ללחוץ לקבלת פרטים נוספים.</translation>
 <translation id="3889543394854987837">‏לחץ על השם שלך כדי לפתוח את Chromium ולהתחיל לגלוש.</translation>
 <translation id="3898493977366060150">‏גלישה באינטרנט עם Google Smarts</translation>
 <translation id="4036079820698952681">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chromium</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
-<translation id="407254336480250557">‏בחר ב-<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="421369550622382712">‏גלה יישומים, משחקים, תוספים ועיצובים מעולים בשביל Chromium.</translation>
 <translation id="4216212958613226427">‏זו השפה שבה מוצג ממשק המשתמש של Chromium</translation>
 <translation id="4222580632002216401">‏אתה מחובר כעת ל-Chromium! הסנכרון הושבת על ידי מנהל המערכת שלך.</translation>
@@ -103,7 +99,6 @@
 <translation id="4677944499843243528">‏נראה שהפרופיל נמצא בשימוש על ידי תהליך Chromium אחר (<ph name="PROCESS_ID" />) במחשב אחר (<ph name="HOST_NAME" />)‏. Chromium נעל את הפרופיל כדי שלא ייפגם. אם אתה משוכנע שאף תהליך אחר אינו משתמש בפרופיל זה, תוכל לבטל את נעילת הפרופיל ולהפעיל את Chromium מחדש.</translation>
 <translation id="469338717132742108">‏קבל עזרה בנושא Chromium OS</translation>
 <translation id="4708774505295300557">‏מישהו נכנס בעבר ל-Chromium מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chromium כדי לשמור על הפרדת המידע שלך.</translation>
-<translation id="4714956846925717402">‏רוצה להגיע ל-Chromium מהר יותר?</translation>
 <translation id="4746050847053251315">‏לסגור את Chromium בכל זאת?</translation>
 <translation id="4748217263233248895">‏בוצע עדכון אבטחה מיוחד של Chromium. עכשיו עליך להפעיל מחדש ואנחנו נשחזר את הכרטיסיות.</translation>
 <translation id="479167709087336770">‏נעשה כאן שימוש בבדיקת האיות של חיפוש Google. הטקסט המוקלד בדפדפן נשלח אל Google. אפשר לשנות את ההתנהגות הזו בכל שלב דרך ההגדרות.</translation>

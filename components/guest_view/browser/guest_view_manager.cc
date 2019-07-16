@@ -74,8 +74,7 @@ GuestViewManager::GuestViewManager(
     : current_instance_id_(0),
       last_instance_id_removed_(0),
       context_(context),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {}
+      delegate_(std::move(delegate)) {}
 
 GuestViewManager::~GuestViewManager() {
   // It seems that ChromeOS OTR profiles may still have RenderProcessHosts at

@@ -39,7 +39,7 @@ class CleanupVisualsTask : public Task {
   base::Time now_;
 
   CleanupVisualsCallback complete_callback_;
-  base::WeakPtrFactory<CleanupVisualsTask> weak_ptr_factory_;
+  base::WeakPtrFactory<CleanupVisualsTask> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CleanupVisualsTask);
 };
 

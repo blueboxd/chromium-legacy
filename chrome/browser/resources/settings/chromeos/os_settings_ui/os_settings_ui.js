@@ -81,9 +81,6 @@ Polymer({
     showCrostini_: Boolean,
 
     /** @private */
-    showParentalControls_: Boolean,
-
-    /** @private */
     showPluginVm_: Boolean,
 
     /** @private */
@@ -170,9 +167,6 @@ Polymer({
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
     // Assistant can be disallowed due to flag, policy, locale, etc.
     this.showAssistant_ = loadTimeData.getBoolean('isAssistantAllowed');
-    this.showParentalControls_ =
-        loadTimeData.valueExists('showParentalControls') &&
-        loadTimeData.getBoolean('showParentalControls');
 
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');

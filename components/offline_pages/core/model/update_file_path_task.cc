@@ -53,8 +53,7 @@ UpdateFilePathTask::UpdateFilePathTask(OfflinePageMetadataStore* store,
     : store_(store),
       offline_id_(offline_id),
       file_path_(file_path),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
+      callback_(std::move(callback)) {
   DCHECK(store_);
 }
 

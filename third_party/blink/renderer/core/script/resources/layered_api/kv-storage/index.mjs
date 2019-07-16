@@ -5,16 +5,18 @@
 import {createStorageAreaAsyncIterator} from './async_iterator.mjs';
 import {promiseForRequest, promiseForTransaction, throwForDisallowedKey} from './idb_utils.mjs';
 
-// TODOs/spec-noncompliances:
+// Overall TODOs/spec-noncompliances:
 // - Susceptible to tampering of built-in prototypes and globals. We want to
 //   work on tooling to ameliorate that.
 
 const DEFAULT_STORAGE_AREA_NAME = 'default';
 const DEFAULT_IDB_STORE_NAME = 'store';
 
+// TODO(crbug.com/977470): this should be handled via infrastructure that
+// avoids putting it in the module map entirely, not as a runtime check.
+// Several web platform tests fail because of this.
 if (!self.isSecureContext) {
-  throw new DOMException(
-      'KV Storage is only available in secure contexts', 'SecurityError');
+  throw new TypeError('KV Storage is only available in secure contexts');
 }
 
 export class StorageArea {

@@ -32,8 +32,7 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
                              (form_saver ? std::move(form_saver)
                                          : std::make_unique<FormSaverImpl>(
                                                client->GetPasswordStore()))),
-      delegate_(delegate),
-      weak_factory_(this) {}
+      delegate_(delegate) {}
 
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() =
     default;

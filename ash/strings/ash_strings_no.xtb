@@ -16,7 +16,6 @@
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Fjern alle</translation>
-<translation id="123828989343052515">Nytt arbeidsområde</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Lader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er været?</translation>
@@ -73,7 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Velg språk</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
-<translation id="1978498689038657292">Skriving av tekst</translation>
+<translation id="1978498689038657292">Tekstfelt</translation>
 <translation id="1993072747612765854">Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen</translation>
 <translation id="1995660704900986789">Slå av</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
@@ -113,7 +112,6 @@
 <translation id="255671100581129685">Google-assistenten er ikke tilgjengelig i offentlige økter.</translation>
 <translation id="2575685495496069081">Multipålogging er slått av</translation>
 <translation id="2582112259361606227">Start på nytt for å oppdatere</translation>
-<translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2651765386227849097">Google-assistenten er slått av på denne enheten.</translation>
 <translation id="2653659639078652383">Send</translation>

@@ -6,15 +6,12 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_source.h"
+#include "net/log/net_log_values.h"
 
 namespace {
 

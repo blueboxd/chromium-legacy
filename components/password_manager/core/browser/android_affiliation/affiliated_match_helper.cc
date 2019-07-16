@@ -39,8 +39,7 @@ AffiliatedMatchHelper::AffiliatedMatchHelper(
     PasswordStore* password_store,
     std::unique_ptr<AffiliationService> affiliation_service)
     : password_store_(password_store),
-      affiliation_service_(std::move(affiliation_service)),
-      weak_ptr_factory_(this) {}
+      affiliation_service_(std::move(affiliation_service)) {}
 
 AffiliatedMatchHelper::~AffiliatedMatchHelper() {
   if (password_store_)

@@ -72,7 +72,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<Core> weak_factory_;
+  base::WeakPtrFactory<Core> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -80,9 +80,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate {
 GCMInvalidationBridge::Core::Core(
     base::WeakPtr<GCMInvalidationBridge> bridge,
     scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner)
-    : bridge_(bridge),
-      ui_thread_task_runner_(ui_thread_task_runner),
-      weak_factory_(this) {
+    : bridge_(bridge), ui_thread_task_runner_(ui_thread_task_runner) {
   // Core is created on UI thread but all calls happen on IO thread.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -172,8 +170,7 @@ GCMInvalidationBridge::GCMInvalidationBridge(
     IdentityProvider* identity_provider)
     : gcm_driver_(gcm_driver),
       identity_provider_(identity_provider),
-      subscribed_for_incoming_messages_(false),
-      weak_factory_(this) {}
+      subscribed_for_incoming_messages_(false) {}
 
 GCMInvalidationBridge::~GCMInvalidationBridge() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -2997,6 +2997,25 @@
             ]
         }
     ],
+    "MixedAutoupgrade": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledAll",
+                    "enable_features": [
+                        "AutoupgradeMixedContent"
+                    ]
+                }
+            ]
+        }
+    ],
     "MostLikelyDeprecation": [
         {
             "platforms": [

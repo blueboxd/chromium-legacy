@@ -54,6 +54,13 @@ using remote_cocoa::RenderWidgetHostNSViewHostHelper;
 
 namespace {
 
+constexpr NSString* WebAutomaticQuoteSubstitutionEnabled =
+    @"WebAutomaticQuoteSubstitutionEnabled";
+constexpr NSString* const WebAutomaticDashSubstitutionEnabled =
+    @"WebAutomaticDashSubstitutionEnabled";
+constexpr NSString* const WebAutomaticTextReplacementEnabled =
+    @"WebAutomaticTextReplacementEnabled";
+
 // A dummy RenderWidgetHostNSViewHostHelper implementation which no-ops all
 // functions.
 class DummyHostHelper : public RenderWidgetHostNSViewHostHelper {
@@ -164,13 +171,14 @@ void ExtractUnderlines(NSAttributedString* string,
   NSInteger textSuggestionsSequenceNumber_;
   BOOL shouldRequestTextSubstitutions_;
   BOOL substitutionWasApplied_;
-
-  NSTextCheckingTypes userEnabledTextCheckingTypes_;
-  NSTextCheckingTypes userDisabledTextCheckingTypes_;
 }
-@property(readonly) NSTextCheckingType allowedTextCheckingTypes;
-@property(readonly) NSTextCheckingType enabledTextCheckingTypes;
 @property(readonly) NSSpellChecker* spellChecker;
+@property(getter=isAutomaticTextReplacementEnabled)
+    BOOL automaticTextReplacementEnabled;
+@property(getter=isAutomaticQuoteSubstitutionEnabled)
+    BOOL automaticQuoteSubstitutionEnabled;
+@property(getter=isAutomaticDashSubstitutionEnabled)
+    BOOL automaticDashSubstitutionEnabled;
 
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event
                    consumed:(BOOL)consumed;
@@ -420,15 +428,13 @@ void ExtractUnderlines(NSAttributedString* string,
 - (NSTextCheckingType)enabledTextCheckingTypes {
   NSTextCheckingType checkingTypes = 0;
   if(@available(macOS 10.9, *)){
-    if (NSSpellChecker.automaticQuoteSubstitutionEnabled)
+    if (self.automaticQuoteSubstitutionEnabled)
       checkingTypes |= NSTextCheckingTypeQuote;
-    if (NSSpellChecker.automaticDashSubstitutionEnabled)
+    if (self.automaticDashSubstitutionEnabled)
       checkingTypes |= NSTextCheckingTypeDash;
+    if (self.automaticTextReplacementEnabled)
+      checkingTypes |= NSTextCheckingTypeReplacement;
   }
-  if (NSSpellChecker.automaticTextReplacementEnabled)
-    checkingTypes |= NSTextCheckingTypeReplacement;
-  checkingTypes |= userEnabledTextCheckingTypes_;
-  checkingTypes &= ~userDisabledTextCheckingTypes_;
   return checkingTypes;
 }
 
@@ -1558,46 +1564,70 @@ void ExtractUnderlines(NSAttributedString* string,
   return YES;
 }
 
-- (void)toggleTextCheckingType:(NSTextCheckingType)type {
-  if (self.enabledTextCheckingTypes & type) {
-    userEnabledTextCheckingTypes_ &= ~type;
-    userDisabledTextCheckingTypes_ |= type;
-  } else {
-    userEnabledTextCheckingTypes_ |= type;
-    userDisabledTextCheckingTypes_ &= ~type;
-  }
+- (BOOL)isAutomaticQuoteSubstitutionEnabled {
+  return [NSUserDefaults.standardUserDefaults
+      boolForKey:WebAutomaticQuoteSubstitutionEnabled];
+}
+
+- (void)setAutomaticQuoteSubstitutionEnabled:(BOOL)enabled {
+  [NSUserDefaults.standardUserDefaults
+      setBool:enabled
+       forKey:WebAutomaticQuoteSubstitutionEnabled];
 }
 
 - (void)toggleAutomaticQuoteSubstitution:(id)sender {
-  [self toggleTextCheckingType:NSTextCheckingTypeQuote];
+  self.automaticQuoteSubstitutionEnabled =
+      !self.automaticQuoteSubstitutionEnabled;
+}
+
+- (BOOL)isAutomaticDashSubstitutionEnabled {
+  return [NSUserDefaults.standardUserDefaults
+      boolForKey:WebAutomaticDashSubstitutionEnabled];
+}
+
+- (void)setAutomaticDashSubstitutionEnabled:(BOOL)enabled {
+  [NSUserDefaults.standardUserDefaults
+      setBool:enabled
+       forKey:WebAutomaticDashSubstitutionEnabled];
 }
 
 - (void)toggleAutomaticDashSubstitution:(id)sender {
-  [self toggleTextCheckingType:NSTextCheckingTypeDash];
+  self.automaticDashSubstitutionEnabled =
+      !self.automaticDashSubstitutionEnabled;
+}
+
+- (BOOL)isAutomaticTextReplacementEnabled {
+  if (![NSUserDefaults.standardUserDefaults
+          objectForKey:WebAutomaticTextReplacementEnabled]) {
+    return NSSpellChecker.automaticTextReplacementEnabled;
+  }
+  return [NSUserDefaults.standardUserDefaults
+      boolForKey:WebAutomaticTextReplacementEnabled];
+}
+
+- (void)setAutomaticTextReplacementEnabled:(BOOL)enabled {
+  [NSUserDefaults.standardUserDefaults
+      setBool:enabled
+       forKey:WebAutomaticTextReplacementEnabled];
 }
 
 - (void)toggleAutomaticTextReplacement:(id)sender {
-  [self toggleTextCheckingType:NSTextCheckingTypeReplacement];
+  self.automaticTextReplacementEnabled = !self.automaticTextReplacementEnabled;
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  if (item.action == @selector(orderFrontSubstitutionsPanel:))
+    return YES;
   if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-    NSTextCheckingType representedTextCheckingType = 0;
-    if (item.action == @selector(orderFrontSubstitutionsPanel:)) {
-      return YES;
-    } else if (item.action == @selector(toggleAutomaticQuoteSubstitution:)) {
-      representedTextCheckingType = NSTextCheckingTypeQuote;
+    if (item.action == @selector(toggleAutomaticQuoteSubstitution:)) {
+      menuItem.state = self.automaticQuoteSubstitutionEnabled;
+      return !!(self.allowedTextCheckingTypes & NSTextCheckingTypeQuote);
     } else if (item.action == @selector(toggleAutomaticDashSubstitution:)) {
-      representedTextCheckingType = NSTextCheckingTypeDash;
+      menuItem.state = self.automaticDashSubstitutionEnabled;
+      return !!(self.allowedTextCheckingTypes & NSTextCheckingTypeDash);
     } else if (item.action == @selector(toggleAutomaticTextReplacement:)) {
-      representedTextCheckingType = NSTextCheckingTypeReplacement;
-    }
-    if (representedTextCheckingType) {
-      menuItem.state =
-          (self.enabledTextCheckingTypes & representedTextCheckingType)
-              ? NSControlStateValueOn
-              : NSControlStateValueOff;
-      return (self.allowedTextCheckingTypes & representedTextCheckingType) != 0;
+      menuItem.state = self.automaticTextReplacementEnabled;
+      return !!(self.allowedTextCheckingTypes & NSTextCheckingTypeReplacement);
     }
   }
 

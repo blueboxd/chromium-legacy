@@ -328,7 +328,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   int64_t display_trace_id_ = -1;
   base::flat_set<SurfaceId> undrawn_surfaces_;
 
-  base::WeakPtrFactory<SurfaceAggregator> weak_factory_;
+  base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceAggregator);
 };

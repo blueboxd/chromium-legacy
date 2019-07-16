@@ -34,8 +34,7 @@ AutofillWebDataService::AutofillWebDataService(
     : WebDataServiceBase(wdbs, callback, ui_task_runner),
       ui_task_runner_(ui_task_runner),
       db_task_runner_(db_task_runner),
-      autofill_backend_(nullptr),
-      weak_ptr_factory_(this) {
+      autofill_backend_(nullptr) {
   base::Closure on_changed_callback =
       Bind(&AutofillWebDataService::NotifyAutofillMultipleChangedOnUISequence,
            weak_ptr_factory_.GetWeakPtr());
@@ -66,8 +65,7 @@ AutofillWebDataService::AutofillWebDataService(
           db_task_runner_,
           base::Closure(),
           base::Closure(),
-          base::Callback<void(syncer::ModelType)>())),
-      weak_ptr_factory_(this) {}
+          base::Callback<void(syncer::ModelType)>())) {}
 
 void AutofillWebDataService::ShutdownOnUISequence() {
   weak_ptr_factory_.InvalidateWeakPtrs();

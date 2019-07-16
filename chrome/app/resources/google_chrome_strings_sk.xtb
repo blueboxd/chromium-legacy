@@ -23,7 +23,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1457721931618994305">Google Chrome sa aktualizuje…</translation>
 <translation id="1469002951682717133">Spúšťač aplikácií Chrome</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
-<translation id="1585657529869845941">Kliknite na možnosť <ph name="BEGIN_BOLD" />Napriek tomu prepnúť<ph name="END_BOLD" /> (ak sa zobrazí)</translation>
 <translation id="1587223624401073077">Google Chrome používa vašu kameru.</translation>
 <translation id="1587325591171447154">Súbor <ph name="FILE_NAME" /> je nebezpečný, a preto ho Chrome zablokoval.</translation>
 <translation id="1590588151039584890">Ak chcete Chrome aktualizovať, nesmie byť spustený v tomto počítači. Ostatní používatelia prihlásení do tohto počítača môžu prísť o neuložené zmeny.</translation>
@@ -34,7 +33,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1682634494516646069">Prehliadač Google Chrome nemôže čítať ani zapisovať do adresára s údajmi: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome je webový prehliadač, ktorý spúšťa webové stránky a aplikácie rýchlosťou blesku. Je rýchly, stabilný a jednoduchý. Má v sebe vstavanú ochranu pred škodlivým softvérom a neoprávneným získavaním údajov, vďaka ktorej je prehliadanie webu bezpečnejšie.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome sa znova spustí o 1 hodinu}few{Chrome sa znova spustí o # hodiny}many{Chrome sa znova spustí o # hodiny}other{Chrome sa znova spustí o # hodín}}</translation>
-<translation id="1718131156967340976">Vyberte <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">Chrome toto heslo uloží do vášho účtu Google. Nebudete si ho musieť pamätať.</translation>
 <translation id="174539241580958092">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje z dôvodu chyby prihlásenia.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -117,7 +115,6 @@ Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vá�
 <translation id="3873044882194371212">Otvoriť odkaz v okne inko&amp;gnito Chromu</translation>
 <translation id="3889417619312448367">Odinštalovanie prehliadača Google Chrome</translation>
 <translation id="3898493977366060150">Prehliadanie webu pomocou inteligentných doplnkov Googlu</translation>
-<translation id="4028693306634653894">Prechádzajte do Chromu rýchlejšie</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
 <translation id="4053720452172726777">Prispôsobiť a ovládať prehliadač Google Chrome</translation>
 <translation id="4143243756087420366">Meno a obrázok profilu Chromu</translation>
@@ -242,7 +239,6 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7808348361785373670">Odstrániť z prehliadača Chrome...</translation>
 <translation id="7825851276765848807">Inštalácia zlyhala kvôli neznámej chybe. Skúste aplikáciu Google Chrome stiahnuť znova.</translation>
 <translation id="7855730255114109580">Google Chrome je aktuálny.</translation>
-<translation id="7888186132678118370">Pripnutie Chromu na paneli úloh</translation>
 <translation id="7890208801193284374">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chrome prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
 <translation id="7896673875602241923">Do Chromu sa už na tomto počítači niekto prihlásil pomocou účtu <ph name="ACCOUNT_EMAIL_LAST" />. Ak chcete ponechať svoje informácie oddelené, vytvorte v Chrome nového používateľa.</translation>
 <translation id="7908168227788431038">Aktualizácia je takmer hotová! Dokončíte ju novým spustením Chromu.</translation>
@@ -291,6 +287,5 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="9138603949443464873">Ak chcete zmeny použiť, spustite Chrome znova</translation>
 <translation id="919706545465235479">Ak chcete spustiť synchronizáciu, aktualizujte Chrome</translation>
-<translation id="924447568950697217">Nastavenie Chromu ako predvoleného prehliadača</translation>
 <translation id="989369509083708165">Google Chrome je vaším predvoleným prehliadačom</translation>
 </translationbundle>

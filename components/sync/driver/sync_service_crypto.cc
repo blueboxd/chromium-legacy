@@ -132,8 +132,7 @@ SyncServiceCrypto::SyncServiceCrypto(
     CryptoSyncPrefs* sync_prefs)
     : notify_observers_(notify_observers),
       reconfigure_(reconfigure),
-      sync_prefs_(sync_prefs),
-      weak_factory_(this) {
+      sync_prefs_(sync_prefs) {
   DCHECK(notify_observers_);
   DCHECK(reconfigure_);
   DCHECK(sync_prefs_);

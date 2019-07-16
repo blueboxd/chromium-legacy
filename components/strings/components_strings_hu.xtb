@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Kártya</translation>
 <translation id="2114841414352855701">A rendszer figyelmen kívül hagyja, mivel a(z) <ph name="POLICY_NAME" /> felülírta.</translation>
+<translation id="2119505898009119320">Tulajdonos: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
 <translation id="2129079103035905234">Mozgásérzékelők</translation>
 <translation id="213826338245044447">Mobilos könyvjelzők</translation>
 <translation id="214556005048008348">Fizetés visszavonása</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">A térerő ellenőrzése tartózkodási helyén</translation>
 <translation id="2523886232349826891">Csak erre az eszközre mentve</translation>
 <translation id="2524461107774643265">További adatok hozzáadása</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{és 1 további}other{és # további}}</translation>
 <translation id="2536110899380797252">Cím hozzáadása</translation>
 <translation id="2539524384386349900">Felismerés</translation>
 <translation id="254947805923345898">A házirend értéke nem érvényes.</translation>
@@ -720,6 +722,7 @@
 <translation id="4858792381671956233">Megkérdezted a szüleidet, hogy meg szabad-e látogatnod ezt a webhelyet</translation>
 <translation id="4876188919622883022">Egyszerűsített nézet</translation>
 <translation id="4876305945144899064">Nincs felhasználónév</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{Nincs}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> keresése</translation>
 <translation id="4879491255372875719">Automatikus (alapértelmezett)</translation>
 <translation id="4880827082731008257">Keresés az előzmények között</translation>
@@ -1014,6 +1017,7 @@
 <translation id="650855688985305916">Igen, szeretném tárolni</translation>
 <translation id="6508722015517270189">Indítsa újra a Chrome-ot</translation>
 <translation id="6517596291481585650">Figyelem: Ezt a házirendet nem egyesítette a rendszer listaként a házirend előírásainak megfelelően, mert nem lista.</translation>
+<translation id="6521745193039995384">Nem aktív</translation>
 <translation id="6529602333819889595">&amp;Törlés újra</translation>
 <translation id="6534179046333460208">Fizikai web – javaslatok</translation>
 <translation id="6545864417968258051">Bluetooth-alapú keresés</translation>
@@ -1477,6 +1481,7 @@ További részletek:
 <translation id="9076630408993835509">Ezt a böngészőt nem kezeli cég vagy más szervezet. Lehetséges, hogy az eszközön végzett tevékenységeket a Chrome-on kívülről felügyelik. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Több információra van szükség</translation>
 <translation id="9080712759204168376">Megrendelés összegzése</translation>
+<translation id="9089260154716455634">Házirend figyelmen kívül hagyása:</translation>
 <translation id="9095388113577226029">További nyelvek…</translation>
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9106062320799175032">Számlázási cím hozzáadása</translation>

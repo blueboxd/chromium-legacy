@@ -89,7 +89,7 @@ class DownloadDriverImpl : public DownloadDriver,
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Only used to post tasks on the same thread.
-  base::WeakPtrFactory<DownloadDriverImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadDriverImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDriverImpl);
 };

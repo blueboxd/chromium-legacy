@@ -3220,19 +3220,8 @@
 <translation id="7123160381479171745">デバイスへのログインを許可するユーザーのリストを定義します。指定形式は <ph name="USER_WHITELIST_ENTRY_FORMAT" /> です（例: <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />）。ドメイン上の任意のユーザーを許可するには、<ph name="USER_WHITELIST_ENTRY_WILDCARD" /> の形式で指定します。
 
       このポリシーが未設定の場合、ログインを許可するユーザーに制限は適用されません。ただし、新しいユーザーの作成には、<ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> ポリシーを適切に設定する必要があります。</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> では、拡張機能の更新やインストールを安全に行うことができます。ただし、Chrome Web Store 以外でホストされている一部の拡張機能のコンテンツは、安全でない署名アルゴリズムやハッシュ アルゴリズム（SHA1 など）のみによって保護されていることがあります。このポリシーが無効になっている場合、Chrome では、そうした拡張機能のフレッシュ インストールや更新は（その拡張機能のデベロッパーがアルゴリズムを強化したバージョンを再作成するまで）許可されません。このポリシーが有効になっている場合は、そうした拡張機能のインストールや更新が許可されます。
-
-          このポリシーが未設定の場合、デフォルトの動作は有効な場合と同じです。
-          ただし、<ph name="PRODUCT_NAME" /> 75 以降では、未設定の場合のデフォルトの動作は無効な場合と同じになります。
-
-          さらに、<ph name="PRODUCT_NAME" /> 77 以降では、このポリシーは無視され、無効として扱われます。</translation>
 <translation id="7126716959063786004">タスク マネージャでプロセスを終了できるようにする</translation>
 <translation id="7127892035367404455">対象バージョンへのロールバック</translation>
-<translation id="7128918109610518786"><ph name="PRODUCT_OS_NAME" /> によりランチャー バーに固定アプリとして表示されるアプリケーション ID のリストを設定します。
-
-      このポリシーを設定していると、アプリケーション セットが固定され、ユーザーは変更することができなくなります。
-
-      このポリシーを設定していないと、ランチャーの固定アプリのリストをユーザーが変更できます。</translation>
 <translation id="713121532817834879">このポリシーは、Internet Explorer の <ph name="IEEM_SITELIST_POLICY" /> ポリシーと同じ形式の XML ファイルを指す URL です。XML ファイルからルールを読み込みますが、それらのルールは Internet Explorer と共有されません。
 
       この XML ファイルのルールは、<ph name="GREYLIST_POLICY_NAME" /> と同じように適用されます。つまり、これらのルールにより、<ph name="PRODUCT_NAME" /> から代替ブラウザを開くことも、代替ブラウザから <ph name="PRODUCT_NAME" /> を開くこともできなくなります。
@@ -4058,12 +4047,6 @@
 <translation id="8759829385824155666">許可されている Kerberos 暗号化タイプ</translation>
 <translation id="8764119899999036911">標準の DNS 名と入力された元の名前のうちどちらを基準にして Kerberos SPN を生成するかを指定します。この設定を有効にすると CNAME 検索がスキップされ、入力されたサーバー名が使用されます。この設定を無効にするか未設定の場合、サーバーの標準名は CNAME 検索によって決まります。</translation>
 <translation id="8764477907716150749">このポリシーは、<ph name="PRODUCT_NAME" /> 自体が内部で使用するものです。</translation>
-<translation id="8765776988041674792">パスワード変更用の URL を設定します（HTTP と HTTPS スキームのみ）。ブラウザで警告が表示された後、ユーザーはパスワード保護サービスによってこの URL にリダイレクトされ、パスワードの変更を促されます。
-      このパスワード変更ページで、新しい指紋によるパスワード認証が <ph name="PRODUCT_NAME" /> で正しく処理されるようにするには、パスワード変更ページが https://www.chromium.org/developers/design-documents/create-amazing-password-forms のガイドラインに沿っていることを確認してください。
-
-      この設定が有効な場合、ブラウザで警告が表示された後、ユーザーはパスワード保護サービスによってこの URL にリダイレクトされ、パスワードの変更を促されます。
-      この設定が無効または未設定の場合、ユーザーはパスワード保護サービスによって https://myaccounts.google.com にリダイレクトされ、パスワードの変更を促されます。
-      このポリシーは、<ph name="MS_AD_NAME" /> ドメインに追加した Windows インスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8800453707696044281">バッテリー充電のカスタムの充電停止設定（%）を行う</translation>
 <translation id="8801680448782904838">ブラウザまたはデバイスの再起動が推奨されるか必要であることをユーザーに通知する</translation>
@@ -4201,9 +4184,6 @@
 
       ポリシーの値は秒単位で指定します。</translation>
 <translation id="9035964157729712237">ブラックリストから除外する拡張機能 ID</translation>
-<translation id="9038058011835642205">ユーザーの操作なしでアプリをサイレント インストールするウェブサイトのリストを指定します。ユーザーはこれらのアプリをアンインストールしたり、無効にしたりできません。
-
-      ポリシーのリスト項目には、必須のメンバー「url」と 2 つの省略可能なメンバー「default_launch_container」、「create_desktop_shortcut」で構成されるオブジェクトをそれぞれ指定します。「url」はインストールするウェブアプリの URL です。「launch_container」には、インストールしたウェブアプリを開く方法として「window」か「tab」を指定します。「create_desktop_shortcut」には、Linux と Windows でデスクトップ ショートカットを作成する場合は「true」を指定します。「default_launch_container」を指定しない場合、アプリはデフォルトでタブで開きます。「default_launch_container」の値に関係なく、ユーザーはアプリを開くコンテナを変更できます。「create_desktop_shortcuts」を指定しない場合、デスクトップ ショートカットは作成されません。</translation>
 <translation id="9038839118379817310">Wi-Fi を有効にする</translation>
 <translation id="9039822628127365650">このポリシーでは、ユーザーが自動的にログアウトし、セッションが終了するまでの時間を指定します。通知領域（システムトレイ）のカウントダウン タイマーに残り時間が表示されます。
 

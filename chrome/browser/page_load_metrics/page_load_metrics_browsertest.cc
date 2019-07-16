@@ -1188,7 +1188,20 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+class PageLoadMetricsBrowserTestWithAutoupgradesDisabled
+    : public PageLoadMetricsBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PageLoadMetricsBrowserTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                        UseCounterFeaturesMixedContent) {
   // UseCounterFeaturesInMainFrame loads the test file on a loopback
   // address. Loopback is treated as a secure origin in most ways, but it
@@ -1221,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                        UseCounterCSSPropertiesMixedContent) {
   // UseCounterCSSPropertiesInMainFrame loads the test file on a loopback
   // address. Loopback is treated as a secure origin in most ways, but it
@@ -1251,7 +1264,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                        UseCounterAnimatedCSSPropertiesMixedContent) {
   // UseCounterCSSPropertiesInMainFrame loads the test file on a loopback
   // address. Loopback is treated as a secure origin in most ways, but it
@@ -1365,7 +1378,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 }
 
 // Test UseCounter UKM mixed content features observed.
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                        UseCounterUkmMixedContentFeaturesLogged) {
   // As with UseCounterFeaturesMixedContent, load on a real HTTPS server to
   // trigger mixed content.

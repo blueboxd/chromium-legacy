@@ -22,7 +22,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1457721931618994305">Mise à jour de Google Chrome en cours…</translation>
 <translation id="1469002951682717133">Lanceur d'applications Google Chrome</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
-<translation id="1585657529869845941">Si le bouton <ph name="BEGIN_BOLD" />Changer quand même<ph name="END_BOLD" /> s'affiche, cliquez dessus</translation>
 <translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="1587325591171447154">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="1590588151039584890">Pour effectuer la mise à jour, vous devez fermer Chrome sur cet ordinateur. Sachez toutefois que les autres utilisateurs qui y sont connectés risquent de perdre leurs données non enregistrées.</translation>
@@ -35,7 +34,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome va être relancé dans une heure}one{Chrome va être relancé dans # heure}other{Chrome va être relancé dans # heures}}</translation>
-<translation id="1718131156967340976">Sélectionnez <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="1734234790201236882">Chrome va enregistrer ce mot de passe dans votre compte Google. Vous n'avez pas besoin de le retenir.</translation>
 <translation id="174539241580958092">Impossible de synchroniser vos données dans Google Chrome, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -118,7 +116,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="3873044882194371212">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
 <translation id="3898493977366060150">Navigation sur le Web avec les fonctionnalités intelligentes de Google</translation>
-<translation id="4028693306634653894">Accédez à Chrome plus rapidement</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
 <translation id="4143243756087420366">Nom et photo dans Chrome</translation>
@@ -244,7 +241,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7808348361785373670">Supprimer de Chrome</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="7855730255114109580">Google Chrome est à jour</translation>
-<translation id="7888186132678118370">Épingler Chrome à votre barre des tâches</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7896673875602241923">Un utilisateur s'est récemment connecté à Chrome sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chrome pour séparer vos informations.</translation>
 <translation id="7908168227788431038">Mise à jour presque terminée. Relancez Google Chrome pour la finaliser.</translation>
@@ -293,6 +289,5 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="9138603949443464873">Pour appliquer vos modifications, relancez Chrome</translation>
 <translation id="919706545465235479">Mettre à jour Chrome pour lancer la synchronisation</translation>
-<translation id="924447568950697217">Définir Chrome comme navigateur par défaut</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>
 </translationbundle>

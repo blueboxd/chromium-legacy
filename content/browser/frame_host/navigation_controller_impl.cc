@@ -2125,7 +2125,6 @@ void NavigationControllerImpl::NotifyUserActivation() {
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
     RenderFrameHostImpl* render_frame_host,
-    const GURL& default_url,
     mojom::NavigationClientAssociatedPtrInfo* navigation_client) {
   NavigationEntryImpl* entry =
       GetEntryWithUniqueID(render_frame_host->nav_entry_id());
@@ -2136,26 +2135,6 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
       entry->GetFrameEntry(render_frame_host->frame_tree_node());
   if (!frame_entry)
     return false;
-
-  // Track how often history navigations load a different URL into a subframe
-  // than the frame's default URL.
-  bool restoring_different_url = frame_entry->url() != default_url;
-  UMA_HISTOGRAM_BOOLEAN("SessionRestore.RestoredSubframeURL",
-                        restoring_different_url);
-  // If this frame's unique name uses a frame path, record the name length.
-  // If these names are long in practice, then a proposed plan to truncate
-  // unique names might affect restore behavior, since it is complex to deal
-  // with truncated names inside frame paths.
-  if (restoring_different_url) {
-    const std::string& unique_name =
-        render_frame_host->frame_tree_node()->unique_name();
-    const char kFramePathPrefix[] = "<!--framePath ";
-    if (base::StartsWith(unique_name, kFramePathPrefix,
-                         base::CompareCase::SENSITIVE)) {
-      UMA_HISTOGRAM_COUNTS_1M("SessionRestore.RestoreSubframeFramePathLength",
-                              unique_name.size());
-    }
-  }
 
   std::unique_ptr<NavigationRequest> request = CreateNavigationRequestFromEntry(
       render_frame_host->frame_tree_node(), entry, frame_entry,

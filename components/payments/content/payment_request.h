@@ -217,7 +217,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   // If not empty, use this error message for rejecting PaymentRequest.show().
   std::string reject_show_error_message_;
 
-  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

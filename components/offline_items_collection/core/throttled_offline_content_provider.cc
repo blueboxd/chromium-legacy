@@ -28,8 +28,7 @@ ThrottledOfflineContentProvider::ThrottledOfflineContentProvider(
     : delay_between_updates_(delay_between_updates),
       last_update_time_(base::TimeTicks::Now()),
       update_queued_(false),
-      wrapped_provider_(provider),
-      weak_ptr_factory_(this) {
+      wrapped_provider_(provider) {
   DCHECK(wrapped_provider_);
   wrapped_provider_->AddObserver(this);
 }

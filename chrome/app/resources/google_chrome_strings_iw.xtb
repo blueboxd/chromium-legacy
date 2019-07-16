@@ -21,7 +21,6 @@
 <translation id="1457721931618994305">‏מעדכן את Google Chrome...</translation>
 <translation id="1469002951682717133">‏מרכז האפליקציות של Chrome</translation>
 <translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
-<translation id="1585657529869845941">אם הלחצן <ph name="BEGIN_BOLD" />אני רוצה להחליף בכל מקרה<ph name="END_BOLD" /> מופיע, צריך ללחוץ עליו</translation>
 <translation id="1587223624401073077">‏Google Chrome משתמש במצלמה שלך.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> מסוכן, ולכן Chrome חסם אותו.</translation>
 <translation id="1590588151039584890">‏כדי לעדכן יש לסגור את Chrome במחשב הזה. הסגירה עשויה לגרום למשתמשים אחרים המחוברים למחשב לאבד שינויים שלא נשמרו.</translation>
@@ -32,7 +31,6 @@
 <translation id="1682634494516646069">‏Google Chrome אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה בטוחה יותר הודות להגנה מפני תוכנות זדוניות ופישינג, המובנית ב-Google Chrome.</translation>
 <translation id="1713301662689114961">{0,plural, =1{‏Chrome יופעל מחדש בעוד שעה}two{‏Chrome יופעל מחדש בעוד # שעות}many{‏Chrome יופעל מחדש בעוד # שעות}other{‏Chrome יופעל מחדש בעוד # שעות}}</translation>
-<translation id="1718131156967340976">‏בחר ב-<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">‏הסיסמה הזאת תישמר על ידי Chrome בחשבון Google. אין צורך לזכור אותה.</translation>
 <translation id="174539241580958092">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך בשל שגיאת כניסה.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -115,7 +113,6 @@
 <translation id="3873044882194371212">‏פתח את הקישור בחלון &amp;גלישה בסתר של Chrome</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
 <translation id="3898493977366060150">‏גלישה באינטרנט עם Google Smarts</translation>
-<translation id="4028693306634653894">‏רוצה להגיע ל-Chrome מהר יותר?</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
 <translation id="4143243756087420366">‏שם ותמונה ב-Chrome</translation>
@@ -236,7 +233,6 @@
 <translation id="7808348361785373670">‏הסר מ-Chrome...</translation>
 <translation id="7825851276765848807">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="7855730255114109580">‏Google Chrome מעודכן</translation>
-<translation id="7888186132678118370">‏הצמד את Chrome לשורת המשימות</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7896673875602241923">‏מישהו נכנס בעבר ל-Chrome מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST" />. צור משתמש חדש ל-Chrome כדי לשמור על הפרדת המידע שלך.</translation>
 <translation id="7908168227788431038">‏העדכון כמעט הושלם! הפעל מחדש את Google Chrome כדי לסיים את העדכון.</translation>
@@ -285,6 +281,5 @@
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="9138603949443464873">‏כדי להחיל את השינויים שביצעת, יש להפעיל מחדש את Chrome</translation>
 <translation id="919706545465235479">‏יש לעדכן את Chrome כדי להתחיל את הסנכרון</translation>
-<translation id="924447568950697217">‏הגדר את Chrome בתור דפדפן ברירת המחדל</translation>
 <translation id="989369509083708165">‏Google Chrome הוא דפדפן ברירת המחדל</translation>
 </translationbundle>

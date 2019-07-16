@@ -9,7 +9,6 @@
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
-#include "components/sync/base/system_encryptor.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,8 +95,7 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
   // keybag using a key derived from that passphrase). However, in some migrated
   // states, the keybag might also additionally contain an old, pre-migration
   // key.
-  syncer::SystemEncryptor encryptor;
-  syncer::Cryptographer cryptographer(&encryptor);
+  syncer::Cryptographer cryptographer;
   bool add_key_result = cryptographer.AddKey(params);
   DCHECK(add_key_result);
   bool get_keys_result =
@@ -114,8 +112,7 @@ sync_pb::EntitySpecifics GetEncryptedBookmarkEntitySpecifics(
 
   sync_pb::EntitySpecifics wrapped_entity_specifics;
   *wrapped_entity_specifics.mutable_bookmark() = bookmark_specifics;
-  syncer::SystemEncryptor encryptor;
-  syncer::Cryptographer cryptographer(&encryptor);
+  syncer::Cryptographer cryptographer;
   bool add_key_result = cryptographer.AddKey(key_params);
   DCHECK(add_key_result);
   bool encrypt_result = cryptographer.Encrypt(

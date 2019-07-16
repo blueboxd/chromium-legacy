@@ -41,7 +41,6 @@ suite('GoogleAssistantHandler', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isAssistantAllowed: true,
-      voiceMatchEnabled: true,
       hotwordDspAvailable: true,
     });
   });
@@ -354,7 +353,6 @@ suite('GoogleAssistantHandlerWihtNoDspHotword', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       isAssistantAllowed: true,
-      voiceMatchEnabled: true,
       hotwordDspAvailable: false,
     });
   });

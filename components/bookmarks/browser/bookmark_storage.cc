@@ -278,8 +278,7 @@ BookmarkStorage::BookmarkStorage(
               sequenced_task_runner,
               base::TimeDelta::FromMilliseconds(kSaveDelayMS),
               "BookmarkStorage"),
-      sequenced_task_runner_(sequenced_task_runner),
-      weak_factory_(this) {}
+      sequenced_task_runner_(sequenced_task_runner) {}
 
 BookmarkStorage::~BookmarkStorage() {
   if (writer_.HasPendingWrite())

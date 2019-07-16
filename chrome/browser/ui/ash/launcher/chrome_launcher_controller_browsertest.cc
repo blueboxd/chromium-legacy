@@ -1750,7 +1750,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsAndTaskManagerWindows) {
   // Open a settings window. Number of browser items should remain unchanged,
   // number of shelf items should increase.
   settings_manager->ShowChromePageForProfile(
-      browser()->profile(), chrome::GetSettingsUrl(std::string()));
+      browser()->profile(), chrome::GetOSSettingsUrl(std::string()));
   // Spin a run loop to sync Ash's ShelfModel change for the settings window.
   base::RunLoop().RunUntilIdle();
   Browser* settings_browser =

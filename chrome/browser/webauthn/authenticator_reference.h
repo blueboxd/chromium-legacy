@@ -21,15 +21,16 @@ class AuthenticatorReference {
                          base::StringPiece16 authenticator_display_name,
                          device::FidoTransportProtocol transport,
                          bool is_in_pairing_mode,
-                         bool is_paired);
+                         bool is_paired,
+                         bool requires_ble_pairing_pin);
   AuthenticatorReference(AuthenticatorReference&& data);
   AuthenticatorReference& operator=(AuthenticatorReference&& other);
   ~AuthenticatorReference();
 
-  void SetAuthenticatorId(std::string authenticator_id);
-  void SetIsInPairingMode(bool is_in_pairing_mode);
-  void SetIsPaired(bool is_paired);
-  void SetDispatched(bool dispatched);
+  void SetAuthenticatorId(std::string);
+  void SetIsInPairingMode(bool);
+  void SetIsPaired(bool);
+  void SetDispatched(bool);
 
   const std::string& authenticator_id() const { return authenticator_id_; }
   const base::string16& authenticator_display_name() const {
@@ -38,6 +39,7 @@ class AuthenticatorReference {
   device::FidoTransportProtocol transport() const { return transport_; }
   bool is_in_pairing_mode() const { return is_in_pairing_mode_; }
   bool is_paired() const { return is_paired_; }
+  bool requires_ble_pairing_pin() const { return requires_ble_pairing_pin_; }
   bool dispatched() const { return dispatched_; }
 
  private:
@@ -46,6 +48,7 @@ class AuthenticatorReference {
   device::FidoTransportProtocol transport_;
   bool is_in_pairing_mode_ = false;
   bool is_paired_ = false;
+  bool requires_ble_pairing_pin_ = true;
   bool dispatched_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorReference);

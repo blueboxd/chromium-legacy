@@ -84,24 +84,27 @@ class CBOR_EXPORT Reader {
     Config();
     ~Config();
 
-    // num_bytes_consumed, if not nullptr, is used to report the number of bytes
-    // of input consumed. This suppresses the |EXTRANEOUS_DATA| error case.
+    // Used to report the number of bytes of input consumed. This suppresses the
+    // |EXTRANEOUS_DATA| error case. May be nullptr.
     size_t* num_bytes_consumed = nullptr;
-    // error_code_out, if not nullptr, is used to report the specific error in
-    // the case that parsing fails.
+
+    // Used to report the specific error in the case that parsing fails. May be
+    // nullptr;
     DecoderError* error_code_out = nullptr;
-    // max_nesting_level controls the maximum depth of CBOR nesting that will be
-    // permitted. This exists to control stack consumption during parsing.
+
+    // Controls the maximum depth of CBOR nesting that will be permitted. This
+    // exists to control stack consumption during parsing.
     int max_nesting_level = kCBORMaxDepth;
-    // allow_invalid_utf8 causes strings that are not valid UTF-8 to be accepted
-    // and suppresses the |INVALID_UTF8| error, unless such strings are map
-    // keys. Invalid strings will result in Values of type |INVALID_UTF8| rather
-    // than |STRING|. Users of this feature should ensure that every invalid
-    // string is accounted for in the resulting structure.
+
+    // Causes strings that are not valid UTF-8 to be accepted and suppresses the
+    // |INVALID_UTF8| error, unless such strings are map keys. Invalid strings
+    // will result in Values of type |INVALID_UTF8| rather than |STRING|. Users
+    // of this feature should ensure that every invalid string is accounted for
+    // in the resulting structure.
     //
     // (Map keys are not allowed to be invalid because it was not necessary for
-    // the motivating case and because it adds complexity to handle the
-    // ordering correctly.)
+    // the motivating case and because it adds complexity to handle the ordering
+    // correctly.)
     bool allow_invalid_utf8 = false;
 
    private:

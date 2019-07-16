@@ -264,8 +264,7 @@ FakeDriveService::FakeDriveService()
       blocked_file_list_load_count_(0),
       start_page_token_load_count_(0),
       offline_(false),
-      never_return_all_file_list_(false),
-      weak_ptr_factory_(this) {
+      never_return_all_file_list_(false) {
   UpdateLatestChangelistId(largest_changestamp_, std::string());
   about_resource_->set_quota_bytes_total(9876543210);
   about_resource_->set_quota_bytes_used_aggregate(6789012345);

@@ -9,7 +9,6 @@
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1067922213147265141">Other Google services</translation>
 <translation id="1068672505746868501">Never translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
-<translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
 <translation id="1100066534610197918">Open in new tab in group</translation>
 <translation id="1105960400813249514">Screen Capture</translation>
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
@@ -56,7 +55,6 @@
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
 <translation id="1376578503827013741">Computing…</translation>
-<translation id="138361230106469022">Hi, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
 <translation id="1386674309198842382">Active <ph name="LAST_UPDATED" /> days ago</translation>
@@ -184,6 +182,7 @@
 <translation id="2289270750774289114">Ask when a site wants to discover nearby Bluetooth devices (recommended)</translation>
 <translation id="230115972905494466">No compatible devices found</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
+<translation id="2318045970523081853">Tap to make call</translation>
 <translation id="2321086116217818302">Preparing passwords…</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2323763861024343754">Site storage</translation>
@@ -204,7 +203,6 @@
 <translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Location access</translation>
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
-<translation id="2476578072172137802">Site settings</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2490684707762498678">Managed by <ph name="APP_NAME" /></translation>
 <translation id="2494974097748878569">Google Assistant in Chrome</translation>
@@ -331,17 +329,16 @@
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3443221991560634068">Reload the current page</translation>
 <translation id="3445014427084483498">Just now</translation>
-<translation id="3452612588551937789">Sign in with your Google Account to get your bookmarks, history, passwords and other settings on all your devices.</translation>
 <translation id="3478363558367712427">You can choose your search engine</translation>
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /> about suggested content</translation>
 <translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
 <translation id="3522247891732774234">Update available. More options</translation>
+<translation id="3524138585025253783">Developer UI</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB available</translation>
 <translation id="3549657413697417275">Search your history</translation>
-<translation id="3552151358455404883">Manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Add to contacts</translation>
 <translation id="3566923219790363270">Chrome is still preparing for VR. Restart Chrome later.</translation>
 <translation id="3568688522516854065">To get your tabs from your other devices, sign in and turn on sync</translation>
@@ -380,7 +377,6 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combine my data</translation>
 <translation id="393697183122708255">No enabled voice search available</translation>
-<translation id="3950820424414687140">Sign in</translation>
 <translation id="395206256282351086">Search and site suggestions disabled</translation>
 <translation id="3955193568934677022">Allow sites to play protected content (recommended)</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome will load your page when ready}other{Chrome will load your pages when ready}}</translation>
@@ -458,7 +454,6 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
 <translation id="4479647676395637221">Ask first before allowing sites to use your camera (recommended)</translation>
 <translation id="4479972344484327217">Installing <ph name="MODULE" /> for Chrome…</translation>
-<translation id="4482194545587547824">Google may use your browsing history to personalise Search and other Google services</translation>
 <translation id="4487967297491345095">All Chrome’s app data will be deleted permanently. This includes all files, settings, accounts, databases, etc.</translation>
 <translation id="4493497663118223949">Lite mode is on</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# day ago}other{# days ago}}</translation>
@@ -469,7 +464,6 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4538018662093857852">Turn on Lite mode</translation>
 <translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
-<translation id="4556110439722119938">Your bookmarks, history, passwords and other settings will be synced to your Google Account so that you can use them on all your devices</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
 <translation id="4561979708150884304">No connection</translation>
 <translation id="4565377596337484307">Hide password</translation>
@@ -616,7 +610,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5527111080432883924">Ask before allowing sites to read text and images from the clipboard (recommended)</translation>
 <translation id="5530766185686772672">Close incognito tabs</translation>
 <translation id="5534640966246046842">Site copied</translation>
-<translation id="5537099431952529648">You and your parents can manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="5561549206367097665">Waiting for network…</translation>
 <translation id="557283862590186398">Chrome needs permission to access your microphone for this site.</translation>
@@ -712,7 +705,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
 <translation id="624789221780392884">Update ready</translation>
 <translation id="6255999984061454636">Content suggestions</translation>
-<translation id="6258133034695130373"><ph name="SITE" /> wants to scan for nearby Bluetooth devices; the following devices have been found:</translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="629730747756840877">Account</translation>
@@ -774,6 +766,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6659594942844771486">Tab</translation>
 <translation id="666731172850799929">Open in <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
+<translation id="6676840375528380067">Clear your Chrome data from this device?</translation>
 <translation id="6697492270171225480">Show suggestions for similar pages when a page can't be found</translation>
 <translation id="6697947395630195233">Chrome needs access to your location to share your location with this site.</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
@@ -792,7 +785,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6803423358608456383">Opened tabs at half height</translation>
 <translation id="6811034713472274749">Page is ready to view</translation>
 <translation id="6818926723028410516">Select items</translation>
-<translation id="6820607729870073286">You have no saved website settings.</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6845325883481699275">Help improve Chrome security</translation>
@@ -815,7 +807,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6965382102122355670">OK</translation>
 <translation id="6978479750597523876">Reset translate settings</translation>
 <translation id="6979737339423435258">All time</translation>
-<translation id="6980462514016882061">Google may use your browsing history to personalise Search, ads and other Google services</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6989267951144302301">Couldn’t download</translation>
 <translation id="6990079615885386641">Get the app from the Google Play Store: <ph name="APP_ACTION" /></translation>
@@ -847,7 +838,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
-<translation id="722055596168483966">Personalise Google services</translation>
 <translation id="723171743924126238">Select images</translation>
 <translation id="7233236755231902816">To see the web in your language, get the latest version of Chrome</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
@@ -962,6 +952,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007176423574883786">Turned off for this device</translation>
+<translation id="8013372441983637696">Also clear your Chrome data from this device</translation>
 <translation id="8015452622527143194">Return everything on the page to default size</translation>
 <translation id="802154636333426148">Download failed</translation>
 <translation id="8026334261755873520">Clear browsing data</translation>
@@ -1078,7 +1069,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
-<translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>

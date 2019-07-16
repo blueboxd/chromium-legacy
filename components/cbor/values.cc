@@ -13,6 +13,14 @@
 
 namespace cbor {
 
+// static
+Value Value::InvalidUTF8StringValueForTesting(base::StringPiece in_string) {
+  return Value(
+      base::span<const uint8_t>(
+          reinterpret_cast<const uint8_t*>(in_string.data()), in_string.size()),
+      Type::INVALID_UTF8);
+}
+
 Value::Value() noexcept : type_(Type::NONE) {}
 
 Value::Value(Value&& that) noexcept {

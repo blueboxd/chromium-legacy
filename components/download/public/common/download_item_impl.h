@@ -831,7 +831,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemImpl);
 };

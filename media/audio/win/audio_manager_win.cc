@@ -278,6 +278,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
     const std::string& output_device_id,
     const AudioParameters& input_params) {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  int channels = 0;
   ChannelLayout channel_layout = CHANNEL_LAYOUT_STEREO;
   int sample_rate = 48000;
   int buffer_size = kFallbackBufferSize;
@@ -313,9 +314,10 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
       DLOG(ERROR) << "GetPreferredAudioParameters failed: " << std::hex << hr;
       return AudioParameters();
     }
-
+    DVLOG(1) << params.AsHumanReadableString();
     DCHECK(params.IsValid());
 
+    channels = params.channels();
     buffer_size = params.frames_per_buffer();
     channel_layout = params.channel_layout();
     sample_rate = params.sample_rate();
@@ -375,6 +377,9 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
       buffer_size,
       AudioParameters::HardwareCapabilities(min_buffer_size, max_buffer_size));
   params.set_effects(effects);
+  if (channel_layout == CHANNEL_LAYOUT_DISCRETE) {
+    params.set_channels_for_discrete(channels);
+  }
   DCHECK(params.IsValid());
   return params;
 }

@@ -30,6 +30,8 @@
 
 #include "base/auto_reset.h"
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -315,6 +317,8 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
   TRACE_EVENT0("blink", "HTMLDocumentParser::EnqueueTokenizedChunk");
 
   DCHECK(chunk);
+  DCHECK(GetDocument());
+
   if (!IsParsing())
     return;
 
@@ -346,13 +350,20 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
   }
 
   if (preloader_) {
-    bool appcache_initialized = GetDocument()->documentElement();
-    if (!appcache_initialized) {
-      appcache_queueing_start_time_ = CurrentTimeTicks();
+    bool appcache_fetched = false;
+    if (GetDocument()->Loader()) {
+      appcache_fetched = (GetDocument()->Loader()->GetResponse().AppCacheID() !=
+                          mojom::blink::kAppCacheNoCacheId);
     }
+    bool appcache_initialized = GetDocument()->documentElement();
     // Delay sending some requests if meta tag based CSP is present or
-    // if AppCache was not yet initialized.
-    if (pending_csp_meta_token_ || !appcache_initialized) {
+    // if AppCache was used to fetch the HTML but was not yet initialized for
+    // this document.
+    if (pending_csp_meta_token_ ||
+        ((!base::FeatureList::IsEnabled(
+              blink::features::kVerifyHTMLFetchedFromAppCacheBeforeDelay) ||
+          appcache_fetched) &&
+         !appcache_initialized)) {
       PreloadRequestStream link_rel_preloads;
       for (auto& request : chunk->preloads) {
         // Link rel preloads don't need to wait for AppCache but they
@@ -1219,23 +1230,8 @@ void HTMLDocumentParser::SetDecoder(
 
 void HTMLDocumentParser::DocumentElementAvailable() {
   TRACE_EVENT0("blink,loading", "HTMLDocumentParser::DocumentElementAvailable");
-  base::TimeDelta delta;
-  if (!appcache_queueing_start_time_.is_null()) {
-    delta = CurrentTimeTicks() - appcache_queueing_start_time_;
-  }
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime", delta,
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(1000), 50);
   Document* document = GetDocument();
   DCHECK(document);
-  LocalFrame* frame = document->GetFrame();
-  if (frame && frame->IsMainFrame()) {
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime.MainFrame",
-        delta, base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromMilliseconds(1000), 50);
-  }
   DCHECK(document->documentElement());
   Element* documentElement = GetDocument()->documentElement();
   if (documentElement->hasAttribute(u"\u26A1") ||

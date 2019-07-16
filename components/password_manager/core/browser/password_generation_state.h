@@ -85,7 +85,7 @@ class PasswordGenerationState {
   // Interface to get current time.
   std::unique_ptr<base::Clock> clock_;
   // Used to produce callbacks.
-  base::WeakPtrFactory<PasswordGenerationState> weak_factory_;
+  base::WeakPtrFactory<PasswordGenerationState> weak_factory_{this};
 };
 
 }  // namespace password_manager

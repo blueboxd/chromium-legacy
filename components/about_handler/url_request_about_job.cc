@@ -18,9 +18,7 @@ namespace about_handler {
 
 URLRequestAboutJob::URLRequestAboutJob(net::URLRequest* request,
                                        net::NetworkDelegate* network_delegate)
-    : URLRequestJob(request, network_delegate),
-      weak_factory_(this) {
-}
+    : URLRequestJob(request, network_delegate) {}
 
 void URLRequestAboutJob::Start() {
   // Start reading asynchronously so that all error reporting and data

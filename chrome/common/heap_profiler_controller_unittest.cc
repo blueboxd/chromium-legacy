@@ -22,8 +22,7 @@
 class HeapProfilerControllerTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
 };
 
 TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {

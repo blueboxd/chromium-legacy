@@ -94,7 +94,7 @@ QuicSimpleServer::~QuicSimpleServer() = default;
 
 int QuicSimpleServer::Listen(const IPEndPoint& address) {
   std::unique_ptr<UDPServerSocket> socket(
-      new UDPServerSocket(&net_log_, NetLogSource()));
+      new UDPServerSocket(nullptr, NetLogSource()));
 
   socket->AllowAddressReuse();
 

@@ -183,7 +183,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   base::Time oldest_non_expired_device_timestamp_;
   size_t number_of_devices_ = 0;
 
-  base::WeakPtrFactory<SendTabToSelfBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<SendTabToSelfBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridge);
 };

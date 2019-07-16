@@ -178,7 +178,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
   gpu::VideoEncodeAcceleratorSupportedProfiles supported_profiles_;
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider_;
 
-  base::WeakPtrFactory<Session> weak_factory_;
+  base::WeakPtrFactory<Session> weak_factory_{this};
 };
 
 }  // namespace mirroring

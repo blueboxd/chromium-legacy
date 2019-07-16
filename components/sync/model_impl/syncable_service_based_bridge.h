@@ -110,7 +110,7 @@ class SyncableServiceBasedBridge : public ModelTypeSyncBridge {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SyncableServiceBasedBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncableServiceBasedBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncableServiceBasedBridge);
 };

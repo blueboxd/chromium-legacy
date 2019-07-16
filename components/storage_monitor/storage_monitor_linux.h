@@ -125,7 +125,7 @@ class StorageMonitorLinux : public StorageMonitor {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<StorageMonitorLinux> weak_ptr_factory_;
+  base::WeakPtrFactory<StorageMonitorLinux> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitorLinux);
 };

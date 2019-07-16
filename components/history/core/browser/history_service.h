@@ -867,7 +867,7 @@ class HistoryService : public KeyedService {
   base::OnceClosure origin_queried_closure_for_testing_;
 
   // All vended weak pointers are invalidated in Cleanup().
-  base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
+  base::WeakPtrFactory<HistoryService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

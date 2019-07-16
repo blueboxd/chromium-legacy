@@ -317,9 +317,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
                    base::WaitableEvent::InitialState::NOT_SIGNALED),
       task_executor_(task_executor),
       fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED),
-      client_thread_weak_ptr_factory_(this),
-      gpu_thread_weak_ptr_factory_(this) {
+                             base::WaitableEvent::InitialState::NOT_SIGNALED) {
   // This binds the client sequence checker to the current sequence.
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   // Detach gpu sequence checker because we want to bind it to the gpu sequence,
@@ -673,10 +671,16 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                                             params.activity_flags);
       }
 
-      if (!context_state_->MakeCurrent(nullptr)) {
+      if (!context_state_->MakeCurrent(nullptr, /*needs_gl=*/true)) {
         DestroyOnGpuThread();
         LOG(ERROR) << "Failed to make context current.";
         return ContextResult::kTransientFailure;
+      }
+
+      // TODO(penghuang): Merge all SharedContextState::Initialize*()
+      if (!context_state_->IsGLInitialized()) {
+        context_state_->InitializeGL(task_executor_->gpu_preferences(),
+                                     context_group_->feature_info());
       }
 
       if (base::ThreadTaskRunnerHandle::IsSet()) {
@@ -685,7 +689,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       }
 
       context_ = context_state_->context();
-
       decoder_.reset(raster::RasterDecoder::Create(
           this, command_buffer_.get(), task_executor_->outputter(),
           task_executor_->gpu_feature_info(), task_executor_->gpu_preferences(),

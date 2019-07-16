@@ -77,7 +77,7 @@ public class MultiWindowTestHelper {
         }
 
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, activity, secondActivityClass);
-        MultiWindowUtils.onMultiInstanceModeStarted();
+        MultiInstanceManager.onMultiInstanceModeStarted();
         activity.startActivity(intent);
 
         // Wait for ChromeTabbedActivity2 to be created.

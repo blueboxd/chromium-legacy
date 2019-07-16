@@ -3326,19 +3326,8 @@
 <translation id="7123160381479171745">Defines the list of users that are allowed to log in to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT" />, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       If this policy is not configured, there are no restrictions on which users are allowed to sign in. Note that creating new users still requires the <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> policy to be configured appropriately.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> provides for the secure update and installation of extensions. However, the content of some extensions hosted outside of the Chrome Web Store may only be protected by insecure signing or hashing algorithms such as SHA1. When this policy is disabled, fresh installation of and updates to such extensions will not be permitted by Chrome (until the extension developers rebuild the extension with stronger algorithms). When this policy is enabled, installation and updates for such extensions will be permitted.
-
-          This will default to the enabled behaviour when unset.
-          Starting in <ph name="PRODUCT_NAME" /> 75, this will default to the disabled behaviour when unset.
-
-          Starting in <ph name="PRODUCT_NAME" /> 77, this policy will be ignored and treated as disabled.</translation>
 <translation id="7126716959063786004">Enable ending processes in Task Manager</translation>
 <translation id="7127892035367404455">Roll back to target version</translation>
-<translation id="7128918109610518786">Lists the application identifiers <ph name="PRODUCT_OS_NAME" /> shows as pinned apps in the launcher bar.
-
-      If this policy is configured, the set of applications is fixed and can't be changed by the user.
-
-      If this policy is left unset, the user may change the list of pinned apps in the launcher.</translation>
 <translation id="713121532817834879">This policy is a URL that points to an XML file in the same format as Internet Explorer's<ph name="IEEM_SITELIST_POLICY" /> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
 
       The rules in this XML file apply in the same way as <ph name="GREYLIST_POLICY_NAME" />. That is, these rules prevent <ph name="PRODUCT_NAME" /> from opening the alternative browser, and also prevent the alternative browser from opening <ph name="PRODUCT_NAME" />.
@@ -4195,12 +4184,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
 <translation id="8764477907716150749">This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
-<translation id="8765776988041674792">Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      In order for <ph name="PRODUCT_NAME" /> to correctly capture the new password fingerprint on this change password page, please make sure that your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME" /> domain. It also applies to Windows 10 Pro or Enterprise instances that enrolled for device management.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8800453707696044281">Set battery charge custom stop charging in per cent</translation>
 <translation id="8801680448782904838">Notify a user that a browser relaunch or device restart is recommended or required</translation>
@@ -4340,9 +4323,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 
       The policy value should be specified in seconds.</translation>
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
-<translation id="9038058011835642205">Specifies a list of websites that are installed silently, without user interaction, and which cannot be uninstalled nor disabled by the user.
-
-      Each list item of the policy is an object with a mandatory member: 'url' and two optional members: 'default_launch_container' and 'create_desktop_shortcut'. 'url' should be the URL of the web app to install, 'launch_container' should be either 'window' or 'tab' to indicate how the Web App will be opened once installed, and 'create_desktop_shortcut' should be true if a desktop shortcut should be created on Linux and Windows. If 'default_launch_container' is omitted, the app will open in a tab by default. Regardless of the value of 'default_launch_container', users are able to change which container the app will open in. If 'create_desktop_shortcuts' is omitted, no desktop shortcuts will be created.</translation>
 <translation id="9038839118379817310">Enable Wi-Fi</translation>
 <translation id="9039822628127365650">When this policy is set, it specifies the length of time after which a user is automatically logged out, terminating the session. The user is informed about the remaining time by a countdown timer shown in the system tray.
 
@@ -4356,6 +4336,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If policy value is set to a token that maps to a Quick Fix Build, the device will be updated to the corresponding Quick Fix Build if the update is not blocked by another policy.
 
       If this policy is not set, or if its value does not map to a Quick Fix Build, then the device won't be updated to a Quick Fix Build. If the device is already running a Quick Fix Build and the policy is not set anymore or its value does not map to a Quick Fix Build anymore, then the device will be updated to a regular build if the update is not blocked by another policy.</translation>
+<translation id="9054012305936267950">This policy controls the sign-in behaviour of the browser. It allows you to specify if the user can sign in to <ph name="PRODUCT_NAME" /> with their account and use account-related services like Chrome sync.
+
+      If the policy is set to 'Disable browser sign-in' then the user cannot sign in to the browser and use account-based services. In this case, browser level features like Chrome sync cannot be used and will be unavailable. If the user was signed in and the policy is set to 'Disabled' they will be signed out the next time that they run Chrome, but their local profile data like bookmarks, passwords, etc. will be preserved. The user will still be able to sign in to and use Google web services like Gmail.
+
+      If the policy is set to 'Enable browser sign-in', then the user is allowed to sign in to the browser and is automatically signed in to the browser when signed in to Google web services like Gmail. Being signed in to the browser means that the user's account information will be kept by the browser. However, it does not mean that Chrome sync will be turned on by default; the user must separately opt in to use this feature. Enabling this policy will prevent the user from turning off the setting that allows browser sign-in. To control the availability of Chrome sync, use the 'SyncDisabled' policy.
+
+      If the policy is set to 'Force browser sign-in' the user is presented with an account selection dialogue and has to choose and sign in to an account to use the browser. This ensures that for managed accounts the policies associated with the account are applied and enforced. By default this turns on Chrome sync for the account, except for the case when sync was disabled by the domain admin or via the 'SyncDisabled' policy. The default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help centre article: https://support.google.com/chrome/a/answer/7572556. This option does not support Linux and will fall back to 'Enable browser sign-in' if used.
+
+      If this policy is not set then the user can decide if they want to enable the browser sign-in option and use it as they see fit.</translation>
 <translation id="9072600218500597787">Configures the required host domain names that will be imposed on remote access hosts and prevents users from changing it.
 
           If this setting is enabled, then hosts can be shared only using accounts registered on one of the specified domain names.

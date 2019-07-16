@@ -179,8 +179,7 @@ BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     std::unique_ptr<DelayBasedTimeSource> time_source)
     : SyntheticBeginFrameSource(kNotRestartableId),
       time_source_(std::move(time_source)),
-      next_sequence_number_(BeginFrameArgs::kStartingFrameNumber),
-      weak_factory_(this) {
+      next_sequence_number_(BeginFrameArgs::kStartingFrameNumber) {
   time_source_->SetClient(this);
   // The time_source_ ticks immediately, so we SetActive(true) for a single
   // tick when we need it, and keep it as SetActive(false) otherwise.

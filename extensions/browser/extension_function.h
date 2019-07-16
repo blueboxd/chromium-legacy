@@ -118,11 +118,10 @@ class ExtensionFunction
     BAD_MESSAGE
   };
 
-  using ResponseCallback = base::Callback<void(
-      ResponseType type,
-      const base::ListValue& results,
-      const std::string& error,
-      extensions::functions::HistogramValue histogram_value)>;
+  using ResponseCallback =
+      base::RepeatingCallback<void(ResponseType type,
+                                   const base::ListValue& results,
+                                   const std::string& error)>;
 
   ExtensionFunction();
 

@@ -288,10 +288,7 @@ GCMClientImpl::GCMClientImpl(
       start_mode_(DELAYED_START),
       clock_(internals_builder_->GetClock()),
       gcm_store_reset_(false),
-      network_connection_tracker_(nullptr),
-      periodic_checkin_ptr_factory_(this),
-      destroying_gcm_store_ptr_factory_(this),
-      weak_ptr_factory_(this) {}
+      network_connection_tracker_(nullptr) {}
 
 GCMClientImpl::~GCMClientImpl() {
 }

@@ -37,7 +37,7 @@ GURL GetViewUrlFromArgs(const std::string& scheme,
 
 DomDistillerHandler::DomDistillerHandler(DomDistillerService* service,
                                          const std::string& scheme)
-    : service_(service), article_scheme_(scheme), weak_ptr_factory_(this) {}
+    : service_(service), article_scheme_(scheme) {}
 
 DomDistillerHandler::~DomDistillerHandler() {}
 

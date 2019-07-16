@@ -131,15 +131,6 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @Override
-    public void fetchContextualSuggestions(String url, Callback<List<SnippetArticle>> callback) {
-    }
-
-    @Override
-    public void fetchContextualSuggestionImage(
-            SnippetArticle suggestion, Callback<Bitmap> callback) {
-    }
-
-    @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
         nativeDismissSuggestion(mNativeSnippetsBridge, suggestion.mUrl, suggestion.getGlobalRank(),

@@ -61,8 +61,7 @@ GCMKeyStore::GCMKeyStore(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
     : key_store_path_(key_store_path),
       blocking_task_runner_(blocking_task_runner),
-      state_(State::UNINITIALIZED),
-      weak_factory_(this) {
+      state_(State::UNINITIALIZED) {
   DCHECK(blocking_task_runner);
 }
 

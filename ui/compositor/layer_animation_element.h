@@ -259,7 +259,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   AnimationMetricsReporter* animation_metrics_reporter_;
   int start_frame_number_;
 
-  base::WeakPtrFactory<LayerAnimationElement> weak_ptr_factory_;
+  base::WeakPtrFactory<LayerAnimationElement> weak_ptr_factory_{this};
 
   DISALLOW_ASSIGN(LayerAnimationElement);
 };

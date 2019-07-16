@@ -73,7 +73,10 @@ source_set("vaapi") {
     "vp9_encoder.h",
   ]
 
-  configs += [ "//third_party/libyuv:libyuv_config" ]
+  configs += [
+    "//build/config/linux/libva",
+    "//third_party/libyuv:libyuv_config",
+  ]
 
   deps = [
     ":libva_stubs",
@@ -84,6 +87,7 @@ source_set("vaapi") {
     "//media",
     "//media/gpu:common",
     "//media/gpu:video_frame_mapper_common",
+    "//media/gpu/linux:common",
     "//media/parsers",
     "//mojo/public/cpp/bindings",
     "//third_party/libyuv",
@@ -102,12 +106,7 @@ source_set("vaapi") {
     deps += [
       "//components/chromeos_camera:jpeg_encode_accelerator",
       "//components/chromeos_camera:mjpeg_decode_accelerator",
-      "//media/gpu/chromeos:common",
     ]
-  }
-
-  if (is_linux) {
-    configs += [ "//build/config/linux/libva" ]
   }
 
   if (use_x11) {

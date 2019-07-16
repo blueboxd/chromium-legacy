@@ -696,6 +696,13 @@ void ChildThreadImpl::ProcessShutdown() {
   quit_closure_.Run();
 }
 
+#if defined(OS_MACOSX)
+void ChildThreadImpl::GetTaskPort(GetTaskPortCallback callback) {
+  mojo::ScopedHandle task_port = mojo::WrapMachPort(mach_task_self());
+  std::move(callback).Run(std::move(task_port));
+}
+#endif
+
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 void ChildThreadImpl::SetIPCLoggingEnabled(bool enable) {
   if (enable)

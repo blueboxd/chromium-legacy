@@ -93,7 +93,7 @@ void RemoveImage(const base::FilePath& image_path) {
 
 }  // namespace
 
-AccountTrackerService::AccountTrackerService() : weak_factory_(this) {
+AccountTrackerService::AccountTrackerService() {
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_ref =

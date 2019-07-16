@@ -185,7 +185,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool context_lost_ = false;
   base::ObserverList<ContextLostObserver>::Unchecked context_lost_observers_;
 
-  base::WeakPtrFactory<SharedContextState> weak_ptr_factory_;
+  base::WeakPtrFactory<SharedContextState> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharedContextState);
 };

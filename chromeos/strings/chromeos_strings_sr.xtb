@@ -9,9 +9,6 @@
 <translation id="2338501278241028356">Укључите Bluetooth да бисте открили уређаје у близини</translation>
 <translation id="2805756323405976993">Апликације</translation>
 <translation id="2872961005593481000">Искључи</translation>
-<translation id="2912823482158781027">ОСВЕЖИ ТИКЕТ</translation>
-<translation id="3511655281162215899">Одмах одаберите нову лозинку</translation>
-<translation id="3562817605261346876">Ускоро освежите тикет за <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="3838338534323494292">Нова лозинка</translation>
 <translation id="445059817448385655">Стара лозинка</translation>
 <translation id="467510802200863975">Лозинке се не подударају</translation>
@@ -23,16 +20,12 @@
 <translation id="5317780077021120954">Сачувај</translation>
 <translation id="5457599981699367932">Прегледајте као гост</translation>
 <translation id="54609108002486618">Управљани</translation>
-<translation id="5733345267661125295">Одаберите нову лозинку</translation>
-<translation id="5743581760404859096">Kerberos тикет ускоро истиче</translation>
 <translation id="5832805196449965646">Додај особу</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="6058625436358447366">Да бисте завршили, унесите стару и нову лозинку</translation>
 <translation id="6106186594183574873">Да бисте завршили, унесите стару лозинку</translation>
 <translation id="6146993107019042706">Да бисте завршили, унесите нову лозинку</translation>
 <translation id="6574601967010742428">Администратор уређаја ће можда моћи да надгледа ваше активности.</translation>
-<translation id="7280705187789120111">Kerberos тикет истиче</translation>
-<translation id="7505377169174526985">{NUM_DAYS,plural, =0{Актуелна лозинка је истекла!}=1{Актуелна лозинка истиче за мање од једног дана!}one{Актуелна лозинка истиче за мање од # дана!}few{Актуелна лозинка истиче за мање од # дана!}other{Актуелна лозинка истиче за мање од # дана!}}</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдите нову лозинку</translation>
 <translation id="808894953321890993">Промени лозинку</translation>

@@ -58,10 +58,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace content {
-class SmsService;
-}
-
 // The default profile implementation.
 class ProfileImpl : public Profile {
  public:
@@ -107,7 +103,6 @@ class ProfileImpl : public Profile {
   std::string GetMediaDeviceIDSalt() override;
   download::InProgressDownloadManager* RetriveInProgressDownloadManager()
       override;
-  content::SmsService* GetSmsService() override;
   content::NativeFileSystemPermissionContext*
   GetNativeFileSystemPermissionContext() override;
   content::ContentIndexProvider* GetContentIndexProvider() override;

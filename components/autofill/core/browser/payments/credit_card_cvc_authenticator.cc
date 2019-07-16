@@ -12,7 +12,7 @@
 namespace autofill {
 
 CreditCardCVCAuthenticator::CreditCardCVCAuthenticator(AutofillClient* client)
-    : client_(client), weak_ptr_factory_(this) {}
+    : client_(client) {}
 
 CreditCardCVCAuthenticator::~CreditCardCVCAuthenticator() {}
 

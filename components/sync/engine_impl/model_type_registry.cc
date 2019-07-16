@@ -68,8 +68,7 @@ ModelTypeRegistry::ModelTypeRegistry(
       nudge_handler_(nudge_handler),
       uss_migrator_(uss_migrator),
       cancelation_signal_(cancelation_signal),
-      keystore_keys_handler_(keystore_keys_handler),
-      weak_ptr_factory_(this) {
+      keystore_keys_handler_(keystore_keys_handler) {
   for (size_t i = 0u; i < workers.size(); ++i) {
     workers_map_.insert(
         std::make_pair(workers[i]->GetModelSafeGroup(), workers[i]));

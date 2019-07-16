@@ -126,7 +126,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
   std::string installable_enabled_method_;
 
-  base::WeakPtrFactory<ServiceWorkerPaymentInstrument> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerPaymentInstrument> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentInstrument);
 };

@@ -84,8 +84,7 @@ GetOperationTask::GetOperationTask(
     GetOperationFinishedCallback callback)
     : prefetch_store_(store),
       request_factory_(request_factory),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 GetOperationTask::~GetOperationTask() {}
 

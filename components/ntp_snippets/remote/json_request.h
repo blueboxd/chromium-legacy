@@ -182,7 +182,7 @@ class JsonRequest {
   // The last response string
   std::string last_response_string_;
 
-  base::WeakPtrFactory<JsonRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<JsonRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsonRequest);
 };

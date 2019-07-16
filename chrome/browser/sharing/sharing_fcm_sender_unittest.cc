@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/callback_list.h"
 #include "base/guid.h"
 #include "chrome/browser/sharing/fcm_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
@@ -67,17 +68,26 @@ class FakeLocalDeviceInfoProvider : public syncer::LocalDeviceInfoProvider {
   }
 
   const syncer::DeviceInfo* GetLocalDeviceInfo() const override {
-    return &local_device_info_;
+    return ready_ ? &local_device_info_ : nullptr;
   }
 
   std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
   RegisterOnInitializedCallback(
       const base::RepeatingClosure& callback) override {
-    return nullptr;
+    return callback_list_.Add(callback);
+  }
+
+  void SetReady(bool ready) {
+    bool got_ready = !ready_ && ready;
+    ready_ = ready;
+    if (got_ready)
+      callback_list_.Notify();
   }
 
  private:
   syncer::DeviceInfo local_device_info_;
+  bool ready_ = true;
+  base::CallbackList<void(void)> callback_list_;
 };
 
 class MockVapidKeyManager : public VapidKeyManager {
@@ -111,9 +121,9 @@ class SharingFCMSenderTest : public Test {
   std::unique_ptr<SharingFCMSender> sharing_fcm_sender_;
   NiceMock<MockGCMDriver> mock_gcm_driver_;
   NiceMock<MockVapidKeyManager> vapid_key_manager_;
+  FakeLocalDeviceInfoProvider local_device_info_provider_;
 
  private:
-  FakeLocalDeviceInfoProvider local_device_info_provider_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
 };
 
@@ -150,4 +160,37 @@ TEST_F(SharingFCMSenderTest, SendMessageToDevice) {
       guid, base::TimeDelta::FromSeconds(kTtlSeconds), SharingMessage(),
       base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
                      base::Unretained(this)));
+}
+
+TEST_F(SharingFCMSenderTest, SendMessageBeforeLocalDeviceInfoReady) {
+  std::string guid = base::GenerateGUID();
+  sync_prefs_->SetSyncDevice(guid, CreateFakeSyncDevice());
+
+  std::unique_ptr<crypto::ECPrivateKey> vapid_key =
+      crypto::ECPrivateKey::Create();
+  ON_CALL(vapid_key_manager_, GetOrCreateKey())
+      .WillByDefault(Return(vapid_key.get()));
+
+  SharingMessage sharing_message;
+  gcm::WebPushMessage web_push_message;
+  web_push_message.time_to_live = kTtlSeconds;
+  sharing_message.SerializeToString(&web_push_message.payload);
+
+  local_device_info_provider_.SetReady(false);
+
+  EXPECT_CALL(mock_gcm_driver_, SendWebPushMessage(_, _, _, _, _, _, _, _))
+      .Times(0);
+
+  sharing_fcm_sender_->SendMessageToDevice(
+      guid, base::TimeDelta::FromSeconds(kTtlSeconds), SharingMessage(),
+      base::BindOnce(&SharingFCMSenderTest::OnMessageSent,
+                     base::Unretained(this)));
+
+  EXPECT_CALL(
+      mock_gcm_driver_,
+      SendWebPushMessage(Eq(kSharingFCMAppID), Eq(""), Eq(kP256dh),
+                         Eq(kAuthSecret), Eq(kFcmToken), Eq(vapid_key.get()),
+                         WebPushMessageMatcher(), _));
+
+  local_device_info_provider_.SetReady(true);
 }

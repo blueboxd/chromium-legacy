@@ -274,8 +274,7 @@ const gfx::FontList& Textfield::GetDefaultFontList() {
 Textfield::Textfield()
     : model_(new TextfieldModel(this)),
       placeholder_text_draw_flags_(gfx::Canvas::DefaultCanvasTextAlignment()),
-      selection_controller_(this),
-      weak_ptr_factory_(this) {
+      selection_controller_(this) {
   set_context_menu_controller(this);
   set_drag_controller(this);
   cursor_view_.SetPaintToLayer(ui::LAYER_SOLID_COLOR);

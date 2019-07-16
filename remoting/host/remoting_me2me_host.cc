@@ -58,7 +58,6 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/desktop_session_connector.h"
-#include "remoting/host/dns_blackhole_checker.h"
 #include "remoting/host/ftl_host_change_notification_listener.h"
 #include "remoting/host/ftl_signaling_connector.h"
 #include "remoting/host/gcd_rest_client.h"
@@ -81,7 +80,6 @@
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "remoting/host/security_key/security_key_extension.h"
 #include "remoting/host/shutdown_watchdog.h"
-#include "remoting/host/signaling_connector.h"
 #include "remoting/host/single_window_desktop_environment.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/test_echo_extension.h"
@@ -101,10 +99,8 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/ftl_host_device_id_provider.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
-#include "remoting/signaling/muxing_signal_strategy.h"
 #include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/remoting_log_to_server.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
@@ -318,7 +314,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool OnRelayPolicyUpdate(base::DictionaryValue* policies);
   bool OnUdpPortPolicyUpdate(base::DictionaryValue* policies);
   bool OnCurtainPolicyUpdate(base::DictionaryValue* policies);
-  bool OnHostTalkGadgetPrefixPolicyUpdate(base::DictionaryValue* policies);
   bool OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies);
   bool OnPairingPolicyUpdate(base::DictionaryValue* policies);
   bool OnGnubbyAuthPolicyUpdate(base::DictionaryValue* policies);
@@ -333,7 +328,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   void OnHeartbeatSuccessful();
   void OnUnknownHostIdError();
 
-  // Error handler for SignalingConnector.
+  // Error handler for FtlSignalingConnector.
   void OnAuthFailed();
 
   void RestartHost(const std::string& host_offline_reason);
@@ -367,10 +362,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::unique_ptr<CertificateWatcher> cert_watcher_;
 #endif
 
-  // XMPP server/remoting bot configuration (initialized from the command line).
-  XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
-  std::string directory_bot_jid_;
-
   // Created on the UI thread but used from the network thread.
   base::FilePath host_config_path_;
   std::string host_config_;
@@ -385,6 +376,7 @@ class HostProcess : public ConfigWatcher::Delegate,
   std::string pin_hash_;
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string oauth_refresh_token_;
+  std::string robot_account_username_;
   std::string serialized_config_;
   std::string host_owner_;
   std::string host_owner_email_;
@@ -400,7 +392,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool allow_nat_traversal_ = true;
   bool allow_relay_ = true;
   PortRange udp_port_range_;
-  std::string talkgadget_prefix_;
   bool allow_pairing_ = true;
 
   DesktopEnvironmentOptions desktop_environment_options_;
@@ -417,17 +408,16 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   // TODO(crbug.com/954566): Clean up GCD code
   // Must outlive |signal_strategy_|, |gcd_state_updater_| and
-  // |signaling_connector_|.
+  // |ftl_signaling_connector_|.
   std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
   // Must outlive |heartbeat_sender_| and |host_status_logger_|.
   std::unique_ptr<LogToServer> log_to_server_;
 
-  // Signal strategies must outlive |signaling_connector_| and
+  // Signal strategies must outlive |ftl_signaling_connector_| and
   // |gcd_subscriber_|.
   std::unique_ptr<SignalStrategy> signal_strategy_;
 
-  std::unique_ptr<SignalingConnector> xmpp_signaling_connector_;
   std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
   std::unique_ptr<FtlHostChangeNotificationListener>
@@ -549,18 +539,6 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   // support, so ignoring certificate requests allows connecting to servers that
   // request, but don't require, a certificate (optional client authentication).
   net::URLFetcher::SetIgnoreCertificateRequests(true);
-
-  ServiceUrls* service_urls = ServiceUrls::GetInstance();
-
-  const std::string& xmpp_server =
-      service_urls->xmpp_server_address_for_me2me_host();
-  if (!net::ParseHostAndPort(xmpp_server, &xmpp_server_config_.host,
-                             &xmpp_server_config_.port)) {
-    LOG(ERROR) << "Invalid XMPP server: " << xmpp_server;
-    return false;
-  }
-  xmpp_server_config_.use_tls = service_urls->xmpp_server_use_tls();
-  directory_bot_jid_ = service_urls->directory_bot_jid();
 
   signal_parent_ = cmd_line->HasSwitch(kSignalParentSwitchName);
 
@@ -1027,10 +1005,10 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
     return false;
   }
 
-  // Use an XMPP connection to the Talk network for session signaling.
-  if (!config.GetString(kXmppLoginConfigPath, &xmpp_server_config_.username) ||
+  // Retrieve robot account credentials for session signaling.
+  if (!config.GetString(kXmppLoginConfigPath, &robot_account_username_) ||
       !config.GetString(kOAuthRefreshTokenConfigPath, &oauth_refresh_token_)) {
-    LOG(ERROR) << "XMPP credentials are not defined in the config.";
+    LOG(ERROR) << "Robot account credentials are not defined in the config.";
     return false;
   }
 
@@ -1039,7 +1017,7 @@ bool HostProcess::ApplyConfig(const base::DictionaryValue& config) {
     use_service_account_ = true;
   } else {
     // User credential configs only have an xmpp_login, which is also the owner.
-    host_owner_ = xmpp_server_config_.username;
+    host_owner_ = robot_account_username_;
     use_service_account_ = false;
   }
 
@@ -1087,7 +1065,6 @@ void HostProcess::OnPolicyUpdate(
   restart_required |= OnNatPolicyUpdate(policies.get());
   restart_required |= OnRelayPolicyUpdate(policies.get());
   restart_required |= OnUdpPortPolicyUpdate(policies.get());
-  restart_required |= OnHostTalkGadgetPrefixPolicyUpdate(policies.get());
   restart_required |= OnHostTokenUrlPolicyUpdate(policies.get());
   restart_required |= OnPairingPolicyUpdate(policies.get());
   restart_required |= OnGnubbyAuthPolicyUpdate(policies.get());
@@ -1352,20 +1329,6 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   return true;
 }
 
-bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
-    base::DictionaryValue* policies) {
-  // Returns true if the host has to be restarted after this policy update.
-  DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-
-  if (!policies->GetString(policy::key::kRemoteAccessHostTalkGadgetPrefix,
-                           &talkgadget_prefix_)) {
-    return false;
-  }
-
-  HOST_LOG << "Policy sets talkgadget prefix: " << talkgadget_prefix_;
-  return true;
-}
-
 bool HostProcess::OnHostTokenUrlPolicyUpdate(base::DictionaryValue* policies) {
   switch (ThirdPartyAuthConfig::Parse(*policies, &third_party_auth_config_)) {
     case ThirdPartyAuthConfig::NoPolicy:
@@ -1443,26 +1406,15 @@ void HostProcess::InitializeSignaling() {
   DCHECK(!signal_strategy_);
   DCHECK(!oauth_token_getter_);
   DCHECK(!ftl_signaling_connector_);
-  DCHECK(!xmpp_signaling_connector_);
 #if defined(USE_GCD)
   DCHECK(!gcd_state_updater_);
   DCHECK(!gcd_subscriber_);
 #endif  // defined(USE_GCD)
   DCHECK(!heartbeat_sender_);
 
-  // Create SignalStrategy.
-  auto xmpp_signal_strategy = std::make_unique<XmppSignalStrategy>(
-      net::ClientSocketFactory::GetDefaultFactory(),
-      context_->url_request_context_getter(), xmpp_server_config_);
-  auto* unowned_xmpp_signal_strategy = xmpp_signal_strategy.get();
-
-  // Create SignalingConnector.
-  auto dns_blackhole_checker = std::make_unique<DnsBlackholeChecker>(
-      context_->url_loader_factory(), talkgadget_prefix_);
   auto oauth_credentials =
       std::make_unique<OAuthTokenGetter::OAuthAuthorizationCredentials>(
-          xmpp_server_config_.username, oauth_refresh_token_,
-          use_service_account_);
+          robot_account_username_, oauth_refresh_token_, use_service_account_);
   // Unretained is sound because we own the OAuthTokenGetterImpl, and the
   // callback will never be invoked once it is destroyed.
   oauth_token_getter_ = std::make_unique<OAuthTokenGetterImpl>(
@@ -1470,10 +1422,6 @@ void HostProcess::InitializeSignaling() {
       base::BindRepeating(&HostProcess::UpdateConfigRefreshToken,
                           base::Unretained(this)),
       context_->url_loader_factory(), false);
-  xmpp_signaling_connector_ = std::make_unique<SignalingConnector>(
-      unowned_xmpp_signal_strategy, std::move(dns_blackhole_checker),
-      oauth_token_getter_.get(),
-      base::BindRepeating(&HostProcess::OnAuthFailed, base::Unretained(this)));
 
   log_to_server_ = std::make_unique<RemotingLogToServer>(
       ServerLogEntry::ME2ME, std::make_unique<OAuthTokenGetterProxy>(
@@ -1486,20 +1434,18 @@ void HostProcess::InitializeSignaling() {
       ftl_signal_strategy.get(),
       base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)));
   ftl_signaling_connector_->Start();
-  auto muxing_signal_strategy = std::make_unique<MuxingSignalStrategy>(
-      std::move(ftl_signal_strategy), std::move(xmpp_signal_strategy));
   heartbeat_sender_ = std::make_unique<HeartbeatSender>(
       base::BindOnce(&HostProcess::OnHeartbeatSuccessful,
                      base::Unretained(this)),
       base::BindOnce(&HostProcess::OnUnknownHostIdError,
                      base::Unretained(this)),
       base::BindOnce(&HostProcess::OnAuthFailed, base::Unretained(this)),
-      host_id_, muxing_signal_strategy.get(), oauth_token_getter_.get(),
+      host_id_, ftl_signal_strategy.get(), oauth_token_getter_.get(),
       log_to_server_.get());
   ftl_host_change_notification_listener_ =
       std::make_unique<FtlHostChangeNotificationListener>(
-          this, muxing_signal_strategy->ftl_signal_strategy());
-  signal_strategy_ = std::move(muxing_signal_strategy);
+          this, ftl_signal_strategy.get());
+  signal_strategy_ = std::move(ftl_signal_strategy);
 
 #if defined(USE_GCD)
   // Create objects to manage GCD state.
@@ -1510,13 +1456,13 @@ void HostProcess::InitializeSignaling() {
   gcd_state_updater_.reset(new GcdStateUpdater(
       base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
       base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-      unowned_xmpp_signal_strategy, std::move(gcd_rest_client)));
+      signal_strategy_.get(), std::move(gcd_rest_client)));
   PushNotificationSubscriber::Subscription sub;
   sub.channel = "cloud_devices";
   PushNotificationSubscriber::SubscriptionList subs;
   subs.push_back(sub);
   gcd_subscriber_.reset(
-      new PushNotificationSubscriber(unowned_xmpp_signal_strategy, subs));
+      new PushNotificationSubscriber(signal_strategy_.get(), subs));
 #endif  // defined(USE_GCD)
 }
 
@@ -1730,7 +1676,6 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   heartbeat_sender_.reset();
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
-  xmpp_signaling_connector_.reset();
   signal_strategy_.reset();
 #if defined(USE_GCD)
   gcd_state_updater_.reset();

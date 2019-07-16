@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -73,7 +73,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
   static base::NoDestructor<password_manager::StoreMetricsReporter> reporter(
       *saving_passwords_enabled_, this, GetSyncService(delegate_.browserState),
       GetIdentityManager(delegate_.browserState), GetPrefs());
-  log_manager_ = password_manager::LogManager::Create(
+  log_manager_ = autofill::LogManager::Create(
       ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
           delegate_.browserState),
       base::Closure());
@@ -204,8 +204,8 @@ IOSChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
 }
 
-const password_manager::LogManager*
-IOSChromePasswordManagerClient::GetLogManager() const {
+const autofill::LogManager* IOSChromePasswordManagerClient::GetLogManager()
+    const {
   return log_manager_.get();
 }
 

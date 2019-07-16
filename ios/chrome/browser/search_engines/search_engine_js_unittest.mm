@@ -72,14 +72,12 @@ class SearchEngineJsTest : public web::WebJsTest<web::WebTestWithWebState> {
     WebTestWithWebState::TearDown();
   }
 
-  bool OnMessageFromJavaScript(const base::DictionaryValue& message,
+  void OnMessageFromJavaScript(const base::DictionaryValue& message,
                                const GURL& page_url,
-                               bool has_user_gesture,
-                               bool form_in_main_frame,
+                               bool user_is_interacting,
                                web::WebFrame* sender_frame) {
     message_received_ = true;
     message_ = message.Clone();
-    return true;
   }
 
   base::Value message_;

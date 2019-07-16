@@ -61,6 +61,7 @@ class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
 
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     AddCreditCard(autofill::test::GetCreditCard());  // Visa.
@@ -89,6 +90,11 @@ class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
         web_state(), autofill_client_.get(), nil, locale,
         autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+  }
+
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
   }
 
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;

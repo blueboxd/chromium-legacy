@@ -86,7 +86,7 @@ CASE 2, hovering over the outer div
       "bounds": [276, 276],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV class='box middle'",
           "rect": [0, 0, 132, 132],
           "reason": "background"
         }
@@ -144,7 +144,7 @@ CASE 3, hovering over the inner div
       "bounds": [276, 276],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV class='box middle'",
           "rect": [0, 0, 132, 132],
           "reason": "background"
         },

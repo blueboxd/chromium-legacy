@@ -670,7 +670,7 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     // Resources loaded from memory cache should be reported the first time
     // they're used.
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
-        resource->Options().initiator_info.name, CurrentTimeTicks());
+        resource->Options().initiator_info.name, base::TimeTicks::Now());
     // TODO(yoav): GetInitialUrlForResourceTiming() is only needed until
     // Out-of-Blink CORS lands: https://crbug.com/736308
     info->SetInitialURL(
@@ -1254,7 +1254,7 @@ void ResourceFetcher::StorePerformanceTimingInitiatorInformation(
     return;
 
   scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create(fetch_initiator, CurrentTimeTicks());
+      ResourceTimingInfo::Create(fetch_initiator, base::TimeTicks::Now());
 
   resource_timing_info_map_.insert(resource, std::move(info));
 }

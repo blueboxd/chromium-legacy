@@ -142,7 +142,7 @@ class HeartbeatSenderTest : public testing::Test, public LogToServer {
 
   ServerLogEntry::Mode mode() const override { return ServerLogEntry::ME2ME; }
 
-  // |heartbeat_sender_| must be deleted before |muxing_signal_strategy_|.
+  // |heartbeat_sender_| must be deleted before |signal_strategy_|.
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
 
   FakeOAuthTokenGetter oauth_token_getter_{OAuthTokenGetter::Status::SUCCESS,

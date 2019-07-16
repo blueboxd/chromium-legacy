@@ -103,14 +103,13 @@ void WebUIIOSImpl::RegisterMessageCallback(const std::string& message,
   message_callbacks_.insert(std::make_pair(message, callback));
 }
 
-bool WebUIIOSImpl::OnJsMessage(const base::DictionaryValue& message,
+void WebUIIOSImpl::OnJsMessage(const base::DictionaryValue& message,
                                const GURL& page_url,
-                               bool has_user_gesture,
-                               bool form_in_main_frame,
+                               bool user_is_interacting,
                                web::WebFrame* sender_frame) {
   // Chrome message are only handled if sent from the main frame.
   if (!sender_frame->IsMainFrame())
-    return false;
+    return;
 
   web::URLVerificationTrustLevel trust_level =
       web::URLVerificationTrustLevel::kNone;
@@ -120,15 +119,14 @@ bool WebUIIOSImpl::OnJsMessage(const base::DictionaryValue& message,
     const base::ListValue* arguments = nullptr;
     if (!message.GetString("message", &message_content)) {
       DLOG(WARNING) << "JS message parameter not found: message";
-      return false;
+      return;
     }
     if (!message.GetList("arguments", &arguments)) {
       DLOG(WARNING) << "JS message parameter not found: arguments";
-      return false;
+      return;
     }
     ProcessWebUIIOSMessage(current_url, message_content, *arguments);
   }
-  return true;
 }
 
 void WebUIIOSImpl::ProcessWebUIIOSMessage(const GURL& source_url,

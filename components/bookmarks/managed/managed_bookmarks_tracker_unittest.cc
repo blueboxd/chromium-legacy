@@ -64,7 +64,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
         IDS_BOOKMARK_BAR_MANAGED_FOLDER_DEFAULT_NAME));
 
     std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
-    client->SetExtraNodeToLoad(std::move(owned_managed_node));
+    client->SetManagedNodeToLoad(std::move(owned_managed_node));
     model_.reset(new BookmarkModel(std::move(client)));
 
     model_->AddObserver(&observer_);
@@ -77,7 +77,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
     TestBookmarkClient* client_ptr =
         static_cast<TestBookmarkClient*>(model_->client());
-    managed_node_ = client_ptr->extra_node();
+    managed_node_ = client_ptr->managed_node();
 
     managed_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
         model_.get(),

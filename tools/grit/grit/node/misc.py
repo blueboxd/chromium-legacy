@@ -606,7 +606,7 @@ class GritNode(base.Node):
 
         try:
           id_list = first_ids[filename][node.name]
-        except KeyError, e:
+        except KeyError as e:
           print('-' * 78)
           print('Resource id not set for %s (%s)!' % (filename, node.name))
           print('Please update %s to include an entry for %s.  See the '
@@ -617,7 +617,7 @@ class GritNode(base.Node):
 
         try:
           node.attrs['first_id'] = str(id_list.pop(0))
-        except IndexError, e:
+        except IndexError as e:
           raise Exception('Please update %s and add a first id for %s (%s).'
                           % (first_ids_filename, filename, node.name))
 

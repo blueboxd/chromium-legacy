@@ -3,6 +3,6 @@ specific_include_rules = {
   # expects an account ID (which on Android is the Gaia ID), but we receive an
   # email address instead along with SigninManagerAndroid::OnSignInCompleted().
   "signin_manager_android\.cc": [
-    "+components/signin/core/browser/primary_account_manager.h",
+    "+components/signin/internal/identity_manager/primary_account_manager.h",
   ],
 }

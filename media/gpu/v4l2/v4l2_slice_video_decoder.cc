@@ -20,7 +20,6 @@
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator.h"
-#include "media/gpu/video_frame_converter.h"
 
 namespace media {
 
@@ -117,11 +116,9 @@ struct V4L2SliceVideoDecoder::OutputRequest {
 // static
 std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter) {
+    std::unique_ptr<DmabufVideoFramePool> frame_pool) {
   DCHECK(client_task_runner->RunsTasksInCurrentSequence());
   DCHECK(frame_pool);
-  DCHECK(frame_converter);
 
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device) {
@@ -130,8 +127,7 @@ std::unique_ptr<VideoDecoder> V4L2SliceVideoDecoder::Create(
   }
 
   return base::WrapUnique<VideoDecoder>(new V4L2SliceVideoDecoder(
-      std::move(client_task_runner), std::move(device), std::move(frame_pool),
-      std::move(frame_converter)));
+      std::move(client_task_runner), std::move(device), std::move(frame_pool)));
 }
 
 // static
@@ -149,11 +145,9 @@ SupportedVideoDecoderConfigs V4L2SliceVideoDecoder::GetSupportedConfigs() {
 V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<V4L2Device> device,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter)
+    std::unique_ptr<DmabufVideoFramePool> frame_pool)
     : device_(std::move(device)),
       frame_pool_(std::move(frame_pool)),
-      frame_converter_(std::move(frame_converter)),
       client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE})),
@@ -166,7 +160,6 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 
   frame_pool_->set_parent_task_runner(decoder_task_runner_);
-  frame_converter_->set_parent_task_runner(decoder_task_runner_);
 }
 
 V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
@@ -1094,20 +1087,12 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
   }
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
 
-  scoped_refptr<VideoFrame> converted_frame =
-      frame_converter_->ConvertFrame(std::move(frame));
-  if (!converted_frame) {
-    VLOGF(1) << "Converter return null frame.";
-    SetState(State::kError);
-    return;
-  }
-
   // Although the document of VideoDecoder says "should run |output_cb| as soon
   // as possible (without thread trampolining)", MojoVideoDecoderService still
   // assumes the callback is called at original thread.
   // TODO(akahuang): call the callback directly after updating MojoVDService.
-  client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(output_cb_, std::move(converted_frame)));
+  client_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(output_cb_, std::move(frame)));
 }
 
 void V4L2SliceVideoDecoder::SetState(State new_state) {

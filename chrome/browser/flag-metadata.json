@@ -3144,6 +3144,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "username-first-flow",
+    "owners": [ "dvadym" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "views-cast-dialog",
     "owners": [ "//chrome/browser/media/router/OWNERS" ],
     "expiry_milestone": 76

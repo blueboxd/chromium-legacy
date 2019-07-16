@@ -1358,18 +1358,24 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
   const auto* empty2_fragment = iterator.NextChild(&offset);
   // 0, vertical margins got collapsed
   EXPECT_THAT(LayoutUnit(), offset.top);
-  // 35 = empty1's padding(20) + empty2's margin(15)
+  // 35 = empty1's padding(20) + empty2's padding(15)
   EXPECT_THAT(offset.left, LayoutUnit(35));
 
-  offset = empty2_fragment->Children()[0].offset;
-  // inline 25 = left float's margin(10) + empty2's padding(15).
-  // block 10 = left float's margin
-  EXPECT_THAT(offset, PhysicalOffset(25, 10));
+  const auto* linebox_fragment = empty2_fragment->Children()[0].fragment;
 
-  offset = empty2_fragment->Children()[1].offset;
-  // inline offset 140 = right float's margin(10) + right float offset(140)
+  offset =
+      To<NGPhysicalLineBoxFragment>(linebox_fragment)->Children()[0].offset;
+  // The floats are positioned outside the line-box as the line-box is
+  // "avoiding" these floats.
+  // inline -35 = inline-size of left-float (including margins).
+  // block 10 = left float's margin
+  EXPECT_THAT(offset, PhysicalOffset(-35, 10));
+
+  offset =
+      To<NGPhysicalLineBoxFragment>(linebox_fragment)->Children()[1].offset;
+  // inline offset 90 = right float's margin(10) + right float offset(80)
   // block offset 15 = right float's margin
-  LayoutUnit right_float_offset = LayoutUnit(140);
+  LayoutUnit right_float_offset = LayoutUnit(80);
   EXPECT_THAT(offset, PhysicalOffset(LayoutUnit(10) + right_float_offset,
                                      LayoutUnit(15)));
 
@@ -2269,7 +2275,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
   EXPECT_EQ(PhysicalSize(150, 60), fragment->Size());
   ASSERT_TRUE(!fragment->BreakToken() || fragment->BreakToken()->IsFinished());
 
-  const auto* float2 = fragment->Children()[1].fragment;
+  const auto* linebox =
+      To<NGPhysicalBoxFragment>(fragment.get())->Children()[0].fragment;
+  const auto* float2 =
+      To<NGPhysicalLineBoxFragment>(linebox)->Children()[1].fragment;
 
   // float2 should only have one fragment.
   EXPECT_EQ(PhysicalSize(60, 200), float2->Size());

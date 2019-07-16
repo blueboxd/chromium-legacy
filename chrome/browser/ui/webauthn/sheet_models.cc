@@ -607,7 +607,7 @@ base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
   DCHECK(ble_authenticator);
   return l10n_util::GetStringFUTF16(
       IDS_WEBAUTHN_BLE_PIN_ENTRY_TITLE,
-      ble_authenticator->authenticator_display_name());
+      ble_authenticator->authenticator_display_name);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepDescription() const {

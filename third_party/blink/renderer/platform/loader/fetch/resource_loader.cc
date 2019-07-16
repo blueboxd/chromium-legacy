@@ -1290,8 +1290,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
       OnProgress(blob->size());
     FinishedCreatingBlob(blob);
   }
-  DidFinishLoading(CurrentTimeTicks(), encoded_data_length, encoded_body_length,
-                   decoded_body_length, false, {});
+  DidFinishLoading(base::TimeTicks::Now(), encoded_data_length,
+                   encoded_body_length, decoded_body_length, false, {});
 }
 
 void ResourceLoader::RequestAsynchronously(const ResourceRequest& request) {

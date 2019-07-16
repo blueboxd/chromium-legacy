@@ -151,6 +151,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldLockToOrigin(content::BrowserContext* browser_context,
                           const GURL& effective_site_url) override;
   const char* GetInitiatorSchemeBypassingDocumentBlocking() override;
+  bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+      base::StringPiece scheme) override;
   network::mojom::URLLoaderFactoryPtrInfo
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,

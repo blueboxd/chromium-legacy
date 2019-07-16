@@ -30,7 +30,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
   static DragEvent* Create(const AtomicString& type,
                            const DragEventInit* initializer) {
     return MakeGarbageCollected<DragEvent>(
-        type, initializer, CurrentTimeTicks(), kRealOrIndistinguishable);
+        type, initializer, base::TimeTicks::Now(), kRealOrIndistinguishable);
   }
 
   DragEvent();

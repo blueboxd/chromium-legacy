@@ -27,9 +27,18 @@ import java.util.List;
 class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelegate {
     private static final String TAG = "BkgrdTaskSchedulerJS";
 
-    private static final String BACKGROUND_TASK_CLASS_KEY = "_background_task_class";
+    /** Delta time to use expiration checks. Used to make checks after the end time. */
+    static final long DEADLINE_DELTA_MS = 1000;
+
+    /** Clock to use so we can mock time in tests. */
+    public interface Clock { long currentTimeMillis(); }
+
+    private static Clock sClock = System::currentTimeMillis;
+
     @VisibleForTesting
-    static final String BACKGROUND_TASK_EXTRAS_KEY = "_background_task_extras";
+    static void setClockForTesting(Clock clock) {
+        sClock = clock;
+    }
 
     static BackgroundTask getBackgroundTaskFromJobParameters(JobParameters jobParameters) {
         String backgroundTaskClassName = getBackgroundTaskClassFromJobParameters(jobParameters);
@@ -40,6 +49,19 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         PersistableBundle extras = jobParameters.getExtras();
         if (extras == null) return null;
         return extras.getString(BACKGROUND_TASK_CLASS_KEY);
+    }
+
+    static Long getDeadlineTimeFromJobParameters(JobParameters jobParameters) {
+        PersistableBundle extras = jobParameters.getExtras();
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
+            return null;
+        }
+        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
+    }
+
+    private static long getDeadlineTime(TaskInfo taskInfo) {
+        long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
+        return sClock.currentTimeMillis() + windowEndTimeMs;
     }
 
     /**
@@ -69,6 +91,10 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         PersistableBundle jobExtras = new PersistableBundle();
         jobExtras.putString(BACKGROUND_TASK_CLASS_KEY, taskInfo.getBackgroundTaskClass().getName());
 
+        if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
+            jobExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
+        }
+
         PersistableBundle persistableBundle = getTaskExtrasAsPersistableBundle(taskInfo);
         jobExtras.putPersistableBundle(BACKGROUND_TASK_EXTRAS_KEY, persistableBundle);
 
@@ -96,7 +122,11 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
         if (oneOffInfo.hasWindowStartTimeConstraint()) {
             builder = builder.setMinimumLatency(oneOffInfo.getWindowStartTimeMs());
         }
-        return builder.setOverrideDeadline(oneOffInfo.getWindowEndTimeMs());
+        long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
+        if (oneOffInfo.expiresAfterWindowEndTime()) {
+            windowEndTimeMs += DEADLINE_DELTA_MS;
+        }
+        return builder.setOverrideDeadline(windowEndTimeMs);
     }
 
     private static JobInfo.Builder getPeriodicJobInfo(JobInfo.Builder builder, TaskInfo taskInfo) {

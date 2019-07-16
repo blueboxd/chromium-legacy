@@ -264,7 +264,7 @@ void ResourceLoadObserverForFrame::DidFailLoading(const KURL&,
   Document& document = frame_or_imported_document_->GetDocument();
   if (auto* interactive_detector = InteractiveDetector::From(document)) {
     // We have not yet recorded load_finish_time. Pass nullopt here; we will
-    // call CurrentTimeTicksInSeconds lazily when we need it.
+    // call base::TimeTicks::Now() lazily when we need it.
     interactive_detector->OnResourceLoadEnd(base::nullopt);
   }
   if (LocalFrame* frame = document.GetFrame()) {

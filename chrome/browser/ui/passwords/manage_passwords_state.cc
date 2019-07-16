@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"

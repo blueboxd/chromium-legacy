@@ -105,7 +105,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
       offset_from_transform_node_(FloatPoint()),
       geometry_needs_update_(false),
       is_animating_(false),
-      start_time_(CurrentTimeTicks()),
+      start_time_(base::TimeTicks::Now()),
       element_id_(NewElementId()) {
   DCHECK(node_);
   fragments_.emplace_back();
@@ -374,7 +374,7 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   // to fade out.
   base::TimeDelta extra_duration_required =
       std::max(base::TimeDelta(),
-               kMinPreFadeDuration - (CurrentTimeTicks() - start_time_));
+               kMinPreFadeDuration - (base::TimeTicks::Now() - start_time_));
   if (!extra_duration_required.is_zero()) {
     curve->AddKeyframe(CompositorFloatKeyframe(
         extra_duration_required.InSecondsF(), kStartOpacity, timing_function));

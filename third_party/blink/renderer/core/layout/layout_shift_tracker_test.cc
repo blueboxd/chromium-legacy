@@ -29,7 +29,7 @@ class LayoutShiftTrackerTest : public RenderingTest {
     GetLayoutShiftTracker().NotifyInput(WebMouseEvent(
         WebInputEvent::kMouseDown, WebFloatPoint(), WebFloatPoint(),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks()));
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now()));
   }
 
   void UpdateAllLifecyclePhases() {

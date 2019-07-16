@@ -127,9 +127,6 @@ void IncidentReportUploaderImpl::OnURLLoaderCompleteInternal(
     const std::string& response_body,
     int response_code,
     int net_error) {
-  UMA_HISTOGRAM_TIMES("SBIRS.ReportUploadTime",
-                      base::TimeTicks::Now() - time_begin_);
-
   Result result = UPLOAD_REQUEST_FAILED;
   std::unique_ptr<ClientIncidentResponse> response;
   if (net_error == net::OK && response_code == net::HTTP_OK) {

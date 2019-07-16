@@ -8,22 +8,22 @@
 #include <utility>
 
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/signin/public/base/signin_client.h"
 
 #if defined(OS_ANDROID)
-#include "components/signin/core/browser/oauth2_token_service_delegate_android.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
 #else
-#include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/webdata/token_web_data.h"
 #endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/signin/core/browser/profile_oauth2_token_service_delegate_chromeos.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_chromeos.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 

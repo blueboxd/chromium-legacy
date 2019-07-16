@@ -16,6 +16,7 @@
 #include "components/translate/core/common/language_detection_details.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
+#include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,13 +38,13 @@
 
 namespace translate {
 
-namespace {
-
 class LanguageDetectionControllerTest
     : public PlatformTest,
       public language::IOSLanguageDetectionTabHelper::Observer {
  protected:
-  LanguageDetectionControllerTest() : details_(nullptr) {
+  LanguageDetectionControllerTest()
+      : fake_main_frame_(/*frame_id=*/"", /*is_main_frame=*/true, GURL()),
+        details_(nullptr) {
     prefs_.registry()->RegisterBooleanPref(prefs::kOfferTranslateEnabled, true);
 
     language::IOSLanguageDetectionTabHelper::CreateForWebState(
@@ -69,6 +70,9 @@ class LanguageDetectionControllerTest
   LanguageDetectionController* controller() { return controller_.get(); }
   LanguageDetectionDetails* details() { return details_.get(); }
 
+ protected:
+  web::FakeWebFrame fake_main_frame_;
+
  private:
   TestingPrefServiceSimple prefs_;
   web::TestWebState web_state_;
@@ -85,8 +89,6 @@ class LanguageDetectionControllerTest
   }
 };
 
-}  // namespace
-
 // Tests that OnTextCaptured() correctly handles messages from the JS side and
 // informs the driver.
 TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
@@ -101,8 +103,7 @@ TEST_F(LanguageDetectionControllerTest, OnTextCaptured) {
   command.SetString("htmlLang", kRootLanguage);
   command.SetString("httpContentLanguage", kContentLanguage);
   controller()->OnTextCaptured(command, GURL("http://google.com"),
-                               /*interacting=*/false, /*is_main_frame=*/true,
-                               /*sender_frame=*/nullptr);
+                               /*interacting=*/false, &fake_main_frame_);
 
   const LanguageDetectionDetails* const details = this->details();
   EXPECT_NE(nullptr, details);
@@ -130,8 +131,7 @@ TEST_F(LanguageDetectionControllerTest, MissingHttpContentLanguage) {
   command.SetString("htmlLang", "");
   command.SetString("httpContentLanguage", "");
   controller()->OnTextCaptured(command, GURL("http://google.com"),
-                               /*interacting=*/false, /*is_main_frame=*/true,
-                               /*sender_frame=*/nullptr);
+                               /*interacting=*/false, &fake_main_frame_);
 
   const LanguageDetectionDetails* const details = this->details();
   EXPECT_NE(nullptr, details);

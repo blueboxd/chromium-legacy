@@ -124,7 +124,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
         const EventInit*,
         base::TimeTicks platform_time_stamp);
   Event(const AtomicString& type, const EventInit* init)
-      : Event(type, init, CurrentTimeTicks()) {}
+      : Event(type, init, base::TimeTicks::Now()) {}
   ~Event() override;
 
   void initEvent(const AtomicString& type, bool bubbles, bool cancelable);

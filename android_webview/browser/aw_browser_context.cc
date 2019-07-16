@@ -9,14 +9,19 @@
 #include <utility>
 
 #include "android_webview/browser/aw_browser_policy_connector.h"
+#include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
+#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_permission_manager.h"
 #include "android_webview/browser/aw_quota_manager_bridge.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/aw_web_ui_controller_factory.h"
+#include "android_webview/browser/cookie_manager.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
+#include "android_webview/browser/network_service/net_helpers.h"
+#include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/base_paths_posix.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -42,6 +47,7 @@
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -111,6 +117,7 @@ AwBrowserContext::AwBrowserContext()
 
 AwBrowserContext::~AwBrowserContext() {
   DCHECK_EQ(this, g_browser_context);
+  BrowserContext::NotifyWillBeDestroyed(this);
   SimpleKeyMap::GetInstance()->Dissociate(this);
   g_browser_context = NULL;
 }
@@ -129,7 +136,6 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
   return static_cast<AwBrowserContext*>(web_contents->GetBrowserContext());
 }
 
-// static
 base::FilePath AwBrowserContext::GetCacheDir() {
   FilePath cache_path;
   if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
@@ -420,6 +426,69 @@ void AwBrowserContext::RebuildTable(
 void AwBrowserContext::SetExtendedReportingAllowed(bool allowed) {
   user_pref_service_->SetBoolean(
       ::prefs::kSafeBrowsingExtendedReportingOptInAllowed, allowed);
+}
+
+// TODO(amalova): Make sure NetworkContext is configured correctly when
+// off-the-record
+network::mojom::NetworkContextParamsPtr
+AwBrowserContext::GetNetworkContextParams(
+    bool in_memory,
+    const base::FilePath& relative_partition_path) {
+  network::mojom::NetworkContextParamsPtr context_params =
+      network::mojom::NetworkContextParams::New();
+  context_params->user_agent = android_webview::GetUserAgent();
+
+  // TODO(ntfschr): set this value to a proper value based on the user's
+  // preferred locales (http://crbug.com/898555). For now, set this to
+  // "en-US,en" instead of "en-us,en", since Android guarantees region codes
+  // will be uppercase.
+  context_params->accept_language =
+      net::HttpUtil::GenerateAcceptLanguageHeader("en-US,en");
+
+  // HTTP cache
+  context_params->http_cache_enabled = true;
+  context_params->http_cache_max_size = GetHttpCacheSize();
+  context_params->http_cache_path = GetCacheDir();
+
+  // WebView should persist and restore cookies between app sessions (including
+  // session cookies).
+  context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
+  context_params->restore_old_session_cookies = true;
+  context_params->persist_session_cookies = true;
+  context_params->cookie_manager_params =
+      network::mojom::CookieManagerParams::New();
+  context_params->cookie_manager_params->allow_file_scheme_cookies =
+      CookieManager::GetInstance()->AllowFileSchemeCookies();
+
+  context_params->initial_ssl_config = network::mojom::SSLConfig::New();
+  // Allow SHA-1 to be used for locally-installed trust anchors, as WebView
+  // should behave like the Android system would.
+  context_params->initial_ssl_config->sha1_local_anchors_enabled = true;
+  // Do not enforce the Legacy Symantec PKI policies outlined in
+  // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html,
+  // defer to the Android system.
+  context_params->initial_ssl_config->symantec_enforcement_disabled = true;
+
+  // WebView does not currently support Certificate Transparency
+  // (http://crbug.com/921750).
+  context_params->enforce_chrome_ct_policy = false;
+
+  // WebView does not support ftp yet.
+  context_params->enable_ftp_url_support = false;
+
+  context_params->enable_brotli = base::FeatureList::IsEnabled(
+      android_webview::features::kWebViewBrotliSupport);
+
+  context_params->check_clear_text_permitted =
+      AwContentBrowserClient::get_check_cleartext_permitted();
+
+  content::UpdateCorsExemptHeader(context_params.get());
+
+  // Add proxy settings
+  AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(
+      context_params);
+
+  return context_params;
 }
 
 }  // namespace android_webview

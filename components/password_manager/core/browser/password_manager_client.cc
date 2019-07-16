@@ -85,7 +85,7 @@ bool PasswordManagerClient::IsMainFrameSecure() const {
   return false;
 }
 
-const LogManager* PasswordManagerClient::GetLogManager() const {
+const autofill::LogManager* PasswordManagerClient::GetLogManager() const {
   return nullptr;
 }
 

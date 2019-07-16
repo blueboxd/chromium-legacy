@@ -6,10 +6,18 @@ import("//build/config/ios/asset_catalog.gni")
 
 group("resources") {
   deps = [
+    ":background_color",
     ":destructive_tint_color",
     ":disabled_tint_color",
+    ":scrim_background_color",
     ":solid_button_text_color",
     ":tint_color",
+  ]
+}
+
+colorset("background_color") {
+  sources = [
+    "background_color.colorset/Contents.json",
   ]
 }
 
@@ -22,6 +30,12 @@ colorset("destructive_tint_color") {
 colorset("disabled_tint_color") {
   sources = [
     "disabled_tint_color.colorset/Contents.json",
+  ]
+}
+
+colorset("scrim_background_color") {
+  sources = [
+    "scrim_background_color.colorset/Contents.json",
   ]
 }
 

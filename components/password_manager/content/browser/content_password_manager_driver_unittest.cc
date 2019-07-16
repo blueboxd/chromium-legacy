@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/password_manager/core/browser/stub_log_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
@@ -36,7 +36,7 @@ namespace password_manager {
 
 namespace {
 
-class MockLogManager : public StubLogManager {
+class MockLogManager : public autofill::StubLogManager {
  public:
   MOCK_CONST_METHOD0(IsLoggingActive, bool(void));
 };
@@ -46,7 +46,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MockPasswordManagerClient() = default;
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_CONST_METHOD0(GetLogManager, const LogManager*());
+  MOCK_CONST_METHOD0(GetLogManager, const autofill::LogManager*());
 #if defined(SAFE_BROWSING_DB_LOCAL)
   MOCK_METHOD2(CheckSafeBrowsingReputation, void(const GURL&, const GURL&));
 #endif

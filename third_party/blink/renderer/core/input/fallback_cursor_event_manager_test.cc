@@ -85,7 +85,7 @@ class FallbackCursorEventManagerTest : public RenderingTest,
     WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(x, y),
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kNoButton, 0,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(scale);
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
@@ -103,7 +103,7 @@ class FallbackCursorEventManagerTest : public RenderingTest,
     WebMouseEvent event(WebInputEvent::kMouseMove, root_frame_point,
                         root_frame_point,
                         WebPointerProperties::Button::kNoButton, 0,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1.0f);
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
@@ -113,7 +113,7 @@ class FallbackCursorEventManagerTest : public RenderingTest,
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
   }

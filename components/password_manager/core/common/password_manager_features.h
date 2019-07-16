@@ -33,6 +33,7 @@ extern const base::Feature kPasswordManagerOnboardingAndroid;
 extern const base::Feature kRecoverPasswordsForSyncUsers;
 extern const base::Feature kTouchToFillAndroid;
 extern const base::Feature kGenerationNoOverwrites;
+extern const base::Feature kUsernameFirstFlow;
 
 // Field trial and corresponding parameters.
 // To manually override this, start Chrome with the following parameters:

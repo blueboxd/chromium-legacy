@@ -198,7 +198,7 @@ bool SpellCheckRequester::RequestCheckingFor(const EphemeralRange& range,
   if (!request)
     return false;
 
-  const base::TimeTicks current_request_time = CurrentTimeTicks();
+  const base::TimeTicks current_request_time = base::TimeTicks::Now();
   if (request_num == 0 && last_request_time_ > base::TimeTicks()) {
     UMA_HISTOGRAM_TIMES("WebCore.SpellChecker.RequestInterval",
                         current_request_time - last_request_time_);

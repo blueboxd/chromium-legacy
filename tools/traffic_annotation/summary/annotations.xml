@@ -8,9 +8,8 @@ Refer to README.md for content description and update process.
 -->
 
 <annotations>
- <item id="CRD_ice_config_request" hash_code="49825319" type="0" content_hash_code="8740825" os_list="linux,windows" file_path="remoting/protocol/http_ice_config_request.cc"/>
  <item id="CRD_relay_session_request" hash_code="24058523" type="0" content_hash_code="36997811" os_list="linux,windows" file_path="remoting/protocol/port_allocator.cc"/>
- <item id="accounts_image_fetcher" hash_code="98658519" type="0" content_hash_code="45432230" os_list="linux,windows" file_path="components/signin/core/browser/account_fetcher_service.cc"/>
+ <item id="accounts_image_fetcher" hash_code="98658519" type="0" content_hash_code="45432230" os_list="linux,windows" file_path="components/signin/internal/identity_manager/account_fetcher_service.cc"/>
  <item id="adb_client_socket" hash_code="87775794" type="0" content_hash_code="56654828" os_list="linux,windows" file_path="chrome/browser/devtools/device/adb/adb_client_socket.cc"/>
  <item id="affiliation_lookup" hash_code="111904019" type="0" content_hash_code="81061452" os_list="linux,windows" file_path="components/password_manager/core/browser/android_affiliation/affiliation_fetcher.cc"/>
  <item id="android_device_manager_socket" hash_code="37249086" type="0" content_hash_code="6436865" os_list="linux,windows" file_path="chrome/browser/devtools/device/android_device_manager.cc"/>
@@ -113,7 +112,7 @@ Refer to README.md for content description and update process.
  <item id="gaia_auth_merge_sessions" hash_code="26216847" type="0" content_hash_code="30423843" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_multilogin" hash_code="31445884" type="0" content_hash_code="77730858" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_revoke_token" hash_code="133982351" type="0" content_hash_code="96665330" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
- <item id="gaia_cookie_manager_external_cc_result" hash_code="4300475" type="0" content_hash_code="31188375" os_list="linux,windows" file_path="components/signin/core/browser/gaia_cookie_manager_service.cc"/>
+ <item id="gaia_cookie_manager_external_cc_result" hash_code="4300475" type="0" content_hash_code="31188375" os_list="linux,windows" file_path="components/signin/internal/identity_manager/gaia_cookie_manager_service.cc"/>
  <item id="gaia_oauth_client_get_token_info" hash_code="32585152" type="0" content_hash_code="128143346" os_list="linux,windows" file_path="google_apis/gaia/gaia_oauth_client.cc"/>
  <item id="gaia_oauth_client_get_tokens" hash_code="5637379" type="0" content_hash_code="12099176" os_list="linux,windows" file_path="google_apis/gaia/gaia_oauth_client.cc"/>
  <item id="gaia_oauth_client_get_user_info" hash_code="83476155" type="0" content_hash_code="35159007" os_list="linux,windows" file_path="google_apis/gaia/gaia_oauth_client.cc"/>
@@ -294,6 +293,5 @@ Refer to README.md for content description and update process.
  <item id="webstore_installer" hash_code="18764319" type="0" content_hash_code="11030110" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_installer.cc"/>
  <item id="webui_content_scripts_download" hash_code="100545943" type="0" content_hash_code="119898059" os_list="linux,windows" file_path="extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.cc"/>
  <item id="worker_script_load" hash_code="72087791" type="0" content_hash_code="24889169" os_list="linux,windows" file_path="content/browser/worker_host/worker_script_fetcher.cc"/>
- <item id="xmpp_signal_strategy" hash_code="88906454" type="0" content_hash_code="88958321" os_list="linux,windows" file_path="remoting/signaling/xmpp_signal_strategy.cc"/>
  <item id="web_push_message" hash_code="39886742" type="0" content_hash_code="110064650" os_list="linux,windows" file_path="components/gcm_driver/web_push_sender.cc"/>
 </annotations>

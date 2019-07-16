@@ -831,11 +831,6 @@ IPC_MESSAGE_ROUTED3(FrameMsg_AddMessageToConsole,
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
                     bool /* bypass_cache */)
 
-// Request the text surrounding the selection with a |max_length|. The response
-// will be sent via FrameHostMsg_TextSurroundingSelectionResponse.
-IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
-                    uint32_t /* max_length */)
-
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 
@@ -1423,13 +1418,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
 // Notify browser the theme color has been changed.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeThemeColor,
                     base::Optional<SkColor> /* theme_color */)
-
-// Response for FrameMsg_TextSurroundingSelectionRequest, |startOffset| and
-// |endOffset| are the offsets of the selection in the returned |content|.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_TextSurroundingSelectionResponse,
-                    base::string16,  /* content */
-                    uint32_t, /* startOffset */
-                    uint32_t/* endOffset */)
 
 // Register a new handler for URL requests with the given scheme.
 IPC_MESSAGE_ROUTED4(FrameHostMsg_RegisterProtocolHandler,

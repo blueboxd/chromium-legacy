@@ -90,7 +90,6 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
                                    web_app::InstallResultCode code);
 
   Profile* profile_;
-  web_app::InstallFinalizer* install_finalizer_;
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   // unique_ptr so that it can be replaced in tests.

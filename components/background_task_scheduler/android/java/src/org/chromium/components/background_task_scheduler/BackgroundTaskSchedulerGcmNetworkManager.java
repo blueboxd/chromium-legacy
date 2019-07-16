@@ -29,11 +29,6 @@ import java.util.concurrent.TimeUnit;
 class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedulerDelegate {
     private static final String TAG = "BkgrdTaskSchedGcmNM";
 
-    @VisibleForTesting
-    static final String BACKGROUND_TASK_CLASS_KEY = "_background_task_class";
-    @VisibleForTesting
-    static final String BACKGROUND_TASK_EXTRAS_KEY = "_background_task_extras";
-
     static BackgroundTask getBackgroundTaskFromTaskParams(@NonNull TaskParams taskParams) {
         String backgroundTaskClassName = getBackgroundTaskClassFromTaskParams(taskParams);
         return BackgroundTaskReflection.getBackgroundTaskFromClassName(backgroundTaskClassName);

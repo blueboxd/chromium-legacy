@@ -56,7 +56,7 @@ void OffscreenCanvas::Commit(scoped_refptr<CanvasResource> canvas_resource,
   RecordCanvasSizeToUMA(
       Size(), CanvasRenderingContextHost::HostType::kOffscreenCanvasHost);
 
-  base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
+  base::TimeTicks commit_start_time = base::TimeTicks::Now();
   current_frame_damage_rect_.join(damage_rect);
   GetOrCreateResourceDispatcher()->DispatchFrameSync(
       std::move(canvas_resource), commit_start_time, current_frame_damage_rect_,
@@ -411,7 +411,7 @@ void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
   current_frame_damage_rect_.join(damage_rect);
   if (current_frame_damage_rect_.isEmpty() || !canvas_resource)
     return;
-  const base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
+  const base::TimeTicks commit_start_time = base::TimeTicks::Now();
   GetOrCreateResourceDispatcher()->DispatchFrame(
       std::move(canvas_resource), commit_start_time, current_frame_damage_rect_,
       !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */,

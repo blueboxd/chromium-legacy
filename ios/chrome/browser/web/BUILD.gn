@@ -247,6 +247,7 @@ source_set("web_internal") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
     "//ios/web/public",
+    "//ios/web/public/js_messaging",
     "//net",
     "//services/identity/public/cpp:manifest",
     "//services/identity/public/mojom",

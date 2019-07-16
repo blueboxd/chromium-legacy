@@ -456,9 +456,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalFreezableIPC:
       return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:
-    // The TaskType of Inspector tasks needs to be unpausable because they need
-    // to run even on a paused page.
-    case TaskType::kInternalInspector:
     // Some tasks in the tests need to run when objects are paused e.g. to hook
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:
@@ -468,6 +465,9 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
+    // The TaskType of Inspector tasks need to be unpausable and should not use virtual time
+    // because they need to run on a paused page or when virtual time is paused.
+    case TaskType::kInternalInspector:
     // Navigation IPCs do not run using virtual time to avoid hanging.
     case TaskType::kInternalNavigationAssociated:
       return DoesNotUseVirtualTimeTaskQueueTraits();
@@ -515,8 +515,6 @@ scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
       return frame_task_queue_controller_->LoadingTaskQueue();
     case TaskType::kNetworkingControl:
       return frame_task_queue_controller_->LoadingControlTaskQueue();
-    case TaskType::kInternalInspector:
-      return frame_task_queue_controller_->InspectorTaskQueue();
     case TaskType::kInternalContentCapture:
       return frame_task_queue_controller_->BestEffortTaskQueue();
     default:

@@ -444,7 +444,7 @@ TEST(SyncedBookmarkTrackerTest, ShouldMatchModelAndMetadata) {
   bookmark_metadata->set_id(model->mobile_node()->id());
   bookmark_metadata->mutable_metadata()->set_server_id("MobileBookmarksId");
 
-  // Add entry for the extra node.
+  // Add entry for the managed node.
   bookmark_metadata = model_metadata.add_bookmarks_metadata();
   bookmark_metadata->set_id(node->id());
   bookmark_metadata->mutable_metadata()->set_server_id("NodeId");
@@ -559,17 +559,18 @@ TEST(SyncedBookmarkTrackerTest,
      ShouldMatchModelWithUnsyncableNodesAndMetadata) {
   // Add a managed node with an arbitrary id 100.
   const int64_t kManagedNodeId = 100;
-  auto owned_extra_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
+  auto owned_managed_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
       kManagedNodeId, bookmarks::BookmarkNode::FOLDER);
-  bookmarks::BookmarkPermanentNode* extra_node = owned_extra_node.get();
+  bookmarks::BookmarkPermanentNode* managed_node = owned_managed_node.get();
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  client->SetManagedNodeToLoad(std::move(owned_managed_node));
 
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
 
   // The model should contain the managed node now.
-  ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId), Eq(extra_node));
+  ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId),
+              Eq(managed_node));
 
   sync_pb::BookmarkModelMetadata model_metadata;
   model_metadata.mutable_model_type_state()->set_initial_sync_done(true);

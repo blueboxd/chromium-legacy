@@ -208,6 +208,10 @@ void Connector::RaiseError() {
   HandleError(true, true);
 }
 
+void Connector::SetConnectionGroup(ConnectionGroup::Ref ref) {
+  connection_group_ = std::move(ref);
+}
+
 bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -504,6 +508,8 @@ bool Connector::DispatchMessage(Message message) {
   TRACE_EVENT0("mojom", heap_profiler_tag_);
 #endif
 
+  if (connection_group_)
+    message.set_receiver_connection_group(&connection_group_);
   bool receiver_result =
       incoming_receiver_ && incoming_receiver_->Accept(&message);
   if (!weak_self)

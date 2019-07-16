@@ -128,7 +128,9 @@ const CGFloat kSpotlightCornerRadius = 7;
   spotlightView.userInteractionEnabled = NO;
   spotlightView.layer.cornerRadius = kSpotlightCornerRadius;
   spotlightView.backgroundColor = self.configuration.buttonsSpotlightColor;
-  [self addSubview:spotlightView];
+  // Make sure that the spotlightView is below the image to avoid changing the
+  // color of the image.
+  [self insertSubview:spotlightView belowSubview:self.imageView];
   AddSameCenterConstraints(self, spotlightView);
   [spotlightView.widthAnchor constraintEqualToConstant:kSpotlightSize].active =
       YES;

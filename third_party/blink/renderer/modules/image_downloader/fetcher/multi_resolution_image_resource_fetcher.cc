@@ -59,8 +59,8 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   fetcher_->Start(
       frame, request_context, network::mojom::RequestMode::kNoCors,
       network::mojom::CredentialsMode::kInclude,
-      base::BindOnce(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
-                     base::Unretained(this)));
+      WTF::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
+                WrapPersistent(this)));
 }
 
 MultiResolutionImageResourceFetcher::~MultiResolutionImageResourceFetcher() {}

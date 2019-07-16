@@ -203,6 +203,7 @@ void InSessionPasswordChangeManager::OnScreenUnlocked() {
 }
 
 void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
+  NotifyObservers(START_SAML_IDP_PASSWORD_CHANGE);
   DismissExpiryNotification();
   PasswordChangeDialog::Show(primary_profile_);
 }
@@ -210,6 +211,8 @@ void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
 void InSessionPasswordChangeManager::OnSamlPasswordChanged(
     const std::string& scraped_old_password,
     const std::string& scraped_new_password) {
+  NotifyObservers(START_SAML_IDP_PASSWORD_CHANGE);
+
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       primary_user_->GetAccountId(), true);
   PasswordChangeDialog::Dismiss();
@@ -236,6 +239,7 @@ void InSessionPasswordChangeManager::OnSamlPasswordChanged(
 void InSessionPasswordChangeManager::ChangePassword(
     const std::string& old_password,
     const std::string& new_password) {
+  NotifyObservers(START_CRYPTOHOME_PASSWORD_CHANGE);
   UserContext user_context(*primary_user_);
   user_context.SetKey(Key(new_password));
   authenticator_->MigrateKey(user_context, old_password);
@@ -251,12 +255,14 @@ void InSessionPasswordChangeManager::RemoveObserver(Observer* observer) {
 
 void InSessionPasswordChangeManager::OnAuthFailure(const AuthFailure& error) {
   VLOG(1) << "Failed to change cryptohome password: " << error.GetErrorString();
-  NotifyObservers(CHANGE_PASSWORD_AUTH_FAILURE);
+  NotifyObservers(CRYPTOHOME_PASSWORD_CHANGE_FAILURE);
 }
 
 void InSessionPasswordChangeManager::OnAuthSuccess(
     const UserContext& user_context) {
   VLOG(3) << "Cryptohome password is changed.";
+  NotifyObservers(CRYPTOHOME_PASSWORD_CHANGED);
+
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       user_context.GetAccountId(), false);
 

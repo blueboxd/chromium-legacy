@@ -15,7 +15,7 @@ TextFragmentAnchorMetrics::TextFragmentAnchorMetrics(Document* document)
 
 void TextFragmentAnchorMetrics::DidCreateAnchor(int selector_count) {
   UseCounter::Count(document_, WebFeature::kTextFragmentAnchor);
-  create_time_ = WTF::CurrentTimeTicks();
+  create_time_ = base::TimeTicks::Now();
   selector_count_ = selector_count;
 }
 
@@ -37,7 +37,7 @@ void TextFragmentAnchorMetrics::ScrollCancelled() {
 
 void TextFragmentAnchorMetrics::DidScroll() {
   if (first_scroll_into_view_time_.is_null())
-    first_scroll_into_view_time_ = WTF::CurrentTimeTicks();
+    first_scroll_into_view_time_ = base::TimeTicks::Now();
 }
 
 void TextFragmentAnchorMetrics::DidNonZeroScroll() {

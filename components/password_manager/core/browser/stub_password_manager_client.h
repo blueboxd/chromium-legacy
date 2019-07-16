@@ -7,11 +7,11 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
-#include "components/password_manager/core/browser/stub_log_manager.h"
 
 namespace password_manager {
 
@@ -53,7 +53,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   PasswordStore* GetPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
-  const LogManager* GetLogManager() const override;
+  const autofill::LogManager* GetLogManager() const override;
 #if defined(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
@@ -73,7 +73,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
 
  private:
   const StubCredentialsFilter credentials_filter_;
-  StubLogManager log_manager_;
+  autofill::StubLogManager log_manager_;
   ukm::SourceId ukm_source_id_;
   base::Optional<PasswordManagerMetricsRecorder> metrics_recorder_;
 

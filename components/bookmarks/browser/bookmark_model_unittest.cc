@@ -428,24 +428,24 @@ class BookmarkModelTest : public testing::Test,
 
   int AllNodesRemovedObserverCount() const { return all_bookmarks_removed_; }
 
-  BookmarkPermanentNode* ReloadModelWithExtraNode() {
+  BookmarkPermanentNode* ReloadModelWithManagedNode() {
     model_->RemoveObserver(this);
 
-    auto owned_extra_node =
+    auto owned_managed_node =
         std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-    BookmarkPermanentNode* extra_node = owned_extra_node.get();
+    BookmarkPermanentNode* managed_node = owned_managed_node.get();
 
     std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient);
-    client->SetExtraNodeToLoad(std::move(owned_extra_node));
+    client->SetManagedNodeToLoad(std::move(owned_managed_node));
 
     model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
     model_->AddObserver(this);
     ClearCounts();
 
-    if (model_->root_node()->GetIndexOf(extra_node) == -1)
+    if (model_->root_node()->GetIndexOf(managed_node) == -1)
       ADD_FAILURE();
 
-    return extra_node;
+    return managed_node;
   }
 
  protected:
@@ -1157,14 +1157,14 @@ TEST_F(BookmarkModelTest, MultipleExtensiveChangesObserver) {
 // and that IsBookmarkedByUser is true only if at least one of the matching
 // bookmarks can be edited by the user.
 TEST_F(BookmarkModelTest, IsBookmarked) {
-  // Reload the model with an extra node that is not editable by the user.
-  BookmarkPermanentNode* extra_node = ReloadModelWithExtraNode();
+  // Reload the model with a managed node that is not editable by the user.
+  BookmarkPermanentNode* managed_node = ReloadModelWithManagedNode();
 
   // "google.com" is a "user" bookmark.
   model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("User"),
                  GURL("http://google.com"));
   // "youtube.com" is not.
-  model_->AddURL(extra_node, 0, base::ASCIIToUTF16("Extra"),
+  model_->AddURL(managed_node, 0, base::ASCIIToUTF16("Managed"),
                  GURL("http://youtube.com"));
 
   EXPECT_TRUE(model_->IsBookmarked(GURL("http://google.com")));
@@ -1179,12 +1179,12 @@ TEST_F(BookmarkModelTest, IsBookmarked) {
 // Verifies that GetMostRecentlyAddedUserNodeForURL skips bookmarks that
 // are not owned by the user.
 TEST_F(BookmarkModelTest, GetMostRecentlyAddedUserNodeForURLSkipsManagedNodes) {
-  // Reload the model with an extra node that is not editable by the user.
-  BookmarkPermanentNode* extra_node = ReloadModelWithExtraNode();
+  // Reload the model with a managed node that is not editable by the user.
+  BookmarkPermanentNode* managed_node = ReloadModelWithManagedNode();
 
   const base::string16 title = base::ASCIIToUTF16("Title");
   const BookmarkNode* user_parent = model_->other_node();
-  const BookmarkNode* managed_parent = extra_node;
+  const BookmarkNode* managed_parent = managed_node;
   const GURL url("http://google.com");
 
   // |url| is not bookmarked yet.

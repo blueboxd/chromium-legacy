@@ -1111,7 +1111,8 @@ void DocumentLoader::InitializeEmptyResponse() {
 }
 
 void DocumentLoader::StartLoading() {
-  probe::LifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
+  probe::LifecycleEvent(frame_, this, "init",
+                        base::TimeTicks::Now().since_origin().InSecondsF());
   StartLoadingInternal();
   params_ = nullptr;
 }
@@ -1274,7 +1275,7 @@ void DocumentLoader::StartLoadingResponse() {
   if (loading_mhtml_archive_ || loading_url_as_empty_document_) {
     // Finish the load of an empty document if the URL was meant to load as an
     // empty document or the load of the MHTML archive failed.
-    FinishedLoading(CurrentTimeTicks());
+    FinishedLoading(base::TimeTicks::Now());
     return;
   }
 

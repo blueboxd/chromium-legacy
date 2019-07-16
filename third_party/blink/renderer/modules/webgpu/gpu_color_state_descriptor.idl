@@ -7,7 +7,7 @@
 dictionary GPUColorStateDescriptor {
     required GPUTextureFormat format;
 
-    required GPUBlendDescriptor alphaBlend;
-    required GPUBlendDescriptor colorBlend;
+    GPUBlendDescriptor alphaBlend;
+    GPUBlendDescriptor colorBlend;
     GPUColorWriteFlags writeMask = 15;  // GPUColorWrite.ALL
 };

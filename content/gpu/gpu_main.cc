@@ -94,10 +94,6 @@
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #endif
@@ -276,8 +272,9 @@ int GpuMain(const MainFunctionParams& parameters) {
 #elif defined(USE_OZONE)
     // The MessagePump type required depends on the Ozone platform selected at
     // runtime.
-    main_thread_task_executor.reset(new base::SingleThreadTaskExecutor(
-        ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu()));
+    main_thread_task_executor =
+        std::make_unique<base::SingleThreadTaskExecutor>(
+            gpu_preferences.message_loop_type);
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)

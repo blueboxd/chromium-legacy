@@ -13,7 +13,7 @@
 #include "chrome/android/chrome_jni_headers/SigninManager_jni.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/primary_account_manager.h"
+#include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"

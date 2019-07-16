@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 

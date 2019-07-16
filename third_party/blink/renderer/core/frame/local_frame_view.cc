@@ -934,7 +934,7 @@ void LocalFrameView::WillStartForcedLayout() {
   forced_layout_stack_depth_++;
   if (forced_layout_stack_depth_ > 1)
     return;
-  forced_layout_start_time_ = CurrentTimeTicks();
+  forced_layout_start_time_ = base::TimeTicks::Now();
 }
 
 void LocalFrameView::DidFinishForcedLayout() {
@@ -944,7 +944,7 @@ void LocalFrameView::DidFinishForcedLayout() {
     LocalFrameUkmAggregator& aggregator = EnsureUkmAggregator();
     aggregator.RecordSample(
         (size_t)LocalFrameUkmAggregator::kForcedStyleAndLayout,
-        forced_layout_start_time_, CurrentTimeTicks());
+        forced_layout_start_time_, base::TimeTicks::Now());
   }
 }
 

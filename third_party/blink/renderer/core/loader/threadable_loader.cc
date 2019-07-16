@@ -269,7 +269,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
     return;
   }
 
-  request_started_ = CurrentTimeTicks();
+  request_started_ = base::TimeTicks::Now();
 
   // Save any headers on the request here. If this request redirects
   // cross-origin, we cancel the old request create a new one, and copy these
@@ -500,7 +500,7 @@ void ThreadableLoader::SetTimeout(const base::TimeDelta& timeout) {
   // was initially sent, however other uses of this method may need to
   // behave differently, in which case this should be re-arranged somehow.
   if (!timeout_.is_zero()) {
-    base::TimeDelta elapsed_time = CurrentTimeTicks() - request_started_;
+    base::TimeDelta elapsed_time = base::TimeTicks::Now() - request_started_;
     base::TimeDelta resolved_time =
         std::max(timeout_ - elapsed_time, base::TimeDelta());
     timeout_timer_.StartOneShot(resolved_time, FROM_HERE);

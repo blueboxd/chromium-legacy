@@ -19,6 +19,8 @@ source_set("common") {
     "platform_video_frame_pool.h",
     "platform_video_frame_utils.cc",
     "platform_video_frame_utils.h",
+    "video_decoder_pipeline.cc",
+    "video_decoder_pipeline.h",
   ]
 
   deps = [

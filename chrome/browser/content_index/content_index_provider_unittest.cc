@@ -11,13 +11,13 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "content/public/browser/content_index_provider.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 using offline_items_collection::ContentId;
 using offline_items_collection::OfflineContentAggregator;
@@ -28,6 +28,7 @@ using offline_items_collection::UpdateDelta;
 using testing::_;
 
 constexpr int64_t kServiceWorkerRegistrationId = 42;
+const GURL kLaunchURL = GURL("https://example.com/foo");
 
 class ProviderClient : public content::ContentIndexProvider::Client {
  public:
@@ -51,8 +52,7 @@ class ContentIndexProviderImplTest : public testing::Test,
                                      public OfflineContentProvider::Observer {
  public:
   void SetUp() override {
-    aggregator_ = std::make_unique<OfflineContentAggregator>();
-    provider_ = std::make_unique<ContentIndexProviderImpl>(aggregator_.get());
+    provider_ = std::make_unique<ContentIndexProviderImpl>(&profile_);
     provider_->AddObserver(this);
   }
 
@@ -70,9 +70,9 @@ class ContentIndexProviderImplTest : public testing::Test,
     auto description = blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::ARTICLE,
         "icon_url", "launch_url");
-    return content::ContentIndexEntry(
-        kServiceWorkerRegistrationId, std::move(description),
-        /* launch_url= */ GURL(), base::Time::Now());
+    return content::ContentIndexEntry(kServiceWorkerRegistrationId,
+                                      std::move(description), kLaunchURL,
+                                      base::Time::Now());
   }
 
   SkBitmap GetVisuals(const ContentId& id) {
@@ -110,8 +110,7 @@ class ContentIndexProviderImplTest : public testing::Test,
 
  protected:
   content::TestBrowserThreadBundle threads_;
-  std::unique_ptr<offline_items_collection::OfflineContentAggregator>
-      aggregator_;
+  TestingProfile profile_;
   ProviderClient client_;
   std::unique_ptr<ContentIndexProviderImpl> provider_;
 };
@@ -131,6 +130,7 @@ TEST_F(ContentIndexProviderImplTest, OfflineItemCreation) {
   EXPECT_FALSE(item.description.empty());
   EXPECT_FALSE(item.is_transient);
   EXPECT_TRUE(item.is_openable);
+  EXPECT_EQ(item.page_url, kLaunchURL);
 }
 
 TEST_F(ContentIndexProviderImplTest, ObserverUpdates) {

@@ -1510,6 +1510,15 @@
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/|'\
                   'components/safe_browsing/',
     },
+    'sampling_profiler': {
+      'filepath': 'base/profiler/'\
+                  '|chrome/common/profiler/'\
+                  '|chrome/common/stack_sampling_configuration*'\
+                  '|chrome/common/thread_profiler*'\
+                  '|chrome/renderer/v8_unwinder*'\
+                  '|components/metrics/*call_stack*'\
+                  '|components/metrics/public/interfaces/call_stack*',
+    },
     'screen_orientation': {
       'filepath': 'screen_orientation',
     },
@@ -2513,6 +2522,7 @@
     'safe_browsing': ['drubery@chromium.org',
                       'timvolodine@chromium.org',
                       'vakh+watch@chromium.org'],
+    'sampling_profiler': ['wittman+watch@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'security': ['security-watchlist@chromium.org'],
     'select_to_speak': ['katie+watch@chromium.org',

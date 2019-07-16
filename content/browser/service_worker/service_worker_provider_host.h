@@ -588,11 +588,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const base::TimeTicks create_time_;
   int render_process_id_;
 
-  // For service worker execution contexts, the id of the service worker thread
-  // or |kInvalidEmbeddedWorkerThreadId| before the service worker starts up.
-  // Otherwise, |kDocumentMainThreadId|.
-  int render_thread_id_;
-
   // The window's RenderFrame id, if this is a service worker window client.
   // Otherwise, |MSG_ROUTING_NONE|.
   int frame_id_;

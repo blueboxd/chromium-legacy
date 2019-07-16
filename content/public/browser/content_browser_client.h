@@ -325,6 +325,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   // exceptions should be granted based on initiator's scheme.
   virtual const char* GetInitiatorSchemeBypassingDocumentBlocking();
 
+  // Returns true if everything embedded inside a document with given scheme
+  // should be treated as first-party content. |scheme| will be in canonical
+  // (lowercased) form.
+  //
+  // See also WebSecurityPolicy::RegisterURLSchemeAsFirstPartyWhenTopLevel() in
+  // the renderer, and the field third_party_cookies_allowed_schemes in
+  // network::mojom::CookieManagerParams, which should be synchronized.
+  virtual bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+      base::StringPiece scheme);
+
   // Called to create a URLLoaderFactory for network requests in the following
   // cases:
   // - The default factory to be used by a frame.  In this case

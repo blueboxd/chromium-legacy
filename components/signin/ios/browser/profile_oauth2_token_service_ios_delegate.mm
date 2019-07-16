@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/ios/browser/device_accounts_provider.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_pref_names.h"

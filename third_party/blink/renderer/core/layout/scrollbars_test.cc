@@ -49,7 +49,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(x, y),
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kNoButton, 0,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>(),
                                            Vector<WebMouseEvent>());
@@ -59,7 +59,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMousePressEvent(event);
   }
@@ -68,7 +68,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kNoButton, 0,
-        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().SendContextMenuEvent(event);
   }
@@ -77,7 +77,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseReleaseEvent(event);
   }
@@ -86,7 +86,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kMiddle, 0,
-        WebInputEvent::Modifiers::kMiddleButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kMiddleButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMousePressEvent(event);
   }
@@ -95,7 +95,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kMiddle, 0,
-        WebInputEvent::Modifiers::kMiddleButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kMiddleButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseReleaseEvent(event);
   }
@@ -104,7 +104,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseMove, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseLeaveEvent(event);
   }
@@ -142,8 +142,8 @@ class ScrollbarsTest : public SimTest {
                                               WebGestureDevice device,
                                               const IntPoint& position,
                                               ScrollOffset offset) {
-    WebGestureEvent event(type, WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                          device);
+    WebGestureEvent event(type, WebInputEvent::kNoModifiers,
+                          base::TimeTicks::Now(), device);
 
     event.SetPositionInWidget(WebFloatPoint(position.X(), position.Y()));
 
@@ -503,9 +503,9 @@ TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   ScrollableArea* scrollable_area =
       ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
   DCHECK(scrollable_area->VerticalScrollbar());
-  WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin,
-                               WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                               WebGestureDevice::kTouchpad);
+  WebGestureEvent scroll_begin(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      base::TimeTicks::Now(), WebGestureDevice::kTouchpad);
   scroll_begin.SetPositionInWidget(
       WebFloatPoint(scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2,
                     scrollable->OffsetTop()));
@@ -2223,7 +2223,7 @@ TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
   WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(5, 5),
                       WebFloatPoint(5, 5), WebPointerProperties::Button::kLeft,
                       0, WebInputEvent::Modifiers::kLeftButtonDown,
-                      CurrentTimeTicks());
+                      base::TimeTicks::Now());
   event.SetFrameScale(1);
   GetEventHandler().HandleMouseLeaveEvent(event);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);

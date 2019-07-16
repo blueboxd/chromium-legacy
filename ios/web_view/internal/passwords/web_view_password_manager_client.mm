@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
@@ -40,7 +40,7 @@ WebViewPasswordManagerClient::WebViewPasswordManagerClient(
     id<CWVPasswordManagerClientDelegate> delegate)
     : delegate_(delegate),
       credentials_filter_(),
-      log_manager_(password_manager::LogManager::Create(
+      log_manager_(autofill::LogManager::Create(
           ios_web_view::WebViewPasswordManagerInternalsServiceFactory::
               GetForBrowserState(delegate_.browserState),
           base::RepeatingClosure())),
@@ -160,8 +160,8 @@ WebViewPasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
 }
 
-const password_manager::LogManager*
-WebViewPasswordManagerClient::GetLogManager() const {
+const autofill::LogManager* WebViewPasswordManagerClient::GetLogManager()
+    const {
   return log_manager_.get();
 }
 

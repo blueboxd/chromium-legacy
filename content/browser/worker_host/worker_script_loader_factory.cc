@@ -29,15 +29,13 @@ WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
       appcache_host_(std::move(appcache_host)),
       resource_context_getter_(resource_context_getter),
       loader_factory_(std::move(loader_factory)) {
-#if DCHECK_IS_ON()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (service_worker_provider_host_) {
-    DCHECK(service_worker_provider_host_->provider_type() ==
-               blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker ||
-           service_worker_provider_host_->provider_type() ==
-               blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
-  }
-#endif  // DCHECK_IS_ON()
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(!service_worker_provider_host_ ||
+         service_worker_provider_host_->provider_type() ==
+             blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker ||
+         service_worker_provider_host_->provider_type() ==
+             blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 }
 
 WorkerScriptLoaderFactory::~WorkerScriptLoaderFactory() {
@@ -53,27 +51,6 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // When NetworkService is not enabled, this function is called from the
-  // renderer process, so use ReportBadMessage() instead of DCHECK().
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Handle only the main script. Import scripts (ResourceType::kScript)
-    // should go to the network loader or controller.
-    if (resource_request.resource_type !=
-            static_cast<int>(ResourceType::kWorker) &&
-        resource_request.resource_type !=
-            static_cast<int>(ResourceType::kSharedWorker)) {
-      mojo::ReportBadMessage(
-          "WorkerScriptLoaderFactory should only get requests for worker "
-          "scripts");
-      return;
-    }
-    if (script_loader_) {
-      mojo::ReportBadMessage(
-          "WorkerScriptLoaderFactory should be used only one time");
-      return;
-    }
-  }
   DCHECK(resource_request.resource_type ==
              static_cast<int>(ResourceType::kWorker) ||
          resource_request.resource_type ==

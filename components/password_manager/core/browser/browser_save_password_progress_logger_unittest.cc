@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
-#include "components/password_manager/core/browser/stub_log_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,7 @@ namespace {
 
 class TestLogger : public BrowserSavePasswordProgressLogger {
  public:
-  explicit TestLogger(LogManager* log_manager)
+  explicit TestLogger(autofill::LogManager* log_manager)
       : BrowserSavePasswordProgressLogger(log_manager) {}
 
   bool LogsContainSubstring(const std::string& substring) {
@@ -37,7 +37,7 @@ class TestLogger : public BrowserSavePasswordProgressLogger {
   std::string accumulated_log_;
 };
 
-class MockLogManager : public StubLogManager {
+class MockLogManager : public autofill::StubLogManager {
  public:
   MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
 };

@@ -8,14 +8,15 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/password_manager/core/browser/log_router.h"
 
 namespace password_manager {
 
 // Collects the logs for the password manager internals page and distributes
 // them to all open tabs with the internals page.
-class PasswordManagerInternalsService : public KeyedService, public LogRouter {
+class PasswordManagerInternalsService : public KeyedService,
+                                        public autofill::LogRouter {
  public:
   // There are only two ways in which the service depends on the BrowserContext:
   // 1) There is one service per each non-incognito BrowserContext.

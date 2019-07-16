@@ -53,7 +53,7 @@ PortalActivateEvent::PortalActivateEvent(
     : Event(event_type_names::kPortalactivate,
             Bubbles::kNo,
             Cancelable::kNo,
-            CurrentTimeTicks()),
+            base::TimeTicks::Now()),
       document_(document),
       predecessor_portal_token_(predecessor_portal_token),
       predecessor_portal_(std::move(predecessor_portal)),

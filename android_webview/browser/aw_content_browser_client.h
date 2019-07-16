@@ -46,6 +46,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // platform. For details, see
   // https://developer.android.com/reference/android/security/NetworkSecurityPolicy.html#isCleartextTrafficPermitted().
   static void set_check_cleartext_permitted(bool permitted);
+  static bool get_check_cleartext_permitted();
 
   // |aw_feature_list_creator| should not be null.
   explicit AwContentBrowserClient(
@@ -62,7 +63,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
-  network::mojom::NetworkContextParamsPtr GetNetworkContextParams();
 
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;

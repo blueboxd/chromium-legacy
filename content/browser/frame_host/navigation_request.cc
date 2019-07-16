@@ -1700,42 +1700,9 @@ void NavigationRequest::OnStartChecksComplete(
   // Mark the fetch_start (Navigation Timing API).
   commit_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
-  GURL base_url;
-#if defined(OS_ANDROID)
-  // On Android, a base URL can be set for the frame. If this the case, it is
-  // the URL to use for cookies.
-  NavigationEntry* last_committed_entry =
-      frame_tree_node_->navigator()->GetController()->GetLastCommittedEntry();
-  if (last_committed_entry)
-    base_url = last_committed_entry->GetBaseURLForDataURL();
-#endif
-  const GURL& top_document_url =
-      !base_url.is_empty()
-          ? base_url
-          : frame_tree_node_->frame_tree()->root()->current_url();
-
-  // Walk the ancestor chain to determine whether all frames are same-site. If
-  // not, the |site_for_cookies| is set to an empty URL.
-  //
-  // TODO(mkwst): This is incorrect. It ought to use the definition from
-  // 'Document::SiteForCookies()' in Blink, which special-cases extension
-  // URLs and a few other sharp edges.
-  const FrameTreeNode* current = frame_tree_node_->parent();
-  bool ancestors_are_same_site = true;
-  while (current && ancestors_are_same_site) {
-    if (!net::registry_controlled_domains::SameDomainOrHost(
-            top_document_url, current->current_url(),
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      ancestors_are_same_site = false;
-    }
-    current = current->parent();
-  }
-
-  const GURL& site_for_cookies =
-      (ancestors_are_same_site || !base_url.is_empty())
-          ? (frame_tree_node_->IsMainFrame() ? common_params_.url
-                                             : top_document_url)
-          : GURL::EmptyGURL();
+  GURL site_for_cookies =
+      frame_tree_node_->current_frame_host()
+          ->ComputeSiteForCookiesForNavigation(common_params_.url);
   bool parent_is_main_frame = !frame_tree_node_->parent()
                                   ? false
                                   : frame_tree_node_->parent()->IsMainFrame();

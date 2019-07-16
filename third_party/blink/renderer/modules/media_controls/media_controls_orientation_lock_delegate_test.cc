@@ -91,13 +91,13 @@ class MockScreenOrientation final
 void DidEnterFullscreen(Document* document) {
   DCHECK(document);
   Fullscreen::DidEnterFullscreen(*document);
-  document->ServiceScriptedAnimations(WTF::CurrentTimeTicks());
+  document->ServiceScriptedAnimations(base::TimeTicks::Now());
 }
 
 void DidExitFullscreen(Document* document) {
   DCHECK(document);
   Fullscreen::DidExitFullscreen(*document);
-  document->ServiceScriptedAnimations(WTF::CurrentTimeTicks());
+  document->ServiceScriptedAnimations(base::TimeTicks::Now());
 }
 
 class MockChromeClientForOrientationLockDelegate final

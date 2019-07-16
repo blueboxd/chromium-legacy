@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
-#include <string>
-#include <vector>
-
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -354,6 +351,19 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   if (user_context.IsUsingPin())
     unlock_attempt_type_ = AUTH_PIN;
 
+  // TODO(crbug.com/826417): Remove this, and instead add a new UI control that
+  // calls ScreenLocker via a separate code path.
+  if (ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
+          user_context.GetAccountId())) {
+    unlock_attempt_type_ = AUTH_CHALLENGE_RESPONSE;
+    challenge_response_auth_keys_loader_.LoadAvailableKeys(
+        user_context.GetAccountId(),
+        base::BindOnce(&ScreenLocker::OnChallengeResponseKeysPrepared,
+                       weak_factory_.GetWeakPtr(), user_context));
+    // OnChallengeResponseKeysPrepared will call ContinueAuthenticate.
+    return;
+  }
+
   const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
   if (user) {
     // Check to see if the user submitted a PIN and it is valid.
@@ -368,6 +378,21 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   }
 
   ContinueAuthenticate(user_context);
+}
+
+void ScreenLocker::OnChallengeResponseKeysPrepared(
+    const UserContext& user_context,
+    std::vector<ChallengeResponseKey> challenge_response_keys) {
+  if (challenge_response_keys.empty()) {
+    // TODO(crbug.com/826417): Indicate the error in the UI.
+    if (on_auth_complete_)
+      std::move(on_auth_complete_).Run(false /* auth_success */);
+    return;
+  }
+  UserContext new_user_context = user_context;
+  *new_user_context.GetMutableChallengeResponseKeys() =
+      std::move(challenge_response_keys);
+  ContinueAuthenticate(new_user_context);
 }
 
 void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,

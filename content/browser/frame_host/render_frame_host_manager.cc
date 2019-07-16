@@ -2388,6 +2388,8 @@ void RenderFrameHostManager::CommitPending(
   gfx::ScopedCocoaDisableScreenUpdates disabler;
 #endif  // defined(OS_MACOSX)
 
+  RenderWidgetHostView* old_view = render_frame_host_->GetView();
+  RenderWidgetHostView* new_view = pending_rfh->GetView();
   bool is_main_frame = frame_tree_node_->IsMainFrame();
 
   // First check whether we're going to want to focus the location bar after
@@ -2401,9 +2403,8 @@ void RenderFrameHostManager::CommitPending(
 
   // Remember if the page was focused so we can focus the new renderer in
   // that case.
-  bool focus_render_view = !will_focus_location_bar &&
-                           render_frame_host_->GetView() &&
-                           render_frame_host_->GetView()->HasFocus();
+  bool focus_render_view =
+      !will_focus_location_bar && old_view && old_view->HasFocus();
 
   // Remove the current frame and its descendants from the set of fullscreen
   // frames immediately. They can stay in pending deletion for some time.
@@ -2452,12 +2453,12 @@ void RenderFrameHostManager::CommitPending(
   // without success in r426913 (https://crbug.com/658688) and r438516 (broke
   // assumptions about RenderWidgetHosts not changing RenderWidgetHostViews over
   // time).
-  if (is_main_frame && old_render_frame_host->GetView()) {
+  if (is_main_frame && old_view) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
     // here would need to make sure it showed the RenderView when the
     // RenderWidget was created as visible.
-    old_render_frame_host->GetView()->Hide();
+    old_view->Hide();
   }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
@@ -2465,9 +2466,9 @@ void RenderFrameHostManager::CommitPending(
 
   if (will_focus_location_bar) {
     delegate_->SetFocusToLocationBar();
-  } else if (focus_render_view && render_frame_host_->GetView()) {
+  } else if (focus_render_view && new_view) {
     if (is_main_frame) {
-      render_frame_host_->GetView()->Focus();
+      new_view->Focus();
     } else {
       // The current tab has page-level focus, so we need to propagate
       // page-level focus to the subframe's renderer. Before doing that, also
@@ -2495,22 +2496,22 @@ void RenderFrameHostManager::CommitPending(
 
   // Make the new view show the contents of old view until it has something
   // useful to show.
-  if (is_main_frame && old_render_frame_host->GetView() &&
-      render_frame_host_->GetView()) {
-    render_frame_host_->GetView()->TakeFallbackContentFrom(
-        old_render_frame_host->GetView());
-  }
+  if (is_main_frame && old_view && new_view)
+    new_view->TakeFallbackContentFrom(old_view);
+
+  RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
+  RenderViewHostImpl* new_rvh = render_frame_host_->render_view_host();
+  DCHECK_NE(old_rvh, new_rvh);
 
   // The RenderViewHost keeps track of the main RenderFrameHost routing id.
   // If this is committing a main frame navigation, update it and set the
   // routing id in the RenderViewHost associated with the old RenderFrameHost
   // to MSG_ROUTING_NONE.
   if (is_main_frame) {
-    RenderViewHostImpl* rvh = render_frame_host_->render_view_host();
     // Recall if the RenderViewHostImpl had a main frame routing id already. If
     // not then it is transitioning from swapped out to active.
-    bool was_active = rvh->is_active();
-    rvh->SetMainFrameRoutingId(render_frame_host_->routing_id());
+    bool was_active = new_rvh->is_active();
+    new_rvh->SetMainFrameRoutingId(render_frame_host_->routing_id());
 
     // If the RenderViewHost is transitioning from swapped out to active state,
     // it was reused, so dispatch a RenderViewReady event.  For example, this
@@ -2520,11 +2521,10 @@ void RenderFrameHostManager::CommitPending(
     // TODO(alexmos):  Remove this and move RenderViewReady consumers to use
     // the main frame's RenderFrameCreated instead.
     if (!was_active)
-      rvh->PostRenderViewReady();
+      new_rvh->PostRenderViewReady();
 
-    rvh->set_is_swapped_out(false);
-    old_render_frame_host->render_view_host()->SetMainFrameRoutingId(
-        MSG_ROUTING_NONE);
+    new_rvh->set_is_swapped_out(false);
+    old_rvh->SetMainFrameRoutingId(MSG_ROUTING_NONE);
   }
 
   // Store the old_render_frame_host's current frame size so that it can be used
@@ -2548,14 +2548,10 @@ void RenderFrameHostManager::CommitPending(
   // Note: We do this after swapping out the old RFH because that may create
   // the proxy we're looking for.
   RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
-  if (proxy_to_parent) {
-    proxy_to_parent->SetChildRWHView(render_frame_host_->GetView(),
-                                     old_size ? &*old_size : nullptr);
-  }
+  if (proxy_to_parent)
+    proxy_to_parent->SetChildRWHView(new_view, old_size ? &*old_size : nullptr);
 
-  bool new_rfh_has_view = !!render_frame_host_->GetView();
-
-  if (new_rfh_has_view) {
+  if (new_view) {
     if (!delegate_->IsHidden()) {
       // Show the new RenderWidgetHost if the new frame is a local root and not
       // hidden or crashed. If the frame is not a local root this is redundant
@@ -2564,7 +2560,7 @@ void RenderFrameHostManager::CommitPending(
       // RenderWidget is not being newly recreated for the new frame due to
       // https://crbug.com/419087 ? Would sub frames be marked correctly as
       // shown from creation of their RenderWidgetHost?
-      render_frame_host_->GetView()->Show();
+      new_view->Show();
     } else {
       // The Browser side RWHI is initialized as hidden, but the RenderWidget is
       // not if it is going to be visible after navigation commit. We are
@@ -2573,9 +2569,8 @@ void RenderFrameHostManager::CommitPending(
       // details.
       // TODO(jonross): This is not needed once https://crbug/419087 is
       // resolved.
-      RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-          render_frame_host_->GetView()->GetRenderWidgetHost());
-      rwhi->SetHiddenOnCommit();
+      RenderWidgetHostImpl::From(new_view->GetRenderWidgetHost())
+          ->SetHiddenOnCommit();
       // TODO(ejoe): This can be removed if the RenderWidget can be always
       // created as hidden by default.
     }
@@ -2588,12 +2583,11 @@ void RenderFrameHostManager::CommitPending(
   // if it is a local root), then this RenderViewHost died while it was hidden.
   // We ignored the RenderProcessGone call at the time, so we should send it now
   // to make sure the sad tab shows up, etc.
-  if (!new_rfh_has_view) {
+  if (!new_view) {
     DCHECK(!render_frame_host_->IsRenderFrameLive());
-    DCHECK(!render_frame_host_->render_view_host()->IsRenderViewLive());
+    DCHECK(!new_rvh->IsRenderViewLive());
     render_frame_host_->ResetLoadingState();
-    delegate_->RenderProcessGoneFromRenderManager(
-        render_frame_host_->render_view_host());
+    delegate_->RenderProcessGoneFromRenderManager(new_rvh);
   }
 
   // After all is done, there must never be a proxy in the list which has the

@@ -175,7 +175,7 @@ def DoMain(argv):
 def main(argv):
   try:
     result = DoMain(argv[1:])
-  except WrongNumberOfArguments, e:
+  except WrongNumberOfArguments as e:
     PrintUsage()
     print(e)
     return 1

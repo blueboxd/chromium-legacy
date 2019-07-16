@@ -98,6 +98,7 @@ class PaymentRequestAddressEditCoordinatorTest
 
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     autofill::CountryNames::SetLocaleString("en-US");
@@ -116,6 +117,7 @@ class PaymentRequestAddressEditCoordinatorTest
     personal_data_manager_.SetPrefService(nullptr);
 
     DoTearDown();
+    PlatformTest::TearDown();
   }
 
   autofill::TestPersonalDataManager personal_data_manager_;

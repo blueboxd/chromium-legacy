@@ -49,9 +49,9 @@ public class PasswordReauthenticationFragmentTest {
         args.putSerializable(PasswordReauthenticationFragment.SCOPE_ID, scope);
         passwordReauthentication.setArguments(args);
 
-        // Replacement fragment for PasswordEntryEditor, which is the fragment that
+        // Replacement fragment for PasswordEntryViewer, which is the fragment that
         // replaces PasswordReauthentication after popBackStack is called.
-        Fragment mockPasswordEntryEditor = new Fragment();
+        Fragment mockPasswordEntryViewer = new Fragment();
 
         FragmentActivity testActivity = Robolectric.setupActivity(FragmentActivity.class);
         Intent returnIntent = new Intent();
@@ -60,8 +60,8 @@ public class PasswordReauthenticationFragmentTest {
 
         FragmentManager fragmentManager = testActivity.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(mockPasswordEntryEditor, "password_entry_editor");
-        fragmentTransaction.addToBackStack("add_password_entry_editor");
+        fragmentTransaction.add(mockPasswordEntryViewer, "password_entry_viewer");
+        fragmentTransaction.addToBackStack("add_password_entry_viewer");
         fragmentTransaction.commit();
 
         FragmentTransaction fragmentTransaction2 = fragmentManager.beginTransaction();
@@ -78,8 +78,8 @@ public class PasswordReauthenticationFragmentTest {
         // reauthentication, as PasswordReauthenticationFragment is popped.
         assertEquals(1, fragmentManager.getBackStackEntryCount());
 
-        // Assert that the remaining fragment in the Back Stack is PasswordEntryEditor.
-        assertEquals("add_password_entry_editor", fragmentManager.getBackStackEntryAt(0).getName());
+        // Assert that the remaining fragment in the Back Stack is PasswordEntryViewer.
+        assertEquals("add_password_entry_viewer", fragmentManager.getBackStackEntryAt(0).getName());
     }
 
     /**

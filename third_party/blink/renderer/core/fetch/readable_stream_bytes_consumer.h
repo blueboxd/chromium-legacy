@@ -23,7 +23,6 @@ class ScriptState;
 // The stream will be immediately locked by the consumer and will never be
 // released.
 class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
-  USING_PRE_FINALIZER(ReadableStreamBytesConsumer, Dispose);
 
  public:
   ReadableStreamBytesConsumer(ScriptState*, ReadableStream*, ExceptionState&);
@@ -45,7 +44,6 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   class OnFulfilled;
   class OnRejected;
 
-  void Dispose();
   void OnRead(DOMUint8Array*);
   void OnReadDone();
   void OnRejected();

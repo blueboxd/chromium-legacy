@@ -199,23 +199,21 @@ void WebStateImpl::OnRenderProcessGone() {
     observer.RenderProcessGone(this);
 }
 
-bool WebStateImpl::OnScriptCommandReceived(const std::string& command,
+void WebStateImpl::OnScriptCommandReceived(const std::string& command,
                                            const base::DictionaryValue& value,
-                                           const GURL& url,
+                                           const GURL& page_url,
                                            bool user_is_interacting,
-                                           bool is_main_frame,
                                            web::WebFrame* sender_frame) {
   size_t dot_position = command.find_first_of('.');
   if (dot_position == 0 || dot_position == std::string::npos)
-    return false;
+    return;
 
   std::string prefix = command.substr(0, dot_position);
   auto it = script_command_callbacks_.find(prefix);
   if (it == script_command_callbacks_.end())
-    return false;
+    return;
 
-  return it->second.Run(value, url, user_is_interacting, is_main_frame,
-                        sender_frame);
+  it->second.Run(value, page_url, user_is_interacting, sender_frame);
 }
 
 void WebStateImpl::SetIsLoading(bool is_loading) {

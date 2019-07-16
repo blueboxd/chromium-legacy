@@ -28,61 +28,16 @@ namespace {
 ///////////////////////////////////////////////////////////////////////////////
 // IO thread helpers
 
-using SetupCallback =
-    base::OnceCallback<void(blink::mojom::ServiceWorkerProviderInfoForWindowPtr,
-                            std::unique_ptr<NavigationLoaderInterceptor,
-                                            BrowserThread::DeleteOnIOThread>)>;
-
-// Does setup on the IO thread and calls |callback| on the UI thread.
-void InitOnIO(ServiceWorkerNavigationHandleCore* handle_core,
-              bool are_ancestors_secure,
-              int frame_tree_node_id,
-              ResourceType resource_type,
-              bool skip_service_worker,
-              SetupCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  ServiceWorkerContextCore* context_core =
-      handle_core->context_wrapper()->context();
-  if (!context_core) {
-    PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(std::move(callback), /*provider_info=*/nullptr,
-                       /*interceptor=*/nullptr));
-    return;
-  }
-
-  // Make the provider host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          context_core->AsWeakPtr(), are_ancestors_secure, frame_tree_node_id,
-          &provider_info);
-  handle_core->set_provider_host(provider_host);
-
-  // TODO(crbug.com/926114): Respect |skip_service_worker|.
-
-  // Make the inner interceptor.
-  std::unique_ptr<ServiceWorkerControlleeRequestHandler,
-                  BrowserThread::DeleteOnIOThread>
-      interceptor(new ServiceWorkerControlleeRequestHandler(
-          context_core->AsWeakPtr(), provider_host, resource_type));
-
-  PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(callback), std::move(provider_info),
-                     std::move(interceptor)));
-}
-
 void LoaderCallbackWrapperOnIO(
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     SingleRequestURLLoaderFactory::RequestHandler handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper,
-          interceptor_on_ui, std::move(handler)));
+          interceptor_on_ui, std::move(provider_info), std::move(handler)));
 }
 
 void FallbackCallbackWrapperOnIO(
@@ -104,6 +59,58 @@ void InvokeRequestHandlerOnIO(
   network::mojom::URLLoaderClientPtr client(std::move(client_info));
   std::move(handler).Run(resource_request, std::move(request),
                          std::move(client));
+}
+
+// Does setup on the IO thread and calls back to
+// |interceptor_on_ui->LoaderCallbackWrapper()| on the UI thread.
+void MaybeCreateLoaderOnIO(
+    base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
+    ServiceWorkerNavigationHandleCore* handle_core,
+    bool are_ancestors_secure,
+    int frame_tree_node_id,
+    ResourceType resource_type,
+    const network::ResourceRequest& tentative_resource_request,
+    BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ServiceWorkerContextCore* context_core =
+      handle_core->context_wrapper()->context();
+  if (!context_core) {
+    LoaderCallbackWrapperOnIO(std::move(interceptor_on_ui),
+                              /*provider_info=*/nullptr,
+                              /*handler=*/{});
+    return;
+  }
+
+  blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info;
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host;
+
+  if (!handle_core->provider_host()) {
+    // This is the initial request before redirects, so make the provider host.
+    // Its lifetime is tied to |provider_info| which will be passed to the
+    // ServiceWorkerNavigationHandle on the UI thread, and finally passed to the
+    // renderer when the navigation commits.
+    provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+    provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
+        context_core->AsWeakPtr(), are_ancestors_secure, frame_tree_node_id,
+        &provider_info);
+    handle_core->set_provider_host(provider_host);
+
+    // Also make the inner interceptor.
+    DCHECK(!handle_core->interceptor());
+    handle_core->set_interceptor(
+        std::make_unique<ServiceWorkerControlleeRequestHandler>(
+            context_core->AsWeakPtr(), provider_host, resource_type));
+  }
+
+  // TODO(crbug.com/926114): Respect |skip_service_worker_|.
+
+  // Start the inner interceptor. We continue in LoaderCallbackWrapperOnIO().
+  handle_core->interceptor()->MaybeCreateLoader(
+      tentative_resource_request, browser_context, /*resource_context=*/nullptr,
+      base::BindOnce(&LoaderCallbackWrapperOnIO, interceptor_on_ui,
+                     std::move(provider_info)),
+      base::BindOnce(&FallbackCallbackWrapperOnIO, interceptor_on_ui));
 }
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -135,36 +142,17 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
     LoaderCallback loader_callback,
     FallbackCallback fallback_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // First make the inner interceptor if it hasn't been done yet. We'll
-  // come back here after.
-  if (!interceptor_on_io_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &InitOnIO, handle_->core(), are_ancestors_secure_,
-            frame_tree_node_id_, resource_type_, skip_service_worker_,
-            base::BindOnce(
-                &ServiceWorkerNavigationLoaderInterceptor::OnInitComplete,
-                GetWeakPtr(), tentative_resource_request, browser_context,
-                resource_context, std::move(loader_callback),
-                std::move(fallback_callback))));
-    return;
-  }
+  DCHECK(!resource_context);
 
   // Start the inner interceptor on the IO thread. It will call back to
-  // functions on the IO thread which hop back to LoaderCallbackWrapper() or
-  // FallbackCallbackWrapper() on the UI thread.
+  // LoaderCallbackWrapper() on the UI thread.
   loader_callback_ = std::move(loader_callback);
   fallback_callback_ = std::move(fallback_callback);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &NavigationLoaderInterceptor::MaybeCreateLoader,
-          base::Unretained(interceptor_on_io_.get()),
-          tentative_resource_request, browser_context, resource_context,
-          base::BindOnce(&LoaderCallbackWrapperOnIO, GetWeakPtr()),
-          base::BindOnce(&FallbackCallbackWrapperOnIO, GetWeakPtr())));
+      base::BindOnce(&MaybeCreateLoaderOnIO, GetWeakPtr(), handle_->core(),
+                     are_ancestors_secure_, frame_tree_node_id_, resource_type_,
+                     tentative_resource_request, browser_context));
 }
 
 base::Optional<SubresourceLoaderParams>
@@ -176,29 +164,15 @@ ServiceWorkerNavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() {
   return base::nullopt;
 }
 
-void ServiceWorkerNavigationLoaderInterceptor::OnInitComplete(
-    const network::ResourceRequest& tentative_resource_request,
-    BrowserContext* browser_context,
-    ResourceContext* resource_context,
-    LoaderCallback callback,
-    FallbackCallback fallback_callback,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-    std::unique_ptr<NavigationLoaderInterceptor,
-                    BrowserThread::DeleteOnIOThread> interceptor) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DCHECK(!interceptor_on_io_);
-  interceptor_on_io_ = std::move(interceptor);
-
-  handle_->OnCreatedProviderHost(std::move(provider_info));
-  MaybeCreateLoader(tentative_resource_request, browser_context,
-                    resource_context, std::move(callback),
-                    std::move(fallback_callback));
-}
-
 void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
+    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     SingleRequestURLLoaderFactory::RequestHandler handler_on_io) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // |provider_info| is non-null if this is the first request before redirects,
+  // which makes the provider host for this navigation.
+  if (provider_info)
+    handle_->OnCreatedProviderHost(std::move(provider_info));
 
   if (!handler_on_io) {
     std::move(loader_callback_).Run({});

@@ -82,6 +82,7 @@ source_set("toolbar_ui") {
     "toolbar_progress_bar.mm",
   ]
   deps = [
+    "resources:tab_toolbar_shadow_color",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/activity_services/requirements",

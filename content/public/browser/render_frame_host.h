@@ -281,11 +281,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool HasSelection() = 0;
 
   // Text surrounding selection.
-  typedef base::Callback<
-      void(const base::string16& content, int start_offset, int end_offset)>
+  typedef base::OnceCallback<void(const base::string16& content,
+                                  uint32_t start_offset,
+                                  uint32_t end_offset)>
       TextSurroundingSelectionCallback;
   virtual void RequestTextSurroundingSelection(
-      const TextSurroundingSelectionCallback& callback,
+      TextSurroundingSelectionCallback callback,
       int max_length) = 0;
 
   // Tell the render frame to enable a set of javascript bindings. The argument

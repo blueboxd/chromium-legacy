@@ -28,10 +28,16 @@ class PaymentRequestShippingAddressSelectionMediatorTest
       public PlatformTest {
  protected:
   // PlatformTest:
-  void SetUp() override { DoSetUp(); }
+  void SetUp() override {
+    PlatformTest::SetUp();
+    DoSetUp();
+  }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 };
 
 // Tests that the expected selectable items are created and that the index of

@@ -38,7 +38,7 @@ class TimeTicks;
 
 namespace autofill {
 
-class AutofillInternalsBuffer;
+class LogBuffer;
 
 // Password attributes (whether a password has special symbols, numeric, etc.)
 enum class PasswordAttribute {
@@ -630,8 +630,7 @@ class FormStructure {
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
 
-AutofillInternalsBuffer& operator<<(AutofillInternalsBuffer& buffer,
-                                    const FormStructure& form);
+LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form);
 
 }  // namespace autofill
 

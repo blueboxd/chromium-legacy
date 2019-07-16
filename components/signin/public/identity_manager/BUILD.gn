@@ -46,7 +46,6 @@ source_set("identity_manager") {
   deps = [
     "//components/image_fetcher/core",
     "//components/prefs",
-    "//components/signin/core/browser:internals",
     "//components/signin/internal/identity_manager",
     "//components/signin/public/webdata",
     "//services/network/public/cpp",
@@ -60,9 +59,6 @@ source_set("identity_manager") {
     # This target is a pair with internal/identity_manager. They always go
     # together and include headers from each other.
     "//components/signin/internal/identity_manager",
-
-    # TODO(blundell): Remove once this target no longer exists.
-    "//components/signin/core/browser:internals",
   ]
 }
 
@@ -89,9 +85,8 @@ source_set("unit_tests") {
     "//components/image_fetcher/core:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//components/signin/core/browser:internals",
-    "//components/signin/core/browser:internals_test_support",
     "//components/signin/internal/identity_manager",
+    "//components/signin/internal/identity_manager:test_support",
     "//components/signin/public/base",
     "//components/signin/public/base:test_support",
     "//components/signin/public/identity_manager",
@@ -128,9 +123,8 @@ source_set("test_support") {
 
   deps = [
     "//components/image_fetcher/core:test_support",
-    "//components/signin/core/browser:internals",
-    "//components/signin/core/browser:internals_test_support",
     "//components/signin/internal/identity_manager",
+    "//components/signin/internal/identity_manager:test_support",
     "//components/signin/public/base:test_support",
     "//components/sync_preferences:test_support",
     "//testing/gtest",

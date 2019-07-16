@@ -31,6 +31,7 @@ class PaymentRequestContactInfoSelectionMediatorTest
  protected:
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     AddAutofillProfile(autofill::test::GetFullProfile());
@@ -55,7 +56,10 @@ class PaymentRequestContactInfoSelectionMediatorTest
   }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 
   ContactInfoSelectionMediator* mediator() const { return mediator_; }
 

@@ -240,14 +240,14 @@ void XRFrameTransport::OnSubmitFrameRendered() {
 
 base::TimeDelta XRFrameTransport::WaitForPreviousRenderToFinish() {
   TRACE_EVENT0("gpu", "waitForPreviousRenderToFinish");
-  base::TimeTicks start = WTF::CurrentTimeTicks();
+  base::TimeTicks start = base::TimeTicks::Now();
   while (waiting_for_previous_frame_render_) {
     if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";
       break;
     }
   }
-  return WTF::CurrentTimeTicks() - start;
+  return base::TimeTicks::Now() - start;
 }
 
 void XRFrameTransport::OnSubmitFrameGpuFence(
@@ -259,14 +259,14 @@ void XRFrameTransport::OnSubmitFrameGpuFence(
 
 base::TimeDelta XRFrameTransport::WaitForGpuFenceReceived() {
   TRACE_EVENT0("gpu", "WaitForGpuFenceReceived");
-  base::TimeTicks start = WTF::CurrentTimeTicks();
+  base::TimeTicks start = base::TimeTicks::Now();
   while (waiting_for_previous_frame_fence_) {
     if (!submit_frame_client_binding_.WaitForIncomingMethodCall()) {
       DLOG(ERROR) << __FUNCTION__ << ": Failed to receive response";
       break;
     }
   }
-  return WTF::CurrentTimeTicks() - start;
+  return base::TimeTicks::Now() - start;
 }
 
 void XRFrameTransport::Trace(blink::Visitor* visitor) {}

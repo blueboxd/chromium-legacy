@@ -137,12 +137,15 @@ void ManualFillingControllerImpl::UpdateSourceAvailability(
   if (has_suggestions == available_sources_.contains(source))
     return;
 
-  if (has_suggestions)
+  if (has_suggestions) {
     available_sources_.insert(source);
-  else
-    available_sources_.erase(source);
+    UpdateVisibility();
+    return;
+  }
 
-  UpdateVisibility();
+  available_sources_.erase(source);
+  if (!ShouldShowAccessory())
+    UpdateVisibility();
 }
 
 void ManualFillingControllerImpl::Hide() {

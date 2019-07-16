@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
@@ -48,7 +49,7 @@ using VizCompositorThreadType = base::Thread;
 // and then stop the thread.
 class VizCompositorThreadRunner {
  public:
-  VizCompositorThreadRunner();
+  explicit VizCompositorThreadRunner(base::MessageLoop::Type message_loop_type);
   // Performs teardown on thread and then stops thread.
   ~VizCompositorThreadRunner();
 

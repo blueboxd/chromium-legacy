@@ -380,21 +380,18 @@ class TestGCCollectGarbageScope {
 class TestGCScope : public TestGCCollectGarbageScope {
  public:
   explicit TestGCScope(BlinkGC::StackState state)
-      : TestGCCollectGarbageScope(state),
-        atomic_pause_scope_(ThreadState::Current()) {
+      : TestGCCollectGarbageScope(state) {
     ThreadState::Current()->Heap().stats_collector()->NotifyMarkingStarted(
         BlinkGC::GCReason::kForcedGCForTesting);
-    ThreadState::Current()->AtomicPausePrologue(state, BlinkGC::kAtomicMarking,
-                                                BlinkGC::GCReason::kPreciseGC);
+    ThreadState::Current()->AtomicPauseMarkPrologue(
+        state, BlinkGC::kAtomicMarking, BlinkGC::GCReason::kPreciseGC);
   }
   ~TestGCScope() {
-    ThreadState::Current()->MarkPhaseEpilogue(BlinkGC::kAtomicMarking);
-    ThreadState::Current()->AtomicPauseEpilogue(BlinkGC::kAtomicMarking,
-                                                BlinkGC::kEagerSweeping);
+    ThreadState::Current()->AtomicPauseMarkEpilogue(BlinkGC::kAtomicMarking);
+    ThreadState::Current()->AtomicPauseSweepAndCompact(BlinkGC::kAtomicMarking,
+                                                       BlinkGC::kEagerSweeping);
+    ThreadState::Current()->AtomicPauseEpilogue();
   }
-
- private:
-  ThreadState::AtomicPauseScope atomic_pause_scope_;
 };
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
@@ -3911,7 +3908,7 @@ TEST(HeapTest, CheckAndMarkPointer) {
     // for heaps >1MB.
     ThreadHeapStatsCollector::Scope stats_scope(
         heap.stats_collector(),
-        ThreadHeapStatsCollector::kStandAloneAtomicMarking);
+        ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
 
@@ -3944,7 +3941,7 @@ TEST(HeapTest, CheckAndMarkPointer) {
     // for heaps >1MB.
     ThreadHeapStatsCollector::Scope stats_scope(
         heap.stats_collector(),
-        ThreadHeapStatsCollector::kStandAloneAtomicMarking);
+        ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure);
     heap.address_cache()->EnableLookup();
     heap.address_cache()->Flush();
 

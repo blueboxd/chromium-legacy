@@ -34,10 +34,9 @@ class CredentialManager {
  private:
   // HandleScriptCommand parses JSON message and invokes Get, Store or
   // PreventSilentAccess on CredentialManagerImpl.
-  bool HandleScriptCommand(const base::DictionaryValue& json,
+  void HandleScriptCommand(const base::DictionaryValue& json,
                            const GURL& origin_url,
                            bool user_is_interacting,
-                           bool is_main_frame,
                            web::WebFrame* sender_frame);
 
   // Passed as callback to CredentialManagerImpl::Get.

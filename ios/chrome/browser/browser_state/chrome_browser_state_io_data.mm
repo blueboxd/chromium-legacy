@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/about_handler/about_protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -428,10 +427,6 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
-
-  job_factory->SetProtocolHandler(
-      url::kAboutScheme,
-      std::make_unique<about_handler::AboutProtocolHandler>());
 
   return job_factory;
 }

@@ -59,6 +59,7 @@
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/auth/challenge_response/cert_utils.h"
+#include "chromeos/login/auth/cryptohome_key_constants.h"
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -753,10 +754,12 @@ void GaiaScreenHandler::HandleCompleteAdAuthentication(
 
   set_populated_email(username);
   DCHECK(authpolicy_login_helper_);
+  Key key(password);
+  key.SetLabel(kCryptohomeGaiaKeyLabel);
   authpolicy_login_helper_->AuthenticateUser(
       username, std::string() /* object_guid */, password,
       base::BindOnce(&GaiaScreenHandler::DoAdAuth, weak_factory_.GetWeakPtr(),
-                     username, Key(password)));
+                     username, key));
 }
 
 void GaiaScreenHandler::HandleCancelActiveDirectoryAuth() {
@@ -1305,7 +1308,9 @@ bool GaiaScreenHandler::BuildUserContextForGaiaSignIn(
     user_context->GetMutableChallengeResponseKeys()->push_back(
         challenge_response_key);
   } else {
-    user_context->SetKey(Key(password));
+    Key key(password);
+    key.SetLabel(kCryptohomeGaiaKeyLabel);
+    user_context->SetKey(key);
     user_context->SetPasswordKey(Key(password));
   }
   if (!auth_code.empty())

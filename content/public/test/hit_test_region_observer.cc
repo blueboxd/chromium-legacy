@@ -76,8 +76,11 @@ HitTestRegionObserver::~HitTestRegionObserver() {
 }
 
 void HitTestRegionObserver::WaitForHitTestData() {
+  DCHECK(cached_hit_test_data_.empty());
+
   for (auto& it : GetHostFrameSinkManager()->display_hit_test_query()) {
     if (it.second->ContainsActiveFrameSinkId(frame_sink_id_)) {
+      cached_hit_test_data_ = it.second->GetHitTestData();
       return;
     }
   }
@@ -87,9 +90,30 @@ void HitTestRegionObserver::WaitForHitTestData() {
   run_loop_.reset();
 }
 
+void HitTestRegionObserver::WaitForHitTestDataChange() {
+  DCHECK(!cached_hit_test_data_.empty());
+
+  for (auto& it : GetHostFrameSinkManager()->display_hit_test_query()) {
+    DCHECK(it.second->ContainsActiveFrameSinkId(frame_sink_id_));
+    if (it.second->GetHitTestData() != cached_hit_test_data_) {
+      cached_hit_test_data_ = it.second->GetHitTestData();
+      return;
+    }
+  }
+
+  hit_test_data_change_run_loop_ = std::make_unique<base::RunLoop>();
+  hit_test_data_change_run_loop_->Run();
+  hit_test_data_change_run_loop_.reset();
+}
+
 void HitTestRegionObserver::OnAggregatedHitTestRegionListUpdated(
     const viz::FrameSinkId& frame_sink_id,
     const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) {
+  if (hit_test_data_change_run_loop_ &&
+      cached_hit_test_data_ != hit_test_data) {
+    cached_hit_test_data_ = hit_test_data;
+    hit_test_data_change_run_loop_->Quit();
+  }
 
   if (!run_loop_)
     return;
@@ -109,7 +133,7 @@ HitTestRegionObserver::GetHitTestData() {
       GetHostFrameSinkManager()->display_hit_test_query();
   const auto iter = hit_test_query_map.find(frame_sink_id_);
   DCHECK(iter != hit_test_query_map.end());
-  return iter->second.get()->hit_test_data_;
+  return iter->second.get()->GetHitTestData();
 }
 
 HitTestTransformChangeObserver::HitTestTransformChangeObserver(

@@ -33,7 +33,6 @@
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
 #include "android_webview/browser/network_service/aw_url_loader_throttle.h"
-#include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/safe_browsing/aw_url_checker_delegate_impl.h"
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
@@ -75,7 +74,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -122,7 +120,6 @@ using content::WebContents;
 namespace android_webview {
 namespace {
 static bool g_should_create_thread_pool = true;
-
 #if DCHECK_IS_ON()
 // A boolean value to determine if the NetworkContext has been created yet. This
 // exists only to check correctness: g_check_cleartext_permitted may only be set
@@ -130,6 +127,7 @@ static bool g_should_create_thread_pool = true;
 // g_check_cleartext_permitted won't have any effect).
 bool g_created_network_context_params = false;
 #endif
+
 // On apps targeting API level O or later, check cleartext is enforced.
 bool g_check_cleartext_permitted = false;
 
@@ -313,6 +311,11 @@ void AwContentBrowserClient::set_check_cleartext_permitted(bool permitted) {
   g_check_cleartext_permitted = permitted;
 }
 
+// static
+bool AwContentBrowserClient::get_check_cleartext_permitted() {
+  return g_check_cleartext_permitted;
+}
+
 AwContentBrowserClient::AwContentBrowserClient(
     AwFeatureListCreator* aw_feature_list_creator)
     : aw_feature_list_creator_(aw_feature_list_creator) {
@@ -362,8 +365,10 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
 
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
-      GetNetworkContextParams();
-
+      aw_context->GetNetworkContextParams(in_memory, relative_partition_path);
+#if DCHECK_IS_ON()
+  g_created_network_context_params = true;
+#endif
   content::GetNetworkService()->CreateNetworkContext(
       MakeRequest(&network_context), std::move(context_params));
 
@@ -372,66 +377,6 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   PassMojoCookieManagerToAwCookieManager(network_context);
 
   return network_context;
-}
-
-network::mojom::NetworkContextParamsPtr
-AwContentBrowserClient::GetNetworkContextParams() {
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  context_params->user_agent = GetUserAgent();
-  // TODO(ntfschr): set this value to a proper value based on the user's
-  // preferred locales (http://crbug.com/898555). For now, set this to
-  // "en-US,en" instead of "en-us,en", since Android guarantees region codes
-  // will be uppercase.
-  context_params->accept_language =
-      net::HttpUtil::GenerateAcceptLanguageHeader("en-US,en");
-
-  // HTTP cache
-  context_params->http_cache_enabled = true;
-  context_params->http_cache_max_size = GetHttpCacheSize();
-  context_params->http_cache_path = AwBrowserContext::GetCacheDir();
-
-  // WebView should persist and restore cookies between app sessions (including
-  // session cookies).
-  context_params->cookie_path = AwBrowserContext::GetCookieStorePath();
-  context_params->restore_old_session_cookies = true;
-  context_params->persist_session_cookies = true;
-  context_params->cookie_manager_params =
-      network::mojom::CookieManagerParams::New();
-  context_params->cookie_manager_params->allow_file_scheme_cookies =
-      CookieManager::GetInstance()->AllowFileSchemeCookies();
-
-  context_params->initial_ssl_config = network::mojom::SSLConfig::New();
-  // Allow SHA-1 to be used for locally-installed trust anchors, as WebView
-  // should behave like the Android system would.
-  context_params->initial_ssl_config->sha1_local_anchors_enabled = true;
-  // Do not enforce the Legacy Symantec PKI policies outlined in
-  // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html,
-  // defer to the Android system.
-  context_params->initial_ssl_config->symantec_enforcement_disabled = true;
-
-  // WebView does not currently support Certificate Transparency
-  // (http://crbug.com/921750).
-  context_params->enforce_chrome_ct_policy = false;
-
-  // WebView does not support ftp yet.
-  context_params->enable_ftp_url_support = false;
-
-  context_params->enable_brotli = base::FeatureList::IsEnabled(
-      android_webview::features::kWebViewBrotliSupport);
-
-#if DCHECK_IS_ON()
-  g_created_network_context_params = true;
-#endif
-  context_params->check_clear_text_permitted = g_check_cleartext_permitted;
-
-  content::UpdateCorsExemptHeader(context_params.get());
-
-  // Add proxy settings
-  AwProxyConfigMonitor::GetInstance()->AddProxyToNetworkContextParams(
-      context_params);
-
-  return context_params;
 }
 
 AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
@@ -604,8 +549,9 @@ AwContentBrowserClient::GetGeneratedCodeCacheSettings(
   // If we pass 0 for size, disk_cache will pick a default size using the
   // heuristics based on available disk size. These are implemented in
   // disk_cache::PreferredCacheSize in net/disk_cache/cache_util.cc.
+  AwBrowserContext* browser_context = static_cast<AwBrowserContext*>(context);
   return content::GeneratedCodeCacheSettings(true, 0,
-                                             AwBrowserContext::GetCacheDir());
+                                             browser_context->GetCacheDir());
 }
 
 void AwContentBrowserClient::AllowCertificateError(

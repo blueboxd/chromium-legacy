@@ -279,7 +279,7 @@
 - (void)setUpSeparator {
   self.separator = [[UIView alloc] init];
   self.separator.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+      [UIColor colorNamed:@"tab_toolbar_shadow_color"];
   self.separator.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:self.separator];
 }

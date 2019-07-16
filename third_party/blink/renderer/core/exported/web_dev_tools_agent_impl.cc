@@ -413,7 +413,7 @@ void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
   HitTestRequest request(hit_type);
   WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WTF::CurrentTimeTicks());
+                            base::TimeTicks::Now());
   dummy_event.SetPositionInWidget(point.x, point.y);
   IntPoint transformed_point = FlooredIntPoint(
       TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)

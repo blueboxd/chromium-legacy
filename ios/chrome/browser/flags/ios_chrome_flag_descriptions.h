@@ -238,15 +238,6 @@ extern const char kNewClearBrowsingDataUIDescription[];
 extern const char kNewOmniboxPopupLayoutName[];
 extern const char kNewOmniboxPopupLayoutDescription[];
 
-// Title and description for the flag to enable new password form parsing.
-extern const char kNewPasswordFormParsingName[];
-extern const char kNewPasswordFormParsingDescription[];
-
-// Title and description for the flag to enable new password form parsing for
-// saving.
-extern const char kNewPasswordFormParsingForSavingName[];
-extern const char kNewPasswordFormParsingForSavingDescription[];
-
 // Title and description for the flag to enable non-modal JavaScript dialogs.
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];
@@ -285,11 +276,6 @@ extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
 // suggestions.
 extern const char kOmniboxOnDeviceHeadSuggestionsName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
-
-// Title and description for the flag to enable using only new password form
-// parsing.
-extern const char kOnlyNewPasswordFormParsingName[];
-extern const char kOnlyNewPasswordFormParsingDescription[];
 
 // Title and description for the flag to enable optional thumbnail for NTP
 // articles according to European copyright directive(EUCD).

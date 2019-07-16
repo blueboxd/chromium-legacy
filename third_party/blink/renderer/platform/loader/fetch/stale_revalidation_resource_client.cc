@@ -11,7 +11,7 @@ namespace blink {
 
 StaleRevalidationResourceClient::StaleRevalidationResourceClient(
     Resource* stale_resource)
-    : start_time_(CurrentTimeTicks()), stale_resource_(stale_resource) {}
+    : start_time_(base::TimeTicks::Now()), stale_resource_(stale_resource) {}
 
 StaleRevalidationResourceClient::~StaleRevalidationResourceClient() = default;
 

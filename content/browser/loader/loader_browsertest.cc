@@ -22,6 +22,7 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -154,6 +155,47 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SniffHTMLWithNoContentType) {
       net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
       "Content Sniffer Test 0");
   EXPECT_EQ("text/html", shell()->web_contents()->GetContentsMimeType());
+}
+
+// Tests that the renderer does not crash when issuing a stale-revalidation
+// request when the enable_referrers renderer preference is `false`. See
+// https://crbug.com/966140.
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
+                       DisableReferrersStaleWhileRevalidate) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to the page that will eventually fetch a stale-revalidation
+  // request. Ensure that the renderer has not crashed.
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/stale-while-revalidate.html")));
+
+  // Create new renderer preferences and force-disable the |enable_referrers|
+  // preference.
+  blink::mojom::RendererPreferences renderer_preferences;
+  renderer_preferences.enable_referrers = false;
+
+  // Send updated renderer preferences to the renderer.
+  RenderViewHost* rvh = web_contents->GetRenderViewHost();
+  rvh->Send(
+      new ViewMsg_SetRendererPrefs(rvh->GetRoutingID(), renderer_preferences));
+
+  // Wait for the stale-while-revalidate tests to pass by observing the page's
+  // title. If the renderer crashes, the test immediately fails.
+  base::string16 expected_title = base::ASCIIToUTF16("Pass");
+  TitleWatcher title_watcher(web_contents, expected_title);
+
+  // The invocation of runTest() below starts a test written in JavaScript, that
+  // after some time, creates a stale-revalidation request. The above IPC
+  // message should be handled by the renderer (thus updating its preferences),
+  // before this stale-revalidation request is sent. Technically nothing
+  // guarantees this will happen, so it is theoretically possible the test is
+  // racy, however in practice the renderer will always handle the IPC message
+  // before the stale-revalidation request. This is because the renderer is
+  // never completely blocked from the time the test starts.
+  EXPECT_TRUE(ExecuteScript(shell(), "runTest()"));
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RespectNoSniffDirective) {

@@ -35,6 +35,8 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/content/browser/bad_message.h"
@@ -45,8 +47,6 @@
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_manager_impl.h"
-#include "components/password_manager/core/browser/log_manager.h"
-#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
@@ -198,7 +198,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
                                                             autofill_client);
   driver_factory_ =
       ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
-  log_manager_ = password_manager::LogManager::Create(
+  log_manager_ = autofill::LogManager::Create(
       password_manager::PasswordManagerInternalsServiceFactory::
           GetForBrowserContext(profile_),
       base::Bind(
@@ -926,8 +926,7 @@ ChromePasswordManagerClient::GetStoreResultFilter() const {
   return &credentials_filter_;
 }
 
-const password_manager::LogManager* ChromePasswordManagerClient::GetLogManager()
-    const {
+const autofill::LogManager* ChromePasswordManagerClient::GetLogManager() const {
   return log_manager_.get();
 }
 

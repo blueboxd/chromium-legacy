@@ -320,7 +320,7 @@ void FrameLoader::DispatchUnloadEvent() {
 
 void FrameLoader::DidExplicitOpen() {
   probe::LifecycleEvent(frame_, GetDocumentLoader(), "init",
-                        CurrentTimeTicksInSeconds());
+                        base::TimeTicks::Now().since_origin().InSecondsF());
   // Calling document.open counts as committing the first real document load.
   if (!state_machine_.CommittedFirstRealDocumentLoad())
     state_machine_.AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);

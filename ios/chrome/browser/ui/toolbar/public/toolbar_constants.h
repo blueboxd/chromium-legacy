@@ -31,7 +31,6 @@ extern const CGFloat kAdaptiveToolbarStackViewSpacing;
 extern const CGFloat kProgressBarHeight;
 
 // Separator.
-extern const CGFloat kToolbarSeparatorAlpha;
 // Height of the separator. Should be aligned to upper pixel.
 extern const CGFloat kToolbarSeparatorHeight;
 

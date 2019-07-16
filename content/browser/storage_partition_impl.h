@@ -85,6 +85,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       storage::QuotaManager* quota_manager);
   void OverrideSpecialStoragePolicyForTesting(
       storage::SpecialStoragePolicy* special_storage_policy);
+  void ShutdownBackgroundSyncContextForTesting();
+  void OverrideBackgroundSyncContextForTesting(
+      BackgroundSyncContextImpl* background_sync_context);
 
   // StoragePartition interface.
   base::FilePath GetPath() override;

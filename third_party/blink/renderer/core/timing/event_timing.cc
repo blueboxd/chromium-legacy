@@ -12,14 +12,13 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 const base::TickClock* g_clock_for_testing = nullptr;
 
 static base::TimeTicks Now() {
   return g_clock_for_testing ? g_clock_for_testing->NowTicks()
-                             : CurrentTimeTicks();
+                             : base::TimeTicks::Now();
 }
 }  // namespace
 

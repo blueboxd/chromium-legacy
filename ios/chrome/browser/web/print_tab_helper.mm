@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #import "ios/chrome/browser/web/web_state_printer.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,21 +41,19 @@ void PrintTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
 }
 
-bool PrintTabHelper::OnPrintCommand(web::WebState* web_state,
+void PrintTabHelper::OnPrintCommand(web::WebState* web_state,
                                     const base::DictionaryValue& command,
                                     const GURL& page_url,
-                                    bool interacting,
-                                    bool is_main_frame,
+                                    bool user_is_interacting,
                                     web::WebFrame* sender_frame) {
-  if (!is_main_frame && !interacting) {
+  if (!sender_frame->IsMainFrame() && !user_is_interacting) {
     // Ignore non user-initiated window.print() calls from iframes, to prevent
     // abusive behavior from web sites.
-    return false;
+    return;
   }
   DCHECK(web_state);
   DCHECK(printer_);
   [printer_ printWebState:web_state];
-  return true;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(PrintTabHelper)

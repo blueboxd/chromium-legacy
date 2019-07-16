@@ -29,13 +29,17 @@ class PaymentRequestContactInfoEditMediatorTest
  protected:
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     CreateTestPaymentRequest();
   }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 };
 
 // Tests that the expected editor fields are created when creating a profile.

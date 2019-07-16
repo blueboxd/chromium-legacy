@@ -441,8 +441,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     managed_bookmark_service_->BookmarkModelCreated(model.get());
     int64_t next_id = 0;
     static_cast<bookmarks::TestBookmarkClient*>(model->client())
-        ->SetExtraNodeToLoad(
-            managed_bookmark_service_->GetLoadExtraNodeCallback().Run(
+        ->SetManagedNodeToLoad(
+            managed_bookmark_service_->GetLoadManagedNodeCallback().Run(
                 &next_id));
     if (delete_bookmarks) {
       base::DeleteFile(data_path.Append(FILE_PATH_LITERAL("dummy_bookmarks")),
@@ -1090,7 +1090,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, InitialModelAssociateWithInvalidUrl) {
   }
 
   // Expect the order of nodes to follow the sync order (see note above), the
-  // node with the invalid URL to be skipped, and the extra native node to be
+  // node with the invalid URL to be skipped, and the managed native node to be
   // at the end.
   EXPECT_EQ("node4,node2,node1", native_titles);
 }

@@ -548,55 +548,55 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SAVED_PASSWORDS_NONE_TEXT" desc="Text when there are no saved passwords/exceptions.">
         Saved passwords will appear here.
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_TITLE" desc='Title of the "edit a name/password" screen.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_TITLE" desc='Title of the overview screen for a saved password.'>
         Saved password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_SITE_TITLE" desc='Title preceding the identification of the site where the stored password comes from.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_SITE_TITLE" desc='Title preceding the identification of the site where the stored password comes from.'>
         Site
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_USERNAME_TITLE" desc='Title preceding username of the account where the stored password comes from.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_USERNAME_TITLE" desc='Title preceding username of the account where the stored password comes from.'>
         Username
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_PASSWORD" desc='Title preceding password on password entry editor.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_PASSWORD" desc='Title preceding password on password entry viewer.'>
         Password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_SITE" desc='Content description for the button that copies the stored site.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_COPY_STORED_SITE" desc='Content description for the button that copies the stored site.'>
         Copy URL
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_USERNAME" desc='Content description for the button that copies the stored username.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_COPY_STORED_USERNAME" desc='Content description for the button that copies the stored username.'>
         Copy username
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_COPY_STORED_PASSWORD" desc='Content description for the button that copies the stored password.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_COPY_STORED_PASSWORD" desc='Content description for the button that copies the stored password.'>
         Copy password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_VIEW_STORED_PASSWORD" desc='Content description for the button that allows users to view the stored password upon reauthentication.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_VIEW_STORED_PASSWORD" desc='Content description for the button that allows users to view the stored password upon reauthentication.'>
         Unmask password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that deletes the stored password.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_DELETE_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that deletes the stored password.'>
         Delete password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_EDIT_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that edits the stored password.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_EDIT_STORED_PASSWORD_ACTION_TITLE" desc='Title for button on action bar that edits the stored password.'>
         Edit password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_HIDE_STORED_PASSWORD" desc="A tooltip on a button that hides the saved password that is being shown.">
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_HIDE_STORED_PASSWORD" desc="A tooltip on a button that hides the saved password that is being shown.">
         Hide password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD" desc='Content description for the button that allows users to delete the stored password.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_DELETE_STORED_PASSWORD" desc='Content description for the button that allows users to delete the stored password.'>
         Delete stored password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_EDIT_STORED_PASSWORD" desc='Content description for the button that allows users to edit the stored password.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_EDIT_STORED_PASSWORD" desc='Content description for the button that allows users to edit the stored password.'>
         Edit stored password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_USERNAME_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the username of a saved account has been copied into clipboard.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_USERNAME_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the username of a saved account has been copied into clipboard.'>
         Username copied
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_SITE_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the site of a saved account has been copied into clipboard.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_SITE_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the site of a saved account has been copied into clipboard.'>
         Site copied
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_PASSWORD_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the password of a saved account has been copied into clipboard.'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_PASSWORD_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the password of a saved account has been copied into clipboard.'>
         Password copied
       </message>
-      <message name="IDS_PASSWORD_ENTRY_EDITOR_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
+      <message name="IDS_PASSWORD_ENTRY_VIEWER_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
         To view or copy your password here, set screen lock on this device.
       </message>
       <message name="IDS_PASSWORD_EXPORT_SET_LOCK_SCREEN" desc="Text prompting user to set device lock in order to be able to export passwords">

@@ -14,7 +14,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
 class AccountTrackerService;

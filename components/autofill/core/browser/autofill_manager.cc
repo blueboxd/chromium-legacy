@@ -244,7 +244,7 @@ void LogAutofillTypePredictionsAvailable(
   if (!IsLogAutofillInternalsActive())
     return;
 
-  AutofillInternalsBuffer buffer;
+  LogBuffer buffer;
   for (FormStructure* form : forms)
     buffer << *form;
 

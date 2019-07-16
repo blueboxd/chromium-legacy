@@ -28,6 +28,7 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
  protected:
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     // Add testing profiles to the database. Make the less frequently used one
@@ -58,7 +59,10 @@ class PaymentRequestBillingAddressSelectionCoordinatorTest
   }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 
   UINavigationController* GetNavigationController() {
     return navigation_controller_;

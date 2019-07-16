@@ -14,6 +14,8 @@ blink_core_sources("svg") {
   }
 
   sources = [
+    "animation/smil_animation_sandwich.cc",
+    "animation/smil_animation_sandwich.h",
     "animation/smil_time.cc",
     "animation/smil_time.h",
     "animation/smil_time_container.cc",

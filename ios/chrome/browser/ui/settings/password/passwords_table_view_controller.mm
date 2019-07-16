@@ -48,6 +48,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -282,9 +283,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
   self.scrimView = [[UIControl alloc] init];
   self.scrimView.alpha = 0.0f;
-  self.scrimView.backgroundColor =
-      [UIColor colorWithWhite:0
-                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrimView.accessibilityIdentifier = kPasswordsScrimViewId;
   [self.scrimView addTarget:self

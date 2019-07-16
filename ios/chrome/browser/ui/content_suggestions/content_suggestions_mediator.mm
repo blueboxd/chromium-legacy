@@ -670,6 +670,19 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   return _actionButtonItems;
 }
 
+- (void)setCommandHandler:
+    (id<ContentSuggestionsCommands, ContentSuggestionsGestureCommands>)
+        commandHandler {
+  if (_commandHandler == commandHandler)
+    return;
+
+  _commandHandler = commandHandler;
+
+  for (ContentSuggestionsMostVisitedItem* item in self.freshMostVisitedItems) {
+    item.commandHandler = commandHandler;
+  }
+}
+
 #pragma mark - ReadingListModelBridgeObserver
 
 - (void)readingListModelLoaded:(const ReadingListModel*)model {

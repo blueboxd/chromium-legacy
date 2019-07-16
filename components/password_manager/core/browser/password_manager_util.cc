@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -22,7 +23,6 @@
 #include "components/password_manager/core/browser/credentials_cleaner.h"
 #include "components/password_manager/core/browser/credentials_cleaner_runner.h"
 #include "components/password_manager/core/browser/http_credentials_cleaner.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -126,7 +126,7 @@ void TrimUsernameOnlyCredentials(
 }
 
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client) {
-  const password_manager::LogManager* log_manager = client->GetLogManager();
+  const autofill::LogManager* log_manager = client->GetLogManager();
   return log_manager && log_manager->IsLoggingActive();
 }
 

@@ -462,7 +462,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
 
   void BeginFrame() {
     helper_.GetWebView()->MainFrameWidget()->BeginFrame(
-        WTF::CurrentTimeTicks(), false /* record_main_frame_metrics */);
+        base::TimeTicks::Now(), false /* record_main_frame_metrics */);
   }
 
   void ForceFullCompositingUpdate() {

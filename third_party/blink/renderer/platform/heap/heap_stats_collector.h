@@ -41,32 +41,30 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   virtual void DecreaseAllocatedObjectSize(size_t) = 0;
 };
 
-#define FOR_ALL_SCOPES(V)                  \
-  V(AtomicPhase)                           \
-  V(AtomicPhaseCompaction)                 \
-  V(AtomicPhaseMarking)                    \
-  V(AtomicSweepAndCompact)                 \
-  V(CompleteSweep)                         \
-  V(EagerSweep)                            \
-  V(IncrementalMarkingFinalize)            \
-  V(IncrementalMarkingStartMarking)        \
-  V(IncrementalMarkingStep)                \
-  V(InvokePreFinalizers)                   \
-  V(LazySweepInIdle)                       \
-  V(LazySweepOnAllocation)                 \
-  V(MarkInvokeEphemeronCallbacks)          \
-  V(MarkProcessWorklist)                   \
-  V(MarkNotFullyConstructedObjects)        \
-  V(MarkWeakProcessing)                    \
-  V(StandAloneAtomicMarking)               \
-  V(UnifiedAtomicMarkingEpilogue)          \
-  V(UnifiedAtomicMarkingPrologue)          \
-  V(UnifiedAtomicMarkingTransitiveClosure) \
-  V(UnifiedMarkingStep)                    \
-  V(VisitCrossThreadPersistents)           \
-  V(VisitDOMWrappers)                      \
-  V(VisitPersistentRoots)                  \
-  V(VisitPersistents)                      \
+#define FOR_ALL_SCOPES(V)             \
+  V(AtomicPauseCompaction)            \
+  V(AtomicPauseMarkEpilogue)          \
+  V(AtomicPauseMarkPrologue)          \
+  V(AtomicPauseMarkRoots)             \
+  V(AtomicPauseMarkTransitiveClosure) \
+  V(AtomicPauseSweepAndCompact)       \
+  V(CompleteSweep)                    \
+  V(EagerSweep)                       \
+  V(IncrementalMarkingFinalize)       \
+  V(IncrementalMarkingStartMarking)   \
+  V(IncrementalMarkingStep)           \
+  V(InvokePreFinalizers)              \
+  V(LazySweepInIdle)                  \
+  V(LazySweepOnAllocation)            \
+  V(MarkInvokeEphemeronCallbacks)     \
+  V(MarkProcessWorklist)              \
+  V(MarkNotFullyConstructedObjects)   \
+  V(MarkWeakProcessing)               \
+  V(UnifiedMarkingStep)               \
+  V(VisitCrossThreadPersistents)      \
+  V(VisitDOMWrappers)                 \
+  V(VisitPersistentRoots)             \
+  V(VisitPersistents)                 \
   V(VisitStackRoots)
 
 #define FOR_ALL_CONCURRENT_SCOPES(V) V(ConcurrentSweep)
@@ -145,7 +143,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     inline InternalScope(ThreadHeapStatsCollector* tracer,
                          IdType id,
                          Args... args)
-        : tracer_(tracer), start_time_(WTF::CurrentTimeTicks()), id_(id) {
+        : tracer_(tracer), start_time_(base::TimeTicks::Now()), id_(id) {
       StartTrace(id, args...);
     }
 
@@ -189,12 +187,12 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     }
 
     void IncreaseScopeTime(Id) {
-      tracer_->IncreaseScopeTime(id_, WTF::CurrentTimeTicks() - start_time_);
+      tracer_->IncreaseScopeTime(id_, base::TimeTicks::Now() - start_time_);
     }
 
     void IncreaseScopeTime(ConcurrentId) {
       tracer_->IncreaseConcurrentScopeTime(
-          id_, WTF::CurrentTimeTicks() - start_time_);
+          id_, base::TimeTicks::Now() - start_time_);
     }
 
     ThreadHeapStatsCollector* const tracer_;
@@ -218,11 +216,11 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
    public:
     template <typename... Args>
     BlinkGCInV8Scope(ThreadHeapStatsCollector* tracer)
-        : tracer_(tracer), start_time_(WTF::CurrentTimeTicks()) {}
+        : tracer_(tracer), start_time_(base::TimeTicks::Now()) {}
 
     ~BlinkGCInV8Scope() {
       if (tracer_)
-        tracer_->gc_nested_in_v8_ += WTF::CurrentTimeTicks() - start_time_;
+        tracer_->gc_nested_in_v8_ += base::TimeTicks::Now() - start_time_;
     }
 
    private:

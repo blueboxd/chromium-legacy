@@ -59,7 +59,7 @@ class CORE_EXPORT UIEvent : public Event {
           const UIEventInit*,
           base::TimeTicks platform_time_stamp);
   UIEvent(const AtomicString& type, const UIEventInit* init)
-      : UIEvent(type, init, CurrentTimeTicks()) {}
+      : UIEvent(type, init, base::TimeTicks::Now()) {}
   ~UIEvent() override;
 
   void initUIEvent(const AtomicString& type,

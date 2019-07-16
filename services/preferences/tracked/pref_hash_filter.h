@@ -55,9 +55,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // If |reset_on_load_observer| is provided, it will be notified if a reset
   // occurs in FilterOnLoad.
   // |reporting_ids_count| is the count of all possible IDs (possibly greater
-  // than |tracked_preferences.size()|). If |report_super_mac_validity| is true,
-  // the state of the super MAC will be reported via UMA during
-  // FinalizeFilterOnLoad.
+  // than |tracked_preferences.size()|).
   // |external_validation_hash_store_pair_| will be used (if non-null) to
   // perform extra validations without triggering resets.
   PrefHashFilter(std::unique_ptr<PrefHashStore> pref_hash_store,
@@ -66,8 +64,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
                      tracked_preferences,
                  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
                  prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
-                 size_t reporting_ids_count,
-                 bool report_super_mac_validity);
+                 size_t reporting_ids_count);
 
   ~PrefHashFilter() override;
 
@@ -149,9 +146,6 @@ class PrefHashFilter : public InterceptablePrefFilter {
   // The set of all paths whose value has changed since the last call to
   // FilterSerializeData.
   ChangedPathsMap changed_paths_;
-
-  // Whether to report the validity of the super MAC at load time (via UMA).
-  bool report_super_mac_validity_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };

@@ -45,10 +45,6 @@ namespace remoting {
 
 namespace {
 
-const char* const kXmppServer = "talk.google.com";
-const int kXmppPort = 5222;
-const bool kXmppUseTls = true;
-
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
 
@@ -489,24 +485,10 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
       client_context_.get(), this, session_context_->video_renderer.get(),
       session_context_->audio_player_weak_factory->GetWeakPtr()));
 
-  XmppSignalStrategy::XmppServerConfig xmpp_config;
-  xmpp_config.host = kXmppServer;
-  xmpp_config.port = kXmppPort;
-  xmpp_config.use_tls = kXmppUseTls;
-  xmpp_config.username = session_context_->info.username;
-  xmpp_config.auth_token = session_context_->info.auth_token;
-
-  if (!session_context_->info.host_ftl_id.empty()) {
-    signaling_ = std::make_unique<FtlSignalStrategy>(
-        runtime_->CreateOAuthTokenGetter(),
-        std::make_unique<FtlClientUuidDeviceIdProvider>());
-    logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
-  } else {
-    signaling_ = std::make_unique<XmppSignalStrategy>(
-        net::ClientSocketFactory::GetDefaultFactory(),
-        runtime_->url_requester(), xmpp_config);
-    logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::XMPP);
-  }
+  signaling_ = std::make_unique<FtlSignalStrategy>(
+      runtime_->CreateOAuthTokenGetter(),
+      std::make_unique<FtlClientUuidDeviceIdProvider>());
+  logger_->SetSignalStrategyType(ChromotingEvent::SignalStrategyType::FTL);
 
   token_getter_ = runtime_->CreateOAuthTokenGetter();
 

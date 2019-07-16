@@ -229,28 +229,27 @@ void WebFrameImpl::CancelPendingRequests() {
   pending_requests_.clear();
 }
 
-bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
+void WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
                                      const base::DictionaryValue& command_json,
                                      const GURL& page_url,
                                      bool interacting,
-                                     bool is_main_frame,
                                      WebFrame* sender_frame) {
   auto* command = command_json.FindKey("command");
   if (!command || !command->is_string() || !command_json.HasKey("messageId")) {
     NOTREACHED();
-    return false;
+    return;
   }
 
   const std::string command_string = command->GetString();
   if (command_string != (GetScriptCommandPrefix() + ".reply")) {
     NOTREACHED();
-    return false;
+    return;
   }
 
   auto* message_id_value = command_json.FindKey("messageId");
   if (!message_id_value->is_double()) {
     NOTREACHED();
-    return false;
+    return;
   }
 
   int message_id = static_cast<int>(message_id_value->GetDouble());
@@ -258,7 +257,7 @@ bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
   auto request = pending_requests_.find(message_id);
   if (request == pending_requests_.end()) {
     // Request may have already been processed due to timeout.
-    return false;
+    return;
   }
 
   auto callbacks = std::move(request->second);
@@ -266,8 +265,6 @@ bool WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
   callbacks->timeout_callback->Cancel();
   const base::Value* result = command_json.FindKey("result");
   std::move(callbacks->completion).Run(result);
-
-  return true;
 }
 
 void WebFrameImpl::DetachFromWebState() {

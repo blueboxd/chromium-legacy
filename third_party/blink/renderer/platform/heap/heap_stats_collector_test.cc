@@ -94,7 +94,7 @@ TEST(ThreadHeapStatsCollectorTest, UpdateReason) {
             stats_collector.previous().reason);
 }
 
-TEST(ThreadHeapStatsCollectorTest, InitialEstimatedObjectSizeInBytes) {
+TEST(ThreadHeapStatsCollectorTest, InitialEstimatedObjectSize) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   EXPECT_EQ(0u, stats_collector.object_size_in_bytes());
@@ -102,7 +102,7 @@ TEST(ThreadHeapStatsCollectorTest, InitialEstimatedObjectSizeInBytes) {
   stats_collector.NotifySweepingCompleted();
 }
 
-TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeInBytesNoMarkedBytes) {
+TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeNoMarkedBytes) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseAllocatedObjectSizeForTesting(512);
@@ -111,7 +111,7 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeInBytesNoMarkedBytes) {
   stats_collector.NotifySweepingCompleted();
 }
 
-TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeInBytesWithMarkedBytes) {
+TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeWithMarkedBytes) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.NotifyMarkingCompleted(128);
@@ -124,7 +124,7 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedObjectSizeInBytesWithMarkedBytes) {
 }
 
 TEST(ThreadHeapStatsCollectorTest,
-     EstimatedObjectSizeInBytesDoNotCountCurrentlyMarkedBytes) {
+     EstimatedObjectSizeDoNotCountCurrentlyMarkedBytes) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.NotifyMarkingCompleted(128);
@@ -151,7 +151,7 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedMarkingTime1) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromSeconds(1));
   stats_collector.NotifyMarkingCompleted(1024);
   stats_collector.NotifySweepingCompleted();
@@ -165,7 +165,7 @@ TEST(ThreadHeapStatsCollectorTest, EstimatedMarkingTime2) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromSeconds(1));
   stats_collector.NotifyMarkingCompleted(1024);
   stats_collector.NotifySweepingCompleted();
@@ -225,7 +225,7 @@ TEST(ThreadHeapStatsCollectorTest, EventPrevGCMarkedObjectSize) {
 }
 
 TEST(ThreadHeapStatsCollectorTest,
-     EventMarkingTimeInMsFromIncrementalStandAloneGC) {
+     EventMarkingTimeFromIncrementalStandAloneGC) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
@@ -235,7 +235,7 @@ TEST(ThreadHeapStatsCollectorTest,
       ThreadHeapStatsCollector::kIncrementalMarkingStep,
       base::TimeDelta::FromMilliseconds(2));
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromMilliseconds(4));
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
@@ -243,8 +243,7 @@ TEST(ThreadHeapStatsCollectorTest,
                    stats_collector.previous().marking_time().InMillisecondsF());
 }
 
-TEST(ThreadHeapStatsCollectorTest,
-     EventMarkingTimeInMsFromIncrementalUnifiedGC) {
+TEST(ThreadHeapStatsCollectorTest, EventMarkingTimeFromIncrementalUnifiedGC) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
@@ -257,13 +256,13 @@ TEST(ThreadHeapStatsCollectorTest,
       ThreadHeapStatsCollector::kUnifiedMarkingStep,
       base::TimeDelta::FromMilliseconds(1));
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingPrologue,
+      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue,
       base::TimeDelta::FromMilliseconds(3));
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingTransitiveClosure,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromMilliseconds(2));
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingEpilogue,
+      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue,
       base::TimeDelta::FromMilliseconds(1));
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
@@ -271,41 +270,32 @@ TEST(ThreadHeapStatsCollectorTest,
                    stats_collector.previous().marking_time().InMillisecondsF());
 }
 
-TEST(ThreadHeapStatsCollectorTest, EventMarkingTimeInMsStandAloneGC) {
+TEST(ThreadHeapStatsCollectorTest, EventMarkingTime) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
+      ThreadHeapStatsCollector::kIncrementalMarkingStep,
+      base::TimeDelta::FromMilliseconds(2));
+  stats_collector.IncreaseScopeTime(
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromMilliseconds(11));
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
-  EXPECT_DOUBLE_EQ(11.0,
+  EXPECT_DOUBLE_EQ(13.0,
                    stats_collector.previous().marking_time().InMillisecondsF());
 }
 
-TEST(ThreadHeapStatsCollectorTest, EventAtomicMarkingTimeStandAlone) {
+TEST(ThreadHeapStatsCollectorTest, EventAtomicMarkingTime) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
-      base::TimeDelta::FromMilliseconds(11));
-  stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
-  stats_collector.NotifySweepingCompleted();
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(11),
-            stats_collector.previous().atomic_marking_time());
-}
-
-TEST(ThreadHeapStatsCollectorTest, EventAtomicMarkingTimeUnifiedHeapGC) {
-  ThreadHeapStatsCollector stats_collector;
-  stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
-  stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingPrologue,
+      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue,
       base::TimeDelta::FromMilliseconds(5));
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingTransitiveClosure,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromMilliseconds(3));
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingEpilogue,
+      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue,
       base::TimeDelta::FromMilliseconds(1));
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.NotifySweepingCompleted();
@@ -313,39 +303,18 @@ TEST(ThreadHeapStatsCollectorTest, EventAtomicMarkingTimeUnifiedHeapGC) {
             stats_collector.previous().atomic_marking_time());
 }
 
-TEST(ThreadHeapStatsCollectorTest, EventAtomicPauseTimeStandAlone) {
+TEST(ThreadHeapStatsCollectorTest, EventAtomicPause) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromMilliseconds(17));
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kAtomicSweepAndCompact,
+      ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact,
       base::TimeDelta::FromMilliseconds(15));
   stats_collector.NotifySweepingCompleted();
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(32),
-            stats_collector.previous().atomic_pause_time());
-}
-
-TEST(ThreadHeapStatsCollectorTest, EventAtomicPauseTimeUnifiedHeapGC) {
-  ThreadHeapStatsCollector stats_collector;
-  stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
-  stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingPrologue,
-      base::TimeDelta::FromMilliseconds(5));
-  stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingTransitiveClosure,
-      base::TimeDelta::FromMilliseconds(3));
-  stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kUnifiedAtomicMarkingEpilogue,
-      base::TimeDelta::FromMilliseconds(1));
-  stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);
-  stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kAtomicSweepAndCompact,
-      base::TimeDelta::FromMilliseconds(15));
-  stats_collector.NotifySweepingCompleted();
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(24),
             stats_collector.previous().atomic_pause_time());
 }
 
@@ -353,7 +322,7 @@ TEST(ThreadHeapStatsCollectorTest, EventMarkingTimePerByteInS) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kStandAloneAtomicMarking,
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
       base::TimeDelta::FromSeconds(1));
   stats_collector.NotifyMarkingCompleted(1000);
   stats_collector.NotifySweepingCompleted();
@@ -361,7 +330,7 @@ TEST(ThreadHeapStatsCollectorTest, EventMarkingTimePerByteInS) {
       .001, stats_collector.previous().marking_time_in_bytes_per_second());
 }
 
-TEST(ThreadHeapStatsCollectorTest, EventSweepingTimeInMs) {
+TEST(ThreadHeapStatsCollectorTest, EventSweepingTime) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::GCReason::kForcedGCForTesting);
   stats_collector.NotifyMarkingCompleted(kNoMarkedBytes);

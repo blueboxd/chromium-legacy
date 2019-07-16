@@ -31,7 +31,17 @@ Polymer({
   },
 
   /** @private */
-  format_: function() {
+  format_: async function() {
+    try {
+      await util.validateExternalDriveName(
+          this.label_,
+          /** @type {!VolumeManagerCommon.FileSystemType} */
+          (this.formatType_));
+    } catch (errorMessage) {
+      this.$.label.setAttribute('error-message', errorMessage);
+      this.$.label.invalid = true;
+      return;
+    }
     chrome.fileManagerPrivate.formatVolume(
         this.volumeInfo_.volumeId, this.formatType_, this.label_);
     this.$.dialog.close();

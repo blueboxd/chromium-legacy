@@ -26,7 +26,6 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_delegate_fake.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
-#include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"

@@ -97,7 +97,7 @@ class Binding {
   // binding it to the previously specified implementation.
   void Bind(InterfaceRequest<Interface> request,
             scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
-    internal_state_.Bind(request.PassMessagePipe(), std::move(runner));
+    internal_state_.Bind(request.internal_state(), std::move(runner));
   }
 
   // Adds a message filter to be notified of each incoming message before

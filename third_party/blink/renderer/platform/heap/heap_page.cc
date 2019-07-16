@@ -323,7 +323,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPage(page);
     if (page_count % kDeadlineCheckInterval == 0) {
-      if (deadline <= CurrentTimeTicks()) {
+      if (deadline <= base::TimeTicks::Now()) {
         // Deadline has come.
         return SweepingAndFinalizationCompleted();
       }
@@ -334,7 +334,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
     swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);
     if (page_count % kDeadlineCheckInterval == 0) {
-      if (deadline <= CurrentTimeTicks()) {
+      if (deadline <= base::TimeTicks::Now()) {
         // Deadline has come.
         return SweepingAndFinalizationCompleted();
       }
@@ -344,7 +344,7 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   while (BasePage* page = swept_unfinalized_empty_pages_.PopLocked()) {
     page->FinalizeSweep(SweepResult::kPageEmpty);
     if (page_count % kDeadlineCheckInterval == 0) {
-      if (deadline <= CurrentTimeTicks()) {
+      if (deadline <= base::TimeTicks::Now()) {
         // Deadline has come.
         return SweepingAndFinalizationCompleted();
       }

@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,7 +30,7 @@
 - (UIColor*)NTPBackgroundColor {
   switch (self.style) {
     case NORMAL:
-      return ntp_home::kNTPBackgroundColor();
+      return [UIColor colorNamed:kBackgroundColor];
     case INCOGNITO:
       return [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
                                alpha:1.0];
@@ -39,7 +40,7 @@
 - (UIColor*)backgroundColor {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:kBlurBackgroundGrayscaleComponent alpha:1];
+      return [UIColor colorNamed:kBackgroundColor];
     case INCOGNITO:
       return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
     }
@@ -48,7 +49,7 @@
 - (UIColor*)buttonsTintColor {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:0 alpha:kToolbarButtonTintColorAlpha];
+      return [UIColor colorNamed:@"tab_toolbar_button_color"];
     case INCOGNITO:
       return [UIColor whiteColor];
   }
@@ -57,8 +58,7 @@
 - (UIColor*)buttonsTintColorHighlighted {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:0
-                               alpha:kToolbarButtonTintColorAlphaHighlighted];
+      return [UIColor colorNamed:@"tab_toolbar_button_color_highlighted"];
       break;
     case INCOGNITO:
       return [UIColor
@@ -71,7 +71,7 @@
 - (UIColor*)buttonsSpotlightColor {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:0 alpha:kToolbarSpotlightAlpha];
+      return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
       break;
     case INCOGNITO:
       return [UIColor colorWithWhite:1 alpha:kToolbarSpotlightAlpha];
@@ -82,7 +82,7 @@
 - (UIColor*)dimmedButtonsSpotlightColor {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:0 alpha:kDimmedToolbarSpotlightAlpha];
+      return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
       break;
     case INCOGNITO:
       return [UIColor colorWithWhite:1 alpha:kDimmedToolbarSpotlightAlpha];

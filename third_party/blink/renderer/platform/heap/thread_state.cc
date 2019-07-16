@@ -633,7 +633,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
-        "idleDeltaInSeconds", (deadline - CurrentTimeTicks()).InSecondsF());
+        "idleDeltaInSeconds", (deadline - base::TimeTicks::Now()).InSecondsF());
     sweep_completed = Heap().AdvanceLazySweep(deadline);
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
@@ -848,64 +848,49 @@ void ThreadState::FinishSnapshot() {
   SetGCPhase(GCPhase::kNone);
 }
 
-void ThreadState::AtomicPauseEpilogue(BlinkGC::MarkingType marking_type,
-                                      BlinkGC::SweepingType sweeping_type) {
+void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
+                                          BlinkGC::MarkingType marking_type,
+                                          BlinkGC::GCReason reason) {
+  ThreadHeapStatsCollector::Scope mark_prologue_scope(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_);
+  EnterAtomicPause();
+  EnterGCForbiddenScope();
+  // Compaction needs to be canceled when incremental marking ends with a
+  // conservative GC.
+  if (stack_state == BlinkGC::kHeapPointersOnStack)
+    Heap().Compaction()->Cancel();
+
+  if (IsMarkingInProgress()) {
+    // Incremental marking is already in progress. Only update the state
+    // that is necessary to update.
+    current_gc_data_.reason = reason;
+    current_gc_data_.stack_state = stack_state;
+    Heap().stats_collector()->UpdateReason(reason);
+    SetGCState(kNoGCScheduled);
+    DisableIncrementalMarkingBarrier();
+  } else {
+    MarkPhasePrologue(stack_state, marking_type, reason);
+  }
+
+  if (marking_type == BlinkGC::kTakeSnapshot)
+    BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
+
+  if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
+    Heap().FlushNotFullyConstructedObjects();
+  }
+
   DCHECK(InAtomicMarkingPause());
-  DCHECK(CheckThread());
-  Heap().PrepareForSweep();
+  Heap().MakeConsistentForGC();
+  Heap().ClearArenaAges();
+}
 
-  if (marking_type == BlinkGC::kTakeSnapshot) {
-    // Doing lazy sweeping for kTakeSnapshot doesn't make any sense so the
-    // sweeping type should always be kEagerSweeping.
-    DCHECK_EQ(sweeping_type, BlinkGC::kEagerSweeping);
-    Heap().TakeSnapshot(ThreadHeap::SnapshotType::kHeapSnapshot);
-
-    // This unmarks all marked objects and marks all unmarked objects dead.
-    Heap().MakeConsistentForMutator();
-
-    Heap().TakeSnapshot(ThreadHeap::SnapshotType::kFreelistSnapshot);
-    return;
+void ThreadState::AtomicPauseEpilogue() {
+  if (!IsSweepingInProgress()) {
+    // Sweeping was finished during the atomic pause. Update statistics needs to
+    // run outside of the top-most stats scope.
+    UpdateStatisticsAfterSweeping();
   }
-
-  // We have to set the GCPhase to Sweeping before calling pre-finalizers
-  // to disallow a GC during the pre-finalizers.
-  SetGCPhase(GCPhase::kSweeping);
-
-  // Allocation is allowed during the pre-finalizers and destructors.
-  // However, they must not mutate an object graph in a way in which
-  // a dead object gets resurrected.
-  InvokePreFinalizers();
-
-  // Slots filtering requires liveness information which is only present before
-  // sweeping any arena.
-  {
-    ThreadHeapStatsCollector::Scope stats_scope(
-        Heap().stats_collector(),
-        ThreadHeapStatsCollector::kAtomicPhaseCompaction);
-    Heap().Compaction()->FilterNonLiveSlots();
-  }
-
-  // Last point where all mark bits are present.
-  VerifyMarking(marking_type);
-
-  EagerSweep();
-
-  // Any sweep compaction must happen after pre-finalizers and eager
-  // sweeping, as it will finalize dead objects in compactable arenas
-  // (e.g., backing stores for container objects.)
-  //
-  // As per-contract for prefinalizers, those finalizable objects must
-  // still be accessible when the prefinalizer runs, hence we cannot
-  // schedule compaction until those have run. Similarly for eager sweeping.
-  {
-    SweepForbiddenScope scope(this);
-    NoAllocationScope no_allocation_scope(this);
-    Heap().Compact();
-  }
-
-#if defined(ADDRESS_SANITIZER)
-  Heap().PoisonAllHeaps();
-#endif
 }
 
 void ThreadState::EagerSweep() {
@@ -1060,7 +1045,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.TimeForHeapCompaction",
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseCompaction]);
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPauseCompaction]);
   UMA_HISTOGRAM_TIMES(
       "BlinkGC.TimeForGlobalWeakProcessing",
       event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
@@ -1346,7 +1331,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state) {
     Heap().FlushNotFullyConstructedObjects();
   }
   const bool complete = MarkPhaseAdvanceMarking(
-      CurrentTimeTicks() + next_incremental_marking_step_duration_);
+      base::TimeTicks::Now() + next_incremental_marking_step_duration_);
   if (complete) {
     if (IsUnifiedGCMarkingInProgress()) {
       // If there are no more objects to mark for unified garbage collections
@@ -1410,7 +1395,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   if (SweepForbidden())
     return;
 
-  base::TimeTicks start_total_collect_garbage_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_total_collect_garbage_time = base::TimeTicks::Now();
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
@@ -1433,7 +1418,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   }
 
   const base::TimeDelta total_collect_garbage_time =
-      WTF::CurrentTimeTicks() - start_total_collect_garbage_time;
+      base::TimeTicks::Now() - start_total_collect_garbage_time;
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForTotalCollectGarbage",
                       total_collect_garbage_time);
 
@@ -1465,20 +1450,31 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
           << " reason: " << BlinkGC::ToString(reason);
 }
 
-void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
-                                          BlinkGC::MarkingType marking_type,
-                                          BlinkGC::GCReason reason) {
-  AtomicPausePrologue(stack_state, marking_type, reason);
+void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
+                                       BlinkGC::MarkingType marking_type,
+                                       BlinkGC::GCReason reason) {
+  ThreadHeapStatsCollector::Scope advance_tracing_scope(
+      Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPauseMarkRoots,
+      "epoch", gc_age_);
   MarkPhaseVisitRoots();
   MarkPhaseVisitNotFullyConstructedObjects();
 }
 
 void ThreadState::AtomicPauseMarkTransitiveClosure() {
+  ThreadHeapStatsCollector::Scope advance_tracing_scope(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure, "epoch",
+      gc_age_);
   CHECK(MarkPhaseAdvanceMarking(base::TimeTicks::Max()));
 }
 
 void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
+  ThreadHeapStatsCollector::Scope stats_scope(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_);
   MarkPhaseEpilogue(marking_type);
+  LeaveAtomicPause();
+  LeaveGCForbiddenScope();
 }
 
 void ThreadState::AtomicPauseSweepAndCompact(
@@ -1486,15 +1482,69 @@ void ThreadState::AtomicPauseSweepAndCompact(
     BlinkGC::SweepingType sweeping_type) {
   ThreadHeapStatsCollector::EnabledScope stats(
       Heap().stats_collector(),
-      ThreadHeapStatsCollector::kAtomicSweepAndCompact);
+      ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_);
   AtomicPauseScope atomic_pause_scope(this);
-  AtomicPauseEpilogue(marking_type, sweeping_type);
+
+  DCHECK(InAtomicMarkingPause());
+  DCHECK(CheckThread());
+  Heap().PrepareForSweep();
+
   if (marking_type == BlinkGC::kTakeSnapshot) {
+    // Doing lazy sweeping for kTakeSnapshot doesn't make any sense so the
+    // sweeping type should always be kEagerSweeping.
+    DCHECK_EQ(sweeping_type, BlinkGC::kEagerSweeping);
+    Heap().TakeSnapshot(ThreadHeap::SnapshotType::kHeapSnapshot);
+
+    // This unmarks all marked objects and marks all unmarked objects dead.
+    Heap().MakeConsistentForMutator();
+
+    Heap().TakeSnapshot(ThreadHeap::SnapshotType::kFreelistSnapshot);
+
     FinishSnapshot();
     CHECK(!IsSweepingInProgress());
     CHECK_EQ(GetGCState(), kNoGCScheduled);
     return;
   }
+
+  // We have to set the GCPhase to Sweeping before calling pre-finalizers
+  // to disallow a GC during the pre-finalizers.
+  SetGCPhase(GCPhase::kSweeping);
+
+  // Allocation is allowed during the pre-finalizers and destructors.
+  // However, they must not mutate an object graph in a way in which
+  // a dead object gets resurrected.
+  InvokePreFinalizers();
+
+  // Slots filtering requires liveness information which is only present before
+  // sweeping any arena.
+  {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        Heap().stats_collector(),
+        ThreadHeapStatsCollector::kAtomicPauseCompaction);
+    Heap().Compaction()->FilterNonLiveSlots();
+  }
+
+  // Last point where all mark bits are present.
+  VerifyMarking(marking_type);
+
+  EagerSweep();
+
+  // Any sweep compaction must happen after pre-finalizers and eager
+  // sweeping, as it will finalize dead objects in compactable arenas
+  // (e.g., backing stores for container objects.)
+  //
+  // As per-contract for prefinalizers, those finalizable objects must
+  // still be accessible when the prefinalizer runs, hence we cannot
+  // schedule compaction until those have run. Similarly for eager sweeping.
+  {
+    SweepForbiddenScope scope(this);
+    NoAllocationScope no_allocation_scope(this);
+    Heap().Compact();
+  }
+
+#if defined(ADDRESS_SANITIZER)
+  Heap().PoisonAllHeaps();
+#endif
   DCHECK(IsSweepingInProgress());
   if (sweeping_type == BlinkGC::kEagerSweeping) {
     // Eager sweeping should happen only in testing.
@@ -1510,32 +1560,17 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
                                  BlinkGC::MarkingType marking_type,
                                  BlinkGC::SweepingType sweeping_type,
                                  BlinkGC::GCReason reason) {
-  {
-    ThreadHeapStatsCollector::DevToolsScope stats1(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPhase,
-        "forced", reason == BlinkGC::GCReason::kForcedGCForTesting);
-    {
-      AtomicPauseScope atomic_pause_scope(this);
-      ThreadHeapStatsCollector::EnabledScope stats2(
-          Heap().stats_collector(),
-          ThreadHeapStatsCollector::kAtomicPhaseMarking,
-          "concurrentAndLazySweeping",
-          sweeping_type == BlinkGC::kConcurrentAndLazySweeping ? "yes" : "no",
-          "gcReason", BlinkGC::ToString(reason));
-      ThreadHeapStatsCollector::EnabledScope stats3(
-          Heap().stats_collector(),
-          ThreadHeapStatsCollector::kStandAloneAtomicMarking);
-      AtomicPauseMarkPrologue(stack_state, marking_type, reason);
-      AtomicPauseMarkTransitiveClosure();
-      AtomicPauseMarkEpilogue(marking_type);
-    }
-    AtomicPauseSweepAndCompact(marking_type, sweeping_type);
-  }
-  if (!IsSweepingInProgress()) {
-    // Sweeping was finished during the atomic pause. Update statistics needs to
-    // run outside of the top-most stats scope.
-    UpdateStatisticsAfterSweeping();
-  }
+  // Legacy scope that is used to add stand-alone Oilpan GCs to DevTools
+  // timeline.
+  TRACE_EVENT1("blink_gc,devtools.timeline", "BlinkGC.AtomicPhase", "forced",
+               reason == BlinkGC::GCReason::kForcedGCForTesting);
+
+  AtomicPauseMarkPrologue(stack_state, marking_type, reason);
+  AtomicPauseMarkRoots(stack_state, marking_type, reason);
+  AtomicPauseMarkTransitiveClosure();
+  AtomicPauseMarkEpilogue(marking_type);
+  AtomicPauseSweepAndCompact(marking_type, sweeping_type);
+  AtomicPauseEpilogue();
 }
 
 namespace {
@@ -1577,38 +1612,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
                 this, GetMarkingMode(compaction_enabled, take_snapshot));
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
-}
-
-void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
-                                      BlinkGC::MarkingType marking_type,
-                                      BlinkGC::GCReason reason) {
-  // Compaction needs to be canceled when incremental marking ends with a
-  // conservative GC.
-  if (stack_state == BlinkGC::kHeapPointersOnStack)
-    Heap().Compaction()->Cancel();
-
-  if (IsMarkingInProgress()) {
-    // Incremental marking is already in progress. Only update the state
-    // that is necessary to update.
-    current_gc_data_.reason = reason;
-    current_gc_data_.stack_state = stack_state;
-    Heap().stats_collector()->UpdateReason(reason);
-    SetGCState(kNoGCScheduled);
-    DisableIncrementalMarkingBarrier();
-  } else {
-    MarkPhasePrologue(stack_state, marking_type, reason);
-  }
-
-  if (marking_type == BlinkGC::kTakeSnapshot)
-    BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
-
-  if (stack_state == BlinkGC::kNoHeapPointersOnStack) {
-    Heap().FlushNotFullyConstructedObjects();
-  }
-
-  DCHECK(InAtomicMarkingPause());
-  Heap().MakeConsistentForGC();
-  Heap().ClearArenaAges();
 }
 
 void ThreadState::MarkPhaseVisitRoots() {

@@ -302,6 +302,7 @@
   }
   [self.advancedSigninSettingsCoordinator stop];
   self.advancedSigninSettingsCoordinator = nil;
+  self.presentingViewController = nil;
 }
 
 @end

@@ -159,7 +159,7 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
   base::TimeTicks timestamp = underlying_event
                                   ? underlying_event->PlatformTimeStamp()
-                                  : CurrentTimeTicks();
+                                  : base::TimeTicks::Now();
   MouseEvent* created_event = MakeGarbageCollected<MouseEvent>(
       event_type, initializer, timestamp, synthetic_type);
 

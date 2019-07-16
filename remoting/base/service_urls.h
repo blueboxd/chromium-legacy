@@ -27,15 +27,6 @@ class ServiceUrls {
   }
   const std::string& gcd_base_url() const { return gcd_base_url_; }
 
-  // XMPP Server configuration.
-  const std::string& xmpp_server_address() const {
-    return xmpp_server_address_;
-  }
-  const std::string& xmpp_server_address_for_me2me_host() const {
-    return xmpp_server_address_for_me2me_host_;
-  }
-  bool xmpp_server_use_tls() const { return xmpp_server_use_tls_; }
-
   // Remoting directory bot JID (for registering hosts, logging, heartbeats).
   const std::string& directory_bot_jid() const { return directory_bot_jid_; }
 
@@ -69,9 +60,6 @@ class ServiceUrls {
   std::string directory_base_url_;
   std::string directory_hosts_url_;
   std::string gcd_base_url_;
-  std::string xmpp_server_address_;
-  std::string xmpp_server_address_for_me2me_host_;
-  bool xmpp_server_use_tls_;
   std::string directory_bot_jid_;
   std::string gcd_jid_;
   std::string ice_config_url_;

@@ -27,6 +27,7 @@ class PrefService;
 
 namespace autofill {
 class AutofillDownloadManager;
+class LogManager;
 }
 
 namespace favicon {
@@ -43,7 +44,6 @@ class PasswordProtectionService;
 
 namespace password_manager {
 
-class LogManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerDriver;
@@ -236,7 +236,7 @@ class PasswordManagerClient {
   virtual const CredentialsFilter* GetStoreResultFilter() const = 0;
 
   // Returns a LogManager instance.
-  virtual const LogManager* GetLogManager() const;
+  virtual const autofill::LogManager* GetLogManager() const;
 
   // Record that we saw a password field on this page.
   virtual void AnnotateNavigationEntry(bool has_password_field);

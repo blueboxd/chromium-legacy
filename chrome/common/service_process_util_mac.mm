@@ -103,7 +103,8 @@ bool ForceServiceProcessShutdown(const std::string& /* version */,
   return ret;
 }
 
-bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
+bool ServiceProcessState::GetServiceProcessData(std::string* version,
+                                                base::ProcessId* pid) {
   base::mac::ScopedNSAutoreleasePool pool;
   std::string label = base::SysNSStringToUTF8(GetServiceProcessLaunchDLabel());
   mac::services::JobInfo info;
@@ -168,7 +169,7 @@ ServiceProcessState::GetServiceProcessServerEndpoint() {
 bool CheckServiceProcessReady() {
   std::string version;
   pid_t pid;
-  if (!GetServiceProcessData(&version, &pid)) {
+  if (!ServiceProcessState::GetServiceProcessData(&version, &pid)) {
     return false;
   }
   base::Version service_version(version);

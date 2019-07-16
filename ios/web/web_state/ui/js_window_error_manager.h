@@ -22,10 +22,9 @@ class JsWindowErrorManager final {
   ~JsWindowErrorManager();
 
  private:
-  bool OnJsMessage(const base::DictionaryValue& message,
+  void OnJsMessage(const base::DictionaryValue& message,
                    const GURL& page_url,
-                   bool has_user_gesture,
-                   bool in_main_frame,
+                   bool user_is_interacting,
                    WebFrame* sender_frame);
 
   WebState* web_state_impl_ = nullptr;

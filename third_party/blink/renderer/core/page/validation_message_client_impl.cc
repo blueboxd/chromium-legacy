@@ -72,7 +72,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
       base::TimeDelta::FromSeconds(5);
   constexpr auto kTimePerCharacter = base::TimeDelta::FromMilliseconds(50);
   finish_time_ =
-      CurrentTimeTicks() +
+      base::TimeTicks::Now() +
       std::max(kMinimumTimeToShowValidationMessage,
                (message.length() + sub_message.length()) * kTimePerCharacter);
 
@@ -164,7 +164,7 @@ void ValidationMessageClientImpl::DidChangeFocusTo(const Element* new_element) {
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
   if ((!WebTestSupport::IsRunningWebTest() &&
-       CurrentTimeTicks() >= finish_time_) ||
+       base::TimeTicks::Now() >= finish_time_) ||
       !CurrentView()) {
     HideValidationMessage(*current_anchor_);
     return;

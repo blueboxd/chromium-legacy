@@ -4,8 +4,8 @@
 
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 namespace identity {

@@ -1999,6 +1999,12 @@ const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "
     "user gesture tokens.";
 
+const char kUsernameFirstFlowName[] = "Username first flow";
+const char kUsernameFirstFlowDescription[] =
+    "Support of username saving and filling on username first flow i.e. login "
+    "flows where a user has to type username first on one page and then "
+    "password on another page";
+
 const char kUseSearchClickForRightClickName[] =
     "Use Search+Click for right click";
 const char kUseSearchClickForRightClickDescription[] =

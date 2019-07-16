@@ -178,21 +178,20 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
 #endif  // defined(OS_WIN)
 }
 
-// http://crbug.com/396390
-TEST_F(ServiceProcessStateTest, DISABLED_SharedMem) {
+TEST_F(ServiceProcessStateTest, SharedMem) {
   std::string version;
   base::ProcessId pid;
-#if defined(OS_WIN)
-  // On Posix, named shared memory uses a file on disk. This file
-  // could be lying around from previous crashes which could cause
-  // GetServiceProcessPid to lie. On Windows, we use a named event so we
-  // don't have this issue. Until we have a more stable shared memory
-  // implementation on Posix, this check will only execute on Windows.
-  ASSERT_FALSE(GetServiceProcessData(&version, &pid));
-#endif  // defined(OS_WIN)
+#if defined(OS_POSIX)
+  // On Posix, named shared memory uses a file on disk. This file could be lying
+  // around from previous crashes which could cause GetServiceProcessPid to lie,
+  // so we aggressively delete it before testing. On Windows, we use a named
+  // event so we don't have this issue.
+  ServiceProcessState::DeleteServiceProcessDataRegion();
+#endif  // defined(OS_POSIX)
+  ASSERT_FALSE(ServiceProcessState::GetServiceProcessData(&version, &pid));
   ServiceProcessState state;
   ASSERT_TRUE(state.Initialize());
-  ASSERT_TRUE(GetServiceProcessData(&version, &pid));
+  ASSERT_TRUE(ServiceProcessState::GetServiceProcessData(&version, &pid));
   ASSERT_EQ(base::GetCurrentProcId(), pid);
 }
 
@@ -205,7 +204,7 @@ TEST_F(ServiceProcessStateTest, MAYBE_ForceShutdown) {
   ASSERT_TRUE(CheckServiceProcessReady());
   std::string version;
   base::ProcessId pid;
-  ASSERT_TRUE(GetServiceProcessData(&version, &pid));
+  ASSERT_TRUE(ServiceProcessState::GetServiceProcessData(&version, &pid));
   ASSERT_TRUE(ForceServiceProcessShutdown(version, pid));
   int exit_code = 0;
   ASSERT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_max_timeout(),

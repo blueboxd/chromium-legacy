@@ -336,6 +336,7 @@ test("android_webview_unittests") {
   ]
 
   sources = [
+    "../browser/aw_browser_context_unittest.cc",
     "../browser/aw_content_browser_client_unittest.cc",
     "../browser/aw_contents_client_bridge_unittest.cc",
     "../browser/aw_cookie_access_policy_unittest.cc",

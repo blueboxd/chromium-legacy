@@ -273,7 +273,7 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
     callback(item);
     processed_callback_count++;
     if (++processed_callback_count == kDeadlineCheckInterval) {
-      if (deadline <= CurrentTimeTicks()) {
+      if (deadline <= base::TimeTicks::Now()) {
         return false;
       }
       processed_callback_count = 0;
@@ -391,7 +391,7 @@ void ThreadHeap::Compact() {
     return;
 
   ThreadHeapStatsCollector::Scope stats_scope(
-      stats_collector(), ThreadHeapStatsCollector::kAtomicPhaseCompaction);
+      stats_collector(), ThreadHeapStatsCollector::kAtomicPauseCompaction);
   // Compaction is done eagerly and before the mutator threads get
   // to run again. Doing it lazily is problematic, as the mutator's
   // references to live objects could suddenly be invalidated by
@@ -609,7 +609,7 @@ bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
     const base::TimeDelta remaining_budget =
-        deadline - slack - CurrentTimeTicks();
+        deadline - slack - base::TimeTicks::Now();
     if (remaining_budget <= base::TimeDelta() ||
         !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;

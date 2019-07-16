@@ -4,8 +4,8 @@
 
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 
+#include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -19,7 +19,7 @@ namespace {
 
 const char kTestText[] = "abcd1234";
 
-class MockLogReceiver : public password_manager::LogReceiver {
+class MockLogReceiver : public autofill::LogReceiver {
  public:
   MockLogReceiver() {}
 

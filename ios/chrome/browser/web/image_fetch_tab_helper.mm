@@ -68,14 +68,8 @@ ImageFetchTabHelper::ImageFetchTabHelper(web::WebState* web_state)
   // BindRepeating cannot work on WeakPtr and function with return value, use
   // lambda as mediator.
   web_state->AddScriptCommandCallback(
-      base::BindRepeating(
-          [](base::WeakPtr<ImageFetchTabHelper> ptr,
-             const base::DictionaryValue& message, const GURL& page_url,
-             bool has_user_gesture, bool form_in_main_frame,
-             web::WebFrame* sender_frame) {
-            return ptr ? ptr->OnJsMessage(message) : true;
-          },
-          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ImageFetchTabHelper::OnJsMessage,
+                          weak_ptr_factory_.GetWeakPtr()),
       kCommandPrefix);
 }
 
@@ -166,14 +160,17 @@ void ImageFetchTabHelper::RecordGetImageDataByJsResult(
 // For failure:
 //   {'command': 'image.getImageData',
 //    'id': id_sent_to_gCrWeb_image_getImageData}
-bool ImageFetchTabHelper::OnJsMessage(const base::DictionaryValue& message) {
+void ImageFetchTabHelper::OnJsMessage(const base::DictionaryValue& message,
+                                      const GURL& page_url,
+                                      bool user_is_interacting,
+                                      web::WebFrame* sender_frame) {
   const base::Value* id_key = message.FindKey("id");
   if (!id_key || !id_key->is_double()) {
-    return false;
+    return;
   }
   int id_value = static_cast<int>(id_key->GetDouble());
   if (!js_callbacks_.count(id_value)) {
-    return true;
+    return;
   }
   JsCallback callback = std::move(js_callbacks_[id_value]);
   js_callbacks_.erase(id_value);
@@ -190,14 +187,11 @@ bool ImageFetchTabHelper::OnJsMessage(const base::DictionaryValue& message) {
           (from->GetString() == "canvas")
               ? ContextMenuGetImageDataByJsResult::kCanvasSucceed
               : ContextMenuGetImageDataByJsResult::kXMLHttpRequestSucceed);
-    } else {
-      return false;
     }
   } else {
     std::move(callback).Run(nullptr);
     RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult::kFail);
   }
-  return true;
 }
 
 void ImageFetchTabHelper::OnJsTimeout(int call_id) {

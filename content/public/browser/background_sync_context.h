@@ -29,9 +29,10 @@ class StoragePartition;
 class CONTENT_EXPORT BackgroundSyncContext {
  public:
   // Gets the soonest time delta from now, when the browser should be woken up
-  // to fire any Background Sync events, across all storage partitions in
-  // |browser_context|, and invokes |callback| with it.
+  // to fire Background Sync events of |sync_type|, across all storage
+  // partitions in |browser_context|, and invokes |callback| with it.
   static void GetSoonestWakeupDeltaAcrossPartitions(
+      blink::mojom::BackgroundSyncType sync_type,
       BrowserContext* browser_context,
       base::OnceCallback<void(base::TimeDelta)> callback);
 
@@ -58,6 +59,7 @@ class CONTENT_EXPORT BackgroundSyncContext {
   // Gets the soonest time delta from now, when the browser should be woken up
   // to fire any Background Sync events. Calls |callback| with this value.
   virtual void GetSoonestWakeupDelta(
+      blink::mojom::BackgroundSyncType sync_type,
       base::OnceCallback<void(base::TimeDelta)> callback) = 0;
 
  protected:

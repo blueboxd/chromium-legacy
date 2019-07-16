@@ -25,12 +25,8 @@
         @apply --cr-form-field-label;
       }
 
-      [slot='body'] > * {
+      [slot='body'] > div {
         margin-bottom: var(--cr-form-field-bottom-spacing);
-      }
-
-      cr-input {
-        --cr-input-error-display: none;
       }
 
       #warning-icon {
@@ -58,7 +54,7 @@
           </div>
         </div>
         <cr-input label="[[i18n('FORMAT_DIALOG_DRIVE_NAME_LABEL')]]"
-            id="label" value="{{label_}}">
+            id="label" value="{{label_}}" auto-validate="true">
         </cr-input>
         <div id="disk-format">
           <div id="format-type-label" class="label">

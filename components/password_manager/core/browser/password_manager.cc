@@ -19,12 +19,12 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
@@ -321,22 +321,34 @@ void RecordParsingOnSavingDifference(
 }
 
 bool IsNewFormParsingForFillingEnabled() {
+#if defined(OS_IOS)
+  return true;
+#else
   return base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
+#endif
 }
 
 bool IsNewFormParsingForSavingEnabled() {
+#if defined(OS_IOS)
+  return true;
+#else
   return base::FeatureList::IsEnabled(
              features::kNewPasswordFormParsingForSaving) &&
          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing);
+#endif
 }
 
 // Returns true if it is turned off using PasswordFormManager in
 // PasswordManager.
 bool IsOnlyNewParserEnabled() {
+#if defined(OS_IOS)
+  return true;
+#else
   return base::FeatureList::IsEnabled(
              features::kNewPasswordFormParsingForSaving) &&
          base::FeatureList::IsEnabled(features::kNewPasswordFormParsing) &&
          base::FeatureList::IsEnabled(features::kOnlyNewParser);
+#endif
 }
 
 }  // namespace

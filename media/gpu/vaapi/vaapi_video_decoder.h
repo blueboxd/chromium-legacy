@@ -34,7 +34,6 @@ class AcceleratedVideoDecoder;
 class DmabufVideoFramePool;
 class VaapiWrapper;
 class VideoFrame;
-class VideoFrameConverter;
 class VASurface;
 
 class VaapiVideoDecoder : public media::VideoDecoder,
@@ -42,8 +41,7 @@ class VaapiVideoDecoder : public media::VideoDecoder,
  public:
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      std::unique_ptr<DmabufVideoFramePool> frame_pool,
-      std::unique_ptr<VideoFrameConverter> frame_converter);
+      std::unique_ptr<DmabufVideoFramePool> frame_pool);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
@@ -94,8 +92,7 @@ class VaapiVideoDecoder : public media::VideoDecoder,
   };
 
   VaapiVideoDecoder(scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-                    std::unique_ptr<DmabufVideoFramePool> frame_pool,
-                    std::unique_ptr<VideoFrameConverter> frame_converter);
+                    std::unique_ptr<DmabufVideoFramePool> frame_pool);
   ~VaapiVideoDecoder() override;
 
   // Destroy the VAAPIVideoDecoder, aborts pending decode requests and blocks
@@ -175,8 +172,6 @@ class VaapiVideoDecoder : public media::VideoDecoder,
 
   // Video frame pool used to allocate and recycle video frames.
   std::unique_ptr<DmabufVideoFramePool> frame_pool_;
-  // Video frame converter.
-  std::unique_ptr<VideoFrameConverter> frame_converter_;
 
   // The mapping between buffer id and the timestamp.
   std::map<int32_t, base::TimeDelta> buffer_id_to_timestamp_;

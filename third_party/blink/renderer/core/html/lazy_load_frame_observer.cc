@@ -222,7 +222,7 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
     return;
 
   DCHECK(time_when_first_visible_.is_null());
-  time_when_first_visible_ = CurrentTimeTicks();
+  time_when_first_visible_ = base::TimeTicks::Now();
   RecordVisibilityMetricsIfLoadedAndVisible();
 
   visibility_metrics_observer_->disconnect();
@@ -261,7 +261,7 @@ void LazyLoadFrameObserver::RecordMetricsOnVisibilityChanged(
 void LazyLoadFrameObserver::RecordMetricsOnLoadFinished() {
   if (!time_when_first_load_finished_.is_null())
     return;
-  time_when_first_load_finished_ = CurrentTimeTicks();
+  time_when_first_load_finished_ = base::TimeTicks::Now();
   RecordVisibilityMetricsIfLoadedAndVisible();
 }
 

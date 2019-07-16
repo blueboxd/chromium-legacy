@@ -15,6 +15,9 @@
 
 namespace ios {
 class ChromeBrowserState;
+}
+
+namespace autofill {
 class LogManager;
 }
 
@@ -103,7 +106,7 @@ class IOSChromePasswordManagerClient
   std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
-  const password_manager::LogManager* GetLogManager() const override;
+  const autofill::LogManager* GetLogManager() const override;
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
@@ -125,7 +128,7 @@ class IOSChromePasswordManagerClient
 
   const password_manager::SyncCredentialsFilter credentials_filter_;
 
-  std::unique_ptr<password_manager::LogManager> log_manager_;
+  std::unique_ptr<autofill::LogManager> log_manager_;
 
   // Recorder of metrics that is associated with the last committed navigation
   // of the tab owning this ChromePasswordManagerClient. May be unset at

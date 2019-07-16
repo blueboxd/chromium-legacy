@@ -74,7 +74,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
              SyntheticEventType = kRealOrIndistinguishable,
              WebMenuSourceType = kMenuSourceNone);
   MouseEvent(const AtomicString& type, const MouseEventInit* init)
-      : MouseEvent(type, init, CurrentTimeTicks()) {}
+      : MouseEvent(type, init, base::TimeTicks::Now()) {}
   MouseEvent();
   ~MouseEvent() override;
 

@@ -418,7 +418,12 @@ static_library("common") {
       "//components/printing/common",
       "//printing",
     ]
-    if (enable_print_preview && !is_chromeos) {
+    if (enable_print_preview && !is_chromeos && !is_android) {
+      # |enable_print_preview| should be false if |is_android| is true.
+      # However, that is somewhat indirect. Part of The service_process_util
+      # code below is based on a model where the cloud print service is a
+      # long-lived process independent of chrome, which is not appropriate
+      # on android. To make that explicit |!is_android| is used above.
       sources += [
         "service_process_util.cc",
         "service_process_util.h",

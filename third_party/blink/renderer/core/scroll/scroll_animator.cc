@@ -55,8 +55,11 @@ cc::PictureLayer* ToCcLayer(GraphicsLayer* layer) {
 
 ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
-  if (scrollable_area && scrollable_area->ScrollAnimatorEnabled())
-    return MakeGarbageCollected<ScrollAnimator>(scrollable_area);
+  if (scrollable_area && scrollable_area->ScrollAnimatorEnabled()) {
+    return MakeGarbageCollected<ScrollAnimator>(scrollable_area, [] {
+      return base::TimeTicks::Now().since_origin().InSecondsF();
+    });
+  }
   return MakeGarbageCollected<ScrollAnimatorBase>(scrollable_area);
 }
 

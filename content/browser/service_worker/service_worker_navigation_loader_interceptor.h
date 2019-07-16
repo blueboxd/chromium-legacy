@@ -52,17 +52,9 @@ class ServiceWorkerNavigationLoaderInterceptor final
       override;
 
   // These are called back from the IO thread helper functions:
-  void OnInitComplete(
-      const network::ResourceRequest& tentative_resource_request,
-      BrowserContext* browser_context,
-      ResourceContext* resource_context,
-      LoaderCallback callback,
-      FallbackCallback fallback_callback,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
-      std::unique_ptr<NavigationLoaderInterceptor,
-                      BrowserThread::DeleteOnIOThread> interceptor);
   void LoaderCallbackWrapper(
-      SingleRequestURLLoaderFactory::RequestHandler handler);
+      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      SingleRequestURLLoaderFactory::RequestHandler handler_on_io);
   void FallbackCallbackWrapper(bool reset_subresource_loader_params);
 
   base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> GetWeakPtr();
@@ -85,16 +77,6 @@ class ServiceWorkerNavigationLoaderInterceptor final
 
   LoaderCallback loader_callback_;
   FallbackCallback fallback_callback_;
-
-  // The inner interceptor. This actually does the work and its methods must be
-  // called only on the IO thread. The goal is to move everything it does to the
-  // UI thread so everything can be done directly there instead.
-  //
-  // Although methods must only be called on the IO thread, this is set exactly
-  // once and on the UI thread, so it's OK to get the pointer on the UI thread,
-  // e.g., to check for nullness or to pass the pointer to the IO thread.
-  std::unique_ptr<NavigationLoaderInterceptor, BrowserThread::DeleteOnIOThread>
-      interceptor_on_io_;
 
   base::WeakPtrFactory<ServiceWorkerNavigationLoaderInterceptor> weak_factory_{
       this};

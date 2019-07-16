@@ -52,10 +52,9 @@ class LanguageDetectionController : public web::WebStateObserver {
 
   // Handles the "languageDetection.textCaptured" javascript command.
   // |interacting| is true if the user is currently interacting with the page.
-  bool OnTextCaptured(const base::DictionaryValue& value,
+  void OnTextCaptured(const base::DictionaryValue& value,
                       const GURL& url,
-                      bool interacting,
-                      bool is_main_frame,
+                      bool user_is_interacting,
                       web::WebFrame* sender_frame);
 
   // Completion handler used to retrieve the text buffered by the

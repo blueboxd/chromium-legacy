@@ -351,7 +351,7 @@ void ImageResource::AppendData(const char* data, size_t length) {
     if (!is_pending_flushing_) {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           Loader()->GetLoadingTaskRunner();
-      base::TimeTicks now = CurrentTimeTicks();
+      base::TimeTicks now = base::TimeTicks::Now();
       if (last_flush_time_.is_null())
         last_flush_time_ = now;
 
@@ -371,7 +371,7 @@ void ImageResource::FlushImageIfNeeded() {
   // We might have already loaded the image fully, in which case we don't need
   // to call |updateImage()|.
   if (IsLoading()) {
-    last_flush_time_ = CurrentTimeTicks();
+    last_flush_time_ = base::TimeTicks::Now();
     UpdateImage(Data(), ImageResourceContent::kUpdateImage, false);
   }
   is_pending_flushing_ = false;
@@ -394,7 +394,8 @@ void ImageResource::DecodeError(bool all_data_received) {
     // Observers are notified via ImageResource::finish().
     // TODO(hiroshige): Do not call didFinishLoading() directly.
     Loader()->AbortResponseBodyLoading();
-    Loader()->DidFinishLoading(CurrentTimeTicks(), size, size, size, false, {});
+    Loader()->DidFinishLoading(base::TimeTicks::Now(), size, size, size, false,
+                               {});
   } else {
     auto result = GetContent()->UpdateImage(
         nullptr, GetStatus(),

@@ -20,21 +20,9 @@ inline double CurrentTimeMS() {
   return CurrentTime() * 1000.0;
 }
 
-// Monotonically increasing clock time since an arbitrary and unspecified origin
-// time. Mockable using SetTimeFunctionsForTesting().
-WTF_EXPORT base::TimeTicks CurrentTimeTicks();
-// Convenience functions that return seconds and milliseconds since the origin
-// time. Prefer CurrentTimeTicks() where possible to avoid potential unit
-// confusion errors.
-WTF_EXPORT double CurrentTimeTicksInSeconds();
-WTF_EXPORT double CurrentTimeTicksInMilliseconds();
-
 }  // namespace WTF
 
 using WTF::CurrentTime;
 using WTF::CurrentTimeMS;
-using WTF::CurrentTimeTicks;
-using WTF::CurrentTimeTicksInMilliseconds;
-using WTF::CurrentTimeTicksInSeconds;
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_

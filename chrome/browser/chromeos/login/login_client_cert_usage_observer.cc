@@ -7,14 +7,15 @@
 #include <cstdint>
 
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/login/auth/challenge_response/cert_utils.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_util.h"
-#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace chromeos {
 
@@ -44,24 +45,10 @@ bool ObtainSignatureAlgorithms(
   }
   signature_algorithms->clear();
   for (auto ssl_algorithm : ssl_algorithms) {
-    switch (ssl_algorithm) {
-      case SSL_SIGN_RSA_PKCS1_SHA1:
-        signature_algorithms->push_back(
-            ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha1);
-        break;
-      case SSL_SIGN_RSA_PKCS1_SHA256:
-        signature_algorithms->push_back(
-            ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha256);
-        break;
-      case SSL_SIGN_RSA_PKCS1_SHA384:
-        signature_algorithms->push_back(
-            ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha384);
-        break;
-      case SSL_SIGN_RSA_PKCS1_SHA512:
-        signature_algorithms->push_back(
-            ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha512);
-        break;
-    }
+    base::Optional<ChallengeResponseKey::SignatureAlgorithm> algorithm =
+        GetChallengeResponseKeyAlgorithmFromSsl(ssl_algorithm);
+    if (algorithm)
+      signature_algorithms->push_back(*algorithm);
   }
   return !signature_algorithms->empty();
 }

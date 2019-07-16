@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_LOGIN_AUTH_CHALLENGE_RESPONSE_KNOWN_USER_PREF_UTILS_H_
 #define CHROMEOS_LOGIN_AUTH_CHALLENGE_RESPONSE_KNOWN_USER_PREF_UTILS_H_
 
+#include <string>
 #include <vector>
 
 #include "base/component_export.h"
@@ -25,6 +26,11 @@ namespace chromeos {
 base::Value COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH)
     SerializeChallengeResponseKeysForKnownUser(
         const std::vector<ChallengeResponseKey>& challenge_response_keys);
+
+bool COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH)
+    DeserializeChallengeResponseKeysFromKnownUser(
+        const base::Value& pref_value,
+        std::vector<std::string>* public_key_spki_list);
 
 }  // namespace chromeos
 

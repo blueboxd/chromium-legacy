@@ -1499,7 +1499,7 @@ WebInputEventResult EventHandler::HandleGestureEvent(
   DCHECK(!targeted_event.Event().IsScrollEvent());
 
   if (targeted_event.Event().GetType() == WebInputEvent::kGestureShowPress)
-    last_show_press_timestamp_ = CurrentTimeTicks();
+    last_show_press_timestamp_ = base::TimeTicks::Now();
 
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
@@ -1827,7 +1827,8 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
-    active_interval = CurrentTimeTicks() - last_show_press_timestamp_.value();
+    active_interval =
+        base::TimeTicks::Now() - last_show_press_timestamp_.value();
     should_keep_active_for_min_interval =
         active_interval < kMinimumActiveInterval;
     if (should_keep_active_for_min_interval)
@@ -2085,7 +2086,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
       WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
-      WebInputEvent::kNoModifiers, CurrentTimeTicks(), source_type);
+      WebInputEvent::kNoModifiers, base::TimeTicks::Now(), source_type);
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.

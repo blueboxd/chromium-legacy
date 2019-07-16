@@ -95,12 +95,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OnRenderProcessGone();
 
   // Called when a script command is received.
-  // Returns true if the command was handled.
-  bool OnScriptCommandReceived(const std::string& command,
+  void OnScriptCommandReceived(const std::string& command,
                                const base::DictionaryValue& value,
-                               const GURL& url,
+                               const GURL& page_url,
                                bool user_is_interacting,
-                               bool is_main_frame,
                                web::WebFrame* sender_frame);
 
   void SetIsLoading(bool is_loading);

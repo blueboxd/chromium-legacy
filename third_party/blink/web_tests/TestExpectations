@@ -366,8 +366,7 @@ crbug.com/922249 virtual/android/fullscreen/compositor-touch-hit-rects-fullscree
 
 # ====== Layout team owned tests from here ======
 
-crbug.com/983322 css3/masking/clip-path-selection.html [ Failure ]
-crbug.com/983593 external/wpt/quirks/table-cell-width-calculation.html [ Failure ]
+crbug.com/980908 wpt_internal/css/css-position/static-position/inline-level-absolute-float-quirk.html [ Failure ]
 
 crbug.com/974853 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Failure ]
 
@@ -1114,7 +1113,6 @@ crbug.com/591099 [ Mac10.13 ] fast/table/tbody-background-image.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/table/unused-percent-heights.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/basic/007.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/basic/012.html [ Failure ]
-crbug.com/591099 [ Mac10.13 ] fast/text/basic/014.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/basic/generic-family-changes.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/capitalize-empty-generated-string.html [ Failure ]
 crbug.com/591099 [ Mac10.13 ] fast/text/color-emoji.html [ Failure ]
@@ -2182,15 +2180,18 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
 crbug.com/983799 [ Win ] virtual/blink-cors/http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
-crbug.com/984429 [ Mac10.10 ] fast/text/basic/014.html [ Failure ]
-crbug.com/984429 [ Mac10.11 ] fast/text/basic/014.html [ Failure ]
-crbug.com/984429 [ Mac10.12 ] fast/text/basic/014.html [ Failure ]
 crbug.com/983790 external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Pass Failure Timeout ]
 crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.html [ Pass Timeout ]
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site-post.html [ Pass Timeout ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
+crbug.com/982148 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
+crbug.com/982148 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
+crbug.com/982148 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/same-origin/http-rp/same-origin/http-http/img-tag/keep-origin-redirect/same-origin-insecure.http.html [ Pass Timeout ]
+crbug.com/984467 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
+crbug.com/984467 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
+crbug.com/984467 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
 

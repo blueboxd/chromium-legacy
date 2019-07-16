@@ -250,7 +250,7 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 
   self.separator = [[UIView alloc] init];
   self.separator.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+      [UIColor colorNamed:@"tab_toolbar_shadow_color"];
   self.separator.alpha = 0;
   self.separator.translatesAutoresizingMaskIntoConstraints = NO;
   [searchField addSubview:self.separator];

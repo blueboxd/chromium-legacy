@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "components/device_event_log/device_event_log.h"
@@ -242,19 +243,36 @@ const std::string& MountExReplyToMountHash(const BaseReply& reply) {
 
 AuthorizationRequest CreateAuthorizationRequest(const std::string& label,
                                                 const std::string& secret) {
-  cryptohome::AuthorizationRequest auth_request;
-  Key* key = auth_request.mutable_key();
-  if (!label.empty())
-    key->mutable_data()->set_label(label);
+  return CreateAuthorizationRequestFromKeyDef(
+      KeyDefinition::CreateForPassword(secret, label, PRIV_DEFAULT));
+}
 
-  key->set_secret(secret);
+AuthorizationRequest CreateAuthorizationRequestFromKeyDef(
+    const KeyDefinition& key_def) {
+  cryptohome::AuthorizationRequest auth_request;
+  KeyDefinitionToKey(key_def, auth_request.mutable_key());
+
+  switch (key_def.type) {
+    case KeyDefinition::TYPE_PASSWORD:
+      break;
+    case KeyDefinition::TYPE_CHALLENGE_RESPONSE:
+      // Specify the additional KeyDelegate information that allows cryptohomed
+      // to call back to Chrome to perform cryptographic challenges.
+      auth_request.mutable_key_delegate()->set_dbus_service_name(
+          cryptohome::kCryptohomeKeyDelegateServiceName);
+      auth_request.mutable_key_delegate()->set_dbus_object_path(
+          cryptohome::kCryptohomeKeyDelegateServicePath);
+      break;
+  }
+
   return auth_request;
 }
 
 // TODO(crbug.com/797848): Finish testing this method.
 void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key) {
   KeyData* data = key->mutable_data();
-  data->set_label(key_def.label);
+  if (!key_def.label.empty())
+    data->set_label(key_def.label);
 
   switch (key_def.type) {
     case KeyDefinition::TYPE_PASSWORD:

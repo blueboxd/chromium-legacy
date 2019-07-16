@@ -78,9 +78,7 @@ class AwBrowserContext : public content::BrowserContext,
   static AwBrowserContext* FromWebContents(
       content::WebContents* web_contents);
 
-  // TODO(ntfschr): consider moving these into our PathService in
-  // common/aw_paths.h (http://crbug.com/934184).
-  static base::FilePath GetCacheDir();
+  base::FilePath GetCacheDir();
   static base::FilePath GetCookieStorePath();
   static base::FilePath GetContextStoragePath();
 
@@ -133,6 +131,10 @@ class AwBrowserContext : public content::BrowserContext,
   PrefService* GetPrefService() const { return user_pref_service_.get(); }
 
   void SetExtendedReportingAllowed(bool allowed);
+
+  network::mojom::NetworkContextParamsPtr GetNetworkContextParams(
+      bool in_memory,
+      const base::FilePath& relative_partition_path);
 
  private:
   void OnAuthPrefsChanged();

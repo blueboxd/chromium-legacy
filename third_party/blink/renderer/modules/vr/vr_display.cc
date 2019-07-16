@@ -80,7 +80,7 @@ class VRDisplayFrameRequestCallback
       return;
     base::TimeTicks monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
-      monotonic_time = WTF::CurrentTimeTicks();
+      monotonic_time = base::TimeTicks::Now();
     } else {
       // Convert document-zero time back to monotonic time.
       base::TimeTicks reference_monotonic_time = vr_display_->GetDocument()
@@ -298,7 +298,7 @@ void VRDisplay::RequestVSync() {
     if (pending_non_immersive_vsync_)
       return;
     non_immersive_vsync_waiting_for_pose_.Reset();
-    non_immersive_pose_request_time_ = WTF::CurrentTimeTicks();
+    non_immersive_pose_request_time_ = base::TimeTicks::Now();
 
     if (non_immersive_provider_) {
       non_immersive_provider_->GetFrameData(
@@ -720,7 +720,7 @@ void VRDisplay::BeginPresent() {
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
   if (doc && !pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
-    base::TimeTicks timestamp = WTF::CurrentTimeTicks();
+    base::TimeTicks timestamp = base::TimeTicks::Now();
     doc->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
@@ -1142,7 +1142,7 @@ void VRDisplay::OnNonImmersiveVSync(base::TimeTicks timestamp) {
     return;
   vr_frame_id_ = -1;
   base::TimeDelta pose_age =
-      WTF::CurrentTimeTicks() - non_immersive_pose_received_time_;
+      base::TimeTicks::Now() - non_immersive_pose_received_time_;
   if (pose_age >= kNonImmersivePoseAgeThreshold &&
       non_immersive_pose_request_time_ > non_immersive_pose_received_time_) {
     // The VSync got triggered before ever receiving a pose, or the pose is
@@ -1161,7 +1161,7 @@ void VRDisplay::OnNonImmersiveVSync(base::TimeTicks timestamp) {
 
 void VRDisplay::OnNonImmersiveFrameData(
     device::mojom::blink::XRFrameDataPtr data) {
-  non_immersive_pose_received_time_ = WTF::CurrentTimeTicks();
+  non_immersive_pose_received_time_ = base::TimeTicks::Now();
   if (data) {
     if (!in_animation_frame_) {
       frame_pose_ = std::move(data->pose);

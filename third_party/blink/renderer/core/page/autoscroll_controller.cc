@@ -342,7 +342,7 @@ void AutoscrollController::Animate() {
   switch (autoscroll_type_) {
     case kAutoscrollForDragAndDrop:
       ScheduleMainThreadAnimation();
-      if ((CurrentTimeTicks() - drag_and_drop_autoscroll_start_time_) >
+      if ((base::TimeTicks::Now() - drag_and_drop_autoscroll_start_time_) >
           kAutoscrollDelay)
         autoscroll_layout_object_->Autoscroll(
             drag_and_drop_autoscroll_reference_position_);

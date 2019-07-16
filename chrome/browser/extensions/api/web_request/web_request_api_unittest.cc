@@ -35,7 +35,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/about_handler/about_protocol_handler.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

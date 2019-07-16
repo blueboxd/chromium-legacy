@@ -299,34 +299,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       requestURL.SchemeIs(url::kBlobScheme);
 
   if (allowLoad) {
-    // If the URL doesn't look like one that can be shown as a web page, it may
-    // handled by the embedder. In that case, update the web controller to
-    // correctly reflect the current state.
-    if (!webControllerCanShow) {
-      // Purge web view if last committed URL is different from the document
-      // URL. This can happen if external URL was added to the navigation stack
-      // and was loaded using Go Back or Go Forward navigation (in which case
-      // document URL will point to the previous page).  If this is the first
-      // load for a NavigationManager, there will be no last committed item, so
-      // check here.
-      // TODO(crbug.com/850760): Check if this code is still needed. The current
-      // implementation doesn't put external apps URLs in the history, so they
-      // shouldn't be accessable by Go Back or Go Forward navigation.
-      web::NavigationItem* lastCommittedItem =
-          self.webStateImpl->GetNavigationManager()->GetLastCommittedItem();
-      if (lastCommittedItem) {
-        GURL lastCommittedURL = lastCommittedItem->GetURL();
-        if (lastCommittedURL != self.documentURL) {
-          [self.delegate navigationHandlerRequirePageReconstruction:self];
-          [self.delegate navigationHandler:self
-                            setDocumentURL:lastCommittedURL
-                                   context:nullptr];
-        }
-      }
-    }
-  }
-
-  if (allowLoad) {
     BOOL userInteractedWithRequestMainFrame =
         self.userInteractionState->HasUserTappedRecently(webView) &&
         net::GURLWithNSURL(action.request.mainDocumentURL) ==

@@ -1641,6 +1641,15 @@ ChromeContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
 #endif
 }
 
+bool ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+    base::StringPiece scheme) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return scheme == extensions::kExtensionScheme;
+#else
+  return false;
+#endif
+}
+
 network::mojom::URLLoaderFactoryPtrInfo
 ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     content::RenderProcessHost* process,

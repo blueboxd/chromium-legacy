@@ -1502,7 +1502,7 @@ void WebViewImpl::DidBeginFrame() {
 
 void WebViewImpl::BeginRafAlignedInput() {
   if (MainFrameImpl()) {
-    raf_aligned_input_start_time_.emplace(CurrentTimeTicks());
+    raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -1511,14 +1511,14 @@ void WebViewImpl::EndRafAlignedInput() {
     DCHECK(raf_aligned_input_start_time_);
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), CurrentTimeTicks());
+        raf_aligned_input_start_time_.value(), base::TimeTicks::Now());
   }
   raf_aligned_input_start_time_.reset();
 }
 
 void WebViewImpl::BeginUpdateLayers() {
   if (MainFrameImpl())
-    update_layers_start_time_.emplace(CurrentTimeTicks());
+    update_layers_start_time_.emplace(base::TimeTicks::Now());
 }
 
 void WebViewImpl::EndUpdateLayers() {
@@ -1526,14 +1526,14 @@ void WebViewImpl::EndUpdateLayers() {
     DCHECK(update_layers_start_time_);
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), CurrentTimeTicks());
+        update_layers_start_time_.value(), base::TimeTicks::Now());
   }
   update_layers_start_time_.reset();
 }
 
 void WebViewImpl::BeginCommitCompositorFrame() {
   if (MainFrameImpl()) {
-    commit_compositor_frame_start_time_.emplace(CurrentTimeTicks());
+    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -1542,7 +1542,7 @@ void WebViewImpl::EndCommitCompositorFrame() {
   if (MainFrameImpl() && commit_compositor_frame_start_time_) {
     MainFrameImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kProxyCommit,
-        commit_compositor_frame_start_time_.value(), CurrentTimeTicks());
+        commit_compositor_frame_start_time_.value(), base::TimeTicks::Now());
   }
   commit_compositor_frame_start_time_.reset();
 }
@@ -1562,7 +1562,7 @@ void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
       ->GetFrame()
       ->View()
       ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
+      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
 void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update,
@@ -3172,9 +3172,9 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
   if (!main_frame)
     return HitTestResult();
 
-  WebGestureEvent tap_event(
-      WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-      WTF::CurrentTimeTicks(), WebGestureDevice::kTouchscreen);
+  WebGestureEvent tap_event(WebInputEvent::kGestureTap,
+                            WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
+                            WebGestureDevice::kTouchscreen);
   // GestureTap is only ever from a touchscreen.
   tap_event.SetPositionInWidget(FloatPoint(IntPoint(tap_point_window_pos)));
   tap_event.data.tap.tap_count = 1;

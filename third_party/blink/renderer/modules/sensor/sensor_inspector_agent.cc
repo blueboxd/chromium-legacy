@@ -48,7 +48,8 @@ void PopulateOrientationReading(double alpha,
                                 double gamma,
                                 device::SensorReading* reading) {
   FillQuaternion(alpha, beta, gamma, &reading->orientation_quat);
-  reading->orientation_quat.timestamp = WTF::CurrentTimeTicksInSeconds();
+  reading->orientation_quat.timestamp =
+      base::TimeTicks::Now().since_origin().InSecondsF();
 }
 
 const char kInspectorConsoleMessage[] =

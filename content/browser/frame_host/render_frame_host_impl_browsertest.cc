@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -49,6 +50,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-test-utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -87,6 +89,41 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTestContentBrowserClient);
 };
+
+const char kTrustMeUrl[] = "trustme://host/path/";
+
+// Configure trustme: as a scheme that should cause cookies to be treated as
+// first-party when top-level, and also installs a URLLoaderFactory that
+// makes all requests to it via kTrustMeUrl return a particular iframe.
+class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
+ public:
+  explicit FirstPartySchemeContentBrowserClient(const GURL& iframe_url)
+      : iframe_url_(iframe_url) {}
+
+  ~FirstPartySchemeContentBrowserClient() override = default;
+
+  bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+      base::StringPiece scheme) override {
+    return scheme == "trustme";
+  }
+
+  void RegisterNonNetworkNavigationURLLoaderFactories(
+      int frame_tree_node_id,
+      NonNetworkURLLoaderFactoryMap* factories) override {
+    auto test_url_loader_factory =
+        std::make_unique<network::TestURLLoaderFactory>();
+    test_url_loader_factory->AddResponse(
+        kTrustMeUrl,
+        base::StrCat({"<iframe src=\"", iframe_url_.spec(), "\"></iframe>"}));
+    factories->emplace("trustme", std::move(test_url_loader_factory));
+  }
+
+ private:
+  GURL iframe_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(FirstPartySchemeContentBrowserClient);
+};
+
 }  // anonymous namespace
 
 // TODO(mlamouri): part of these tests were removed because they were dependent
@@ -2468,6 +2505,220 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       shell()->web_contents()->GetMainFrame());
   static_cast<mojom::FrameHost*>(main_frame)
       ->UpdateActiveSchedulerTrackedFeatures(0b0u);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesForNavigation) {
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(b(d)),c())");
+
+  FirstPartySchemeContentBrowserClient new_client(url);
+  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
+
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+  GURL c_url = embedded_test_server()->GetURL("c.com", "/");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  {
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame =
+        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+
+    EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+    ASSERT_EQ(2u, main_frame->child_count());
+    FrameTreeNode* child_a = main_frame->child_at(0);
+    FrameTreeNode* child_c = main_frame->child_at(1);
+    EXPECT_EQ("a.com", child_a->current_url().host());
+    EXPECT_EQ("c.com", child_c->current_url().host());
+
+    ASSERT_EQ(1u, child_a->child_count());
+    FrameTreeNode* child_b = child_a->child_at(0);
+    EXPECT_EQ("b.com", child_b->current_url().host());
+    ASSERT_EQ(1u, child_b->child_count());
+    FrameTreeNode* child_d = child_b->child_at(0);
+    EXPECT_EQ("d.com", child_d->current_url().host());
+
+    EXPECT_EQ("a.com",
+              main_frame->ComputeSiteForCookiesForNavigation(url).host());
+    EXPECT_EQ("b.com",
+              main_frame->ComputeSiteForCookiesForNavigation(b_url).host());
+    EXPECT_EQ("c.com",
+              main_frame->ComputeSiteForCookiesForNavigation(c_url).host());
+
+    // a.com -> a.com frame being navigated.
+    EXPECT_EQ("a.com", child_a->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(url)
+                           .host());
+    EXPECT_EQ("a.com", child_a->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(b_url)
+                           .host());
+    EXPECT_EQ("a.com", child_a->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(c_url)
+                           .host());
+
+    // a.com -> a.com -> b.com frame being navigated.
+
+    // The first case here is especially interesting, since we go to
+    // a/a/a from a/a/b. We currently treat this as all first-party, but there
+    // is a case to be made for doing it differently, due to involvement of b.
+    EXPECT_EQ("a.com", child_b->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(url)
+                           .host());
+    EXPECT_EQ("a.com", child_b->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(b_url)
+                           .host());
+    EXPECT_EQ("a.com", child_b->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(c_url)
+                           .host());
+
+    // a.com -> c.com frame being navigated.
+    EXPECT_EQ("a.com", child_c->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(url)
+                           .host());
+    EXPECT_EQ("a.com", child_c->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(b_url)
+                           .host());
+    EXPECT_EQ("a.com", child_c->current_frame_host()
+                           ->ComputeSiteForCookiesForNavigation(c_url)
+                           .host());
+
+    // a.com -> a.com -> b.com -> d.com frame being navigated.
+    EXPECT_EQ("", child_d->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(url)
+                      .host());
+    EXPECT_EQ("", child_d->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(b_url)
+                      .host());
+    EXPECT_EQ("", child_d->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(c_url)
+                      .host());
+  }
+
+  // The rest of the test relies on
+  // RegisterNonNetworkNavigationURLLoaderFactories, which needs NetworkService
+  // on.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    SetBrowserClientForTesting(old_client);
+    return;
+  }
+
+  // Now try with a trusted scheme that gives first-partiness.
+  GURL trusty_url(kTrustMeUrl);
+  EXPECT_TRUE(NavigateToURL(shell(), trusty_url));
+  {
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame =
+        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              main_frame->GetLastCommittedURL().GetOrigin());
+
+    ASSERT_EQ(1u, main_frame->child_count());
+    FrameTreeNode* child_a = main_frame->child_at(0);
+    EXPECT_EQ("a.com", child_a->current_url().host());
+
+    ASSERT_EQ(2u, child_a->child_count());
+    FrameTreeNode* child_aa = child_a->child_at(0);
+    EXPECT_EQ("a.com", child_aa->current_url().host());
+
+    ASSERT_EQ(1u, child_aa->child_count());
+    FrameTreeNode* child_aab = child_aa->child_at(0);
+    EXPECT_EQ("b.com", child_aab->current_url().host());
+
+    ASSERT_EQ(1u, child_aab->child_count());
+    FrameTreeNode* child_aabd = child_aab->child_at(0);
+    EXPECT_EQ("d.com", child_aabd->current_url().host());
+
+    // Main frame navigations are not affected by the special schema.
+    EXPECT_EQ(url.GetOrigin(),
+              main_frame->ComputeSiteForCookiesForNavigation(url).GetOrigin());
+    EXPECT_EQ(
+        b_url.GetOrigin(),
+        main_frame->ComputeSiteForCookiesForNavigation(b_url).GetOrigin());
+    EXPECT_EQ(
+        c_url.GetOrigin(),
+        main_frame->ComputeSiteForCookiesForNavigation(c_url).GetOrigin());
+
+    // Child navigation gets the magic scheme.
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aa->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(url)
+                  .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aa->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(b_url)
+                  .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aa->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(c_url)
+                  .GetOrigin());
+
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aabd->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(url)
+                  .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aabd->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(b_url)
+                  .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aabd->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(c_url)
+                  .GetOrigin());
+  }
+
+  SetBrowserClientForTesting(old_client);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       ComputeSiteForCookiesForNavigationSrcDoc) {
+  // srcdoc frames basically don't figure into site_for_cookies computation.
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/frame_tree/page_with_srcdoc_iframe_tree.html");
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  EXPECT_EQ("a.com", main_frame->GetLastCommittedURL().host());
+
+  ASSERT_EQ(1u, main_frame->child_count());
+  FrameTreeNode* child_sd = main_frame->child_at(0);
+  EXPECT_TRUE(child_sd->current_url().IsAboutSrcdoc());
+
+  ASSERT_EQ(1u, child_sd->child_count());
+  FrameTreeNode* child_sd_a = child_sd->child_at(0);
+  EXPECT_EQ("a.com", child_sd_a->current_url().host());
+
+  ASSERT_EQ(1u, child_sd_a->child_count());
+  FrameTreeNode* child_sd_a_sd = child_sd_a->child_at(0);
+  EXPECT_TRUE(child_sd_a_sd->current_url().IsAboutSrcdoc());
+  ASSERT_EQ(0u, child_sd_a_sd->child_count());
+
+  EXPECT_EQ("a.com", child_sd->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(url)
+                         .host());
+  EXPECT_EQ("a.com", child_sd_a->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(url)
+                         .host());
+  EXPECT_EQ("a.com", child_sd_a_sd->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(url)
+                         .host());
+
+  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+  EXPECT_EQ("b.com",
+            main_frame->ComputeSiteForCookiesForNavigation(b_url).host());
+  EXPECT_EQ("a.com", child_sd->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(b_url)
+                         .host());
+  EXPECT_EQ("a.com", child_sd_a->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(b_url)
+                         .host());
+  EXPECT_EQ("a.com", child_sd_a_sd->current_frame_host()
+                         ->ComputeSiteForCookiesForNavigation(b_url)
+                         .host());
 }
 
 }  // namespace content

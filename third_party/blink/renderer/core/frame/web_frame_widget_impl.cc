@@ -292,7 +292,7 @@ void WebFrameWidgetImpl::DidBeginFrame() {
 
 void WebFrameWidgetImpl::BeginRafAlignedInput() {
   if (LocalRootImpl()) {
-    raf_aligned_input_start_time_.emplace(CurrentTimeTicks());
+    raf_aligned_input_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -301,14 +301,14 @@ void WebFrameWidgetImpl::EndRafAlignedInput() {
     DCHECK(raf_aligned_input_start_time_);
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kHandleInputEvents,
-        raf_aligned_input_start_time_.value(), CurrentTimeTicks());
+        raf_aligned_input_start_time_.value(), base::TimeTicks::Now());
   }
   raf_aligned_input_start_time_.reset();
 }
 
 void WebFrameWidgetImpl::BeginUpdateLayers() {
   if (LocalRootImpl())
-    update_layers_start_time_.emplace(CurrentTimeTicks());
+    update_layers_start_time_.emplace(base::TimeTicks::Now());
 }
 
 void WebFrameWidgetImpl::EndUpdateLayers() {
@@ -316,14 +316,14 @@ void WebFrameWidgetImpl::EndUpdateLayers() {
     DCHECK(update_layers_start_time_);
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kUpdateLayers,
-        update_layers_start_time_.value(), CurrentTimeTicks());
+        update_layers_start_time_.value(), base::TimeTicks::Now());
   }
   update_layers_start_time_.reset();
 }
 
 void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
   if (LocalRootImpl()) {
-    commit_compositor_frame_start_time_.emplace(CurrentTimeTicks());
+    commit_compositor_frame_start_time_.emplace(base::TimeTicks::Now());
   }
 }
 
@@ -333,7 +333,7 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame() {
     // timing data.
     LocalRootImpl()->GetFrame()->View()->EnsureUkmAggregator().RecordSample(
         LocalFrameUkmAggregator::kProxyCommit,
-        commit_compositor_frame_start_time_.value(), CurrentTimeTicks());
+        commit_compositor_frame_start_time_.value(), base::TimeTicks::Now());
   }
   commit_compositor_frame_start_time_.reset();
 }
@@ -354,7 +354,7 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
       ->GetFrame()
       ->View()
       ->EnsureUkmAggregator()
-      .RecordEndOfFrameMetrics(frame_begin_time, CurrentTimeTicks());
+      .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,

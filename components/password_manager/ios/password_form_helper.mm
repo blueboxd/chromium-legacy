@@ -129,14 +129,13 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
     __weak PasswordFormHelper* weakSelf = self;
     auto callback = base::BindRepeating(
-        ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
-              bool interacting, bool isMainFrame, web::WebFrame* senderFrame) {
-          if (!isMainFrame) {
-            // Passwords is only supported on main frame.
-            return false;
+        ^(const base::DictionaryValue& JSON, const GURL& originURL,
+          bool interacting, web::WebFrame* senderFrame) {
+          // Passwords is only supported on main frame.
+          if (senderFrame->IsMainFrame()) {
+            // |originURL| and |interacting| aren't used.
+            [weakSelf handleScriptCommand:JSON];
           }
-          // |originURL| and |interacting| aren't used.
-          return [weakSelf handleScriptCommand:JSON];
         });
     _webState->AddScriptCommandCallback(callback, kCommandPrefix);
   }

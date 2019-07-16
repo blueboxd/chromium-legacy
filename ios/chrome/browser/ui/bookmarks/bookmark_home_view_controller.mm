@@ -329,9 +329,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.definesPresentationContext = YES;
 
   self.scrimView = [[UIControl alloc] init];
-  self.scrimView.backgroundColor =
-      [UIColor colorWithWhite:0
-                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrimView.accessibilityIdentifier = kBookmarkHomeSearchScrimIdentifier;
   [self.scrimView addTarget:self

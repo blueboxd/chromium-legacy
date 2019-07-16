@@ -20,13 +20,14 @@ namespace offline_items_collection {
 class OfflineContentAggregator;
 }  // namespace offline_items_collection
 
+class Profile;
+
 class ContentIndexProviderImpl
     : public KeyedService,
       public offline_items_collection::OfflineContentProvider,
       public content::ContentIndexProvider {
  public:
-  explicit ContentIndexProviderImpl(
-      offline_items_collection::OfflineContentAggregator* aggregator);
+  explicit ContentIndexProviderImpl(Profile* profile);
   ~ContentIndexProviderImpl() override;
 
   // KeyedService implementation.
@@ -70,6 +71,7 @@ class ContentIndexProviderImpl
                   VisualsCallback callback,
                   SkBitmap icon);
 
+  Profile* profile_;
   offline_items_collection::OfflineContentAggregator* aggregator_;
   std::map<std::string, EntryData> entries_;
   base::ObserverList<Observer>::Unchecked observers_;

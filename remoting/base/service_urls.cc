@@ -12,9 +12,6 @@
 // Configurable service data.
 constexpr char kDirectoryBaseUrl[] = "https://www.googleapis.com/chromoting/v1";
 constexpr char kGcdBaseUrl[] = "https://www.googleapis.com/clouddevices/v1";
-constexpr char kXmppServerAddress[] = "talk.google.com:443";
-constexpr char kXmppServerAddressForMe2MeHost[] = "talk.google.com:5222";
-constexpr bool kXmppServerUseTls = true;
 constexpr char kGcdJid[] = "clouddevices.gserviceaccount.com";
 constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 constexpr char kRemotingServerEndpoint[] = "remotedesktop-pa.googleapis.com";
@@ -23,8 +20,6 @@ constexpr char kRemotingServerEndpoint[] = "remotedesktop-pa.googleapis.com";
 #if !defined(NDEBUG)
 constexpr char kDirectoryBaseUrlSwitch[] = "directory-base-url";
 constexpr char kGcdBaseUrlSwitch[] = "gcd-base-url";
-constexpr char kXmppServerAddressSwitch[] = "xmpp-server-address";
-constexpr char kXmppServerDisableTlsSwitch[] = "disable-xmpp-server-tls";
 constexpr char kDirectoryBotJidSwitch[] = "directory-bot-jid";
 constexpr char kGcdJidSwitch[] = "gcd-jid";
 constexpr char kFtlServerEndpointSwitch[] = "ftl-server-endpoint";
@@ -40,9 +35,6 @@ namespace remoting {
 ServiceUrls::ServiceUrls()
     : directory_base_url_(kDirectoryBaseUrl),
       gcd_base_url_(kGcdBaseUrl),
-      xmpp_server_address_(kXmppServerAddress),
-      xmpp_server_address_for_me2me_host_(kXmppServerAddressForMe2MeHost),
-      xmpp_server_use_tls_(kXmppServerUseTls),
       directory_bot_jid_(kRemotingBotJid),
       gcd_jid_(kGcdJid),
       ftl_server_endpoint_(kFtlServerEndpoint),
@@ -59,14 +51,6 @@ ServiceUrls::ServiceUrls()
     }
     if (command_line->HasSwitch(kGcdBaseUrlSwitch)) {
       gcd_base_url_ = command_line->GetSwitchValueASCII(kGcdBaseUrlSwitch);
-    }
-    if (command_line->HasSwitch(kXmppServerAddressSwitch)) {
-      xmpp_server_address_ =
-          command_line->GetSwitchValueASCII(kXmppServerAddressSwitch);
-      xmpp_server_address_for_me2me_host_ = xmpp_server_address_;
-    }
-    if (command_line->HasSwitch(kXmppServerDisableTlsSwitch)) {
-      xmpp_server_use_tls_ = false;
     }
     if (command_line->HasSwitch(kDirectoryBotJidSwitch)) {
       directory_bot_jid_ =

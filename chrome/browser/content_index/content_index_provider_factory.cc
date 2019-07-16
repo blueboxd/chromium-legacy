@@ -29,13 +29,11 @@ ContentIndexProviderFactory::ContentIndexProviderFactory()
   DependsOn(OfflineContentAggregatorFactory::GetInstance());
 }
 
-ContentIndexProviderFactory::~ContentIndexProviderFactory() {}
+ContentIndexProviderFactory::~ContentIndexProviderFactory() = default;
 
 KeyedService* ContentIndexProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  auto* aggregator = OfflineContentAggregatorFactory::GetForKey(
-      Profile::FromBrowserContext(context)->GetProfileKey());
-  return new ContentIndexProviderImpl(aggregator);
+  return new ContentIndexProviderImpl(Profile::FromBrowserContext(context));
 }
 
 content::BrowserContext* ContentIndexProviderFactory::GetBrowserContextToUse(

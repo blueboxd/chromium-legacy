@@ -99,11 +99,9 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
   DCHECK(!prevent_scheduled_animations_changes_);
 #endif
 
-  auto& attribute_map =
-      scheduled_animations_.insert(target, AttributeMap()).stored_value->value;
-
+  auto key = std::make_pair(target, attribute_name);
   auto& scheduled =
-      attribute_map.insert(attribute_name, nullptr).stored_value->value;
+      scheduled_animations_.insert(key, nullptr).stored_value->value;
   if (!scheduled)
     scheduled = MakeGarbageCollected<ScheduledVector>();
 
@@ -124,20 +122,16 @@ void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
   DCHECK(!prevent_scheduled_animations_changes_);
 #endif
 
-  AnimationsMap::iterator it = scheduled_animations_.find(target);
+  auto key = std::make_pair(target, attribute_name);
+  AnimationsMap::iterator it = scheduled_animations_.find(key);
   CHECK(it != scheduled_animations_.end());
-  AttributeMap& attribute_map = it->value;
-  AttributeMap::iterator attribute_map_it = attribute_map.find(attribute_name);
-  DCHECK(attribute_map_it != attribute_map.end());
-  auto& scheduled = *(attribute_map_it->value);
+  auto& scheduled = *(it->value);
 
   auto* position = std::find(scheduled.begin(), scheduled.end(), animation);
   DCHECK(scheduled.end() != position);
   scheduled.erase(position);
 
   if (scheduled.IsEmpty())
-    attribute_map.erase(attribute_map_it);
-  if (attribute_map.IsEmpty())
     scheduled_animations_.erase(it);
 }
 
@@ -256,11 +250,9 @@ void SMILTimeContainer::SetElapsed(double elapsed) {
 #if DCHECK_IS_ON()
   prevent_scheduled_animations_changes_ = true;
 #endif
-  for (const auto& attribute_entry : scheduled_animations_) {
-    for (const auto& entry : attribute_entry.value) {
-      for (SVGSMILElement* element : *entry.value) {
-        element->Reset();
-      }
+  for (const auto& entry : scheduled_animations_) {
+    for (SVGSMILElement* element : *entry.value) {
+      element->Reset();
     }
   }
 #if DCHECK_IS_ON()
@@ -423,7 +415,6 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
                                              bool seek_to_time) {
   DCHECK(GetDocument().IsActive());
-  SMILTime earliest_fire_time = SMILTime::Unresolved();
 
 #if DCHECK_IS_ON()
   // This boolean will catch any attempts to schedule/unschedule
@@ -437,87 +428,42 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
   if (document_order_indexes_dirty_)
     UpdateDocumentOrderIndexes();
 
-  for (auto& attribute_entry : scheduled_animations_) {
-    AttributeMap& attribute_map = attribute_entry.value;
-    Vector<QualifiedName> invalid_keys;
-    for (auto& entry : attribute_map) {
-      if (entry.value->IsEmpty())
+  {
+    Vector<AnimationId> invalid_keys;
+    for (auto& entry : scheduled_animations_) {
+      if (entry.value->IsEmpty()) {
         invalid_keys.push_back(entry.key);
+      }
     }
-    attribute_map.RemoveAll(invalid_keys);
+    scheduled_animations_.RemoveAll(invalid_keys);
   }
 
   active_sandwiches_.ReserveCapacity(scheduled_animations_.size());
-  for (auto& attribute_entry : scheduled_animations_) {
-    AttributeMap& attribute_map = attribute_entry.value;
-    for (auto& entry : attribute_map) {
-      auto& scheduled = *entry.value;
-      if (!std::is_sorted(scheduled.begin(), scheduled.end(),
-                          PriorityCompare(elapsed))) {
-        std::sort(scheduled.begin(), scheduled.end(), PriorityCompare(elapsed));
-      }
-      ScheduledVector sandwich;
-      for (const auto& it_animation : scheduled) {
-        SVGSMILElement* animation = it_animation.Get();
-        DCHECK_EQ(animation->TimeContainer(), this);
-        DCHECK(animation->HasValidTarget());
+  SMILTime earliest_fire_time = SMILTime::Unresolved();
+  for (auto& entry : scheduled_animations_) {
+    auto& scheduled = *entry.value;
+    if (!std::is_sorted(scheduled.begin(), scheduled.end(),
+                        PriorityCompare(elapsed))) {
+      // TODO: Replace this with inline insertion sort.
+      std::sort(scheduled.begin(), scheduled.end(), PriorityCompare(elapsed));
+    }
+    auto* sandwich = MakeGarbageCollected<SMILAnimationSandwich>(
+        scheduled, elapsed, seek_to_time);
 
-        // This will calculate the contribution from the animation and update
-        // timing.
-        if (animation->NeedsToProgress(elapsed, seek_to_time)) {
-          animation->Progress(elapsed, seek_to_time);
-          sandwich.push_back(animation);
-        } else if (animation->IsContributing(elapsed)) {
-          sandwich.push_back(animation);
-        } else {
-          animation->ClearAnimatedType();
-        }
+    SMILTime next_fire_time = sandwich->GetNextFireTime();
+    if (next_fire_time.IsFinite())
+      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
 
-        SMILTime next_fire_time = animation->NextProgressTime();
-        if (next_fire_time.IsFinite())
-          earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
-      }
-
-      if (!sandwich.IsEmpty()) {
-        active_sandwiches_.push_back(sandwich);
-      }
+    if (!sandwich->IsEmpty()) {
+      active_sandwiches_.push_back(sandwich);
     }
   }
 
   for (auto& sandwich : active_sandwiches_) {
-    if (seek_to_time) {
-      for (auto& animation : sandwich) {
-        animation->TriggerPendingEvents(elapsed);
-      }
-    }
-
-    for (auto& animation : sandwich) {
-      animation->UpdateSyncbases();
-    }
-
-    for (auto& animation : sandwich) {
-      animation->UpdateNextProgressTime(elapsed);
-    }
-
-    auto* it = sandwich.begin();
-    while (it != sandwich.end()) {
-      auto* scheduled = it->Get();
-      if (scheduled->IsContributing(elapsed)) {
-        it++;
-        continue;
-      }
-      scheduled->ClearAnimatedType();
-      it = sandwich.erase(it);
-    }
-
-    if (sandwich.IsEmpty())
-      continue;
-
-    for (auto& animation : sandwich) {
-      SMILTime next_fire_time = animation->NextProgressTime();
-      if (next_fire_time.IsFinite())
-        earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
-    }
+    sandwich->UpdateAnimations();
+    SMILTime next_fire_time = sandwich->GetNextFireTime();
+    if (next_fire_time.IsFinite())
+      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
   }
   return earliest_fire_time;
 }
@@ -528,36 +474,12 @@ void SMILTimeContainer::ApplyAnimations(double elapsed) {
 #endif
   ScheduledVector animations_to_apply;
   for (auto& sandwich : active_sandwiches_) {
-    if (sandwich.IsEmpty()) {
+    if (sandwich->IsEmpty()) {
       continue;
     }
 
-    // Results are accumulated to the first animation that animates and
-    // contributes to a particular element/attribute pair.
-    // Only reset the animated type to the base value once for
-    // the lowest priority animation that animates and
-    // contributes to a particular element/attribute pair.
-    SVGSMILElement* result_element = sandwich.front();
-    result_element->ResetAnimatedType();
-
-    // Animations have to be applied lowest to highest prio.
-    //
-    // Only calculate the relevant animations. If we actually set the
-    // animation value, we don't need to calculate what is beneath it
-    // in the sandwich.
-    auto* sandwich_start = sandwich.end();
-    while (sandwich_start != sandwich.begin()) {
-      --sandwich_start;
-      if ((*sandwich_start)->OverwritesUnderlyingAnimationValue())
-        break;
-    }
-
-    for (auto* sandwich_it = sandwich_start; sandwich_it != sandwich.end();
-         sandwich_it++) {
-      (*sandwich_it)->UpdateAnimatedValue(result_element);
-    }
-
-    animations_to_apply.push_back(result_element);
+    SVGSMILElement* animation = sandwich->UpdateAnimationValues();
+    animations_to_apply.push_back(animation);
   }
   active_sandwiches_.Shrink(0);
 

@@ -32,6 +32,7 @@ source_set("browser") {
     "//ios/chrome/browser/metrics:ukm_url_recorder",
     "//ios/web/public",
     "//ios/web/public/deprecated",
+    "//ios/web/public/js_messaging",
     "//net",
     "//net/traffic_annotation:traffic_annotation",
     "//services/network/public/cpp:cpp_base",

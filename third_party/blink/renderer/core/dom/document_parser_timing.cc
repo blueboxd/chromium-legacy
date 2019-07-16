@@ -27,14 +27,14 @@ void DocumentParserTiming::MarkParserStart() {
   if (parser_detached_ || !parser_start_.is_null())
     return;
   DCHECK(parser_stop_.is_null());
-  parser_start_ = CurrentTimeTicks();
+  parser_start_ = base::TimeTicks::Now();
   NotifyDocumentParserTimingChanged();
 }
 
 void DocumentParserTiming::MarkParserStop() {
   if (parser_detached_ || parser_start_.is_null() || !parser_stop_.is_null())
     return;
-  parser_stop_ = CurrentTimeTicks();
+  parser_stop_ = base::TimeTicks::Now();
   NotifyDocumentParserTimingChanged();
 }
 

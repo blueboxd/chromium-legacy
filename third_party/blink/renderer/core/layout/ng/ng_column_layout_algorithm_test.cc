@@ -2937,6 +2937,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, AbsposFitsInOneColumn) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:222x100
+          offset:0,0 size:0x0
           offset:0,0 size:111x50
       offset:110,0 size:100x100
         offset:0,0 size:222x100

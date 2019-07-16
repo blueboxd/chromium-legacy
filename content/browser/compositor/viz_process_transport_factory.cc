@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
@@ -189,7 +190,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
 
     // GPU process access is disabled. Start a new thread to run the display
     // compositor in-process and connect HostFrameSinkManager to it.
-    viz_compositor_thread_ = std::make_unique<viz::VizCompositorThreadRunner>();
+    viz_compositor_thread_ = std::make_unique<viz::VizCompositorThreadRunner>(
+        base::MessageLoop::TYPE_DEFAULT);
 
     viz::mojom::FrameSinkManagerParamsPtr params =
         viz::mojom::FrameSinkManagerParams::New();

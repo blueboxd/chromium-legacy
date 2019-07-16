@@ -90,7 +90,7 @@ void ScrollSnapTest::ScrollBegin(double x,
                                  double hint_x,
                                  double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
@@ -107,7 +107,7 @@ void ScrollSnapTest::ScrollUpdate(double x,
                                   double delta_y,
                                   bool is_in_inertial_phase) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));
@@ -124,7 +124,7 @@ void ScrollSnapTest::ScrollUpdate(double x,
 
 void ScrollSnapTest::ScrollEnd(double x, double y, bool is_in_inertial_phase) {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks(),
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
                         WebGestureDevice::kTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(x, y));
   event.SetPositionInScreen(WebFloatPoint(x, y));

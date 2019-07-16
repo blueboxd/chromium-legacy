@@ -175,6 +175,8 @@ void WebURLRequest::SetHttpReferrer(
   resource_request_->SetHttpReferrer(
       Referrer(referrer, referrer_policy),
       ResourceRequest::SetHttpReferrerLocation::kWebURLRequest);
+  resource_request_->SetReferrerString(
+      referrer, ResourceRequest::SetReferrerStringLocation::kWebURLRequest);
 }
 
 void WebURLRequest::AddHttpHeaderField(const WebString& name,

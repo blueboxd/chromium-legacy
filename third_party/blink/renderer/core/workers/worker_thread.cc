@@ -433,7 +433,7 @@ void WorkerThread::ChildThreadTerminatedOnWorkerThread(WorkerThread* child) {
 }
 
 WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
-    : time_origin_(CurrentTimeTicks()),
+    : time_origin_(base::TimeTicks::Now()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       worker_reporting_proxy_(worker_reporting_proxy),

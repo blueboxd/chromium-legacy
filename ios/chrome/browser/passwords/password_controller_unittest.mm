@@ -18,8 +18,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -88,7 +88,7 @@ class MockPasswordManagerClient
 
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_CONST_METHOD0(GetLogManager, password_manager::LogManager*(void));
+  MOCK_CONST_METHOD0(GetLogManager, autofill::LogManager*(void));
   MOCK_CONST_METHOD0(GetPasswordSyncState, password_manager::SyncState());
   MOCK_CONST_METHOD0(IsIncognito, bool());
 
@@ -103,7 +103,7 @@ class MockPasswordManagerClient
   password_manager::PasswordStore* const store_;
 };
 
-class MockLogManager : public password_manager::LogManager {
+class MockLogManager : public autofill::LogManager {
  public:
   MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
   MOCK_CONST_METHOD0(IsLoggingActive, bool(void));

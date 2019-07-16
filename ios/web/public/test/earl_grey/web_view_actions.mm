@@ -97,11 +97,9 @@ bool AddVerifierToElementWithPrefix(web::WebState* web_state,
   // The callback doesn't care about any of the parameters, just whether it is
   // called or not.
   auto callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& /* json */,
-            const GURL& /* origin_url */, bool /* user_is_interacting */,
-            bool /* is_main_frame */, web::WebFrame* /* sender_frame */) {
+      ^(const base::DictionaryValue& /* json */, const GURL& /* origin_url */,
+        bool /* user_is_interacting */, web::WebFrame* /* sender_frame */) {
         *verified = true;
-        return true;
       });
 
   static_cast<web::WebStateImpl*>(web_state)->AddScriptCommandCallback(callback,

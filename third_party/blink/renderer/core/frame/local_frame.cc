@@ -516,9 +516,9 @@ void LocalFrame::DidFreeze() {
 
 void LocalFrame::DidResume() {
   if (GetDocument()) {
-    const base::TimeTicks resume_event_start = CurrentTimeTicks();
+    const base::TimeTicks resume_event_start = base::TimeTicks::Now();
     GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
-    const base::TimeTicks resume_event_end = CurrentTimeTicks();
+    const base::TimeTicks resume_event_end = base::TimeTicks::Now();
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, resume_histogram,
         ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));

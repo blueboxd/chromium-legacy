@@ -113,7 +113,7 @@ V8GCForContextDispose& V8GCForContextDispose::Instance() {
 
 void V8GCForContextDispose::PseudoIdleTimerFired(TimerBase*) {
   V8PerIsolateData::MainThreadIsolate()->IdleNotificationDeadline(
-      CurrentTimeTicksInSeconds());
+      base::TimeTicks::Now().since_origin().InSecondsF());
   Reset();
 }
 

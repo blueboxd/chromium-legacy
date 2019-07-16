@@ -60,7 +60,7 @@ class ScrollBeginEventBuilder : public WebGestureEvent {
                           WebGestureDevice device)
       : WebGestureEvent(WebInputEvent::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers,
-                        CurrentTimeTicks(),
+                        base::TimeTicks::Now(),
                         device) {
     SetPositionInWidget(position);
     SetPositionInScreen(position);

@@ -3994,9 +3994,9 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   auto& before_unload_event = *MakeGarbageCollected<BeforeUnloadEvent>();
   before_unload_event.initEvent(event_type_names::kBeforeunload, false, true);
   load_event_progress_ = kBeforeUnloadEventInProgress;
-  const base::TimeTicks beforeunload_event_start = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_event_start = base::TimeTicks::Now();
   dom_window_->DispatchEvent(before_unload_event, this);
-  const base::TimeTicks beforeunload_event_end = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_event_end = base::TimeTicks::Now();
   load_event_progress_ = kBeforeUnloadEventCompleted;
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, beforeunload_histogram,
@@ -4053,10 +4053,11 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   String text = before_unload_event.returnValue();
   beforeunload_dialog_histogram.Count(
       BeforeUnloadDialogHistogramEnum::kShowDialog);
-  const base::TimeTicks beforeunload_confirmpanel_start = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_confirmpanel_start =
+      base::TimeTicks::Now();
   did_allow_navigation =
       chrome_client->OpenBeforeUnloadConfirmPanel(text, frame_, is_reload);
-  const base::TimeTicks beforeunload_confirmpanel_end = CurrentTimeTicks();
+  const base::TimeTicks beforeunload_confirmpanel_end = base::TimeTicks::Now();
   if (did_allow_navigation) {
     // Only record when a navigation occurs, since we want to understand
     // the impact of the before unload dialog on overall input to navigation.
@@ -4084,11 +4085,11 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;
       if (LocalDOMWindow* window = domWindow()) {
-        const base::TimeTicks pagehide_event_start = CurrentTimeTicks();
+        const base::TimeTicks pagehide_event_start = base::TimeTicks::Now();
         window->DispatchEvent(
             *PageTransitionEvent::Create(event_type_names::kPagehide, false),
             this);
-        const base::TimeTicks pagehide_event_end = CurrentTimeTicks();
+        const base::TimeTicks pagehide_event_end = base::TimeTicks::Now();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, pagehide_histogram,
             ("DocumentEventTiming.PageHideDuration", 0, 10000000, 50));
@@ -4106,11 +4107,11 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
         // Dispatch visibilitychange event, but don't bother doing
         // other notifications as we're about to be unloaded.
         const base::TimeTicks pagevisibility_hidden_event_start =
-            CurrentTimeTicks();
+            base::TimeTicks::Now();
         DispatchEvent(
             *Event::CreateBubble(event_type_names::kVisibilitychange));
         const base::TimeTicks pagevisibility_hidden_event_end =
-            CurrentTimeTicks();
+            base::TimeTicks::Now();
         DEFINE_STATIC_LOCAL(CustomCountHistogram, pagevisibility_histogram,
                             ("DocumentEventTiming.PageVibilityHiddenDuration",
                              0, 10000000, 50));
@@ -4130,10 +4131,10 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
       if (timing && timing->UnloadEventStart().is_null() &&
           timing->UnloadEventEnd().is_null()) {
         DCHECK(!timing->NavigationStart().is_null());
-        const base::TimeTicks unload_event_start = CurrentTimeTicks();
+        const base::TimeTicks unload_event_start = base::TimeTicks::Now();
         timing->MarkUnloadEventStart(unload_event_start);
         frame_->DomWindow()->DispatchEvent(unload_event, this);
-        const base::TimeTicks unload_event_end = CurrentTimeTicks();
+        const base::TimeTicks unload_event_end = base::TimeTicks::Now();
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, unload_histogram,
             ("DocumentEventTiming.UnloadDuration", 0, 10000000, 50));
@@ -4149,11 +4150,11 @@ void Document::DispatchUnloadEvents(DocumentLoadTiming* timing) {
 }
 
 void Document::DispatchFreezeEvent() {
-  const base::TimeTicks freeze_event_start = CurrentTimeTicks();
+  const base::TimeTicks freeze_event_start = base::TimeTicks::Now();
   SetFreezingInProgress(true);
   DispatchEvent(*Event::Create(event_type_names::kFreeze));
   SetFreezingInProgress(false);
-  const base::TimeTicks freeze_event_end = CurrentTimeTicks();
+  const base::TimeTicks freeze_event_end = base::TimeTicks::Now();
   DEFINE_STATIC_LOCAL(CustomCountHistogram, freeze_histogram,
                       ("DocumentEventTiming.FreezeDuration", 0, 10000000, 50));
   freeze_histogram.CountMicroseconds(freeze_event_end - freeze_event_start);
@@ -7261,11 +7262,11 @@ void Document::ServiceScriptedAnimations(
     base::TimeTicks monotonic_animation_start_time) {
   if (!scripted_animation_controller_)
     return;
-  auto start_time = CurrentTimeTicks();
+  auto start_time = base::TimeTicks::Now();
   scripted_animation_controller_->ServiceScriptedAnimations(
       monotonic_animation_start_time);
   if (GetFrame()) {
-    GetFrame()->GetFrameScheduler()->AddTaskTime(CurrentTimeTicks() -
+    GetFrame()->GetFrameScheduler()->AddTaskTime(base::TimeTicks::Now() -
                                                  start_time);
   }
 }

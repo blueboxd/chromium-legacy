@@ -157,13 +157,15 @@ void BackgroundSyncControllerImpl::NotifyBackgroundSyncCompleted(
       origin, status_code, num_attempts, max_attempts);
 }
 
-void BackgroundSyncControllerImpl::RunInBackground() {
+void BackgroundSyncControllerImpl::ScheduleBrowserWakeUp(
+    blink::mojom::BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile_->IsOffTheRecord())
     return;
+
 #if defined(OS_ANDROID)
-  BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped();
+  BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUp(sync_type);
 #endif
 }
 

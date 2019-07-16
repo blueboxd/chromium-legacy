@@ -498,11 +498,11 @@ TEST_F(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
 }
 
 TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
-  auto owned_extra_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
+  auto owned_managed_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
       100, bookmarks::BookmarkNode::FOLDER);
-  bookmarks::BookmarkPermanentNode* extra_node = owned_extra_node.get();
+  bookmarks::BookmarkPermanentNode* managed_node = owned_managed_node.get();
   auto client = std::make_unique<bookmarks::TestBookmarkClient>();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  client->SetManagedNodeToLoad(std::move(owned_managed_node));
 
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
@@ -546,21 +546,24 @@ TEST_F(BookmarkModelObserverImplTest, ShouldNotSyncUnsyncableBookmarks) {
   model->AddObserver(&observer);
 
   EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
-  // In the TestBookmarkClient, descendants of extra nodes shouldn't be synced.
+  // In the TestBookmarkClient, descendants of managed nodes shouldn't be
+  // synced.
   const bookmarks::BookmarkNode* unsyncable_node =
-      model->AddURL(/*parent=*/extra_node, /*index=*/0,
+      model->AddURL(/*parent=*/managed_node, /*index=*/0,
                     base::ASCIIToUTF16("Title"), GURL("http://www.url.com"));
   // Only permanent folders should be tracked.
   EXPECT_THAT(bookmark_tracker.TrackedEntitiesCountForTest(), 3U);
 
   EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
-  // In the TestBookmarkClient, descendants of extra nodes shouldn't be synced.
+  // In the TestBookmarkClient, descendants of managed nodes shouldn't be
+  // synced.
   model->SetTitle(unsyncable_node, base::ASCIIToUTF16("NewTitle"));
   // Only permanent folders should be tracked.
   EXPECT_THAT(bookmark_tracker.TrackedEntitiesCountForTest(), 3U);
 
   EXPECT_CALL(*nudge_for_commit_closure(), Run()).Times(0);
-  // In the TestBookmarkClient, descendants of extra nodes shouldn't be synced.
+  // In the TestBookmarkClient, descendants of managed nodes shouldn't be
+  // synced.
   model->Remove(unsyncable_node);
 
   // Only permanent folders should be tracked.

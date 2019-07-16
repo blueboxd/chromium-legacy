@@ -46,7 +46,9 @@ source_set("jsoncpp") {
 
   include_dirs = [ "source/src/lib_json" ]
 
-  cflags_cc = [ "-Wno-implicit-fallthrough" ]
+  if (!is_win || is_clang) {
+    cflags_cc = [ "-Wno-implicit-fallthrough" ]
+  }
 }
 
 fuzzer_test("jsoncpp_fuzzer") {

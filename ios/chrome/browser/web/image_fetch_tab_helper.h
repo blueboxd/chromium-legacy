@@ -77,7 +77,10 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   void RecordGetImageDataByJsResult(ContextMenuGetImageDataByJsResult result);
 
   // Handler for messages sent back from injected JavaScript.
-  bool OnJsMessage(const base::DictionaryValue& message);
+  void OnJsMessage(const base::DictionaryValue& message,
+                   const GURL& page_url,
+                   bool user_is_interacting,
+                   web::WebFrame* sender_frame);
 
   // Handler for timeout on GetImageDataByJs.
   void OnJsTimeout(int call_id);

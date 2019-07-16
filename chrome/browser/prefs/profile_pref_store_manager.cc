@@ -130,7 +130,6 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
   // won't have kicked in yet on the main thread.
   bool success = serializer.Serialize(*master_prefs);
 
-  UMA_HISTOGRAM_BOOLEAN("Settings.InitializedFromMasterPrefs", success);
   return success;
 }
 

@@ -18,7 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
           "rect": [238, 241, 40, 40],
           "reason": "disappeared"
         }

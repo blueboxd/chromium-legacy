@@ -475,7 +475,7 @@ void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
   WebMouseEvent fake_mouse_move_event(
       WebInputEvent::kMouseMove, event_position, event_position_screen,
       WebPointerProperties::Button::kNoButton, click_count,
-      WebInputEvent::kRelativeMotionEvent, CurrentTimeTicks());
+      WebInputEvent::kRelativeMotionEvent, base::TimeTicks::Now());
   Vector<WebMouseEvent> coalesced_events, predicted_events;
 
   DCHECK(IsA<LocalFrame>(page_->MainFrame()));

@@ -278,7 +278,7 @@ void AuthenticatorRequestDialogModel::InitiatePairingDevice(
   SetCurrentStep(Step::kBleVerifying);
   DispatchRequestAsync(selected_authenticator);
 #else
-  if (selected_authenticator->requires_ble_pairing_pin()) {
+  if (selected_authenticator->requires_ble_pairing_pin) {
     SetCurrentStep(Step::kBlePinEntry);
     return;
   }
@@ -307,7 +307,7 @@ void AuthenticatorRequestDialogModel::FinishPairingWithPin(
   }
 
   DCHECK_EQ(device::FidoTransportProtocol::kBluetoothLowEnergy,
-            selected_authenticator->transport());
+            selected_authenticator->transport);
   ble_pairing_callback_.Run(
       *ephemeral_state_.selected_authenticator_id_, base::UTF16ToUTF8(pin),
       base::BindOnce(&AuthenticatorRequestDialogModel::OnPairingSuccess,
@@ -325,7 +325,7 @@ void AuthenticatorRequestDialogModel::OnPairingSuccess() {
   if (!authenticator)
     return;
 
-  authenticator->SetIsPaired(true /* is_paired */);
+  authenticator->is_paired = true;
   DCHECK(ble_device_paired_callback_);
   ble_device_paired_callback_.Run(*ephemeral_state_.selected_authenticator_id_);
 
@@ -370,7 +370,7 @@ void AuthenticatorRequestDialogModel::HideDialogAndTryTouchId() {
   auto touch_id_authenticator_it =
       std::find_if(authenticators.begin(), authenticators.end(),
                    [](const auto& authenticator) {
-                     return authenticator.transport() ==
+                     return authenticator.transport ==
                             device::FidoTransportProtocol::kInternal;
                    });
 
@@ -544,8 +544,8 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
       *authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode(),
       authenticator.IsPaired(), authenticator.RequiresBlePairingPin());
 
-  if (authenticator_reference.is_paired() &&
-      authenticator_reference.transport() ==
+  if (authenticator_reference.is_paired &&
+      authenticator_reference.transport ==
           AuthenticatorTransport::kBluetoothLowEnergy) {
     DispatchRequestAsync(&authenticator_reference);
   }
@@ -562,12 +562,12 @@ void AuthenticatorRequestDialogModel::DispatchRequestAsync(
     AuthenticatorReference* authenticator) {
   // Dispatching to the same authenticator twice may result in unexpected
   // behavior.
-  if (authenticator->dispatched()) {
+  if (authenticator->dispatched) {
     return;
   }
 
-  DispatchRequestAsyncInternal(authenticator->authenticator_id());
-  authenticator->SetDispatched(true);
+  DispatchRequestAsyncInternal(authenticator->authenticator_id);
+  authenticator->dispatched = true;
 }
 
 void AuthenticatorRequestDialogModel::DispatchRequestAsyncInternal(
@@ -611,7 +611,7 @@ void AuthenticatorRequestDialogModel::OnAccountSelected(size_t index) {
 void AuthenticatorRequestDialogModel::SetSelectedAuthenticatorForTesting(
     AuthenticatorReference test_authenticator) {
   ephemeral_state_.selected_authenticator_id_ =
-      test_authenticator.authenticator_id();
+      test_authenticator.authenticator_id;
   ephemeral_state_.saved_authenticators_.AddAuthenticator(
       std::move(test_authenticator));
 }

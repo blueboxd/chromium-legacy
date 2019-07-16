@@ -372,6 +372,10 @@ void MultiplexRouter::SetMasterInterfaceName(const char* name) {
   connector_.SetWatcherHeapProfilerTag(name);
 }
 
+void MultiplexRouter::SetConnectionGroup(ConnectionGroup::Ref ref) {
+  connector_.SetConnectionGroup(std::move(ref));
+}
+
 InterfaceId MultiplexRouter::AssociateInterface(
     ScopedInterfaceEndpointHandle handle_to_send) {
   if (!handle_to_send.pending_association())

@@ -67,6 +67,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
+  // TODO(domfarolino): Remove these location enums when Referer header crash
+  // debugging is done.
   enum class SetHttpReferrerLocation : uint8_t {
     kCreateRedirectRequest,
     kFrameLoaderResourceRequestForReload,
@@ -89,6 +91,7 @@ class PLATFORM_EXPORT ResourceRequest final {
     kThreadableLoaderCreateAccessControlPreflightRequest,
     kThreadableLoaderPrepareCrossOriginRequest,
     kWebLocalFrameImpl,
+    kWebURLRequest,
   };
   enum class SetReferrerPolicyLocation : uint8_t {
     kAnchorElement,

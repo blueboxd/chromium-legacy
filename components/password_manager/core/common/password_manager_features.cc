@@ -86,6 +86,10 @@ const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
 const base::Feature kGenerationNoOverwrites = {
     "GenerationNoOverwrites", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables support of filling and saving on username first flow.
+const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =
     "PasswordGenerationRequirements";

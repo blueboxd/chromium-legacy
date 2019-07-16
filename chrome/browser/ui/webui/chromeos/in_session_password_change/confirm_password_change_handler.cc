@@ -37,7 +37,8 @@ ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() {
 
 void ConfirmPasswordChangeHandler::OnEvent(
     InSessionPasswordChangeManager::Event event) {
-  if (event == InSessionPasswordChangeManager::CHANGE_PASSWORD_AUTH_FAILURE) {
+  if (event ==
+      InSessionPasswordChangeManager::CRYPTOHOME_PASSWORD_CHANGE_FAILURE) {
     AllowJavascript();
     FireWebUIListener("incorrect-old-password");
   }

@@ -120,8 +120,6 @@ source_set("test_support") {
     "//components/signin/core/browser",
     "//components/signin/public/identity_manager",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/signin:test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

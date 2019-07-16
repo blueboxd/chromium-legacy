@@ -19,6 +19,7 @@
 #include "google_apis/google_api_keys.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/favicon/favicon_url.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -484,18 +485,17 @@ static NSString* gUserAgentProduct = nil;
 - (void)addScriptCommandHandler:(id<CWVScriptCommandHandler>)handler
                   commandPrefix:(NSString*)commandPrefix {
   CWVWebView* __weak weakSelf = self;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^bool(
-          const base::DictionaryValue& content, const GURL& mainDocumentURL,
-          bool userInteracting, bool isMainFrame, web::WebFrame* senderFrame) {
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
+      ^(const base::DictionaryValue& content, const GURL& mainDocumentURL,
+        bool userInteracting, web::WebFrame* senderFrame) {
         NSDictionary* nsContent = NSDictionaryFromDictionaryValue(content);
         CWVScriptCommand* command = [[CWVScriptCommand alloc]
             initWithContent:nsContent
             mainDocumentURL:net::NSURLWithGURL(mainDocumentURL)
             userInteracting:userInteracting];
-        return [handler webView:weakSelf
+        [handler webView:weakSelf
             handleScriptCommand:command
-                  fromMainFrame:isMainFrame];
+                  fromMainFrame:senderFrame->IsMainFrame()];
       });
 
   std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);

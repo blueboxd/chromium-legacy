@@ -465,7 +465,7 @@ void HTMLCanvasElement::FinalizeFrame() {
           context_->PaintRenderingResultsToCanvas(kBackBuffer);
       }
 
-      const base::TimeTicks start_time = WTF::CurrentTimeTicks();
+      const base::TimeTicks start_time = base::TimeTicks::Now();
       const scoped_refptr<CanvasResource> canvas_resource =
           ResourceProvider()->ProduceCanvasResource();
       const FloatRect src_rect(0, 0, Size().Width(), Size().Height());
@@ -975,7 +975,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
     return;
   }
 
-  base::TimeTicks start_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   double quality = kUndefinedQualityValue;
   if (!quality_argument.IsEmpty()) {
     v8::Local<v8::Value> v8_value = quality_argument.V8Value();

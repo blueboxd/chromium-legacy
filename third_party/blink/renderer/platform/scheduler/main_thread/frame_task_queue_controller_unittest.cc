@@ -155,12 +155,6 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  // Add inspector task queue.
-  task_queue = frame_task_queue_controller_->InspectorTaskQueue();
-  EXPECT_FALSE(all_task_queues.Contains(task_queue));
-  all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
-  EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
-
   // Add best effort task queue.
   task_queue = frame_task_queue_controller_->BestEffortTaskQueue();
   EXPECT_FALSE(all_task_queues.Contains(task_queue));

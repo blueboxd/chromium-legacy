@@ -423,7 +423,7 @@ void MouseEventManager::RecomputeMouseHoverState() {
   WebMouseEvent fake_mouse_move_event(WebInputEvent::kMouseMove,
                                       last_known_mouse_position_,
                                       last_known_mouse_screen_position_, button,
-                                      0, modifiers, CurrentTimeTicks());
+                                      0, modifiers, base::TimeTicks::Now());
   Vector<WebMouseEvent> coalesced_events, predicted_events;
   frame_->GetEventHandler().HandleMouseMoveEvent(
       TransformWebMouseEvent(view, fake_mouse_move_event), coalesced_events,
@@ -807,7 +807,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-        CurrentTimeTicks());
+        base::TimeTicks::Now());
     mouse_down_ = mouse_down_event;
 
     WebMouseEvent mouse_drag_event(
@@ -815,7 +815,7 @@ bool MouseEventManager::HandleDragDropIfPossible(
         WebPointerProperties::Button::kLeft, 1,
         modifiers | WebInputEvent::Modifiers::kLeftButtonDown |
             WebInputEvent::Modifiers::kIsCompatibilityEventForTouch,
-        CurrentTimeTicks());
+        base::TimeTicks::Now());
     HitTestRequest request(HitTestRequest::kReadOnly);
     MouseEventWithHitTestResults mev =
         event_handling_util::PerformMouseEventHitTest(frame_, request,

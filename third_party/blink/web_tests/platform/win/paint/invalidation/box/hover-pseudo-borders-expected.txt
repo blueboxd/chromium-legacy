@@ -23,7 +23,7 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutNGBlockFlow DIV class='hitregion'",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV class='hitregion'",
           "rect": [8, 8, 100, 100],
           "reason": "background"
         }

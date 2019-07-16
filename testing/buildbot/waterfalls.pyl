@@ -1436,7 +1436,7 @@
       },
       'VR Linux': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'additional_compile_targets': [
           'vr_common_perftests',

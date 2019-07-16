@@ -204,13 +204,11 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromMainFrame) {
   // The callback doesn't care about any of the parameters not related to
   // frames.
   auto callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& /* json */,
-            const GURL& /* origin_url */, bool /* user_is_interacting */,
-            bool is_main_frame, WebFrame* sender_frame) {
+      ^(const base::DictionaryValue& /* json */, const GURL& /* origin_url */,
+        bool /* user_is_interacting */, WebFrame* sender_frame) {
         command_received = true;
-        EXPECT_TRUE(is_main_frame);
+        EXPECT_TRUE(sender_frame->IsMainFrame());
         EXPECT_EQ(GetMainWebFrame(web_state()), sender_frame);
-        return true;
       });
 
   web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");
@@ -235,13 +233,11 @@ TEST_F(WebFrameImplIntTest, JavaScriptMessageFromFrame) {
   // The callback doesn't care about any of the parameters not related to
   // frames.
   auto callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& /* json */,
-            const GURL& /* origin_url */, bool /* user_is_interacting */,
-            bool is_main_frame, WebFrame* sender_frame) {
+      ^(const base::DictionaryValue& /* json */, const GURL& /* origin_url */,
+        bool /* user_is_interacting */, WebFrame* sender_frame) {
         command_received = true;
-        EXPECT_FALSE(is_main_frame);
+        EXPECT_FALSE(sender_frame->IsMainFrame());
         EXPECT_EQ(GetChildWebFrameForWebState(web_state()), sender_frame);
-        return true;
       });
 
   web_state()->AddScriptCommandCallback(callback, "senderFrameTestCommand");

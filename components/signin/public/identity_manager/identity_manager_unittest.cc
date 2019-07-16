@@ -17,14 +17,14 @@
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/image_fetcher/core/fake_image_decoder.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/primary_account_manager.h"
-#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
+#include "components/signin/internal/identity_manager/account_fetcher_service.h"
+#include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/primary_account_manager.h"
+#include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/signin/public/base/signin_switches.h"
@@ -47,7 +47,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
-#include "components/signin/core/browser/child_account_info_fetcher_android.h"
+#include "components/signin/internal/identity_manager/child_account_info_fetcher_android.h"
 #endif
 
 namespace identity {

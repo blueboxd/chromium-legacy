@@ -62,8 +62,16 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
  public:
   // Events in the in-session SAML password change flow.
   enum Event {
-    CHANGE_PASSWORD_AUTH_FAILURE,
-    // TODO(https://crbug.com/930109): Add more useful events.
+    // Dialog is open showing third-party IdP SAML password change page:
+    START_SAML_IDP_PASSWORD_CHANGE,
+    // Third party IdP SAML password is changed (but not cryptohome yet):
+    SAML_IDP_PASSWORD_CHANGED,
+    // Async call to change cryptohome password is started:
+    START_CRYPTOHOME_PASSWORD_CHANGE,
+    // Change of cryptohome password failed - wrong old password:
+    CRYPTOHOME_PASSWORD_CHANGE_FAILURE,
+    // Change of cryptohome password complete. In session PW change complete.
+    CRYPTOHOME_PASSWORD_CHANGED,
   };
 
   // Observers of InSessionPasswordChangeManager are notified of certain events.

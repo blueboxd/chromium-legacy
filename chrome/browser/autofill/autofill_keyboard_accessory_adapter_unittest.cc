@@ -5,7 +5,6 @@
 #include <cstddef>
 
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -52,20 +51,13 @@ class MockAccessoryView
   DISALLOW_COPY_AND_ASSIGN(MockAccessoryView);
 };
 
-Suggestion createPasswordEntry(std::string password,
-                               std::string username,
-                               std::string psl_origin) {
-  Suggestion s(/*value=*/username, /*label=*/psl_origin, /*icon=*/"",
-               PopupItemId::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
-  s.additional_label = ASCIIToUTF16(password);
-  return s;
-}
-
 std::vector<Suggestion> createSuggestions() {
   std::vector<Suggestion> suggestions = {
-      createPasswordEntry("****************", "Alf", ""),
-      createPasswordEntry("****************", "Berta", "psl.origin.eg"),
-      createPasswordEntry("***", "Carl", "")};
+      Suggestion("*", "A", "", PopupItemId::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY),
+      Suggestion("**", "", "", PopupItemId::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY),
+      Suggestion("***", "C", "",
+                 PopupItemId::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)};
+  suggestions[1].additional_label = ASCIIToUTF16("B");
   return suggestions;
 }
 
@@ -182,19 +174,14 @@ TEST_F(AutofillKeyboardAccessoryAdapterTest, ReorderUpdatedSuggestions) {
 }
 
 TEST_F(AutofillKeyboardAccessoryAdapterTest, UseAdditionalLabelForElidedLabel) {
-  controller()->set_suggestions(createSuggestions(/*clearItemOffset=*/1));
+  controller()->set_suggestions(createSuggestions());
   NotifyAboutSuggestions();
 
-  // If there is a label, use it but cap at 8 bullets.
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(0),
-            ASCIIToUTF16("********"));
+  // If there is a label, use it.
+  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(0), ASCIIToUTF16("A"));
 
   // If the label is empty, use the additional label:
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(1),
-            ASCIIToUTF16("psl.origin.eg ********"));
-
-  // If the password has less than 8 bullets, show the exact amount.
-  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(2), ASCIIToUTF16("***"));
+  EXPECT_EQ(adapter_as_controller()->GetElidedLabelAt(1), ASCIIToUTF16("B"));
 }
 
 TEST_F(AutofillKeyboardAccessoryAdapterTest, ProvideReorderedSuggestions) {

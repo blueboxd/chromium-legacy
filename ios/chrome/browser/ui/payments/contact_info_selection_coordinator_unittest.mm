@@ -30,6 +30,7 @@ class PaymentRequestContactInfoSelectionCoordinatorTest
  protected:
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     // One profile is incomplete.
@@ -40,7 +41,10 @@ class PaymentRequestContactInfoSelectionCoordinatorTest
   }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 };
 
 // Tests that invoking start and stop on the coordinator presents and dismisses

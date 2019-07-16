@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/rolling_time_delta_history.h"
 
@@ -207,18 +207,16 @@ void CompositorFrameReporter::ReportHistogram(
   CHECK_GE(histogram_index, 0);
 
   const char* compositor_type = is_single_threaded_ ? "SingleThreaded" : "";
+  const std::string name =
+      base::StrCat({compositor_type, "CompositorLatency.",
+                    kReportTypeNames[static_cast<int>(report_type)],
+                    kStageNames[static_cast<int>(stage_type)]});
 
   STATIC_HISTOGRAM_POINTER_GROUP(
-      base::StringPrintf("%s%s%s%s", compositor_type, "CompositorLatency.",
-                         kReportTypeNames[static_cast<int>(report_type)],
-                         kStageNames[static_cast<int>(stage_type)]),
-      histogram_index, kMaxHistogramIndex,
+      name, histogram_index, kMaxHistogramIndex,
       AddTimeMicrosecondsGranularity(time_delta),
       base::Histogram::FactoryGet(
-          base::StringPrintf("%s%s%s%s", compositor_type, "CompositorLatency.",
-                             kReportTypeNames[static_cast<int>(report_type)],
-                             kStageNames[static_cast<int>(stage_type)]),
-          kHistogramMin, kHistogramMax, kHistogramBucketCount,
+          name, kHistogramMin, kHistogramMax, kHistogramBucketCount,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 

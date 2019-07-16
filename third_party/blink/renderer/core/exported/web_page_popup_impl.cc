@@ -370,7 +370,7 @@ void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time, bool) {
     return;
   // FIXME: This should use lastFrameTimeMonotonic but doing so
   // breaks tests.
-  PageWidgetDelegate::Animate(*page_, CurrentTimeTicks());
+  PageWidgetDelegate::Animate(*page_, base::TimeTicks::Now());
 }
 
 void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,

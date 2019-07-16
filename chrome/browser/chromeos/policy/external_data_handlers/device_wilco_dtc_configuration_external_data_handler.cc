@@ -34,14 +34,18 @@ DeviceWilcoDtcConfigurationExternalDataHandler::
 
 void DeviceWilcoDtcConfigurationExternalDataHandler::
     OnDeviceExternalDataCleared(const std::string& policy) {
-  GetWilcoDtcSupportdManager()->SetConfigurationData(nullptr);
+  auto* wilco_manager = GetWilcoDtcSupportdManager();
+  if (wilco_manager)
+    wilco_manager->SetConfigurationData(nullptr);
 }
 
 void DeviceWilcoDtcConfigurationExternalDataHandler::
     OnDeviceExternalDataFetched(const std::string& policy,
                                 std::unique_ptr<std::string> data,
                                 const base::FilePath& file_path) {
-  GetWilcoDtcSupportdManager()->SetConfigurationData(std::move(data));
+  auto* wilco_manager = GetWilcoDtcSupportdManager();
+  if (wilco_manager)
+    wilco_manager->SetConfigurationData(std::move(data));
 }
 
 void DeviceWilcoDtcConfigurationExternalDataHandler::Shutdown() {

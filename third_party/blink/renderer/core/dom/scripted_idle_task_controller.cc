@@ -54,7 +54,7 @@ class IdleRequestCallbackWrapper
       scoped_refptr<IdleRequestCallbackWrapper> callback_wrapper) {
     if (ScriptedIdleTaskController* controller =
             callback_wrapper->Controller()) {
-      controller->CallbackFired(callback_wrapper->Id(), CurrentTimeTicks(),
+      controller->CallbackFired(callback_wrapper->Id(), base::TimeTicks::Now(),
                                 IdleDeadline::CallbackType::kCalledByTimeout);
     }
     callback_wrapper->Cancel();
@@ -205,7 +205,7 @@ void ScriptedIdleTaskController::RunCallback(
   IdleTask* idle_task = queued_idle_task->task();
   DCHECK(idle_task);
 
-  base::TimeTicks now = CurrentTimeTicks();
+  base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta allotted_time = std::max(deadline - now, base::TimeDelta());
 
   probe::AsyncTask async_task(GetExecutionContext(), idle_task);
@@ -252,7 +252,7 @@ void ScriptedIdleTaskController::ContextUnpaused() {
   Vector<CallbackId> pending_timeouts;
   pending_timeouts_.swap(pending_timeouts);
   for (auto& id : pending_timeouts)
-    RunCallback(id, CurrentTimeTicks(),
+    RunCallback(id, base::TimeTicks::Now(),
                 IdleDeadline::CallbackType::kCalledByTimeout);
 
   // Repost idle tasks for any remaining callbacks.

@@ -6604,14 +6604,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
-// Flaky on Linux. See https://crbug.com/980564
-#if defined(OS_LINUX)
-#define MAYBE_PointerEventsNoneOOPIF DISABLED_PointerEventsNoneOOPIF
-#else
-#define MAYBE_PointerEventsNoneOOPIF PointerEventsNoneOOPIF
-#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
-                       MAYBE_PointerEventsNoneOOPIF) {
+                       PointerEventsNoneOOPIF) {
   auto hit_test_data = SetupAndGetHitTestData(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html", 0);
   float device_scale_factor = current_device_scale_factor();
@@ -6644,12 +6638,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
       expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
   EXPECT_EQ(flags, hit_test_data[2].flags);
 
-  // Check that an update on the css property can trigger an update in submitted
-  // hit test data.
-  EXPECT_TRUE(ExecuteScript(web_contents(),
-                            "document.getElementsByTagName('iframe')[0].style."
-                            "pointerEvents = 'auto';\n"));
-
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
                             ->root();
@@ -6658,30 +6646,22 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  {
-    MainThreadFrameObserver observer(
-        root->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
-  {
-    MainThreadFrameObserver observer(
-        root->child_at(0)->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
-  {
-    MainThreadFrameObserver observer(
-        root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
+  HitTestRegionObserver hit_test_data_change_observer(
+      rwhv_root->GetRootFrameSinkId());
+  hit_test_data_change_observer.WaitForHitTestData();
 
-  WaitForHitTestDataOrChildSurfaceReady(
-      root->child_at(0)->current_frame_host());
-  WaitForHitTestDataOrChildSurfaceReady(
-      root->child_at(1)->current_frame_host());
+  // Check that an update on the css property can trigger an update in submitted
+  // hit test data.
+  EXPECT_TRUE(ExecuteScript(web_contents(),
+                            "document.getElementsByTagName('iframe')[0].style."
+                            "pointerEvents = 'auto';\n"));
+  MainThreadFrameObserver observer(
+      root->current_frame_host()->GetRenderWidgetHost());
+  observer.Wait();
 
-  HitTestRegionObserver observer(rwhv_root->GetRootFrameSinkId());
-  observer.WaitForHitTestData();
-  hit_test_data = observer.GetHitTestData();
+  hit_test_data_change_observer.WaitForHitTestDataChange();
+  hit_test_data = hit_test_data_change_observer.GetHitTestData();
+
   ASSERT_EQ(4u, hit_test_data.size());
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
@@ -6696,6 +6676,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
   EXPECT_TRUE(
       expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
+  // Hit test region with pointer-events: none is marked as kHitTestIgnore. The
+  // JavaScript above sets the element's pointer-events to 'auto' therefore
+  // kHitTestIgnore should be removed from the flag.
   if (features::IsVizHitTestingSurfaceLayerEnabled()) {
     EXPECT_EQ(kFastHitTestFlags, hit_test_data[3].flags);
   } else {

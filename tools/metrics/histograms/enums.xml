@@ -33869,6 +33869,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1755301960" label="ClearOldBrowsingData:enabled"/>
   <int value="-1753458842" label="OfflinePagesLivePageSharing:disabled"/>
   <int value="-1751928267" label="disable-icon-ntp"/>
+  <int value="-1750008152" label="UsernameFirstFlow:enabled"/>
   <int value="-1749176684" label="PauseBackgroundTabs:disabled"/>
   <int value="-1746767834" label="ssl-interstitial-v2-gray"/>
   <int value="-1746255521" label="NewOverviewUi:enabled"/>
@@ -34012,6 +34013,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1544248549" label="ArcUseAuthEndpoint:enabled"/>
   <int value="-1543316040"
       label="DisplayPersistenceToggleInPermissionPrompts:disabled"/>
+  <int value="-1541187160" label="UsernameFirstFlow:disabled"/>
   <int value="-1538492024" label="OmniboxReverseAnswers:enabled"/>
   <int value="-1537773844"
       label="ContextualSuggestionsAlternateCardLayout:disabled"/>
@@ -58406,6 +58408,7 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Password"/>
   <int value="1" label="Pin"/>
   <int value="2" label="Fingerprint"/>
+  <int value="3" label="Challenge-response security token"/>
 </enum>
 
 <enum name="UnPackStatus">

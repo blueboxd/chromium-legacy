@@ -49,13 +49,13 @@ void* AsyncId(void* task) {
 
 base::TimeTicks ProbeBase::CaptureStartTime() const {
   if (start_time_.is_null())
-    start_time_ = CurrentTimeTicks();
+    start_time_ = base::TimeTicks::Now();
   return start_time_;
 }
 
 base::TimeTicks ProbeBase::CaptureEndTime() const {
   if (end_time_.is_null())
-    end_time_ = CurrentTimeTicks();
+    end_time_ = base::TimeTicks::Now();
   return end_time_;
 }
 

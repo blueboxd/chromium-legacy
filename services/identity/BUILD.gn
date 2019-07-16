@@ -18,7 +18,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/signin/core/browser:internals",
     "//components/signin/public/base",
     "//components/signin/public/identity_manager",
     "//google_apis",

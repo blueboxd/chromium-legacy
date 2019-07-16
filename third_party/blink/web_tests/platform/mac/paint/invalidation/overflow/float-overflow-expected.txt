@@ -158,32 +158,32 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 504, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 498, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 465, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 459, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 426, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 420, 50, 10],
           "reason": "geometry"
         },
@@ -198,82 +198,82 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 177, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 171, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 138, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 132, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 99, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 93, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 60, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 54, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 21, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 15, 50, 10],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGTableCell TD",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
           "rect": [69, 374, 42, 12],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGTableCell TD",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
           "rect": [69, 368, 42, 12],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGTableCell TD",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
           "rect": [69, 335, 42, 12],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGTableCell TD",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
           "rect": [69, 329, 42, 12],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGTableCell TD",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
           "rect": [69, 296, 42, 12],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGTableCell TD",
+          "object": "NGPhysicalBoxFragment LayoutNGTableCell TD",
           "rect": [69, 290, 42, 12],
           "reason": "geometry"
         },
@@ -418,12 +418,12 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 543, 32, 20],
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow DIV",
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [67, 537, 32, 20],
           "reason": "geometry"
         },

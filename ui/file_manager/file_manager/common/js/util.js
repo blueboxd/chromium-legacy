@@ -1289,15 +1289,14 @@ util.validateFileName = (parentEntry, name, filterHiddenOn) => {
  * It also verifies that name length is in the limits of the filesystem.
  *
  * @param {string} name New external drive name.
- * @param {!VolumeInfo} volumeInfo
+ * @param {!VolumeManagerCommon.FileSystemType} fileSystem
  * @return {Promise} Promise fulfilled on success, or rejected with the error
  *     message.
  */
-util.validateExternalDriveName = (name, volumeInfo) => {
+util.validateExternalDriveName = (name, fileSystem) => {
   // Verify if entered name for external drive respects restrictions provided by
   // the target filesystem
 
-  const fileSystem = volumeInfo.diskFileSystemType;
   const nameLength = name.length;
   const lengthLimit = VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit;
 

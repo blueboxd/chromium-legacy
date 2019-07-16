@@ -11,10 +11,10 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -88,7 +88,7 @@ std::string FormSignatureToDebugString(autofill::FormSignature form_signature) {
 }  // namespace
 
 BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
-    const LogManager* log_manager)
+    const autofill::LogManager* log_manager)
     : log_manager_(log_manager) {
   DCHECK(log_manager_);
 }

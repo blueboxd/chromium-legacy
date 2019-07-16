@@ -30,16 +30,15 @@ JsWindowErrorManager::~JsWindowErrorManager() {
   web_state_impl_->RemoveScriptCommandCallback(kCommandPrefix);
 }
 
-bool JsWindowErrorManager::OnJsMessage(const base::DictionaryValue& message,
+void JsWindowErrorManager::OnJsMessage(const base::DictionaryValue& message,
                                        const GURL& page_url,
-                                       bool has_user_gesture,
-                                       bool form_in_main_frame,
+                                       bool user_is_interacting,
                                        WebFrame* sender_frame) {
   DCHECK(sender_frame->IsMainFrame());
   std::string error_message;
   if (!message.GetString("message", &error_message)) {
     DLOG(WARNING) << "JS message parameter not found: message";
-    return NO;
+    return;
   }
   web::URLVerificationTrustLevel trust_level =
       web::URLVerificationTrustLevel::kNone;
@@ -47,8 +46,6 @@ bool JsWindowErrorManager::OnJsMessage(const base::DictionaryValue& message,
 
   DLOG(ERROR) << "JavaScript error: " << error_message
               << " URL:" << current_url.spec();
-
-  return true;
 }
 
 }  // namespace web

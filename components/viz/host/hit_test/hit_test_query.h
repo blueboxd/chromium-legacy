@@ -13,10 +13,6 @@
 #include "components/viz/host/viz_host_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
-namespace content {
-class HitTestRegionObserver;
-}
-
 namespace viz {
 
 struct Target {
@@ -110,6 +106,9 @@ class VIZ_HOST_EXPORT HitTestQuery {
 
   // Returns hit-test data, using indentation to visualize the tree structure.
   std::string PrintHitTestData() const;
+  const std::vector<AggregatedHitTestRegion>& GetHitTestData() const {
+    return hit_test_data_;
+  }
 
  protected:
   // The FindTargetForLocation() functions call into this.
@@ -123,8 +122,6 @@ class VIZ_HOST_EXPORT HitTestQuery {
       bool is_location_relative_to_parent) const;
 
  private:
-  friend class content::HitTestRegionObserver;
-
   // Helper function to find |target| for |location| in the |region_index|,
   // returns true if a target is found and false otherwise. If
   // |is_location_relative_to_parent| is true, |location| is in the coordinate

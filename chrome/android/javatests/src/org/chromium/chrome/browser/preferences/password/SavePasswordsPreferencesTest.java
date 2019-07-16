@@ -303,7 +303,7 @@ public class SavePasswordsPreferencesTest {
         } catch (Exception NoMatchingViewException) {
             openActionBarOverflowOrOptionsMenu(
                     InstrumentationRegistry.getInstrumentation().getTargetContext());
-            return withText(R.string.password_entry_editor_edit_stored_password_action_title);
+            return withText(R.string.password_entry_viewer_edit_stored_password_action_title);
         }
     }
 
@@ -1408,9 +1408,9 @@ public class SavePasswordsPreferencesTest {
 
         View mainDecorView = preferences.getWindow().getDecorView();
         Espresso.onView(withText(containsString("test user"))).perform(click());
-        Espresso.onView(withContentDescription(R.string.password_entry_editor_copy_stored_password))
+        Espresso.onView(withContentDescription(R.string.password_entry_viewer_copy_stored_password))
                 .perform(click());
-        Espresso.onView(withText(R.string.password_entry_editor_set_lock_screen))
+        Espresso.onView(withText(R.string.password_entry_viewer_set_lock_screen))
                 .inRoot(withDecorView(not(is(mainDecorView))))
                 .check(matches(isDisplayed()));
     }
@@ -1439,7 +1439,7 @@ public class SavePasswordsPreferencesTest {
         // happened. This will allow showing the password.
         ReauthenticationManager.recordLastReauth(
                 System.currentTimeMillis(), ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
-        Espresso.onView(withContentDescription(R.string.password_entry_editor_view_stored_password))
+        Espresso.onView(withContentDescription(R.string.password_entry_viewer_view_stored_password))
                 .perform(click());
         Espresso.onView(withText("test password")).check(matches(isDisplayed()));
     }
@@ -1876,7 +1876,7 @@ public class SavePasswordsPreferencesTest {
         monitor.waitForActivityWithTimeout(UI_UPDATING_TIMEOUT_MS);
         Assert.assertEquals("Monitor for has not been called", 1, monitor.getHits());
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
-        Espresso.onView(withContentDescription(R.string.password_entry_editor_view_stored_password))
+        Espresso.onView(withContentDescription(R.string.password_entry_viewer_view_stored_password))
                 .perform(click());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 

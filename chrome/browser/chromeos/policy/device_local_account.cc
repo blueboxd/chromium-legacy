@@ -29,6 +29,7 @@ namespace {
 const char kPublicAccountDomainPrefix[] = "public-accounts";
 const char kKioskAppAccountDomainPrefix[] = "kiosk-apps";
 const char kArcKioskAppAccountDomainPrefix[] = "arc-kiosk-apps";
+const char kSAMLPublicAccountDomainPrefix[] = "saml-public-accounts";
 const char kDeviceLocalAccountDomainSuffix[] = ".device-local.localhost";
 
 }  // namespace
@@ -94,6 +95,9 @@ std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,
     case DeviceLocalAccount::TYPE_ARC_KIOSK_APP:
       domain_prefix = kArcKioskAppAccountDomainPrefix;
       break;
+    case DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION:
+      domain_prefix = kSAMLPublicAccountDomainPrefix;
+      break;
     case DeviceLocalAccount::TYPE_COUNT:
       NOTREACHED();
       break;
@@ -132,6 +136,11 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
       *type = DeviceLocalAccount::TYPE_ARC_KIOSK_APP;
     return true;
   }
+  if (domain_prefix == kSAMLPublicAccountDomainPrefix) {
+    if (type)
+      *type = DeviceLocalAccount::TYPE_SAML_PUBLIC_SESSION;
+    return true;
+  }
 
   // |user_id| is a device-local account but its type is not recognized.
   NOTREACHED();
@@ -142,6 +151,7 @@ bool IsDeviceLocalAccountUser(const std::string& user_id,
 
 void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
                             const std::vector<DeviceLocalAccount>& accounts) {
+  // TODO(https://crbug.com/984021): handle TYPE_SAML_PUBLIC_SESSION
   base::ListValue list;
   for (std::vector<DeviceLocalAccount>::const_iterator it = accounts.begin();
        it != accounts.end(); ++it) {
@@ -186,6 +196,7 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
 
 std::vector<DeviceLocalAccount> GetDeviceLocalAccounts(
     chromeos::CrosSettings* cros_settings) {
+  // TODO(https://crbug.com/984021): handle TYPE_SAML_PUBLIC_SESSION
   std::vector<DeviceLocalAccount> accounts;
 
   const base::ListValue* list = NULL;

@@ -80,6 +80,7 @@ class PaymentRequestCoordinatorTest : public PaymentRequestUnitTestBase,
  protected:
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     autofill::AutofillProfile profile = autofill::test::GetFullProfile();
@@ -92,7 +93,10 @@ class PaymentRequestCoordinatorTest : public PaymentRequestUnitTestBase,
   }
 
   // PlatformTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    PlatformTest::TearDown();
+  }
 };
 
 // Tests that invoking start and stop on the coordinator presents and

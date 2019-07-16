@@ -248,29 +248,15 @@ class WebState : public base::SupportsUserData {
   // Returns the currently visible WebInterstitial if one is shown.
   virtual WebInterstitial* GetWebInterstitial() const = 0;
 
-  // Callback used to handle script commands.
-  // The callback must return true if the command was handled, and false
-  // otherwise.
-  // In particular the callback must return false if the command is unexpected
-  // or ill-formatted.
-  // The first parameter is the content of the command, the second parameter is
-  // the URL of the page, the third parameter is a bool indicating if the
-  // user is currently interacting with the page, the fourth parameter indicates
-  // if the message was sent from the main frame.
-  // The fifth parameter is the frame that sent the message. If frame messaging
-  // is not supported, its value will always be null (see
-  // |CRWWebController frameBecameAvailableWithMessage:|, and javascript
-  // function isFrameMessagingSupported_ for details).
-  // TODO(crbug.com/881811): remove the fourth parameter indicating if message
-  // has been sent from main frame once frame messaging is fully enabled.
-  // TODO(crbug.com/881813): remove the second parameter indicating the URL
-  // of the main frame.
-  // TODO(crbug.com/881816): Update comment once WebFrame cannot be null.
-  typedef base::RepeatingCallback<bool(const base::DictionaryValue&,
-                                       const GURL&,
-                                       bool,
-                                       bool,
-                                       web::WebFrame*)>
+  // Callback used to handle script commands. |message| is the JS message sent
+  // from the |sender_frame| in the page, |page_url| is the URL of page's main
+  // frame, |user_is_interacting| indicates if the user is interacting with the
+  // page.
+  // TODO(crbug.com/881813): remove |page_url|.
+  typedef base::RepeatingCallback<void(const base::DictionaryValue& message,
+                                       const GURL& page_url,
+                                       bool user_is_interacting,
+                                       web::WebFrame* sender_frame)>
       ScriptCommandCallback;
 
   // Registers a callback that will be called when a command matching

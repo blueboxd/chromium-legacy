@@ -122,7 +122,7 @@ ScriptElementBase* PendingScript::GetElement() const {
 
 void PendingScript::MarkParserBlockingLoadStartTime() {
   DCHECK(parser_blocking_load_start_time_.is_null());
-  parser_blocking_load_start_time_ = CurrentTimeTicks();
+  parser_blocking_load_start_time_ = base::TimeTicks::Now();
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#execute-the-script-block">
@@ -207,14 +207,14 @@ void PendingScript::ExecuteScriptBlockInternal(
   if (parser_blocking_load_start_time > base::TimeTicks()) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptLoadDuration(
-            CurrentTimeTicks() - parser_blocking_load_start_time,
+            base::TimeTicks::Now() - parser_blocking_load_start_time,
             created_during_document_write);
   }
 
   if (was_canceled)
     return;
 
-  base::TimeTicks script_exec_start_time = CurrentTimeTicks();
+  base::TimeTicks script_exec_start_time = base::TimeTicks::Now();
 
   {
     if (element->ElementHasDuplicateAttributes()) {
@@ -292,7 +292,7 @@ void PendingScript::ExecuteScriptBlockInternal(
   if (!is_controlled_by_script_runner) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptExecutionDuration(
-            CurrentTimeTicks() - script_exec_start_time,
+            base::TimeTicks::Now() - script_exec_start_time,
             created_during_document_write);
   }
 

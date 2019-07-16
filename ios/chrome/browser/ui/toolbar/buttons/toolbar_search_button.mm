@@ -28,11 +28,6 @@ const CGFloat kSpotlightHeight = 38.0f;
   [super setDimmed:dimmed];
 
   self.spotlightView.hidden = dimmed && !self.spotlighted;
-  if (!dimmed) {
-    // Override the color of the non-dimmed button.
-    self.spotlightView.backgroundColor =
-        [self.configuration locationBarBackgroundColorWithVisibility:1];
-  }
 }
 
 - (void)setSpotlighted:(BOOL)spotlighted {
@@ -47,8 +42,7 @@ const CGFloat kSpotlightHeight = 38.0f;
   spotlightView.translatesAutoresizingMaskIntoConstraints = NO;
   spotlightView.userInteractionEnabled = NO;
   spotlightView.layer.cornerRadius = kSpotlightHeight / 2;
-  spotlightView.backgroundColor =
-      [self.configuration locationBarBackgroundColorWithVisibility:1];
+  spotlightView.backgroundColor = self.configuration.buttonsSpotlightColor;
   // Make sure that the spotlightView is below the image to avoid changing the
   // color of the image.
   [self insertSubview:spotlightView belowSubview:self.imageView];

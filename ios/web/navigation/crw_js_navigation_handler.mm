@@ -69,12 +69,11 @@ GURL URLEscapedForHistory(const GURL& url) {
     _delegate = delegate;
 
     __weak CRWJSNavigationHandler* weakSelf = self;
-    auto navigationStateCallback = ^bool(const base::DictionaryValue& message,
-                                         const GURL&, bool /* is_main_frame */,
-                                         bool /* user_is_interacting */,
-                                         web::WebFrame* senderFrame) {
+    auto navigationStateCallback = ^(
+        const base::DictionaryValue& message, const GURL&,
+        bool /* user_is_interacting */, web::WebFrame* senderFrame) {
       if (!senderFrame->IsMainFrame())
-        return false;
+        return;
 
       const std::string* command = message.FindStringKey("command");
       DCHECK(command);
@@ -90,10 +89,7 @@ GURL URLEscapedForHistory(const GURL& url) {
                                                  inFrame:senderFrame];
       } else if (*command == "navigation.goDelta") {
         [weakSelf handleNavigationGoDeltaMessage:message inFrame:senderFrame];
-      } else {
-        return false;
       }
-      return true;
     };
 
     self.webStateImpl->AddScriptCommandCallback(

@@ -752,6 +752,25 @@ TEST_P(NodeInsertTest, NeedsCollectInlinesOnInsert) {
   EXPECT_FALSE(next->GetLayoutObject()->NeedsCollectInlines());
 }
 
+TEST_F(NGInlineNodeTest, NeedsCollectInlinesOnInsertToOutOfFlowButton) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #xflex { display: flex; }
+    </style>
+    <div id="container">
+      <button id="flex" style="position: absolute"></button>
+    </div>
+  )HTML");
+
+  Element* container = GetElementById("container");
+  Element* parent = ElementTraversal::FirstChild(*container);
+  Element* child = GetDocument().CreateRawElement(html_names::kDivTag);
+  parent->appendChild(child);
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  EXPECT_FALSE(container->GetLayoutObject()->NeedsCollectInlines());
+}
+
 class NodeRemoveTest : public NGInlineNodeTest,
                        public testing::WithParamInterface<const char*> {};
 

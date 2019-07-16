@@ -18,7 +18,7 @@ using blink::mojom::ServiceWorkerResponseError;
 namespace blink {
 
 void RespondWithObserver::WillDispatchEvent() {
-  event_dispatch_time_ = WTF::CurrentTimeTicks();
+  event_dispatch_time_ = base::TimeTicks::Now();
 }
 
 void RespondWithObserver::DidDispatchEvent(

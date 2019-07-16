@@ -353,6 +353,7 @@ class Generator(generator.Generator):
       "is_enum_kind": mojom.IsEnumKind,
       "is_integral_kind": mojom.IsIntegralKind,
       "is_interface_kind": mojom.IsInterfaceKind,
+      "is_receiver_kind": self._IsReceiverKind,
       "is_native_only_kind": IsNativeOnlyKind,
       "is_any_handle_kind": mojom.IsAnyHandleKind,
       "is_any_interface_kind": mojom.IsAnyInterfaceKind,
@@ -642,6 +643,10 @@ class Generator(generator.Generator):
     if mojom.IsAnyHandleOrInterfaceKind(kind):
       return True
     return False
+
+  def _IsReceiverKind(self, kind):
+    return (mojom.IsPendingReceiverKind(kind) or
+            mojom.IsInterfaceRequestKind(kind))
 
   def _IsCopyablePassByValue(self, kind):
     if not self._IsTypemappedKind(kind):

@@ -110,8 +110,6 @@ source_set("test_support") {
     "authentication_service_delegate_fake.mm",
     "authentication_service_fake.h",
     "authentication_service_fake.mm",
-    "identity_test_environment_chrome_browser_state_adaptor.cc",
-    "identity_test_environment_chrome_browser_state_adaptor.h",
   ]
   deps = [
     ":signin",

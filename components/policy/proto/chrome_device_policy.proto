@@ -403,6 +403,8 @@ message DeviceLocalAccountInfoProto {
     // An account that serves as a container for a single full-screen
     // Android app.
     ACCOUNT_TYPE_KIOSK_ANDROID_APP = 2;
+    // SAML public session account
+    ACCOUNT_TYPE_SAML_PUBLIC_SESSION = 3;
   }
 
   // The account type.

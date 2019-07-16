@@ -177,15 +177,15 @@ base::TimeDelta ThreadHeapStatsCollector::Event::incremental_marking_time()
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::atomic_marking_time() const {
-  return scope_data[kStandAloneAtomicMarking] +
-         scope_data[kUnifiedAtomicMarkingPrologue] +
-         scope_data[kUnifiedAtomicMarkingEpilogue] +
-         scope_data[kUnifiedAtomicMarkingTransitiveClosure];
+  return scope_data[kAtomicPauseMarkPrologue] +
+         scope_data[kAtomicPauseMarkRoots] +
+         scope_data[kAtomicPauseMarkTransitiveClosure] +
+         scope_data[kAtomicPauseMarkEpilogue];
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::atomic_sweep_and_compact_time()
     const {
-  return scope_data[ThreadHeapStatsCollector::kAtomicSweepAndCompact];
+  return scope_data[ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact];
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
@@ -203,7 +203,7 @@ base::TimeDelta ThreadHeapStatsCollector::Event::gc_cycle_time() const {
   // scope if they are nested in a V8 scope.
   return incremental_marking_time() + atomic_marking_time() +
          atomic_sweep_and_compact_time() +
-         scope_data[ThreadHeapStatsCollector::kAtomicSweepAndCompact] +
+         scope_data[ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact] +
          scope_data[ThreadHeapStatsCollector::kCompleteSweep] +
          scope_data[ThreadHeapStatsCollector::kLazySweepInIdle] +
          scope_data[ThreadHeapStatsCollector::kLazySweepOnAllocation];

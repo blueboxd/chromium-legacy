@@ -60,7 +60,7 @@ const double kIdleTaskCompleteTimeoutDelayMs = 9000.0;
 #endif
 
 bool IsCreateBlobDeadlineNearOrPassed(base::TimeTicks deadline) {
-  return CurrentTimeTicks() >= deadline - kCreateBlobSlackBeforeDeadline;
+  return base::TimeTicks::Now() >= deadline - kCreateBlobSlackBeforeDeadline;
 }
 
 bool IsEncodeRowDeadlineNearOrPassed(base::TimeTicks deadline,
@@ -71,7 +71,7 @@ bool IsEncodeRowDeadlineNearOrPassed(base::TimeTicks deadline,
                            (image_width / 4000.0);
   base::TimeDelta row_encode_time_delta =
       base::TimeDelta::FromMicroseconds(row_encode_time_us);
-  return CurrentTimeTicks() >=
+  return base::TimeTicks::Now() >=
          deadline - row_encode_time_delta - kEncodeRowSlackBeforeDeadline;
 }
 
@@ -343,7 +343,7 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
 }
 
 void CanvasAsyncBlobCreator::ScheduleInitiateEncoding(double quality) {
-  schedule_idle_task_start_time_ = WTF::CurrentTimeTicks();
+  schedule_idle_task_start_time_ = base::TimeTicks::Now();
   ThreadScheduler::Current()->PostIdleTask(
       FROM_HERE, WTF::Bind(&CanvasAsyncBlobCreator::InitiateEncoding,
                            WrapPersistent(this), quality));
@@ -355,7 +355,7 @@ void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
     return;
   }
   RecordInitiateEncodingTimeHistogram(
-      mime_type_, WTF::CurrentTimeTicks() - schedule_idle_task_start_time_);
+      mime_type_, base::TimeTicks::Now() - schedule_idle_task_start_time_);
 
   DCHECK(idle_task_status_ == kIdleTaskNotStarted);
   idle_task_status_ = kIdleTaskStarted;
@@ -366,7 +366,7 @@ void CanvasAsyncBlobCreator::InitiateEncoding(double quality,
   }
 
   // Re-use this time variable to collect data on complete encoding delay
-  schedule_idle_task_start_time_ = WTF::CurrentTimeTicks();
+  schedule_idle_task_start_time_ = base::TimeTicks::Now();
   IdleEncodeRows(deadline);
 }
 
@@ -394,7 +394,7 @@ void CanvasAsyncBlobCreator::IdleEncodeRows(base::TimeTicks deadline) {
 
   idle_task_status_ = kIdleTaskCompleted;
   base::TimeDelta elapsed_time =
-      WTF::CurrentTimeTicks() - schedule_idle_task_start_time_;
+      base::TimeTicks::Now() - schedule_idle_task_start_time_;
   RecordCompleteEncodingTimeHistogram(mime_type_, elapsed_time);
   if (IsCreateBlobDeadlineNearOrPassed(deadline)) {
     context_->GetTaskRunner(TaskType::kCanvasBlobSerialization)
@@ -451,7 +451,7 @@ void CanvasAsyncBlobCreator::CreateBlobAndReturnResult() {
   }
 
   RecordScaledDurationHistogram(mime_type_,
-                                WTF::CurrentTimeTicks() - start_time_,
+                                base::TimeTicks::Now() - start_time_,
                                 image_->width(), image_->height());
   // Avoid unwanted retention, see dispose().
   Dispose();

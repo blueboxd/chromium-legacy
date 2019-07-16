@@ -35,7 +35,7 @@ class UrlIndex;
 // A callback that generates a std::unique_ptr<BookmarkPermanentNode>, given a
 // max ID to use. The max ID argument will be updated after if a new node has
 // been created and assigned an ID.
-using LoadExtraCallback =
+using LoadManagedNodeCallback =
     base::OnceCallback<std::unique_ptr<BookmarkPermanentNode>(int64_t*)>;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
@@ -51,9 +51,9 @@ class BookmarkLoadDetails {
   explicit BookmarkLoadDetails(BookmarkClient* client);
   ~BookmarkLoadDetails();
 
-  // Loads the extra node and adds it to |root_|. Returns true if the added node
-  // has children.
-  bool LoadExtraNode();
+  // Loads the managed node and adds it to |root_|. Returns true if the added
+  // node has children.
+  bool LoadManagedNode();
 
   BookmarkNode* root_node() { return root_node_ptr_; }
   BookmarkPermanentNode* bb_node() { return bb_node_; }
@@ -121,7 +121,7 @@ class BookmarkLoadDetails {
   BookmarkPermanentNode* bb_node_ = nullptr;
   BookmarkPermanentNode* other_folder_node_ = nullptr;
   BookmarkPermanentNode* mobile_folder_node_ = nullptr;
-  LoadExtraCallback load_extra_callback_;
+  LoadManagedNodeCallback load_managed_node_callback_;
   std::unique_ptr<TitledUrlIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
   int64_t model_sync_transaction_version_;

@@ -19,7 +19,6 @@ const CGFloat kAdaptiveToolbarStackViewSpacing = 11.0f;
 
 const CGFloat kProgressBarHeight = 2.0f;
 
-const CGFloat kToolbarSeparatorAlpha = 0.33f;
 const CGFloat kToolbarSeparatorHeight = 0.1f;
 
 const CGFloat kAdaptiveToolbarButtonHeight = 44.0f;

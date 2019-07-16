@@ -38,16 +38,4 @@ double CurrentTime() {
   return base::Time::Now().ToDoubleT();
 }
 
-base::TimeTicks CurrentTimeTicks() {
-  return base::TimeTicks::Now();
-}
-
-double CurrentTimeTicksInSeconds() {
-  return CurrentTimeTicks().since_origin().InSecondsF();
-}
-
-double CurrentTimeTicksInMilliseconds() {
-  return CurrentTimeTicks().since_origin().InMillisecondsF();
-}
-
 }  // namespace WTF

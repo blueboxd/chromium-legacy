@@ -177,10 +177,6 @@ void ReadableStreamBytesConsumer::Trace(blink::Visitor* visitor) {
   BytesConsumer::Trace(visitor);
 }
 
-void ReadableStreamBytesConsumer::Dispose() {
-  read_handle_ = nullptr;
-}
-
 void ReadableStreamBytesConsumer::OnRead(DOMUint8Array* buffer) {
   DCHECK(is_reading_);
   DCHECK(buffer);

@@ -7,9 +7,9 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/grit/components_resources.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
-#include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -36,7 +36,7 @@ content::WebUIDataSource* CreatePasswordManagerInternalsHTMLSource() {
 // chrome://password-manager-internals specific UI handler that takes care of
 // subscribing to the autofill logging instance.
 class PasswordManagerInternalsUIHandler : public content::WebUIMessageHandler,
-                                          public password_manager::LogReceiver {
+                                          public autofill::LogReceiver {
  public:
   PasswordManagerInternalsUIHandler() = default;
   ~PasswordManagerInternalsUIHandler() override;

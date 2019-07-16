@@ -7,14 +7,15 @@
 #include <string>
 
 #include "base/strings/string_number_conversions.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
-#include "components/password_manager/core/browser/log_manager.h"
 
 using autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
 
-CredentialManagerLogger::CredentialManagerLogger(const LogManager* log_manager)
+CredentialManagerLogger::CredentialManagerLogger(
+    const autofill::LogManager* log_manager)
     : log_manager_(log_manager) {}
 
 CredentialManagerLogger::~CredentialManagerLogger() = default;

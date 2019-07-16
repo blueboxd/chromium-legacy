@@ -9,15 +9,15 @@
 
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_fetcher_service.h"
-#include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/primary_account_manager.h"
-#include "components/signin/core/browser/primary_account_policy_manager.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/account_fetcher_service.h"
+#include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h"
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
+#include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
+#include "components/signin/internal/identity_manager/primary_account_policy_manager.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_builder.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
@@ -38,7 +38,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
-#include "components/signin/core/browser/primary_account_policy_manager_impl.h"
+#include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #endif
 
 namespace identity {

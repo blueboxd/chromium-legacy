@@ -49,7 +49,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          CurrentTimeTicks()) {
+                          base::TimeTicks::Now()) {
     ReadyToRunWorkerScript();
   }
 

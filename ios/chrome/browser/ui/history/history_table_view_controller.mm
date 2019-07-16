@@ -206,9 +206,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
   self.scrimView = [[UIControl alloc] init];
   self.scrimView.alpha = 0.0f;
-  self.scrimView.backgroundColor =
-      [UIColor colorWithWhite:0
-                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrimView.accessibilityIdentifier = kHistorySearchScrimIdentifier;
   [self.scrimView addTarget:self

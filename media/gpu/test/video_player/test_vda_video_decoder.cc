@@ -15,13 +15,14 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/waiting.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/video.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_V4L2_CODEC) || defined(USE_VAAPI)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #endif
 
@@ -216,7 +217,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
       // handles to the video frame's data to the decoder.
       for (const PictureBuffer& picture_buffer : picture_buffers) {
         scoped_refptr<VideoFrame> video_frame;
-#if defined(USE_V4L2_CODEC) || defined(USE_VAAPI)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         video_frame = CreatePlatformVideoFrame(
             format, dimensions, visible_rect, visible_rect.size(),
             base::TimeDelta(), gfx::BufferUsage::SCANOUT_VDA_WRITE);
@@ -224,7 +225,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
         gfx::GpuMemoryBufferHandle handle;
-#if defined(USE_V4L2_CODEC) || defined(USE_VAAPI)
+#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         handle = CreateGpuMemoryBufferHandle(video_frame.get());
 #else
         NOTREACHED();

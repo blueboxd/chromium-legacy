@@ -61,25 +61,20 @@ void FormActivityTabHelper::RemoveObserver(FormActivityObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
+void FormActivityTabHelper::OnFormCommand(const base::DictionaryValue& message,
                                           const GURL& url,
-                                          bool has_user_gesture,
-                                          bool form_in_main_frame,
+                                          bool user_is_interacting,
                                           web::WebFrame* sender_frame) {
   std::string command;
   if (!message.GetString("command", &command)) {
     DLOG(WARNING) << "JS message parameter not found: command";
-    return NO;
+  } else if (command == "form.submit") {
+    FormSubmissionHandler(message, user_is_interacting,
+                          sender_frame->IsMainFrame(), sender_frame);
+  } else if (command == "form.activity") {
+    HandleFormActivity(message, user_is_interacting,
+                       sender_frame->IsMainFrame(), sender_frame);
   }
-  if (command == "form.submit") {
-    return FormSubmissionHandler(message, has_user_gesture, form_in_main_frame,
-                                 sender_frame);
-  }
-  if (command == "form.activity") {
-    return HandleFormActivity(message, has_user_gesture, form_in_main_frame,
-                              sender_frame);
-  }
-  return false;
 }
 
 bool FormActivityTabHelper::HandleFormActivity(

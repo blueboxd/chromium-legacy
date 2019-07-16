@@ -221,8 +221,8 @@ void LazyLoadImageObserver::OnLoadFinished(HTMLImageElement* image_element) {
 
   base::TimeDelta visible_load_delay;
   if (!visible_load_time_metrics.time_when_first_visible.is_null()) {
-    visible_load_delay =
-        CurrentTimeTicks() - visible_load_time_metrics.time_when_first_visible;
+    visible_load_delay = base::TimeTicks::Now() -
+                         visible_load_time_metrics.time_when_first_visible;
   }
 
   switch (GetNetworkStateNotifier().EffectiveType()) {
@@ -297,7 +297,8 @@ void LazyLoadImageObserver::OnVisibilityChanged(
       }
       if (entry->isIntersecting()) {
         DCHECK(visible_load_time_metrics.time_when_first_visible.is_null());
-        visible_load_time_metrics.time_when_first_visible = CurrentTimeTicks();
+        visible_load_time_metrics.time_when_first_visible =
+            base::TimeTicks::Now();
 
         if (visible_load_time_metrics.record_visibility_metrics &&
             image_element->GetDocument().GetFrame()) {

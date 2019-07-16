@@ -299,8 +299,15 @@ class AndroidNetworkLibrary {
      */
     @CalledByNative
     public static int getWifiSignalLevel(int countBuckets) {
-        final Intent intent = ContextUtils.getApplicationContext().registerReceiver(
-                null, new IntentFilter(WifiManager.RSSI_CHANGED_ACTION));
+        Intent intent = null;
+        try {
+            intent = ContextUtils.getApplicationContext().registerReceiver(
+                    null, new IntentFilter(WifiManager.RSSI_CHANGED_ACTION));
+        } catch (IllegalArgumentException e) {
+            // Some devices unexpectedly throw IllegalArgumentException when registering
+            // the broadcast receiver. See https://crbug.com/984179.
+            return -1;
+        }
         if (intent == null) {
             return -1;
         }

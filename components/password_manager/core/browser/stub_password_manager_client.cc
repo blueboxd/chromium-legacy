@@ -72,7 +72,7 @@ const CredentialsFilter* StubPasswordManagerClient::GetStoreResultFilter()
   return &credentials_filter_;
 }
 
-const LogManager* StubPasswordManagerClient::GetLogManager() const {
+const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 

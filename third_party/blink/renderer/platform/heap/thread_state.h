@@ -470,11 +470,18 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void AtomicPauseMarkPrologue(BlinkGC::StackState,
                                BlinkGC::MarkingType,
                                BlinkGC::GCReason);
+  void AtomicPauseMarkRoots(BlinkGC::StackState,
+                            BlinkGC::MarkingType,
+                            BlinkGC::GCReason);
   void AtomicPauseMarkTransitiveClosure();
   void AtomicPauseMarkEpilogue(BlinkGC::MarkingType);
   void AtomicPauseSweepAndCompact(BlinkGC::MarkingType marking_type,
                                   BlinkGC::SweepingType sweeping_type);
+  void AtomicPauseEpilogue();
 
+  // RunAtomicPause composes the final atomic pause that finishes a mark-compact
+  // phase of a garbage collection. Depending on SweepingType it may also finish
+  // sweeping or schedule lazy/concurrent sweeping.
   void RunAtomicPause(BlinkGC::StackState,
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
@@ -486,10 +493,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void MarkPhasePrologue(BlinkGC::StackState,
                          BlinkGC::MarkingType,
                          BlinkGC::GCReason);
-  void AtomicPausePrologue(BlinkGC::StackState,
-                           BlinkGC::MarkingType,
-                           BlinkGC::GCReason);
-  void AtomicPauseEpilogue(BlinkGC::MarkingType, BlinkGC::SweepingType);
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
   void MarkPhaseVisitNotFullyConstructedObjects();

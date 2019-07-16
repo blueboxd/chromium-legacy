@@ -14,8 +14,13 @@ void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
   registration_origin_ = origin;
 }
 
-void MockBackgroundSyncController::RunInBackground() {
-  run_in_background_count_ += 1;
+void MockBackgroundSyncController::ScheduleBrowserWakeUp(
+    blink::mojom::BackgroundSyncType sync_type) {
+  if (sync_type == blink::mojom::BackgroundSyncType::PERIODIC) {
+    run_in_background_for_periodic_sync_count_ += 1;
+    return;
+  }
+  run_in_background_for_one_shot_sync_count_ += 1;
 }
 
 void MockBackgroundSyncController::GetParameterOverrides(

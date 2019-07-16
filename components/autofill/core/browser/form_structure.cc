@@ -2164,8 +2164,7 @@ void FormStructure::RationalizeTypeRelationships() {
   }
 }
 
-AutofillInternalsBuffer& operator<<(AutofillInternalsBuffer& buffer,
-                                    const FormStructure& form) {
+LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
   buffer << MakeTr2Cells("Form signature:", form.form_signature());

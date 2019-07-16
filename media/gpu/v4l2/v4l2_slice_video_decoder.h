@@ -32,7 +32,6 @@ namespace media {
 class AcceleratedVideoDecoder;
 class DmabufVideoFramePool;
 class V4L2DecodeSurface;
-class VideoFrameConverter;
 
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
                                                public V4L2DecodeSurfaceHandler {
@@ -42,8 +41,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // determined in Initialize().
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      std::unique_ptr<DmabufVideoFramePool> frame_pool,
-      std::unique_ptr<VideoFrameConverter> frame_converter);
+      std::unique_ptr<DmabufVideoFramePool> frame_pool);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
@@ -81,8 +79,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   V4L2SliceVideoDecoder(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<V4L2Device> device,
-      std::unique_ptr<DmabufVideoFramePool> frame_pool,
-      std::unique_ptr<VideoFrameConverter> frame_converter);
+      std::unique_ptr<DmabufVideoFramePool> frame_pool);
   ~V4L2SliceVideoDecoder() override;
   void Destroy() override;
 
@@ -204,7 +201,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   scoped_refptr<V4L2Device> device_;
   // VideoFrame manager used to allocate and recycle video frame.
   std::unique_ptr<DmabufVideoFramePool> frame_pool_;
-  std::unique_ptr<VideoFrameConverter> frame_converter_;
   // Video decoder used to parse stream headers by software.
   std::unique_ptr<AcceleratedVideoDecoder> avd_;
 

@@ -1136,6 +1136,8 @@ source_set("chromeos") {
     "login/auth/chrome_cryptohome_authenticator.h",
     "login/auth/chrome_login_performer.cc",
     "login/auth/chrome_login_performer.h",
+    "login/challenge_response_auth_keys_loader.cc",
+    "login/challenge_response_auth_keys_loader.h",
     "login/chrome_restart_request.cc",
     "login/chrome_restart_request.h",
     "login/configuration_keys.cc",

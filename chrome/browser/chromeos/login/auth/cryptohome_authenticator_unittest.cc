@@ -271,7 +271,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
     profile_.reset(new TestingProfile);
     OwnerSettingsServiceChromeOSFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
-    user_context_.SetKey(Key("fakepass"));
+    Key key("fakepass");
+    key.SetLabel(kCryptohomeGAIAKeyLabel);
+    user_context_.SetKey(key);
     user_context_.SetUserIDHash("me_nowhere_com_hash");
     const user_manager::User* user =
         user_manager_->AddUser(user_context_.GetAccountId());

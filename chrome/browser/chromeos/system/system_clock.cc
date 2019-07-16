@@ -163,8 +163,8 @@ void SystemClock::SetLastFocusedPodHourClockType(
 }
 
 bool SystemClock::ShouldUse24HourClock() const {
-  // On login screen and in guest mode owner default is used for
-  // kUse24HourClock preference.
+  // default is used for kUse24HourClock preference on login screen and whenever
+  // set so in user's preference
   const chromeos::LoginState::LoggedInUserType status =
       LoginState::IsInitialized() ? LoginState::Get()->GetLoggedInUserType()
                                   : LoginState::LOGGED_IN_USER_NONE;
@@ -176,21 +176,17 @@ bool SystemClock::ShouldUse24HourClock() const {
   bool system_use_24_hour_clock = true;
   const bool system_value_found = cros_settings->GetBoolean(
       kSystemUse24HourClock, &system_use_24_hour_clock);
+  const bool default_value =
+      system_value_found ? system_use_24_hour_clock
+                         : (base::GetHourClockType() == base::k24HourClock);
 
-  if ((status == LoginState::LOGGED_IN_USER_NONE) || !user_pref_registrar_) {
-    return (system_value_found
-                ? system_use_24_hour_clock
-                : (base::GetHourClockType() == base::k24HourClock));
-  }
+  if ((status == LoginState::LOGGED_IN_USER_NONE) || !user_pref_registrar_)
+    return default_value;
 
   const PrefService::Preference* user_pref =
       user_pref_registrar_->prefs()->FindPreference(prefs::kUse24HourClock);
-  if (status == LoginState::LOGGED_IN_USER_GUEST &&
-      user_pref->IsDefaultValue()) {
-    return (system_value_found
-                ? system_use_24_hour_clock
-                : (base::GetHourClockType() == base::k24HourClock));
-  }
+  if (status == LoginState::LOGGED_IN_USER_GUEST && user_pref->IsDefaultValue())
+    return default_value;
 
   user_manager::User* active_user =
       user_manager::UserManager::Get()->GetActiveUser();
@@ -200,6 +196,10 @@ bool SystemClock::ShouldUse24HourClock() const {
       user_pref =
           user_profile->GetPrefs()->FindPreference(prefs::kUse24HourClock);
     }
+  }
+  if (status != LoginState::LOGGED_IN_USER_REGULAR &&
+      user_pref->IsDefaultValue()) {
+    return default_value;
   }
 
   bool use_24_hour_clock = true;

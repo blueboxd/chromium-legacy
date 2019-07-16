@@ -31,28 +31,27 @@ JavaScriptConsoleTabHelper::JavaScriptConsoleTabHelper(web::WebState* web_state)
       kCommandPrefix);
 }
 
-bool JavaScriptConsoleTabHelper::OnJavaScriptConsoleMessage(
+void JavaScriptConsoleTabHelper::OnJavaScriptConsoleMessage(
     const base::DictionaryValue& message,
     const GURL& page_url,
-    bool has_user_gesture,
-    bool main_frame,
+    bool user_is_interacting,
     web::WebFrame* sender_frame) {
   // Completely skip processing the message if no delegate exists.
   if (!delegate_) {
-    return true;
+    return;
   }
 
   const base::Value* log_message = message.FindKey("message");
   if (!log_message) {
-    return false;
+    return;
   }
   const base::Value* log_level_value = message.FindKey("method");
   if (!log_level_value || !log_level_value->is_string()) {
-    return false;
+    return;
   }
   const base::Value* url_value = message.FindKey("url");
   if (!url_value || !url_value->is_string()) {
-    return false;
+    return;
   }
 
   JavaScriptConsoleMessage frame_message;
@@ -60,7 +59,6 @@ bool JavaScriptConsoleTabHelper::OnJavaScriptConsoleMessage(
   frame_message.url = GURL(url_value->GetString());
   frame_message.message = base::Value::ToUniquePtrValue(log_message->Clone());
   delegate_->DidReceiveConsoleMessage(web_state_, sender_frame, frame_message);
-  return true;
 }
 
 void JavaScriptConsoleTabHelper::WebStateDestroyed(web::WebState* web_state) {

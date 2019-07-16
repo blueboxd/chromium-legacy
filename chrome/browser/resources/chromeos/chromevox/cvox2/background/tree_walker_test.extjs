@@ -18,6 +18,21 @@ function ChromeVoxAutomationTreeWalkerTest() {
 
 ChromeVoxAutomationTreeWalkerTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
+  /** @override */
+  testGenCppIncludes: function() {
+    ChromeVoxE2ETest.prototype.testGenCppIncludes.call(this);
+
+    // See https://crbug.com/981953 for details.
+    GEN(`
+#if !defined(NDEBUG)
+#define MAYBE_Forward DISABLED_Forward
+#define MAYBE_Backward DISABLED_Backward
+#else
+#define MAYBE_Forward Forward
+#define MAYBE_Backward Backward
+#endif
+    `);
+  },
 
   flattenTree: function(node, outResult) {
     outResult.push(node);
@@ -45,7 +60,7 @@ ChromeVoxAutomationTreeWalkerTest.prototype = {
   }
 };
 
-TEST_F('ChromeVoxAutomationTreeWalkerTest', 'Forward', function() {
+TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Forward', function() {
   chrome.automation.getDesktop(this.newCallback(function(d) {
     var resultList = [];
     this.flattenTree(d, resultList);
@@ -72,7 +87,7 @@ TEST_F('ChromeVoxAutomationTreeWalkerTest', 'Forward', function() {
   }.bind(this)));
 });
 
-TEST_F('ChromeVoxAutomationTreeWalkerTest', 'Backward', function() {
+TEST_F('ChromeVoxAutomationTreeWalkerTest', 'MAYBE_Backward', function() {
   chrome.automation.getDesktop(this.newCallback(function(d) {
     var resultList = [];
     this.flattenTree(d, resultList);

@@ -1074,9 +1074,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("formatDialog").EnableFormatDialog(),
-                      TestCase("formatDialogEmpty").EnableFormatDialog(),
-                      TestCase("formatDialogCancel").EnableFormatDialog()));
+    ::testing::Values(
+        TestCase("formatDialog").EnableFormatDialog(),
+        TestCase("formatDialogEmpty").EnableFormatDialog(),
+        TestCase("formatDialogCancel").EnableFormatDialog(),
+        TestCase("formatDialogNameLength").EnableFormatDialog(),
+        TestCase("formatDialogNameInvalid").EnableFormatDialog()));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

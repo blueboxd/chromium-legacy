@@ -261,7 +261,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   size_t GetProxyCount() override;
   bool HasSelection() override;
   void RequestTextSurroundingSelection(
-      const TextSurroundingSelectionCallback& callback,
+      TextSurroundingSelectionCallback callback,
       int max_length) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() override;
@@ -427,6 +427,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
+
+  // Computes site_for_cookies to be used when navigating this frame to
+  // |destination|.
+  GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
 
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
@@ -1131,9 +1135,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              JavaScriptDialogType dialog_type,
                              IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(bool is_reload, IPC::Message* reply_msg);
-  void OnTextSurroundingSelectionResponse(const base::string16& content,
-                                          uint32_t start_offset,
-                                          uint32_t end_offset);
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
 
@@ -1981,10 +1982,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Bitfield for renderer-side state that blocks fast shutdown of the frame.
   blink::WebSuddenTerminationDisablerType
       sudden_termination_disabler_types_enabled_ = 0;
-
-  // Callback for responding when
-  // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
-  TextSurroundingSelectionCallback text_surrounding_selection_callback_;
 
   // We switch between |audio_service_audio_output_stream_factory_| and
   // |in_content_audio_output_stream_factory_| based on

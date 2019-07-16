@@ -2255,8 +2255,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_ReloadLoFiImages, OnReloadLoFiImages)
-    IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
-                        OnTextSurroundingSelectionRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
@@ -2783,6 +2781,24 @@ void RenderFrameImpl::SetLifecycleState(
   frame_->SetLifecycleState(state);
 }
 
+void RenderFrameImpl::GetTextSurroundingSelection(
+    uint32_t max_length,
+    GetTextSurroundingSelectionCallback callback) {
+  blink::WebSurroundingText surrounding_text(frame_, max_length);
+
+  if (surrounding_text.IsEmpty()) {
+    // |surrounding_text| might not be correctly initialized, for example if
+    // |frame_->SelectionRange().IsNull()|, in other words, if there was no
+    // selection.
+    std::move(callback).Run(base::string16(), 0, 0);
+    return;
+  }
+
+  std::move(callback).Run(surrounding_text.TextContent().Utf16(),
+                          surrounding_text.StartOffsetInTextContent(),
+                          surrounding_text.EndOffsetInTextContent());
+}
+
 void RenderFrameImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   GetFrameHost()->VisibilityChanged(visibility);
@@ -2918,24 +2934,6 @@ void RenderFrameImpl::OnReload(bool bypass_cache) {
 void RenderFrameImpl::OnReloadLoFiImages() {
   previews_state_ = PREVIEWS_NO_TRANSFORM;
   GetWebFrame()->ReloadLoFiImages();
-}
-
-void RenderFrameImpl::OnTextSurroundingSelectionRequest(uint32_t max_length) {
-  blink::WebSurroundingText surrounding_text(frame_, max_length);
-
-  if (surrounding_text.IsEmpty()) {
-    // |surrounding_text| might not be correctly initialized, for example if
-    // |frame_->SelectionRange().IsNull()|, in other words, if there was no
-    // selection.
-    Send(new FrameHostMsg_TextSurroundingSelectionResponse(
-        routing_id_, base::string16(), 0, 0));
-    return;
-  }
-
-  Send(new FrameHostMsg_TextSurroundingSelectionResponse(
-      routing_id_, surrounding_text.TextContent().Utf16(),
-      surrounding_text.StartOffsetInTextContent(),
-      surrounding_text.EndOffsetInTextContent()));
 }
 
 bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,

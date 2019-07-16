@@ -88,6 +88,7 @@ class PaymentRequestContactInfoEditCoordinatorTest
 
   // PlatformTest:
   void SetUp() override {
+    PlatformTest::SetUp();
     DoSetUp();
 
     personal_data_manager_.SetPrefService(pref_service());
@@ -105,6 +106,7 @@ class PaymentRequestContactInfoEditCoordinatorTest
     personal_data_manager_.SetPrefService(nullptr);
 
     DoTearDown();
+    PlatformTest::TearDown();
   }
 
   autofill::TestPersonalDataManager personal_data_manager_;

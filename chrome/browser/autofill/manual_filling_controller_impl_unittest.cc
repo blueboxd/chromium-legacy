@@ -143,23 +143,19 @@ TEST_F(ManualFillingControllerTest, ClosesSheetWhenFocusingTextArea) {
 }
 
 TEST_F(ManualFillingControllerTest, AlwaysShowsAccessoryForPasswordFields) {
-  SetSuggestionsAndClearExpectations(
-      populate_sheet(AccessoryTabType::PASSWORDS));
-  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
+  controller()->RefreshSuggestions(empty_passwords_sheet());
 
   EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
-  controller()->RefreshSuggestions(empty_passwords_sheet());
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
 }
 
 TEST_F(ManualFillingControllerTest, TouchToFillSheetHasPreference) {
-  SetSuggestionsAndClearExpectations(
+  controller()->RefreshSuggestions(
       populate_sheet(AccessoryTabType::TOUCH_TO_FILL));
-  SetSuggestionsAndClearExpectations(
-      populate_sheet(AccessoryTabType::PASSWORDS));
-  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
+  controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
 
   EXPECT_CALL(*view(), ShowTouchToFillSheet());
-  controller()->RefreshSuggestions(empty_passwords_sheet());
+  FocusFieldAndClearExpectations(FocusedFieldType::kFillablePasswordField);
 }
 
 TEST_F(ManualFillingControllerTest,
@@ -254,9 +250,9 @@ TEST_F(ManualFillingControllerTest, HidesAccessoryWithoutAvailableSources) {
                                          /*has_suggestions=*/true);
   testing::Mock::VerifyAndClearExpectations(view());
 
-  // Hiding just one of two active filling sources won't have any effect.
+  // Hiding just one of two active filling sources won't have any effect at all.
   EXPECT_CALL(*view(), Hide()).Times(0);
-  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible());
+  EXPECT_CALL(*view(), ShowWhenKeyboardIsVisible()).Times(0);
   controller()->UpdateSourceAvailability(FillingSource::PASSWORD_FALLBACKS,
                                          /*has_suggestions=*/false);
   testing::Mock::VerifyAndClearExpectations(view());

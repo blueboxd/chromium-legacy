@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 #include "media/media_buildflags.h"
@@ -213,6 +214,9 @@ struct GPU_EXPORT GpuPreferences {
 
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
+
+  // Determines message loop type for the GPU thread.
+  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.

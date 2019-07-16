@@ -271,13 +271,11 @@ class JsLanguageDetectionManagerDetectLanguageTest
     JsLanguageDetectionManagerTest::TearDown();
   }
   // Called when "languageDetection" command is received.
-  bool CommandReceived(const base::DictionaryValue& command,
+  void CommandReceived(const base::DictionaryValue& command,
                        const GURL& url,
-                       bool interacting,
-                       bool is_main_frame,
+                       bool user_is_interacting,
                        web::WebFrame* sender_frame) {
     commands_received_.push_back(command.CreateDeepCopy());
-    return true;
   }
 
  protected:

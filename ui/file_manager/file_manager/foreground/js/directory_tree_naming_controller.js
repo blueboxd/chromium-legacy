@@ -127,7 +127,8 @@ class DirectoryTreeNamingController {
 
     if (this.isRemovableRoot_) {
       // Validate new name.
-      util.validateExternalDriveName(newName, assert(this.volumeInfo_))
+      util.validateExternalDriveName(
+              newName, assert(this.volumeInfo_).diskFileSystemType)
           .then(
               this.performExternalDriveRename_.bind(this, entry, newName),
               errorMessage => {

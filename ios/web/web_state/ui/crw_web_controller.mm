@@ -1286,16 +1286,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     return NO;
   }
 
-  if (self.webStateImpl->OnScriptCommandReceived(
-          command, *crwCommand, net::GURLWithNSURL(self.webView.URL),
-          _userInteractionState.IsUserInteracting(self.webView),
-          scriptMessage.frameInfo.mainFrame, senderFrame)) {
-    return YES;
-  }
-  // Message was either unexpected or not correctly handled.
-  // Page is reset as a precaution.
-  DLOG(WARNING) << "Unexpected message received: " << command;
-  return NO;
+  self.webStateImpl->OnScriptCommandReceived(
+      command, *crwCommand, net::GURLWithNSURL(self.webView.URL),
+      _userInteractionState.IsUserInteracting(self.webView), senderFrame);
+  return YES;
 }
 
 #pragma mark - CRWWebViewScrollViewProxyObserver

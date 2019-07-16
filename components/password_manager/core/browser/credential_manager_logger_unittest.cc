@@ -4,7 +4,7 @@
 
 #include "components/password_manager/core/browser/credential_manager_logger.h"
 
-#include "components/password_manager/core/browser/stub_log_manager.h"
+#include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +18,7 @@ using ::testing::Return;
 const char kSiteOrigin[] = "https://example.com";
 const char kFederationOrigin[] = "https://google.com";
 
-class MockLogManager : public StubLogManager {
+class MockLogManager : public autofill::StubLogManager {
  public:
   MockLogManager() = default;
   ~MockLogManager() override = default;

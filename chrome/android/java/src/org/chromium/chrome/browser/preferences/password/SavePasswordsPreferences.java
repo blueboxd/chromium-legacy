@@ -59,7 +59,7 @@ public class SavePasswordsPreferences
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
 
-    // A PasswordEntryEditor receives a boolean value with this key. If set true, the the entry was
+    // A PasswordEntryViewer receives a boolean value with this key. If set true, the the entry was
     // part of a search result.
     public static final String EXTRA_FOUND_VIA_SEARCH = "found_via_search_args";
 
@@ -373,13 +373,13 @@ public class SavePasswordsPreferences
             intent.setPackage(getActivity().getPackageName());
             getActivity().startActivity(intent);
         } else {
-            // Launch preference activity with PasswordEntryEditor fragment with
+            // Launch preference activity with PasswordEntryViewer fragment with
             // intent extras specifying the object.
             Bundle fragmentAgs = new Bundle(preference.getExtras());
             fragmentAgs.putBoolean(
                     SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
             PreferencesLauncher.launchSettingsPageCompat(
-                    getActivity(), PasswordEntryEditor.class, fragmentAgs);
+                    getActivity(), PasswordEntryViewer.class, fragmentAgs);
         }
         return true;
     }

@@ -123,9 +123,9 @@ class ContextualSearchDelegate
       const bool may_send_base_page_url);
 
   void OnTextSurroundingSelectionAvailable(
-    const base::string16& surrounding_text,
-    int start_offset,
-    int end_offset);
+      const base::string16& surrounding_text,
+      uint32_t start_offset,
+      uint32_t end_offset);
 
   // Populates and returns the discourse context.
   std::string GetDiscourseContext(const ContextualSearchContext& context);

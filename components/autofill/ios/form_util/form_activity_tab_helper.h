@@ -57,10 +57,9 @@ class FormActivityTabHelper
                              web::WebFrame* sender_frame);
 
   // Handler for "form.*" JavaScript command. Dispatch to more specific handler.
-  bool OnFormCommand(const base::DictionaryValue& message,
+  void OnFormCommand(const base::DictionaryValue& message,
                      const GURL& url,
-                     bool has_user_gesture,
-                     bool form_in_main_frame,
+                     bool user_is_interacting,
                      web::WebFrame* sender_frame);
 
   // The WebState this instance is observing. Will be null after

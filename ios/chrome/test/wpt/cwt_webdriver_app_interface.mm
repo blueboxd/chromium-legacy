@@ -176,9 +176,9 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
 
   __block base::Optional<base::Value> messageValue;
   const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^bool(const base::DictionaryValue& value, const GURL&,
-                                /*interacted*/ bool, /*is_main_frame*/ bool,
-                                /*sender_frame*/ web::WebFrame*) {
+      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+                            /*interacted*/ bool,
+                            /*sender_frame*/ web::WebFrame*) {
         const base::Value* result = value.FindKey(kMessageResultKey);
 
         // |result| will be null when the computed result in JavaScript is
@@ -189,7 +189,6 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
           messageValue = result->Clone();
         else
           messageValue = base::Value();
-        return true;
       });
 
   __block BOOL webStateFound = NO;

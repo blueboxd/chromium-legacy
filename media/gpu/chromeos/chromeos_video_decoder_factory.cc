@@ -11,6 +11,7 @@
 #include "media/gpu/buildflags.h"
 #include "media/gpu/linux/mailbox_video_frame_converter.h"
 #include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/linux/video_decoder_pipeline.h"
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_decoder.h"
@@ -51,20 +52,25 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
   if (!client_task_runner || !frame_pool || !frame_converter)
     return nullptr;
 
+  std::unique_ptr<VideoDecoder> decoder;
+
   // TODO(dstaessens@): We first try VAAPI as USE_V4L2_CODEC might also be
   // set, even though initialization of V4L2SliceVideoDecoder would fail. We
   // need to implement a better way to select the correct decoder.
 #if BUILDFLAG(USE_VAAPI)
-  return VaapiVideoDecoder::Create(std::move(client_task_runner),
-                                   std::move(frame_pool),
-                                   std::move(frame_converter));
+  decoder =
+      VaapiVideoDecoder::Create(client_task_runner, std::move(frame_pool));
 #elif BUILDFLAG(USE_V4L2_CODEC)
-  return V4L2SliceVideoDecoder::Create(std::move(client_task_runner),
-                                       std::move(frame_pool),
-                                       std::move(frame_converter));
+  decoder =
+      V4L2SliceVideoDecoder::Create(client_task_runner, std::move(frame_pool));
 #endif
 
-  return nullptr;
+  if (!decoder)
+    return nullptr;
+
+  return std::make_unique<VideoDecoderPipeline>(std::move(client_task_runner),
+                                                std::move(decoder),
+                                                std::move(frame_converter));
 }
 
 }  // namespace media

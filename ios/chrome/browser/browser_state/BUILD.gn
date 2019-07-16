@@ -65,7 +65,6 @@ source_set("browser_state_impl") {
     ":browser_state",
     "//base",
     "//base:i18n",
-    "//components/about_handler",
     "//components/bookmarks/browser",
     "//components/browser_sync",
     "//components/content_settings/core/browser",

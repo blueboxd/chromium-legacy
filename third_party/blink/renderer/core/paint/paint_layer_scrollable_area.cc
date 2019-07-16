@@ -2037,6 +2037,11 @@ PhysicalRect PaintLayerScrollableArea::ScrollIntoView(
       GetLayoutBox()->AbsoluteToLocalRect(absolute_rect);
   PhysicalOffset border_origin_to_scroll_origin(-GetLayoutBox()->BorderLeft(),
                                                 -GetLayoutBox()->BorderTop());
+  // There might be scroll bar between border_origin and scroll_origin.
+  IntSize scroll_bar_adjustment =
+      GetLayoutBox()->OriginAdjustmentForScrollbars();
+  border_origin_to_scroll_origin.left -= scroll_bar_adjustment.Width();
+  border_origin_to_scroll_origin.top -= scroll_bar_adjustment.Height();
   border_origin_to_scroll_origin +=
       PhysicalOffset::FromFloatSizeFloor(GetScrollOffset());
   // Represent the rect in the container's scroll-origin coordinate.

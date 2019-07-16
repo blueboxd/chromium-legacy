@@ -68,7 +68,8 @@
 
 - (void)resetAfterSideSwipeSnapshot {
   [super resetAfterSideSwipeSnapshot];
-  self.view.backgroundColor = nil;
+  self.view.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
   self.view.locationBarContainer.hidden = NO;
 }
 

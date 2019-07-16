@@ -83,8 +83,8 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   if (!dependencies_.io_thread_task_runner)
     io_thread_ = CreateAndStartIOThread();
   if (dependencies_.create_display_compositor) {
-    viz_compositor_thread_runner_ =
-        std::make_unique<VizCompositorThreadRunner>();
+    viz_compositor_thread_runner_ = std::make_unique<VizCompositorThreadRunner>(
+        gpu_init_->gpu_preferences().message_loop_type);
     if (delegate_) {
       delegate_->PostCompositorThreadCreated(
           viz_compositor_thread_runner_->task_runner());

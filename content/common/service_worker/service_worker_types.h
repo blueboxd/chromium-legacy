@@ -12,10 +12,6 @@
 
 namespace content {
 
-// Indicates the document main thread ID in the child process. This is used for
-// messaging between the browser process and the child process.
-static const int kDocumentMainThreadId = 0;
-
 // Constants for error messages.
 extern const char kServiceWorkerRegisterErrorPrefix[];
 extern const char kServiceWorkerUpdateErrorPrefix[];

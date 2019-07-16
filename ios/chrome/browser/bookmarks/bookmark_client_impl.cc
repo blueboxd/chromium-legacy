@@ -80,8 +80,9 @@ void BookmarkClientImpl::RecordAction(const base::UserMetricsAction& action) {
   base::RecordAction(action);
 }
 
-bookmarks::LoadExtraCallback BookmarkClientImpl::GetLoadExtraNodeCallback() {
-  return bookmarks::LoadExtraCallback();
+bookmarks::LoadManagedNodeCallback
+BookmarkClientImpl::GetLoadManagedNodeCallback() {
+  return bookmarks::LoadManagedNodeCallback();
 }
 
 bool BookmarkClientImpl::CanSetPermanentNodeTitle(

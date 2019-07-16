@@ -420,12 +420,12 @@ TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
 }
 
 TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
-  // Load a model with an extra node that is not editable.
+  // Load a model with an managed node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  auto owned_extra_node =
+  auto owned_managed_node =
       std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-  BookmarkPermanentNode* extra_node = owned_extra_node.get();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  BookmarkPermanentNode* managed_node = owned_managed_node.get();
+  client->SetManagedNodeToLoad(std::move(owned_managed_node));
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));
@@ -444,8 +444,8 @@ TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
 
   // But it can't be pasted into a non-editable folder.
   BookmarkClient* upcast = model->client();
-  EXPECT_FALSE(upcast->CanBeEditedByUser(extra_node));
-  EXPECT_FALSE(CanPasteFromClipboard(model.get(), extra_node));
+  EXPECT_FALSE(upcast->CanBeEditedByUser(managed_node));
+  EXPECT_FALSE(CanPasteFromClipboard(model.get(), managed_node));
 }
 #endif  // !defined(OS_IOS)
 
@@ -571,26 +571,26 @@ TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
 }
 
 TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
-  // Load a model with an extra node that is not editable.
+  // Load a model with an managed node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  auto owned_extra_node =
+  auto owned_managed_node =
       std::make_unique<BookmarkPermanentNode>(100, BookmarkNode::FOLDER);
-  BookmarkPermanentNode* extra_node = owned_extra_node.get();
-  client->SetExtraNodeToLoad(std::move(owned_extra_node));
+  BookmarkPermanentNode* managed_node = owned_managed_node.get();
+  client->SetManagedNodeToLoad(std::move(owned_managed_node));
 
   std::unique_ptr<BookmarkModel> model(
       TestBookmarkClient::CreateModelWithClient(std::move(client)));
   EXPECT_TRUE(model->bookmark_bar_node()->children().empty());
   EXPECT_TRUE(model->other_node()->children().empty());
   EXPECT_TRUE(model->mobile_node()->children().empty());
-  EXPECT_TRUE(extra_node->children().empty());
+  EXPECT_TRUE(managed_node->children().empty());
 
   const base::string16 title = base::ASCIIToUTF16("Title");
   const GURL url("http://google.com");
   model->AddURL(model->bookmark_bar_node(), 0, title, url);
   model->AddURL(model->other_node(), 0, title, url);
   model->AddURL(model->mobile_node(), 0, title, url);
-  model->AddURL(extra_node, 0, title, url);
+  model->AddURL(managed_node, 0, title, url);
 
   std::vector<const BookmarkNode*> nodes;
   model->GetNodesByURL(url, &nodes);
@@ -604,7 +604,7 @@ TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   EXPECT_TRUE(model->bookmark_bar_node()->children().empty());
   EXPECT_TRUE(model->other_node()->children().empty());
   EXPECT_TRUE(model->mobile_node()->children().empty());
-  EXPECT_EQ(1u, extra_node->children().size());
+  EXPECT_EQ(1u, managed_node->children().size());
 }
 
 }  // namespace

@@ -37,6 +37,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/background_sync_network_observer_android.h"
+#include "content/browser/background_sync/background_sync_launcher.h"
 #endif
 
 using blink::mojom::BackgroundSyncType;
@@ -174,17 +175,6 @@ void NotifyBackgroundSyncCompletedOnUIThread(
 
   background_sync_controller->NotifyBackgroundSyncCompleted(
       origin, status_code, num_attempts, max_attempts);
-}
-
-void RunInBackgroundOnUIThread(
-    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  BackgroundSyncController* background_sync_controller =
-      GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
-  if (background_sync_controller) {
-    background_sync_controller->RunInBackground();
-  }
 }
 
 std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
@@ -497,6 +487,7 @@ BackgroundSyncManager::BackgroundSyncManager(
     : op_scheduler_(CacheStorageSchedulerClient::kBackgroundSync,
                     base::ThreadTaskRunnerHandle::Get()),
       service_worker_context_(std::move(service_worker_context)),
+      proxy_(service_worker_context_),
       devtools_context_(std::move(devtools_context)),
       parameters_(std::make_unique<BackgroundSyncParameters>()),
       disabled_(false),
@@ -504,6 +495,7 @@ BackgroundSyncManager::BackgroundSyncManager(
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(devtools_context_);
+  DCHECK(service_worker_context_);
 
   service_worker_context_->AddObserver(this);
 
@@ -863,6 +855,7 @@ void BackgroundSyncManager::UnregisterPeriodicSyncDidStore(
   }
 
   BackgroundSyncMetrics::CountUnregisterPeriodicSync(BACKGROUND_SYNC_STATUS_OK);
+  ScheduleDelayedProcessingOfRegistrations(BackgroundSyncType::PERIODIC);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), BACKGROUND_SYNC_STATUS_OK));
@@ -1009,8 +1002,7 @@ void BackgroundSyncManager::RegisterDidStore(
       registration_could_fire,
       BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE);
 
-  // TODO(crbug.com/925297): Schedule or update a wake up task for periodic
-  // Background Sync registrations.
+  ScheduleDelayedProcessingOfRegistrations(BackgroundSyncType::PERIODIC);
 
   // Tell the client that the registration is ready. We won't fire it until the
   // client has resolved the registration event.
@@ -1189,10 +1181,33 @@ void BackgroundSyncManager::DispatchPeriodicSyncEvent(
   // TODO(crbug.com/961238): Record Periodic Sync events for DevTools.
 }
 
-void BackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
+base::CancelableOnceClosure& BackgroundSyncManager::get_delayed_task(
+    BackgroundSyncType sync_type) {
+  if (sync_type == BackgroundSyncType::ONE_SHOT)
+    return delayed_one_shot_sync_task_;
+  return delayed_periodic_sync_task_;
+}
+
+void BackgroundSyncManager::ScheduleDelayedTask(BackgroundSyncType sync_type,
                                                 base::TimeDelta delay) {
+  base::OnceClosure callback = get_delayed_task(sync_type).callback();
+
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, std::move(callback), delay);
+}
+
+void BackgroundSyncManager::ResetAndScheduleDelayedSyncTask(
+    BackgroundSyncType sync_type,
+    base::TimeDelta soonest_wakeup_delta) {
+  if (soonest_wakeup_delta.is_max() || soonest_wakeup_delta.is_zero())
+    return;
+
+  auto fire_events_callback = base::BindOnce(
+      &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
+      sync_type, MakeEmptyCompletion(), /* keepalive= */ nullptr);
+
+  get_delayed_task(sync_type).Reset(std::move(fire_events_callback));
+  ScheduleDelayedTask(sync_type, soonest_wakeup_delta);
 }
 
 void BackgroundSyncManager::HasMainFrameProviderHost(const url::Origin& origin,
@@ -1264,9 +1279,11 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
 }
 
 base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
-    BackgroundSyncType sync_type) {
+    BackgroundSyncType sync_type,
+    bool apply_browser_wakeup_limit) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::TimeDelta soonest_wakeup_delta = base::TimeDelta::Max();
+  bool need_retries = false;
   for (const auto& sw_reg_id_and_registrations : active_registrations_) {
     for (const auto& key_and_registration :
          sw_reg_id_and_registrations.second.registration_map) {
@@ -1274,6 +1291,10 @@ base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
           key_and_registration.second;
       if (registration.sync_type() != sync_type)
         continue;
+      if (registration.num_attempts() > 0 &&
+          registration.num_attempts() < registration.max_attempts()) {
+        need_retries = true;
+      }
       if (registration.sync_state() ==
           blink::mojom::BackgroundSyncState::PENDING) {
         if (clock_->Now() >= registration.delay_until()) {
@@ -1290,37 +1311,49 @@ base::TimeDelta BackgroundSyncManager::GetSoonestWakeupDelta(
 
   // If the browser is closed while firing events, the browser needs a task to
   // wake it back up and try again.
-  if (sync_type == BackgroundSyncType::ONE_SHOT &&
-      num_firing_registrations_ > 0 &&
+  if (num_firing_registrations_ > 0 &&
       soonest_wakeup_delta > parameters_->min_sync_recovery_time) {
     soonest_wakeup_delta = parameters_->min_sync_recovery_time;
   }
 
+  // The browser may impose a hard limit on how often it can be woken up to
+  // process periodic Background Sync registrations. This excludes retries.
+  if (sync_type == BackgroundSyncType::PERIODIC && !need_retries &&
+      apply_browser_wakeup_limit) {
+    soonest_wakeup_delta = ApplyBrowserWakeupCountLimit(soonest_wakeup_delta);
+  }
   return soonest_wakeup_delta;
 }
 
-// TODO(crbug.com/925297): Update to also schedule a wakeup task for Periodic
-// Background Sync.
-void BackgroundSyncManager::RunInBackgroundIfNecessary() {
+base::TimeDelta BackgroundSyncManager::ApplyBrowserWakeupCountLimit(
+    base::TimeDelta soonest_wakeup_delta) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::TimeDelta soonest_wakeup_delta =
-      GetSoonestWakeupDelta(BackgroundSyncType::ONE_SHOT);
+  base::TimeDelta time_since_last_browser_wakeup = base::TimeDelta::Max();
+#if defined(OS_ANDROID)
+  time_since_last_browser_wakeup =
+      BackgroundSyncLauncher::Get()
+          ->TimeSinceLastBrowserWakeUpForPeriodicSync();
+#endif
+  if (time_since_last_browser_wakeup >=
+      parameters_->min_periodic_sync_events_interval)
+    return soonest_wakeup_delta;
 
-  // Try firing again after the wakeup delta.
-  if (!soonest_wakeup_delta.is_max() && !soonest_wakeup_delta.is_zero()) {
-    delayed_sync_task_.Reset(base::BindOnce(
-        &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
-        BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion(),
-        /* keepalive= */ nullptr));
-    ScheduleDelayedTask(delayed_sync_task_.callback(), soonest_wakeup_delta);
-  }
+  base::TimeDelta time_till_next_allowed_browser_wakeup =
+      parameters_->min_periodic_sync_events_interval -
+      time_since_last_browser_wakeup;
+  return std::max(soonest_wakeup_delta, time_till_next_allowed_browser_wakeup);
+}
 
-  // In case the browser closes (or to prevent it from closing), call
-  // RunInBackground to wake up the browser at the wakeup delta.
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(RunInBackgroundOnUIThread, service_worker_context_));
+void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
+    blink::mojom::BackgroundSyncType sync_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ResetAndScheduleDelayedSyncTask(
+      sync_type,
+      GetSoonestWakeupDelta(sync_type,
+                            /* apply_browser_wakeup_limit= */ false));
+  proxy_.ScheduleBrowserWakeUp(sync_type);
 }
 
 void BackgroundSyncManager::FireReadyEvents(
@@ -1378,7 +1411,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   }
 
   if (to_fire.empty()) {
-    RunInBackgroundIfNecessary();
+    ScheduleDelayedProcessingOfRegistrations(sync_type);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
     return;
@@ -1391,7 +1424,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(
   base::RepeatingClosure events_fired_barrier_closure = base::BarrierClosure(
       to_fire.size(),
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsAllEventsFiring,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), sync_type,
+                     std::move(callback)));
 
   // Record the total time taken after all events have run to completion.
   base::RepeatingClosure events_completed_barrier_closure =
@@ -1489,10 +1523,10 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
 }
 
 void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
+    BackgroundSyncType sync_type,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  RunInBackgroundIfNecessary();
+  ScheduleDelayedProcessingOfRegistrations(sync_type);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -1693,10 +1727,8 @@ void BackgroundSyncManager::EventCompleteDidStore(
   }
 
   // Fire any ready events and call RunInBackground if anything is waiting.
-  // We don't need to do this for periodic Background Sync registrations, since
-  // once all events have been dispatched, we'll schedule a delayed task to
-  // (wake up Chrome and) fire the next set of periodicsync events.
   FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::PERIODIC, MakeEmptyCompletion());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }

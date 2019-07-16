@@ -1892,7 +1892,6 @@ jumbo_split_static_library("browser") {
     "//chrome/common:channel_info",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
-    "//components/about_handler",
     "//components/app_modal",
     "//components/assist_ranker",
     "//components/autofill/content/browser",

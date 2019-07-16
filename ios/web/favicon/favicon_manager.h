@@ -21,10 +21,9 @@ class FaviconManager final {
   ~FaviconManager();
 
  private:
-  bool OnJsMessage(const base::DictionaryValue& message,
+  void OnJsMessage(const base::DictionaryValue& message,
                    const GURL& page_url,
                    bool has_user_gesture,
-                   bool in_main_frame,
                    WebFrame* sender_frame);
 
   WebStateImpl* web_state_impl_ = nullptr;

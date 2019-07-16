@@ -79,8 +79,8 @@ void SmartSelectionClient::RequestSurroundingText(
   }
 
   focused_frame->RequestTextSurroundingSelection(
-      base::Bind(&SmartSelectionClient::OnSurroundingTextReceived,
-                 weak_ptr_factory_.GetWeakPtr(), callback_data),
+      base::BindOnce(&SmartSelectionClient::OnSurroundingTextReceived,
+                     weak_ptr_factory_.GetWeakPtr(), callback_data),
       num_extra_characters);
 }
 
@@ -92,8 +92,8 @@ void SmartSelectionClient::CancelAllRequests(
 
 void SmartSelectionClient::OnSurroundingTextReceived(int callback_data,
                                                      const base::string16& text,
-                                                     int start,
-                                                     int end) {
+                                                     uint32_t start,
+                                                     uint32_t end) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null()) {

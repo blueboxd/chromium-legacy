@@ -135,7 +135,7 @@ Response InspectorPerformanceAgent::getMetrics(
       std::make_unique<protocol::Array<protocol::Performance::Metric>>();
 
   AppendMetric(result.get(), "Timestamp",
-               CurrentTimeTicks().since_origin().InSecondsF());
+               base::TimeTicks::Now().since_origin().InSecondsF());
 
   // Renderer instance counters.
   for (size_t i = 0; i < ARRAY_SIZE(kInstanceCounterNames); ++i) {

@@ -56,7 +56,7 @@ class FindTaskController::IdleFindTask
 
   void ForceInvocationForTesting() {
     invoke(MakeGarbageCollected<IdleDeadline>(
-        CurrentTimeTicks() + kFindTaskTestTimeout,
+        base::TimeTicks::Now() + kFindTaskTestTimeout,
         IdleDeadline::CallbackType::kCalledWhenIdle));
   }
 

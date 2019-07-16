@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

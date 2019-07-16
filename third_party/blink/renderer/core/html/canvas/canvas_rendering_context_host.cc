@@ -207,7 +207,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     return ScriptPromise();
   }
 
-  base::TimeTicks start_time = WTF::CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_refptr<StaticBitmapImage> image_bitmap =
       RenderingContext()->GetImage(kPreferNoAcceleration);
   if (image_bitmap) {

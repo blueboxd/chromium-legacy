@@ -91,7 +91,7 @@ class WebViewPasswordManagerClient
   const GURL& GetLastCommittedEntryURL() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;
-  const password_manager::LogManager* GetLogManager() const override;
+  const autofill::LogManager* GetLogManager() const override;
   ukm::SourceId GetUkmSourceId() override;
   password_manager::PasswordManagerMetricsRecorder* GetMetricsRecorder()
       override;
@@ -112,7 +112,7 @@ class WebViewPasswordManagerClient
   // TODO(crbug.com/867297) Replace with SyncCredentialsFilter
   const MockCredentialsFilter credentials_filter_;
 
-  std::unique_ptr<password_manager::LogManager> log_manager_;
+  std::unique_ptr<autofill::LogManager> log_manager_;
 
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.

@@ -739,6 +739,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
   form_manager_to_save->Save();
 }
 
+#if !defined(OS_IOS)
 TEST_F(PasswordManagerTest, BestMatchFormToManager) {
   base::test::ScopedFeatureList scoped_feature_list;
   // This test does not make sense for NewPasswordFormManager:
@@ -857,6 +858,7 @@ TEST_F(PasswordManagerTest, AnyMatchFormToManager) {
   EXPECT_EQ(changed_form.form_data.name,
             form_manager->GetSubmittedForm()->form_data.name);
 }
+#endif
 
 // Tests that a credential wouldn't be saved if it is already in the store.
 TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
@@ -1725,6 +1727,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
   task_runner_->FastForwardUntilNoTasksRemain();
 }
 
+#if !defined(OS_IOS)
 // If kNewPasswordFormParsing is disabled, "similar" is governed by
 // PasswordFormManager::DoesManage and is related to actual similarity of the
 // forms, including having the same signon realm (and hence origin). Should a
@@ -1752,6 +1755,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameForm) {
   EXPECT_CALL(*store_, GetLogins(_, _)).Times(0);
   manager()->OnPasswordFormsParsed(&driver_b, {same_form});
 }
+#endif
 
 TEST_F(PasswordManagerTest, SameDocumentNavigation) {
   // Test that observing a newly submitted form shows the save password bar on
@@ -1809,6 +1813,7 @@ TEST_F(PasswordManagerTest, SameDocumentBlacklistedSite) {
   EXPECT_TRUE(form_manager_to_save->IsBlacklisted());
 }
 
+#if !defined(OS_IOS)
 TEST_F(PasswordManagerTest, SavingSignupForms_NoHTMLMatch) {
   base::test::ScopedFeatureList scoped_feature_list;
   // This test does not make sense for NewPasswordFormManager:
@@ -1968,6 +1973,7 @@ TEST_F(PasswordManagerTest, FormSubmittedChangedWithAutofillResponse) {
   ASSERT_TRUE(form_manager_to_save);
   form_manager_to_save->Save();
 }
+#endif
 
 TEST_F(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
   // This tests verifies that if the observed forms and provisionally saved
@@ -2355,6 +2361,7 @@ TEST_F(PasswordManagerTest, SetGenerationElementAndReasonForForm) {
   EXPECT_TRUE(form_manager->HasGeneratedPassword());
 }
 
+#if !defined(OS_IOS)
 TEST_F(PasswordManagerTest,
        PasswordGenerationNoCorrespondingPasswordFormManager) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -2383,6 +2390,7 @@ TEST_F(PasswordManagerTest,
 
   EXPECT_FALSE(form_manager->HasGeneratedPassword());
 }
+#endif
 
 TEST_F(PasswordManagerTest, UpdateFormManagers) {
     // Seeing a form should result in creating PasswordFormManager and
@@ -2397,6 +2405,7 @@ TEST_F(PasswordManagerTest, UpdateFormManagers) {
     manager()->UpdateFormManagers();
 }
 
+#if !defined(OS_IOS)
 TEST_F(PasswordManagerTest, DropFormManagers) {
   // This test doesn't make sense for the new parser, because
   // NewPasswordFormManager is created on submission if it is missing.
@@ -2423,6 +2432,7 @@ TEST_F(PasswordManagerTest, DropFormManagers) {
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
+#endif
 
 TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   PasswordForm android_form(MakeAndroidCredential());
@@ -2975,6 +2985,7 @@ TEST_F(PasswordManagerTest, CreatingFormManagers) {
   EXPECT_EQ(1u, manager()->form_managers().size());
 }
 
+#if !defined(OS_IOS)
 TEST_F(PasswordManagerTest,
        ShowManualFallbacksDontChangeProvisionalSaveManager) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -3012,6 +3023,7 @@ TEST_F(PasswordManagerTest,
   EXPECT_EQ(last_provisional_save_manager,
             manager()->provisional_save_manager());
 }
+#endif
 
 // Tests that processing normal HTML form submissions works properly with the
 // new parsing. For details see scheme 1 in comments before
@@ -3129,6 +3141,7 @@ TEST_F(PasswordManagerTest, SubmittedGaiaFormWithoutVisiblePasswordField) {
   manager()->OnPasswordFormSubmittedNoChecks(&driver_, form);
 }
 
+#if !defined(OS_IOS)
 // Tests that PasswordFormManager and NewPasswordFormManager for the same form
 // have the same metrics recorder.
 TEST_F(PasswordManagerTest, CheckMetricsRecorder) {
@@ -3160,6 +3173,7 @@ TEST_F(PasswordManagerTest, CheckMetricsRecorder) {
   EXPECT_EQ(password_form_managers[0]->GetMetricsRecorder(),
             new_password_form_managers[0]->GetMetricsRecorder());
 }
+#endif
 
 TEST_F(PasswordManagerTest, MetricForSchemeOfSuccessfulLogins) {
   for (bool origin_is_secure : {false, true}) {
@@ -3233,6 +3247,7 @@ TEST_F(PasswordManagerTest, ManualFallbackForSavingNewParser) {
   manager()->HideManualFallbackForSaving();
 }
 
+#if !defined(OS_IOS)
 // Check that some value for the ParsingOnSavingDifference UKM metric is emitted
 // on a successful login.
 TEST_F(PasswordManagerTest, ParsingOnSavingMetricRecorded) {
@@ -3267,6 +3282,7 @@ TEST_F(PasswordManagerTest, ParsingOnSavingMetricRecorded) {
                      ukm::builders::PasswordForm::kEntryName),
       ukm::builders::PasswordForm::kParsingOnSavingDifferenceName));
 }
+#endif
 
 TEST_F(PasswordManagerTest, NoSavePromptWhenPasswordManagerDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -3554,8 +3570,13 @@ TEST_F(PasswordManagerTest, ReportMissingFormManager) {
     EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
         .WillRepeatedly(Return(test_case.saving ==
                                MissingFormManagerTestCase::Saving::Enabled));
+    std::vector<bool> only_new_parser_options(1, true);
+#if !defined(OS_IOS)
+    // The old parser is not present on iOS anymore.
+    only_new_parser_options.push_back(false);
+#endif
 
-    for (bool only_new_parser : {false, true}) {
+    for (bool only_new_parser : only_new_parser_options) {
       if ((only_new_parser && !test_case.run_for_new_parser) ||
           (!only_new_parser && !test_case.run_for_old_parser)) {
         continue;

@@ -32,16 +32,13 @@
 #include "components/ui_devtools/viz/overlay_agent_viz.h"
 #endif
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 namespace viz {
 namespace {
 
 const char kThreadName[] = "VizCompositorThread";
 
-std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
+std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
+    base::MessageLoop::Type message_loop_type) {
   const base::ThreadPriority thread_priority =
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
           ? base::ThreadPriority::DISPLAY
@@ -55,11 +52,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   auto thread = std::make_unique<base::Thread>(kThreadName);
 
   base::Thread::Options thread_options;
-#if defined(USE_OZONE)
-  // We may need a non-default message loop type for the platform surface.
-  thread_options.message_loop_type =
-      ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
-#endif
+  thread_options.message_loop_type = message_loop_type;
   thread_options.priority = thread_priority;
 
   CHECK(thread->StartWithOptions(thread_options));
@@ -69,8 +62,9 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
 
 }  // namespace
 
-VizCompositorThreadRunner::VizCompositorThreadRunner()
-    : thread_(CreateAndStartCompositorThread()),
+VizCompositorThreadRunner::VizCompositorThreadRunner(
+    base::MessageLoop::Type message_loop_type)
+    : thread_(CreateAndStartCompositorThread(message_loop_type)),
       task_runner_(thread_->task_runner()) {}
 
 VizCompositorThreadRunner::~VizCompositorThreadRunner() {

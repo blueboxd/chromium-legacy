@@ -115,11 +115,10 @@ class WebFrameImpl : public WebFrame, public web::WebStateObserver {
 
   // Handles message from JavaScript with result of executing the function
   // specified in CallJavaScriptFunction.
-  bool OnJavaScriptReply(web::WebState* web_state,
+  void OnJavaScriptReply(web::WebState* web_state,
                          const base::DictionaryValue& command,
                          const GURL& page_url,
                          bool interacting,
-                         bool is_main_frame,
                          WebFrame* sender_frame);
 
   // The JavaScript requests awating a reply.

@@ -757,6 +757,9 @@ extern const char kNewPasswordFormParsingForSavingDescription[];
 extern const char kOnlyNewPasswordFormParsingName[];
 extern const char kOnlyNewPasswordFormParsingDescription[];
 
+extern const char kUsernameFirstFlowName[];
+extern const char kUsernameFirstFlowDescription[];
+
 extern const char kNewPrintPreviewLayoutName[];
 extern const char kNewPrintPreviewLayoutDescription[];
 

@@ -586,7 +586,7 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
             std::move(temp_mock_external_validation_pref_hash_store),
             std::move(temp_mock_external_validation_hash_store_contents)),
         std::move(configuration), std::move(reset_on_load_observer),
-        &mock_validation_delegate_, base::size(kTestTrackedPrefs), true));
+        &mock_validation_delegate_, base::size(kTestTrackedPrefs)));
   }
 
   // Verifies whether a reset was reported by the PrefHashFiler. Also verifies
@@ -715,42 +715,6 @@ TEST_P(PrefHashFilterTest, FilterTrackedPrefClearing) {
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   VerifyRecordedReset(false);
-}
-
-TEST_P(PrefHashFilterTest, ReportSuperMacValidity) {
-  // Do this once just to force the histogram to be defined.
-  DoFilterOnLoad(false);
-
-  base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
-      "Settings.HashesDictionaryTrusted");
-  ASSERT_TRUE(histogram);
-
-  base::HistogramBase::Count initial_untrusted =
-      histogram->SnapshotSamples()->GetCount(0);
-  base::HistogramBase::Count initial_trusted =
-      histogram->SnapshotSamples()->GetCount(1);
-
-  Reset();
-
-  // Run with an invalid super MAC.
-  mock_pref_hash_store_->set_is_super_mac_valid_result(false);
-
-  DoFilterOnLoad(false);
-
-  // Verify that the invalidity was reported.
-  ASSERT_EQ(initial_untrusted + 1, histogram->SnapshotSamples()->GetCount(0));
-  ASSERT_EQ(initial_trusted, histogram->SnapshotSamples()->GetCount(1));
-
-  Reset();
-
-  // Run with a valid super MAC.
-  mock_pref_hash_store_->set_is_super_mac_valid_result(true);
-
-  DoFilterOnLoad(false);
-
-  // Verify that the validity was reported.
-  ASSERT_EQ(initial_untrusted + 1, histogram->SnapshotSamples()->GetCount(0));
-  ASSERT_EQ(initial_trusted + 1, histogram->SnapshotSamples()->GetCount(1));
 }
 
 TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {

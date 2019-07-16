@@ -7,12 +7,23 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/update_delta.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/image/image_skia.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/service_tab_launcher.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/common/referrer.h"
+#else
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#endif
 
 using offline_items_collection::ContentId;
 using offline_items_collection::LaunchLocation;
@@ -78,17 +89,18 @@ OfflineItem EntryToOfflineItem(const content::ContentIndexEntry& entry) {
   item.state = offline_items_collection::OfflineItemState::COMPLETE;
   item.is_resumable = false;
   item.can_rename = false;
-
-  // TODO(crbug.com/973844): Include URL info.
+  item.page_url = entry.launch_url;
 
   return item;
 }
 
 }  // namespace
 
-ContentIndexProviderImpl::ContentIndexProviderImpl(
-    offline_items_collection::OfflineContentAggregator* aggregator)
-    : aggregator_(aggregator), weak_ptr_factory_(this) {
+ContentIndexProviderImpl::ContentIndexProviderImpl(Profile* profile)
+    : profile_(profile),
+      aggregator_(OfflineContentAggregatorFactory::GetForKey(
+          profile_->GetProfileKey())),
+      weak_ptr_factory_(this) {
   aggregator_->RegisterProvider(kProviderNamespace, this);
 }
 
@@ -144,7 +156,22 @@ void ContentIndexProviderImpl::OnContentDeleted(
 
 void ContentIndexProviderImpl::OpenItem(LaunchLocation location,
                                         const ContentId& id) {
-  NOTIMPLEMENTED();
+  auto it = entries_.find(id.id);
+  if (it == entries_.end())
+    return;
+
+#if defined(OS_ANDROID)
+  content::OpenURLParams params(
+      it->second.offline_item.page_url, content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      /* is_renderer_initiated= */ false);
+  ServiceTabLauncher::GetInstance()->LaunchTab(profile_, params,
+                                               base::DoNothing());
+#else
+  NavigateParams nav_params(profile_, it->second.offline_item.page_url,
+                            ui::PAGE_TRANSITION_LINK);
+  Navigate(&nav_params);
+#endif
 }
 
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
@@ -179,7 +206,7 @@ void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
   for (const auto& entry : entries_)
     list.push_back(entry.second.offline_item);
 
-  // TODO(crbug.com/1687257): Consider fetching these from the DB rather than
+  // TODO(crbug.com/973844): Consider fetching these from the DB rather than
   // storing them in memory.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(list)));

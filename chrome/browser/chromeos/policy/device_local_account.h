@@ -49,6 +49,8 @@ struct DeviceLocalAccount {
     // An account that serves as a container for a single full-screen
     // Android app.
     TYPE_ARC_KIOSK_APP,
+    // SAML public session account
+    TYPE_SAML_PUBLIC_SESSION,
     // Sentinel, must be last.
     TYPE_COUNT
   };

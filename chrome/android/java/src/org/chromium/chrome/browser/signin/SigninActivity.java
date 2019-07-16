@@ -11,8 +11,12 @@ import android.support.annotation.IntDef;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
+import org.chromium.base.Log;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.SynchronousInitializationActivity;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 
 import java.lang.annotation.Retention;
@@ -22,7 +26,7 @@ import java.lang.annotation.RetentionPolicy;
  * Allows user to pick an account and sign in. Started from Settings and various sign-in promos.
  */
 // TODO(https://crbug.com/820491): extend AsyncInitializationActivity.
-public class SigninActivity extends SynchronousInitializationActivity {
+public class SigninActivity extends ChromeBaseAppCompatActivity {
     private static final String TAG = "SigninActivity";
     private static final String ARGUMENT_FRAGMENT_ARGS = "SigninActivity.FragmentArgs";
 
@@ -101,6 +105,15 @@ public class SigninActivity extends SynchronousInitializationActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Make sure the native is initialized before calling super.onCreate(), as it might recreate
+        // SigninFragment that currently depends on native. See https://crbug.com/983730.
+        try {
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Failed to start browser process.", e);
+            ChromeApplication.reportStartupErrorAndExit(e);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signin_activity);
 

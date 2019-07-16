@@ -28,25 +28,23 @@ FaviconManager::~FaviconManager() {
   web_state_impl_->RemoveScriptCommandCallback(kCommandPrefix);
 }
 
-bool FaviconManager::OnJsMessage(const base::DictionaryValue& message,
+void FaviconManager::OnJsMessage(const base::DictionaryValue& message,
                                  const GURL& page_url,
                                  bool has_user_gesture,
-                                 bool form_in_main_frame,
                                  WebFrame* sender_frame) {
   DCHECK(sender_frame->IsMainFrame());
 
   const std::string* command = message.FindStringKey("command");
   if (!command) {
-    return false;
+    return;
   }
 
   std::vector<FaviconURL> URLs;
   if (!ExtractFaviconURL(&message, page_url, &URLs))
-    return false;
+    return;
 
   if (!URLs.empty())
     web_state_impl_->OnFaviconUrlUpdated(URLs);
-  return true;
 }
 
 }  // namespace web

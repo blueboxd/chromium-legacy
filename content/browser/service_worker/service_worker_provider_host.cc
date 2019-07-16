@@ -264,7 +264,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
       render_process_id_(ChildProcessHost::kInvalidUniqueID),
-      render_thread_id_(kDocumentMainThreadId),
       frame_id_(MSG_ROUTING_NONE),
       is_parent_frame_secure_(is_parent_frame_secure),
       frame_tree_node_id_(frame_tree_node_id),
@@ -280,10 +279,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 
   if (type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
     // Actual |render_process_id_| will be set after choosing a process for the
-    // controller, and |render_thread_id_| will be set when the service worker
-    // context gets started.
-    render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
-
+    // controller.
     DCHECK(!client_ptr_info);
   } else {
     DCHECK(client_ptr_info.is_valid());
@@ -722,7 +718,6 @@ void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
     service_manager::mojom::InterfaceProviderRequest
         interface_provider_request) {
   DCHECK(context_);
-  DCHECK_EQ(kInvalidEmbeddedWorkerThreadId, render_thread_id_);
   DCHECK_EQ(ChildProcessHost::kInvalidUniqueID, render_process_id_);
   DCHECK_NE(ChildProcessHost::kInvalidUniqueID, process_id);
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
@@ -1289,7 +1284,6 @@ void ServiceWorkerProviderHost::GetInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK_NE(kDocumentMainThreadId, render_thread_id_);
   DCHECK(IsProviderForServiceWorker());
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},

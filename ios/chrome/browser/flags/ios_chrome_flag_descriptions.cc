@@ -284,19 +284,6 @@ const char kNewOmniboxPopupLayoutDescription[] =
     "Switches the omnibox suggestions and omnibox itself to display the new "
     "design with favicons, new suggestion layout, rich entity support.";
 
-const char kNewPasswordFormParsingName[] = "New password form parsing";
-const char kNewPasswordFormParsingDescription[] =
-    "Replaces existing form parsing in password manager with a new version, "
-    "currently under development. WARNING: when enabled Password Manager might "
-    "stop working";
-
-const char kNewPasswordFormParsingForSavingName[] =
-    "New password form parsing for saving passwords";
-const char kNewPasswordFormParsingForSavingDescription[] =
-    "Replaces existing form parsing for saving in password manager with a new "
-    "version, currently under development. WARNING: when enabled, Password "
-    "Manager might stop working";
-
 const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
 const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "
@@ -341,11 +328,6 @@ const char kOmniboxOnDeviceHeadSuggestionsName[] =
 const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
     "Shows Google head non personalized search suggestions provided by a "
     "compact on device model";
-
-const char kOnlyNewPasswordFormParsingName[] =
-    "Use only new password form parsing";
-const char kOnlyNewPasswordFormParsingDescription[] =
-    "The old password form parsing is disabled";
 
 const char kOptionalArticleThumbnailName[] =
     "Enable optional thumbnails for NTP articles";

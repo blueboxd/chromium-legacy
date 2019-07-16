@@ -100,8 +100,7 @@ class CompositorAnimationTimeline;
 class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
  public:
   using TimeFunction = double (*)();
-  explicit ScrollAnimator(ScrollableArea*,
-                          TimeFunction = WTF::CurrentTimeTicksInSeconds);
+  ScrollAnimator(ScrollableArea*, TimeFunction);
   ~ScrollAnimator() override;
 
   bool HasRunningAnimation() const override;

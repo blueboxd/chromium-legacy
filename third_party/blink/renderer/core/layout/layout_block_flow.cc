@@ -3090,12 +3090,6 @@ LayoutInline* LayoutBlockFlow::InlineElementContinuation() const {
                                                   : nullptr;
 }
 
-static bool IsMergeableAnonymousBlock(const LayoutBlockFlow* block) {
-  return block->IsAnonymousBlock() && !block->Continuation() &&
-         !block->BeingDestroyed() && !block->IsRubyRun() &&
-         !block->IsRubyBase();
-}
-
 void LayoutBlockFlow::AddChild(LayoutObject* new_child,
                                LayoutObject* before_child) {
   if (LayoutMultiColumnFlowThread* flow_thread = MultiColumnFlowThread()) {
@@ -3119,12 +3113,6 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
   // inserted, we move all our inline children into anonymous block boxes.
   bool child_is_block_level =
       !new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned();
-
-  // LayoutNG we considers a block with only floats or OOF-positioned nodes as
-  // block-level. This changes the static-position of OOF-positioned nodes.
-  if (IsLayoutNGContainingBlock(this) &&
-      new_child->IsFloatingOrOutOfFlowPositioned())
-    child_is_block_level = !FirstChild();
 
   if (ChildrenInline()) {
     if (child_is_block_level) {
@@ -3164,14 +3152,6 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
       new_block->ReparentPrecedingFloatingOrOutOfFlowSiblings();
       new_block->AddChild(new_child);
       new_block->ReparentSubsequentFloatingOrOutOfFlowSiblings();
-
-      // Moving the preceding/subsequent (block-level) floats/out-of-flow
-      // siblings may have left us as a single (inline-level) anonymous block.
-      // We can pull the content now back up into our box.
-      if (!new_block->PreviousSibling() && !new_block->NextSibling()) {
-        if (IsMergeableAnonymousBlock(new_block))
-          CollapseAnonymousBlockChild(new_block);
-      }
       return;
     }
   }
@@ -3185,6 +3165,12 @@ void LayoutBlockFlow::AddChild(LayoutObject* new_child,
     parent_layout_block->RemoveLeftoverAnonymousBlock(this);
     // |this| may be dead now.
   }
+}
+
+static bool IsMergeableAnonymousBlock(const LayoutBlockFlow* block) {
+  return block->IsAnonymousBlock() && !block->Continuation() &&
+         !block->BeingDestroyed() && !block->IsRubyRun() &&
+         !block->IsRubyBase();
 }
 
 void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {

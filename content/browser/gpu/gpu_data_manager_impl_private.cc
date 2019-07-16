@@ -56,7 +56,7 @@
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
@@ -278,6 +278,7 @@ void UpdateDx12VulkanInfoOnIO(
           dx12_vulkan_version_info));
 }
 #endif
+
 }  // anonymous namespace
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
@@ -644,6 +645,11 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
   if (kind == GPU_PROCESS_KIND_UNSANDBOXED_NO_GL) {
     gpu_preferences->disable_gpu_watchdog = true;
   }
+#endif
+
+#if defined(USE_OZONE)
+  gpu_preferences->message_loop_type =
+      ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
 #endif
 }
 

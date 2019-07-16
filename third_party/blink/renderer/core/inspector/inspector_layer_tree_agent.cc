@@ -173,16 +173,13 @@ BuildStickyInfoForLayer(const cc::Layer* root, const cc::Layer* layer) {
   return constraints_obj;
 }
 
-static bool IsUsingLayerLists(const cc::Layer* root) {
-  return root->layer_tree_host() &&
-         root->layer_tree_host()->IsUsingLayerLists();
-}
-
 static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     const cc::Layer* root,
     const cc::Layer* layer,
     bool report_wheel_event_listeners) {
-  bool is_using_layer_lists = IsUsingLayerLists(root);
+  bool using_layer_list =
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+      RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled();
 
   // When the front-end doesn't show internal layers, it will use the the first
   // DrawsContent layer as the root of the shown layer tree. This doesn't work
@@ -190,13 +187,13 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   // all DrawsContent layers. We have to cheat the front-end by setting
   // drawsContent to true for the root layer.
   bool draws_content =
-      (is_using_layer_lists && root == layer) || layer->DrawsContent();
+      (using_layer_list && root == layer) || layer->DrawsContent();
 
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
           .setLayerId(IdForLayer(layer))
-          .setOffsetX(is_using_layer_lists ? 0 : layer->position().x())
-          .setOffsetY(is_using_layer_lists ? 0 : layer->position().y())
+          .setOffsetX(using_layer_list ? 0 : layer->position().x())
+          .setOffsetY(using_layer_list ? 0 : layer->position().y())
           .setWidth(layer->bounds().width())
           .setHeight(layer->bounds().height())
           .setPaintCount(layer->paint_count())
@@ -211,7 +208,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
 
   gfx::Transform transform;
   gfx::Point3F transform_origin;
-  if (is_using_layer_lists) {
+  if (using_layer_list) {
     transform = layer->ScreenSpaceTransform();
   } else {
     transform = layer->transform();
@@ -238,7 +235,6 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     }
     layer_object->setAnchorZ(transform_origin.z());
   }
-
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       BuildScrollRectsForLayer(layer, report_wheel_event_listeners);
   if (scroll_rects)
@@ -351,11 +347,6 @@ InspectorLayerTreeAgent::BuildLayerTree() {
       root_frame->GetChromeClient().EventListenerProperties(
           root_frame, cc::EventListenerClass::kMouseWheel) ==
       cc::EventListenerProperties::kBlocking;
-
-  // Update layers' ScreenSpaceTransform() which will be used during
-  // GatherLayers().
-  if (IsUsingLayerLists(root_layer))
-    root_layer->layer_tree_host()->UpdateLayers();
 
   GatherLayers(root_layer, layers, have_blocking_wheel_event_handlers,
                scrolling_layer_id);

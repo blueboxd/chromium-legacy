@@ -67,9 +67,9 @@ class CORE_EXPORT InteractiveDetector
   explicit InteractiveDetector(Document&, NetworkActivityChecker*);
   ~InteractiveDetector() override = default;
 
-  // Calls to CurrentTimeTicksInSeconds is expensive, so we try not to call it
-  // unless we really have to. If we already have the event time available, we
-  // pass it in as an argument.
+  // Calls to base::TimeTicks::Now().since_origin().InSecondsF() is expensive,
+  // so we try not to call it unless we really have to. If we already have the
+  // event time available, we pass it in as an argument.
   void OnResourceLoadBegin(base::Optional<base::TimeTicks> load_begin_time);
   void OnResourceLoadEnd(base::Optional<base::TimeTicks> load_finish_time);
 
@@ -189,7 +189,7 @@ class CORE_EXPORT InteractiveDetector
   Vector<VisibilityChangeEvent> visibility_change_events_;
   bool initially_hidden_;
   // Returns true if page was ever backgrounded in the range
-  // [event_time, CurrentTimeTicks()].
+  // [event_time, base::TimeTicks::Now()].
   bool PageWasBackgroundedSinceEvent(base::TimeTicks event_time);
 
   // Finds a window of length kTimeToInteractiveWindowSeconds after lower_bound

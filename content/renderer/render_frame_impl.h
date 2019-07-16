@@ -529,6 +529,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
   void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;
+  void GetTextSurroundingSelection(
+      uint32_t max_length,
+      GetTextSurroundingSelectionCallback callback) override;
 
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(
@@ -1129,7 +1132,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnVisualStateRequest(uint64_t key);
   void OnReload(bool bypass_cache);
   void OnReloadLoFiImages();
-  void OnTextSurroundingSelectionRequest(uint32_t max_length);
   void OnSetAccessibilityMode(ui::AXMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);

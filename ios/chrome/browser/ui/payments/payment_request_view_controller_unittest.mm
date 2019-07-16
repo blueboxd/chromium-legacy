@@ -131,7 +131,10 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest,
   }
 
   // CollectionViewControllerTest:
-  void TearDown() override { DoTearDown(); }
+  void TearDown() override {
+    DoTearDown();
+    CollectionViewControllerTest::TearDown();
+  }
 
   CollectionViewController* InstantiateController() override {
     PaymentRequestViewController* viewController =

@@ -688,6 +688,8 @@ void Element::scrollIntoView(bool align_to_top) {
   scrollIntoView(arg);
 }
 
+// TODO(cathiechen): CSS direction hasn't been supported. (See:
+// crbug.com/982212, https://www.w3.org/TR/cssom-view-1/#beginning-edges).
 static ScrollAlignment ToPhysicalAlignment(const ScrollIntoViewOptions* options,
                                            ScrollOrientation axis,
                                            bool is_horizontal_writing_mode,

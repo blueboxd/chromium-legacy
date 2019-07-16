@@ -215,9 +215,9 @@ void AutoplayUmaHelper::OnIntersectionChangedForMutedVideoOffscreenDuration(
 
   if (is_visible) {
     muted_video_autoplay_offscreen_duration_ +=
-        CurrentTimeTicks() - muted_video_autoplay_offscreen_start_time_;
+        base::TimeTicks::Now() - muted_video_autoplay_offscreen_start_time_;
   } else {
-    muted_video_autoplay_offscreen_start_time_ = CurrentTimeTicks();
+    muted_video_autoplay_offscreen_start_time_ = base::TimeTicks::Now();
   }
 
   is_visible_ = is_visible;
@@ -288,7 +288,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
     return;
 
   // Start recording muted video playing offscreen duration.
-  muted_video_autoplay_offscreen_start_time_ = CurrentTimeTicks();
+  muted_video_autoplay_offscreen_start_time_ = base::TimeTicks::Now();
   is_visible_ = false;
   muted_video_offscreen_duration_intersection_observer_ =
       IntersectionObserver::Create(
@@ -309,7 +309,7 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
 
   if (!is_visible_) {
     muted_video_autoplay_offscreen_duration_ +=
-        CurrentTimeTicks() - muted_video_autoplay_offscreen_start_time_;
+        base::TimeTicks::Now() - muted_video_autoplay_offscreen_start_time_;
   }
 
   DCHECK(sources_.Contains(AutoplaySource::kMethod));

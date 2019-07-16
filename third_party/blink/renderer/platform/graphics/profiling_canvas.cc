@@ -30,18 +30,16 @@
 
 #include "third_party/blink/renderer/platform/graphics/profiling_canvas.h"
 
-#include "third_party/blink/renderer/platform/wtf/time.h"
-
 namespace blink {
 
 CanvasInterceptor<ProfilingCanvas>::CanvasInterceptor(
     InterceptingCanvasBase* canvas)
-    : CanvasInterceptorBase(canvas), start_time_(WTF::CurrentTimeTicks()) {}
+    : CanvasInterceptorBase(canvas), start_time_(base::TimeTicks::Now()) {}
 
 CanvasInterceptor<ProfilingCanvas>::~CanvasInterceptor() {
   if (!TopLevelCall())
     return;
-  base::TimeDelta delta = WTF::CurrentTimeTicks() - start_time_;
+  base::TimeDelta delta = base::TimeTicks::Now() - start_time_;
   if (auto* timings = Canvas()->timings_) {
     DCHECK_EQ(timings->size(), Canvas()->CallCount());
     timings->push_back(delta);

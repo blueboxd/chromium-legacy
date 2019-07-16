@@ -103,10 +103,9 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     base::WeakPtr<ContextualSearchContext> contextual_search_context,
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  RenderFrameHost::TextSurroundingSelectionCallback callback =
-      base::BindRepeating(
-          &ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
-          AsWeakPtr());
+  RenderFrameHost::TextSurroundingSelectionCallback callback = base::BindOnce(
+      &ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
+      AsWeakPtr());
   context_ = contextual_search_context;
   if (context_ == nullptr)
     return;
@@ -117,10 +116,10 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
                                 : field_trial_->GetSampleSurroundingSize();
   RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
   if (focused_frame) {
-    focused_frame->RequestTextSurroundingSelection(callback,
+    focused_frame->RequestTextSurroundingSelection(std::move(callback),
                                                    surroundingTextSize);
   } else {
-    callback.Run(base::string16(), 0, 0);
+    std::move(callback).Run(base::string16(), 0, 0);
   }
 }
 
@@ -323,8 +322,8 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
 
 void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
     const base::string16& surrounding_text,
-    int start_offset,
-    int end_offset) {
+    uint32_t start_offset,
+    uint32_t end_offset) {
   if (context_ == nullptr)
     return;
 
@@ -336,9 +335,9 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
   }
 
   // Pin the start and end offsets to ensure they point within the string.
-  int surrounding_length = surrounding_text.length();
-  start_offset = std::min(surrounding_length, std::max(0, start_offset));
-  end_offset = std::min(surrounding_length, std::max(0, end_offset));
+  uint32_t surrounding_length = surrounding_text.length();
+  start_offset = std::min(surrounding_length, start_offset);
+  end_offset = std::min(surrounding_length, end_offset);
 
   context_->SetSelectionSurroundings(start_offset, end_offset,
                                      surrounding_text);

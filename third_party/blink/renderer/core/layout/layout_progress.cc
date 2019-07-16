@@ -61,7 +61,7 @@ void LayoutProgress::UpdateFromElement() {
 double LayoutProgress::AnimationProgress() const {
   if (!animating_)
     return 0;
-  base::TimeDelta elapsed = CurrentTimeTicks() - animation_start_time_;
+  base::TimeDelta elapsed = base::TimeTicks::Now() - animation_start_time_;
   return (elapsed % animation_duration_).InSecondsF() /
          animation_duration_.InSecondsF();
 }
@@ -98,7 +98,7 @@ void LayoutProgress::UpdateAnimationState() {
 
   animating_ = animating;
   if (animating_) {
-    animation_start_time_ = CurrentTimeTicks();
+    animation_start_time_ = base::TimeTicks::Now();
     animation_timer_.StartOneShot(animation_repeat_interval_, FROM_HERE);
   } else {
     animation_timer_.Stop();

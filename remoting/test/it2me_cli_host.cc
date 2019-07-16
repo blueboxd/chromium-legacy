@@ -41,13 +41,10 @@ constexpr char kCRDDebugLog[] = "_debug_log";
 // Connect message parameters:
 constexpr char kCRDConnectUserName[] = "userName";
 constexpr char kCRDConnectAuth[] = "authServiceWithToken";
-constexpr char kCRDConnectXMPPServer[] = "xmppServerAddress";
-constexpr char kCRDConnectXMPPTLS[] = "xmppServerUseTls";
 constexpr char kCRDConnectDirectoryBot[] = "directoryBotJid";
 constexpr char kCRDConnectNoDialogs[] = "noDialogs";
 
 // Connect message parameter values:
-constexpr char kCRDConnectXMPPServerValue[] = "talk.google.com:443";
 constexpr char kCRDConnectDirectoryBotValue[] = "remoting@bot.talk.google.com";
 
 // CRD host states we care about:
@@ -219,9 +216,6 @@ void It2MeCliHost::StartCRDHostAndGetCode(OAuthTokenGetter::Status status,
 
   connect_params.SetKey(kCRDConnectUserName, base::Value(user_email));
   connect_params.SetKey(kCRDConnectAuth, base::Value("oauth2:" + access_token));
-  connect_params.SetKey(kCRDConnectXMPPServer,
-                        base::Value(kCRDConnectXMPPServerValue));
-  connect_params.SetKey(kCRDConnectXMPPTLS, base::Value(true));
   connect_params.SetKey(kCRDConnectDirectoryBot,
                         base::Value(kCRDConnectDirectoryBotValue));
   connect_params.SetKey(kCRDConnectNoDialogs, base::Value(true));

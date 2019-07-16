@@ -291,7 +291,7 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
       message->SerializeIfNecessary();
     } else {
       if (!callback_.is_null())
-        context->Dispatch(&callback_);
+        context->Dispatch(message, &callback_);
       return true;
     }
   }
@@ -358,9 +358,9 @@ bool {{class_name}}_{{method.name}}_HandleSyncResponse::Accept(
       message->SerializeIfNecessary();
     } else {
       context->HandleSyncResponse(
-{%-       for param in method.response_parameters %}
+          message
+{%-       for param in method.response_parameters %},
           out_{{param.name}}_
-{%-         if not loop.last -%}, {% endif -%}
 {%-       endfor %});
       *result_ = true;
       mojo::internal::SyncMessageResponseSetup::SetCurrentSyncResponseMessage(
@@ -421,7 +421,7 @@ bool {{class_name}}StubDispatch::Accept(
           // Force serialization before dispatch in this case.
           message->SerializeIfNecessary();
         } else {
-          context->Dispatch(impl);
+          context->Dispatch(message, impl);
           return true;
         }
       }
@@ -484,7 +484,7 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
                   message->request_id(),
                   message->has_flag(mojo::Message::kFlagIsSync),
                   std::move(responder));
-          context->Dispatch(impl, std::move(callback));
+          context->Dispatch(message, impl, std::move(callback));
           return true;
         }
       }

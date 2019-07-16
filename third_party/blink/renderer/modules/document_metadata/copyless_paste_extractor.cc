@@ -296,9 +296,9 @@ WebPagePtr CopylessPasteExtractor::Extract(const Document& document) {
   WebPagePtr page = WebPage::New();
 
   // Traverse the DOM tree and extract the metadata.
-  base::TimeTicks start_time = CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   ExtractionStatus status = ExtractMetadata(*html, page->entities);
-  base::TimeDelta elapsed_time = CurrentTimeTicks() - start_time;
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
 
   DEFINE_STATIC_LOCAL(EnumerationHistogram, status_histogram,
                       ("CopylessPaste.ExtractionStatus", kCount));

@@ -34,14 +34,14 @@
 
 namespace {
 
-// web_contents->GetURL in general will not necessarily yield the original URL
-// that started the request, but we're only interested in verifying if it was
-// issued by a history page, for whom this is the case. If it is not possible to
-// obtain the URL, we return the empty GURL.
+// web_contents->GetLastCommittedURL in general will not necessarily yield the
+// original URL that started the request, but we're only interested in verifying
+// if it was issued by a history page, for whom this is the case. If it is not
+// possible to obtain the URL, we return the empty GURL.
 GURL GetUnsafeRequestOrigin(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter) {
   content::WebContents* web_contents = wc_getter.Run();
-  return web_contents ? web_contents->GetURL() : GURL();
+  return web_contents ? web_contents->GetLastCommittedURL() : GURL();
 }
 
 bool ParseHistoryUiOrigin(const GURL& url,

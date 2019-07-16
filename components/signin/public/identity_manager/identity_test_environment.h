@@ -16,7 +16,6 @@
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 
 class FakeProfileOAuth2TokenService;
-class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
 class TestSigninClient;
@@ -275,7 +274,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   void SimulateMergeSessionFailure(const GoogleServiceAuthError& auth_error);
 
  private:
-  friend class ::IdentityTestEnvironmentChromeBrowserStateAdaptor;
   friend class ::IdentityTestEnvironmentProfileAdaptor;
 
   struct AccessTokenRequestState {
@@ -307,8 +305,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // use the ProfileKeyedServiceFactory infrastructure).
   // NOTE: This constructor is for usage only in the special case of embedder
   // unittests that must use the IdentityManager instance associated with the
-  // Profile/ChromeBrowserState. If you think you have another use case for it,
-  // contact blundell@chromium.org.
+  // Profile. If you think you have another use case for it, contact
+  // blundell@chromium.org.
   IdentityTestEnvironment(IdentityManager* identity_manager);
 
   // IdentityManager::DiagnosticsObserver:

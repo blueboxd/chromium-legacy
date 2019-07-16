@@ -40,8 +40,8 @@ class SmartSelectionClient {
  private:
   void OnSurroundingTextReceived(int callback_data,
                                  const base::string16& text,
-                                 int start,
-                                 int end);
+                                 uint32_t start,
+                                 uint32_t end);
 
   // A weak reference to the Java ContentSelectionClient object.
   JavaObjectWeakGlobalRef java_ref_;

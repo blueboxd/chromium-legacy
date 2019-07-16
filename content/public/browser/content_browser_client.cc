@@ -133,6 +133,11 @@ ContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
   return nullptr;
 }
 
+bool ContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
+    base::StringPiece scheme) {
+  return false;
+}
+
 network::mojom::URLLoaderFactoryPtrInfo
 ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     RenderProcessHost* process,

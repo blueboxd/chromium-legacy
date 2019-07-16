@@ -89,6 +89,7 @@ if (is_android) {
     java_files = [
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerGcmNetworkManagerTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskGcmTaskServiceTest.java",
+      "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskJobServiceTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerImplTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerPrefsTest.java",
       "android/junit/src/org/chromium/components/background_task_scheduler/BackgroundTaskSchedulerUmaTest.java",

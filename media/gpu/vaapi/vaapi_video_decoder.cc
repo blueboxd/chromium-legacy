@@ -23,7 +23,6 @@
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "media/gpu/video_frame_converter.h"
 #include "ui/gfx/native_pixmap.h"
 
 namespace media {
@@ -68,11 +67,9 @@ VaapiVideoDecoder::DecodeTask::DecodeTask(DecodeTask&&) = default;
 // static
 std::unique_ptr<VideoDecoder> VaapiVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter) {
-  return base::WrapUnique<VideoDecoder>(
-      new VaapiVideoDecoder(std::move(client_task_runner),
-                            std::move(frame_pool), std::move(frame_converter)));
+    std::unique_ptr<DmabufVideoFramePool> frame_pool) {
+  return base::WrapUnique<VideoDecoder>(new VaapiVideoDecoder(
+      std::move(client_task_runner), std::move(frame_pool)));
 }
 
 // static
@@ -83,10 +80,8 @@ SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs() {
 
 VaapiVideoDecoder::VaapiVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-    std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter)
+    std::unique_ptr<DmabufVideoFramePool> frame_pool)
     : frame_pool_(std::move(frame_pool)),
-      frame_converter_(std::move(frame_converter)),
       client_task_runner_(std::move(client_task_runner)),
       decoder_thread_("VaapiDecoderThread"),
       weak_this_factory_(this) {
@@ -161,7 +156,6 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
   frame_pool_->set_parent_task_runner(decoder_thread_task_runner_);
-  frame_converter_->set_parent_task_runner(decoder_thread_task_runner_);
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -270,7 +264,6 @@ void VaapiVideoDecoder::DestroyTask() {
   // Drop all video frame references. This will cause the frames to be
   // destroyed once the decoder's client is done using them.
   frame_pool_ = nullptr;
-  frame_converter_ = nullptr;
 
   weak_this_factory_.InvalidateWeakPtrs();
 }
@@ -512,19 +505,11 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
     video_frame = std::move(wrapped_frame);
   }
 
-  scoped_refptr<VideoFrame> converted_frame =
-      frame_converter_->ConvertFrame(video_frame);
-  if (!converted_frame) {
-    VLOGF(1) << "Failed to convert video frame";
-    SetState(State::kError);
-    return;
-  }
-
   // TODO(dstaessens): MojoVideoDecoderService expects the |output_cb_| to be
   // called on the client task runner, even though media::VideoDecoder states
   // frames should be output without any thread jumping.
   client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(output_cb_, std::move(converted_frame)));
+      FROM_HERE, base::BindOnce(output_cb_, std::move(video_frame)));
 }
 
 void VaapiVideoDecoder::ChangeFrameResolutionTask() {

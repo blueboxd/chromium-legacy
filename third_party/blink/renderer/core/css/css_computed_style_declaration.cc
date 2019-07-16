@@ -554,6 +554,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     AtomicString custom_property_name) {
+  DCHECK_EQ(CSSPropertyID::kVariable, cssPropertyID(custom_property_name));
   return GetPropertyCSSValue(custom_property_name);
 }
 

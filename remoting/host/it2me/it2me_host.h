@@ -20,7 +20,7 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/port_range.h"
 #include "remoting/protocol/validating_authenticator.h"
-#include "remoting/signaling/xmpp_signal_strategy.h"
+#include "remoting/signaling/signal_strategy.h"
 
 namespace base {
 class DictionaryValue;

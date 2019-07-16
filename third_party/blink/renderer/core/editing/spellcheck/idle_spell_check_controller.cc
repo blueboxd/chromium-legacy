@@ -229,7 +229,7 @@ void IdleSpellCheckController::ForceInvocationForTesting() {
     return;
 
   auto* deadline = MakeGarbageCollected<IdleDeadline>(
-      CurrentTimeTicks() + kIdleSpellcheckTestTimeout,
+      base::TimeTicks::Now() + kIdleSpellcheckTestTimeout,
       IdleDeadline::CallbackType::kCalledWhenIdle);
 
   switch (state_) {

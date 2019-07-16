@@ -137,7 +137,7 @@ Vector<Vector<base::TimeDelta>> PictureSnapshot::Profile(
       SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
   bitmap.eraseARGB(0, 0, 0, 0);
 
-  base::TimeTicks now = WTF::CurrentTimeTicks();
+  base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks stop_time = now + min_duration;
   for (unsigned step = 0; step < min_repeat_count || now < stop_time; ++step) {
     Vector<base::TimeDelta> current_timings;
@@ -153,7 +153,7 @@ Vector<Vector<base::TimeDelta>> PictureSnapshot::Profile(
     canvas.SetTimings(&current_timings);
     picture_->playback(&canvas);
     timings.push_back(std::move(current_timings));
-    now = WTF::CurrentTimeTicks();
+    now = base::TimeTicks::Now();
   }
   return timings;
 }

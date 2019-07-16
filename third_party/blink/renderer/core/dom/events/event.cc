@@ -80,7 +80,7 @@ Event::Event(const AtomicString& event_type,
             bubbles,
             cancelable,
             composed_mode,
-            CurrentTimeTicks()) {}
+            base::TimeTicks::Now()) {}
 
 Event::Event(const AtomicString& event_type,
              Bubbles bubbles,

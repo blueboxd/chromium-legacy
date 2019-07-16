@@ -11,6 +11,7 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace chromeos {
 
@@ -29,6 +30,23 @@ bool GetSubjectPublicKeyInfo(const net::X509Certificate& certificate,
 }
 
 }  // namespace
+
+base::Optional<ChallengeResponseKey::SignatureAlgorithm>
+GetChallengeResponseKeyAlgorithmFromSsl(uint16_t ssl_algorithm) {
+  switch (ssl_algorithm) {
+    case SSL_SIGN_RSA_PKCS1_SHA1:
+      return ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha1;
+    case SSL_SIGN_RSA_PKCS1_SHA256:
+      return ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha256;
+    case SSL_SIGN_RSA_PKCS1_SHA384:
+      return ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha384;
+    case SSL_SIGN_RSA_PKCS1_SHA512:
+      return ChallengeResponseKey::SignatureAlgorithm::kRsassaPkcs1V15Sha512;
+    default:
+      // This algorithm is unsupported by ChallengeResponseKey.
+      return {};
+  }
+}
 
 bool ExtractChallengeResponseKeyFromCert(
     const net::X509Certificate& certificate,

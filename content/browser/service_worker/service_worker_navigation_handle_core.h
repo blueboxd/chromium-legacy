@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_controllee_request_handler.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
@@ -18,7 +20,6 @@ namespace content {
 
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
-class ServiceWorkerProviderHost;
 
 // This class is created on the UI thread, but should only be accessed from the
 // IO thread afterwards. It is the IO thread pendant of
@@ -36,11 +37,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
 
-  void set_provider_host(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host) {
-    provider_host_ = std::move(provider_host);
-  }
-
   // Called when the navigation is ready to commit, set the 2 IDs for the
   // pre-created provider host.
   void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
@@ -49,10 +45,33 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
     return context_wrapper_.get();
   }
 
+  /////////////////////////////////////////////////////////////////////////////
+  // NavigationLoaderOnUI:
+
+  void set_provider_host(
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host) {
+    provider_host_ = std::move(provider_host);
+  }
+
+  ServiceWorkerProviderHost* provider_host() { return provider_host_.get(); }
+
+  void set_interceptor(
+      std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor) {
+    interceptor_ = std::move(interceptor);
+  }
+
+  ServiceWorkerControlleeRequestHandler* interceptor() {
+    return interceptor_.get();
+  }
+  /////////////////////////////////////////////////////////////////////////////
+
  private:
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+
+  // NavigationLoaderOnUI:
+  std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandleCore);
 };

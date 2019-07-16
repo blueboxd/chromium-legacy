@@ -923,9 +923,6 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
     }
     return;
   }
-
-  UMA_HISTOGRAM_COUNTS_100("SBIRS.IncidentCount", count);
-
   // Perform final synchronous collection tasks for the report.
   DoExtensionCollection(report->mutable_extension_data());
 

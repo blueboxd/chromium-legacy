@@ -35,7 +35,7 @@ class DisplayLockBudgetTest : public RenderingTest,
   void ResetDeadlineForTesting(YieldingDisplayLockBudget& budget,
                                const LifecycleData& lifecycle_data) {
     budget.deadline_ =
-        CurrentTimeTicks() + budget.GetCurrentBudget(lifecycle_data);
+        base::TimeTicks::Now() + budget.GetCurrentBudget(lifecycle_data);
   }
 
   void ResetBudget(std::unique_ptr<DisplayLockBudget> budget,

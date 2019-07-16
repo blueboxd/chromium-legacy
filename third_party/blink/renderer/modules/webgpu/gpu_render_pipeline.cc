@@ -41,8 +41,17 @@ DawnColorStateDescriptor AsDawnType(
 
   DawnColorStateDescriptor dawn_desc;
   dawn_desc.nextInChain = nullptr;
-  dawn_desc.alphaBlend = AsDawnType(webgpu_desc->alphaBlend());
-  dawn_desc.colorBlend = AsDawnType(webgpu_desc->colorBlend());
+
+  GPUBlendDescriptor* gpu_alpha_blend = webgpu_desc->hasAlphaBlend()
+                                            ? webgpu_desc->alphaBlend()
+                                            : GPUBlendDescriptor::Create();
+  dawn_desc.alphaBlend = AsDawnType(gpu_alpha_blend);
+
+  GPUBlendDescriptor* gpu_color_blend = webgpu_desc->hasColorBlend()
+                                            ? webgpu_desc->colorBlend()
+                                            : GPUBlendDescriptor::Create();
+  dawn_desc.colorBlend = AsDawnType(gpu_color_blend);
+
   dawn_desc.writeMask =
       AsDawnEnum<DawnColorWriteMask>(webgpu_desc->writeMask());
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());

@@ -320,6 +320,10 @@ button:not(.primary):hover {
   width: 150px;
 }
 
+.experiment-origin-list-value {
+  resize: none;
+}
+
 select {
   background: white;
   border: 1px solid var(--link-color);

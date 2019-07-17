@@ -32,7 +32,6 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
       scenic_session_(manager_->GetScenic()),
       view_(&scenic_session_, std::move(view_token.value), "chromium window"),
       node_(&scenic_session_),
-      input_node_(&scenic_session_),
       render_node_(&scenic_session_) {
   scenic_session_.set_error_handler(
       fit::bind_member(this, &ScenicWindow::OnScenicError));
@@ -43,9 +42,6 @@ ScenicWindow::ScenicWindow(ScenicWindowManager* window_manager,
   // Subscribe to metrics events from the node. These events are used to
   // get the device pixel ratio for the screen.
   node_.SetEventMask(fuchsia::ui::gfx::kMetricsEventMask);
-
-  // Add input shape.
-  node_.AddChild(input_node_);
 
   // Add rendering subtree. Hit testing is disabled to prevent GPU process from
   // receiving input.
@@ -185,10 +181,6 @@ void ScenicWindow::UpdateSize() {
 
   // Scale the render node so that surface rect can always be 1x1.
   render_node_.SetScale(size_dips_.width(), size_dips_.height(), 1.f);
-
-  // Resize input node to cover the whole surface.
-  input_node_.SetShape(scenic::Rectangle(&scenic_session_, size_dips_.width(),
-                                         size_dips_.height()));
 
   // This is necessary when using vulkan because ImagePipes are presented
   // separately and we need to make sure our sizes change is committed.

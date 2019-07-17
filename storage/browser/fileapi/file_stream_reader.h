@@ -74,7 +74,7 @@ class FileStreamReader {
   // modification time to see if the file has been modified, and if it does any
   // succeeding read operations should fail with ERR_UPLOAD_FILE_CHANGED error.
   COMPONENT_EXPORT(STORAGE_BROWSER)
-  static FileStreamReader* CreateForFileSystemFile(
+  static std::unique_ptr<FileStreamReader> CreateForFileSystemFile(
       storage::FileSystemContext* context,
       const storage::FileSystemURL& url,
       int64_t initial_offset,

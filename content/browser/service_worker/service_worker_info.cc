@@ -5,7 +5,7 @@
 #include "content/browser/service_worker/service_worker_info.h"
 
 #include "content/browser/service_worker/embedded_worker_status.h"
-#include "content/common/service_worker/service_worker_types.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -21,7 +21,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
       registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
       version_id(blink::mojom::kInvalidServiceWorkerVersionId),
       process_id(ChildProcessHost::kInvalidUniqueID),
-      thread_id(kInvalidEmbeddedWorkerThreadId),
+      thread_id(ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId),
       devtools_agent_route_id(MSG_ROUTING_NONE) {}
 
 ServiceWorkerVersionInfo::ServiceWorkerVersionInfo(

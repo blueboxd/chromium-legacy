@@ -276,7 +276,7 @@ void KeyframeEffect::RemoveKeyframeModel(int keyframe_model_id) {
   bool keyframe_model_removed = false;
 
   // Since we want to use the KeyframeModels that we're going to remove, we
-  // need to use a stable_parition here instead of remove_if. Remove_if leaves
+  // need to use a stable_partition here instead of remove_if. remove_if leaves
   // the removed items in an unspecified state.
   auto keyframe_models_to_remove = std::stable_partition(
       keyframe_models_.begin(), keyframe_models_.end(),

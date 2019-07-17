@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Constant to indicate selection index is not set.
+const NO_SELECTION = -1;
+
 /**
  * Class to handle text input for improved accuracy and efficiency.
  */
@@ -23,6 +26,12 @@ class TextInputManager {
       color: SAConstants.Focus.PRIMARY_COLOR,
       secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     };
+
+    /** @private {number} */
+    this.selectionStart_ = NO_SELECTION;
+
+    /** @private {number} */
+    this.selectionEnd_ = NO_SELECTION;
   }
 
   /**
@@ -130,5 +139,53 @@ class TextInputManager {
   clearFocusRingForTextInput_() {
     this.textInputFocusRing_.rects = [];
     chrome.accessibilityPrivate.setFocusRings([this.textInputFocusRing_]);
+  }
+
+  /**
+   * IN PROGRESS TEXT SELECTION BELOW
+   *  TODO(rosalindag): Move this into the text navigation file when
+   *  creation of that file is merged
+   */
+
+
+  /**
+   * TODO(rosalindag): Check for value is -1 for selectionStart and
+   * selectionEnd and handle error.
+   *
+   * TODO(rosalindag): Add variables to pass into anchorObject and focusObject.
+   *
+   * Sets the selection using the selectionStart and selectionEnd
+   * as the offset input for setDocumentSelection and the parameter
+   * textNode as the object input for setDocumentSelection.
+   * @param {!chrome.automation.AutomationNode} textNode
+   * @private
+   */
+  setSelection_(textNode) {
+    chrome.automation.setDocumentSelection({
+      anchorObject: textNode,
+      anchorOffset: this.selectionStart_,
+      focusObject: textNode,
+      focusOffset: this.selectionEnd_
+    });
+  }
+
+  /**
+   * Sets the selectionStart variable based on the selection of the current
+   * node.
+   * @public
+   */
+  setSelectStart() {
+    var textNode = this.navigationManager_.currentNode();
+    this.selectionStart_ = textNode.textSelStart;
+  }
+
+  /**
+   * Sets the selectionEnd variable based on the selection of the current node.
+   * @public
+   */
+  setSelectEnd() {
+    var textNode = this.navigationManager_.currentNode();
+    this.selectionEnd_ = textNode.textSelEnd;
+    this.setSelection_(textNode);
   }
 }

@@ -36,6 +36,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -156,19 +157,6 @@ bool IsSecureFrame(FrameTreeNode* frame) {
   return true;
 }
 
-bool IsFetchMetadataEnabled() {
-  return base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
-}
-
-bool IsFetchMetadataDestinationEnabled() {
-  return base::FeatureList::IsEnabled(
-             network::features::kFetchMetadataDestination) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
-}
-
 // This should match blink::ResourceRequest::needsHTTPOrigin.
 bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
                      const std::string& method) {
@@ -205,18 +193,17 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  if (!base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
-                                               "holdback_web", false)) {
-    bool is_reload =
-        navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-        navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
-        navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
-    if (is_reload)
-      headers->RemoveHeader("Save-Data");
-
-    if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context))
-      headers->SetHeaderIfMissing("Save-Data", "on");
-  }
+  const bool is_reload =
+      navigation_type == FrameMsg_Navigate_Type::RELOAD ||
+      navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
+      navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+  blink::mojom::RendererPreferences render_prefs =
+      frame_tree_node->render_manager()
+          ->current_host()
+          ->GetDelegate()
+          ->GetRendererPrefs(browser_context);
+  UpdateAdditionalHeadersForBrowserInitiatedRequest(headers, browser_context,
+                                                    is_reload, render_prefs);
 
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
@@ -762,14 +749,6 @@ NavigationRequest::NavigationRequest(
                           &commit_params_.post_content_type);
       }
     }
-
-    blink::mojom::RendererPreferences render_prefs =
-        frame_tree_node_->render_manager()
-            ->current_host()
-            ->GetDelegate()
-            ->GetRendererPrefs(browser_context);
-    if (render_prefs.enable_do_not_track)
-      headers.SetHeader(kDoNotTrackHeader, "1");
   }
 
   begin_params_->headers = headers.ToString();

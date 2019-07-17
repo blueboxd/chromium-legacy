@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -241,8 +242,8 @@ void AssistantOptInFlowScreenHandler::OnActivityControlOptInResult(
             weak_factory_.GetWeakPtr()));
   } else {
     RecordAssistantOptInStatus(ACTIVITY_CONTROL_SKIPPED);
-    ::assistant::prefs::SetConsentStatus(profile->GetPrefs(),
-                                         ash::mojom::ConsentStatus::kUnknown);
+    profile->GetPrefs()->SetInteger(assistant::prefs::kAssistantConsentStatus,
+                                    assistant::prefs::ConsentStatus::kUnknown);
     HandleFlowFinished();
   }
 }
@@ -375,9 +376,10 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
         settings_ui.consent_flow_ui().consent_status() ==
             assistant::ConsentFlowUi_ConsentStatus_ASK_FOR_CONSENT;
 
-    ::assistant::prefs::SetConsentStatus(
-        prefs, consented ? ash::mojom::ConsentStatus::kActivityControlAccepted
-                         : ash::mojom::ConsentStatus::kUnknown);
+    prefs->SetInteger(
+        assistant::prefs::kAssistantConsentStatus,
+        consented ? assistant::prefs::ConsentStatus::kActivityControlAccepted
+                  : assistant::prefs::ConsentStatus::kUnknown);
   } else {
     AddSettingZippy("settings",
                     CreateZippyData(activity_control_ui.setting_zippy()));
@@ -453,8 +455,9 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
     } else if (activity_control_needed_) {
       activity_control_needed_ = false;
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-      ::assistant::prefs::SetConsentStatus(
-          prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
+      prefs->SetInteger(
+          assistant::prefs::kAssistantConsentStatus,
+          assistant::prefs::ConsentStatus::kActivityControlAccepted);
     }
   }
 
@@ -554,12 +557,13 @@ void AssistantOptInFlowScreenHandler::HandleLoadingTimeout() {
 
 void AssistantOptInFlowScreenHandler::HandleFlowFinished() {
   auto* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  if (!prefs->GetUserPrefValue(::assistant::prefs::kAssistantConsentStatus)) {
+  if (!prefs->GetUserPrefValue(assistant::prefs::kAssistantConsentStatus)) {
     // Set consent status to unknown if user consent is needed but not provided.
-    ::assistant::prefs::SetConsentStatus(
-        prefs, activity_control_needed_
-                   ? ash::mojom::ConsentStatus::kUnknown
-                   : ash::mojom::ConsentStatus::kActivityControlAccepted);
+    prefs->SetInteger(
+        assistant::prefs::kAssistantConsentStatus,
+        activity_control_needed_
+            ? assistant::prefs::ConsentStatus::kUnknown
+            : assistant::prefs::ConsentStatus::kActivityControlAccepted);
   }
 
   UMA_HISTOGRAM_EXACT_LINEAR("Assistant.OptInFlow.LoadingTimeoutCount",

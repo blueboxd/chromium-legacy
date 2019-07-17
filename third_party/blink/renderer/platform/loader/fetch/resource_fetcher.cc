@@ -33,6 +33,8 @@
 
 #include "base/auto_reset.h"
 #include "base/time/time.h"
+#include "services/network/public/cpp/request_mode.h"
+#include "third_party/blink/public/common/loader/request_destination.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -338,24 +340,6 @@ void SetReferrer(
   }
 }
 
-// This maps the network::mojom::RequestMode to a string that can be used
-// in a `Sec-Fetch-Mode` header.
-const char* RequestModeToString(network::mojom::RequestMode mode) {
-  switch (mode) {
-    case network::mojom::RequestMode::kSameOrigin:
-      return "same-origin";
-    case network::mojom::RequestMode::kNoCors:
-      return "no-cors";
-    case network::mojom::RequestMode::kCors:
-    case network::mojom::RequestMode::kCorsWithForcedPreflight:
-      return "cors";
-    case network::mojom::RequestMode::kNavigate:
-      return "navigate";
-  }
-  NOTREACHED();
-  return "";
-}
-
 void SetSecFetchHeaders(
     ResourceRequest& request,
     const FetchClientSettingsObject& fetch_client_settings_object) {
@@ -364,7 +348,7 @@ void SetSecFetchHeaders(
   if (blink::RuntimeEnabledFeatures::FetchMetadataEnabled() &&
       url_origin->IsPotentiallyTrustworthy()) {
     const char* destination_value =
-        FetchUtils::GetDestinationFromContext(request.GetRequestContext());
+        GetRequestDestinationFromContext(request.GetRequestContext());
 
     // If the request's destination is the empty string (e.g. `fetch()`), then
     // we'll use the identifier "empty" instead.
@@ -378,8 +362,8 @@ void SetSecFetchHeaders(
         request.SetHttpHeaderField("Sec-Fetch-Dest", destination_value);
       }
 
-      request.SetHttpHeaderField("Sec-Fetch-Mode",
-                                 RequestModeToString(request.GetMode()));
+      request.SetHttpHeaderField(
+          "Sec-Fetch-Mode", network::RequestModeToString(request.GetMode()));
 
       // Note that the `Sec-Fetch-User` header is always false (and therefore
       // omitted) for subresource requests. Likewise, note that we rely on

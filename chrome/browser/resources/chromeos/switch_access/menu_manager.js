@@ -284,6 +284,8 @@ class MenuManager {
         actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT);
         actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
         actions.push(SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
+        actions.push(SAConstants.MenuAction.SELECT_START);
+        actions.push(SAConstants.MenuAction.SELECT_END);
       }
     } else if (actions.length > 0) {
       actions.push(SAConstants.MenuAction.SELECT);
@@ -371,6 +373,12 @@ class MenuManager {
       case SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
         this.navigationManager_.moveUpOneLineOfText();
         exitAfterAction = false;
+        break;
+      case SAConstants.MenuAction.SELECT_START:
+        this.navigationManager_.textInputManager().setSelectStart();
+        break;
+      case SAConstants.MenuAction.SELECT_END:
+        this.navigationManager_.textInputManager().setSelectEnd();
         break;
       default:
         this.navigationManager_.performActionOnCurrentNode(action);

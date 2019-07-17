@@ -1,7 +1,7 @@
 # Please consult components/viz/README.md about allowable dependencies.
 
 include_rules = [
-  "+components/discardable_memory/public/interfaces",
+  "+components/discardable_memory/public/mojom",
   "+components/viz/common/features.h",
   "-components/viz/common/switches.h",
   "+media/base/video_types.h",

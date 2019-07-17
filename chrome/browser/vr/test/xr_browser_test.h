@@ -164,7 +164,15 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   // JavaScript errors were encountered.
   void AssertNoJavaScriptErrors(content::WebContents* web_contents);
 
-  Browser* browser() { return InProcessBrowserTest::browser(); }
+  Browser* browser() {
+    return browser_ == nullptr ? InProcessBrowserTest::browser() : browser_;
+  }
+
+  void SetBrowser(Browser* browser) { browser_ = browser; }
+
+  Browser* CreateIncognitoBrowser(Profile* profile = nullptr) {
+    return InProcessBrowserTest::CreateIncognitoBrowser(profile);
+  }
 
   // Convenience function for running RunJavaScriptOrFail with the return value
   // of GetCurrentWebContents.
@@ -222,6 +230,7 @@ class XrBrowserTestBase : public InProcessBrowserTest {
 
  private:
   void LogJavaScriptFailure();
+  Browser* browser_ = nullptr;
   std::unique_ptr<net::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList scoped_feature_list_;
   bool test_skipped_at_startup_ = false;

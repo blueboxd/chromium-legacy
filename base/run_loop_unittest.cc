@@ -403,7 +403,7 @@ TEST_P(RunLoopTest, NestedRunWithTimeoutWhereInnerLoopHasALongerTimeout) {
 // Verify that the QuitWhenIdleClosure() can run after the RunLoop has been
 // deleted. It should have no effect.
 TEST_P(RunLoopTest, QuitWhenIdleClosureAfterRunLoopScope) {
-  Closure quit_when_idle_closure;
+  RepeatingClosure quit_when_idle_closure;
   {
     RunLoop run_loop;
     quit_when_idle_closure = run_loop.QuitWhenIdleClosure();

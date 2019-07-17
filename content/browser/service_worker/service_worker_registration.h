@@ -19,7 +19,6 @@
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 

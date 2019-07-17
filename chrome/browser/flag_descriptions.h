@@ -451,6 +451,9 @@ extern const char kEnableNotificationExpansionAnimationDescription[];
 extern const char kEnableOutOfBlinkCorsName[];
 extern const char kEnableOutOfBlinkCorsDescription[];
 
+extern const char kCrossOriginEmbedderPolicyName[];
+extern const char kCrossOriginEmbedderPolicyDescription[];
+
 extern const char kVizDisplayCompositorName[];
 extern const char kVizDisplayCompositorDescription[];
 

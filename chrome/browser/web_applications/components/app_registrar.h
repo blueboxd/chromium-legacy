@@ -60,8 +60,10 @@ class AppRegistrar {
       const AppId& app_id,
       web_app::InstallSource install_source) const;
 
-  // Returns the app id for which the |url| is in scope of, empty if none.
-  virtual AppId FindAppIdForUrl(const GURL& url) const = 0;
+  // Searches for the first app id in the registry for which the |url| is in
+  // scope.
+  virtual base::Optional<AppId> FindAppWithUrlInScope(
+      const GURL& url) const = 0;
 
   // Count a number of all apps which are installed by user (non-default).
   // Requires app registry to be in a ready state.

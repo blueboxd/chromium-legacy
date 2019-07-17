@@ -99,7 +99,7 @@ base::File::Error DraggedFileUtil::GetFileInfo(
   }
   base::File::Error error =
       NativeFileUtil::GetFileInfo(url.path(), file_info);
-  if (base::IsLink(url.path()) && !base::FilePath().IsParent(url.path())) {
+  if (IsHiddenItem(url.path()) && !base::FilePath().IsParent(url.path())) {
     // Don't follow symlinks unless it's the one that are selected by the user.
     return base::File::FILE_ERROR_NOT_FOUND;
   }

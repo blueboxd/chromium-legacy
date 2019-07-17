@@ -45,11 +45,11 @@ AssistantFooterView::AssistantFooterView(AssistantViewDelegate* delegate)
               &AssistantFooterView::OnAnimationEnded,
               base::Unretained(this)))) {
   InitLayout();
-  delegate_->AddVoiceInteractionControllerObserver(this);
+  delegate_->AddAssistantPrefsObserver(this);
 }
 
 AssistantFooterView::~AssistantFooterView() {
-  delegate_->RemoveVoiceInteractionControllerObserver(this);
+  delegate_->RemoveAssistantPrefsObserver(this);
 }
 
 const char* AssistantFooterView::GetClassName() const {
@@ -68,8 +68,9 @@ void AssistantFooterView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Initial view state is based on user consent state.
-  const bool consent_given = delegate_->GetConsentStatus() ==
-                             mojom::ConsentStatus::kActivityControlAccepted;
+  const bool consent_given =
+      delegate_->GetConsentStatus() ==
+      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Suggestion container.
   suggestion_container_ = new SuggestionContainerView(delegate_);
@@ -96,14 +97,14 @@ void AssistantFooterView::InitLayout() {
   AddChildView(opt_in_view_);
 }
 
-void AssistantFooterView::OnVoiceInteractionConsentStatusUpdated(
-    mojom::ConsentStatus consent_status) {
+void AssistantFooterView::OnAssistantConsentStatusUpdated(int consent_status) {
   using assistant::util::CreateLayerAnimationSequence;
   using assistant::util::CreateOpacityElement;
   using assistant::util::StartLayerAnimationSequence;
 
   const bool consent_given =
-      consent_status == mojom::ConsentStatus::kActivityControlAccepted;
+      consent_status ==
+      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // When the consent state changes, we need to hide/show the appropriate views.
   views::View* hide_view =
@@ -150,8 +151,9 @@ void AssistantFooterView::OnAnimationStarted(
 
 bool AssistantFooterView::OnAnimationEnded(
     const ui::CallbackLayerAnimationObserver& observer) {
-  const bool consent_given = delegate_->GetConsentStatus() ==
-                             mojom::ConsentStatus::kActivityControlAccepted;
+  const bool consent_given =
+      delegate_->GetConsentStatus() ==
+      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Only the view relevant to our consent state should process events.
   suggestion_container_->set_can_process_events_within_subtree(consent_given);

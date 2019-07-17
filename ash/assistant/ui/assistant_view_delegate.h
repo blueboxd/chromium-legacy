@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/model/assistant_cache_model.h"
 #include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
@@ -112,12 +113,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void AddUiModelObserver(AssistantUiModelObserver* observer) = 0;
   virtual void RemoveUiModelObserver(AssistantUiModelObserver* observer) = 0;
 
-  // Adds/removes the voice interaction controller observer associated with the
-  // view delegate.
-  virtual void AddVoiceInteractionControllerObserver(
-      DefaultVoiceInteractionObserver* observer) = 0;
-  virtual void RemoveVoiceInteractionControllerObserver(
-      DefaultVoiceInteractionObserver* observer) = 0;
+  // Adds/removes the Assistant prefs observer associated with the view
+  // delegate.
+  virtual void AddAssistantPrefsObserver(AssistantPrefsObserver* observer) = 0;
+  virtual void RemoveAssistantPrefsObserver(
+      AssistantPrefsObserver* observer) = 0;
 
   // Gets the caption bar delegate associated with the view delegate.
   virtual CaptionBarDelegate* GetCaptionBarDelegate() = 0;
@@ -130,7 +130,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       AssistantImageDownloader::DownloadCallback callback) = 0;
 
   // Returns the status of the user's consent.
-  virtual mojom::ConsentStatus GetConsentStatus() const = 0;
+  virtual int GetConsentStatus() const = 0;
 
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;

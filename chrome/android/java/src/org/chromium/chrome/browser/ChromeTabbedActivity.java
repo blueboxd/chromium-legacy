@@ -245,6 +245,9 @@ public class ChromeTabbedActivity
                     "Android.MainActivity.UndispatchedExplicitMainViewIntentSource",
                     IntentHandler.ExternalAppId.NUM_ENTRIES);
 
+    // Count histogram used to track number of tabs when we show the Overview on Return to Chrome.
+    private static final String TAB_COUNT_ON_RETURN = "Tabs.TabCountOnStartScreenShown";
+
     private final ActivityStopMetrics mActivityStopMetrics;
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
     private final @Nullable MultiInstanceManager mMultiInstanceManager;
@@ -1040,6 +1043,10 @@ public class ChromeTabbedActivity
         long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
         if (ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
                 && isMainIntentFromLauncher(getIntent()) && !isOverviewVisible) {
+            if (getCurrentTabModel() != null) {
+                RecordHistogram.recordCountHistogram(
+                        TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
+            }
             toggleOverview();
             return;
         }

@@ -75,6 +75,12 @@ class StubBufferHandleProvider
     return std::make_unique<StubBufferHandle>(mapped_size_, data_);
   }
 
+#if defined(OS_CHROMEOS)
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override {
+    return gfx::GpuMemoryBufferHandle();
+  }
+#endif
+
  private:
   const size_t mapped_size_;
   uint8_t* const data_;

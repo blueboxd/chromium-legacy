@@ -757,6 +757,31 @@ test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
       $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
           .getElementsByClassName('selected')[0]
           .firstChild.id === 'coll_0_img_tile_0');
+
+  // Clicking the image again should deselect it.
+  $('coll_0_img_tile_0').click();
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
+
+  // Close and reopen the submenu and ensure nothing is selected.
+  $(test.customizeMenu.IDS.MENU_BACK).click();
+  assertTrue(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundImageSubmenu));
+  assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
+  $('coll_tile_0').click();
+
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertTrue(elementIsVisible(backgroundImageSubmenu));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
 };
 
 // ******************************* HELPERS *******************************

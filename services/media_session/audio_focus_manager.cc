@@ -139,23 +139,24 @@ void AudioFocusManager::AbandonAudioFocusInternal(RequestId id) {
   // Notify observers that we lost audio focus.
   mojom::AudioFocusRequestStatePtr session_state =
       row->ToAudioFocusRequestState();
-  observers_.ForAllPtrs([&session_state](mojom::AudioFocusObserver* observer) {
+
+  for (const auto& observer : observers_)
     observer->OnFocusLost(session_state.Clone());
-  });
 
   if (!was_top_most_session || audio_focus_stack_.empty())
     return;
 
   // Notify observers that the session on top gained focus.
   AudioFocusRequest* new_session = audio_focus_stack_.back().get();
-  observers_.ForAllPtrs([&new_session](mojom::AudioFocusObserver* observer) {
+
+  for (const auto& observer : observers_)
     observer->OnFocusGained(new_session->ToAudioFocusRequestState());
-  });
 }
 
-void AudioFocusManager::AddObserver(mojom::AudioFocusObserverPtr observer) {
+void AudioFocusManager::AddObserver(
+    mojo::PendingRemote<mojom::AudioFocusObserver> observer) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  observers_.AddPtr(std::move(observer));
+  observers_.Add(std::move(observer));
 }
 
 void AudioFocusManager::SetSourceName(const std::string& name) {
@@ -179,19 +180,19 @@ void AudioFocusManager::SetEnforcementMode(mojom::EnforcementMode mode) {
 }
 
 void AudioFocusManager::CreateActiveMediaController(
-    mojom::MediaControllerRequest request) {
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  active_media_controller_.BindToInterface(std::move(request));
+  active_media_controller_.BindToInterface(std::move(receiver));
 }
 
 void AudioFocusManager::CreateMediaControllerForSession(
-    mojom::MediaControllerRequest request,
-    const base::UnguessableToken& request_id) {
+    mojo::PendingReceiver<mojom::MediaController> receiver,
+    const base::UnguessableToken& receiver_id) {
   for (auto& row : audio_focus_stack_) {
-    if (row->id() != request_id)
+    if (row->id() != receiver_id)
       continue;
 
-    row->BindToMediaController(std::move(request));
+    row->BindToMediaController(std::move(receiver));
     break;
   }
 }
@@ -234,9 +235,8 @@ void AudioFocusManager::RequestAudioFocusInternal(
   // Notify observers that we were gained audio focus.
   mojom::AudioFocusRequestStatePtr session_state =
       audio_focus_stack_.back()->ToAudioFocusRequestState();
-  observers_.ForAllPtrs([&session_state](mojom::AudioFocusObserver* observer) {
+  for (const auto& observer : observers_)
     observer->OnFocusGained(session_state.Clone());
-  });
 }
 
 void AudioFocusManager::EnforceAudioFocus() {

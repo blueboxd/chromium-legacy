@@ -74,7 +74,7 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
               url, launch_name, should_launch_app, should_persist)) {
         CloseOrGoBack(web_contents);
       } else {
-        close_reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+        close_reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
       }
       return;
     case apps::mojom::AppType::kUnknown:
@@ -133,9 +133,9 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
     std::vector<apps::IntentPickerAppInfo> apps) {
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
+  bool show_persistence_options = ShouldShowPersistenceOptions(apps_for_picker);
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps_for_picker),
-      ShouldShowRememberSelection(apps_for_picker),
+      web_contents, std::move(apps_for_picker), show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -154,7 +154,8 @@ ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
     case PickerAction::ARC_APP_PRESSED:
     case PickerAction::ARC_APP_PREFERRED_PRESSED:
     case PickerAction::PWA_APP_PRESSED:
-    case PickerAction::PICKER_ERROR:
+    case PickerAction::ERROR_BEFORE_PICKER:
+    case PickerAction::ERROR_AFTER_PICKER:
     case PickerAction::DIALOG_DEACTIVATED:
     case PickerAction::CHROME_PRESSED:
     case PickerAction::CHROME_PREFERRED_PRESSED:

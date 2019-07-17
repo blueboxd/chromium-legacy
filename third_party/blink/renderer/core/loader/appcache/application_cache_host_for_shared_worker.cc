@@ -39,4 +39,17 @@ void ApplicationCacheHostForSharedWorker::LogMessage(
 void ApplicationCacheHostForSharedWorker::SetSubresourceFactory(
     network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) {}
 
+void ApplicationCacheHostForSharedWorker::SelectCacheWithoutManifest() {
+  // This can be called during WorkerShadowPage initialization.
+  // TODO(https://crbug.com/538751): Add NOTREACHED() here after
+  // WorkerShadowPage is removed.
+}
+
+void ApplicationCacheHostForSharedWorker::SelectCacheWithManifest(
+    const KURL& manifest_url) {
+  // This can be called during WorkerShadowPage initialization.
+  // TODO(https://crbug.com/538751): Add NOTREACHED() here after
+  // WorkerShadowPage is removed.
+}
+
 }  // namespace blink

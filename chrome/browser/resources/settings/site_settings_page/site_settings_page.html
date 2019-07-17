@@ -23,17 +23,15 @@
         --cr-section-min-height: var(--cr-section-two-line-min-height);
       }
     </style>
-    <template is="dom-if" if="[[enableSiteSettings_]]">
-      <div class="settings-box first line-only">
-        <h2 class="first">$i18n{siteSettingsAllSites}</h2>
-      </div>
-      <cr-link-row data-route="SITE_SETTINGS_ALL" id="all-sites"
-          label="$i18n{siteSettingsAllSitesDescription}"
-          on-click="onTapNavigate_"></cr-link-row>
-      <div class="settings-box first line-only">
-        <h2>$i18n{siteSettingsPermissions}</h2>
-      </div>
-    </template>
+    <div class="settings-box first line-only">
+      <h2 class="first">$i18n{siteSettingsAllSites}</h2>
+    </div>
+    <cr-link-row data-route="SITE_SETTINGS_ALL" id="all-sites"
+        label="$i18n{siteSettingsAllSitesDescription}"
+        on-click="onTapNavigate_"></cr-link-row>
+    <div class="settings-box first line-only">
+      <h2>$i18n{siteSettingsPermissions}</h2>
+    </div>
 
     <cr-link-row class="two-line" data-route="SITE_SETTINGS_COOKIES"
         id="cookies" label="$i18n{siteSettingsCookies}"

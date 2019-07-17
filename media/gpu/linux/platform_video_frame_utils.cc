@@ -102,6 +102,19 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
   return nullptr;
 }
 
+base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    gfx::BufferUsage buffer_usage) {
+  // |visible_rect| and |natural_size| are not matter here. |coded_size| is set
+  // as a dummy variable.
+  auto frame =
+      CreatePlatformVideoFrame(pixel_format, coded_size, gfx::Rect(coded_size),
+                               coded_size, base::TimeDelta(), buffer_usage);
+  return frame ? base::make_optional<VideoFrameLayout>(frame->layout())
+               : base::nullopt;
+}
+
 gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     const VideoFrame* video_frame) {
   DCHECK(video_frame);

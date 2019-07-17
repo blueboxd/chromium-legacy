@@ -35,9 +35,8 @@ void MediaDialogController::Initialize() {
   // Connect to receive audio focus events.
   connector_->BindInterface(media_session::mojom::kServiceName,
                             mojo::MakeRequest(&audio_focus_ptr_));
-  media_session::mojom::AudioFocusObserverPtr audio_focus_observer;
-  audio_focus_observer_binding_.Bind(mojo::MakeRequest(&audio_focus_observer));
-  audio_focus_ptr_->AddObserver(std::move(audio_focus_observer));
+  audio_focus_ptr_->AddObserver(
+      audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 
   audio_focus_ptr_->GetFocusRequests(
       base::BindOnce(&MediaDialogController::OnReceivedAudioFocusRequests,

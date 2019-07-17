@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/common/service_worker/service_worker_types.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 namespace content {
@@ -35,20 +35,22 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
   if (response_head.headers->response_code() / 100 != 2) {
     // Non-2XX HTTP status code is handled as an error.
     error_code = net::ERR_INVALID_RESPONSE;
-    error_message = base::StringPrintf(kServiceWorkerBadHTTPResponseError,
-                                       response_head.headers->response_code());
+    error_message = base::StringPrintf(
+        ServiceWorkerConsts::kServiceWorkerBadHTTPResponseError,
+        response_head.headers->response_code());
   } else if (net::IsCertStatusError(response_head.cert_status) &&
              !base::CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kIgnoreCertificateErrors)) {
     error_code = static_cast<net::Error>(
         net::MapCertStatusToNetError(response_head.cert_status));
-    error_message = kServiceWorkerSSLError;
+    error_message = ServiceWorkerConsts::kServiceWorkerSSLError;
   } else if (!blink::IsSupportedJavascriptMimeType(response_head.mime_type)) {
     error_code = net::ERR_INSECURE_RESPONSE;
     error_message = response_head.mime_type.empty()
-                        ? kServiceWorkerNoMIMEError
-                        : base::StringPrintf(kServiceWorkerBadMIMEError,
-                                             response_head.mime_type.c_str());
+                        ? ServiceWorkerConsts::kServiceWorkerNoMIMEError
+                        : base::StringPrintf(
+                              ServiceWorkerConsts::kServiceWorkerBadMIMEError,
+                              response_head.mime_type.c_str());
   }
   if (out_completion_status)
     *out_completion_status = network::URLLoaderCompletionStatus(error_code);

@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -709,7 +710,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
             storage()->NewRegistrationId());
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
             storage()->NewVersionId());
-  EXPECT_EQ(kInvalidServiceWorkerResourceId, storage()->NewRegistrationId());
+  EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+            storage()->NewRegistrationId());
 }
 
 TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {

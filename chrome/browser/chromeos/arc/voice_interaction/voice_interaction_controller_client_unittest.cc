@@ -112,17 +112,6 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   EXPECT_EQ(false,
             ash::VoiceInteractionController::Get()->notification_enabled());
 
-  ASSERT_EQ(static_cast<int>(ash::mojom::ConsentStatus::kUnknown),
-            prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  prefs->SetInteger(
-      assistant::prefs::kAssistantConsentStatus,
-      static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted));
-  ASSERT_EQ(
-      static_cast<int>(ash::mojom::ConsentStatus::kActivityControlAccepted),
-      prefs->GetInteger(assistant::prefs::kAssistantConsentStatus));
-  EXPECT_EQ(ash::mojom::ConsentStatus::kActivityControlAccepted,
-            ash::VoiceInteractionController::Get()->consent_status());
-
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");
   ASSERT_EQ("en-CA", prefs->GetString(language::prefs::kApplicationLocale));

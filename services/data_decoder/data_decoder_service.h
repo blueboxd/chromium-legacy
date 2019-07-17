@@ -40,7 +40,8 @@ class DataDecoderService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
-  void BindBundledExchangesParser(mojom::BundledExchangesParserRequest request);
+  void BindBundledExchangesParserFactory(
+      mojom::BundledExchangesParserFactoryRequest request);
   void BindImageDecoder(mojom::ImageDecoderRequest request);
   void BindJsonParser(mojom::JsonParserRequest request);
   void BindXmlParser(mojom::XmlParserRequest request);

@@ -170,4 +170,20 @@ TEST_F(BadgeManagerUnittest, BadgingMultipleProfiles) {
   EXPECT_EQ(base::nullopt, other_delegate->set_badges().back().second);
 }
 
+// Tests methods which call into the badge manager delegate do not crash when
+// the delegate is unset.
+TEST_F(BadgeManagerUnittest, BadgingWithNoDelegateDoesNotCrash) {
+  const std::string kAppId = "app-id";
+
+  badge_manager()->SetDelegate(nullptr);
+
+  badge_manager()->UpdateAppBadge(kAppId, base::nullopt);
+  badge_manager()->UpdateAppBadge(kAppId, base::Optional<uint64_t>(7u));
+  badge_manager()->UpdateAppBadge(base::nullopt, base::nullopt);
+  badge_manager()->UpdateAppBadge(base::nullopt, base::Optional<uint64_t>(7u));
+
+  badge_manager()->ClearAppBadge(kAppId);
+  badge_manager()->ClearAppBadge(base::nullopt);
+}
+
 }  // namespace badging

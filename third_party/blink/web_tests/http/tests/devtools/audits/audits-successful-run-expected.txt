@@ -298,7 +298,7 @@ button-name: notApplicable
 bypass: notApplicable
 canonical: notApplicable
 color-contrast: notApplicable
-content-width: fail
+content-width: notApplicable
 critical-request-chains: notApplicable
 custom-controls-labels: manual
 custom-controls-roles: manual
@@ -321,7 +321,7 @@ first-meaningful-paint: flaky
 focus-traps: manual
 focusable-controls: manual
 font-display: pass
-font-size: fail
+font-size: notApplicable
 frame-title: notApplicable
 geolocation-on-start: pass
 heading-levels: manual
@@ -381,7 +381,7 @@ speed-index: flaky
 splash-screen: fail
 structured-data: manual
 tabindex: notApplicable
-tap-targets: fail
+tap-targets: notApplicable
 td-headers-attr: notApplicable
 th-has-data-cells: notApplicable
 themed-omnibox: fail

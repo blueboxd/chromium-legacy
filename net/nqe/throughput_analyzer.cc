@@ -385,9 +385,14 @@ int64_t ThroughputAnalyzer::GetBitsReceived() const {
   return NetworkActivityMonitor::GetInstance()->GetBytesReceived() * 8;
 }
 
-size_t ThroughputAnalyzer::CountInFlightRequests() const {
+size_t ThroughputAnalyzer::CountActiveInFlightRequests() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return requests_.size();
+}
+
+size_t ThroughputAnalyzer::CountTotalInFlightRequests() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return response_content_sizes_.size();
 }
 
 int64_t ThroughputAnalyzer::CountTotalContentSizeBytes() const {

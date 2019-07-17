@@ -186,8 +186,12 @@
       <message desc="The Switch Access action for moving the text caret up one line." name="IDS_SWITCH_ACCESS_MOVE_UP_ONE_LINE_OF_TEXT">
         Move up one line
       </message>
+      <message desc="The Switch Access action to set the beginning of a text selection area." name="IDS_SWITCH_ACCESS_SELECTION_START">
+        Selection start
+      </message>
+      <message desc="The Switch Access action to set the end of a text selection area." name="IDS_SWITCH_ACCESS_SELECTION_END">
+        Selection end
+      </message>
     </messages>
   </release>
 </grit>
-
-

@@ -5,3 +5,4 @@ per-file *.sb=set noparent
 per-file *.sb=rsesek@chromium.org
 
 # COMPONENT: Internals>Plugins>Pepper
+# TEAM: pepper-dev@chromium.org

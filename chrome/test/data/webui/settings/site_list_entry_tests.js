@@ -61,7 +61,6 @@ suite('SiteListEntry', function() {
   }
 
   test('not valid origin does not go to site details page', function() {
-    loadTimeData.overrideValues({enableSiteSettings: true});
     browserProxy.setIsOriginValid(false);
     testElement.model = {
       controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
@@ -85,7 +84,6 @@ suite('SiteListEntry', function() {
   });
 
   test('valid origin goes to site details page', function() {
-    loadTimeData.overrideValues({enableSiteSettings: true});
     browserProxy.setIsOriginValid(true);
     testElement.model = {
       controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,

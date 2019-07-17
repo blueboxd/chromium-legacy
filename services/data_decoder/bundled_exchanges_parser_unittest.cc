@@ -63,38 +63,40 @@ class TestDataSource : public mojom::BundleDataSource {
 };
 
 mojom::BundleMetadataPtr ParseBundle(TestDataSource* data_source) {
-  BundledExchangesParser parser_impl(nullptr /* service_ref */);
-  data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
-
   mojo::PendingRemote<mojom::BundleDataSource> source_remote;
   data_source->AddReceiver(source_remote.InitWithNewPipeAndPassReceiver());
 
+  mojo::PendingRemote<mojom::BundledExchangesParser> parser_remote;
+  BundledExchangesParser parser_impl(
+      parser_remote.InitWithNewPipeAndPassReceiver(), std::move(source_remote));
+  data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
+
   base::RunLoop run_loop;
   mojom::BundleMetadataPtr result;
-  parser.ParseMetadata(
-      std::move(source_remote),
-      base::BindLambdaForTesting(
-          [&result, &run_loop](mojom::BundleMetadataPtr metadata,
-                               const base::Optional<std::string>& error) {
-            result = std::move(metadata);
-            run_loop.QuitClosure().Run();
-          }));
+  parser.ParseMetadata(base::BindLambdaForTesting(
+      [&result, &run_loop](mojom::BundleMetadataPtr metadata,
+                           const base::Optional<std::string>& error) {
+        result = std::move(metadata);
+        run_loop.QuitClosure().Run();
+      }));
   run_loop.Run();
   return result;
 }
 
 mojom::BundleResponsePtr ParseResponse(TestDataSource* data_source,
                                        const mojom::BundleIndexItemPtr& item) {
-  BundledExchangesParser parser_impl(nullptr /* service_ref */);
-  data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
-
   mojo::PendingRemote<mojom::BundleDataSource> source_remote;
   data_source->AddReceiver(source_remote.InitWithNewPipeAndPassReceiver());
+
+  mojo::PendingRemote<mojom::BundledExchangesParser> parser_remote;
+  BundledExchangesParser parser_impl(
+      parser_remote.InitWithNewPipeAndPassReceiver(), std::move(source_remote));
+  data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
 
   base::RunLoop run_loop;
   mojom::BundleResponsePtr result;
   parser.ParseResponse(
-      std::move(source_remote), item->response_offset, item->response_length,
+      item->response_offset, item->response_length,
       base::BindLambdaForTesting(
           [&result, &run_loop](mojom::BundleResponsePtr response,
                                const base::Optional<std::string>& error) {

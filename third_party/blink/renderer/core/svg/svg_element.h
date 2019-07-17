@@ -264,6 +264,8 @@ class CORE_EXPORT SVGElement : public Element {
   void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) final;
 
+  void AccessKeyAction(bool send_mouse_events) override;
+
  private:
   bool IsSVGElement() const =
       delete;  // This will catch anyone doing an unnecessary check.

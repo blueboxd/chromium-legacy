@@ -82,7 +82,8 @@ void TestPresentationEntryImpl(WebXrVrBrowserTestBase* t,
 IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTest, TestRequestPresentEntersVr) {
   TestPresentationEntryImpl(this, "generic_webvr_page");
 }
-WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestRequestSessionEntersVr) {
+WEBXR_VR_ALL_RUNTIMES_PLUS_INCOGNITO_BROWSER_TEST_F(
+    TestRequestSessionEntersVr) {
   TestPresentationEntryImpl(t, "generic_webxr_page");
 }
 

@@ -203,20 +203,20 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
   switch (implementation) {
     case VideoDecoderImplementation::kDefault: {
 #if defined(OS_ANDROID)
-  auto get_stub_cb =
-      base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
-                 command_buffer_id->channel_token, command_buffer_id->route_id);
-  auto image_provider = std::make_unique<DirectSharedImageVideoProvider>(
-      gpu_task_runner_, std::move(get_stub_cb));
-  video_decoder = std::make_unique<MediaCodecVideoDecoder>(
-      gpu_preferences_, gpu_feature_info_, DeviceInfo::GetInstance(),
-      CodecAllocator::GetInstance(gpu_task_runner_),
-      std::make_unique<AndroidVideoSurfaceChooserImpl>(
-          DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
-      android_overlay_factory_cb_, std::move(request_overlay_info_cb),
-      std::make_unique<VideoFrameFactoryImpl>(
-          gpu_task_runner_, gpu_preferences_, std::move(image_provider),
-          MaybeRenderEarlyManager::Create(gpu_task_runner_)));
+      auto get_stub_cb = base::Bind(
+          &GetCommandBufferStub, media_gpu_channel_manager_,
+          command_buffer_id->channel_token, command_buffer_id->route_id);
+      auto image_provider = std::make_unique<DirectSharedImageVideoProvider>(
+          gpu_task_runner_, std::move(get_stub_cb));
+      video_decoder = std::make_unique<MediaCodecVideoDecoder>(
+          gpu_preferences_, gpu_feature_info_, DeviceInfo::GetInstance(),
+          CodecAllocator::GetInstance(gpu_task_runner_),
+          std::make_unique<AndroidVideoSurfaceChooserImpl>(
+              DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
+          android_overlay_factory_cb_, std::move(request_overlay_info_cb),
+          std::make_unique<VideoFrameFactoryImpl>(
+              gpu_task_runner_, gpu_preferences_, std::move(image_provider),
+              MaybeRenderEarlyManager::Create(gpu_task_runner_)));
 
 #elif defined(OS_CHROMEOS)
       std::unique_ptr<VideoDecoder> cros_video_decoder;
@@ -258,19 +258,19 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 
     case VideoDecoderImplementation::kAlternate:
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
-    // If nothing has cached the configs yet, then do so now.
-    if (!d3d11_supported_configs_)
-      GetSupportedVideoDecoderConfigs();
+      if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
+        // If nothing has cached the configs yet, then do so now.
+        if (!d3d11_supported_configs_)
+          GetSupportedVideoDecoderConfigs();
 
-    video_decoder = D3D11VideoDecoder::Create(
-        gpu_task_runner_, media_log->Clone(), gpu_preferences_,
-        gpu_workarounds_,
-        base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
-                            command_buffer_id->channel_token,
-                            command_buffer_id->route_id),
-        GetD3D11DeviceCallback(), *d3d11_supported_configs_);
-  }
+        video_decoder = D3D11VideoDecoder::Create(
+            gpu_task_runner_, media_log->Clone(), gpu_preferences_,
+            gpu_workarounds_,
+            base::BindRepeating(
+                &GetCommandBufferStub, media_gpu_channel_manager_,
+                command_buffer_id->channel_token, command_buffer_id->route_id),
+            GetD3D11DeviceCallback(), *d3d11_supported_configs_);
+      }
 #endif  // defined(OS_WIN)
   break;
   };  // switch

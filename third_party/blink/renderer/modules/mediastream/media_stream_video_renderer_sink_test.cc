@@ -5,7 +5,6 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 
 #include <memory>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"

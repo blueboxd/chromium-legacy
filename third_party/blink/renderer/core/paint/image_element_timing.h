@@ -18,7 +18,6 @@
 namespace blink {
 
 class ImageResourceContent;
-class LayoutImage;
 class PropertyTreeState;
 class StyleImage;
 
@@ -52,9 +51,6 @@ class CORE_EXPORT ImageElementTiming final
       Node*,
       const StyleImage* background_image,
       const PropertyTreeState& current_paint_chunk_properties);
-
-  // Called when the LayoutImage will be destroyed.
-  void NotifyWillBeDestroyed(const LayoutObject*);
 
   void NotifyImageRemoved(const LayoutObject*,
                           const ImageResourceContent* image);
@@ -111,12 +107,11 @@ class CORE_EXPORT ImageElementTiming final
   // Vector containing the element timing infos that will be reported during the
   // next swap promise callback.
   HeapVector<Member<ElementTimingInfo>> element_timings_;
-  // Hashmap of LayoutObjects for which paint has already been notified.
-  WTF::HashSet<const LayoutObject*> images_notified_;
-  // Hashmap of pairs of elements, background images whose paint has been
-  // observed.
+  // Hashmap of pairs of elements, LayoutObjects (for the elements) and
+  // ImageResourceContent (for the src) which correspond to either images or
+  // background images whose paint has been observed.
   WTF::HashSet<std::pair<const LayoutObject*, const ImageResourceContent*>>
-      background_images_notified_;
+      images_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };

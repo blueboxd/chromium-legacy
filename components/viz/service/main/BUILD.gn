@@ -21,7 +21,7 @@ source_set("main") {
   deps = [
     "//cc",
     "//components/discardable_memory/client",
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//components/ui_devtools",
     "//components/ui_devtools/viz",
     "//components/viz/service",

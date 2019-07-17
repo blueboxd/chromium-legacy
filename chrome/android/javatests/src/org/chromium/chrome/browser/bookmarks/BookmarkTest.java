@@ -15,14 +15,18 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -34,11 +38,12 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
+import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -58,7 +63,8 @@ import java.util.concurrent.ExecutionException;
 /**
  * Tests for the bookmark manager.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @RetryOnFailure
 public class BookmarkTest {
@@ -84,6 +90,17 @@ public class BookmarkTest {
     private EmbeddedTestServer mTestServer;
     private @Nullable BookmarkActivity mBookmarkActivity;
 
+    @BeforeClass
+    public static void setUpBeforeActivityLaunched() {
+        NightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
+    public void setupNightMode(boolean nightModeEnabled) {
+        NightModeTestUtils.setUpNightModeForChromeActivity(nightModeEnabled);
+        mRenderTestRule.setNightModeEnabled(nightModeEnabled);
+    }
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityFromLauncher();
@@ -106,6 +123,11 @@ public class BookmarkTest {
     @After
     public void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+    }
+
+    @AfterClass
+    public static void tearDownAfterActivityDestroyed() {
+        NightModeTestUtils.tearDownNightModeAfterChromeActivityDestroyed();
     }
 
     private void openBookmarkManager() throws InterruptedException {
@@ -381,7 +403,8 @@ public class BookmarkTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testBookmarkFolderIcon() throws Exception {
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testBookmarkFolderIcon(boolean nightModeEnabled) throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
         addFolder(TEST_FOLDER_TITLE);
         openBookmarkManager();

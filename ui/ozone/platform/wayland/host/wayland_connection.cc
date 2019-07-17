@@ -164,7 +164,7 @@ std::vector<WaylandWindow*> WaylandConnection::GetWindowsOnOutput(
     uint32_t output_id) {
   std::vector<WaylandWindow*> result;
   for (auto entry : window_map_) {
-    if (entry.second->GetEnteredOutputsIds().count(output_id) > 0)
+    if (entry.second->entered_outputs_ids().count(output_id) > 0)
       result.push_back(entry.second);
   }
   return result;

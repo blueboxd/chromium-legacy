@@ -64,6 +64,10 @@ namespace test {
 class QuicChromiumClientSessionPeer;
 }  // namespace test
 
+// SETTINGS_MAX_HEADERS_LIST_SIZE, the maximum size of uncompressed QUIC headers
+// that the server is allowed to send.
+const size_t kQuicMaxHeaderListSize = 256 * 1024;
+
 // Result of a session migration attempt.
 enum class MigrationResult {
   SUCCESS,         // Migration succeeded.

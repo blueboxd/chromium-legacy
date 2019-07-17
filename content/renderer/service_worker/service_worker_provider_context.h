@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -39,6 +40,10 @@ class URLLoaderFactory;
 
 namespace service_worker_provider_context_unittest {
 class ServiceWorkerProviderContextTest;
+FORWARD_DECLARE_TEST(ServiceWorkerProviderContextTest,
+                     SetControllerServiceWorker);
+FORWARD_DECLARE_TEST(ServiceWorkerProviderContextTest,
+                     ControllerWithoutFetchHandler);
 }  // namespace service_worker_provider_context_unittest
 
 class WebServiceWorkerRegistrationImpl;
@@ -97,9 +102,13 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // any, otherwise returns nullptr.
   blink::mojom::ServiceWorkerObjectInfoPtr TakeController();
 
-  // Returns URLLoaderFactory for loading subresources with the controller
-  // ServiceWorker, or nullptr if no controller is attached.
-  network::mojom::URLLoaderFactory* GetSubresourceLoaderFactory();
+  // Returns the factory for loading subresources with the controller
+  // ServiceWorker, or nullptr if no controller is attached. Returns a
+  // WeakWrapperSharedURLLoaderFactory because the inner factory is destroyed
+  // when this context is destroyed but loaders may persist a reference to the
+  // loader returned from this method.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+  GetSubresourceLoaderFactory();
 
   // Returns the feature usage of the controller service worker.
   const std::set<blink::mojom::WebFeature>& used_features() const;
@@ -171,6 +180,12 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       ServiceWorkerProviderContextTest;
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
+  FRIEND_TEST_ALL_PREFIXES(service_worker_provider_context_unittest::
+                               ServiceWorkerProviderContextTest,
+                           SetControllerServiceWorker);
+  FRIEND_TEST_ALL_PREFIXES(service_worker_provider_context_unittest::
+                               ServiceWorkerProviderContextTest,
+                           ControllerWithoutFetchHandler);
 
   ~ServiceWorkerProviderContext() override;
   void DestructOnMainThread() const;
@@ -190,6 +205,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // A convenient utility method to tell if a subresource loader factory
   // can be created for this context.
   bool CanCreateSubresourceLoaderFactory() const;
+
+  // Returns URLLoaderFactory for loading subresources with the controller
+  // ServiceWorker, or nullptr if no controller is attached.
+  network::mojom::URLLoaderFactory* GetSubresourceLoaderFactoryInternal();
 
   const blink::mojom::ServiceWorkerProviderType provider_type_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

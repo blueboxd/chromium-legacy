@@ -110,7 +110,11 @@ class NET_EXPORT_PRIVATE ThroughputAnalyzer {
 
   // Returns the number of in-flight requests that can be used for computing
   // throughput.
-  size_t CountInFlightRequests() const;
+  size_t CountActiveInFlightRequests() const;
+
+  // Returns the total number of in-flight requests. This also includes hanging
+  // requests.
+  size_t CountTotalInFlightRequests() const;
 
   // Returns the sum of expected response content size in bytes for all inflight
   // requests. Request with an unknown response content size have the default

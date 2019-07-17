@@ -106,6 +106,8 @@ const char kPasswordProtectionWarningTrigger[] =
     "safebrowsing.password_protection_warning_trigger";
 const char kAdvancedProtectionLastRefreshInUs[] =
     "safebrowsing.advanced_protection_last_refresh";
+const char kPasswordProtectedAllowed[] =
+    "safebrowsing.password_protected_allowed";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -167,6 +169,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);
   registry->RegisterInt64Pref(prefs::kAdvancedProtectionLastRefreshInUs, 0);
+  registry->RegisterBooleanPref(prefs::kPasswordProtectedAllowed, true);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {

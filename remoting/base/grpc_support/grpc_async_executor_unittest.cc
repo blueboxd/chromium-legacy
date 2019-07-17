@@ -36,6 +36,10 @@ using ::testing::Return;
 
 using EchoStreamResponder = test::GrpcServerStreamResponder<EchoResponse>;
 using MockOnceClosure = base::MockCallback<base::OnceClosure>;
+using MockMessageCallback =
+    base::MockCallback<base::RepeatingCallback<void(const EchoResponse&)>>;
+using MockStatusCallback =
+    base::MockCallback<base::OnceCallback<void(const grpc::Status&)>>;
 
 base::RepeatingClosure NotReachedClosure() {
   return base::BindRepeating([]() { NOTREACHED(); });
@@ -76,7 +80,8 @@ class GrpcAsyncExecutorTest : public testing::Test {
       base::OnceClosure on_channel_ready,
       const base::RepeatingCallback<void(const EchoResponse&)>& on_incoming_msg,
       base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
-      GrpcAsyncExecutor* executor);
+      GrpcAsyncExecutor* executor,
+      base::Time deadline = {});
 
   std::unique_ptr<ScopedGrpcServerStream> StartEchoStream(
       const std::string& request_text,
@@ -95,12 +100,12 @@ class GrpcAsyncExecutorTest : public testing::Test {
   std::unique_ptr<GrpcAsyncExecutor> executor_;
   std::unique_ptr<test::GrpcAsyncTestServer> server_;
   std::unique_ptr<GrpcAsyncExecutorTestService::Stub> stub_;
-
- private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 };
 
 void GrpcAsyncExecutorTest::SetUp() {
+  scoped_task_environment_ =
+      std::make_unique<base::test::ScopedTaskEnvironment>();
   executor_ = std::make_unique<GrpcAsyncExecutor>();
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<GrpcAsyncExecutorTestService::AsyncService>());
@@ -133,7 +138,8 @@ GrpcAsyncExecutorTest::StartEchoStreamOnExecutor(
     base::OnceClosure on_channel_ready,
     const base::RepeatingCallback<void(const EchoResponse&)>& on_incoming_msg,
     base::OnceCallback<void(const grpc::Status&)> on_channel_closed,
-    GrpcAsyncExecutor* executor) {
+    GrpcAsyncExecutor* executor,
+    base::Time deadline) {
   EchoRequest request;
   request.set_text(request_text);
   std::unique_ptr<ScopedGrpcServerStream> scoped_stream;
@@ -142,6 +148,9 @@ GrpcAsyncExecutorTest::StartEchoStreamOnExecutor(
                      base::Unretained(stub_.get())),
       request, std::move(on_channel_ready), on_incoming_msg,
       std::move(on_channel_closed), &scoped_stream);
+  if (!deadline.is_null()) {
+    grpc_request->set_initial_metadata_deadline(deadline);
+  }
   executor->ExecuteRpc(std::move(grpc_request));
   return scoped_stream;
 }
@@ -614,6 +623,52 @@ TEST_F(GrpcAsyncExecutorTest, ExecuteWithDeadline_DeadlineNotChanged) {
   base::Time new_deadline = GetDeadline(*unowned_context);
   ASSERT_LT(deadline - kDeadlineEpsilon, new_deadline);
   ASSERT_GT(deadline + kDeadlineEpsilon, new_deadline);
+}
+
+TEST_F(GrpcAsyncExecutorTest,
+       ServerStreamInitialMetadataDeadline_DefaultDeadline) {
+  // Other tests can't work with mock time so we have to replace it here.
+  // We also have to reset the old task environment before creating a new one
+  // since only one ScopedTaskEnvironment can exist at a time.
+  scoped_task_environment_.reset();
+  scoped_task_environment_ =
+      std::make_unique<base::test::ScopedTaskEnvironment>(
+          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+
+  MockOnceClosure on_channel_ready;
+  MockMessageCallback on_incoming_message;
+  MockStatusCallback on_status;
+  auto scoped_stream =
+      StartEchoStream("Hello", on_channel_ready.Get(),
+                      on_incoming_message.Get(), on_status.Get());
+  EXPECT_CALL(on_status, Run(Property(&grpc::Status::error_code,
+                                      grpc::StatusCode::DEADLINE_EXCEEDED)));
+  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
+}
+
+TEST_F(GrpcAsyncExecutorTest,
+       ServerStreamInitialMetadataDeadline_ManualDeadline) {
+  scoped_task_environment_.reset();
+  scoped_task_environment_ =
+      std::make_unique<base::test::ScopedTaskEnvironment>(
+          base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
+
+  MockOnceClosure on_channel_ready;
+  MockMessageCallback on_incoming_message;
+  MockStatusCallback on_status;
+  auto scoped_stream = StartEchoStreamOnExecutor(
+      "Hello", on_channel_ready.Get(), on_incoming_message.Get(),
+      on_status.Get(), executor_.get(),
+      base::Time::Now() + base::TimeDelta::FromSeconds(60));
+
+  // |on_status| shouldn't be called in the first 30 seconds.
+  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
+
+  EXPECT_CALL(on_status, Run(Property(&grpc::Status::error_code,
+                                      grpc::StatusCode::DEADLINE_EXCEEDED)));
+
+  // |on_status| should be called here.
+  scoped_task_environment_->FastForwardBy(base::TimeDelta::FromSeconds(30));
 }
 
 }  // namespace remoting

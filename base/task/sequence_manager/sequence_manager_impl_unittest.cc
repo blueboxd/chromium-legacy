@@ -3874,7 +3874,7 @@ class RunOnDestructionHelper {
 base::OnceClosure RunOnDestruction(base::OnceClosure task) {
   return base::BindOnce(
       [](std::unique_ptr<RunOnDestructionHelper>) {},
-      base::Passed(std::make_unique<RunOnDestructionHelper>(std::move(task))));
+      std::make_unique<RunOnDestructionHelper>(std::move(task)));
 }
 
 base::OnceClosure PostOnDestruction(scoped_refptr<TestTaskQueue> task_queue,

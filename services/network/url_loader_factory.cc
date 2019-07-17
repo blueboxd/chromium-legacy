@@ -17,7 +17,7 @@
 #include "services/network/network_service.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
 #include "url/gurl.h"
 #include "url/origin.h"

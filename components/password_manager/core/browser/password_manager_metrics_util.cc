@@ -107,12 +107,6 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
       ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
-void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block) {
-  base::UmaHistogramBoolean(
-      "PasswordManager.ShouldBlockPasswordForSameOriginButDifferentScheme",
-      should_block);
-}
-
 void LogCountHttpMigratedPasswords(int count) {
   base::UmaHistogramCounts100("PasswordManager.HttpPasswordMigrationCount",
                               count);

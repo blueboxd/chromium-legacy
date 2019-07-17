@@ -30,8 +30,8 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/resource_scheduler.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/upload_progress_tracker.h"
 
 namespace net {

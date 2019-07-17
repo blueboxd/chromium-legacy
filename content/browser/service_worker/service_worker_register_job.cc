@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -22,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -330,7 +330,8 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
   version_to_update->script_cache_map()->GetResources(&resources);
   int64_t script_resource_id =
       version_to_update->script_cache_map()->LookupResourceId(script_url_);
-  DCHECK_NE(script_resource_id, kInvalidServiceWorkerResourceId);
+  DCHECK_NE(script_resource_id,
+            ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
@@ -523,7 +524,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
     message = new_version()->script_cache_map()->main_script_status_message();
     if (message.empty())
-      message = kServiceWorkerFetchScriptError;
+      message = ServiceWorkerConsts::kServiceWorkerFetchScriptError;
   }
   Complete(status, message);
 }

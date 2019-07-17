@@ -177,15 +177,8 @@ suite('SiteDetails', function() {
     }
   });
 
-  test('usage heading shows when site settings enabled', function() {
+  test('usage heading shows properly', function() {
     browserProxy.setPrefs(prefs);
-    // Expect usage to be hidden when Site Settings is disabled.
-    loadTimeData.overrideValues({enableSiteSettings: false});
-    testElement = createSiteDetails('https://foo.com:443');
-    Polymer.dom.flush();
-    assert(!testElement.$$('#usage'));
-
-    loadTimeData.overrideValues({enableSiteSettings: true});
     testElement = createSiteDetails('https://foo.com:443');
     Polymer.dom.flush();
     assert(!!testElement.$$('#usage'));
@@ -207,7 +200,6 @@ suite('SiteDetails', function() {
   test('storage gets trashed properly', function() {
     const origin = 'https://foo.com:443';
     browserProxy.setPrefs(prefs);
-    loadTimeData.overrideValues({enableSiteSettings: true});
     testElement = createSiteDetails(origin);
 
     // Remove the current website-usage-private-api element.
@@ -251,7 +243,6 @@ suite('SiteDetails', function() {
   test('cookies gets deleted properly', function() {
     const origin = 'https://foo.com:443';
     browserProxy.setPrefs(prefs);
-    loadTimeData.overrideValues({enableSiteSettings: true});
     testElement = createSiteDetails(origin);
 
     // Remove the current website-usage-private-api element.
@@ -377,7 +368,6 @@ suite('SiteDetails', function() {
 
   test('show confirmation dialog on clear storage', function() {
     browserProxy.setPrefs(prefs);
-    loadTimeData.overrideValues({enableSiteSettings: true});
     testElement = createSiteDetails('https://foo.com:443');
 
     // Give |testElement.storedData_| a non-empty value to make the clear
@@ -473,7 +463,6 @@ suite('SiteDetails', function() {
 
     settings.navigateTo(settings.routes.SITE_SETTINGS);
 
-    loadTimeData.overrideValues({enableSiteSettings: false});
     testElement = createSiteDetails(invalid_url);
     assertEquals(
         settings.routes.SITE_SETTINGS_SITE_DETAILS.path,
@@ -495,7 +484,6 @@ suite('SiteDetails', function() {
   test('call fetch block autoplay status', function() {
     const origin = 'https://foo.com:443';
     browserProxy.setPrefs(prefs);
-    loadTimeData.overrideValues({enableSiteSettings: true});
     testElement = createSiteDetails(origin);
     return browserProxy.whenCalled('fetchBlockAutoplayStatus');
   });

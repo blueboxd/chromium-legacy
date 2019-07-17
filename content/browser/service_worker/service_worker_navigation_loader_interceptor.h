@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -54,6 +55,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
   // These are called back from the IO thread helper functions:
   void LoaderCallbackWrapper(
       blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      base::Optional<SubresourceLoaderParams> subresource_loader_params,
       SingleRequestURLLoaderFactory::RequestHandler handler_on_io);
   void FallbackCallbackWrapper(bool reset_subresource_loader_params);
 
@@ -77,6 +79,8 @@ class ServiceWorkerNavigationLoaderInterceptor final
 
   LoaderCallback loader_callback_;
   FallbackCallback fallback_callback_;
+
+  base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 
   base::WeakPtrFactory<ServiceWorkerNavigationLoaderInterceptor> weak_factory_{
       this};

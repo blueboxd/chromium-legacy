@@ -52,6 +52,7 @@ class TabContentManager::TabReadbackRequest {
  public:
   TabReadbackRequest(content::RenderWidgetHostView* rwhv,
                      float thumbnail_scale,
+                     bool crop_to_square,
                      TabReadbackCallback end_callback)
       : thumbnail_scale_(thumbnail_scale),
         end_callback_(std::move(end_callback)),
@@ -68,9 +69,14 @@ class TabContentManager::TabReadbackRequest {
       std::move(result_callback).Run(SkBitmap());
       return;
     }
+    if (crop_to_square) {
+      view_size_in_pixels.set_height(
+          std::min(view_size_in_pixels.height(), view_size_in_pixels.width()));
+    }
+    gfx::Rect source_rect = gfx::Rect(view_size_in_pixels);
     gfx::Size thumbnail_size(
         gfx::ScaleToCeiledSize(view_size_in_pixels, thumbnail_scale_));
-    rwhv->CopyFromSurface(gfx::Rect(), thumbnail_size,
+    rwhv->CopyFromSurface(source_rect, thumbnail_size,
                           std::move(result_callback));
   }
 
@@ -273,7 +279,8 @@ void TabContentManager::CaptureThumbnail(
       &TabContentManager::OnTabReadback, weak_factory_.GetWeakPtr(), tab_id,
       base::android::ScopedJavaGlobalRef<jobject>(j_callback), write_to_cache);
   pending_tab_readbacks_[tab_id] = std::make_unique<TabReadbackRequest>(
-      rwhv, thumbnail_scale, std::move(readback_done_callback));
+      rwhv, thumbnail_scale, !write_to_cache,
+      std::move(readback_done_callback));
 }
 
 void TabContentManager::CacheTabWithBitmap(JNIEnv* env,

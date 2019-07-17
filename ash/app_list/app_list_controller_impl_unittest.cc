@@ -15,6 +15,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
@@ -182,7 +183,8 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   EXPECT_EQ(0, app_list_screen_bounds.y());
   EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
-  expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
+  expected_transform.Translate(
+      0, -app_list::AppListConfig::instance().background_radius());
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
@@ -232,7 +234,8 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
 
   // AppListBackgroundShield is translated to hide the rounded corners.
   gfx::Transform expected_transform;
-  expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
+  expected_transform.Translate(
+      0, -app_list::AppListConfig::instance().background_radius());
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());

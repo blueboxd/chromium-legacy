@@ -31,8 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_H_
 
-#include <vector>
-
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_vector.h"

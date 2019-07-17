@@ -81,8 +81,12 @@ BaseParallelResourceThrottle::BaseParallelResourceThrottle(
     : request_(request), resource_type_(resource_type) {
   content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
-  auto throttle = BrowserURLLoaderThrottle::MaybeCreate(
-      std::move(url_checker_delegate), info->GetWebContentsGetterForRequest());
+  auto throttle = BrowserURLLoaderThrottle::Create(
+      base::BindOnce([](scoped_refptr<UrlCheckerDelegate> delegate,
+                        content::ResourceContext*) { return delegate; },
+                     url_checker_delegate),
+      info->GetWebContentsGetterForRequest(), info->GetFrameTreeNodeId(),
+      info->GetContext());
   url_loader_throttle_holder_ =
       std::make_unique<URLLoaderThrottleHolder>(this, std::move(throttle));
 }

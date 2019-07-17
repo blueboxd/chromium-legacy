@@ -512,10 +512,6 @@ public class DownloadNotificationService {
                         ? NotificationUmaTracker.SystemNotificationType.DOWNLOAD_PAGES
                         : NotificationUmaTracker.SystemNotificationType.DOWNLOAD_FILES,
                 notification);
-
-        // Record the number of other notifications when there's a new notification.
-        DownloadNotificationUmaHelper.recordExistingNotificationsCountHistogram(
-                mDownloadSharedPreferenceHelper.getEntries().size(), true /* withForeground */);
     }
 
     private static boolean canResumeDownload(Context context, DownloadSharedPreferenceEntry entry) {

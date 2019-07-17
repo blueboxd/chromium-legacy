@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
-#include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace dom_distiller {

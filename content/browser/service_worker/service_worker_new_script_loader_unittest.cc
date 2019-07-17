@@ -14,6 +14,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -1139,7 +1140,8 @@ TEST_F(ServiceWorkerNewScriptLoaderResumeTest, CompleteFailed) {
   client_->RunUntilComplete();
 
   EXPECT_EQ(net::ERR_FAILED, client_->completion_status().error_code);
-  EXPECT_EQ(kInvalidServiceWorkerResourceId, LookupResourceId(kScriptURL));
+  EXPECT_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+            LookupResourceId(kScriptURL));
 }
 
 }  // namespace service_worker_new_script_loader_unittest

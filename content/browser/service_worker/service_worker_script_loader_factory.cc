@@ -10,6 +10,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_installed_script_loader.h"
 #include "content/browser/service_worker/service_worker_new_script_loader.h"
@@ -85,7 +86,7 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
       provider_host_->running_hosted_version();
   int64_t resource_id =
       version->script_cache_map()->LookupResourceId(resource_request.url);
-  if (resource_id != kInvalidServiceWorkerResourceId) {
+  if (resource_id != ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     std::unique_ptr<ServiceWorkerResponseReader> response_reader =
         context_->storage()->CreateResponseReader(resource_id);
     mojo::MakeStrongBinding(
@@ -238,7 +239,7 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
   if (error != net::OK) {
     version->script_cache_map()->NotifyFinishedCaching(
         resource_request.url, resource_size, error,
-        kServiceWorkerCopyScriptError);
+        ServiceWorkerConsts::kServiceWorkerCopyScriptError);
 
     client->OnComplete(network::URLLoaderCompletionStatus(error));
     return;

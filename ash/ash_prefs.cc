@@ -25,6 +25,7 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 
 namespace ash {
 
@@ -49,6 +50,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry);
   tray::VPNListView::RegisterProfilePrefs(registry);
+  chromeos::assistant::prefs::RegisterProfilePrefsForeign(registry, for_test);
 }
 
 }  // namespace

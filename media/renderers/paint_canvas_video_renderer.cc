@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -572,16 +571,14 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 };
 
 PaintCanvasVideoRenderer::PaintCanvasVideoRenderer()
-    : last_image_deleting_timer_(
+    : cache_deleting_timer_(
           FROM_HERE,
           base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
           this,
           &PaintCanvasVideoRenderer::ResetCache),
       renderer_stable_id_(cc::PaintImage::GetNextId()) {}
 
-PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() {
-  ResetCache();
-}
+PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() = default;
 
 void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                                      cc::PaintCanvas* canvas,
@@ -615,6 +612,9 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   if (!UpdateLastImage(video_frame, context_provider,
                        false /* allow_wrap_texture */))
     return;
+  DCHECK(cache_);
+  cc::PaintImage image = cache_->paint_image;
+  DCHECK(image);
 
   cc::PaintFlags video_flags;
   video_flags.setAlpha(flags.getAlpha());
@@ -623,7 +623,7 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
 
   const bool need_rotation = video_transformation.rotation != VIDEO_ROTATION_0;
   const bool need_scaling =
-      dest_rect.size() != gfx::SizeF(last_image_.width(), last_image_.height());
+      dest_rect.size() != gfx::SizeF(image.width(), image.height());
   const bool need_translation = !dest_rect.origin().IsOrigin();
   // TODO(tmathmeyer): apply horizontal / vertical mirroring if needed.
   bool need_transform = need_rotation || need_scaling || need_translation;
@@ -654,11 +654,10 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
       rotated_dest_size =
           gfx::SizeF(rotated_dest_size.height(), rotated_dest_size.width());
     }
-    canvas->scale(
-        SkFloatToScalar(rotated_dest_size.width() / last_image_.width()),
-        SkFloatToScalar(rotated_dest_size.height() / last_image_.height()));
-    canvas->translate(-SkFloatToScalar(last_image_.width() * 0.5f),
-                      -SkFloatToScalar(last_image_.height() * 0.5f));
+    canvas->scale(SkFloatToScalar(rotated_dest_size.width() / image.width()),
+                  SkFloatToScalar(rotated_dest_size.height() / image.height()));
+    canvas->translate(-SkFloatToScalar(image.width() * 0.5f),
+                      -SkFloatToScalar(image.height() * 0.5f));
   }
 
   // This is a workaround for crbug.com/524717. A texture backed image is not
@@ -667,15 +666,13 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   // sw image into the SkPicture. The long term solution is for Skia to provide
   // a SkPicture filter that makes a picture safe for multiple CPU raster
   // threads. (skbug.com/4321).
-  cc::PaintImage image = last_image_;
   if (canvas->imageInfo().colorType() == kUnknown_SkColorType &&
-      last_image_.IsTextureBacked()) {
+      image.IsTextureBacked()) {
     sk_sp<SkImage> non_texture_image =
-        last_image_.GetSkImage()->makeNonTextureImage();
-    image =
-        cc::PaintImageBuilder::WithProperties(last_image_)
-            .set_image(std::move(non_texture_image), last_image_.content_id())
-            .TakePaintImage();
+        image.GetSkImage()->makeNonTextureImage();
+    image = cc::PaintImageBuilder::WithProperties(image)
+                .set_image(std::move(non_texture_image), image.content_id())
+                .TakePaintImage();
   }
   canvas->drawImage(image, 0, 0, &video_flags);
 
@@ -692,9 +689,9 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                               context_provider->ContextSupport());
   }
   // Because we are not retaining a reference to the VideoFrame, it would be
-  // invalid for last_image_ to directly wrap its texture(s), as they will be
+  // invalid for the cache to directly wrap its texture(s), as they will be
   // recycled.
-  DCHECK(!last_image_wraps_video_frame_texture_);
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
 }
 
 void PaintCanvasVideoRenderer::Copy(scoped_refptr<VideoFrame> video_frame,
@@ -1129,8 +1126,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
       return false;
     }
 
+    DCHECK(cache_);
+    DCHECK(cache_->source_image);
     GrBackendTexture backend_texture =
-        last_image_.GetSkImage()->getBackendTexture(true);
+        cache_->source_image->getBackendTexture(true);
     if (!backend_texture.isValid())
       return false;
     GrGLTextureInfo texture_info;
@@ -1154,9 +1153,10 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         destination_gl->CreateAndConsumeTextureCHROMIUM(
             mailbox_holder.mailbox.name);
 
-    destination_gl->CopyTextureCHROMIUM(intermediate_texture, 0, target,
-                                        texture, level, internal_format, type,
-                                        flip_y, premultiply_alpha, false);
+    VideoFrameCopyTextureOrSubTexture(
+        destination_gl, cache_->coded_size, cache_->visible_rect,
+        intermediate_texture, target, texture, internal_format, format, type,
+        level, premultiply_alpha, flip_y);
 
     destination_gl->DeleteTextures(1, &intermediate_texture);
 
@@ -1167,14 +1167,14 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     canvas_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
 
     // Because we are not retaining a reference to the VideoFrame, it would be
-    // invalid to keep last_image_ around if it directly wraps the VideoFrame
+    // invalid to keep the cache around if it directly wraps the VideoFrame
     // texture(s), as they will be recycled.
-    if (last_image_wraps_video_frame_texture_)
-      ResetCache();
+    if (cache_->wraps_video_frame_texture)
+      cache_.reset();
 
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by getBackendTexture() or CopyTextureCHROMIUM (in the
-    // case last_image_ was referencing its texture(s) directly).
+    // case the cache was referencing its texture(s) directly).
     SynchronizeVideoFrameRead(std::move(video_frame), canvas_gl,
                               context_provider->ContextSupport());
   } else {
@@ -1183,7 +1183,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         format, type, level, premultiply_alpha, flip_y);
     SynchronizeVideoFrameRead(std::move(video_frame), destination_gl, nullptr);
   }
-  DCHECK(!last_image_wraps_video_frame_texture_);
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
 
   return true;
 }
@@ -1259,7 +1259,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
   SyncTokenClientImpl client(source_gl);
   video_frame->UpdateReleaseSyncToken(&client);
 
-  DCHECK(!last_image_wraps_video_frame_texture_);
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
   return true;
 }
 
@@ -1412,7 +1412,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   // The temporary SkImages should be automatically cleaned up here.
 
   // Kick off a timer to release the cache.
-  last_image_deleting_timer_.Reset();
+  cache_deleting_timer_.Reset();
   return true;
 }
 
@@ -1490,28 +1490,28 @@ bool PaintCanvasVideoRenderer::TexSubImage2D(unsigned target,
 
 void PaintCanvasVideoRenderer::ResetCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Clear cached values.
-  last_image_ = cc::PaintImage();
-  last_id_.reset();
-  last_image_wraps_video_frame_texture_ = false;
+  cache_.reset();
   yuv_cache_.Reset();
 }
+
+PaintCanvasVideoRenderer::Cache::Cache(int frame_id) : frame_id(frame_id) {}
+
+PaintCanvasVideoRenderer::Cache::~Cache() = default;
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
     scoped_refptr<VideoFrame> video_frame,
     viz::ContextProvider* context_provider,
     bool allow_wrap_texture) {
-  DCHECK(!last_image_wraps_video_frame_texture_);
-  if (!last_image_ || video_frame->unique_id() != last_id_ ||
-      !last_image_.GetSkImage()->getBackendTexture(true).isValid()) {
-    ResetCache();
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
+  if (!cache_ || video_frame->unique_id() != cache_->frame_id ||
+      !cache_->source_image) {
+    cache_.emplace(video_frame->unique_id());
 
     auto paint_image_builder =
         cc::PaintImageBuilder::WithDefault()
             .set_id(renderer_stable_id_)
             .set_animation_type(cc::PaintImage::AnimationType::VIDEO)
             .set_completion_state(cc::PaintImage::CompletionState::DONE);
-
     // Generate a new image.
     // Note: Skia will hold onto |video_frame| via |video_generator| only when
     // |video_frame| is software.
@@ -1522,29 +1522,38 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
       DCHECK(context_provider->GrContext());
       DCHECK(context_provider->ContextGL());
       if (video_frame->NumTextures() > 1) {
-        paint_image_builder.set_image(NewSkImageFromVideoFrameYUVTextures(
-                                          video_frame.get(), context_provider),
-                                      cc::PaintImage::GetNextContentId());
+        cache_->source_image = NewSkImageFromVideoFrameYUVTextures(
+            video_frame.get(), context_provider);
       } else {
-        paint_image_builder.set_image(
-            NewSkImageFromVideoFrameNative(
-                video_frame.get(), context_provider, allow_wrap_texture,
-                &last_image_wraps_video_frame_texture_),
-            cc::PaintImage::GetNextContentId());
+        cache_->source_image = NewSkImageFromVideoFrameNative(
+            video_frame.get(), context_provider, allow_wrap_texture,
+            &cache_->wraps_video_frame_texture);
       }
+      if (!cache_->source_image) {
+        // Couldn't create the SkImage.
+        cache_.reset();
+        return false;
+      }
+      cache_->coded_size = video_frame->coded_size();
+      cache_->visible_rect = video_frame->visible_rect();
+      paint_image_builder.set_image(
+          cache_->source_image->makeSubset(
+              gfx::RectToSkIRect(cache_->visible_rect)),
+          cc::PaintImage::GetNextContentId());
     } else {
       paint_image_builder.set_paint_image_generator(
           sk_make_sp<VideoImageGenerator>(video_frame));
     }
-    last_image_ = paint_image_builder.TakePaintImage();
-    CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
-    if (!last_image_)  // Couldn't create the SkImage.
+    cache_->paint_image = paint_image_builder.TakePaintImage();
+    if (!cache_->paint_image) {
+      // Couldn't create the SkImage.
+      cache_.reset();
       return false;
-    last_id_ = video_frame->unique_id();
+    }
   }
 
-  DCHECK(last_image_);
-  last_image_deleting_timer_.Reset();
+  DCHECK(cache_);
+  cache_deleting_timer_.Reset();
   return true;
 }
 
@@ -1553,9 +1562,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     viz::ContextProvider* context_provider,
     unsigned int textureTarget,
     unsigned int texture) {
-  // We are about to replace last_image_, make sure to reset related state such
-  // as last_id_ or last_image_wraps_video_frame_texture_.
-  ResetCache();
+  cache_.emplace(video_frame->unique_id());
   auto paint_image_builder =
       cc::PaintImageBuilder::WithDefault()
           .set_id(renderer_stable_id_)
@@ -1572,25 +1579,29 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     DCHECK(context_provider->GrContext());
     DCHECK(context_provider->ContextGL());
     if (video_frame->NumTextures() > 1) {
-      paint_image_builder.set_image(
+      cache_->source_image =
           NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
-              video_frame.get(), context_provider, textureTarget, texture),
-          cc::PaintImage::GetNextContentId());
+              video_frame.get(), context_provider, textureTarget, texture);
+      if (!cache_->source_image) {
+        // Couldn't create the SkImage.
+        cache_.reset();
+        return false;
+      }
     } else {
       // We don't support Android now.
+      cache_.reset();
       return false;
     }
+    cache_->coded_size = video_frame->coded_size();
+    cache_->visible_rect = video_frame->visible_rect();
+    paint_image_builder.set_image(cache_->source_image->makeSubset(
+                                      gfx::RectToSkIRect(cache_->visible_rect)),
+                                  cc::PaintImage::GetNextContentId());
   } else {
     paint_image_builder.set_paint_image_generator(
         sk_make_sp<VideoImageGenerator>(video_frame));
   }
-  last_image_ = paint_image_builder.TakePaintImage();
-  CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
-  if (!last_image_)  // Couldn't create the SkImage.
-    return false;
-  last_id_ = video_frame->unique_id();
-  last_image_deleting_timer_.Reset();
-  DCHECK(!!last_image_);
+  cache_deleting_timer_.Reset();
   return true;
 }
 
@@ -1618,21 +1629,10 @@ void PaintCanvasVideoRenderer::YUVTextureCache::Reset() {
   context_provider.reset();
 }
 
-void PaintCanvasVideoRenderer::CorrectLastImageDimensions(
-    const SkIRect& visible_rect) {
-  last_image_dimensions_for_testing_ = visible_rect.size();
-  if (!last_image_)
-    return;
-  SkIRect bounds = SkIRect::MakeWH(last_image_.width(), last_image_.height());
-  if (bounds.size() != visible_rect.size() && bounds.contains(visible_rect)) {
-    last_image_ = cc::PaintImageBuilder::WithCopy(std::move(last_image_))
-                      .make_subset(gfx::SkIRectToRect(visible_rect))
-                      .TakePaintImage();
-  }
-}
-
-SkISize PaintCanvasVideoRenderer::LastImageDimensionsForTesting() {
-  return last_image_dimensions_for_testing_;
+gfx::Size PaintCanvasVideoRenderer::LastImageDimensionsForTesting() {
+  DCHECK(cache_);
+  DCHECK(cache_->paint_image);
+  return gfx::Size(cache_->paint_image.width(), cache_->paint_image.height());
 }
 
 }  // namespace media

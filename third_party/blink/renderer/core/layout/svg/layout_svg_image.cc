@@ -56,11 +56,6 @@ LayoutSVGImage::~LayoutSVGImage() = default;
 void LayoutSVGImage::WillBeDestroyed() {
   image_resource_->Shutdown();
 
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
-    if (LocalDOMWindow* window = GetDocument().domWindow())
-      ImageElementTiming::From(*window).NotifyWillBeDestroyed(this);
-  }
-
   LayoutSVGModelObject::WillBeDestroyed();
 }
 

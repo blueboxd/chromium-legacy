@@ -117,7 +117,7 @@ interface AudioFocusManager {
   GetFocusRequests@1() => (array<AudioFocusRequestState> requests);
 
   // Adds observers that receive audio focus events.
-  AddObserver@2(AudioFocusObserver observer);
+  AddObserver@2(pending_remote<AudioFocusObserver> observer);
 
   // Associates a name with this binding. This will be associated with all
   // audio focus requests made with this binding. It will also be used for

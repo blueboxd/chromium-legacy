@@ -78,8 +78,9 @@ void HttpStreamFactory::ProcessAlternativeServices(
     quic::ParsedQuicVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !alternative_service_entry.version.empty()) {
       advertised_versions = FilterSupportedAltSvcVersions(
-          alternative_service_entry, session->params().quic_supported_versions,
-          session->params().support_ietf_format_quic_altsvc);
+          alternative_service_entry,
+          session->params().quic_params.supported_versions,
+          session->params().quic_params.support_ietf_format_quic_altsvc);
       if (advertised_versions.empty())
         continue;
     }

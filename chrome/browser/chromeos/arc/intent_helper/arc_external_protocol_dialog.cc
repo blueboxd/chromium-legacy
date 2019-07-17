@@ -386,12 +386,13 @@ void OnIntentPickerClosed(int render_process_host_id,
   }
 
   if (!instance)
-    reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+    reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
 
   if (reason == apps::IntentPickerCloseReason::OPEN_APP ||
       reason == apps::IntentPickerCloseReason::STAY_IN_CHROME) {
     if (selected_app_index == handlers.size()) {
-      reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+      // Selected app does not exist.
+      reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
     }
   }
 
@@ -423,7 +424,11 @@ void OnIntentPickerClosed(int render_process_host_id,
       LOG(ERROR) << "Chrome is not a valid option for external protocol URLs";
       NOTREACHED();
       return;  // no UMA recording.
-    case apps::IntentPickerCloseReason::PICKER_ERROR:
+    case apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER:
+      // This can happen since an error could occur right before invoking
+      // Show() on the bubble's UI code.
+      FALLTHROUGH;
+    case apps::IntentPickerCloseReason::ERROR_AFTER_PICKER:
       LOG(ERROR) << "IntentPickerBubbleView returned CloseReason::ERROR: "
                  << "instance=" << instance
                  << ", selected_app_index=" << selected_app_index
@@ -474,7 +479,7 @@ void OnAppIconsReceived(
   const bool stay_in_chrome = IsChromeAnAppCandidate(handlers);
   IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
   browser->window()->ShowIntentPickerBubble(
-      std::move(app_info), stay_in_chrome, /*show_remember_selection=*/true,
+      std::move(app_info), stay_in_chrome, /*show_persistence_options=*/true,
       base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
                      url, safe_to_bypass_ui, std::move(handlers)));
 }

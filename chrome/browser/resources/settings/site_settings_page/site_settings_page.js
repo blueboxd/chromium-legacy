@@ -28,14 +28,6 @@ Polymer({
     },
 
     /** @private */
-    enableSiteSettings_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSiteSettings');
-      },
-    },
-
-    /** @private */
     isGuest_: {
       type: Boolean,
       value: function() {

@@ -21,7 +21,7 @@
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
-#include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"

@@ -202,12 +202,7 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
 
-      'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
-      'Android Builder (dbg) Goma Latest Client': 'android_debug_static_bot_vrdata',
-
       'android-code-coverage': 'android_debug_static_bot_arm64_minimal_symbols_coverage',
-      'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
-      'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk',
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
@@ -216,47 +211,55 @@
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
       'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',
 
-      'Linux Builder Goma Canary': 'release_bot',
-      'Linux Builder Goma Latest Client': 'release_bot',
+      'Linux Builder Goma Canary': 'gpu_tests_release_bot',
+      'Linux Builder Goma Latest Client': 'gpu_tests_release_bot',
       'Linux x64 Goma Canary (clobber)': 'release_bot',
       'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
       'Linux x64 Goma Latest Client (clobber)': 'release_bot',
       'Linux x64 Goma Latest Client LocalOutputCache': 'release_bot',
 
-      'mac-hermetic-upgrade-rel': 'release_bot',
+      'Win Builder Goma Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
+      'Win Builder Goma Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
+      'Win Builder (dbg) Goma Canary': 'gpu_tests_debug_bot_x86',
+      'Win Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot_x86',
+      'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression',
+      'Win Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression',
 
-      'Mac Builder (dbg) Goma Canary (clobber)': 'debug_bot',
-      'Mac Builder (dbg) Goma Canary': 'debug_bot',
-      'Mac Builder (dbg) Goma Latest Client (clobber)': 'debug_bot',
-      'Mac Builder (dbg) Goma Latest Client': 'debug_bot',
-      'Mac Builder Goma Canary': 'gpu_tests_release_bot_minimal_symbols',
-      'Mac Builder Goma Latest Client': 'gpu_tests_release_bot_minimal_symbols',
-      'Mac Goma Canary (clobber)': 'release_bot_mac_strip_minimal_symbols',
-      'Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip_minimal_symbols',
-      'Mac Goma Latest Client (clobber)': 'release_bot_mac_strip_minimal_symbols',
-      'Mac Goma Latest Client LocalOutputCache': 'release_bot_mac_strip_minimal_symbols',
-
-      'Win7 Builder (dbg) Goma Canary': 'debug_trybot_x86',
-      'Win7 Builder (dbg) Goma Latest Client': 'debug_trybot_x86',
-      'Win7 Builder Goma Canary': 'release_bot_x86_minimal_symbols',
-      'Win7 Builder Goma Latest Client': 'release_bot_x86_minimal_symbols',
-      'Win Builder (dbg) Goma Canary': 'debug_bot_x86',
-      'Win Builder (dbg) Goma Latest Client': 'debug_bot_x86',
-      'Win Builder Goma Canary': 'release_bot_x86_minimal_symbols',
-      'Win Builder Goma Latest Client': 'release_bot_x86_minimal_symbols',
-      'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_no_clang',
-      'Win cl.exe Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols_no_clang',
-      'Win Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols',
-      'Win Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols',
+      # TODO(yyanagisawa): deprecate cl.exe.
+      'Win cl.exe Goma Canary LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
+      'Win cl.exe Goma Latest Client LocalOutputCache': 'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang',
       'WinMSVC64 Goma Canary': 'win_msvc_release_bot',
       'WinMSVC64 Goma Latest Client': 'win_msvc_release_bot',
+
+      'Win7 Builder Goma Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
+      'Win7 Builder Goma Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
+      'Win7 Builder (dbg) Goma Canary': 'gpu_tests_debug_bot_x86',
+      'Win7 Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot_x86',
+
+      'Mac Builder Goma Canary': 'gpu_tests_release_bot_minimal_symbols',
+      'Mac Builder Goma Latest Client': 'gpu_tests_release_bot_minimal_symbols',
+      'Mac Builder (dbg) Goma Canary': 'gpu_tests_debug_bot',
+      'Mac Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot',
+      'Mac Goma Canary (clobber)': 'release_bot_mac_strip_minimal_symbols',
+      'Mac Goma Latest Client (clobber)': 'release_bot_mac_strip_minimal_symbols',
+      'Mac Builder (dbg) Goma Canary (clobber)': 'gpu_tests_debug_bot',
+      'Mac Builder (dbg) Goma Latest Client (clobber)': 'gpu_tests_debug_bot',
+      'Mac Goma Canary LocalOutputCache': 'release_bot_mac_strip_minimal_symbols',
+      'Mac Goma Latest Client LocalOutputCache': 'release_bot_mac_strip_minimal_symbols',
+
+      'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk_headless_ozone',
+      'Android Builder (dbg) Goma Canary': 'android_without_codecs_debug_bot',
+      'Android Builder (dbg) Goma Latest Client': 'android_without_codecs_debug_bot',
+
+      'ios-device-goma-canary-clobber': 'ios_error',
+      'ios-device-goma-latest-clobber': 'ios_error',
+
+      'mac-hermetic-upgrade-rel': 'release_bot',
 
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
-
-      'ios-device-goma-canary-clobber': 'ios_error',
-      'ios-device-goma-latest-clobber': 'ios_error',
 
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
       'ios-simulator': 'ios_error',
@@ -985,10 +988,6 @@
 
     'android_debug_static_bot': [
       'android', 'debug_static_bot',
-    ],
-
-    'android_debug_static_bot_vrdata': [
-      'android', 'debug_static_bot', 'include_vr_data',
     ],
 
     'android_debug_static_bot_arm64': [
@@ -1792,6 +1791,11 @@
       'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression'
     ],
 
+    'release_bot_x86_minimal_symbols_enable_archive_compression_no_clang': [
+      'no_clang',
+      'release_bot', 'x86', 'minimal_symbols', 'enable_archive_compression',
+    ],
+
     'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
       'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
@@ -1834,10 +1838,6 @@
 
     'release_trybot_x86': [
       'release_trybot', 'x86',
-    ],
-
-    'release_bot_x86_minimal_symbols_no_clang': [
-      'release_bot', 'x86', 'minimal_symbols', 'no_clang',
     ],
 
     'release_bot_x86_minimal_symbols_no_clang_cxx11': [
@@ -2161,10 +2161,6 @@
     'hybrid': {
       'gn_args': 'v8_target_cpu="arm" target_cpu="x86"',
       'mixins': ['disable_nacl'],
-    },
-
-    'include_vr_data': {
-      'gn_args': 'include_vr_data=true',
     },
 
     'incremental': {

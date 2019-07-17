@@ -251,12 +251,26 @@ struct NetworkServiceParams {
   array<EnvironmentVariable> environment;
 };
 
+// Information about how logging should be configured.
+// Corresponds to logging::LoggingSettings.
+[EnableIf=is_chromeos]
+struct LoggingSettings {
+  uint32 logging_dest;
+  mojo_base.mojom.FilePath log_file;
+};
+
 // Browser interface to the network service.
 interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they
   // complete.
   SetClient(NetworkServiceClient client, NetworkServiceParams params);
+
+  // Reinitializes the Network Service's logging with the given settings. This
+  // is needed on Chrome OS, which switches to a log file in the user's home
+  // directory once they log in.
+  [EnableIf=is_chromeos]
+  ReinitializeLogging(LoggingSettings settings);
 
   // Starts observing the NetLog event stream and writing entries to |file|.
   // |constants| is a legend used for decoding constant values in the log; it

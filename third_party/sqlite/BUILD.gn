@@ -20,6 +20,10 @@ import("//third_party/protobuf/proto_library.gni")
 # https://www.sqlite.org/compile.html
 config("chromium_sqlite3_compile_options") {
   defines = [
+    # Skip writing transaction rollback journals on f2fs.
+    # f2fs tends to be used on Android, and may be used on ChromeOS.
+    "SQLITE_ENABLE_BATCH_ATOMIC_WRITE",
+
     "SQLITE_ENABLE_FTS3",
 
     # New unicode61 tokenizer with built-in tables.

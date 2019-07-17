@@ -1190,14 +1190,17 @@ gfx::Rect OverviewGrid::GetGridEffectiveBounds() const {
   return effective_bounds;
 }
 
-bool OverviewGrid::UpdateDesksBarDragDetails(const gfx::Point& screen_location,
-                                             bool for_drop) {
+bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
+                                          bool update_desks_bar_drag_details,
+                                          bool for_drop) {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   const bool dragged_item_over_bar =
       desks_widget_->GetWindowBoundsInScreen().Contains(screen_location);
-  desks_bar_view_->SetDragDetails(screen_location,
-                                  !for_drop && dragged_item_over_bar);
+  if (update_desks_bar_drag_details) {
+    desks_bar_view_->SetDragDetails(screen_location,
+                                    !for_drop && dragged_item_over_bar);
+  }
   return dragged_item_over_bar;
 }
 
@@ -1207,8 +1210,11 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   DCHECK(desks_util::ShouldDesksBarBeCreated());
 
   // End the drag for the DesksBarView.
-  if (!UpdateDesksBarDragDetails(screen_location, /*for_drop=*/true))
+  if (!IntersectsWithDesksBar(screen_location,
+                              /*update_desks_bar_drag_details=*/true,
+                              /*for_drop=*/true)) {
     return false;
+  }
 
   auto* desks_controller = DesksController::Get();
   for (auto& mini_view : desks_bar_view_->mini_views()) {

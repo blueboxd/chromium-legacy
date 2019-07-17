@@ -2891,9 +2891,9 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
     // Frame 0 should have DC Layers enabled because of the overlay.
     // After 60 frames of no overlays DC layers should be disabled again.
-    if (i < 60)
+    if (i == 0)
       EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_TRUE));
-    else
+    else if (i == 60)
       EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_FALSE));
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);

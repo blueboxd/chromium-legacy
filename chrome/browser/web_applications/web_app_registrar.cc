@@ -90,9 +90,10 @@ bool WebAppRegistrar::WasExternalAppUninstalledByUser(
   return false;
 }
 
-AppId WebAppRegistrar::FindAppIdForUrl(const GURL& url) const {
+base::Optional<AppId> WebAppRegistrar::FindAppWithUrlInScope(
+    const GURL& url) const {
   NOTIMPLEMENTED();
-  return AppId();
+  return base::nullopt;
 }
 
 int WebAppRegistrar::CountUserInstalledApps() const {

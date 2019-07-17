@@ -889,6 +889,7 @@ should be able to be added at any place in this file.
 <action name="Accel_Restore_Tab">
   <owner>mpearson@chromium.org</owner>
   <owner>chrisha@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Emitted when the Ash window manager hotkey handler handles the
     &quot;Ctrl-Shift-T&quot; shortcut that causes the most recently closed tab
@@ -909,6 +910,9 @@ should be able to be added at any place in this file.
     regardless of the number of tabs.
 
     This is not emitted during session restore that occurs as part of startup.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -1683,8 +1687,12 @@ should be able to be added at any place in this file.
 
 <action name="Android.Download.InfoBar.LinkClicked.OpenDownload">
   <owner>shaktisahu@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User tapped on the infobar link to open the downloaded file.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -1763,8 +1771,12 @@ should be able to be added at any place in this file.
 
 <action name="Android.DownloadManager.List.View.Action">
   <owner>dtrainor@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User triggered actions on an offline item in download home.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -1894,24 +1906,36 @@ should be able to be added at any place in this file.
 
 <action name="Android.HistoryPage.OpenItem">
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User opened an item on the native Android history page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="Android.HistoryPage.OpenSelected">
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User opened one or more selected items in new tabs on the native Android
     history page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="Android.HistoryPage.OpenSelectedIncognito">
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User opened one or more selected items in new incognito tabs on the native
     Android history page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -1954,24 +1978,36 @@ should be able to be added at any place in this file.
 
 <action name="Android.HistoryPage.Search.OpenItem">
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User opened an item while searching on the native Android history page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="Android.HistoryPage.Search.OpenSelected">
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User opened one or more selected items in new tabs while searching on the
     native Android history page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="Android.HistoryPage.Search.OpenSelectedIncognito">
   <owner>twellington@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     User opened one or more selected items in new incognito tabs while searching
     on the native Android history page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -3288,29 +3324,41 @@ should be able to be added at any place in this file.
 
 <action name="BookmarkBar_ContextMenu_OpenAll">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened one or more bookmarks in the Bookmarks Bar using the context
     menu. Distinguished from launching from e.g. the application menu or the
     bookmark manager. This is for opening bookmarks normally (in the same
     window).
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="BookmarkBar_ContextMenu_OpenAllIncognito">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened one or more bookmarks in the Bookmarks Bar using the context
     menu. Distinguished from launching from e.g. the application menu or the
     bookmark manager. This is for opening bookmarks in an incognito window.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="BookmarkBar_ContextMenu_OpenAllInNewWindow">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened one or more bookmarks in the Bookmarks Bar using the context
     menu. Distinguished from launching from e.g. the application menu or the
     bookmark manager. This is for opening bookmarks in a new window.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -4229,11 +4277,15 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ClickedBookmarkBarURLButton">
+  <owner>chrome-analysis-team@google.com</owner>
   <owner>dfried@chromium.org</owner>
   <description>
     User clicks a bookmark to open it, either in the bookmarks bar or in a
     bookmarks bar folder or overflow menu. (Changed in M75 to include
     non-top-level bookmarks.)
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -5484,13 +5536,18 @@ should be able to be added at any place in this file.
 
 <action name="Downloads_OpenUrlOfDownloadedItem">
   <owner>xingliu@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Records clicks on the URL of download items in chrome://downloads page.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="Downloads_OpenUrlOfDownloadedItemFromContextMenu">
   <owner>xingliu@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Records open a URL of download items in chrome://downloads page from context
     menu.
@@ -5498,6 +5555,9 @@ should be able to be added at any place in this file.
     As of M-76, &quot;Save link as...&quot;, &quot;Copy link address&quot;, and
     &quot;Copy link text&quot; context menu actions no longer log this action
     (this was accidentally the case before M-76).
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -5579,9 +5639,13 @@ should be able to be added at any place in this file.
 <action name="ExploreSites.ContextMenu">
   <owner>chili@chromium.org</owner>
   <owner>dewittj@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Android: user used the context menu on a suggested item in the explore sites
     native page UI.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -6249,13 +6313,30 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="HistoryPage_EntryLinkClick">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mpearson@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <description>
+    On desktop, user clicked a link to a URL from history on the
+    chrome://history page to navigate to the URL.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
 </action>
 
 <action name="HistoryPage_EntryLinkRightClick">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mpearson@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <description>
+    On desktop, user right-clicked a link to a URL from history on the
+    chrome://history page. This causes the context menu to be displayed.
+    Sometimes the user will select an &quot;open in&quot; action, which would
+    cause a navigation. Selections such as &quot;save link as&quot; or
+    &quot;copy link address&quot; will not cause a navigation.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
 </action>
 
 <action name="HistoryPage_EntryMenuRemoveFromHistory">
@@ -11315,10 +11396,14 @@ should be able to be added at any place in this file.
 
 <action name="MobileBookmarkManagerEntryOpened">
   <owner>ianwen@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     A bookmark was opened from the bookmark manager. Bookmarks opened directly
     from the NTP will not be counted. Instead those will be counted in the
     NewTabPage.ContentSuggestions.* histograms.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -11745,13 +11830,25 @@ should be able to be added at any place in this file.
 <action name="MobileHistoryPage_EntryLinkOpenNewIncognitoTab">
   <owner>sczs@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
-  <description>User opened a History entry in a new Incognito Tab.</description>
+  <owner>chrome-analysis-team@google.com</owner>
+  <description>
+    User opened a History entry in a new Incognito Tab.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
 </action>
 
 <action name="MobileHistoryPage_EntryLinkOpenNewTab">
   <owner>sczs@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
-  <description>User opened a History entry in a new Tab.</description>
+  <owner>chrome-analysis-team@google.com</owner>
+  <description>
+    User opened a History entry in a new Tab.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
 </action>
 
 <action name="MobileMenuAddToBookmarks">
@@ -12561,7 +12658,13 @@ should be able to be added at any place in this file.
 
 <action name="MobileReadingListOpen">
   <owner>gambard@chromium.org</owner>
-  <description>User opened a ReadingList entry.</description>
+  <owner>chrome-analysis-team@google.com</owner>
+  <description>
+    User opened a ReadingList entry.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
 </action>
 
 <action name="MobileReceivedExternalIntent">
@@ -12594,26 +12697,38 @@ should be able to be added at any place in this file.
 <action name="MobileRecentTabManagerOpenAllTabsFromOtherDevice">
   <owner>sczs@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user has selected to Open all tabs from other device in Recent Tabs.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="MobileRecentTabManagerRecentTabOpened">
   <owner>finkm@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     A recently closed tab was opened from the recent tabs manager. Recently
     closed tabs opened directly from the NTP will not be counted. Instead those
     will be counted in the NewTabPage.ContentSuggestions.* histograms.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="MobileRecentTabManagerTabFromOtherDeviceOpened">
   <owner>finkm@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     A tab from another device was opened from the recent tabs manager. Tabs from
     another device opened directly from the NTP will not be counted. Instead
     those will be counted in the NewTabPage.ContentSuggestions.* histograms.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -13363,8 +13478,12 @@ should be able to be added at any place in this file.
 <action name="MostVisited_ClickedFromContextMenu">
   <owner>dbeam@chromium.org</owner>
   <owner>kristipark@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     An NTP tile was opened from the context menu. Desktop only.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -13743,12 +13862,16 @@ should be able to be added at any place in this file.
 <action name="NTP_LinkOpenedFromContextMenu">
   <owner>kmilka@chromium.org</owner>
   <owner>ramyan@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Recorded when a link on the New Tab Page is opened via the context menu.
     This can include: Middle-slot promos, Doodles, the One Google Bar, and
     custom background image attributions, but *not* shortcuts. For shortcuts see
     MostVisited_Clicked. Logged only when Google is the default search provider,
     as these elements only appear on the Google NTP.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -17033,6 +17156,7 @@ should be able to be added at any place in this file.
 <action name="RestoreTab">
   <owner>mpearson@chromium.org</owner>
   <owner>chrisha@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Emitted anytime the most recently closed tab is restored via
     browser/ui/browser_tab_restorer.cc. This occurs either via the
@@ -17051,6 +17175,9 @@ should be able to be added at any place in this file.
     regardless of the number of tabs.
 
     This is not emitted during session restore that occurs as part of startup.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -20527,7 +20654,13 @@ should be able to be added at any place in this file.
 <action name="Suggestions.Content.Opened">
   <owner>finkm@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
-  <description>User opened a content suggestion.</description>
+  <owner>chrome-analysis-team@google.com</owner>
+  <description>
+    User opened a content suggestion.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
 </action>
 
 <action name="Suggestions.ContextMenu">
@@ -21326,28 +21459,40 @@ should be able to be added at any place in this file.
 
 <action name="TopMenu_Bookmarks_LaunchURL">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened a bookmark from the application menu at the top of the
-    screen on macOS. Distinguished from launching from the wrench/app menu or
-    the bookmarks bar.
+    screen on, for example, MacOS. Distinguished from launching from the
+    wrench/app menu or the bookmarks bar.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="TopMenu_History_RecentlyClosed">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened a link from the Recently Closed section in the application
     menu at the top of the screen on macOS. Distinguished from launching from
     the wrench/app menu.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="TopMenu_History_RecentlyVisited">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened a link from the Recently Visited section in the application
     menu at the top of the screen on macOS. Distinguished from launching from
     the wrench/app menu.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
@@ -22228,52 +22373,76 @@ should be able to be added at any place in this file.
 
 <action name="WrenchMenu_Bookmarks_ContextMenu_OpenAll">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened one or more bookmarks in the Bookmarks Bar using the context
     menu. Distinguished from launching from e.g. the application menu or the
     bookmark manager. This is for opening bookmarks normally (in the same
     window).
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="WrenchMenu_Bookmarks_ContextMenu_OpenAllIncognito">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened one or more bookmarks in the Bookmarks Bar using the context
     menu. Distinguished from launching from e.g. the application menu or the
     bookmark manager. This is for opening bookmarks in an incognito window.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="WrenchMenu_Bookmarks_ContextMenu_OpenAllInNewWindow">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened one or more bookmarks in the Bookmarks Bar using the context
     menu. Distinguished from launching from e.g. the application menu or the
     bookmark manager. This is for opening bookmarks in a new window.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="WrenchMenu_Bookmarks_LaunchURL">
   <owner>dfried@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     The user opened a bookmark from the wrench/application/three-dot menu.
     Distinguished from launching from e.g. the bookmarks bar or bookmark
     manager.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="WrenchMenu_OpenRecentTabFromDevice">
   <owner>jwd@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Hot Dog Menu: Recent Tabs: Open a recent tab from a device.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 
 <action name="WrenchMenu_OpenRecentTabFromLocal">
   <owner>jwd@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
   <description>
     Hot Dog Menu: Recent Tabs: Open a recent tab link from local.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
   </description>
 </action>
 

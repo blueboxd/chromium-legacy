@@ -263,7 +263,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   int64_t NewVersionId();
 
   // Returns a new resource id which is guaranteed to be unique in the storage.
-  // Returns kInvalidServiceWorkerResourceId if the storage is disabled.
+  // Returns ServiceWorkerConsts::kInvalidServiceWorkerResourceId if the storage
+  // is disabled.
   int64_t NewResourceId();
 
   // Intended for use only by ServiceWorkerRegisterJob and

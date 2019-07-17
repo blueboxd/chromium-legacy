@@ -315,17 +315,16 @@ SandboxFileSystemBackendDelegate::CreateFileSystemOperationContext(
   return operation_context;
 }
 
-std::unique_ptr<storage::FileStreamReader>
+std::unique_ptr<FileStreamReader>
 SandboxFileSystemBackendDelegate::CreateFileStreamReader(
     const FileSystemURL& url,
     int64_t offset,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   if (!IsAccessValid(url))
-    return std::unique_ptr<storage::FileStreamReader>();
-  return std::unique_ptr<storage::FileStreamReader>(
-      storage::FileStreamReader::CreateForFileSystemFile(
-          context, url, offset, expected_modification_time));
+    return nullptr;
+  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+                                                   expected_modification_time);
 }
 
 std::unique_ptr<FileStreamWriter>

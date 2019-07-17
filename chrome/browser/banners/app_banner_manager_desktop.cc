@@ -159,8 +159,9 @@ void AppBannerManagerDesktop::OnWebAppInstalled(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
   DCHECK(provider);
-  web_app::AppId app_id = provider->registrar().FindAppIdForUrl(validated_url_);
-  if (!app_id.empty() && app_id == installed_app_id)
+  base::Optional<web_app::AppId> app_id =
+      provider->registrar().FindAppWithUrlInScope(validated_url_);
+  if (app_id.has_value() && *app_id == installed_app_id)
     OnInstall(blink::kWebDisplayModeStandalone);
 }
 

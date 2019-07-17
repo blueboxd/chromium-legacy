@@ -694,8 +694,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static void SetDefaultQuotaSettingsForTesting(
       const storage::QuotaSettings *settings);
 
-  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate(
-      content::ResourceContext* resource_context);
+  scoped_refptr<safe_browsing::UrlCheckerDelegate>
+  GetSafeBrowsingUrlCheckerDelegate(content::ResourceContext* resource_context);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.

@@ -35,6 +35,7 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability(
               chromeos::network_config::mojom::kServiceName,
               chromeos::network_config::mojom::kNetworkConfigCapability)
+          .RequireCapability("preferences", "pref_client")
 
           .Build()};
   return *manifest;

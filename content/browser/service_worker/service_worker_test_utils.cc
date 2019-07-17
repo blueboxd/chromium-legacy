@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -630,7 +631,7 @@ bool ServiceWorkerUpdateCheckTestUtils::VerifyStoredResponse(
     ServiceWorkerStorage* storage,
     const std::string& expected_body) {
   DCHECK(storage);
-  if (resource_id == kInvalidServiceWorkerResourceId)
+  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId)
     return false;
 
   // Verify the response status.

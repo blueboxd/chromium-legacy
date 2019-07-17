@@ -516,6 +516,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "cross-origin-embedder-policy",
+    "owners": [ "yhirano" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "crostini-backup",
     "owners": [ "joelhockey", "nverne", "benwells" ],
     "expiry_milestone": 77

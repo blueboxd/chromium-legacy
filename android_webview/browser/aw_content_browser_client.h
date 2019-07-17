@@ -268,7 +268,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   static void DisableCreatingThreadPool();
 
  private:
-  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();
+  scoped_refptr<safe_browsing::UrlCheckerDelegate>
+  GetSafeBrowsingUrlCheckerDelegate();
 
   // TODO(eroman): Remove once WebView has switched over to NetworkService.
   std::unique_ptr<net::NetLog> non_network_service_net_log_;

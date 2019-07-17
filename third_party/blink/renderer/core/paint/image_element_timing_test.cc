@@ -55,7 +55,9 @@ class ImageElementTimingTest : public testing::Test {
     return layout_image;
   }
 
-  const WTF::HashSet<const LayoutObject*>& GetImagesNotified() {
+  const WTF::HashSet<
+      std::pair<const LayoutObject*, const ImageResourceContent*>>&
+  GetImagesNotified() {
     return ImageElementTiming::From(*GetDoc()->domWindow()).images_notified_;
   }
 
@@ -68,13 +70,6 @@ class ImageElementTimingTest : public testing::Test {
 
   LayoutObject* GetLayoutObjectById(const char* id) {
     return GetDoc()->getElementById(id)->GetLayoutObject();
-  }
-
-  const WTF::HashSet<
-      std::pair<const LayoutObject*, const ImageResourceContent*>>&
-  GetBackgroundImagesNotified() {
-    return ImageElementTiming::From(*GetDoc()->domWindow())
-        .background_images_notified_;
   }
 
   void UpdateAllLifecyclePhases() {
@@ -148,7 +143,8 @@ TEST_F(ImageElementTimingTest, IgnoresUnmarkedElement) {
   LayoutImage* layout_image = SetImageResource("target", 5, 5);
   ASSERT_TRUE(layout_image);
   UpdateAllLifecyclePhases();
-  EXPECT_FALSE(GetImagesNotified().Contains(layout_image));
+  EXPECT_FALSE(GetImagesNotified().Contains(
+      std::make_pair(layout_image, layout_image->CachedImage())));
 }
 
 TEST_F(ImageElementTimingTest, ImageInsideSVG) {
@@ -169,7 +165,8 @@ TEST_F(ImageElementTimingTest, ImageInsideSVG) {
   UpdateAllLifecyclePhases();
 
   // |layout_image| should have had its paint notified to ImageElementTiming.
-  EXPECT_TRUE(GetImagesNotified().Contains(layout_image));
+  EXPECT_TRUE(GetImagesNotified().Contains(
+      std::make_pair(layout_image, layout_image->CachedImage())));
 }
 
 TEST_F(ImageElementTimingTest, ImageRemoved) {
@@ -181,7 +178,8 @@ TEST_F(ImageElementTimingTest, ImageRemoved) {
   LayoutImage* layout_image = SetImageResource("target", 5, 5);
   ASSERT_TRUE(layout_image);
   UpdateAllLifecyclePhases();
-  EXPECT_TRUE(GetImagesNotified().Contains(layout_image));
+  EXPECT_TRUE(GetImagesNotified().Contains(
+      std::make_pair(layout_image, layout_image->CachedImage())));
 
   GetDoc()->getElementById("target")->remove();
   // |layout_image| should no longer be part of |images_notified| since it will
@@ -200,7 +198,8 @@ TEST_F(ImageElementTimingTest, SVGImageRemoved) {
   LayoutSVGImage* layout_image = SetSVGImageResource("target", 5, 5);
   ASSERT_TRUE(layout_image);
   UpdateAllLifecyclePhases();
-  EXPECT_TRUE(GetImagesNotified().Contains(layout_image));
+  EXPECT_TRUE(GetImagesNotified().Contains(std::make_pair(
+      layout_image, layout_image->ImageResource()->CachedImage())));
 
   GetDoc()->getElementById("target")->remove();
   // |layout_image| should no longer be part of |images_notified| since it will
@@ -225,12 +224,11 @@ TEST_F(ImageElementTimingTest, BackgroundImageRemoved) {
   ImageResourceContent* content =
       object->Style()->BackgroundLayers().GetImage()->CachedImage();
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(GetBackgroundImagesNotified().size(), 1u);
-  EXPECT_TRUE(
-      GetBackgroundImagesNotified().Contains(std::make_pair(object, content)));
+  EXPECT_EQ(GetImagesNotified().size(), 1u);
+  EXPECT_TRUE(GetImagesNotified().Contains(std::make_pair(object, content)));
 
   GetDoc()->getElementById("target")->remove();
-  EXPECT_TRUE(GetBackgroundImagesNotified().IsEmpty());
+  EXPECT_TRUE(GetImagesNotified().IsEmpty());
 }
 
 }  // namespace blink

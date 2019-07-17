@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
@@ -25,7 +26,8 @@ ServiceWorkerInstalledScriptsSender::ServiceWorkerInstalledScriptsSender(
       last_finished_reason_(
           ServiceWorkerInstalledScriptReader::FinishedReason::kNotFinished) {
   DCHECK(ServiceWorkerVersion::IsInstalled(owner_->status()));
-  DCHECK_NE(kInvalidServiceWorkerResourceId, main_script_id_);
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+            main_script_id_);
 }
 
 ServiceWorkerInstalledScriptsSender::~ServiceWorkerInstalledScriptsSender() {}
@@ -55,7 +57,8 @@ ServiceWorkerInstalledScriptsSender::CreateInfoAndBind() {
 
 void ServiceWorkerInstalledScriptsSender::Start() {
   DCHECK_EQ(State::kNotStarted, state_);
-  DCHECK_NE(kInvalidServiceWorkerResourceId, main_script_id_);
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+            main_script_id_);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
                                     "ServiceWorkerInstalledScriptsSender", this,
                                     "main_script_url", main_script_url_.spec());
@@ -217,7 +220,7 @@ void ServiceWorkerInstalledScriptsSender::RequestInstalledScript(
   int64_t resource_id =
       owner_->script_cache_map()->LookupResourceId(script_url);
 
-  if (resource_id == kInvalidServiceWorkerResourceId) {
+  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     mojo::ReportBadMessage("Requested script was not installed.");
     return;
   }

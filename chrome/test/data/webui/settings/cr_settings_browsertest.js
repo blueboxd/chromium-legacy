@@ -1182,8 +1182,6 @@ CrSettingsSiteDataDetailsTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  featureList: {enabled: ['features::kSiteSettings']},
-
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
@@ -1336,8 +1334,6 @@ CrSettingsAllSitesTest.prototype = {
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
 
-  featureList: {enabled: ['features::kSiteSettings']},
-
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
@@ -1421,8 +1417,6 @@ CrSettingsSiteListTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
-
-  featureList: {enabled: ['features::kSiteSettings']},
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([

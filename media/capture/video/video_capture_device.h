@@ -101,6 +101,9 @@ class CAPTURE_EXPORT VideoCaptureDevice
         GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
         virtual std::unique_ptr<VideoCaptureBufferHandle>
         GetHandleForInProcessAccess() = 0;
+#if defined(OS_CHROMEOS)
+        virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() = 0;
+#endif
       };
 
       Buffer();

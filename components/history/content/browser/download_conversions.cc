@@ -74,6 +74,8 @@ download::DownloadDangerType ToContentDownloadDangerType(
       return download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY;
     case DownloadDangerType::ASYNC_SCANNING:
       return download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING;
+    case DownloadDangerType::BLOCKED_PASSWORD_PROTECTED:
+      return download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED;
     case DownloadDangerType::INVALID:
       NOTREACHED();
       return download::DOWNLOAD_DANGER_TYPE_MAX;
@@ -107,6 +109,8 @@ DownloadDangerType ToHistoryDownloadDangerType(
       return DownloadDangerType::WHITELISTED_BY_POLICY;
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
       return DownloadDangerType::ASYNC_SCANNING;
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
+      return DownloadDangerType::BLOCKED_PASSWORD_PROTECTED;
     default:
       NOTREACHED();
       return DownloadDangerType::INVALID;

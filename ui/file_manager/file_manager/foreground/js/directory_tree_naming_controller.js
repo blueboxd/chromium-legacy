@@ -92,7 +92,6 @@ class DirectoryTreeNamingController {
             'rename-placeholder');
 
     if (this.isRemovableRoot_ && renameInputElementPlaceholder.length === 1) {
-      // TODO(crbug.com/984427): this removable volume case has no test.
       renameInputElementPlaceholder[0].appendChild(this.inputElement_);
     } else {
       const label = this.getLabelElement_();

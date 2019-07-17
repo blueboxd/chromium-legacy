@@ -393,6 +393,16 @@ void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
   network_contexts_.erase(network_context);
 }
 
+#if defined(OS_CHROMEOS)
+void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
+  logging::LoggingSettings logging_settings;
+  logging_settings.logging_dest = settings->logging_dest;
+  logging_settings.log_file = settings->log_file.value().c_str();
+  if (!logging::InitLogging(logging_settings))
+    LOG(ERROR) << "Unable to reinitialize logging to " << settings->log_file;
+}
+#endif
+
 void NetworkService::CreateNetLogEntriesForActiveObjects(
     net::NetLog::ThreadSafeObserver* observer) {
   std::set<net::URLRequestContext*> contexts;

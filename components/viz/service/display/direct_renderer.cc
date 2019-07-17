@@ -397,13 +397,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       &current_frame()->root_damage_rect,
       &current_frame()->root_content_bounds);
 
-  // Draw all non-root render passes except for the root render pass.
-  for (const auto& pass : *render_passes_in_draw_order) {
-    if (pass.get() == root_render_pass)
-      break;
-    DrawRenderPassAndExecuteCopyRequests(pass.get());
-  }
-
   bool was_using_dc_layers = using_dc_layers_;
   if (!current_frame()->dc_layer_overlay_list.empty()) {
     DCHECK(supports_dc_layers_);
@@ -413,6 +406,17 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
              kNumberOfFramesBeforeDisablingDCLayers) {
     using_dc_layers_ = false;
   }
+
+  if (supports_dc_layers_ && (was_using_dc_layers != using_dc_layers_))
+    SetEnableDCLayers(using_dc_layers_);
+
+  // Draw all non-root render passes except for the root render pass.
+  for (const auto& pass : *render_passes_in_draw_order) {
+    if (pass.get() == root_render_pass)
+      break;
+    DrawRenderPassAndExecuteCopyRequests(pass.get());
+  }
+
   if (supports_dc_layers_ &&
       (did_reshape || (was_using_dc_layers != using_dc_layers_))) {
     // The entire surface has to be redrawn if it was reshaped or if switching
@@ -756,9 +760,6 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
-
-    if (supports_dc_layers_)
-      SetEnableDCLayers(using_dc_layers_);
     output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),

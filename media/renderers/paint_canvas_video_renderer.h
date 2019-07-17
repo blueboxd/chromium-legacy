@@ -180,42 +180,65 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   void ResetCache();
 
   // Used for unit test.
-  SkISize LastImageDimensionsForTesting();
+  gfx::Size LastImageDimensionsForTesting();
 
  private:
+  // This structure wraps information extracted out of a VideoFrame and/or
+  // constructed out of it. The various calls in PaintCanvasVideoRenderer must
+  // not keep a reference to the VideoFrame so necessary data is extracted out
+  // of it.
+  struct Cache {
+    explicit Cache(int frame_id);
+    ~Cache();
+
+    // VideoFrame::unique_id() of the videoframe used to generate the cache.
+    int frame_id;
+
+    // A PaintImage that can be used to draw into a PaintCanvas. This is sized
+    // to the visible size of the VideoFrame. Its contents are generated lazily.
+    cc::PaintImage paint_image;
+
+    // A SkImage that contain the source texture for |paint_image|. This can be
+    // either the source VideoFrame's texture (if wraps_video_frame_texture is
+    // true) or a newly allocated texture (if wraps_video_frame_texture is
+    // false) if a copy or conversion was necessary.
+    // This is only set if the VideoFrame was texture-backed.
+    sk_sp<SkImage> source_image;
+
+    // The allocated size of |source_image|.
+    // This is only set if the VideoFrame was texture-backed.
+    gfx::Size coded_size;
+
+    // The visible subrect of |coded_size| that represents the logical contents
+    // of the frame after cropping.
+    // This is only set if the VideoFrame was texture-backed.
+    gfx::Rect visible_rect;
+
+    // Whether |source_image| directly points to a texture of the VideoFrame
+    // (if true), or to an allocated texture (if false).
+    bool wraps_video_frame_texture = false;
+  };
+
   // Update the cache holding the most-recently-painted frame. Returns false
   // if the image couldn't be updated.
   bool UpdateLastImage(scoped_refptr<VideoFrame> video_frame,
                        viz::ContextProvider* context_provider,
                        bool allow_wrap_texture);
 
-  void CorrectLastImageDimensions(const SkIRect& visible_rect);
-
   bool PrepareVideoFrame(scoped_refptr<VideoFrame> video_frame,
                          viz::ContextProvider* context_provider,
                          unsigned int textureTarget,
                          unsigned int texture);
 
-  // Last image used to draw to the canvas.
-  cc::PaintImage last_image_;
+  base::Optional<Cache> cache_;
 
-  // last_image_ directly wraps a texture from a VideoFrame, in which case we
-  // need to synchronize access before releasing the VideoFrame.
-  bool last_image_wraps_video_frame_texture_ = false;
-
-  // VideoFrame::unique_id() of the videoframe used to generate |last_image_|.
-  base::Optional<int> last_id_;
-
-  // If |last_image_| is not used for a while, it's deleted to save memory.
-  base::DelayTimer last_image_deleting_timer_;
+  // If |cache_| is not used for a while, it's deleted to save memory.
+  base::DelayTimer cache_deleting_timer_;
   // Stable paint image id to provide to draw image calls.
   cc::PaintImage::Id renderer_stable_id_;
 
   // Used for DCHECKs to ensure method calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
-
-  // Used for unit test.
-  SkISize last_image_dimensions_for_testing_;
 
   struct YUVTextureCache {
     YUVTextureCache();

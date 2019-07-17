@@ -56,6 +56,10 @@ void FtlMessageReceptionChannel::StopReceivingMessages() {
   if (state_ == State::STOPPED) {
     return;
   }
+
+  // Current stream ready callbacks shouldn't receive notification for future
+  // stream.
+  stream_ready_callbacks_.clear();
   StopReceivingMessagesInternal();
   RunStreamClosedCallbacks(grpc::Status::CANCELLED);
 }
@@ -87,6 +91,7 @@ void FtlMessageReceptionChannel::OnReceiveMessagesStreamClosed(
     RetryStartReceivingMessagesWithBackoff();
     return;
   }
+  stream_ready_callbacks_.clear();
   StopReceivingMessagesInternal();
   RunStreamClosedCallbacks(status);
 }

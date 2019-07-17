@@ -7,7 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/dom_distiller/content/common/distillability_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "components/dom_distiller/core/distillable_page_detector.h"
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/page_features.h"

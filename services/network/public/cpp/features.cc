@@ -88,6 +88,10 @@ const base::Feature kProactivelyThrottleLowPriorityRequests{
     "ProactivelyThrottleLowPriorityRequests",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// https://github.com/mikewest/corpp
+const base::Feature kCrossOriginEmbedderPolicy{
+    "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.
   if (!base::FeatureList::IsEnabled(features::kNetworkService))

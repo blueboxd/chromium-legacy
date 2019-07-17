@@ -32,7 +32,7 @@ void WebAppTabHelperBase::Init(WebAppAudioFocusIdMap* audio_focus_id_map) {
 
   // Sync app_id with the initial url from WebContents (used in Tab Restore etc)
   const GURL init_url = web_contents()->GetSiteInstance()->GetSiteURL();
-  SetAppId(FindAppIdInScopeOfUrl(init_url));
+  SetAppId(FindAppIdWithUrlInScope(init_url));
 }
 
 bool WebAppTabHelperBase::HasAssociatedApp() const {
@@ -53,7 +53,7 @@ void WebAppTabHelperBase::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
 
-  const AppId app_id = FindAppIdInScopeOfUrl(navigation_handle->GetURL());
+  const AppId app_id = FindAppIdWithUrlInScope(navigation_handle->GetURL());
   SetAppId(app_id);
 
   ReinstallPlaceholderAppIfNecessary(navigation_handle->GetURL());
@@ -79,7 +79,7 @@ void WebAppTabHelperBase::SetAudioFocusIdMap(
 
 void WebAppTabHelperBase::OnWebAppInstalled(const AppId& installed_app_id) {
   // Check if current web_contents url is in scope for the newly installed app.
-  AppId app_id = FindAppIdInScopeOfUrl(web_contents()->GetURL());
+  AppId app_id = FindAppIdWithUrlInScope(web_contents()->GetURL());
   if (app_id == installed_app_id)
     SetAppId(app_id);
 }
@@ -132,11 +132,11 @@ void WebAppTabHelperBase::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   provider->policy_manager()->ReinstallPlaceholderAppIfNecessary(url);
 }
 
-AppId WebAppTabHelperBase::FindAppIdInScopeOfUrl(const GURL& url) const {
+AppId WebAppTabHelperBase::FindAppIdWithUrlInScope(const GURL& url) const {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   DCHECK(provider);
-  return provider->registrar().FindAppIdForUrl(url);
+  return provider->registrar().FindAppWithUrlInScope(url).value_or(AppId());
 }
 
 }  // namespace web_app

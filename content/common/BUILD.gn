@@ -225,7 +225,6 @@ source_set("common") {
     "service_manager/service_manager_connection_impl.h",
     "service_worker/service_worker_loader_helpers.cc",
     "service_worker/service_worker_loader_helpers.h",
-    "service_worker/service_worker_types.cc",
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.cc",
     "service_worker/service_worker_utils.h",

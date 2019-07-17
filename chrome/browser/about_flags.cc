@@ -1384,9 +1384,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"focus-mode", flag_descriptions::kFocusMode,
      flag_descriptions::kFocusModeDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kFocusMode)},
-    {"site-settings", flag_descriptions::kSiteSettings,
-     flag_descriptions::kSiteSettingsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSiteSettings)},
     {"touch-events", flag_descriptions::kTouchEventsName,
      flag_descriptions::kTouchEventsDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kTouchEventFeatureDetectionChoices)},
@@ -2761,6 +2758,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"out-of-blink-cors", flag_descriptions::kEnableOutOfBlinkCorsName,
      flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},
+
+    {"cross-origin-embedder-policy",
+     flag_descriptions::kCrossOriginEmbedderPolicyName,
+     flag_descriptions::kCrossOriginEmbedderPolicyDescription, kOsAll,
+     FEATURE_VALUE_TYPE(network::features::kCrossOriginEmbedderPolicy)},
 
     {"enable-resource-load-scheduler",
      flag_descriptions::kResourceLoadSchedulerName,

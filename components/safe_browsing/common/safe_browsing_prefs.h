@@ -80,6 +80,9 @@ extern const char kPasswordProtectionWarningTrigger[];
 // Last time Chrome refreshes advanced protection status for sign-in users (in
 // microseconds);
 extern const char kAdvancedProtectionLastRefreshInUs[];
+
+// Whether or not to allow downloads of password-protected files.
+extern const char kPasswordProtectedAllowed[];
 }
 
 namespace safe_browsing {

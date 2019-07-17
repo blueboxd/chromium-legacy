@@ -73,7 +73,7 @@ void CrostiniHandler::OnJavascriptAllowed() {
   crostini::CrostiniManager::GetForProfile(profile_)
       ->AddInstallerViewStatusObserver(this);
   if (chromeos::CrosUsbDetector::Get()) {
-    chromeos::CrosUsbDetector::Get()->AddSharedUsbDeviceObserver(this);
+    chromeos::CrosUsbDetector::Get()->AddUsbDeviceObserver(this);
   }
 }
 
@@ -84,7 +84,7 @@ void CrostiniHandler::OnJavascriptDisallowed() {
         ->RemoveInstallerViewStatusObserver(this);
   }
   if (chromeos::CrosUsbDetector::Get()) {
-    chromeos::CrosUsbDetector::Get()->RemoveSharedUsbDeviceObserver(this);
+    chromeos::CrosUsbDetector::Get()->RemoveUsbDeviceObserver(this);
   }
 }
 
@@ -141,7 +141,7 @@ void CrostiniHandler::HandleRemoveCrostiniSharedPath(
 
 namespace {
 base::ListValue UsbDevicesToListValue(
-    const std::vector<SharedUsbDeviceInfo> shared_usbs) {
+    const std::vector<CrosUsbDeviceInfo> shared_usbs) {
   base::ListValue usb_devices_list;
   for (auto device : shared_usbs) {
     base::Value device_info(base::Value::Type::DICTIONARY);
@@ -171,7 +171,7 @@ void CrostiniHandler::HandleGetCrostiniSharedUsbDevices(
 
   ResolveJavascriptCallback(
       base::Value(callback_id),
-      UsbDevicesToListValue(detector->GetSharedUsbDevices()));
+      UsbDevicesToListValue(detector->GetDevicesSharableWithCrostini()));
 }
 
 void CrostiniHandler::HandleSetCrostiniUsbDeviceShared(
@@ -194,10 +194,12 @@ void CrostiniHandler::HandleSetCrostiniUsbDeviceShared(
                                   base::DoNothing());
 }
 
-void CrostiniHandler::OnSharedUsbDevicesChanged(
-    const std::vector<SharedUsbDeviceInfo> shared_usbs) {
-  FireWebUIListener("crostini-shared-usb-devices-changed",
-                    UsbDevicesToListValue(shared_usbs));
+void CrostiniHandler::OnUsbDevicesChanged() {
+  chromeos::CrosUsbDetector* detector = chromeos::CrosUsbDetector::Get();
+  DCHECK(detector);  // This callback is called by the detector.
+  FireWebUIListener(
+      "crostini-shared-usb-devices-changed",
+      UsbDevicesToListValue(detector->GetDevicesSharableWithCrostini()));
 }
 
 void CrostiniHandler::HandleExportCrostiniContainer(

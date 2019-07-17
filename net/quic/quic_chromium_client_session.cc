@@ -74,9 +74,6 @@ const size_t kMinRetryTimeForDefaultNetworkSecs = 1;
 // network.
 const int kDefaultRTTMilliSecs = 300;
 
-// The maximum size of uncompressed QUIC headers that will be allowed.
-const size_t kMaxUncompressedHeaderSize = 256 * 1024;
-
 // Histograms for tracking down the crashes from http://crbug.com/354669
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
@@ -929,10 +926,10 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
 }
 
 void QuicChromiumClientSession::Initialize() {
+  set_max_inbound_header_list_size(kQuicMaxHeaderListSize);
   quic::QuicSpdyClientSessionBase::Initialize();
   SetHpackEncoderDebugVisitor(std::make_unique<HpackEncoderDebugVisitor>());
   SetHpackDecoderDebugVisitor(std::make_unique<HpackDecoderDebugVisitor>());
-  set_max_uncompressed_header_bytes(kMaxUncompressedHeaderSize);
 }
 
 size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(

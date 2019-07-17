@@ -38,8 +38,8 @@ CodecImageGroup::CodecImageGroup(
 
 CodecImageGroup::~CodecImageGroup() {}
 
-void CodecImageGroup::SetDestructionCb(
-    CodecImage::DestructionCb destruction_cb) {
+void CodecImageGroup::SetDestructionCB(
+    CodecImage::DestructionCB destruction_cb) {
   destruction_cb_ = std::move(destruction_cb);
 }
 
@@ -55,7 +55,7 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
 
   // Bind a strong ref to |this| so that the callback will prevent us from being
   // destroyed until the CodecImage is destroyed.
-  image->SetDestructionCb(
+  image->SetDestructionCB(
       base::BindRepeating(&CodecImageGroup::OnCodecImageDestroyed,
                           scoped_refptr<CodecImageGroup>(this)));
 }

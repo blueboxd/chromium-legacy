@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/media_message_center/media_notification_controller.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
@@ -66,8 +66,8 @@ class MediaDialogController
   media_session::mojom::MediaControllerManagerPtr controller_manager_ptr_;
 
   // Used to receive updates to the active media controller.
-  mojo::Binding<media_session::mojom::AudioFocusObserver>
-      audio_focus_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::AudioFocusObserver>
+      audio_focus_observer_receiver_{this};
 
   base::WeakPtrFactory<MediaDialogController> weak_ptr_factory_{this};
 

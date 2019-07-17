@@ -104,13 +104,13 @@ mojom::AudioFocusRequestStatePtr AudioFocusRequest::ToAudioFocusRequestState()
 }
 
 void AudioFocusRequest::BindToMediaController(
-    mojom::MediaControllerRequest request) {
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
   if (!controller_) {
     controller_ = std::make_unique<MediaController>();
     controller_->SetMediaSession(this);
   }
 
-  controller_->BindToInterface(std::move(request));
+  controller_->BindToInterface(std::move(receiver));
 }
 
 void AudioFocusRequest::Suspend(const EnforcementState& state) {

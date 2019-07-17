@@ -169,6 +169,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       transport_rtt_observation_count_last_ect_computation_(0),
       new_rtt_observations_since_last_ect_computation_(0),
       new_throughput_observations_since_last_ect_computation_(0),
+      network_congestion_analyzer_(tick_clock_),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cached_estimate_applied_(false),
       net_log_(NetLogWithSource::Make(
@@ -329,7 +330,9 @@ bool NetworkQualityEstimator::IsHangingRequest(
   return true;
 }
 
-void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
+void NetworkQualityEstimator::NotifyHeadersReceived(
+    const URLRequest& request,
+    int64_t prefilter_total_bytes_read) {
   TRACE_EVENT0(NetTracingCategory(),
                "NetworkQualityEstimator::NotifyHeadersReceived");
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -376,7 +379,9 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
       request, request.GetExpectedContentSize());
 }
 
-void NetworkQualityEstimator::NotifyBytesRead(const URLRequest& request) {
+void NetworkQualityEstimator::NotifyBytesRead(
+    const URLRequest& request,
+    int64_t prefilter_total_bytes_read) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   throughput_analyzer_->NotifyBytesRead(request);
 }
@@ -774,6 +779,17 @@ void NetworkQualityEstimator::ComputeNetworkQueueingDelay() {
 
   network_congestion_analyzer_.ComputeRecentQueueingDelay(
       recent_rtt_stats, historical_rtt_stats, downlink_kbps);
+
+  // Gets the total number of inflight requests including hanging GETs. The app
+  // cannot determine whether a request is hanging or is still in the wire.
+  size_t count_inflight_requests =
+      throughput_analyzer_->CountTotalInFlightRequests();
+
+  // Tracks the mapping between the peak observed queueing delay to the peak
+  // count of in-flight requests.
+  network_congestion_analyzer_.UpdatePeakDelayMapping(
+      network_congestion_analyzer_.recent_queueing_delay(),
+      count_inflight_requests);
 }
 
 void NetworkQualityEstimator::ComputeEffectiveConnectionType() {

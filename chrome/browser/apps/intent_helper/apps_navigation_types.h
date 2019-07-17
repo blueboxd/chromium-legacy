@@ -17,8 +17,11 @@ namespace apps {
 
 // Describes the possible ways for the intent picker to be closed.
 enum class IntentPickerCloseReason {
-  // There was an error in showing the intent picker.
-  PICKER_ERROR,
+  // An error occurred in the intent picker before it could be displayed.
+  ERROR_BEFORE_PICKER,
+
+  // An error occurred in the intent picker after it was displayed.
+  ERROR_AFTER_PICKER,
 
   // The user dismissed the picker without making a choice.
   DIALOG_DEACTIVATED,

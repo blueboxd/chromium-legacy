@@ -123,6 +123,8 @@ class MetaBuildWrapper(object):
     subp.add_argument('output_path',
                       help='path to a file containing the output arguments '
                            'as a JSON object.')
+    subp.add_argument('--json_output',
+                      help='Write errors to json.output')
     subp.set_defaults(func=self.CmdAnalyze)
 
     subp = subps.add_parser('export',
@@ -141,6 +143,8 @@ class MetaBuildWrapper(object):
     subp.add_argument('--swarming-targets-file',
                       help='save runtime dependencies for targets listed '
                            'in file.')
+    subp.add_argument('--json_output',
+                      help='Write errors to json.output')
     subp.add_argument('path',
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
@@ -828,8 +832,11 @@ class MetaBuildWrapper(object):
       self.WriteFile(gn_runtime_deps_path, '\n'.join(labels) + '\n')
       cmd.append('--runtime-deps-list-file=%s' % gn_runtime_deps_path)
 
-    ret, _, _ = self.Run(cmd)
+    ret, output, _ = self.Run(cmd)
     if ret:
+      if getattr(self.args, 'json_output', None) and output:
+        # write errors to json.output
+        self.WriteJSON({'output': output}, self.args.json_output)
       # If `gn gen` failed, we should exit early rather than trying to
       # generate isolates. Run() will have already logged any error output.
       self.Print('GN gen failed: %d' % ret)
@@ -1554,6 +1561,7 @@ class MetaBuildWrapper(object):
       if ret:
         self.Print('  -> returned %d' % ret)
       if out:
+        # This is the error seen on the logs
         self.Print(out, end='')
       if err:
         self.Print(err, end='', file=sys.stderr)

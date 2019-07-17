@@ -28,3 +28,14 @@ source_set("audio_decoder_manifest") {
     "//services/service_manager/public/cpp",
   ]
 }
+
+source_set("prefs") {
+  sources = [
+    "assistant_prefs.cc",
+    "assistant_prefs.h",
+  ]
+
+  deps = [
+    "//components/prefs",
+  ]
+}

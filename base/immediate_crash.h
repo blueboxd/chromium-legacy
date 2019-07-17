@@ -33,32 +33,33 @@
 //   Note: this last bullet point may no longer be true, and may be removed in
 //   the future.
 
-// Note: TRAP_SEQUENCE Is currently split into two macro helpers due to the fact
-// that clang emits an actual instruction for __builtin_unreachable() on certain
-// platforms (see https://crbug.com/958675). In addition, the int3/bkpt/brk will
-// be removed in followups, so splitting it up like this now makes it easy to
-// land the followups.
+// TODO(https://crbug.com/958675): TRAP_SEQUENCE_() was previously split into
+// two macro helpers to make it easier to simplify it to one instruction in
+// followups. TRAP_SEQUENCE2_() will be renamed and collapsed into
+// TRAP_SEQUENCE_() assuming nothing goes wrong...
 
 #if defined(COMPILER_GCC)
 
 #if defined(OS_NACL)
 
 // Crash report accuracy is not guaranteed on NaCl.
-#define TRAP_SEQUENCE1_() __builtin_trap()
-#define TRAP_SEQUENCE2_() asm volatile("")
+#define TRAP_SEQUENCE2_() __builtin_trap()
 
 #elif defined(ARCH_CPU_X86_FAMILY)
 
-// TODO(https://crbug.com/958675): In theory, it should be possible to use just
-// int3. However, there are a number of crashes with SIGILL as the exception
-// code, so it seems likely that there's a signal handler that allows execution
-// to continue after SIGTRAP.
-#define TRAP_SEQUENCE1_() asm volatile("int3")
+// In theory, it should be possible to use just int3. However, there are a
+// number of crashes with SIGILL as the exception code, so it seems likely that
+// there's a signal handler that allows execution to continue after SIGTRAP.
 
 #if defined(OS_MACOSX)
 // Intentionally empty: __builtin_unreachable() is always part of the sequence
 // (see IMMEDIATE_CRASH below) and already emits a ud2 on Mac.
 #define TRAP_SEQUENCE2_() asm volatile("")
+#elif defined(OS_LINUX)
+// TODO(dcheng): Remove int3 on Linux as well. Removing it is preventing
+// IMMEDIATE_CRASH() from being detected as abnormal program termination on
+// Linux.
+#define TRAP_SEQUENCE2_() asm volatile("int3;ud2")
 #else
 #define TRAP_SEQUENCE2_() asm volatile("ud2")
 #endif  // defined(OS_MACOSX)
@@ -69,23 +70,22 @@
 // as a 32 bit userspace app on arm64. There doesn't seem to be any way to
 // cause a SIGTRAP from userspace without using a syscall (which would be a
 // problem for sandboxing).
-// TODO(https://crbug.com/958675): Remove bkpt from this sequence.
-#define TRAP_SEQUENCE1_() asm volatile("bkpt #0")
+// TODO(dcheng): This likely will no longer generate a SIGTRAP, update this
+// comment to what it does generate?
 #define TRAP_SEQUENCE2_() asm volatile("udf #0")
 
 #elif defined(ARCH_CPU_ARM64)
 
 // This will always generate a SIGTRAP on arm64.
-// TODO(https://crbug.com/958675): Remove brk from this sequence.
-#define TRAP_SEQUENCE1_() asm volatile("brk #0")
+// TODO(dcheng): This likely will no longer generate a SIGTRAP, update this
+// comment to what it does generate?
 #define TRAP_SEQUENCE2_() asm volatile("hlt #0")
 
 #else
 
 // Crash report accuracy will not be guaranteed on other architectures, but at
 // least this will crash as expected.
-#define TRAP_SEQUENCE1_() __builtin_trap()
-#define TRAP_SEQUENCE2_() asm volatile("")
+#define TRAP_SEQUENCE2_() __builtin_trap()
 
 #endif  // ARCH_CPU_*
 
@@ -94,19 +94,15 @@
 #if !defined(__clang__)
 
 // MSVC x64 doesn't support inline asm, so use the MSVC intrinsic.
-#define TRAP_SEQUENCE1_() __debugbreak()
-#define TRAP_SEQUENCE2_()
+#define TRAP_SEQUENCE2_() __debugbreak()
 
 #elif defined(ARCH_CPU_ARM64)
 
-#define TRAP_SEQUENCE1_() __asm volatile("brk #0\n")
 // Intentionally empty: __builtin_unreachable() is always part of the sequence
 // (see IMMEDIATE_CRASH below) and already emits a ud2 on Win64
 #define TRAP_SEQUENCE2_() __asm volatile("")
 
 #else
-
-#define TRAP_SEQUENCE1_() asm volatile("int3")
 
 #if defined(ARCH_CPU_64_BITS)
 // Intentionally empty: __builtin_unreachable() is always part of the sequence
@@ -126,7 +122,6 @@
 
 #define TRAP_SEQUENCE_() \
   do {                   \
-    TRAP_SEQUENCE1_();   \
     TRAP_SEQUENCE2_();   \
   } while (false)
 

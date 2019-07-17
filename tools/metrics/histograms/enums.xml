@@ -2386,11 +2386,8 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="ArcIntentHandlerAction">
-  <obsolete>
-    Deprecated as of 9/2018 (M71).
-  </obsolete>
   <summary>Defines Arc intent handler actions</summary>
-  <int value="0" label="Error"/>
+  <int value="0" label="Error after showing picker"/>
   <int value="1" label="Dialog deactivated"/>
   <int value="2" label="DEPRECATED: Always"/>
   <int value="3" label="DEPRECATED: Just once"/>
@@ -2400,6 +2397,7 @@ Unknown properties are collapsed to zero. -->
   <int value="7" label="ARC app pressed"/>
   <int value="8" label="ARC app preferred and pressed"/>
   <int value="9" label="Progressive web app pressed"/>
+  <int value="10" label="Error before showing picker"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
@@ -14706,6 +14704,7 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="POTENTIALLY_UNWANTED"/>
   <int value="9" label="WHITELISTED_BY_POLICY"/>
   <int value="10" label="ASYNC_SCANNING"/>
+  <int value="11" label="BLOCKED_PASSWORD_PROTECTED"/>
 </enum>
 
 <enum name="DownloadLocationDialogResult">
@@ -14793,6 +14792,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DownloadNotificationLaunchType">
+  <obsolete>
+    Deprecated in July 2019.
+  </obsolete>
   <int value="0" label="LAUNCH"/>
   <int value="1" label="RELAUNCH"/>
 </enum>
@@ -34046,6 +34048,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>
   <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
+  <int value="-1509001043" label="CrossOriginEmbedderPolicy:enabled"/>
   <int value="-1508852757" label="CreditCardAutofillTouchBar:disabled"/>
   <int value="-1506880454"
       label="SupervisedUserCommittedInterstitials:disabled"/>
@@ -34231,7 +34234,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1288130734" label="OpenVR:disabled"/>
   <int value="-1287511172"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:disabled"/>
-  <int value="-1285293181" label="SiteSettings:enabled"/>
   <int value="-1285021473" label="save-page-as-mhtml"/>
   <int value="-1284637134" label="pull-to-refresh"/>
   <int value="-1282992935"
@@ -34684,6 +34686,7 @@ from previous Chrome versions.
   <int value="-662064703" label="MediaSessionService:enabled"/>
   <int value="-661978438" label="enable-data-reduction-proxy-lo-fi"/>
   <int value="-660160292" label="enable-apps-show-on-first-paint"/>
+  <int value="-656345197" label="CrossOriginEmbedderPolicy:disabled"/>
   <int value="-654196854" label="PasswordsKeyboardAccessory:enabled"/>
   <int value="-650504533" label="enable-speculative-launch-service-worker"/>
   <int value="-650213879" label="OmniboxZeroSuggestionsOnNTP:disabled"/>
@@ -35164,7 +35167,6 @@ from previous Chrome versions.
   <int value="43951968" label="DesktopPWAsCustomTabUI:enabled"/>
   <int value="44088203" label="ExpensiveBackgroundTimerThrottling:enabled"/>
   <int value="48159177" label="reduced-referrer-granularity"/>
-  <int value="48223610" label="SiteSettings:disabled"/>
   <int value="49113130" label="OmniboxOnDeviceHeadProvider:disabled"/>
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
@@ -51285,6 +51287,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="26" label="SAMPLED_UNSUPPORTED_FILE"/>
   <int value="27" label="VERDICT_UNKNOWN"/>
   <int value="28" label="DOWNLOAD_DESTROYED"/>
+  <int value="29" label="BLOCKED_PASSWORD_PROTECTED"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
@@ -51296,6 +51299,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="POTENTIALLY_UNWANTED"/>
   <int value="6" label="WHITELISTED_BY_POLICY"/>
   <int value="7" label="ASYNC_SCANNING"/>
+  <int value="8" label="BLOCKED_PASSWORD_PROTECTED"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">

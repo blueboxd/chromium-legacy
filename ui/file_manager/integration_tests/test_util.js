@@ -292,6 +292,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
 var EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
+  LINK: 'link',
   SHARED_DRIVE: 'team_drive',
   COMPUTER: 'Computer'
 });
@@ -799,6 +800,48 @@ var ENTRIES = {
     targetPath: 'D/E/F',
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'F',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
+
+  deeplyBurriedSmallJpeg: new TestEntryInfo({
+    type: EntryType.FILE,
+    targetPath: 'A/B/C/deep.jpg',
+    sourceFileName: 'small.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'deep.jpg',
+    sizeText: '886 bytes',
+    typeText: 'JPEG image'
+  }),
+
+  linkGtoB: new TestEntryInfo({
+    type: EntryType.LINK,
+    targetPath: 'G',
+    sourceFileName: 'A/B',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'G',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
+
+  linkHtoFile: new TestEntryInfo({
+    type: EntryType.LINK,
+    targetPath: 'H.jpg',
+    sourceFileName: 'A/B/C/deep.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'H.jpg',
+    sizeText: '886 bytes',
+    typeText: 'JPEG image'
+  }),
+
+  linkTtoTransitiveDirectory: new TestEntryInfo({
+    type: EntryType.LINK,
+    targetPath: 'T',
+    sourceFileName: 'G/C',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'T',
     sizeText: '--',
     typeText: 'Folder'
   }),

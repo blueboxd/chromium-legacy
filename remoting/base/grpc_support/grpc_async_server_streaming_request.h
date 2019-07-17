@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "remoting/base/grpc_support/grpc_async_request.h"
 #include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
 #include "third_party/grpc/src/include/grpcpp/support/async_stream.h"
@@ -38,6 +40,19 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
       std::unique_ptr<ScopedGrpcServerStream>* scoped_stream);
   ~GrpcAsyncServerStreamingRequestBase() override;
 
+  // Sets the deadline of receiving initial metadata (marker of stream being
+  // started). The request will be closed with a DEADLINE_EXCEEDED error if
+  // initial metadata has not been received after |deadline|.
+  //
+  // Note that this is different than setting deadline on the client context,
+  // which will close the stream if the server doesn't close it after
+  // |deadline|.
+  //
+  // The default value is 30s after request is started.
+  void set_initial_metadata_deadline(base::Time deadline) {
+    initial_metadata_deadline_ = deadline;
+  }
+
  protected:
   enum class State {
     STARTING,
@@ -58,6 +73,8 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
   // has been deleted right before it is being executed.
   void RunTask(base::OnceClosure task);
 
+  void StartInitialMetadataTimer();
+
   virtual void ReadInitialMetadata(void* event_tag) = 0;
   virtual void ResolveIncomingMessage() = 0;
   virtual void WaitForIncomingMessage(void* event_tag) = 0;
@@ -71,10 +88,13 @@ class GrpcAsyncServerStreamingRequestBase : public GrpcAsyncRequest {
   bool CanStartRequest() const override;
   void ResolveChannelReady();
   void ResolveChannelClosed();
+  void OnInitialMetadataTimeout();
 
   base::OnceClosure on_channel_ready_;
   base::OnceCallback<void(const grpc::Status&)> on_channel_closed_;
   State state_ = State::STARTING;
+  base::Time initial_metadata_deadline_;
+  base::OneShotTimer initial_metadata_timer_;
 
   RunTaskCallback run_task_callback_;
   base::WeakPtr<ScopedGrpcServerStream> scoped_stream_;
@@ -132,6 +152,7 @@ class GrpcAsyncServerStreamingRequest
              void* event_tag) override {
     reader_ = std::move(create_reader_callback_).Run(cq, event_tag);
     set_run_task_callback(run_task_cb);
+    StartInitialMetadataTimer();
   }
 
   // GrpcAsyncServerStreamingRequestBase implementations.

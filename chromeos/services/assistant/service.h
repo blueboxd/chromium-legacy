@@ -34,6 +34,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 class GoogleServiceAuthError;
+class PrefService;
 
 namespace base {
 class OneShotTimer;
@@ -145,6 +146,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
             mojom::DeviceActionsPtr device_actions,
             bool is_test) override;
 
+  void OnPrefServiceConnected(std::unique_ptr<::PrefService> pref_service);
+
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   void GetPrimaryAccountInfoCallback(
@@ -213,6 +216,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+
+  std::unique_ptr<PrefService> pref_service_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

@@ -173,7 +173,11 @@ SAConstants.MenuAction = {
   // Either perform the default action or enter a new scope, as applicable.
   SELECT: 'select',
   // Show the system context menu for the current element.
-  SHOW_CONTEXT_MENU: chrome.automation.ActionType.SHOW_CONTEXT_MENU
+  SHOW_CONTEXT_MENU: chrome.automation.ActionType.SHOW_CONTEXT_MENU,
+  // Set the end of a text selection.
+  SELECT_END: 'selectEnd',
+  // Set the beginning of a text selection.
+  SELECT_START: 'selectStart'
 };
 
 /**

@@ -17,6 +17,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -32,6 +33,7 @@
 #include "base/observer_list.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -45,6 +47,7 @@ class AssistantAlarmTimerController;
 class AssistantCacheController;
 class AssistantInteractionController;
 class AssistantNotificationController;
+class AssistantPrefsController;
 class AssistantScreenContextController;
 class AssistantSetupController;
 class AssistantUiController;
@@ -128,6 +131,10 @@ class ASH_EXPORT AssistantController
     return &assistant_notification_controller_;
   }
 
+  AssistantPrefsController* prefs_controller() {
+    return &assistant_prefs_controller_;
+  }
+
   AssistantScreenContextController* screen_context_controller() {
     return &assistant_screen_context_controller_;
   }
@@ -173,6 +180,7 @@ class ASH_EXPORT AssistantController
   AssistantCacheController assistant_cache_controller_;
   AssistantInteractionController assistant_interaction_controller_;
   AssistantNotificationController assistant_notification_controller_;
+  AssistantPrefsController assistant_prefs_controller_;
   AssistantScreenContextController assistant_screen_context_controller_;
   AssistantSetupController assistant_setup_controller_;
   AssistantUiController assistant_ui_controller_;

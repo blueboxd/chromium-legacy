@@ -10,6 +10,9 @@ namespace remoting {
 
 namespace {
 
+constexpr base::TimeDelta kDefaultInitialMetadataTimeout =
+    base::TimeDelta::FromSeconds(30);
+
 void RunTaskIfScopedStreamIsAlive(
     base::WeakPtr<ScopedGrpcServerStream> scoped_stream,
     base::OnceClosure task) {
@@ -42,6 +45,17 @@ void GrpcAsyncServerStreamingRequestBase::RunTask(base::OnceClosure task) {
   DCHECK(run_task_callback_);
   run_task_callback_.Run(base::BindOnce(&RunTaskIfScopedStreamIsAlive,
                                         scoped_stream_, std::move(task)));
+}
+
+void GrpcAsyncServerStreamingRequestBase::StartInitialMetadataTimer() {
+  base::TimeDelta initial_metadata_timeout = kDefaultInitialMetadataTimeout;
+  base::Time now = base::Time::Now();
+  if (initial_metadata_deadline_ > now) {
+    initial_metadata_timeout = initial_metadata_deadline_ - now;
+  }
+  initial_metadata_timer_.Start(
+      FROM_HERE, initial_metadata_timeout, this,
+      &GrpcAsyncServerStreamingRequestBase::OnInitialMetadataTimeout);
 }
 
 bool GrpcAsyncServerStreamingRequestBase::OnDequeue(bool operation_succeeded) {
@@ -103,6 +117,7 @@ void GrpcAsyncServerStreamingRequestBase::OnRequestCanceled() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::CLOSED;
   status_ = grpc::Status::CANCELLED;
+  initial_metadata_timer_.AbandonAndStop();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -113,11 +128,21 @@ bool GrpcAsyncServerStreamingRequestBase::CanStartRequest() const {
 
 void GrpcAsyncServerStreamingRequestBase::ResolveChannelReady() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  initial_metadata_timer_.AbandonAndStop();
   RunTask(std::move(on_channel_ready_));
 }
 
 void GrpcAsyncServerStreamingRequestBase::ResolveChannelClosed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  initial_metadata_timer_.AbandonAndStop();
+  RunTask(base::BindOnce(std::move(on_channel_closed_), status_));
+}
+
+void GrpcAsyncServerStreamingRequestBase::OnInitialMetadataTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CancelRequest();
+  status_ = grpc::Status(grpc::StatusCode::DEADLINE_EXCEEDED,
+                         "Timed out waiting for initial metadata.");
   RunTask(base::BindOnce(std::move(on_channel_closed_), status_));
 }
 

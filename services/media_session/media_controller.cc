@@ -303,13 +303,14 @@ void MediaController::ClearMediaSession() {
     holder->ClearImage();
 }
 
-void MediaController::BindToInterface(mojom::MediaControllerRequest request) {
+void MediaController::BindToInterface(
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MediaController::FlushForTesting() {
-  bindings_.FlushForTesting();
+  receivers_.FlushForTesting();
 }
 
 void MediaController::CleanupImageObservers() {

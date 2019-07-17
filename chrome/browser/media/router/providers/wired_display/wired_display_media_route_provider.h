@@ -122,8 +122,9 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
     // observers if the title changed.
     void UpdatePresentationTitle(const std::string& title);
 
-    void SetMojoConnections(mojom::MediaControllerRequest media_controller,
-                            mojom::MediaStatusObserverPtr observer);
+    void SetMojoConnections(
+        mojo::PendingReceiver<mojom::MediaController> media_controller,
+        mojom::MediaStatusObserverPtr observer);
 
     // Resets the Mojo connections to media controller and status observer.
     void ResetMojoConnections();
@@ -145,7 +146,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
     MediaStatus status_;
 
     // |media_controller_request| is retained but not used.
-    mojom::MediaControllerRequest media_controller_request_;
+    mojo::PendingReceiver<mojom::MediaController> media_controller_receiver_;
 
     // |media_status_observer|, when set, gets notified whenever |status|
     // changes.

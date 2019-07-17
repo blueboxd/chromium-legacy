@@ -21,7 +21,7 @@ class GpuMaybeRenderEarlyImpl {
 
   void SetCodecImageGroup(scoped_refptr<CodecImageGroup> image_group) {
     image_group_ = std::move(image_group);
-    image_group_->SetDestructionCb(
+    image_group_->SetDestructionCB(
         base::BindRepeating(&GpuMaybeRenderEarlyImpl::OnImageDestructed,
                             weak_factory_.GetWeakPtr()));
   }

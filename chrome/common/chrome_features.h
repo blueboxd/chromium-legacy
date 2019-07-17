@@ -386,8 +386,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShowTrustedPublisherURL;
 #endif
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSiteSettings;
-
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSitePerProcess;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

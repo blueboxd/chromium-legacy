@@ -294,19 +294,6 @@ Polymer({
     return cookiesSummary;
   },
 
-
-  /**
-   * Choose a content/site settings label.
-   * @param {string} siteSettings
-   * @param {string} contentSettings
-   * @return {string}
-   * @private
-   */
-  siteSettingsLabel_: function(siteSettings, contentSettings) {
-    return loadTimeData.getBoolean('enableSiteSettings') ? siteSettings :
-                                                           contentSettings;
-  },
-
   /**
    * Updates the text of a browsing data counter corresponding to the given
    * preference.

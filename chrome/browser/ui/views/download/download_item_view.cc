@@ -956,6 +956,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
         return gfx::CreateVectorIcon(vector_icons::kWarningIcon,
                                      kWarningIconSize, gfx::kGoogleRed700);
       }
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

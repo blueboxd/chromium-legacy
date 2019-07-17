@@ -94,7 +94,7 @@ void MediaInternalsAudioFocusHelper::SetEnabled(bool enabled) {
   if (!enabled) {
     audio_focus_ptr_.reset();
     audio_focus_debug_ptr_.reset();
-    binding_.Close();
+    receiver_.reset();
   }
 }
 
@@ -127,12 +127,10 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
   }
 
   // Add the observer to receive audio focus events.
-  if (!binding_.is_bound()) {
-    media_session::mojom::AudioFocusObserverPtr observer;
-    binding_.Bind(mojo::MakeRequest(&observer));
-    audio_focus_ptr_->AddObserver(std::move(observer));
+  if (!receiver_.is_bound()) {
+    audio_focus_ptr_->AddObserver(receiver_.BindNewPipeAndPassRemote());
 
-    binding_.set_connection_error_handler(base::BindRepeating(
+    receiver_.set_disconnect_handler(base::BindRepeating(
         &MediaInternalsAudioFocusHelper::OnMojoError, base::Unretained(this)));
   }
 
@@ -141,7 +139,7 @@ bool MediaInternalsAudioFocusHelper::EnsureServiceConnection() {
 
 void MediaInternalsAudioFocusHelper::OnMojoError() {
   audio_focus_ptr_.reset();
-  binding_.Close();
+  receiver_.reset();
 }
 
 void MediaInternalsAudioFocusHelper::OnDebugMojoError() {

@@ -98,6 +98,10 @@ Most tests simply use the standard `WebXrVrOpenVrBrowserTest` and
 `WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F` macro, which only needs to take the test
 name, further cutting down on boilerplate code.
 
+You can also use `WEBXR_VR_ALL_RUNTIMES_PLUS_INCOGNITO_BROWSER_TEST_F` if you
+want the same functionality as `WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F`, but
+also want the test run in Incognito mode in addition to regular Chrome.
+
 [multi class macros]: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/vr/test/multi_class_browser_test.h
 
 ## Test Class Names

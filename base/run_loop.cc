@@ -200,26 +200,28 @@ void RunLoop::QuitWhenIdle() {
   quit_when_idle_received_ = true;
 }
 
-Closure RunLoop::QuitClosure() {
+RepeatingClosure RunLoop::QuitClosure() {
   // Obtaining the QuitClosure() is not thread-safe; either post the
   // QuitClosure() from the run thread or invoke Quit() directly (which is
   // thread-safe).
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
 
-  return Bind(&ProxyToTaskRunner, origin_task_runner_,
-              Bind(&RunLoop::Quit, weak_factory_.GetWeakPtr()));
+  return BindRepeating(
+      &ProxyToTaskRunner, origin_task_runner_,
+      BindRepeating(&RunLoop::Quit, weak_factory_.GetWeakPtr()));
 }
 
-Closure RunLoop::QuitWhenIdleClosure() {
+RepeatingClosure RunLoop::QuitWhenIdleClosure() {
   // Obtaining the QuitWhenIdleClosure() is not thread-safe; either post the
   // QuitWhenIdleClosure() from the run thread or invoke QuitWhenIdle() directly
   // (which is thread-safe).
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   allow_quit_current_deprecated_ = false;
 
-  return Bind(&ProxyToTaskRunner, origin_task_runner_,
-              Bind(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
+  return BindRepeating(
+      &ProxyToTaskRunner, origin_task_runner_,
+      BindRepeating(&RunLoop::QuitWhenIdle, weak_factory_.GetWeakPtr()));
 }
 
 // static
@@ -268,13 +270,13 @@ void RunLoop::QuitCurrentWhenIdleDeprecated() {
 }
 
 // static
-Closure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
+RepeatingClosure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
   // TODO(844016): Fix callsites and enable this check, or remove the API.
   // Delegate* delegate = GetTlsDelegate().Get();
   // DCHECK(delegate->active_run_loops_.top()->allow_quit_current_deprecated_)
   //     << "Please migrate off QuitCurrentWhenIdleClosureDeprecated(), e.g to "
   //        "QuitWhenIdleClosure().";
-  return Bind(&RunLoop::QuitCurrentWhenIdleDeprecated);
+  return BindRepeating(&RunLoop::QuitCurrentWhenIdleDeprecated);
 }
 
 #if DCHECK_IS_ON()

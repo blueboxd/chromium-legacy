@@ -6,13 +6,18 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
@@ -22,8 +27,9 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -34,7 +40,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for a merchant that provides free shipping regardless of address.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestFreeShippingTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
@@ -43,11 +50,32 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
 
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
-            new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
+            new PaymentRequestTestRule("payment_request_free_shipping_test.html", this, true);
 
     @Rule
     public RenderTestRule mRenderTestRule =
             new RenderTestRule("components/test/data/payments/render_tests");
+
+    @BeforeClass
+    public static void setUpBeforeActivityLaunched() {
+        NightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
+    public void setupNightMode(boolean nightModeEnabled) {
+        NightModeTestUtils.setUpNightModeForChromeActivity(nightModeEnabled);
+        mRenderTestRule.setNightModeEnabled(nightModeEnabled);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        mPaymentRequestTestRule.startMainActivity();
+    }
+
+    @AfterClass
+    public static void tearDownAfterActivityDestroyed() {
+        NightModeTestUtils.tearDownNightModeAfterChromeActivityDestroyed();
+    }
 
     @Override
     public void onMainActivityStarted() throws InterruptedException, TimeoutException {
@@ -65,7 +93,8 @@ public class PaymentRequestFreeShippingTest implements MainActivityStartCallback
     @Test
     @MediumTest
     @Feature({"Payments", "RenderTest"})
-    public void testPayWithRender() throws Throwable {
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testPayWithRender(boolean nightModeEnabled) throws Throwable {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mRenderTestRule.render(mPaymentRequestTestRule.getPaymentRequestView(), "free_shipping");
         mPaymentRequestTestRule.clickAndWait(

@@ -23,7 +23,7 @@ namespace settings {
 
 class CrostiniHandler : public ::settings::SettingsPageUIHandler,
                         public crostini::InstallerViewStatusObserver,
-                        public chromeos::SharedUsbDeviceObserver {
+                        public chromeos::CrosUsbDeviceObserver {
  public:
   explicit CrostiniHandler(Profile* profile);
   ~CrostiniHandler() override;
@@ -47,8 +47,7 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   // Set the share state of a USB device.
   void HandleSetCrostiniUsbDeviceShared(const base::ListValue* args);
   // chromeos::SharedUsbDeviceObserver.
-  void OnSharedUsbDevicesChanged(
-      const std::vector<SharedUsbDeviceInfo> shared_usbs) override;
+  void OnUsbDevicesChanged() override;
   // Export the crostini container.
   void HandleExportCrostiniContainer(const base::ListValue* args);
   // Import the crostini container.

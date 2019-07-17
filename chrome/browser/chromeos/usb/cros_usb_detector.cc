@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -198,14 +199,13 @@ void ShowNotificationForDevice(device::mojom::UsbDeviceInfoPtr device_info) {
 
 }  // namespace
 
-SharedUsbDeviceInfo::SharedUsbDeviceInfo() = default;
-SharedUsbDeviceInfo::SharedUsbDeviceInfo(const SharedUsbDeviceInfo&) = default;
-SharedUsbDeviceInfo::~SharedUsbDeviceInfo() = default;
+CrosUsbDeviceInfo::CrosUsbDeviceInfo() = default;
+CrosUsbDeviceInfo::CrosUsbDeviceInfo(const CrosUsbDeviceInfo&) = default;
+CrosUsbDeviceInfo::~CrosUsbDeviceInfo() = default;
 
-SharedUsbDeviceInfo::VmSharingInfo::VmSharingInfo() = default;
-SharedUsbDeviceInfo::VmSharingInfo::VmSharingInfo(const VmSharingInfo&) =
-    default;
-SharedUsbDeviceInfo::VmSharingInfo::~VmSharingInfo() = default;
+CrosUsbDeviceInfo::VmSharingInfo::VmSharingInfo() = default;
+CrosUsbDeviceInfo::VmSharingInfo::VmSharingInfo(const VmSharingInfo&) = default;
+CrosUsbDeviceInfo::VmSharingInfo::~VmSharingInfo() = default;
 
 std::string CrosUsbDetector::MakeNotificationId(const std::string& guid) {
   return "cros:" + guid;
@@ -265,24 +265,32 @@ void CrosUsbDetector::SetDeviceManagerForTesting(
   device_manager_ = std::move(device_manager);
 }
 
-void CrosUsbDetector::AddSharedUsbDeviceObserver(
-    SharedUsbDeviceObserver* observer) {
-  shared_usb_device_observers_.AddObserver(observer);
+void CrosUsbDetector::AddUsbDeviceObserver(CrosUsbDeviceObserver* observer) {
+  usb_device_observers_.AddObserver(observer);
 }
 
-void CrosUsbDetector::RemoveSharedUsbDeviceObserver(
-    SharedUsbDeviceObserver* observer) {
-  shared_usb_device_observers_.RemoveObserver(observer);
+void CrosUsbDetector::RemoveUsbDeviceObserver(CrosUsbDeviceObserver* observer) {
+  usb_device_observers_.RemoveObserver(observer);
 }
 
-void CrosUsbDetector::SignalSharedUsbDeviceObservers() {
-  for (auto& observer : shared_usb_device_observers_) {
-    observer.OnSharedUsbDevicesChanged(shared_usb_devices_);
+void CrosUsbDetector::SignalUsbDeviceObservers() {
+  for (auto& observer : usb_device_observers_) {
+    observer.OnUsbDevicesChanged();
   }
 }
 
-std::vector<SharedUsbDeviceInfo> CrosUsbDetector::GetSharedUsbDevices() {
-  return shared_usb_devices_;
+const std::vector<CrosUsbDeviceInfo>& CrosUsbDetector::GetConnectedDevices()
+    const {
+  return usb_devices_;
+}
+
+std::vector<CrosUsbDeviceInfo> CrosUsbDetector::GetDevicesSharableWithCrostini()
+    const {
+  auto devices = usb_devices_;
+  base::EraseIf(devices, [](const CrosUsbDeviceInfo& device) {
+    return !device.sharable_with_crostini;
+  });
+  return devices;
 }
 
 void CrosUsbDetector::ConnectToDeviceManager() {
@@ -319,17 +327,6 @@ bool CrosUsbDetector::ShouldShowNotification(
                                             device_info);
 }
 
-bool CrosUsbDetector::IsDeviceSharable(
-    const device::mojom::UsbDeviceInfo& device_info) {
-  if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||
-      device::UsbDeviceFilterMatches(*fastboot_device_filter_, device_info)) {
-    return true;
-  }
-  return base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported) &&
-         !device::UsbDeviceFilterMatchesAny(guest_os_classes_blocked_,
-                                            device_info);
-}
-
 void CrosUsbDetector::OnDeviceChecked(
     device::mojom::UsbDeviceInfoPtr device_info,
     bool hide_notification,
@@ -340,22 +337,34 @@ void CrosUsbDetector::OnDeviceChecked(
                  << " vendor:" << device_info->vendor_id;
     return;
   }
-
-  SharedUsbDeviceInfo new_device;
+  CrosUsbDeviceInfo new_device;
   new_device.guid = device_info->guid;
   new_device.label = ProductLabelFromDevice(device_info);
 
-  shared_usb_devices_.push_back(new_device);
-  available_device_info_.emplace(device_info->guid, device_info.Clone());
-  SignalSharedUsbDeviceObservers();
+  const bool has_supported_interface =
+      device::UsbDeviceFilterMatches(*adb_device_filter_, *device_info) ||
+      device::UsbDeviceFilterMatches(*fastboot_device_filter_, *device_info);
+  const bool has_blocked_interface = device::UsbDeviceFilterMatchesAny(
+      guest_os_classes_blocked_, *device_info);
+  new_device.sharable_with_crostini =
+      has_supported_interface ||
+      (!has_blocked_interface &&
+       base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported));
 
-  // USB devices not claimed by Chrome OS get automatically attached to the
-  // default VM. Note that this relies on the underlying VM (ARCVM) having its
-  // own permission model to restrict access to the device.
-  AttachUsbDeviceToVm(kDefaultVmName, new_device.guid, base::DoNothing());
+  usb_devices_.push_back(new_device);
+  available_device_info_.emplace(device_info->guid, device_info.Clone());
+  SignalUsbDeviceObservers();
+
+  if (has_supported_interface || !has_blocked_interface) {
+    // USB devices not claimed by Chrome OS get automatically attached to the
+    // default VM. Note that this relies on the underlying VM (ARCVM) having its
+    // own permission model to restrict access to the device.
+    AttachUsbDeviceToVm(kDefaultVmName, new_device.guid, base::DoNothing());
+  }
 
   // Some devices should not trigger the notification.
-  if (hide_notification || !ShouldShowNotification(*device_info)) {
+  if (!new_device.sharable_with_crostini || hide_notification ||
+      !ShouldShowNotification(*device_info)) {
     return;
   }
   ShowNotificationForDevice(std::move(device_info));
@@ -367,9 +376,6 @@ void CrosUsbDetector::OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device) {
 
 void CrosUsbDetector::OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info,
                                     bool hide_notification) {
-  if (!IsDeviceSharable(*device_info)) {
-    return;  // Guest OS does not handle this kind of device.
-  }
   device_manager_->CheckAccess(
       device_info->guid,
       base::BindOnce(&CrosUsbDetector::OnDeviceChecked,
@@ -383,7 +389,7 @@ void CrosUsbDetector::OnDeviceRemoved(
       CrosUsbDetector::MakeNotificationId(device_info->guid));
 
   std::string guid = device_info->guid;
-  for (const auto& device : shared_usb_devices_) {
+  for (const auto& device : usb_devices_) {
     if (device.guid == guid) {
       for (const auto& sharing_info_pair : device.vm_sharing_info) {
         DetachUsbDeviceFromVmInternal(sharing_info_pair.first, guid,
@@ -391,16 +397,14 @@ void CrosUsbDetector::OnDeviceRemoved(
       }
     }
   }
-  const auto& start =
-      std::remove_if(shared_usb_devices_.begin(), shared_usb_devices_.end(),
-                     [guid](const SharedUsbDeviceInfo& device) {
-                       return device.guid == guid;
-                     });
-  if (start != shared_usb_devices_.end()) {
-    shared_usb_devices_.erase(start, shared_usb_devices_.end());
+  const auto& start = std::remove_if(
+      usb_devices_.begin(), usb_devices_.end(),
+      [guid](const CrosUsbDeviceInfo& device) { return device.guid == guid; });
+  if (start != usb_devices_.end()) {
+    usb_devices_.erase(start, usb_devices_.end());
   }
   available_device_info_.erase(guid);
-  SignalSharedUsbDeviceObservers();
+  SignalUsbDeviceObservers();
 }
 
 void CrosUsbDetector::OnDeviceManagerConnectionError() {
@@ -411,7 +415,7 @@ void CrosUsbDetector::OnDeviceManagerConnectionError() {
 
 void CrosUsbDetector::ConnectSharedDevicesOnVmStartup() {
   // Reattach shared devices when the VM becomes available.
-  for (auto& device : shared_usb_devices_) {
+  for (auto& device : usb_devices_) {
     bool attached_device = false;
     for (const auto& sharing_pair : device.vm_sharing_info) {
       if (sharing_pair.second.shared) {
@@ -429,7 +433,7 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback) {
-  for (auto& device : shared_usb_devices_) {
+  for (auto& device : usb_devices_) {
     if (device.guid == guid) {
       // Mark the USB device shared so that we know to reattach it on VM
       // restart.
@@ -503,7 +507,7 @@ void CrosUsbDetector::DetachUsbDeviceFromVmInternal(
   const auto& device_info = it->second;
 
   base::Optional<uint8_t> guest_port;
-  for (const auto& device : shared_usb_devices_) {
+  for (const auto& device : usb_devices_) {
     if (device.guid == guid) {
       const auto it = device.vm_sharing_info.find(vm_name);
       if (it != device.vm_sharing_info.end()) {
@@ -547,7 +551,7 @@ void CrosUsbDetector::OnAttachUsbDeviceOpened(
     std::move(callback).Run(/*success=*/false);
     return;
   }
-  for (const auto& device : shared_usb_devices_) {
+  for (const auto& device : usb_devices_) {
     if (device.guid == device_info->guid) {
       const auto it = device.vm_sharing_info.find(vm_name);
       if (it != device.vm_sharing_info.end() && it->second.guest_port) {
@@ -576,7 +580,7 @@ void CrosUsbDetector::OnUsbDeviceAttachFinished(
     bool success,
     uint8_t guest_port) {
   if (success) {
-    for (auto& device : shared_usb_devices_) {
+    for (auto& device : usb_devices_) {
       if (device.guid == guid) {
         auto& vm_sharing_info = device.vm_sharing_info[vm_name];
         vm_sharing_info.shared = true;
@@ -585,7 +589,7 @@ void CrosUsbDetector::OnUsbDeviceAttachFinished(
       }
     }
   }
-  SignalSharedUsbDeviceObservers();
+  SignalUsbDeviceObservers();
   std::move(callback).Run(success);
 }
 
@@ -594,13 +598,13 @@ void CrosUsbDetector::OnUsbDeviceDetachFinished(
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback,
     bool success) {
-  for (auto& device : shared_usb_devices_) {
+  for (auto& device : usb_devices_) {
     if (device.guid == guid) {
       device.vm_sharing_info.erase(vm_name);
       break;
     }
   }
-  SignalSharedUsbDeviceObservers();
+  SignalUsbDeviceObservers();
   std::move(callback).Run(success);
 }
 

@@ -111,7 +111,8 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);
-    advertised_versions_ = HttpNetworkSession::Params().quic_supported_versions;
+    advertised_versions_ =
+        HttpNetworkSession::Params().quic_params.supported_versions;
     pref_delegate_ = new MockPrefDelegate;
 
     http_server_props_manager_ = std::make_unique<HttpServerPropertiesManager>(

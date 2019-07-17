@@ -37,6 +37,7 @@ enum class DownloadDangerType {
   POTENTIALLY_UNWANTED = 8,
   WHITELISTED_BY_POLICY = 9,
   ASYNC_SCANNING = 10,
+  BLOCKED_PASSWORD_PROTECTED = 11,
 };
 
 // DownloadId represents the id of a DownloadRow into the DownloadDatabase.

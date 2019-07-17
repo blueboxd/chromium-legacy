@@ -52,6 +52,7 @@ testcase.formatDialog = async () => {
   await sendTestMessage({name: 'mountFakeUsb'});
   const appId = await setupFormatDialogTest();
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
 
   // Check the correct size is displayed.
@@ -76,6 +77,7 @@ testcase.formatDialogEmpty = async () => {
   await sendTestMessage({name: 'mountFakeUsbEmpty'});
   const appId = await setupFormatDialogTest();
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
 
   // Check the warning message is hidden.
@@ -99,6 +101,7 @@ testcase.formatDialogCancel = async () => {
   await sendTestMessage({name: 'mountFakeUsb'});
   const appId = await setupFormatDialogTest();
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
 
   // Click cancel button.
@@ -188,26 +191,42 @@ testcase.formatDialogNameLength = async () => {
   await sendTestMessage({name: 'mountFakeUsb'});
   const appId = await setupFormatDialogTest();
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
+
+  // Check that a 12 character name fails on vfat.
   await checkError(
       appId, 'ABCDEFGHIJKL', 'vfat',
       'Use a name that\'s 11 characters or less');
+
+  // Check that a 11 character name succeeds on vfat.
   await checkSuccess(appId, 'ABCDEFGHIJK', 'vfat');
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
+
+  // Check that a 16 character name fails on exfat.
   await checkError(
       appId, 'ABCDEFGHIJKLMNOP', 'exfat',
       'Use a name that\'s 15 characters or less');
+
+  // Check that a 15 character name succeeds on exfat.
   await checkSuccess(appId, 'ABCDEFGHIJKLMNO', 'exfat');
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
+
+  // Check that a 33 character name fails on ntfs.
   await checkError(
       appId, 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFG', 'ntfs',
       'Use a name that\'s 32 characters or less');
+
   // Also test both invalid character and long name.
   await checkError(
       appId, '*ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFG', 'ntfs',
       'Use a name that\'s 32 characters or less');
+
+  // Check that a 32 character name succeeds on ntfs.
   await checkSuccess(appId, 'ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF', 'ntfs');
 };
 
@@ -218,7 +237,12 @@ testcase.formatDialogNameInvalid = async () => {
   await sendTestMessage({name: 'mountFakeUsb'});
   const appId = await setupFormatDialogTest();
 
+  // Open the format dialog on fake-usb.
   await openFormatDialog(appId, 'fake-usb');
+
+  // Check that a name with invalid characters fails.
   await checkError(appId, '<invalid>', 'vfat', 'Invalid character: <');
+
+  // Check that a name without invalid characters succeeds.
   await checkSuccess(appId, 'Nice name', 'vfat');
 };

@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/data_decoder/bundled_exchanges_parser.h"
+#include "services/data_decoder/bundled_exchanges_parser_factory.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
@@ -38,7 +38,8 @@ DataDecoderService::DataDecoderService()
   registry_.AddInterface(base::BindRepeating(&DataDecoderService::BindXmlParser,
                                              base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
-      &DataDecoderService::BindBundledExchangesParser, base::Unretained(this)));
+      &DataDecoderService::BindBundledExchangesParserFactory,
+      base::Unretained(this)));
 
 #ifdef OS_CHROMEOS
   registry_.AddInterface(base::BindRepeating(
@@ -92,10 +93,10 @@ void DataDecoderService::BindXmlParser(mojom::XmlParserRequest request) {
                           std::move(request));
 }
 
-void DataDecoderService::BindBundledExchangesParser(
-    mojom::BundledExchangesParserRequest request) {
+void DataDecoderService::BindBundledExchangesParserFactory(
+    mojom::BundledExchangesParserFactoryRequest request) {
   mojo::MakeStrongBinding(
-      std::make_unique<BundledExchangesParser>(keepalive_.CreateRef()),
+      std::make_unique<BundledExchangesParserFactory>(keepalive_.CreateRef()),
       std::move(request));
 }
 

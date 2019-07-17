@@ -67,6 +67,10 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
 
     private static final int DEFAULT_TOP_PADDING = 0;
 
+    // Count histograms for tab counts when showing switcher.
+    static final String TAB_COUNT_HISTOGRAM = "Tabs.TabCountInSwitcher";
+    static final String TAB_ENTRIES_HISTOGRAM = "Tabs.IndependentTabCountInSwitcher";
+
     /** Field trial parameter for the {@link TabListRecyclerView} cleanup delay. */
     private static final String SOFT_CLEANUP_DELAY_PARAM = "soft-cleanup-delay";
     private static final int DEFAULT_SOFT_CLEANUP_DELAY_MS = 3_000;
@@ -393,6 +397,8 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         mModelIndexWhenShown = mTabModelSelector.getCurrentModelIndex();
         mTabIdwhenShown = mTabModelSelector.getCurrentTabId();
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+
+        recordTabCounts();
     }
 
     @Override
@@ -522,5 +528,16 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         return mTabModelSelector.getTabModelFilterProvider()
                 .getCurrentTabModelFilter()
                 .getRelatedTabList(tabId);
+    }
+
+    private void recordTabCounts() {
+        final TabModel model = mTabModelSelector.getCurrentModel();
+        if (model == null) return;
+        RecordHistogram.recordCountHistogram(TAB_COUNT_HISTOGRAM, model.getCount());
+
+        final TabModelFilter filter =
+                mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter();
+        if (filter == null) return;
+        RecordHistogram.recordCountHistogram(TAB_ENTRIES_HISTOGRAM, filter.getCount());
     }
 }

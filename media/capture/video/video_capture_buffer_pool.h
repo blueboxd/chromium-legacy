@@ -59,6 +59,11 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) = 0;
 
+#if defined(OS_CHROMEOS)
+  virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle(
+      int buffer_id) = 0;
+#endif
+
   // Reserve or allocate a buffer to support a packed frame of |dimensions| of
   // pixel |format| and return its id. If the pool is already at maximum
   // capacity, this will return kMaxBufferCountExceeded and set |buffer_id| to

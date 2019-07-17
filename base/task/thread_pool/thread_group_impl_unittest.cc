@@ -1795,13 +1795,7 @@ INSTANTIATE_TEST_SUITE_P(WillBlock,
 // Verify that worker detachment doesn't race with worker cleanup, regression
 // test for https://crbug.com/810464.
 TEST_F(ThreadGroupImplImplStartInBodyTest, RacyCleanup) {
-#if defined(OS_FUCHSIA)
-  // Fuchsia + QEMU doesn't deal well with *many* threads being
-  // created/destroyed at once: https://crbug.com/816575.
-  constexpr size_t kLocalMaxTasks = 16;
-#else   // defined(OS_FUCHSIA)
   constexpr size_t kLocalMaxTasks = 256;
-#endif  // defined(OS_FUCHSIA)
   constexpr TimeDelta kReclaimTimeForRacyCleanupTest =
       TimeDelta::FromMilliseconds(10);
 

@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SINGLE_THREAD_IDLE_TASK_RUNNER_H_
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"

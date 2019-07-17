@@ -148,7 +148,7 @@ TEST_F(CodecImageGroupTest, DestroyedImagesForwardsImageDestruction) {
   Record rec = CreateImageGroup();
   scoped_refptr<CodecImage> image_1 = new MockCodecImage();
   scoped_refptr<CodecImage> image_2 = new MockCodecImage();
-  rec.image_group->SetDestructionCb(base::Bind(
+  rec.image_group->SetDestructionCB(base::BindRepeating(
       &CodecImageGroupTest::OnCodecImageDestroyed, base::Unretained(this)));
   rec.image_group->AddCodecImage(image_1.get());
   rec.image_group->AddCodecImage(image_2.get());

@@ -1328,4 +1328,9 @@ void SVGElement::Trace(blink::Visitor* visitor) {
   Element::Trace(visitor);
 }
 
+void SVGElement::AccessKeyAction(bool send_mouse_events) {
+  DispatchSimulatedClick(
+      nullptr, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
+}
+
 }  // namespace blink

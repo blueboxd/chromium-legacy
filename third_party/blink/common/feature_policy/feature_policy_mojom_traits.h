@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_COMMON_FEATURE_POLICY_FEATURE_POLICY_MOJOM_TRAITS_H_
 
 #include <map>
-#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"

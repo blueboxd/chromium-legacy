@@ -37,7 +37,6 @@
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"

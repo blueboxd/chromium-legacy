@@ -82,7 +82,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
       std::vector<IntentPickerAppInfo> apps,
-      bool show_remember_selection,
+      bool show_persistence_options,
       IntentPickerResponse callback);
 
   explicit AppsNavigationThrottle(content::NavigationHandle* navigation_handle);
@@ -104,7 +104,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   // and need to be synced with histograms.xml. This enum class should also be
   // treated as append-only.
   enum class PickerAction : int {
-    PICKER_ERROR = 0,
+    // Picker errors occurring after the picker is shown.
+    ERROR_AFTER_PICKER = 0,
     // DIALOG_DEACTIVATED keeps track of the user dismissing the UI via clicking
     // the close button or clicking outside of the IntentPickerBubbleView
     // surface. As with CHROME_PRESSED, the user stays in Chrome, however we
@@ -124,7 +125,9 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     ARC_APP_PRESSED = 7,
     ARC_APP_PREFERRED_PRESSED = 8,
     PWA_APP_PRESSED = 9,
-    INVALID = 10,
+    // Picker errors occurring before the picker is shown.
+    ERROR_BEFORE_PICKER = 10,
+    INVALID = 11,
     kMaxValue = INVALID,
   };
 
@@ -169,7 +172,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static bool ContainsOnlyPwas(
       const std::vector<apps::IntentPickerAppInfo>& apps);
 
-  static bool ShouldShowRememberSelection(
+  static bool ShouldShowPersistenceOptions(
       std::vector<apps::IntentPickerAppInfo>& apps);
 
   // Overridden for Chrome OS to allow arc handling.

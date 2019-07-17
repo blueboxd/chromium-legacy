@@ -33,13 +33,6 @@
       #storageText {
         display: flex;
       }
-      /* When 'Usage' is omitted, subheadings are removed. Reduce the start
-       * padding allowed for lists without headings and add back vertical space
-       * that would normally be provided by the subheading. */
-      .list-frame.without-heading {
-        margin-top: 12px;
-        padding-inline-start: var(--cr-section-padding);
-      }
 
       #resetSettingsButton {
         margin-top: 24px;
@@ -80,44 +73,42 @@
       </div>
     </cr-dialog>
 
-    <template is="dom-if" if="[[enableSiteSettings_]]">
-      <div id="usage">
-        <div class="settings-box first line-only">
-          <h2 class="first">$i18n{siteSettingsUsage}</h2>
+    <div id="usage">
+      <div class="settings-box first line-only">
+        <h2 class="first">$i18n{siteSettingsUsage}</h2>
+      </div>
+      <div class="list-frame">
+        <div class="list-item" id="noStorage"
+            hidden$="[[hasUsage_(storedData_, numCookies_)]]">
+          <div class="start">$i18n{siteSettingsUsageNone}</div>
         </div>
-        <div class="list-frame">
-          <div class="list-item" id="noStorage"
-              hidden$="[[hasUsage_(storedData_, numCookies_)]]">
-            <div class="start">$i18n{siteSettingsUsageNone}</div>
-          </div>
-          <div class="list-item" id="storage"
-              hidden$="[[!hasUsage_(storedData_, numCookies_)]]">
-            <div class="start" id="storageText">
-              <div hidden$="[[!storedData_]]">[[storedData_]]</div>
-              <div hidden$="[[!hasDataAndCookies_(storedData_, numCookies_)]]">
-                &nbsp;&middot;&nbsp;
-              </div>
-              <div hidden$="[[!numCookies_]]">[[numCookies_]]</div>
+        <div class="list-item" id="storage"
+            hidden$="[[!hasUsage_(storedData_, numCookies_)]]">
+          <div class="start" id="storageText">
+            <div hidden$="[[!storedData_]]">[[storedData_]]</div>
+            <div hidden$="[[!hasDataAndCookies_(storedData_, numCookies_)]]">
+              &nbsp;&middot;&nbsp;
             </div>
-            <cr-button id="clearStorage" role="button" aria-disabled="false"
-                on-click="onConfirmClearStorage_"
-                aria-label="$i18n{siteSettingsDelete}">
-              $i18n{siteSettingsDelete}
-            </cr-button>
+            <div hidden$="[[!numCookies_]]">[[numCookies_]]</div>
           </div>
+          <cr-button id="clearStorage" role="button" aria-disabled="false"
+              on-click="onConfirmClearStorage_"
+              aria-label="$i18n{siteSettingsDelete}">
+            $i18n{siteSettingsDelete}
+          </cr-button>
         </div>
       </div>
+    </div>
 
-      <div class="settings-box first">
-        <h2 class="start">$i18n{siteSettingsPermissions}</h2>
-        <cr-button id="resetSettingsButton" class="header-aligned-button"
-            role="button" aria-disabled="false"
-            on-click="onConfirmClearSettings_">
-          $i18n{siteSettingsReset}
-        </cr-button>
-      </div>
-    </template>
-    <div class$="list-frame [[permissionListClass_(enableSiteSettings_)]]">
+    <div class="settings-box first">
+      <h2 class="start">$i18n{siteSettingsPermissions}</h2>
+      <cr-button id="resetSettingsButton" class="header-aligned-button"
+          role="button" aria-disabled="false"
+          on-click="onConfirmClearSettings_">
+        $i18n{siteSettingsReset}
+      </cr-button>
+    </div>
+    <div class="list-frame">
       <site-details-permission category="{{ContentSettingsTypes.GEOLOCATION}}"
           icon="cr:location-on" id="geolocation"
           label="$i18n{siteSettingsLocation}">
@@ -218,14 +209,6 @@
       </template>
     </div>
 
-    <template is="dom-if" if="[[!enableSiteSettings_]]">
-      <cr-link-row
-          class="hr"
-          id="resetSettingsButton"
-          label="$i18n{siteSettingsReset}"
-          on-click="onConfirmClearSettings_">
-      </cr-link-row>
-    </template>
     <website-usage-private-api id="usageApi"
         website-data-usage="{{storedData_}}"
         website-cookie-usage="{{numCookies_}}">

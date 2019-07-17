@@ -4721,17 +4721,11 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
         request.url, io_data->safe_browsing_whitelist_domains());
     if (!matches_enterprise_whitelist) {
-      auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
-      if (delegate && !delegate->ShouldSkipRequestCheck(
-                          resource_context, request.url, frame_tree_node_id,
-                          -1 /* render_process_id */, -1 /* render_frame_id */,
-                          request.originated_from_service_worker)) {
-        auto safe_browsing_throttle =
-            safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
-                                                                 wc_getter);
-        if (safe_browsing_throttle)
-          result.push_back(std::move(safe_browsing_throttle));
-      }
+      result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
+          base::BindOnce(
+              &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
+              base::Unretained(this)),
+          wc_getter, frame_tree_node_id, resource_context));
     }
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
@@ -4822,6 +4816,18 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
                      data_reduction_proxy::DataReductionProxyURLLoaderThrottle>(
         headers, data_reduction_proxy_throttle_manager_.get()));
   }
+
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
+      request.url, *profile->GetPrefs());
+  if (!matches_enterprise_whitelist) {
+    result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
+        base::BindOnce(
+            &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
+            base::Unretained(this)),
+        wc_getter, frame_tree_node_id, profile->GetResourceContext()));
+  }
+#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
   if (chrome_navigation_ui_data &&
       chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
@@ -5491,7 +5497,7 @@ void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
   g_default_quota_settings = settings;
 }
 
-safe_browsing::UrlCheckerDelegate*
+scoped_refptr<safe_browsing::UrlCheckerDelegate>
 ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
     content::ResourceContext* resource_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -5508,7 +5514,7 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
             safe_browsing_service_->ui_manager());
   }
 
-  return safe_browsing_url_checker_delegate_.get();
+  return safe_browsing_url_checker_delegate_;
 }
 
 base::Optional<std::string>

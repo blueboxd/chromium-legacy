@@ -22,24 +22,21 @@ function stylesheetFactory() {
       stylesheet.replaceSync(`
         :host {
           position: fixed;
-          bottom: 0;
-          right: 0;
+          bottom: 1em;
+          right: 1em;
+          border: solid;
+          padding: 1em;
+          background: white;
+          color: black;
           z-index: 1;
-          background-color: #FFFFFF;
-          color: #000000;
-          font-size: 20px;
-          border-color: #000000;
-          border-style: solid;
-          border-width: 2px;
-          border-radius: 2.5px;
-          padding: 10px;
-          margin: 10px;
         }
 
         :host(:not([open])) {
           display: none;
         }
       `);
+      // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over bottom: / right:
+      // when implemented https://bugs.chromium.org/p/chromium/issues/detail?id=538475
     }
     return stylesheet;
   };

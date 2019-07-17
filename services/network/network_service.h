@@ -132,6 +132,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // mojom::NetworkService implementation:
   void SetClient(mojom::NetworkServiceClientPtr client,
                  mojom::NetworkServiceParamsPtr params) override;
+#if defined(OS_CHROMEOS)
+  void ReinitializeLogging(mojom::LoggingSettingsPtr settings) override;
+#endif
   void StartNetLog(base::File file,
                    net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;

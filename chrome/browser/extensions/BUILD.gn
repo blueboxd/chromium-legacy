@@ -983,6 +983,7 @@ jumbo_static_library("extensions") {
       "//chromeos/login/auth",
       "//chromeos/login/login_state",
       "//chromeos/network",
+      "//chromeos/services/assistant/public/cpp:prefs",
       "//chromeos/services/ime/public/mojom",
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/mojom",

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
@@ -237,10 +238,11 @@ class CdmFileImpl::FileReader {
         base::checked_cast<size_t>(bytes_to_read));
 
     // Read the contents of the file into |buffer|.
+    base::TimeTicks start_time = base::TimeTicks::Now();
     result = file_stream_reader_->Read(
         buffer.get(), bytes_to_read,
         base::BindOnce(&FileReader::OnRead, weak_factory_.GetWeakPtr(), buffer,
-                       bytes_to_read));
+                       start_time, bytes_to_read));
     DVLOG(3) << __func__ << " Read(): " << result;
 
     // If Read() is running asynchronously, simply return.
@@ -248,13 +250,14 @@ class CdmFileImpl::FileReader {
       return;
 
     // Read() was synchronous, so pass the result on.
-    OnRead(std::move(buffer), bytes_to_read, result);
+    OnRead(std::move(buffer), start_time, bytes_to_read, result);
   }
 
   // Called when the file has been read and returns the result to the callback
   // provided to Read(). |result| will be the number of bytes read (if >= 0) or
   // a net:: error on failure (if < 0).
   void OnRead(scoped_refptr<CdmFileIOBuffer> buffer,
+              base::TimeTicks start_time,
               int bytes_to_read,
               int result) {
     DVLOG(3) << __func__ << " Requested " << bytes_to_read << " bytes, got "
@@ -270,6 +273,10 @@ class CdmFileImpl::FileReader {
       std::move(callback_).Run(false, {});
       return;
     }
+
+    // Only report reading time for successful reads.
+    base::TimeDelta read_time = base::TimeTicks::Now() - start_time;
+    UMA_HISTOGRAM_TIMES("Media.EME.CdmFileIO.ReadTime", read_time);
 
     // Successful read. Return the bytes read.
     std::move(callback_).Run(true, std::move(buffer->TakeData()));

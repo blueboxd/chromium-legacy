@@ -67,6 +67,13 @@ SharedMemoryBufferTracker::GetNonOwnedSharedMemoryHandleForLegacyIPC() {
   return provider_.GetNonOwnedSharedMemoryHandleForLegacyIPC();
 }
 
+#if defined(OS_CHROMEOS)
+gfx::GpuMemoryBufferHandle
+SharedMemoryBufferTracker::GetGpuMemoryBufferHandle() {
+  return provider_.GetGpuMemoryBufferHandle();
+}
+#endif
+
 uint32_t SharedMemoryBufferTracker::GetMemorySizeInBytes() {
   return provider_.GetMemorySizeInBytes();
 }

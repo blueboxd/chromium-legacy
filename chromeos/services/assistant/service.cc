@@ -25,12 +25,16 @@
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -125,7 +129,16 @@ void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
   token_refresh_timer_ = std::move(timer);
 }
 
-void Service::OnStart() {}
+void Service::OnStart() {
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  prefs::RegisterProfilePrefsForeign(pref_registry.get());
+  ::prefs::mojom::PrefStoreConnectorPtr pref_store_connector;
+
+  ::prefs::ConnectToPrefService(
+      service_binding_.GetConnector(), std::move(pref_registry),
+      base::Bind(&Service::OnPrefServiceConnected, base::Unretained(this)),
+      ::prefs::mojom::kServiceName);
+}
 
 void Service::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
@@ -279,6 +292,13 @@ void Service::Init(mojom::ClientPtr client,
   }
 
   RequestAccessToken();
+}
+
+void Service::OnPrefServiceConnected(
+    std::unique_ptr<::PrefService> pref_service) {
+  // TODO(b/110211045): Switch to user pref service after migrating other
+  // Assistant related prefs.
+  pref_service_ = std::move(pref_service);
 }
 
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {

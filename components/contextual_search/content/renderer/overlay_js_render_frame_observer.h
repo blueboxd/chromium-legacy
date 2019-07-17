@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/contextual_search/content/common/contextual_search_js_api_service.mojom.h"
+#include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

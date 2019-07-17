@@ -12,7 +12,6 @@
 #include "base/task/post_task.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
-#include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
@@ -29,15 +28,24 @@ namespace {
 // IO thread helpers
 
 void LoaderCallbackWrapperOnIO(
+    ServiceWorkerNavigationHandleCore* handle_core,
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
     SingleRequestURLLoaderFactory::RequestHandler handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::Optional<SubresourceLoaderParams> subresource_loader_params;
+  if (handle_core->interceptor()) {
+    subresource_loader_params =
+        handle_core->interceptor()->MaybeCreateSubresourceLoaderParams();
+  }
+
   PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper,
-          interceptor_on_ui, std::move(provider_info), std::move(handler)));
+          interceptor_on_ui, std::move(provider_info),
+          std::move(subresource_loader_params), std::move(handler)));
 }
 
 void FallbackCallbackWrapperOnIO(
@@ -76,7 +84,7 @@ void MaybeCreateLoaderOnIO(
   ServiceWorkerContextCore* context_core =
       handle_core->context_wrapper()->context();
   if (!context_core) {
-    LoaderCallbackWrapperOnIO(std::move(interceptor_on_ui),
+    LoaderCallbackWrapperOnIO(handle_core, std::move(interceptor_on_ui),
                               /*provider_info=*/nullptr,
                               /*handler=*/{});
     return;
@@ -106,9 +114,12 @@ void MaybeCreateLoaderOnIO(
   // TODO(crbug.com/926114): Respect |skip_service_worker_|.
 
   // Start the inner interceptor. We continue in LoaderCallbackWrapperOnIO().
+  //
+  // It's safe to bind the raw |handle_core| to the callback because it owns the
+  // interceptor, which invokes the callback.
   handle_core->interceptor()->MaybeCreateLoader(
       tentative_resource_request, browser_context, /*resource_context=*/nullptr,
-      base::BindOnce(&LoaderCallbackWrapperOnIO, interceptor_on_ui,
+      base::BindOnce(&LoaderCallbackWrapperOnIO, handle_core, interceptor_on_ui,
                      std::move(provider_info)),
       base::BindOnce(&FallbackCallbackWrapperOnIO, interceptor_on_ui));
 }
@@ -158,14 +169,12 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
 base::Optional<SubresourceLoaderParams>
 ServiceWorkerNavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/926114): Implement this. The params have to be received from
-  // the IO thread inner interceptor before MaybeCreateLoader() is completed, so
-  // this function can synchronously return them.
-  return base::nullopt;
+  return std::move(subresource_loader_params_);
 }
 
 void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
     blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    base::Optional<SubresourceLoaderParams> subresource_loader_params,
     SingleRequestURLLoaderFactory::RequestHandler handler_on_io) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -173,6 +182,8 @@ void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
   // which makes the provider host for this navigation.
   if (provider_info)
     handle_->OnCreatedProviderHost(std::move(provider_info));
+
+  subresource_loader_params_ = std::move(subresource_loader_params);
 
   if (!handler_on_io) {
     std::move(loader_callback_).Run({});

@@ -18,6 +18,7 @@
 #include "ash/utility/screenshot_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -37,6 +38,7 @@ AssistantController::AssistantController()
       assistant_cache_controller_(this),
       assistant_interaction_controller_(this),
       assistant_notification_controller_(this),
+      assistant_prefs_controller_(),
       assistant_screen_context_controller_(this),
       assistant_setup_controller_(this),
       assistant_ui_controller_(this),
@@ -117,10 +119,9 @@ void AssistantController::SendAssistantFeedback(
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
-  mojom::ConsentStatus consent_status =
-      VoiceInteractionController::Get()->consent_status().value_or(
-          mojom::ConsentStatus::kUnknown);
-  if (consent_status == mojom::ConsentStatus::kActivityControlAccepted) {
+  if (prefs_controller()->prefs()->GetInteger(
+          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
                                         FlowType::kSpeakerIdEnrollment);

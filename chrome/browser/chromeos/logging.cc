@@ -13,6 +13,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
+#include "content/public/common/network_service_util.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace logging {
 
@@ -37,8 +40,17 @@ void SymlinkSetUp(const base::CommandLine& command_line,
     base::PostTaskWithTraits(
         FROM_HERE, {base::MayBlock()},
         base::BindOnce(&RemoveSymlinkAndLog, log_path, target_path));
-  } else {
-    chrome_logging_redirected_ = true;
+    return;
+  }
+  chrome_logging_redirected_ = true;
+
+  // Redirect the Network Service's logs as well if it's running out of process.
+  if (content::IsOutOfProcessNetworkService()) {
+    auto logging_settings = network::mojom::LoggingSettings::New();
+    logging_settings->logging_dest = settings.logging_dest;
+    logging_settings->log_file = log_path;
+    content::GetNetworkService()->ReinitializeLogging(
+        std::move(logging_settings));
   }
 }
 

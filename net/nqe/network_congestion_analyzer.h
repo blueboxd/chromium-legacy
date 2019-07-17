@@ -9,6 +9,7 @@
 #include <map>
 #include <unordered_map>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -30,7 +31,7 @@ namespace internal {
 // recent downlink throughput.
 class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
  public:
-  NetworkCongestionAnalyzer();
+  explicit NetworkCongestionAnalyzer(const base::TickClock* tick_clock);
   ~NetworkCongestionAnalyzer();
 
   // Returns the number of hosts that are involved in the last attempt of
@@ -59,6 +60,13 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
           historical_rtt_stats,
       const int32_t downlink_kbps);
 
+  // Updates new observations of queueing delay and count of in-flight requests
+  // in order to track peak queueing delay and peak count of in-flight requests.
+  // |delay| is a newly observed queueing delay. |count_inflight_requests| is a
+  // newly observed count of in-flight requests.
+  void UpdatePeakDelayMapping(const base::TimeDelta& delay,
+                              size_t count_inflight_requests);
+
   base::Optional<float> recent_queue_length() const {
     return recent_queue_length_;
   }
@@ -68,6 +76,20 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
+                           TestUpdatePeakDelayMapping);
+
+  base::Optional<size_t> count_inflight_requests_causing_high_delay() const {
+    return count_inflight_requests_causing_high_delay_;
+  }
+
+  // Returns true if a new measurement period should start. A new measurement
+  // period should start when the observed queueing delay is small and there are
+  // few in-flight requests. |delay| is a new queueing delay observation.
+  // |count_inflight_requests| is a new observed count of in-flight requests.
+  bool ShouldStartNewMeasurement(const base::TimeDelta& delay,
+                                 size_t count_inflight_requests);
+
   // Starts tracking the peak queueing delay for |request|.
   void TrackPeakQueueingDelayBegin(const URLRequest* request);
 
@@ -86,9 +108,13 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
     return recent_downlink_throughput_kbps_;
   }
 
+  // Guaranteed to be non-null during the lifetime of |this|.
+  const base::TickClock* tick_clock_;
+
   // Recent downstream throughput estimate. It is the median of most recent
   // downstream throughput observations (in kilobits per second).
   base::Optional<int32_t> recent_downlink_throughput_kbps_;
+
   // Time of transmitting one 1500-Byte TCP packet under
   // |recent_downlink_throughput_kbps_|.
   base::Optional<int32_t> recent_downlink_per_packet_time_ms_;
@@ -96,6 +122,7 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   // The estimate of packet queue length. Computation is done based on the last
   // observed downlink throughput.
   base::Optional<float> recent_queue_length_;
+
   // The estimate of queueing delay induced by packet queue.
   base::TimeDelta recent_queueing_delay_;
 
@@ -111,6 +138,28 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   // Counts the number of hosts involved in the last attempt of computing the
   // recent queueing delay.
   size_t recent_active_hosts_count_;
+
+  // The peak queueing delay that is observed within the current ongoing
+  // measurement period.
+  base::TimeDelta peak_queueing_delay_;
+
+  // The peak number of in-flight requests that are responsible for the peak
+  // queueing delay within the current ongoing measurement period. These
+  // requests should be in-flight before the peak queueing delay is observed.
+  size_t count_inflight_requests_for_peak_queueing_delay_;
+
+  // The peak number of in-flight requests during the current measurement
+  // period. It updates the |count_inflight_requests_for_peak_queueing_delay_|
+  // only if a higher queueing delay is observed later.
+  size_t peak_count_inflight_requests_measurement_period_;
+
+  // Timestamp when the app started observing an empty queue. Resets to nullopt
+  // if the queue is unlikely to be empty or if a new measurement period starts.
+  base::Optional<base::TimeTicks> observing_empty_queue_timestamp_;
+
+  // The count of in-flight requests that would cause a high network queueing
+  // delay.
+  base::Optional<size_t> count_inflight_requests_causing_high_delay_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

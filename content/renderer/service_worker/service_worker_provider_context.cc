@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -99,7 +100,7 @@ ServiceWorkerProviderContext::GetControllerServiceWorkerMode() const {
 }
 
 network::mojom::URLLoaderFactory*
-ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
+ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
   DCHECK(state_for_client_);
   auto* state = state_for_client_.get();
   if (!state->controller_endpoint && !state->controller_connector) {
@@ -135,8 +136,27 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
                        mojo::MakeRequest(&state->controller_connector),
                        mojo::MakeRequest(&state->subresource_loader_factory),
                        task_runner));
+
+    DCHECK(!state->weak_wrapped_subresource_loader_factory);
+    state->weak_wrapped_subresource_loader_factory =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            state->subresource_loader_factory.get());
   }
   return state->subresource_loader_factory.get();
+}
+
+scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
+  // If we can't get our internal factory it means the state is not currently
+  // good to process new requests regardless of the presence of an existing
+  // weak_wrapped_subresource_loader_factory.
+  if (!GetSubresourceLoaderFactoryInternal()) {
+    return nullptr;
+  }
+
+  DCHECK(state_for_client_);
+  auto* state = state_for_client_.get();
+  return state->weak_wrapped_subresource_loader_factory;
 }
 
 blink::mojom::ServiceWorkerContainerHost*

@@ -177,7 +177,7 @@ struct AddEntriesMessage {
   };
 
   // Represents the different types of entries (e.g. file, folder).
-  enum EntryType { FILE, DIRECTORY, TEAM_DRIVE, COMPUTER };
+  enum EntryType { FILE, DIRECTORY, LINK, TEAM_DRIVE, COMPUTER };
 
   // Represents whether an entry appears in 'Share with Me' or not.
   enum SharedOption { NONE, SHARED, SHARED_WITH_ME, NESTED_SHARED_WITH_ME };
@@ -409,6 +409,8 @@ struct AddEntriesMessage {
         *type = FILE;
       else if (value == "directory")
         *type = DIRECTORY;
+      else if (value == "link")
+        *type = LINK;
       else if (value == "team_drive")
         *type = TEAM_DRIVE;
       else if (value == "Computer")
@@ -701,6 +703,11 @@ class LocalTestVolume : public TestVolume {
       case AddEntriesMessage::DIRECTORY:
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
+        break;
+      case AddEntriesMessage::LINK:
+        ASSERT_TRUE(base::CreateSymbolicLink(
+            base::FilePath(entry.source_file_name), target_path))
+            << "Failed to create a symlink: " << target_path.value();
         break;
       case AddEntriesMessage::TEAM_DRIVE:
         NOTREACHED() << "Can't create a team drive in a local volume: "
@@ -1040,12 +1047,17 @@ class DriveTestVolume : public TestVolume {
                 entry.shared_option == AddEntriesMessage::SHARED_WITH_ME,
             file_capabilities);
         break;
+      case AddEntriesMessage::LINK:
+        NOTREACHED() << "Can't create a link in a drive test volume: "
+                     << entry.computer_name;
+        break;
       case AddEntriesMessage::TEAM_DRIVE:
         CreateTeamDrive(entry.team_drive_name, team_drive_capabilities);
         break;
       case AddEntriesMessage::COMPUTER:
         NOTREACHED() << "Can't create a computer in a drive test volume: "
                      << entry.computer_name;
+        break;
     }
 
     // Any file or directory created above, will only appear in Drive after
@@ -1227,6 +1239,12 @@ class DriveFsTestVolume : public DriveTestVolume {
       case AddEntriesMessage::DIRECTORY:
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
+        break;
+      case AddEntriesMessage::LINK:
+        ASSERT_TRUE(base::CreateSymbolicLink(
+            base::FilePath(entry.source_file_name), target_path))
+            << "Failed to create a symlink from " << entry.source_file_name
+            << " to " << target_path.value();
         break;
       case AddEntriesMessage::TEAM_DRIVE:
         ASSERT_TRUE(base::CreateDirectory(target_path))

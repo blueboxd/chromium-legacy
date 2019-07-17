@@ -5,7 +5,6 @@
 #ifndef WebProcessMemoryDump_h
 #define WebProcessMemoryDump_h
 
-#include <map>
 #include <memory>
 #include <unordered_map>
 

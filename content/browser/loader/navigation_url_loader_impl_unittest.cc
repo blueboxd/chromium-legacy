@@ -40,7 +40,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_request_context_owner.h"
 #include "testing/gtest/include/gtest/gtest.h"

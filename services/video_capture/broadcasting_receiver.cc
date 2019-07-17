@@ -166,6 +166,12 @@ BroadcastingReceiver::BufferContext::CloneBufferHandle(
         NOTREACHED() << "Unexpected video buffer handle type";
       }
       break;
+#if defined(OS_CHROMEOS)
+    case media::VideoCaptureBufferType::kGpuMemoryBuffer:
+      // TODO(jcliang): Implement this.
+      NOTREACHED() << "Unexpected video buffer handle type";
+      break;
+#endif
   }
   return result;
 }

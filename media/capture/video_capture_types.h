@@ -57,7 +57,10 @@ enum class PowerLineFrequency {
 enum class VideoCaptureBufferType {
   kSharedMemory,
   kSharedMemoryViaRawFileDescriptor,
-  kMailboxHolder
+  kMailboxHolder,
+#if defined(OS_CHROMEOS)
+  kGpuMemoryBuffer
+#endif
 };
 
 // WARNING: Do not change the values assigned to the entries. They are used for

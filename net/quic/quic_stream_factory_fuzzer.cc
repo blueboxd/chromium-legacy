@@ -93,40 +93,44 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Initialize this on each loop since some options mutate this.
   HttpServerPropertiesImpl http_server_properties;
 
-  bool store_server_configs_in_properties = data_provider.ConsumeBool();
-  bool close_sessions_on_ip_change = data_provider.ConsumeBool();
-  bool mark_quic_broken_when_network_blackholes = data_provider.ConsumeBool();
-  bool allow_server_migration = data_provider.ConsumeBool();
-  bool race_cert_verification = data_provider.ConsumeBool();
-  bool estimate_initial_rtt = data_provider.ConsumeBool();
-  bool headers_include_h2_stream_dependency = data_provider.ConsumeBool();
-  bool enable_socket_recv_optimization = data_provider.ConsumeBool();
-  bool race_stale_dns_on_connection = data_provider.ConsumeBool();
+  QuicParams params;
+  params.max_server_configs_stored_in_properties =
+      data_provider.ConsumeBool() ? 1 : 0;
+  params.close_sessions_on_ip_change = data_provider.ConsumeBool();
+  params.mark_quic_broken_when_network_blackholes = data_provider.ConsumeBool();
+  params.allow_server_migration = data_provider.ConsumeBool();
+  params.race_cert_verification = data_provider.ConsumeBool();
+  params.estimate_initial_rtt = data_provider.ConsumeBool();
+  params.headers_include_h2_stream_dependency = data_provider.ConsumeBool();
+  params.enable_socket_recv_optimization = data_provider.ConsumeBool();
+  params.race_stale_dns_on_connection = data_provider.ConsumeBool();
 
   env->crypto_client_stream_factory.AddProofVerifyDetails(&env->verify_details);
 
-  bool goaway_sessions_on_ip_change = false;
-  bool migrate_sessions_early_v2 = false;
-  bool migrate_sessions_on_network_change_v2 = false;
-  bool retry_on_alternate_network_before_handshake = false;
-  bool migrate_idle_sessions = false;
-  bool go_away_on_path_degrading = false;
+  params.goaway_sessions_on_ip_change = false;
+  params.migrate_sessions_early_v2 = false;
+  params.migrate_sessions_on_network_change_v2 = false;
+  params.retry_on_alternate_network_before_handshake = false;
+  params.migrate_idle_sessions = false;
+  params.go_away_on_path_degrading = false;
 
-  if (!close_sessions_on_ip_change) {
-    goaway_sessions_on_ip_change = data_provider.ConsumeBool();
-    if (!goaway_sessions_on_ip_change) {
-      migrate_sessions_on_network_change_v2 = data_provider.ConsumeBool();
-      if (migrate_sessions_on_network_change_v2) {
-        migrate_sessions_early_v2 = data_provider.ConsumeBool();
-        retry_on_alternate_network_before_handshake =
+  if (!params.close_sessions_on_ip_change) {
+    params.goaway_sessions_on_ip_change = data_provider.ConsumeBool();
+    if (!params.goaway_sessions_on_ip_change) {
+      params.migrate_sessions_on_network_change_v2 =
+          data_provider.ConsumeBool();
+      if (params.migrate_sessions_on_network_change_v2) {
+        params.migrate_sessions_early_v2 = data_provider.ConsumeBool();
+        params.retry_on_alternate_network_before_handshake =
             data_provider.ConsumeBool();
-        migrate_idle_sessions = data_provider.ConsumeBool();
+        params.migrate_idle_sessions = data_provider.ConsumeBool();
       }
     }
   }
 
-  if (!migrate_sessions_early_v2)
-    go_away_on_path_degrading = data_provider.ConsumeBool();
+  if (!params.migrate_sessions_early_v2) {
+    params.go_away_on_path_degrading = data_provider.ConsumeBool();
+  }
 
   std::unique_ptr<QuicStreamFactory> factory =
       std::make_unique<QuicStreamFactory>(
@@ -136,25 +140,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           &env->ct_policy_enforcer, &env->transport_security_state,
           env->cert_transparency_verifier.get(), nullptr,
           &env->crypto_client_stream_factory, &env->random_generator,
-          &env->clock, quic::kDefaultMaxPacketSize, std::string(),
-          store_server_configs_in_properties, close_sessions_on_ip_change,
-          goaway_sessions_on_ip_change,
-          mark_quic_broken_when_network_blackholes,
-          kIdleConnectionTimeoutSeconds, quic::kPingTimeoutSecs,
-          kDefaultRetransmittableOnWireTimeoutMillisecs,
-          quic::kMaxTimeForCryptoHandshakeSecs, quic::kInitialIdleTimeoutSecs,
-          migrate_sessions_on_network_change_v2, migrate_sessions_early_v2,
-          retry_on_alternate_network_before_handshake, migrate_idle_sessions,
-          base::TimeDelta::FromSeconds(
-              kDefaultIdleSessionMigrationPeriodSeconds),
-          base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
-          kMaxMigrationsToNonDefaultNetworkOnWriteError,
-          kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
-          allow_server_migration, race_stale_dns_on_connection,
-          go_away_on_path_degrading, race_cert_verification,
-          estimate_initial_rtt, headers_include_h2_stream_dependency,
-          env->connection_options, env->client_connection_options,
-          enable_socket_recv_optimization, 0);
+          &env->clock, params);
 
   SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
   QuicStreamRequest request(factory.get());

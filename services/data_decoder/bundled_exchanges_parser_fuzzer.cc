@@ -47,19 +47,23 @@ class DataSource : public data_decoder::mojom::BundleDataSource {
 class BundledExchangesParserFuzzer {
  public:
   BundledExchangesParserFuzzer(const uint8_t* data, size_t size)
-      : data_source_(data, size), parser_impl_(/*service_ref=*/nullptr) {}
+      : data_source_(data, size) {}
 
   void FuzzBundle(base::RunLoop* run_loop) {
-    data_decoder::mojom::BundledExchangesParser& parser = parser_impl_;
-
     mojo::PendingRemote<data_decoder::mojom::BundleDataSource>
         data_source_remote;
     data_source_.AddReceiver(
         data_source_remote.InitWithNewPipeAndPassReceiver());
 
+    mojo::PendingRemote<data_decoder::mojom::BundledExchangesParser>
+        remote_parser;
+    std::unique_ptr<data_decoder::mojom::BundledExchangesParser> parser =
+        std::make_unique<data_decoder::BundledExchangesParser>(
+            remote_parser.InitWithNewPipeAndPassReceiver(),
+            std::move(data_source_remote));
+
     quit_loop_ = run_loop->QuitClosure();
-    parser.ParseMetadata(
-        std::move(data_source_remote),
+    parser->ParseMetadata(
         base::Bind(&BundledExchangesParserFuzzer::OnParseMetadata,
                    base::Unretained(this)));
   }
@@ -80,15 +84,18 @@ class BundledExchangesParserFuzzer {
       return;
     }
 
-    data_decoder::mojom::BundledExchangesParser& parser = parser_impl_;
-
     mojo::PendingRemote<data_decoder::mojom::BundleDataSource>
         data_source_remote;
     data_source_.AddReceiver(
         data_source_remote.InitWithNewPipeAndPassReceiver());
 
+    mojo::PendingReceiver<data_decoder::mojom::BundledExchangesParser> receiver;
+    data_decoder::BundledExchangesParser parser_impl(
+        std::move(receiver), std::move(data_source_remote));
+    data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
+
     parser.ParseResponse(
-        std::move(data_source_remote), metadata_->index[index]->response_offset,
+        metadata_->index[index]->response_offset,
         metadata_->index[index]->response_length,
         base::Bind(&BundledExchangesParserFuzzer::OnParseResponse,
                    base::Unretained(this), index));
@@ -102,7 +109,6 @@ class BundledExchangesParserFuzzer {
 
  private:
   DataSource data_source_;
-  data_decoder::BundledExchangesParser parser_impl_;
   base::Closure quit_loop_;
   data_decoder::mojom::BundleMetadataPtr metadata_;
 };

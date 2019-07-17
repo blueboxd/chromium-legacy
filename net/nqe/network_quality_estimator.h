@@ -179,12 +179,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       RTTAndThroughputEstimatesObserver* observer);
 
   // Notifies NetworkQualityEstimator that the response header of |request| has
-  // been received.
-  void NotifyHeadersReceived(const URLRequest& request);
+  // been received. Reports the total prefilter network bytes that have been
+  // read for the response of |request|.
+  void NotifyHeadersReceived(const URLRequest& request,
+                             int64_t prefilter_total_bytes_read);
 
   // Notifies NetworkQualityEstimator that unfiltered bytes have been read for
-  // |request|.
-  void NotifyBytesRead(const URLRequest& request);
+  // |request|. Reports the total prefilter network bytes that have been read
+  // for the response of |request|.
+  void NotifyBytesRead(const URLRequest& request,
+                       int64_t prefilter_total_bytes_read);
 
   // Notifies NetworkQualityEstimator that the headers of |request| are about to
   // be sent.

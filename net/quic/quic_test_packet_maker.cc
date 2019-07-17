@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "net/quic/mock_crypto_client_stream.h"
+#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
@@ -355,8 +356,7 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] =
-        quic::kDefaultMaxUncompressedHeaderSize;
+    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -808,8 +808,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] =
-        quic::kDefaultMaxUncompressedHeaderSize;
+    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -903,8 +902,7 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] =
-        quic::kDefaultMaxUncompressedHeaderSize;
+    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -975,8 +973,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     std::string type(1, 0x00);
 
     quic::SettingsFrame settings;
-    settings.values[quic::kSettingsMaxHeaderListSize] =
-        quic::kDefaultMaxUncompressedHeaderSize;
+    settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
     std::unique_ptr<char[]> buffer1;
     quic::QuicByteCount frame_length1 =
         http_encoder_.SerializeSettingsFrame(settings, &buffer1);
@@ -1287,7 +1284,7 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   if (!quic::VersionHasStreamType(version_.transport_version)) {
     spdy::SpdySettingsIR settings_frame;
     settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
-                              quic::kDefaultMaxUncompressedHeaderSize);
+                              kQuicMaxHeaderListSize);
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, should_include_version);
@@ -1301,8 +1298,7 @@ QuicTestPacketMaker::MakeSettingsPacket(uint64_t packet_number,
   // first.
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
-  settings.values[quic::kSettingsMaxHeaderListSize] =
-      quic::kDefaultMaxUncompressedHeaderSize;
+  settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);
@@ -1333,7 +1329,7 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   if (!quic::VersionHasStreamType(version_.transport_version)) {
     spdy::SpdySettingsIR settings_frame;
     settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
-                              quic::kDefaultMaxUncompressedHeaderSize);
+                              kQuicMaxHeaderListSize);
     spdy::SpdySerializedFrame spdy_frame(
         spdy_request_framer_.SerializeFrame(settings_frame));
     InitializeHeader(packet_number, /*should_include_version*/ true);
@@ -1347,8 +1343,7 @@ QuicTestPacketMaker::MakeInitialSettingsPacket(uint64_t packet_number) {
   // first.
   std::string type(1, 0x00);
   quic::SettingsFrame settings;
-  settings.values[quic::kSettingsMaxHeaderListSize] =
-      quic::kDefaultMaxUncompressedHeaderSize;
+  settings.values[quic::kSettingsMaxHeaderListSize] = kQuicMaxHeaderListSize;
   std::unique_ptr<char[]> buffer;
   quic::QuicByteCount frame_length =
       http_encoder_.SerializeSettingsFrame(settings, &buffer);

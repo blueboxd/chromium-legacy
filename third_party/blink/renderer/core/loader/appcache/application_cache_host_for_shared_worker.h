@@ -23,6 +23,8 @@ class ApplicationCacheHostForSharedWorker final : public ApplicationCacheHost {
                   const String& message) override;
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override;
+  void SelectCacheWithoutManifest() override;
+  void SelectCacheWithManifest(const KURL& manifest_url) override;
 };
 
 }  // namespace blink

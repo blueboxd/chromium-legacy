@@ -15,12 +15,12 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
@@ -95,7 +95,7 @@ void DidUpdateNavigationPreloadState(
 ServiceWorkerStorage::InitialData::InitialData()
     : next_registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
       next_version_id(blink::mojom::kInvalidServiceWorkerVersionId),
-      next_resource_id(kInvalidServiceWorkerResourceId) {}
+      next_resource_id(ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {}
 
 ServiceWorkerStorage::InitialData::~InitialData() {
 }
@@ -631,7 +631,7 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
 }
 
 void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id);
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
       << state_;
@@ -651,7 +651,7 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {
 }
 
 void ServiceWorkerStorage::DoomUncommittedResource(int64_t resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id);
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
       << state_;
@@ -1091,7 +1091,7 @@ int64_t ServiceWorkerStorage::NewVersionId() {
 
 int64_t ServiceWorkerStorage::NewResourceId() {
   if (state_ == STORAGE_STATE_DISABLED)
-    return kInvalidServiceWorkerResourceId;
+    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
   return next_resource_id_++;
 }
@@ -1146,7 +1146,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
     storage::SpecialStoragePolicy* special_storage_policy)
     : next_registration_id_(blink::mojom::kInvalidServiceWorkerRegistrationId),
       next_version_id_(blink::mojom::kInvalidServiceWorkerVersionId),
-      next_resource_id_(kInvalidServiceWorkerResourceId),
+      next_resource_id_(ServiceWorkerConsts::kInvalidServiceWorkerResourceId),
       state_(STORAGE_STATE_UNINITIALIZED),
       expecting_done_with_disk_on_disable_(false),
       user_data_directory_(user_data_directory),

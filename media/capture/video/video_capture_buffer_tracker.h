@@ -13,6 +13,12 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/system/buffer.h"
 
+#if defined(OS_CHROMEOS)
+namespace gfx {
+struct GpuMemoryBufferHandle;
+}
+#endif
+
 namespace media {
 
 // Keeps track of the state of a given mappable resource. This is a base class
@@ -45,6 +51,9 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
       bool read_only) = 0;
   virtual base::SharedMemoryHandle
   GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
+#if defined(OS_CHROMEOS)
+  virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() = 0;
+#endif
 
  private:
   // Indicates whether this VideoCaptureBufferTracker is currently referenced by

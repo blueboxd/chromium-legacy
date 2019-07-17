@@ -118,7 +118,7 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool enable_stay_in_chrome,
-      bool show_remember_selection,
+      bool show_persistence_options,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.

@@ -13,12 +13,32 @@
 
 namespace net {
 
+namespace {
+
+// The threshold for the observed peak queueing delay in milliseconds.
+// A peak queueing delay is HIGH if it exceeds this threshold. The value is the
+// 98th percentile value of the peak queueing delay observed by all requests.
+static constexpr int64_t kHighQueueingDelayMsec = 5000;
+
+// The minimal time interval between two consecutive empty queue observations
+// when the number of in-flight requests is relatively low (i.e. 2). This time
+// interval is required so that a new measurement period could start.
+static constexpr int64_t kMinEmptyQueueObservingTimeMsec = 1500;
+
+}  // namespace
+
 namespace nqe {
 
 namespace internal {
 
-NetworkCongestionAnalyzer::NetworkCongestionAnalyzer()
-    : recent_active_hosts_count_(0u) {}
+NetworkCongestionAnalyzer::NetworkCongestionAnalyzer(
+    const base::TickClock* tick_clock)
+    : tick_clock_(tick_clock),
+      recent_active_hosts_count_(0u),
+      count_inflight_requests_for_peak_queueing_delay_(0u),
+      peak_count_inflight_requests_measurement_period_(0u) {
+  DCHECK(tick_clock_);
+}
 
 NetworkCongestionAnalyzer::~NetworkCongestionAnalyzer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -136,6 +156,88 @@ void NetworkCongestionAnalyzer::ComputeRecentQueueingDelay(
   if (recent_downlink_per_packet_time_ms_ != base::nullopt) {
     recent_queue_length_ = static_cast<float>(delay_ms) /
                            recent_downlink_per_packet_time_ms_.value();
+  }
+}
+
+bool NetworkCongestionAnalyzer::ShouldStartNewMeasurement(
+    const base::TimeDelta& delay,
+    size_t count_inflight_requests) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // The queue is not empty if either the queueing delay is high or the number
+  // of in-flight requests is high.
+  if (delay > base::TimeDelta::FromMilliseconds(500) ||
+      count_inflight_requests >= 3) {
+    observing_empty_queue_timestamp_ = base::nullopt;
+    return false;
+  }
+
+  // Starts a new measurement period immediately if there is very few number of
+  // in-flight requests.
+  if (count_inflight_requests <= 1) {
+    observing_empty_queue_timestamp_ = base::nullopt;
+    return true;
+  }
+
+  base::TimeTicks now = tick_clock_->NowTicks();
+  // Requires a sufficient time interval between consecutive empty queue
+  // observations to claim the queue is empty.
+  if (observing_empty_queue_timestamp_.has_value()) {
+    if (now - observing_empty_queue_timestamp_.value() >=
+        base::TimeDelta::FromMilliseconds(kMinEmptyQueueObservingTimeMsec)) {
+      observing_empty_queue_timestamp_ = base::nullopt;
+      return true;
+    }
+  } else {
+    observing_empty_queue_timestamp_ = now;
+  }
+  return false;
+}
+
+void NetworkCongestionAnalyzer::UpdatePeakDelayMapping(
+    const base::TimeDelta& delay,
+    size_t count_inflight_requests) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Discards an abnormal observation. This high queueing delay is likely
+  // caused by retransmission packets from a previous measurement period.
+  if (delay >= base::TimeDelta::FromSeconds(20))
+    return;
+
+  if (ShouldStartNewMeasurement(delay, count_inflight_requests)) {
+    // This is the logic to export the tracked mapping data from the last
+    // measurement period.
+    // Updates the count of in-flight requests that would likely cause a high
+    // network queueing delay later.
+    if (peak_queueing_delay_ >=
+        base::TimeDelta::FromMilliseconds(kHighQueueingDelayMsec)) {
+      count_inflight_requests_causing_high_delay_ =
+          count_inflight_requests_for_peak_queueing_delay_;
+    }
+
+    // Resets the tracked data for the new measurement period.
+    peak_queueing_delay_ = delay;
+    count_inflight_requests_for_peak_queueing_delay_ = count_inflight_requests;
+    peak_count_inflight_requests_measurement_period_ = count_inflight_requests;
+  } else {
+    // This is the logic to update the tracking data.
+    // First, updates the pending peak count of in-flight requests if a higher
+    // number of in-flight requests is observed.
+    // Second, updates the peak queueing delay and the peak count of inflight
+    // requests if a higher queueing delay is observed. The new peak queueing
+    // delay should be mapped to the peak count of in-flight requests that are
+    // observed before within this measurement period.
+    peak_count_inflight_requests_measurement_period_ =
+        std::max(peak_count_inflight_requests_measurement_period_,
+                 count_inflight_requests);
+
+    if (delay > peak_queueing_delay_) {
+      // Updates the peak queueing delay and the count of in-flight requests
+      // that are responsible for the delay.
+      peak_queueing_delay_ = delay;
+      count_inflight_requests_for_peak_queueing_delay_ =
+          peak_count_inflight_requests_measurement_period_;
+    }
   }
 }
 

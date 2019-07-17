@@ -139,13 +139,9 @@ ServiceWorkerNetworkProviderForFrame::CreateURLLoader(
 
   // Create our own SubresourceLoader to route the request to the controller
   // ServiceWorker.
-  // TODO(crbug.com/796425): Temporarily wrap the raw mojom::URLLoaderFactory
-  // pointer into SharedURLLoaderFactory.
   return std::make_unique<WebURLLoaderImpl>(
       RenderThreadImpl::current()->resource_dispatcher(),
-      std::move(task_runner_handle),
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          context()->GetSubresourceLoaderFactory()));
+      std::move(task_runner_handle), context()->GetSubresourceLoaderFactory());
 }
 
 blink::mojom::ControllerServiceWorkerMode

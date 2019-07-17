@@ -1189,6 +1189,9 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         is_pending_scanning = true;
         danger_type = download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING;
         break;
+      case safe_browsing::DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
+        danger_type = download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED;
+        break;
     }
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);

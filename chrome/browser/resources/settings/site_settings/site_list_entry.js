@@ -15,14 +15,6 @@ Polymer({
   ],
 
   properties: {
-    /** @private */
-    enableSiteSettings_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableSiteSettings');
-      },
-    },
-
     /**
      * Some content types (like Location) do not allow the user to manually
      * edit the exception list from within Settings.
@@ -209,7 +201,7 @@ Polymer({
       return;
     }
     this.browserProxy.isOriginValid(this.model.origin).then((valid) => {
-      this.allowNavigateToSiteDetail_ = valid && this.enableSiteSettings_;
+      this.allowNavigateToSiteDetail_ = valid;
     });
   }
 });

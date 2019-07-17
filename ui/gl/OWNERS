@@ -9,3 +9,4 @@ per-file *_ozone*=dnicoara@chromium.org
 per-file *_ozone*=spang@chromium.org
 
 # COMPONENT: Internals>GPU>Internals
+# TEAM: graphics-dev@chromium.org

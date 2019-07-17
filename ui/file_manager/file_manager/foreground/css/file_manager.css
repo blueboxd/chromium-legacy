@@ -187,6 +187,10 @@ div.splitter {
   width: 100%;
 }
 
+#directory-tree [renaming] .root-eject {
+  display: none;
+}
+
 #directory-tree [renaming] > .tree-row > .label {
   display: none;
 }

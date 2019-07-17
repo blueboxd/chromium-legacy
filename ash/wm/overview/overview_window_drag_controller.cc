@@ -298,6 +298,18 @@ void OverviewWindowDragController::ContinueDragToClose(
   const gfx::PointF centerpoint =
       location_in_screen - (initial_event_location_ - initial_centerpoint_);
 
+  // If the drag location intersects with the desk bar, then we should cancel
+  // the drag-to-close mode and start the normal drag mode.
+  if (virtual_desks_bar_enabled_ &&
+      item_->overview_grid()->IntersectsWithDesksBar(
+          gfx::ToRoundedPoint(location_in_screen),
+          /*update_desks_bar_drag_details=*/false, /*for_drop=*/false)) {
+    item_->SetOpacity(original_opacity_);
+    StartNormalDragMode(location_in_screen);
+    ContinueNormalDrag(location_in_screen);
+    return;
+  }
+
   // Update |item_|'s opacity based on its distance. |item_|'s x coordinate
   // should not change while in drag to close state.
   float val = std::abs(location_in_screen.y() - initial_event_location_.y()) /
@@ -348,8 +360,9 @@ void OverviewWindowDragController::ContinueNormalDrag(
 
   bool allow_original_window_opacity_change = true;
   if (virtual_desks_bar_enabled_) {
-    if (item_->overview_grid()->UpdateDesksBarDragDetails(
-            gfx::ToRoundedPoint(location_in_screen), /*for_drop=*/false)) {
+    if (item_->overview_grid()->IntersectsWithDesksBar(
+            gfx::ToRoundedPoint(location_in_screen),
+            /*update_desks_bar_drag_details=*/true, /*for_drop=*/false)) {
       // The drag location intersects the bounds of the DesksBarView, in this
       // case we scale down the item, and center it around the drag location.
       bounds.set_size(on_desks_bar_item_size_);

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_update_checker.h"
 
 #include "base/bind.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -112,7 +113,7 @@ ServiceWorkerUpdateChecker::TakeComparedResults() {
 
 void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
                                                 const int64_t resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id)
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id)
       << "All the target scripts should be stored in the storage.";
 
   bool is_main_script = url == main_script_url_;

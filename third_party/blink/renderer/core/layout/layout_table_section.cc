@@ -1149,20 +1149,6 @@ static bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
   return true;
 }
 
-static bool ShouldFlexCellChild(const LayoutTableCell& cell,
-                                LayoutObject* cell_descendant) {
-  if (!CellHasExplicitlySpecifiedHeight(cell))
-    return false;
-  // TODO(dgrogan): Delete ShouldFlexCellChild. It's only called when
-  // CellHasExplicitlySpecifiedHeight is false.
-  NOTREACHED() << "This is dead code?";
-  if (cell_descendant->StyleRef().OverflowY() == EOverflow::kVisible ||
-      cell_descendant->StyleRef().OverflowY() == EOverflow::kHidden)
-    return true;
-  return cell_descendant->IsBox() &&
-         ToLayoutBox(cell_descendant)->ShouldBeConsideredAsReplaced();
-}
-
 void LayoutTableSection::LayoutRows() {
 #if DCHECK_IS_ON()
   SetLayoutNeededForbiddenScope layout_forbidden_scope(*this);
@@ -1900,53 +1886,38 @@ void LayoutTableSection::SetLogicalPositionForCell(
 void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
                                               int row_index,
                                               int row_height) {
-  // Force percent height children to lay themselves out again.
-  // This will cause these children to grow to fill the cell.
+  // Force percent height children to lay themselves out again now that the
+  // cell's final height is determined.
   // FIXME: There is still more work to do here to fully match WinIE (should
   // it become necessary to do so).  In quirks mode, WinIE behaves like we
   // do, but it will clip the cells that spill out of the table section.
   // strict mode, Mozilla and WinIE both regrow the table to accommodate the
   // new height of the cell (thus letting the percentages cause growth one
   // time only). We may also not be handling row-spanning cells correctly.
-  //
-  // Note also the oddity where replaced elements always flex, and yet blocks/
-  // tables do not necessarily flex. WinIE is crazy and inconsistent, and we
-  // can't hope to match the behavior perfectly, but we'll continue to refine it
-  // as we discover new bugs. :)
-  bool cell_children_flex = false;
-  bool flex_all_children = CellHasExplicitlySpecifiedHeight(cell) ||
-                           (!Table()->StyleRef().LogicalHeight().IsAuto() &&
-                            row_height != cell.LogicalHeight());
 
-  for (LayoutObject* child = cell.FirstChild(); child;
-       child = child->NextSibling()) {
-    if (!child->IsText() &&
-        child->StyleRef().LogicalHeight().IsPercentOrCalc() &&
-        (flex_all_children || ShouldFlexCellChild(cell, child)) &&
-        (!child->IsTable() || (!child->IsOutOfFlowPositioned() &&
-                               ToLayoutTable(child)->HasSections()))) {
-      cell_children_flex = true;
-      break;
-    }
-  }
+  if (!CellHasExplicitlySpecifiedHeight(cell) &&
+      (Table()->StyleRef().LogicalHeight().IsAuto() ||
+       row_height == cell.LogicalHeight()))
+    return;
 
-  if (!cell_children_flex) {
-    if (TrackedLayoutBoxListHashSet* percent_height_descendants =
-            cell.PercentHeightDescendants()) {
-      for (auto* descendant : *percent_height_descendants) {
-        if (flex_all_children || ShouldFlexCellChild(cell, descendant)) {
-          cell_children_flex = true;
-          break;
-        }
+  bool any_child_needs_relayout = cell.HasPercentHeightDescendants();
+
+  if (!any_child_needs_relayout) {
+    for (LayoutObject* child = cell.FirstChild(); child;
+         child = child->NextSibling()) {
+      if (!child->IsText() &&
+          child->StyleRef().LogicalHeight().IsPercentOrCalc() &&
+          (!child->IsTable() || (!child->IsOutOfFlowPositioned() &&
+                                 ToLayoutTable(child)->HasSections()))) {
+        any_child_needs_relayout = true;
+        break;
       }
     }
   }
 
-  if (!cell_children_flex)
+  if (!any_child_needs_relayout)
     return;
 
-  // Alignment within a cell is based off the calculated height, which becomes
-  // irrelevant once the cell has been resized based off its percentage.
   cell.SetOverrideLogicalHeightFromRowHeight(LayoutUnit(row_height));
   cell.ForceLayout();
 

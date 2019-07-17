@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "net/nqe/network_quality.h"
 #include "net/nqe/observation_buffer.h"
@@ -20,12 +21,20 @@ namespace nqe {
 namespace internal {
 
 namespace {
+
 constexpr float kEpsilon = 0.001f;
+
+// These values should remain synchronized with the values in
+// net/nqe/network_congestion_analyzer.cc.
+constexpr int64_t kHighQueueingDelayMsec = 5000;
+constexpr int64_t kMinEmptyQueueObservingTimeMsec = 1500;
 
 // Verify that the network queueing delay is computed correctly based on RTT
 // and downlink throughput observations.
 TEST(NetworkCongestionAnalyzerTest, TestComputingQueueingDelay) {
-  NetworkCongestionAnalyzer analyzer;
+  base::SimpleTestTickClock tick_clock;
+
+  NetworkCongestionAnalyzer analyzer(&tick_clock);
   std::map<uint64_t, CanonicalStats> recent_rtt_stats;
   std::map<uint64_t, CanonicalStats> historical_rtt_stats;
   int32_t downlink_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
@@ -74,6 +83,82 @@ TEST(NetworkCongestionAnalyzerTest, TestComputingQueueingDelay) {
 }
 
 }  // namespace
+
+// Verify that the peak queueing delay is correctly mapped to the count of
+// in-flight requests that are responsible for that delay.
+TEST(NetworkCongestionAnalyzerTest, TestUpdatePeakDelayMapping) {
+  base::SimpleTestTickClock tick_clock;
+
+  NetworkCongestionAnalyzer analyzer(&tick_clock);
+  EXPECT_EQ(base::nullopt,
+            analyzer.count_inflight_requests_causing_high_delay());
+
+  // Checks that a measurement period starts correctly when an empty queue
+  // observation shows up.
+  EXPECT_FALSE(analyzer.ShouldStartNewMeasurement(
+      base::TimeDelta::FromMilliseconds(500), 2));
+  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(
+      base::TimeDelta::FromMilliseconds(500), 0));
+
+  // Checks that a new measurement period starts after waiting for a sufficient
+  // time interval when the number of in-flight requests is relatively low (=2).
+  EXPECT_FALSE(analyzer.ShouldStartNewMeasurement(
+      base::TimeDelta::FromMilliseconds(500), 2));
+  tick_clock.Advance(
+      base::TimeDelta::FromMilliseconds(kMinEmptyQueueObservingTimeMsec / 2));
+  EXPECT_FALSE(analyzer.ShouldStartNewMeasurement(
+      base::TimeDelta::FromMilliseconds(500), 2));
+  tick_clock.Advance(
+      base::TimeDelta::FromMilliseconds(kMinEmptyQueueObservingTimeMsec / 2));
+  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(
+      base::TimeDelta::FromMilliseconds(500), 2));
+
+  // Checks that the count of in-flight requests for peak queueing delay is
+  // correctly recorded.
+  // Case #1: the peak queueing delay was observed after the max count (7) of
+  // in-flight requests was observed.
+  const size_t expected_count_requests_1 = 7;
+  std::vector<std::pair<base::TimeDelta, size_t>> queueing_delay_samples_1 = {
+      std::make_pair(base::TimeDelta::FromMilliseconds(10), 1),
+      std::make_pair(base::TimeDelta::FromMilliseconds(10), 3),
+      std::make_pair(base::TimeDelta::FromMilliseconds(400), 5),
+      std::make_pair(base::TimeDelta::FromMilliseconds(800),
+                     expected_count_requests_1),
+      std::make_pair(base::TimeDelta::FromMilliseconds(kHighQueueingDelayMsec),
+                     5),
+      std::make_pair(base::TimeDelta::FromMilliseconds(1000), 3),
+      std::make_pair(base::TimeDelta::FromMilliseconds(700), 3),
+      std::make_pair(base::TimeDelta::FromMilliseconds(600), 1),
+      std::make_pair(base::TimeDelta::FromMilliseconds(300), 0),
+  };
+  for (const auto& sample : queueing_delay_samples_1) {
+    analyzer.UpdatePeakDelayMapping(sample.first, sample.second);
+  }
+  EXPECT_EQ(expected_count_requests_1,
+            analyzer.count_inflight_requests_causing_high_delay().value_or(0));
+
+  // Case #2: the peak queueing delay is observed before the max count (11) of
+  // in-flight requests was observed. The 8 requests should be responsible for
+  // the peak queueing delay.
+  const size_t expected_count_requests_2 = 10;
+  std::vector<std::pair<base::TimeDelta, size_t>> queueing_delay_samples_2 = {
+      std::make_pair(base::TimeDelta::FromMilliseconds(10), 1),
+      std::make_pair(base::TimeDelta::FromMilliseconds(10), 3),
+      std::make_pair(base::TimeDelta::FromMilliseconds(400), 5),
+      std::make_pair(base::TimeDelta::FromMilliseconds(800), 5),
+      std::make_pair(base::TimeDelta::FromMilliseconds(kHighQueueingDelayMsec),
+                     expected_count_requests_2),
+      std::make_pair(base::TimeDelta::FromMilliseconds(3000), 11),
+      std::make_pair(base::TimeDelta::FromMilliseconds(700), 3),
+      std::make_pair(base::TimeDelta::FromMilliseconds(600), 1),
+      std::make_pair(base::TimeDelta::FromMilliseconds(300), 0),
+  };
+  for (const auto& sample : queueing_delay_samples_2) {
+    analyzer.UpdatePeakDelayMapping(sample.first, sample.second);
+  }
+  EXPECT_EQ(expected_count_requests_2,
+            analyzer.count_inflight_requests_causing_high_delay().value_or(0));
+}
 
 }  // namespace internal
 

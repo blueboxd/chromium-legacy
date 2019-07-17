@@ -44,6 +44,7 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
+    "loader/request_destination.cc",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
     "logging/logging_utils.cc",

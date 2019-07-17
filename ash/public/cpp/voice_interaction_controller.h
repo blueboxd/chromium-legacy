@@ -45,9 +45,6 @@ class ASH_PUBLIC_EXPORT VoiceInteractionController
   // Called when the hotword is set to always on/only with power source.
   virtual void NotifyHotwordAlwaysOn(bool always_on);
 
-  // Called when the consent status is obtained from the server.
-  virtual void NotifyConsentStatus(mojom::ConsentStatus consent_status);
-
   // Notify if voice interaction feature is allowed or not. e.g. not allowed
   // if disabled by policy.
   virtual void NotifyFeatureAllowed(mojom::AssistantAllowedState state);

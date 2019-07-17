@@ -23,11 +23,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -38,6 +42,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -49,7 +54,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
@@ -73,7 +78,8 @@ import java.util.concurrent.TimeoutException;
 /**
  * Instrumentation tests for the {@link TileGridLayout} on the New Tab Page.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class TileGridLayoutTest {
     @Rule
@@ -105,12 +111,29 @@ public class TileGridLayoutTest {
 
     private final CallbackHelper mLoadCompleteHelper = new CallbackHelper();
 
+    @BeforeClass
+    public static void setUpBeforeActivityLaunched() {
+        NightModeTestUtils.setUpNightModeBeforeChromeActivityLaunched();
+    }
+
+    @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
+    public void setupNightMode(boolean nightModeEnabled) {
+        NightModeTestUtils.setUpNightModeForChromeActivity(nightModeEnabled);
+        mRenderTestRule.setNightModeEnabled(nightModeEnabled);
+    }
+
+    @AfterClass
+    public static void tearDownAfterActivityDestroyed() {
+        NightModeTestUtils.tearDownNightModeAfterChromeActivityDestroyed();
+    }
+
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     // TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
     @DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
-    public void testTileGridAppearance() throws Exception {
+    public void testTileGridAppearance(boolean nightModeEnabled) throws Exception {
         NewTabPage ntp = setUpFakeDataToShowOnNtp(FAKE_MOST_VISITED_URLS.length);
         mRenderTestRule.render(getTileGridLayout(ntp), "ntp_tile_grid_layout");
     }
@@ -119,7 +142,8 @@ public class TileGridLayoutTest {
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
     @Feature({"NewTabPage", "RenderTest"})
-    public void testModernTileGridAppearance_Full() throws IOException, InterruptedException {
+    public void testModernTileGridAppearance_Full()
+            throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
         setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, mActivityTestRule.getActivity());
@@ -141,7 +165,8 @@ public class TileGridLayoutTest {
     @DisabledTest(message = "crbug.com/771648")
     @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
-    public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
+    public void testModernTileGridAppearance_Two()
+            throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
         setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, mActivityTestRule.getActivity());
@@ -156,7 +181,8 @@ public class TileGridLayoutTest {
     @Feature({"NewTabPage", "RenderTest"})
     // TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
     @DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
-    public void testTileAppearanceModern()
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testTileAppearanceModern(boolean nightModeEnabled)
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
         List<String> offlineAvailableUrls = Collections.singletonList(suggestions.get(0).url);

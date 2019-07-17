@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_FEATURE_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_FEATURE_POLICY_H_
 
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>

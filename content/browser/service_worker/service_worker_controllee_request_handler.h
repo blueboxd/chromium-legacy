@@ -17,7 +17,6 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"

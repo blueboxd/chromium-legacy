@@ -13,18 +13,10 @@ class PrefRegistrySimple;
 namespace assistant {
 namespace prefs {
 
-extern const char kAssistantConsentStatus[];
 extern const char kAssistantDisabledByPolicy[];
 
 // Registers Assistant specific profile preferences.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-// Gets the user's consent status from the given preference service.
-ash::mojom::ConsentStatus GetConsentStatus(PrefService* pref_service);
-
-// Sets the user's consent status in the given preference service.
-void SetConsentStatus(PrefService* pref_service,
-                      ash::mojom::ConsentStatus consent_status);
 
 }  // namespace prefs
 }  // namespace assistant

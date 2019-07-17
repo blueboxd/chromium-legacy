@@ -19,7 +19,7 @@ void ReceivedSessionInfo(media_session::mojom::MediaSessionInfoPtr* info_out,
 
 }  // namespace
 
-TestAudioFocusObserver::TestAudioFocusObserver() : binding_(this) {}
+TestAudioFocusObserver::TestAudioFocusObserver() {}
 
 TestAudioFocusObserver::~TestAudioFocusObserver() = default;
 
@@ -57,9 +57,9 @@ void TestAudioFocusObserver::WaitForLostEvent() {
   run_loop_.Run();
 }
 
-void TestAudioFocusObserver::BindToMojoRequest(
-    media_session::mojom::AudioFocusObserverRequest request) {
-  binding_.Bind(std::move(request));
+mojo::PendingRemote<media_session::mojom::AudioFocusObserver>
+TestAudioFocusObserver::BindNewPipeAndPassRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 media_session::mojom::MediaSessionInfoPtr GetMediaSessionInfoSync(

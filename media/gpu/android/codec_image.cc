@@ -59,7 +59,7 @@ void CodecImage::Initialize(
   promotion_hint_cb_ = std::move(promotion_hint_cb);
 }
 
-void CodecImage::SetDestructionCb(DestructionCb destruction_cb) {
+void CodecImage::SetDestructionCB(DestructionCB destruction_cb) {
   destruction_cb_ = std::move(destruction_cb);
 }
 

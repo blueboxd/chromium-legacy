@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"

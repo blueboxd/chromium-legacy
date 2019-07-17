@@ -1296,7 +1296,10 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
     }
 
     base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-    base::UmaHistogramMicrosecondsTimes(duration_histogram_name, elapsed);
+
+    // TODO(crbug.com/983261) Change this to use UmaHistogramMicrosecondsTimes.
+    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+        duration_histogram_name, elapsed);
 
     float sqrt_pixels_float =
         std::sqrt(dst_rect.Width()) * std::sqrt(dst_rect.Height());

@@ -765,6 +765,10 @@ const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCorsDescription[] =
     "CORS handling logic is moved out of blink.";
 
+const char kCrossOriginEmbedderPolicyName[] = "Cross Origin Embedder Policy";
+const char kCrossOriginEmbedderPolicyDescription[] =
+    "Enable Cross Origin Embedder Policy (https://mikewest.github.io/corpp/).";
+
 const char kExperimentalAccessibilityFeaturesName[] =
     "Experimental accessibility features";
 const char kExperimentalAccessibilityFeaturesDescription[] =
@@ -1780,10 +1784,6 @@ const char kSiteIsolationOptOutDescription[] =
     "vulnerability affecting most computers.";
 const char kSiteIsolationOptOutChoiceDefault[] = "Default";
 const char kSiteIsolationOptOutChoiceOptOut[] = "Disabled (not recommended)";
-
-const char kSiteSettings[] = "Site settings";
-const char kSiteSettingsDescription[] =
-    "Add the All Sites list to Site Settings.";
 
 const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =

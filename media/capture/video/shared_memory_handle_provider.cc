@@ -129,6 +129,14 @@ SharedMemoryHandleProvider::GetHandleForInProcessAccess() {
   return std::make_unique<Handle>(this);
 }
 
+#if defined(OS_CHROMEOS)
+gfx::GpuMemoryBufferHandle
+SharedMemoryHandleProvider::GetGpuMemoryBufferHandle() {
+  NOTREACHED() << "Unsupported operation";
+  return gfx::GpuMemoryBufferHandle();
+}
+#endif
+
 #if DCHECK_IS_ON()
 void SharedMemoryHandleProvider::OnHandleDestroyed() {
   base::AutoLock lock(mapping_lock_);

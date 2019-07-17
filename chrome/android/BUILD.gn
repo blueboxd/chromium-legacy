@@ -296,7 +296,7 @@ android_library("chrome_java") {
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/content_capture/android:java",
-    "//components/contextual_search/content:mojo_bindings_java",
+    "//components/contextual_search/content/common/mojom:mojom_java",
     "//components/crash/android:java",
     "//components/dom_distiller/content/browser/android:dom_distiller_content_java",
     "//components/dom_distiller/core/android:dom_distiller_core_java",

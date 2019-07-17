@@ -19,7 +19,7 @@
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
-#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/viz/host/viz_host_export.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_domain_guilt.h"

@@ -29,6 +29,20 @@
     You're viewing the source of a web page
   </message>
 
+  <!-- Safety Tip summary strings -->
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_NAME" desc="Name of safety tips, displayed in bold as part of the title of the safety tip bubble.">
+    Safety tip:
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE" desc="Title of Safety Tip bubble when triggered.">
+    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious behavior
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION" desc="Body of message to display in the page info bubble when you are viewing a page that triggered a safety tip.">
+    This page might try to trick you, steal personal information, or harm your device. Be cautious when entering personal information or opening downloaded files.
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
+    Leave this site
+  </message>
+
   <!-- Viewing file strings -->
   <message name="IDS_PAGE_INFO_FILE_PAGE" desc="Message to display in the page info bubble when the page the user has navigated to is a file:// page">
     You're viewing a local or shared file

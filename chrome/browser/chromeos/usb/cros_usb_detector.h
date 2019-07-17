@@ -40,10 +40,12 @@ enum class CrosUsbNotificationClosed {
   kMaxValue = kConnectToLinux
 };
 
-struct SharedUsbDeviceInfo {
-  SharedUsbDeviceInfo();
-  SharedUsbDeviceInfo(const SharedUsbDeviceInfo&);
-  ~SharedUsbDeviceInfo();
+// Represents a USB device tracked by a CrosUsbDetector instance. The device may
+// or may not be sharable with a particular type of VM (e.g. Crostini).
+struct CrosUsbDeviceInfo {
+  CrosUsbDeviceInfo();
+  CrosUsbDeviceInfo(const CrosUsbDeviceInfo&);
+  ~CrosUsbDeviceInfo();
 
   struct VmSharingInfo {
     VmSharingInfo();
@@ -62,14 +64,15 @@ struct SharedUsbDeviceInfo {
   base::flat_map<std::string, VmSharingInfo> vm_sharing_info;
   std::string guid;
   base::string16 label;
+  // Whether the device can be shared with Crostini.
+  bool sharable_with_crostini = false;
   // TODO(nverne): Add current state and errors etc.
 };
 
-class SharedUsbDeviceObserver : public base::CheckedObserver {
+class CrosUsbDeviceObserver : public base::CheckedObserver {
  public:
   // Called when the available USB devices change.
-  virtual void OnSharedUsbDevicesChanged(
-      std::vector<SharedUsbDeviceInfo> usb_devices) = 0;
+  virtual void OnUsbDevicesChanged() = 0;
 };
 
 // Detects USB Devices for Chrome OS and manages UI for controlling their use
@@ -115,11 +118,18 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
                              const std::string& guid,
                              base::OnceCallback<void(bool success)> callback);
 
-  void AddSharedUsbDeviceObserver(SharedUsbDeviceObserver* observer);
-  void RemoveSharedUsbDeviceObserver(SharedUsbDeviceObserver* observer);
-  void SignalSharedUsbDeviceObservers();
+  void AddUsbDeviceObserver(CrosUsbDeviceObserver* observer);
+  void RemoveUsbDeviceObserver(CrosUsbDeviceObserver* observer);
+  void SignalUsbDeviceObservers();
 
-  std::vector<SharedUsbDeviceInfo> GetSharedUsbDevices();
+  // Returns all the USB devices tracked by this instance. This may not contain
+  // all physically connected devices and may also contain devices that are
+  // sharable with e.g. ARCVM but not with Crostini.
+  const std::vector<CrosUsbDeviceInfo>& GetConnectedDevices() const;
+
+  // Returns all the USB devices that are sharable with Crostini. This may not
+  // include all connected devices.
+  std::vector<CrosUsbDeviceInfo> GetDevicesSharableWithCrostini() const;
 
  private:
   void AttachUsbDeviceToVmInternal(
@@ -168,8 +178,6 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
 
   // Returns true when a device should show a notification when attached.
   bool ShouldShowNotification(const device::mojom::UsbDeviceInfo& device_info);
-  // Returns true when a device can be shared.
-  bool IsDeviceSharable(const device::mojom::UsbDeviceInfo& device_info);
 
   device::mojom::UsbDeviceManagerPtr device_manager_;
   mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
@@ -184,9 +192,9 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   // A mapping from GUID -> UsbDeviceInfo for each attached USB device
   std::map<std::string, device::mojom::UsbDeviceInfoPtr> available_device_info_;
 
-  std::vector<SharedUsbDeviceInfo> shared_usb_devices_;
+  std::vector<CrosUsbDeviceInfo> usb_devices_;
 
-  base::ObserverList<SharedUsbDeviceObserver> shared_usb_device_observers_;
+  base::ObserverList<CrosUsbDeviceObserver> usb_device_observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

@@ -31,6 +31,11 @@ namespace {
 
 bool IsFormatSupported(media::VideoPixelFormat pixel_format) {
   return (pixel_format == media::PIXEL_FORMAT_I420 ||
+#if defined(OS_CHROMEOS)
+          // Used by GpuMemoryBuffer on Chrome OS.
+          pixel_format == media::PIXEL_FORMAT_NV12 ||
+          pixel_format == media::PIXEL_FORMAT_MJPEG ||
+#endif
           pixel_format == media::PIXEL_FORMAT_Y16);
 }
 
@@ -136,6 +141,11 @@ class BufferPoolBufferHandleProvider
       override {
     return buffer_pool_->GetHandleForInProcessAccess(buffer_id_);
   }
+#if defined(OS_CHROMEOS)
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override {
+    return buffer_pool_->GetGpuMemoryBufferHandle(buffer_id_);
+  }
+#endif
 
  private:
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
@@ -491,6 +501,12 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
       case VideoCaptureBufferType::kMailboxHolder:
         NOTREACHED();
         break;
+#if defined(OS_CHROMEOS)
+      case VideoCaptureBufferType::kGpuMemoryBuffer:
+        buffer_handle->set_gpu_memory_buffer_handle(
+            buffer_pool_->GetGpuMemoryBufferHandle(buffer_id));
+        break;
+#endif
     }
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     buffer_ids_known_by_receiver_.push_back(buffer_id);

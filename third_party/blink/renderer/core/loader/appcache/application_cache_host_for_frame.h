@@ -5,13 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_FOR_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_FOR_FRAME_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
 namespace blink {
 
 class LocalFrame;
 
-class ApplicationCacheHostForFrame final : public ApplicationCacheHost {
+class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
  public:
   ApplicationCacheHostForFrame(
       DocumentLoader* document_loader,

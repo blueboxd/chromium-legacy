@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -19,6 +20,7 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/local_file_util.h"
+#include "storage/browser/fileapi/native_file_util.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace drive {
@@ -26,6 +28,21 @@ namespace internal {
 namespace {
 
 constexpr char kTrashDirectoryName[] = ".Trash";
+
+class DriveFsFileUtil : public storage::LocalFileUtil {
+ public:
+  DriveFsFileUtil() = default;
+  ~DriveFsFileUtil() override = default;
+
+ protected:
+  bool IsHiddenItem(const base::FilePath& local_file_path) const override {
+    // DriveFS is a trusted filesystem, allow symlinks.
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DriveFsFileUtil);
+};
 
 class CopyOperation {
  public:
@@ -188,7 +205,7 @@ class DeleteOperation {
 }  // namespace
 
 DriveFsAsyncFileUtil::DriveFsAsyncFileUtil(Profile* profile)
-    : AsyncFileUtilAdapter(new storage::LocalFileUtil),
+    : AsyncFileUtilAdapter(new DriveFsFileUtil),
       profile_(profile),
       weak_factory_(this) {}
 

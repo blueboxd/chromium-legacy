@@ -230,6 +230,13 @@ class ReceiverSetBase {
         current_receiver());
   }
 
+  void FlushForTesting() {
+    for (const auto& it : receivers_) {
+      if (it.second)
+        it.second->FlushForTesting();
+    }
+  }
+
  private:
   friend class Entry;
 
@@ -251,6 +258,8 @@ class ReceiverSetBase {
       receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
     }
+
+    void FlushForTesting() { receiver_.FlushForTesting(); }
 
    private:
     class DispatchFilter : public MessageReceiver {

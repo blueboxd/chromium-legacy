@@ -33,7 +33,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"

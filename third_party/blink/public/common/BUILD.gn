@@ -68,6 +68,7 @@ source_set("headers") {
     "indexeddb/indexeddb_key_range.h",
     "indexeddb/indexeddb_metadata.h",
     "indexeddb/web_idb_types.h",
+    "loader/request_destination.h",
     "loader/url_loader_factory_bundle.h",
     "loader/url_loader_factory_bundle_mojom_traits.h",
     "logging/logging_utils.h",

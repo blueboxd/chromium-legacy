@@ -620,10 +620,6 @@ const base::Feature kSitePerProcessOnlyForHighMemoryClients{
 const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
     "site-per-process-low-memory-cutoff-mb";
 
-// The site settings all sites list page in the Chrome settings UI.
-const base::Feature kSiteSettings{"SiteSettings",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables automatic setup of USB printers.
 const base::Feature kStreamlinedUsbPrinterSetup{

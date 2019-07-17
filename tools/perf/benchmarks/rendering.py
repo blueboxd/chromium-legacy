@@ -74,6 +74,10 @@ class RenderingMobile(perf_benchmark.PerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     options.AppendExtraBrowserArgs('--touch-events=enabled')
+    # Disable locking the controls as visible for a minimum duration. This
+    # allows controls to unlock after page load, rather than in the middle of a
+    # story.
+    options.AppendExtraBrowserArgs('--disable-minimum-show-duration')
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()

@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -22,13 +23,13 @@ using storage::FileStreamReader;
 // blob and fileapi into content namespace.
 namespace storage {
 
-FileStreamReader* FileStreamReader::CreateForFileSystemFile(
-    storage::FileSystemContext* file_system_context,
-    const storage::FileSystemURL& url,
+std::unique_ptr<FileStreamReader> FileStreamReader::CreateForFileSystemFile(
+    FileSystemContext* file_system_context,
+    const FileSystemURL& url,
     int64_t initial_offset,
     const base::Time& expected_modification_time) {
-  return new storage::FileSystemFileStreamReader(
-      file_system_context, url, initial_offset, expected_modification_time);
+  return base::WrapUnique(new FileSystemFileStreamReader(
+      file_system_context, url, initial_offset, expected_modification_time));
 }
 
 FileSystemFileStreamReader::FileSystemFileStreamReader(

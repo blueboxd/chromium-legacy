@@ -61,6 +61,8 @@ const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
       return "POTENTIALLY_UNWANTED";
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
       return "ASYNC_SCANNING";
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
+      return "BLOCKED_PASSWORD_PROTECTED";
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:

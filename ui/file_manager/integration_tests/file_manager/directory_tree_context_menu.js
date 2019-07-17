@@ -583,6 +583,125 @@
   };
 
   /**
+   * Tests renaming removable volume with the keyboard.
+   */
+  testcase.dirRenameRemovableWithKeyboard = async () => {
+    // Open Files app on local downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+    // Mount a single partition NTFS USB volume: they can be renamed.
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ntfs'});
+
+    // Wait for the USB mount and click the USB volume.
+    const usbVolume = '#directory-tree [volume-type-icon="removable"]';
+    await remoteCall.waitAndClickElement(appId, usbVolume);
+
+    // Check: the USB should be the current directory tree selection.
+    const usbVolumeSelected =
+        '#directory-tree .tree-row[selected] [volume-type-icon="removable"]';
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Focus the directory tree.
+    await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
+
+    // Check: the USB volume is still the current directory tree selection.
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Press rename <Ctrl>-Enter keyboard shortcut on the USB.
+    const renameKey =
+        ['#directory-tree .tree-row[selected]', 'Enter', true, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, renameKey);
+
+    // Check: the renaming text input element should appear.
+    const textInput = '#directory-tree .tree-row[selected] input';
+    await remoteCall.waitForElement(appId, textInput);
+
+    // Enter the new name for the USB volume.
+    await remoteCall.callRemoteTestUtil(
+        'inputText', appId, [textInput, 'usb-was-renamed']);
+
+    // Press Enter key to end text input.
+    const enterKey = [textInput, 'Enter', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey);
+
+    // Wait for the renaming input element to disappear.
+    await remoteCall.waitForElementLost(appId, textInput);
+
+    // Check: the USB volume .label text should be the new name.
+    const element = await remoteCall.waitForElement(
+        appId, '#directory-tree:focus .tree-row[selected] .label');
+    chrome.test.assertEq('usb-was-renamed', element.text);
+
+    // Even though the Files app rename flow worked, the background.js page
+    // console errors about not being able to 'mount' the older volume name
+    // due to a disk_mount_manager.cc error: user/fake-usb not found.
+    return IGNORE_APP_ERRORS;
+  };
+
+  /**
+   * Tests renaming removable volume with the context menu.
+   */
+  testcase.dirRenameRemovableWithContentMenu = async () => {
+    // Open Files app on local downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+    // Mount a single partition NTFS USB volume: they can be renamed.
+    await sendTestMessage({name: 'mountFakeUsb', filesystem: 'ntfs'});
+
+    // Wait for the USB mount and click the USB volume.
+    const usbVolume = '#directory-tree [volume-type-icon="removable"]';
+    await remoteCall.waitAndClickElement(appId, usbVolume);
+
+    // Check: the USB should be the current directory tree selection.
+    const usbVolumeSelected =
+        '#directory-tree .tree-row[selected] [volume-type-icon="removable"]';
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Focus the directory tree.
+    await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
+
+    // Check: the USB volume is still the current directory tree selection.
+    await remoteCall.waitForElement(appId, usbVolumeSelected);
+
+    // Right-click the USB volume.
+    const usb = '#directory-tree:focus .tree-row[selected]';
+    await remoteCall.callRemoteTestUtil('fakeMouseRightClick', appId, [usb]);
+
+    // Check: a context menu with a 'rename' item should appear.
+    const renameItem =
+        'cr-menu-item[command="#rename"]:not([hidden]):not([disabled])';
+    await remoteCall.waitForElement(appId, renameItem);
+
+    // Click the context menu 'rename' item.
+    await remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [renameItem]);
+
+    // Check: the renaming text input element should appear.
+    const textInput = '#directory-tree .tree-row[selected] input';
+    await remoteCall.waitForElement(appId, textInput);
+
+    // Enter the new name for the USB volume.
+    await remoteCall.callRemoteTestUtil(
+        'inputText', appId, [textInput, 'usb-was-renamed']);
+
+    // Press Enter key to end text input.
+    const enterKey = [textInput, 'Enter', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, enterKey);
+
+    // Wait for the renaming input element to disappear.
+    await remoteCall.waitForElementLost(appId, textInput);
+
+    // Check: the USB volume .label text should be the new name.
+    const element = await remoteCall.waitForElement(
+        appId, '#directory-tree:focus .tree-row[selected] .label');
+    chrome.test.assertEq('usb-was-renamed', element.text);
+
+    // Even though the Files app rename flow worked, the background.js page
+    // console errors about not being able to 'mount' the older volume name
+    // due to a disk_mount_manager.cc error: user/fake-usb not found.
+    return IGNORE_APP_ERRORS;
+  };
+
+  /**
    * Tests creating a folder with the context menu.
    */
   testcase.dirCreateWithContextMenu = () => {
@@ -1506,12 +1625,12 @@
     const appId =
         await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
-    // Right-click /My files/Downloads in the directory tree.
+    // Wait for /My files/Downloads to appear in the directory tree.
     const query =
         '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
     await remoteCall.waitForElement(appId, query);
 
-    // Right-click the selected file.
+    // Right-click the /My files/Downloads tree row.
     chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
         'fakeMouseRightClick', appId, [query]));
 

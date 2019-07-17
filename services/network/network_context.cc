@@ -81,7 +81,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/resolve_host_request.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "services/network/ssl_config_service_mojo.h"

@@ -89,7 +89,7 @@ class HttpServerPropertiesImplTest : public TestWithScopedTaskEnvironment {
     if (alternative_service.protocol == kProtoQUIC) {
       return impl_.SetQuicAlternativeService(
           origin, alternative_service, expiration,
-          HttpNetworkSession::Params().quic_supported_versions);
+          HttpNetworkSession::Params().quic_params.supported_versions);
     } else {
       return impl_.SetHttp2AlternativeService(origin, alternative_service,
                                               expiration);
@@ -376,7 +376,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ExcludeOrigin) {
   AlternativeServiceInfo alternative_service_info4 =
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           AlternativeService(kProtoQUIC, "foo", 443), expiration,
-          HttpNetworkSession::Params().quic_supported_versions);
+          HttpNetworkSession::Params().quic_params.supported_versions);
   alternative_service_info_vector.push_back(alternative_service_info4);
 
   url::SchemeHostPort test_server("https", "foo", 443);
@@ -571,7 +571,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearServerWithCanonical) {
   const AlternativeServiceInfo alternative_service_info =
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service, expiration,
-          HttpNetworkSession::Params().quic_supported_versions);
+          HttpNetworkSession::Params().quic_params.supported_versions);
 
   impl_.SetAlternativeServices(
       canonical_server,
@@ -987,7 +987,7 @@ TEST_F(AlternateProtocolServerPropertiesTest, Canonical) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           canonical_alternative_service1, expiration,
-          HttpNetworkSession::Params().quic_supported_versions));
+          HttpNetworkSession::Params().quic_params.supported_versions));
   const AlternativeService canonical_alternative_service2(kProtoHTTP2, "", 443);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateHttp2AlternativeServiceInfo(
@@ -1234,12 +1234,12 @@ TEST_F(AlternateProtocolServerPropertiesTest,
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           AlternativeService(kProtoQUIC, "bar", 443),
           now + base::TimeDelta::FromHours(1),
-          HttpNetworkSession::Params().quic_supported_versions));
+          HttpNetworkSession::Params().quic_params.supported_versions));
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           AlternativeService(kProtoQUIC, "baz", 443),
           now + base::TimeDelta::FromHours(1),
-          HttpNetworkSession::Params().quic_supported_versions));
+          HttpNetworkSession::Params().quic_params.supported_versions));
 
   impl_.SetAlternativeServices(url::SchemeHostPort("https", "youtube.com", 443),
                                alternative_service_info_vector);

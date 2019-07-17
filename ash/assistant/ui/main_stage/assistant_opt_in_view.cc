@@ -36,8 +36,9 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(
   return style;
 }
 
-base::string16 GetAction(mojom::ConsentStatus consent_status) {
-  return consent_status == mojom::ConsentStatus::kUnauthorized
+base::string16 GetAction(int consent_status) {
+  return consent_status ==
+                 chromeos::assistant::prefs::ConsentStatus::kUnauthorized
              ? l10n_util::GetStringUTF16(
                    IDS_ASH_ASSISTANT_OPT_IN_ASK_ADMINISTRATOR)
              : l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_GET_STARTED);
@@ -89,11 +90,11 @@ class AssistantOptInContainer : public views::Button {
 AssistantOptInView::AssistantOptInView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   InitLayout();
-  delegate_->AddVoiceInteractionControllerObserver(this);
+  delegate_->AddAssistantPrefsObserver(this);
 }
 
 AssistantOptInView::~AssistantOptInView() {
-  delegate_->RemoveVoiceInteractionControllerObserver(this);
+  delegate_->RemoveAssistantPrefsObserver(this);
 }
 
 const char* AssistantOptInView::GetClassName() const {
@@ -113,8 +114,7 @@ void AssistantOptInView::ButtonPressed(views::Button* sender,
   delegate_->OnOptInButtonPressed();
 }
 
-void AssistantOptInView::OnVoiceInteractionConsentStatusUpdated(
-    mojom::ConsentStatus consent_status) {
+void AssistantOptInView::OnAssistantConsentStatusUpdated(int consent_status) {
   UpdateLabel(consent_status);
 }
 
@@ -155,7 +155,7 @@ void AssistantOptInView::InitLayout() {
   UpdateLabel(delegate_->GetConsentStatus());
 }
 
-void AssistantOptInView::UpdateLabel(mojom::ConsentStatus consent_status) {
+void AssistantOptInView::UpdateLabel(int consent_status) {
   // First substitution string: "Unlock more Assistant features."
   const base::string16 unlock_features =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_UNLOCK_MORE_FEATURES);

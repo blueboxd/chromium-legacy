@@ -55,6 +55,7 @@
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -417,7 +418,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Google Assistant.
-  (*s_whitelist)[::assistant::prefs::kAssistantConsentStatus] =
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantConsentStatus] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::assistant::prefs::kAssistantDisabledByPolicy] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

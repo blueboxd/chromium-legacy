@@ -18,11 +18,11 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
@@ -176,25 +176,28 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
     case ConsentFlowUi::ASK_FOR_CONSENT:
       if (consent_ui.has_activity_control_ui() &&
           consent_ui.activity_control_ui().setting_zippy().size()) {
-        assistant::prefs::SetConsentStatus(
-            prefs, ash::mojom::ConsentStatus::kNotFound);
+        prefs->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
+                          chromeos::assistant::prefs::ConsentStatus::kNotFound);
       } else {
-        assistant::prefs::SetConsentStatus(
-            prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
+        prefs->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
+                          chromeos::assistant::prefs::ConsentStatus::
+                              kActivityControlAccepted);
       }
       break;
     case ConsentFlowUi::ERROR_ACCOUNT:
-      assistant::prefs::SetConsentStatus(
-          prefs, ash::mojom::ConsentStatus::kUnauthorized);
+      prefs->SetInteger(
+          chromeos::assistant::prefs::kAssistantConsentStatus,
+          chromeos::assistant::prefs::ConsentStatus::kUnauthorized);
       break;
     case ConsentFlowUi::ALREADY_CONSENTED:
-      assistant::prefs::SetConsentStatus(
-          prefs, ash::mojom::ConsentStatus::kActivityControlAccepted);
+      prefs->SetInteger(
+          chromeos::assistant::prefs::kAssistantConsentStatus,
+          chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted);
       break;
     case ConsentFlowUi::UNSPECIFIED:
     case ConsentFlowUi::ERROR:
-      assistant::prefs::SetConsentStatus(prefs,
-                                         ash::mojom::ConsentStatus::kUnknown);
+      prefs->SetInteger(chromeos::assistant::prefs::kAssistantConsentStatus,
+                        chromeos::assistant::prefs::ConsentStatus::kUnknown);
       LOG(ERROR) << "Invalid activity control consent status.";
   }
 }
@@ -203,7 +206,7 @@ void AssistantSetup::MaybeStartAssistantOptInFlow() {
   auto* pref_service = ProfileManager::GetActiveUserProfile()->GetPrefs();
   DCHECK(pref_service);
   if (!pref_service->GetUserPrefValue(
-          assistant::prefs::kAssistantConsentStatus)) {
+          chromeos::assistant::prefs::kAssistantConsentStatus)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AssistantSetup::StartAssistantOptInFlow,

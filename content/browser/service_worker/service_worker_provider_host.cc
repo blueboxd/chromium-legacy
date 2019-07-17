@@ -30,7 +30,6 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -923,9 +922,9 @@ void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
     blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
     RegisterCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, options->scope, script_url,
-                                    kServiceWorkerRegisterErrorPrefix,
-                                    nullptr)) {
+  if (!CanServeContainerHostMethods(
+          &callback, options->scope, script_url,
+          ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix, nullptr)) {
     return;
   }
   if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
@@ -978,7 +977,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
-        std::string(kServiceWorkerRegisterErrorPrefix) +
+        std::string(ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix) +
             std::string(ServiceWorkerConsts::kShutdownErrorMessage),
         nullptr);
     return;
@@ -990,7 +989,9 @@ void ServiceWorkerProviderHost::RegistrationComplete(
     GetServiceWorkerErrorTypeForRegistration(status, status_message,
                                              &error_type, &error_message);
     std::move(callback).Run(
-        error_type, kServiceWorkerRegisterErrorPrefix + error_message, nullptr);
+        error_type,
+        ServiceWorkerConsts::kServiceWorkerRegisterErrorPrefix + error_message,
+        nullptr);
     return;
   }
 
@@ -1009,9 +1010,10 @@ void ServiceWorkerProviderHost::RegistrationComplete(
 void ServiceWorkerProviderHost::GetRegistration(
     const GURL& client_url,
     GetRegistrationCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, url(), GURL(),
-                                    kServiceWorkerGetRegistrationErrorPrefix,
-                                    nullptr)) {
+  if (!CanServeContainerHostMethods(
+          &callback, url(), GURL(),
+          ServiceWorkerConsts::kServiceWorkerGetRegistrationErrorPrefix,
+          nullptr)) {
     return;
   }
 
@@ -1037,9 +1039,10 @@ void ServiceWorkerProviderHost::GetRegistration(
 
 void ServiceWorkerProviderHost::GetRegistrations(
     GetRegistrationsCallback callback) {
-  if (!CanServeContainerHostMethods(&callback, url(), GURL(),
-                                    kServiceWorkerGetRegistrationsErrorPrefix,
-                                    base::nullopt)) {
+  if (!CanServeContainerHostMethods(
+          &callback, url(), GURL(),
+          ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix,
+          base::nullopt)) {
     return;
   }
 
@@ -1076,7 +1079,8 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
-        std::string(kServiceWorkerGetRegistrationErrorPrefix) +
+        std::string(
+            ServiceWorkerConsts::kServiceWorkerGetRegistrationErrorPrefix) +
             std::string(ServiceWorkerConsts::kShutdownErrorMessage),
         nullptr);
     return;
@@ -1089,7 +1093,9 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
     GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
                                              &error_message);
     std::move(callback).Run(
-        error_type, kServiceWorkerGetRegistrationErrorPrefix + error_message,
+        error_type,
+        ServiceWorkerConsts::kServiceWorkerGetRegistrationErrorPrefix +
+            error_message,
         nullptr);
     return;
   }
@@ -1116,7 +1122,8 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
   if (!IsContextAlive()) {
     std::move(callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
-        std::string(kServiceWorkerGetRegistrationsErrorPrefix) +
+        std::string(
+            ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix) +
             std::string(ServiceWorkerConsts::kShutdownErrorMessage),
         base::nullopt);
     return;
@@ -1128,7 +1135,9 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
     GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
                                              &error_message);
     std::move(callback).Run(
-        error_type, kServiceWorkerGetRegistrationsErrorPrefix + error_message,
+        error_type,
+        ServiceWorkerConsts::kServiceWorkerGetRegistrationsErrorPrefix +
+            error_message,
         base::nullopt);
     return;
   }

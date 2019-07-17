@@ -155,7 +155,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SPS;
   ctrl.size = sizeof(v4l2_sps);
-  ctrl.p_h264_sps = &v4l2_sps;
+  ctrl.ptr = &v4l2_sps;
   ctrls.push_back(ctrl);
 
   struct v4l2_ctrl_h264_pps v4l2_pps;
@@ -195,7 +195,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_H264_PPS;
   ctrl.size = sizeof(v4l2_pps);
-  ctrl.p_h264_pps = &v4l2_pps;
+  ctrl.ptr = &v4l2_pps;
   ctrls.push_back(ctrl);
 
   struct v4l2_ctrl_h264_scaling_matrix v4l2_scaling_matrix;
@@ -247,7 +247,7 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitFrameMetadata(
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SCALING_MATRIX;
   ctrl.size = sizeof(v4l2_scaling_matrix);
-  ctrl.p_h264_scal_mtrx = &v4l2_scaling_matrix;
+  ctrl.ptr = &v4l2_scaling_matrix;
   ctrls.push_back(ctrl);
 
   scoped_refptr<V4L2DecodeSurface> dec_surface =
@@ -417,13 +417,13 @@ H264Decoder::H264Accelerator::Status V4L2H264Accelerator::SubmitDecode(
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_H264_SLICE_PARAM;
   ctrl.size = sizeof(v4l2_slice_params_);
-  ctrl.p_h264_slice_param = v4l2_slice_params_;
+  ctrl.ptr = v4l2_slice_params_;
   ctrls.push_back(ctrl);
 
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_VIDEO_H264_DECODE_PARAM;
   ctrl.size = sizeof(v4l2_decode_param_);
-  ctrl.p_h264_decode_param = &v4l2_decode_param_;
+  ctrl.ptr = &v4l2_decode_param_;
   ctrls.push_back(ctrl);
 
   struct v4l2_ext_controls ext_ctrls;

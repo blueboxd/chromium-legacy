@@ -16,7 +16,7 @@ static_library("pdf_compositor") {
     "//base",
     "//components/crash/core/common:crash_key",
     "//components/discardable_memory/client",
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//content/public/child",
     "//content/public/common:service_names",
     "//content/public/utility",

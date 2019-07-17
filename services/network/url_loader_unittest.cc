@@ -62,7 +62,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/test/test_data_pipe_getter.h"
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_network_service_client.h"

@@ -33,7 +33,8 @@
 //   run_loop.QuitWhenIdle();
 // }
 //
-// CancelableClosure timeout(base::Bind(&TimeoutCallback, "Test timed out."));
+// CancelableOnceClosure timeout(
+//     base::BindOnce(&TimeoutCallback, "Test timed out."));
 // ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, timeout.callback(),
 //                                                TimeDelta::FromSeconds(4));
 // RunIntensiveTest();
@@ -145,7 +146,7 @@ using CancelableOnceClosure = CancelableOnceCallback<void()>;
 template <typename Signature>
 using CancelableRepeatingCallback =
     internal::CancelableCallbackImpl<RepeatingCallback<Signature>>;
-using CancelableRepeatingClosure = CancelableOnceCallback<void()>;
+using CancelableRepeatingClosure = CancelableRepeatingCallback<void()>;
 
 template <typename Signature>
 using CancelableCallback = CancelableRepeatingCallback<Signature>;

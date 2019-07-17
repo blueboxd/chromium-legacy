@@ -26,6 +26,14 @@ MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     base::TimeDelta timestamp,
     gfx::BufferUsage buffer_usage);
 
+// Get VideoFrameLayout of platform dependent video frame with |pixel_format|,
+// |coded_size| and |buffer_usage|. This function is not cost-free as this
+// allocates a platform dependent video frame.
+MEDIA_GPU_EXPORT base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    gfx::BufferUsage buffer_usage);
+
 // Create a shared GPU memory handle to the |video_frame|'s data.
 MEDIA_GPU_EXPORT gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     const VideoFrame* video_frame);

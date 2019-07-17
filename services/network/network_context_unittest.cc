@@ -594,7 +594,7 @@ TEST_F(NetworkContextTest, QuicUserAgentId) {
                                   ->http_transaction_factory()
                                   ->GetSession()
                                   ->params()
-                                  .quic_user_agent_id);
+                                  .quic_params.user_agent_id);
 }
 
 TEST_F(NetworkContextTest, DataUrlSupport) {
@@ -714,8 +714,8 @@ TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
 
   EXPECT_TRUE(params.enable_http2);
   EXPECT_FALSE(params.enable_quic);
-  EXPECT_EQ(1350u, params.quic_max_packet_length);
-  EXPECT_TRUE(params.origins_to_force_quic_on.empty());
+  EXPECT_EQ(1350u, params.quic_params.max_packet_length);
+  EXPECT_TRUE(params.quic_params.origins_to_force_quic_on.empty());
   EXPECT_FALSE(params.enable_user_alternate_protocol_ports);
   EXPECT_FALSE(params.ignore_certificate_errors);
   EXPECT_EQ(0, params.testing_fixed_http_port);

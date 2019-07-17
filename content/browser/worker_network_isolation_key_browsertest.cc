@@ -260,6 +260,10 @@ INSTANTIATE_TEST_SUITE_P(
 // also won't trigger an update.
 IN_PROC_BROWSER_TEST_F(WorkerNetworkIsolationKeyBrowserTest,
                        ServiceWorkerMainScriptRequest) {
+  // TODO(http://crbug.com/984099): Fix this with network service disabled.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Discard the old process to clear the in-memory cache.
   CrossProcessNavigation();
 

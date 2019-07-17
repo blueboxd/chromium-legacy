@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
 #include "base/scoped_observer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -18,8 +19,10 @@ class AutocompleteProviderListener;
 // An asynchronous autocomplete provider which receives input string and tries
 // to find the matches in an on device head model. This provider is designed to
 // help users get suggestions when they are in poor network.
-// All matches provided by this provider will have a relevance no greater than
-// 99, such that its matches will not show before any other providers.
+// By default, all matches provided by this provider will have a relevance no
+// greater than 99, such that its matches will not show before any other
+// providers; However the relevance can be changed to any arbitrary value by
+// Finch when the input is not classified as a URL.
 class OnDeviceHeadProvider : public AutocompleteProvider,
                              public component_updater::ServiceObserver {
  public:
@@ -29,10 +32,6 @@ class OnDeviceHeadProvider : public AutocompleteProvider,
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
   void Stop(bool clear_cached_results, bool due_to_user_inactivity) override;
   void AddProviderInfo(ProvidersInfo* provider_info) const override;
-
-  // Creates the on device head serving service from a local head model.
-  // Returns true if the creation is successful.
-  bool CreateOnDeviceHeadServingInstance();
 
   AutocompleteProviderClient* client() { return client_; }
 
@@ -59,8 +58,27 @@ class OnDeviceHeadProvider : public AutocompleteProvider,
   // fetches by DoSearch and then calls OnProviderUpdate.
   void SearchDone(std::unique_ptr<OnDeviceHeadProviderParams> params);
 
+  // Helper function which finds the model and return its filename from the
+  // model installed directory.
+  std::string GetModelFilenameFromInstalledDirectory() const;
+
+  // Helper function only for unit tests to set the test model directory.
+  static void OverrideEnumDirOnDeviceHeadSuggestForTest(
+      const base::FilePath file_path);
+
+  // The function to load pre installed model from DIR_ON_DEVICE_HEAD_SUGGEST
+  // which will be called during provider's initialization.
+  void LoadPreInstalledModel();
+
+  // Clears up the directory which contains the current model.
+  void DeleteInstalledDirectory();
+
   // Required by component_updater::ServiceObserver.
   void OnEvent(Events event, const std::string& id) override;
+
+  // Creates the on device head serving service from a local head model, which
+  // can return up to |provider_max_matches_| suggestions.
+  void CreateOnDeviceHeadServingInstance();
 
   AutocompleteProviderClient* client_;
   AutocompleteProviderListener* listener_;
@@ -82,6 +100,9 @@ class OnDeviceHeadProvider : public AutocompleteProvider,
   ScopedObserver<component_updater::ComponentUpdateService,
                  OnDeviceHeadProvider>
       observer_;
+
+  // The directory where the on device model and its manifest are installed.
+  base::FilePath installed_directory_;
 
   base::WeakPtrFactory<OnDeviceHeadProvider> weak_ptr_factory_{this};
 

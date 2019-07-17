@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
@@ -204,8 +203,8 @@ PluginPrivateFileSystemBackend::CreateFileStreamReader(
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-  return base::WrapUnique(FileStreamReader::CreateForFileSystemFile(
-      context, url, offset, expected_modification_time));
+  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+                                                   expected_modification_time);
 }
 
 std::unique_ptr<FileStreamWriter>

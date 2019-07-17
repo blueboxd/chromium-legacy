@@ -816,17 +816,13 @@ AwContentBrowserClient::CreateURLLoaderThrottlesOnIO(
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
-    auto* delegate = GetSafeBrowsingUrlCheckerDelegate();
-    if (delegate && !delegate->ShouldSkipRequestCheck(
-                        resource_context, request.url, frame_tree_node_id,
-                        -1 /* render_process_id */, -1 /* render_frame_id */,
-                        request.originated_from_service_worker)) {
-      auto safe_browsing_throttle =
-          safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
-                                                               wc_getter);
-      if (safe_browsing_throttle)
-        result.push_back(std::move(safe_browsing_throttle));
-    }
+    result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
+        base::BindOnce(
+            [](AwContentBrowserClient* client, content::ResourceContext*) {
+              return client->GetSafeBrowsingUrlCheckerDelegate();
+            },
+            base::Unretained(this)),
+        wc_getter, frame_tree_node_id, resource_context));
   }
 
   if (request.resource_type ==
@@ -858,6 +854,14 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
+  result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
+      base::BindOnce(
+          [](AwContentBrowserClient* client, content::ResourceContext*) {
+            return client->GetSafeBrowsingUrlCheckerDelegate();
+          },
+          base::Unretained(this)),
+      wc_getter, frame_tree_node_id, browser_context->GetResourceContext()));
+
   if (request.resource_type ==
       static_cast<int>(content::ResourceType::kMainFrame)) {
     const bool is_load_url =
@@ -877,7 +881,7 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
   return result;
 }
 
-safe_browsing::UrlCheckerDelegate*
+scoped_refptr<safe_browsing::UrlCheckerDelegate>
 AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -888,7 +892,7 @@ AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
         AwBrowserProcess::GetInstance()->GetSafeBrowsingWhitelistManager());
   }
 
-  return safe_browsing_url_checker_delegate_.get();
+  return safe_browsing_url_checker_delegate_;
 }
 
 void AwContentBrowserClient::ExposeInterfacesToMediaService(

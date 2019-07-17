@@ -18,6 +18,7 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
@@ -35,8 +36,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/origin_util.h"
 #include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/load_flags.h"
@@ -240,55 +239,14 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
                                                network::kDefaultAcceptHeader);
 
-  // Set the "DNT" header if necessary.
   blink::mojom::RendererPreferences renderer_preferences;
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
       browser_context, &renderer_preferences);
-  if (renderer_preferences.enable_do_not_track)
-    resource_request->headers.SetHeaderIfMissing(kDoNotTrackHeader, "1");
+  UpdateAdditionalHeadersForBrowserInitiatedRequest(
+      &resource_request->headers, browser_context,
+      /*should_update_existing_headers=*/false, renderer_preferences);
 
-  // Set the "Save-Data" header if necessary.
-  if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context) &&
-      !base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
-                                               "holdback_web", false)) {
-    resource_request->headers.SetHeaderIfMissing("Save-Data", "on");
-  }
-
-  // Set Fetch metadata headers if necessary.
-  bool experimental_features_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures);
-  if ((base::FeatureList::IsEnabled(network::features::kFetchMetadata) ||
-       experimental_features_enabled) &&
-      IsOriginSecure(resource_request->url)) {
-    resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Mode",
-                                                 "same-origin");
-
-    if (base::FeatureList::IsEnabled(
-            network::features::kFetchMetadataDestination) ||
-        experimental_features_enabled) {
-      ResourceType resource_type =
-          static_cast<ResourceType>(resource_request->resource_type);
-      std::string destination;
-      switch (resource_type) {
-        case ResourceType::kWorker:
-          destination = "worker";
-          break;
-        case ResourceType::kSharedWorker:
-          destination = "sharedworker";
-          break;
-        default:
-          NOTREACHED() << resource_request->resource_type;
-          break;
-      }
-      resource_request->headers.SetHeaderIfMissing("Sec-Fetch-Dest",
-                                                   destination);
-    }
-
-    // Note that the `Sec-Fetch-User` header is always false (and therefore
-    // omitted) for subresource requests. Also note that `Sec-Fetch-Site` is
-    // covered elsewhere - by the network::SetSecFetchSiteHeader function.
-  }
+  SetFetchMetadataHeadersForBrowserInitiatedRequest(resource_request);
 }
 
 void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(

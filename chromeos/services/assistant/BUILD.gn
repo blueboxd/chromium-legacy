@@ -41,16 +41,20 @@ component("lib") {
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/services/assistant/public/proto",
     "//components/account_id",
+    "//components/prefs",
     "//components/user_manager",
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
     "//services/network/public/cpp:cpp",
+    "//services/preferences/public/cpp",
+    "//services/preferences/public/mojom",
     "//ui/accessibility:ax_assistant",
   ]
 
   public_deps = [
     "//ash/public/cpp:cpp",
     "//chromeos/services/assistant/public:feature_flags",
+    "//chromeos/services/assistant/public/cpp:prefs",
     "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
@@ -175,6 +179,7 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//chromeos/services/assistant/public/cpp:prefs",
     "//chromeos/services/assistant/public/mojom",
     "//testing/gmock",
   ]

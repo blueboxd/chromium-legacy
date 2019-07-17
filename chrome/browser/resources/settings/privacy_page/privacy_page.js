@@ -389,17 +389,6 @@ Polymer({
     settings.navigateTo(settings.routes.SECURITY_KEYS);
   },
 
-  /**
-   * The sub-page title for the site or content settings.
-   * @return {string}
-   * @private
-   */
-  siteSettingsPageTitle_: function() {
-    return loadTimeData.getBoolean('enableSiteSettings') ?
-        loadTimeData.getString('siteSettings') :
-        loadTimeData.getString('contentSettings');
-  },
-
   /** @private */
   getProtectedContentLabel_: function(value) {
     return value ? this.i18n('siteSettingsProtectedContentEnable') :

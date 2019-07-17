@@ -7,8 +7,10 @@
 #include <algorithm>
 
 #include "base/big_endian.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/containers/span.h"
+#include "base/memory/weak_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -232,26 +234,35 @@ class InputReader {
   DISALLOW_COPY_AND_ASSIGN(InputReader);
 };
 
+}  // namespace
+
+class BundledExchangesParser::SharedBundleDataSource::Observer {
+ public:
+  Observer() {}
+  virtual ~Observer() {}
+  virtual void OnDisconnect() = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(Observer);
+};
+
 // A parser for bundle's metadata. This currently looks only at the "index"
 // section. This class owns itself and will self destruct after calling the
 // ParseMetadataCallback.
 // TODO(crbug.com/966753): Add support for the "manifest" section and "critical"
 // section.
-class MetadataParser {
+class BundledExchangesParser::MetadataParser
+    : BundledExchangesParser::SharedBundleDataSource::Observer {
  public:
-  MetadataParser(
-      mojo::PendingRemote<mojom::BundleDataSource> pending_data_source,
-      BundledExchangesParser::ParseMetadataCallback callback)
-      : data_source_(std::move(pending_data_source)),
-        callback_(std::move(callback)) {
-    // Unretained is safe because |this| owns |data_source_|.
-    data_source_.set_disconnect_handler(
-        base::BindOnce(&MetadataParser::OnDisconnect, base::Unretained(this)));
+  MetadataParser(scoped_refptr<SharedBundleDataSource> data_source,
+                 ParseMetadataCallback callback)
+      : data_source_(data_source), callback_(std::move(callback)) {
+    data_source_->AddObserver(this);
   }
+  ~MetadataParser() override { data_source_->RemoveObserver(this); }
 
   void Start() {
-    data_source_->GetSize(
-        base::BindOnce(&MetadataParser::DidGetSize, base::Unretained(this)));
+    data_source_->GetSize(base::BindOnce(&MetadataParser::DidGetSize,
+                                         weak_factory_.GetWeakPtr()));
   }
 
  private:
@@ -266,7 +277,7 @@ class MetadataParser {
                            kMaxCBORItemHeaderSize * 2);
     data_source_->Read(0, length,
                        base::BindOnce(&MetadataParser::ParseBundleHeader,
-                                      base::Unretained(this), length));
+                                      weak_factory_.GetWeakPtr(), length));
   }
 
   // Step 1-15 of
@@ -423,7 +434,7 @@ class MetadataParser {
     data_source_->Read(
         index_section_offset, index_section_length,
         base::BindOnce(&MetadataParser::ParseIndexSection,
-                       base::Unretained(this), index_section_length));
+                       weak_factory_.GetWeakPtr(), index_section_length));
   }
 
   // Step 1. of
@@ -462,8 +473,8 @@ class MetadataParser {
     data_source_->Read(
         responses_section_offset, length,
         base::BindOnce(&MetadataParser::ParseResponsesSectionHeader,
-                       base::Unretained(this), std::move(*index_section_value),
-                       length));
+                       weak_factory_.GetWeakPtr(),
+                       std::move(*index_section_value), length));
   }
 
   // Step 2- of
@@ -622,44 +633,46 @@ class MetadataParser {
     delete this;
   }
 
-  void OnDisconnect() {
+  // Implements SharedBundleDataSource::Observer.
+  void OnDisconnect() override {
     RunCallbackAndDestroy(nullptr, "Data source disconnected.");
   }
 
-  mojo::Remote<mojom::BundleDataSource> data_source_;
-  BundledExchangesParser::ParseMetadataCallback callback_;
+  scoped_refptr<SharedBundleDataSource> data_source_;
+  ParseMetadataCallback callback_;
   uint64_t size_;
   // name -> (offset, length)
   std::map<std::string, std::pair<uint64_t, uint64_t>> section_offsets_;
   std::vector<mojom::BundleIndexItemPtr> items_;
   GURL manifest_url_;
 
+  base::WeakPtrFactory<MetadataParser> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(MetadataParser);
 };
 
 // A parser for reading single item from the responses section. This class owns
 // itself and will self destruct after calling the ParseResponseCallback.
-class ResponseParser {
+class BundledExchangesParser::ResponseParser
+    : public BundledExchangesParser::SharedBundleDataSource::Observer {
  public:
-  ResponseParser(
-      mojo::PendingRemote<mojom::BundleDataSource> pending_data_source,
-      uint64_t response_offset,
-      uint64_t response_length,
-      BundledExchangesParser::ParseResponseCallback callback)
-      : data_source_(std::move(pending_data_source)),
+  ResponseParser(scoped_refptr<SharedBundleDataSource> data_source,
+                 uint64_t response_offset,
+                 uint64_t response_length,
+                 BundledExchangesParser::ParseResponseCallback callback)
+      : data_source_(data_source),
         response_offset_(response_offset),
         response_length_(response_length),
         callback_(std::move(callback)) {
-    // Unretained is safe because |this| owns |data_source_|.
-    data_source_.set_disconnect_handler(
-        base::BindOnce(&ResponseParser::OnDisconnect, base::Unretained(this)));
+    data_source_->AddObserver(this);
   }
+  ~ResponseParser() override { data_source_->RemoveObserver(this); }
 
   void Start(uint64_t buffer_size = kInitialBufferSizeForResponse) {
     const uint64_t length = std::min(response_length_, buffer_size);
     data_source_->Read(response_offset_, length,
                        base::BindOnce(&ResponseParser::ParseResponseHeader,
-                                      base::Unretained(this), length));
+                                      weak_factory_.GetWeakPtr(), length));
   }
 
  private:
@@ -804,42 +817,85 @@ class ResponseParser {
     delete this;
   }
 
-  void OnDisconnect() {
+  // Implements SharedBundleDataSource::Observer.
+  void OnDisconnect() override {
     RunCallbackAndDestroy(nullptr, "Data source disconnected.");
   }
 
-  mojo::Remote<mojom::BundleDataSource> data_source_;
+  scoped_refptr<SharedBundleDataSource> data_source_;
   uint64_t response_offset_;
   uint64_t response_length_;
-  BundledExchangesParser::ParseResponseCallback callback_;
+  ParseResponseCallback callback_;
+
+  base::WeakPtrFactory<ResponseParser> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResponseParser);
 };
 
-}  // namespace
+BundledExchangesParser::SharedBundleDataSource::SharedBundleDataSource(
+    mojo::PendingRemote<mojom::BundleDataSource> pending_data_source)
+    : data_source_(std::move(pending_data_source)) {
+  data_source_.set_disconnect_handler(base::BindOnce(
+      &SharedBundleDataSource::OnDisconnect, base::Unretained(this)));
+}
+
+void BundledExchangesParser::SharedBundleDataSource::AddObserver(
+    Observer* observer) {
+  DCHECK(observers_.end() == observers_.find(observer));
+  observers_.insert(observer);
+}
+
+void BundledExchangesParser::SharedBundleDataSource::RemoveObserver(
+    Observer* observer) {
+  auto it = observers_.find(observer);
+  DCHECK(observers_.end() != it);
+  observers_.erase(it);
+}
+
+BundledExchangesParser::SharedBundleDataSource::~SharedBundleDataSource() =
+    default;
+
+void BundledExchangesParser::SharedBundleDataSource::OnDisconnect() {
+  for (auto* observer : observers_)
+    observer->OnDisconnect();
+}
+
+void BundledExchangesParser::SharedBundleDataSource::GetSize(
+    GetSizeCallback callback) {
+  data_source_->GetSize(std::move(callback));
+}
+
+void BundledExchangesParser::SharedBundleDataSource::Read(
+    uint64_t offset,
+    uint64_t length,
+    ReadCallback callback) {
+  data_source_->Read(offset, length, std::move(callback));
+}
 
 BundledExchangesParser::BundledExchangesParser(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+    mojo::PendingReceiver<mojom::BundledExchangesParser> receiver,
+    mojo::PendingRemote<mojom::BundleDataSource> data_source)
+    : receiver_(this, std::move(receiver)),
+      data_source_(base::MakeRefCounted<SharedBundleDataSource>(
+          std::move(data_source))) {
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &base::DeletePointer<BundledExchangesParser>, base::Unretained(this)));
+}
 
 BundledExchangesParser::~BundledExchangesParser() = default;
 
-void BundledExchangesParser::ParseMetadata(
-    mojo::PendingRemote<mojom::BundleDataSource> data_source,
-    ParseMetadataCallback callback) {
+void BundledExchangesParser::ParseMetadata(ParseMetadataCallback callback) {
   MetadataParser* parser =
-      new MetadataParser(std::move(data_source), std::move(callback));
+      new MetadataParser(data_source_, std::move(callback));
   parser->Start();
 }
 
 void BundledExchangesParser::ParseResponse(
-    mojo::PendingRemote<mojom::BundleDataSource> data_source,
     uint64_t response_offset,
     uint64_t response_length,
     ParseResponseCallback callback) {
-  ResponseParser* parser =
-      new ResponseParser(std::move(data_source), response_offset,
-                         response_length, std::move(callback));
+  ResponseParser* parser = new ResponseParser(
+      data_source_, response_offset, response_length, std::move(callback));
   parser->Start();
 }
 

@@ -364,7 +364,7 @@ class BrowserView : public BrowserWindow,
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool enable_stay_in_chrome,
-      bool show_remember_selection,
+      bool show_persistence_options,
       IntentPickerResponse callback) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(

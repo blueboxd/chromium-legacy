@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_installed_script_reader.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"

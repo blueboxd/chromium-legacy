@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 
 namespace {
@@ -57,11 +58,9 @@ void AssistantSetupController::OnDeepLinkReceived(
 }
 
 void AssistantSetupController::OnOptInButtonPressed() {
-  mojom::ConsentStatus consent_status =
-      VoiceInteractionController::Get()->consent_status().value_or(
-          mojom::ConsentStatus::kUnknown);
-
-  if (consent_status == mojom::ConsentStatus::kUnauthorized) {
+  if (assistant_controller_->prefs_controller()->prefs()->GetInteger(
+          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+      chromeos::assistant::prefs::ConsentStatus::kUnauthorized) {
     assistant_controller_->OpenUrl(assistant::util::CreateLocalizedGURL(
         kGSuiteAdministratorInstructionsUrl));
   } else {

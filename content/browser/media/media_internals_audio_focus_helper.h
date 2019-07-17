@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
@@ -72,7 +72,7 @@ class MediaInternalsAudioFocusHelper
 
   bool enabled_ = false;
 
-  mojo::Binding<media_session::mojom::AudioFocusObserver> binding_{this};
+  mojo::Receiver<media_session::mojom::AudioFocusObserver> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsAudioFocusHelper);
 };

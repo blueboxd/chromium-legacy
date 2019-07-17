@@ -120,6 +120,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     PaymentRequestImpl mPaymentRequest;
     PaymentRequestUI mUI;
 
+    private final boolean mDelayStartActivity;
+
     private final AtomicReference<WebContents> mWebContentsRef;
 
     private final String mTestFilePath;
@@ -129,6 +131,11 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     private final MainActivityStartCallback mCallback;
 
     public PaymentRequestTestRule(String testFileName, MainActivityStartCallback callback) {
+        this(testFileName, callback, false);
+    }
+
+    public PaymentRequestTestRule(
+            String testFileName, MainActivityStartCallback callback, boolean delayStartActivity) {
         super();
         mReadyForInput = new PaymentsCallbackHelper<>();
         mReadyToPay = new PaymentsCallbackHelper<>();
@@ -155,6 +162,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 : UrlUtils.getIsolatedTestFilePath(
                         String.format("components/test/data/payments/%s", testFileName));
         mCallback = callback;
+        mDelayStartActivity = delayStartActivity;
     }
 
     public PaymentRequestTestRule(String testFileName) {
@@ -1241,7 +1249,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                startMainActivity();
+                if (!mDelayStartActivity) startMainActivity();
                 base.evaluate();
             }
         }, description);

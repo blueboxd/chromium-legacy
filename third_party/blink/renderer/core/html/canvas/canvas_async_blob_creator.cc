@@ -82,11 +82,12 @@ void RecordIdleTaskStatusHistogram(
 
 void RecordInitiateEncodingTimeHistogram(ImageEncodingMimeType mime_type,
                                          base::TimeDelta elapsed_time) {
+  // TODO(crbug.com/983261) Change this to use UmaHistogramMicrosecondsTimes.
   if (mime_type == kMimeTypePng) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.InitiateEncodingDelay.PNG", elapsed_time);
   } else if (mime_type == kMimeTypeJpeg) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.InitiateEncodingDelay.JPEG", elapsed_time);
   }
 }
@@ -94,10 +95,10 @@ void RecordInitiateEncodingTimeHistogram(ImageEncodingMimeType mime_type,
 void RecordCompleteEncodingTimeHistogram(ImageEncodingMimeType mime_type,
                                          base::TimeDelta elapsed_time) {
   if (mime_type == kMimeTypePng) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.CompleteEncodingDelay.PNG", elapsed_time);
   } else if (mime_type == kMimeTypeJpeg) {
-    UmaHistogramMicrosecondsTimes(
+    UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
         "Blink.Canvas.ToBlob.CompleteEncodingDelay.JPEG", elapsed_time);
   }
 }

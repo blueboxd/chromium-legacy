@@ -74,7 +74,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
 
     bubble_ = IntentPickerBubbleView::CreateBubbleView(
         std::move(app_info), enable_stay_in_chrome,
-        /*show_remember_selection=*/true,
+        /*show_persistence_options=*/true,
         base::Bind(&IntentPickerBubbleViewTest::OnBubbleClosed,
                    base::Unretained(this)),
         web_contents);

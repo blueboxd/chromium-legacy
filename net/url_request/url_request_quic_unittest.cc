@@ -60,7 +60,8 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
                                            OK);
     // To simplify the test, and avoid the race with the HTTP request, we force
     // QUIC for these requests.
-    params->origins_to_force_quic_on.insert(HostPortPair(kTestServerHost, 443));
+    params->quic_params.origins_to_force_quic_on.insert(
+        HostPortPair(kTestServerHost, 443));
     params->enable_quic = true;
     params->enable_server_push_cancellation = true;
     context_->set_host_resolver(host_resolver_.get());

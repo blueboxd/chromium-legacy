@@ -43,6 +43,8 @@ jumbo_component("cpp") {
     "network_quality_tracker.h",
     "network_switches.cc",
     "network_switches.h",
+    "request_mode.cc",
+    "request_mode.h",
     "resolve_host_client_base.cc",
     "resolve_host_client_base.h",
     "shared_url_loader_factory.cc",

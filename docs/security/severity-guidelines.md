@@ -27,7 +27,8 @@ milestone (or earliest milestone affected). For critical severity bugs,
 [SheriffBot](https://www.chromium.org/issue-tracking/autotriage) will
 automatically assign the milestone.
 
-#### For critical vulnerabilities, we aim to deploy the patch to all Chrome users in under 30 days.
+**For critical severity vulnerabilities, we aim to deploy the patch to all
+Chrome users in under 30 days.**
 
 Critical vulnerability details may be made public in 60 days,
 in accordance with Google's general [vulnerability disclosure recommendations](https://security.googleblog.com/2010/07/rebooting-responsible-disclosure-focus.html),
@@ -60,8 +61,8 @@ milestone (or earliest milestone affected). For high severity bugs,
 [SheriffBot](https://www.chromium.org/issue-tracking/autotriage) will
 automatically assign the milestone.
 
-For high severity vulnerabilities, we aim to deploy the patch to all Chrome
-users in under 60 days.
+**For high severity vulnerabilities, we aim to deploy the patch to all Chrome
+users in under 60 days.**
 
 Example bugs:
 
@@ -88,9 +89,9 @@ Medium severity bugs allow attackers to read or modify limited amounts of
 information, or are not harmful on their own but potentially harmful when
 combined with other bugs. This includes information leaks that could be useful
 in potential memory corruption exploits, or exposure of sensitive user
-information that an attacker can exfiltrate. Bugs that would normally rated at a
-higher severity level with unusual mitigating factors may be rated as medium
-severity.
+information that an attacker can exfiltrate. Bugs that would normally be rated
+at a higher severity level with unusual mitigating factors may be rated as
+medium severity.
 
 They are normally assigned priority **Pri-1** and assigned to the current stable
 milestone (or earliest milestone affected). If the fix seems too complicated to
@@ -141,4 +142,3 @@ Example bugs:
 
 The [security FAQ](faq.md) covers many of the cases that we do not consider to
 be security bugs, such as [denial of service](faq.md#TOC-Are-denial-of-service-issues-considered-security-bugs-).
-

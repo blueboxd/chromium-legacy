@@ -1,0 +1,39 @@
+# These tests currently fail when run with --enable-features=NavigationLoaderOnUI
+# See https://crbug.com/824840
+
+# service worker
+Bug(none) external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
+Bug(none) external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+Bug(none) external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
+Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
+Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
+Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
+Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
+Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
+Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
+Bug(none) http/tests/devtools/service-workers/service-workers-bypass-for-network-navigation.js [ Failure ]
+Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
+Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
+
+# signed exchange
+Bug(none) external/wpt/signed-exchange [ Skip ]
+Bug(none) virtual/sxg-subresource [ Skip ]
+Bug(none) virtual/sxg-with-network-service [ Skip ]
+Bug(none) http/tests/devtools/sxg [ Skip ]
+Bug(none) http/tests/loading/sxg [ Skip ]
+
+# appcache
+Bug(none) external/wpt/html/browsers/offline/appcache/appcache-iframe.https.html [ Timeout ]
+Bug(none) http/tests/appcache/fallback.html [ Timeout ]
+Bug(none) http/tests/appcache/main-resource-hash.html [ Timeout ]
+Bug(none) http/tests/appcache/main-resource-redirect.html [ Timeout ]
+Bug(none) http/tests/appcache/offline-access.html [ Timeout ]
+Bug(none) http/tests/appcache/remove-cache.html [ Timeout ]
+Bug(none) http/tests/appcache/top-frame-2.html [ Timeout ]
+Bug(none) virtual/conditional-appcache-delay/http/tests/loading/appcache-delay/appcache-loads-subresource.html [ Failure ]
+
+Bug(none) http/tests/misc/xhtml.php [ Failure ]

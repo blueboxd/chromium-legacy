@@ -35,8 +35,6 @@ void AssistantStateProxy::AddObserver(
     observer->OnVoiceInteractionContextEnabled(context_enabled_.value());
   if (hotword_enabled_.has_value())
     observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
-  if (consent_status_.has_value())
-    observer->OnVoiceInteractionConsentStatusUpdated(consent_status_.value());
   if (hotword_always_on_.has_value())
     observer->OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
   if (allowed_state_.has_value())
@@ -77,13 +75,6 @@ void AssistantStateProxy::OnVoiceInteractionHotwordEnabled(bool enabled) {
   hotword_enabled_ = enabled;
   for (auto& observer : observers_)
     observer.OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
-}
-
-void AssistantStateProxy::OnVoiceInteractionConsentStatusUpdated(
-    mojom::ConsentStatus consent_status) {
-  consent_status_ = consent_status;
-  for (auto& observer : observers_)
-    observer.OnVoiceInteractionConsentStatusUpdated(consent_status_.value());
 }
 
 void AssistantStateProxy::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {

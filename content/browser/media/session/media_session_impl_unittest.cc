@@ -140,9 +140,7 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     std::unique_ptr<TestAudioFocusObserver> observer =
         std::make_unique<TestAudioFocusObserver>();
 
-    media_session::mojom::AudioFocusObserverPtr observer_ptr;
-    observer->BindToMojoRequest(mojo::MakeRequest(&observer_ptr));
-    audio_focus_ptr_->AddObserver(std::move(observer_ptr));
+    audio_focus_ptr_->AddObserver(observer->BindNewPipeAndPassRemote());
     audio_focus_ptr_.FlushForTesting();
 
     return observer;

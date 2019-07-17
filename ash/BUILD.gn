@@ -192,6 +192,8 @@ component("ash") {
     "assistant/assistant_notification_controller.h",
     "assistant/assistant_notification_expiry_monitor.cc",
     "assistant/assistant_notification_expiry_monitor.h",
+    "assistant/assistant_prefs_controller.cc",
+    "assistant/assistant_prefs_controller.h",
     "assistant/assistant_screen_context_controller.cc",
     "assistant/assistant_screen_context_controller.h",
     "assistant/assistant_settings.cc",
@@ -1289,7 +1291,7 @@ component("ash") {
     "//ash/resources/vector_icons",
     "//ash/strings",
     "//ash/wayland",
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//mojo/public/cpp/system",
     "//services/device/public/cpp/bluetooth",
     "//services/device/public/mojom",
@@ -1350,6 +1352,7 @@ component("ash") {
     # TODO(https://crbug.com/644355): Remove Shill dependencies.
     "//chromeos/network",
     "//chromeos/services/assistant/public:feature_flags",
+    "//chromeos/services/assistant/public/cpp:prefs",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/network_config/public/cpp",
@@ -1447,6 +1450,7 @@ component("ash") {
   ]
 
   allow_circular_includes_from = [
+    "//ash/assistant/ui",
     "//components/exo",
     "//components/exo/wayland",
   ]
@@ -1536,7 +1540,7 @@ static_library("ash_shell_lib_with_content") {
     "//chromeos/services/network_config/public/cpp:manifest",
     "//chromeos/services/network_config/public/cpp:test_support",
     "//chromeos/system",
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//components/services/font:lib",
     "//components/services/font/public/interfaces",
     "//content",
@@ -1606,6 +1610,7 @@ test("ash_unittests") {
     "app_menu/notification_overflow_view_unittest.cc",
     "assistant/assistant_controller_unittest.cc",
     "assistant/assistant_notification_controller_unittest.cc",
+    "assistant/assistant_prefs_controller_unittest.cc",
     "assistant/assistant_screen_context_controller_unittest.cc",
     "assistant/model/assistant_query_history_unittest.cc",
     "assistant/ui/assistant_container_view_unittest.cc",

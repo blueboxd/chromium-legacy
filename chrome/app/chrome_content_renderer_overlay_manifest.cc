@@ -11,7 +11,7 @@
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/common/search.mojom.h"
 #include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"

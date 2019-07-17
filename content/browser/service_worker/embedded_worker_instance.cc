@@ -22,13 +22,13 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/url_schemes.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -734,7 +734,7 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
       status_(EmbeddedWorkerStatus::STOPPED),
       starting_phase_(NOT_STARTING),
       restart_count_(0),
-      thread_id_(kInvalidEmbeddedWorkerThreadId),
+      thread_id_(ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId),
       instance_host_binding_(this),
       devtools_attached_(false),
       network_accessed_for_script_(false),
@@ -1109,7 +1109,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   lifetime_tracker_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;
   starting_phase_ = NOT_STARTING;
-  thread_id_ = kInvalidEmbeddedWorkerThreadId;
+  thread_id_ = ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId;
 }
 
 void EmbeddedWorkerInstance::OnSetupFailed(

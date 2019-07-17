@@ -5,8 +5,11 @@
 #include <wayland-server.h>
 #include <memory>
 
+#include "base/strings/stringprintf.h"
+#include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/display_switches.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
@@ -586,14 +589,39 @@ TEST_P(WaylandScreenTest, SetBufferScale) {
   wl_surface_send_enter(surface_->resource(), output_->resource());
 
   // Change the scale of the output.  Windows looking into that output must get
-  // the new scale and update scale of their buffers.
-  const int32_t kNewScale = 3;
-  EXPECT_CALL(*surface_, SetBufferScale(kNewScale));
-  output_->SetScale(kNewScale);
+  // the new scale and update scale of their buffers.  The default UI scale
+  // equals the output scale.
+  const int32_t kTripleScale = 3;
+  EXPECT_CALL(*surface_, SetBufferScale(kTripleScale));
+  output_->SetScale(kTripleScale);
 
   Sync();
 
-  EXPECT_EQ(window_->buffer_scale(), kNewScale);
+  EXPECT_EQ(window_->buffer_scale(), kTripleScale);
+  EXPECT_EQ(window_->ui_scale_, kTripleScale);
+
+  // Now simulate the --force-device-scale-factor=1.5
+  const float kForcedUIScale = 1.5;
+  base::test::ScopedCommandLine command_line;
+  command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      switches::kForceDeviceScaleFactor,
+      base::StringPrintf("%.1f", kForcedUIScale));
+  display::Display::ResetForceDeviceScaleFactorForTesting();
+
+  // Change the scale of the output again.  Windows must update scale of
+  // their buffers but the UI scale must get the forced value.
+  const int32_t kDoubleScale = 2;
+  // Question ourselves before questioning others!
+  EXPECT_NE(kForcedUIScale, kDoubleScale);
+  EXPECT_CALL(*surface_, SetBufferScale(kDoubleScale));
+  output_->SetScale(kDoubleScale);
+
+  Sync();
+
+  EXPECT_EQ(window_->buffer_scale(), kDoubleScale);
+  EXPECT_EQ(window_->ui_scale_, kForcedUIScale);
+
+  display::Display::ResetForceDeviceScaleFactorForTesting();
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

@@ -56,6 +56,8 @@ run_jsbundler("switch_access_copied_files") {
     "icons/scrollUpOrBackward.svg",
     "icons/select.svg",
     "icons/showContextMenu.svg",
+    "icons/textSelectionEnd.svg",
+    "icons/textSelectionStart.svg",
     "key_event_handler.js",
     "menu_manager.js",
     "menu_panel.css",

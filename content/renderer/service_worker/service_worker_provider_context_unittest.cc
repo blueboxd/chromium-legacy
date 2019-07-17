@@ -25,6 +25,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -449,8 +450,11 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
       std::move(controller_info1), loader_factory_);
 
   // The subresource loader factory must be available.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory1 = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory1);
   network::mojom::URLLoaderFactory* subresource_loader_factory1 =
-      provider_context->GetSubresourceLoaderFactory();
+      provider_context->GetSubresourceLoaderFactoryInternal();
   ASSERT_NE(nullptr, subresource_loader_factory1);
 
   // Performing a request should reach the controller.
@@ -492,8 +496,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // Subresource loader factory must be available, and should be the same
   // one as we got before.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory2 = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory2);
+  EXPECT_EQ(wrapped_loader_factory1, wrapped_loader_factory2);
   network::mojom::URLLoaderFactory* subresource_loader_factory2 =
-      provider_context->GetSubresourceLoaderFactory();
+      provider_context->GetSubresourceLoaderFactoryInternal();
   ASSERT_NE(nullptr, subresource_loader_factory2);
   EXPECT_EQ(subresource_loader_factory1, subresource_loader_factory2);
 
@@ -527,6 +535,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
 
   // Subresource loader factory must not be available.
   EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
+  EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactoryInternal());
 
   // The SetController() call results in another Mojo call to
   // ControllerServiceWorkerConnector.UpdateController(). Flush that interface
@@ -568,8 +577,11 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   container_ptr.FlushForTesting();
 
   // Subresource loader factory must be available.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory4 = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory4);
   auto* subresource_loader_factory4 =
-      provider_context->GetSubresourceLoaderFactory();
+      provider_context->GetSubresourceLoaderFactoryInternal();
   ASSERT_NE(nullptr, subresource_loader_factory4);
 
   // The SetController() call results in another Mojo call to
@@ -624,6 +636,7 @@ TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
 
   // Subresource loader factory must not be available.
   EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
+  EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactoryInternal());
 }
 
 TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
@@ -734,6 +747,62 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   provider_context->PingContainerHost(base::DoNothing());
   provider_context->DispatchNetworkQuiet();
   provider_context->NotifyExecutionReady();
+}
+
+TEST_F(ServiceWorkerProviderContextTest,
+       SubresourceLoaderFactoryUseableAfterContextDestructs) {
+  EnableNetworkService();
+
+  // Make the object host for .controller.
+  auto mock_service_worker_object_host =
+      std::make_unique<MockServiceWorkerObjectHost>(201 /* version_id */);
+  ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+  blink::mojom::ServiceWorkerObjectInfoPtr object_info =
+      mock_service_worker_object_host->CreateObjectInfo();
+  EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+
+  // Make the ControllerServiceWorkerInfo.
+  FakeControllerServiceWorker fake_controller;
+  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
+  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
+  fake_controller.Clone(mojo::MakeRequest(&controller_ptr));
+  controller_info->mode =
+      blink::mojom::ControllerServiceWorkerMode::kControlled;
+  controller_info->object_info = std::move(object_info);
+  controller_info->endpoint = controller_ptr.PassInterface();
+
+  // Make the container host and container pointers.
+  blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&host_ptr);
+  blink::mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  blink::mojom::ServiceWorkerContainerAssociatedRequest container_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
+
+  // Make the ServiceWorkerProviderContext, pasing it the controller, container,
+  // and container host.
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      std::move(container_request), host_ptr.PassInterface(),
+      std::move(controller_info), loader_factory_);
+
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      wrapped_loader_factory = provider_context->GetSubresourceLoaderFactory();
+  ASSERT_NE(nullptr, wrapped_loader_factory);
+
+  // Clear our context and ensure that we don't crash when later trying to use
+  // the factory.
+  provider_context.reset();
+
+  network::ResourceRequest request;
+  request.url = GURL("https://www.example.com/random.js");
+  request.resource_type = static_cast<int>(ResourceType::kSubResource);
+  network::mojom::URLLoaderPtr loader;
+  network::TestURLLoaderClient loader_client;
+  wrapped_loader_factory->CreateLoaderAndStart(
+      mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
+      request, loader_client.CreateInterfacePtr(),
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
 }  // namespace service_worker_provider_context_unittest

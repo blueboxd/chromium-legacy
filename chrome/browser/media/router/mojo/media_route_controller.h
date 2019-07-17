@@ -92,7 +92,8 @@ class MediaRouteController
   // The second item is a bound MediaStatusObserverPtr whose binding is owned
   // by |this|.
   using InitMojoResult =
-      std::pair<mojom::MediaControllerRequest, mojom::MediaStatusObserverPtr>;
+      std::pair<mojo::PendingReceiver<mojom::MediaController>,
+                mojom::MediaStatusObserverPtr>;
 
   // Constructs a MediaRouteController that forwards media commands to
   // |mojo_media_controller_|. |media_router_| will be notified when the

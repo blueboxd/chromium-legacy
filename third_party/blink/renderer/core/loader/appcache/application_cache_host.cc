@@ -370,29 +370,6 @@ void ApplicationCacheHost::ErrorEventRaised(
   }
 }
 
-void ApplicationCacheHost::SelectCacheWithManifest(const KURL& manifest_url) {
-  DCHECK(document_loader_);
-  LocalFrame* frame = document_loader_->GetFrame();
-  Document* document = frame->GetDocument();
-  if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
-    // Prevent sandboxes from establishing application caches.
-    SelectCacheWithoutManifest();
-    return;
-  }
-  if (document->IsSecureContext()) {
-    UseCounter::Count(document,
-                      WebFeature::kApplicationCacheManifestSelectSecureOrigin);
-  } else {
-    Deprecation::CountDeprecation(
-        document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
-    Deprecation::CountDeprecationCrossOriginIframe(
-        *document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
-    HostsUsingFeatures::CountAnyWorld(
-        *document, HostsUsingFeatures::Feature::
-                       kApplicationCacheManifestSelectInsecureHost);
-  }
-}
-
 void ApplicationCacheHost::GetAssociatedCacheInfo(
     ApplicationCacheHost::CacheInfo* info) {
   if (!backend_host_.is_bound())

@@ -8,6 +8,7 @@ FAIL an aborted signal should cause the writable stream to reject with an AbortE
 FAIL all the AbortError objects should be the same object promise_test: Unhandled rejection with value: "failed to abort"
 FAIL preventCancel should prevent canceling the readable assert_throws: pipeTo should reject function "function() { throw e }" threw "failed to abort" with type "string", not an object
 FAIL preventAbort should prevent aborting the readable assert_throws: pipeTo should reject function "function() { throw e }" threw "failed to abort" with type "string", not an object
+FAIL preventCancel and preventAbort should prevent canceling the readable and aborting the readable assert_throws: pipeTo should reject function "function() { throw e }" threw "failed to abort" with type "string", not an object
 FAIL abort should prevent further reads assert_unreached: Should have rejected: pipeTo should reject Reached unreachable code
 FAIL all pending writes should complete on abort assert_unreached: Should have rejected: pipeTo should reject Reached unreachable code
 FAIL a rejection from underlyingSource.cancel() should be returned by pipeTo() assert_throws: pipeTo should reject function "function() { throw e }" threw "failed to abort" with type "string", not an object

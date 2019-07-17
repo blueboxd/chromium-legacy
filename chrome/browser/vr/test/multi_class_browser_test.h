@@ -55,11 +55,28 @@
     MULTI_CLASS_RUNNER_NAME_(test_name)::ActuallyRunTestOnMainThread(this); \
   }
 
+#define DEFINE_INCOGNITO_BROWSER_TEST_(test_class, test_name)               \
+  IN_PROC_BROWSER_TEST_F(test_class, test_name##Incognito) {                \
+    auto* browser = CreateIncognitoBrowser();                               \
+    SetBrowser(browser);                                                    \
+    MULTI_CLASS_RUNNER_NAME_(test_name)::ActuallyRunTestOnMainThread(this); \
+  }
+
 #define IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(test_class1, test_class2,    \
                                             base_class, test_name)       \
   DEFINE_RUN_TEST_IMPL_(test_name, base_class)                           \
   DEFINE_BROWSER_TEST_(test_class1, test_name)                           \
   DEFINE_BROWSER_TEST_(test_class2, test_name)                           \
+  void MULTI_CLASS_RUNNER_NAME_(test_name)::ActuallyRunTestOnMainThread( \
+      base_class* t)
+
+#define IN_PROC_MULTI_CLASS_PLUS_INCOGNITO_BROWSER_TEST_F2(              \
+    test_class1, test_class2, base_class, test_name)                     \
+  DEFINE_RUN_TEST_IMPL_(test_name, base_class)                           \
+  DEFINE_BROWSER_TEST_(test_class1, test_name)                           \
+  DEFINE_BROWSER_TEST_(test_class2, test_name)                           \
+  DEFINE_INCOGNITO_BROWSER_TEST_(test_class1, test_name)                 \
+  DEFINE_INCOGNITO_BROWSER_TEST_(test_class2, test_name)                 \
   void MULTI_CLASS_RUNNER_NAME_(test_name)::ActuallyRunTestOnMainThread( \
       base_class* t)
 
@@ -70,5 +87,12 @@
   IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest, \
                                       WebXrVrWmrBrowserTest,    \
                                       WebXrVrBrowserTestBase, test_name)
+
+// The same as WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F, but runs the tests in
+// incognito mode as well.
+#define WEBXR_VR_ALL_RUNTIMES_PLUS_INCOGNITO_BROWSER_TEST_F(test_name)         \
+  IN_PROC_MULTI_CLASS_PLUS_INCOGNITO_BROWSER_TEST_F2(                          \
+      WebXrVrOpenVrBrowserTest, WebXrVrWmrBrowserTest, WebXrVrBrowserTestBase, \
+      test_name)
 
 #endif  // CHROME_BROWSER_VR_TEST_MULTI_CLASS_BROWSER_TEST_H_

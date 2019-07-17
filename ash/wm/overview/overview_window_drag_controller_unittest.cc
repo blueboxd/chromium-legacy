@@ -7,6 +7,9 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -196,6 +199,82 @@ TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
   event_generator->ReleaseLeftButton();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
+}
+
+class OverviewWindowDragControllerWithDesksTest : public AshTestBase {
+ public:
+  OverviewWindowDragControllerWithDesksTest() = default;
+  ~OverviewWindowDragControllerWithDesksTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
+
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewWindowDragControllerWithDesksTest);
+};
+
+TEST_F(OverviewWindowDragControllerWithDesksTest,
+       SwitchDragToCloseToNormalDragWhendraggedToDesk) {
+  UpdateDisplay("600x800");
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+
+  auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  auto* overview_session = overview_controller->overview_session();
+  const auto* overview_grid =
+      overview_session->GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(overview_grid);
+  const auto* desks_bar_view = overview_grid->desks_bar_view();
+  ASSERT_TRUE(desks_bar_view);
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(overview_item);
+  const gfx::RectF target_bounds_before_drag = overview_item->target_bounds();
+
+  // Drag with touch gesture only vertically without intersecting with the desk
+  // bar, which should trigger the drag-to-close mode.
+  const int item_center_to_desks_bar_bottom =
+      gfx::ToRoundedPoint(target_bounds_before_drag.CenterPoint()).y() -
+      desks_bar_view->GetBoundsInScreen().bottom();
+  EXPECT_GT(item_center_to_desks_bar_bottom, 0);
+  const int space_to_leave = 20;
+  auto* event_generator = GetEventGenerator();
+  StartDraggingItemBy(overview_item, 0,
+                      -(item_center_to_desks_bar_bottom - space_to_leave),
+                      /*by_touch_gestures=*/true, event_generator);
+  OverviewWindowDragController* drag_controller =
+      overview_session->window_drag_controller();
+  EXPECT_EQ(OverviewWindowDragController::DragBehavior::kDragToClose,
+            drag_controller->current_drag_behavior());
+  // Continue dragging vertically up such that the drag location intersects with
+  // the desks bar. Expect that normal drag is now triggered.
+  event_generator->MoveTouchBy(0, -(space_to_leave + 10));
+  EXPECT_EQ(OverviewWindowDragController::DragBehavior::kNormalDrag,
+            drag_controller->current_drag_behavior());
+  // Now it's possible to drop it on desk_2's mini_view.
+  auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
+  ASSERT_TRUE(desk_2_mini_view);
+  event_generator->MoveTouch(
+      desk_2_mini_view->GetBoundsInScreen().CenterPoint());
+  event_generator->ReleaseTouch();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(overview_grid->empty());
+  const Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
+  EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
 }
 
 }  // namespace ash

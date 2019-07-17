@@ -51,6 +51,9 @@ class CAPTURE_EXPORT SharedMemoryHandleProvider
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override;
+#if defined(OS_CHROMEOS)
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
+#endif
 
  private:
   // Accessor to mapped memory. When the first of these is created, the shared

@@ -59,9 +59,6 @@ class SearchModel;
 
 namespace {
 
-// The background corner radius in peeking and fullscreen state.
-constexpr int kAppListBackgroundRadius = 28;
-
 // The fraction of app list height that the app list must be released at in
 // order to transition to the next state.
 constexpr int kAppListThresholdDenominator = 3;
@@ -317,10 +314,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
-  }
-
-  int get_background_radius_for_test() const {
-    return kAppListBackgroundRadius;
   }
 
   views::View* GetAppListBackgroundShieldForTest();

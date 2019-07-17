@@ -32,7 +32,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
   // A callback for observing CodecImage destruction.  This is a repeating cb
   // since CodecImageGroup calls the same cb for multiple images.
-  using DestructionCb = base::RepeatingCallback<void(CodecImage*)>;
+  using DestructionCB = base::RepeatingCallback<void(CodecImage*)>;
 
   CodecImage();
 
@@ -45,7 +45,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
       scoped_refptr<TextureOwner> texture_owner,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
-  void SetDestructionCb(DestructionCb destruction_cb);
+  void SetDestructionCB(DestructionCB destruction_cb);
 
   // gl::GLImage implementation
   gfx::Size GetSize() override;
@@ -155,7 +155,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // Callback to notify about promotion hints and overlay position.
   PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
-  DestructionCb destruction_cb_;
+  DestructionCB destruction_cb_;
   bool was_tex_image_bound_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CodecImage);

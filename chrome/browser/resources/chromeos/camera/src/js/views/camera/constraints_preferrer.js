@@ -151,19 +151,20 @@ cca.views.camera.VideoConstraintsPreferrer = function(
   Object.seal(this);
 
   // Restore saved preferred recording fps per video device per resolution.
-  chrome.storage.local.get(
+  cca.proxy.browserProxy.localStorageGet(
       {deviceVideoFps: {}},
       (values) => this.prefFpses_ = values.deviceVideoFps);
 
   // Restore saved preferred video resolution per video device.
-  chrome.storage.local.get(
+  cca.proxy.browserProxy.localStorageGet(
       {deviceVideoResolution: {}},
       (values) => this.prefResolution_ = values.deviceVideoResolution);
 
   this.resolBroker_.registerChangeVideoPrefResolHandler(
       (deviceId, width, height) => {
         this.prefResolution_[deviceId] = {width, height};
-        chrome.storage.local.set({deviceVideoResolution: this.prefResolution_});
+        cca.proxy.browserProxy.localStorageSet(
+            {deviceVideoResolution: this.prefResolution_});
         if (cca.state.get('video-mode') && deviceId == this.deviceId_) {
           this.doReconfigureStream_();
         } else {
@@ -213,7 +214,7 @@ cca.views.camera.VideoConstraintsPreferrer.prototype.setPreferredConstFps_ =
       (fps) => cca.state.set(`_${fps}fps`, fps == prefFps));
   this.prefFpses_[deviceId] = this.prefFpses_[deviceId] || {};
   this.prefFpses_[deviceId][[width, height]] = prefFps;
-  chrome.storage.local.set({deviceVideoFps: this.prefFpses_});
+  cca.proxy.browserProxy.localStorageSet({deviceVideoFps: this.prefFpses_});
 };
 
 /**
@@ -242,7 +243,8 @@ cca.views.camera.VideoConstraintsPreferrer.prototype.updateResolutions =
       frontResolutions && toDeviceIdResols(...frontResolutions),
       backResolutions && toDeviceIdResols(...backResolutions),
       externalResolutions.map((ext) => toDeviceIdResols(...ext)));
-  chrome.storage.local.set({deviceVideoResolution: this.prefResolution_});
+  cca.proxy.browserProxy.localStorageSet(
+      {deviceVideoResolution: this.prefResolution_});
 };
 
 /**
@@ -282,7 +284,8 @@ cca.views.camera.VideoConstraintsPreferrer.prototype.updateValues = function(
   this.deviceId_ = deviceId;
   this.resolution_ = [width, height];
   this.prefResolution_[deviceId] = {width, height};
-  chrome.storage.local.set({deviceVideoResolution: this.prefResolution_});
+  cca.proxy.browserProxy.localStorageSet(
+      {deviceVideoResolution: this.prefResolution_});
   this.resolBroker_.notifyVideoPrefResolChange(deviceId, width, height);
 
   const fps = stream.getVideoTracks()[0].getSettings().frameRate;
@@ -377,14 +380,15 @@ cca.views.camera.PhotoResolPreferrer = function(
   Object.seal(this);
 
   // Restore saved preferred photo resolution per video device.
-  chrome.storage.local.get(
+  cca.proxy.browserProxy.localStorageGet(
       {devicePhotoResolution: {}},
       (values) => this.prefResolution_ = values.devicePhotoResolution);
 
   this.resolBroker_.registerChangePhotoPrefResolHandler(
       (deviceId, width, height) => {
         this.prefResolution_[deviceId] = {width, height};
-        chrome.storage.local.set({devicePhotoResolution: this.prefResolution_});
+        cca.proxy.browserProxy.localStorageSet(
+            {devicePhotoResolution: this.prefResolution_});
         if (!cca.state.get('video-mode') && deviceId == this.deviceId_) {
           this.doReconfigureStream_();
         } else {
@@ -423,7 +427,8 @@ cca.views.camera.PhotoResolPreferrer.prototype.updateResolutions = function(
       frontResolutions && toDeviceIdResols(...frontResolutions),
       backResolutions && toDeviceIdResols(...backResolutions),
       externalResolutions.map((ext) => toDeviceIdResols(...ext)));
-  chrome.storage.local.set({devicePhotoResolution: this.prefResolution_});
+  cca.proxy.browserProxy.localStorageSet(
+      {devicePhotoResolution: this.prefResolution_});
 };
 
 /**
@@ -438,7 +443,8 @@ cca.views.camera.PhotoResolPreferrer.prototype.updateValues = function(
     deviceId, stream, width, height) {
   this.deviceId_ = deviceId;
   this.prefResolution_[deviceId] = {width, height};
-  chrome.storage.local.set({devicePhotoResolution: this.prefResolution_});
+  cca.proxy.browserProxy.localStorageSet(
+      {devicePhotoResolution: this.prefResolution_});
   this.resolBroker_.notifyPhotoPrefResolChange(deviceId, width, height);
 };
 

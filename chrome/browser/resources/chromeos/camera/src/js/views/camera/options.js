@@ -191,7 +191,8 @@ cca.views.camera.Options = function(
   this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
 
   // Restore saved mirroring states per video device.
-  chrome.storage.local.get({mirroringToggles: {}},
+  cca.proxy.browserProxy.localStorageGet(
+      {mirroringToggles: {}},
       (values) => this.mirroringToggles_ = values.mirroringToggles);
   // Remove the deprecated values.
   cca.proxy.browserProxy.localStorageRemove(
@@ -316,7 +317,8 @@ cca.views.camera.Options.prototype.updateMirroring_ = function(facingMode) {
  */
 cca.views.camera.Options.prototype.saveMirroring_ = function() {
   this.mirroringToggles_[this.videoDeviceId_] = this.toggleMirror_.checked;
-  chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
+  cca.proxy.browserProxy.localStorageSet(
+      {mirroringToggles: this.mirroringToggles_});
 };
 
 /**

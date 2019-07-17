@@ -45,10 +45,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileUtil
                                 const FileSystemURL& url,
                                 base::File::Info* file_info,
                                 base::FilePath* platform_file) override;
+
+  // |this| must remain valid through the lifetime of the created enumerator.
   std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,
       bool recursive) override;
+
   base::File::Error GetLocalFilePath(FileSystemOperationContext* context,
                                      const FileSystemURL& file_system_url,
                                      base::FilePath* local_file_path) override;
@@ -78,7 +81,16 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) LocalFileUtil
       base::File::Info* file_info,
       base::FilePath* platform_path) override;
 
+ protected:
+  // Whether this item should not be accessed. For security reasons by default
+  // symlinks are not exposed through |this|. If the derived implementation
+  // can ensure safety of symlinks in some other way, it can lift this
+  // restriction by overriding this method.
+  virtual bool IsHiddenItem(const base::FilePath& local_file_path) const;
+
  private:
+  class LocalFileEnumerator;
+
   DISALLOW_COPY_AND_ASSIGN(LocalFileUtil);
 };
 

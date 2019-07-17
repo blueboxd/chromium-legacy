@@ -113,13 +113,13 @@ quic::QuicTime::Delta QuicStreamFactoryPeer::GetPingTimeout(
 
 bool QuicStreamFactoryPeer::GetRaceCertVerification(
     QuicStreamFactory* factory) {
-  return factory->race_cert_verification_;
+  return factory->params_.race_cert_verification;
 }
 
 void QuicStreamFactoryPeer::SetRaceCertVerification(
     QuicStreamFactory* factory,
     bool race_cert_verification) {
-  factory->race_cert_verification_ = race_cert_verification;
+  factory->params_.race_cert_verification = race_cert_verification;
 }
 
 quic::QuicAsyncStatus QuicStreamFactoryPeer::StartCertVerifyJob(

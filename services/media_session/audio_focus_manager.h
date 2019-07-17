@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/media_controller.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -62,7 +62,8 @@ class AudioFocusManager : public mojom::AudioFocusManager,
                                 const base::UnguessableToken& group_id,
                                 RequestAudioFocusCallback callback) override;
   void GetFocusRequests(GetFocusRequestsCallback callback) override;
-  void AddObserver(mojom::AudioFocusObserverPtr observer) override;
+  void AddObserver(
+      mojo::PendingRemote<mojom::AudioFocusObserver> observer) override;
   void SetSourceName(const std::string& name) override;
   void SetEnforcementMode(mojom::EnforcementMode mode) override;
 
@@ -72,10 +73,10 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   // mojom::MediaControllerManager.
   void CreateActiveMediaController(
-      mojom::MediaControllerRequest request) override;
+      mojo::PendingReceiver<mojom::MediaController> receiver) override;
   void CreateMediaControllerForSession(
-      mojom::MediaControllerRequest request,
-      const base::UnguessableToken& request_id) override;
+      mojo::PendingReceiver<mojom::MediaController> receiver,
+      const base::UnguessableToken& receiver_id) override;
   void SuspendAllSessions() override;
 
   // Bind to a mojom::AudioFocusManagerRequest.
@@ -144,7 +145,7 @@ class AudioFocusManager : public mojom::AudioFocusManager,
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.
-  mojo::InterfacePtrSet<mojom::AudioFocusObserver> observers_;
+  mojo::RemoteSet<mojom::AudioFocusObserver> observers_;
 
   // A stack of Mojo interface pointers and their requested audio focus type.
   // A MediaSession must abandon audio focus before its destruction.

@@ -104,7 +104,7 @@ jumbo_component("aura") {
     "//cc",
     "//cc/mojo_embedder",
     "//components/discardable_memory/client",
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",

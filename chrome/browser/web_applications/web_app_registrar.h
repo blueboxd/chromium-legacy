@@ -40,7 +40,7 @@ class WebAppRegistrar : public AppRegistrar {
   bool IsInstalled(const GURL& start_url) const override;
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
-  AppId FindAppIdForUrl(const GURL& url) const override;
+  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;

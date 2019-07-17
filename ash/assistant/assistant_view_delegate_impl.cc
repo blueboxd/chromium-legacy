@@ -9,6 +9,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -91,14 +92,14 @@ void AssistantViewDelegateImpl::RemoveUiModelObserver(
   assistant_controller_->ui_controller()->RemoveModelObserver(observer);
 }
 
-void AssistantViewDelegateImpl::AddVoiceInteractionControllerObserver(
-    DefaultVoiceInteractionObserver* observer) {
-  VoiceInteractionController::Get()->AddLocalObserver(observer);
+void AssistantViewDelegateImpl::AddAssistantPrefsObserver(
+    AssistantPrefsObserver* observer) {
+  assistant_controller_->prefs_controller()->AddObserver(observer);
 }
 
-void AssistantViewDelegateImpl::RemoveVoiceInteractionControllerObserver(
-    DefaultVoiceInteractionObserver* observer) {
-  VoiceInteractionController::Get()->RemoveLocalObserver(observer);
+void AssistantViewDelegateImpl::RemoveAssistantPrefsObserver(
+    AssistantPrefsObserver* observer) {
+  assistant_controller_->prefs_controller()->RemoveObserver(observer);
 }
 
 CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
@@ -111,9 +112,9 @@ void AssistantViewDelegateImpl::DownloadImage(
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 
-mojom::ConsentStatus AssistantViewDelegateImpl::GetConsentStatus() const {
-  return VoiceInteractionController::Get()->consent_status().value_or(
-      mojom::ConsentStatus::kUnknown);
+int AssistantViewDelegateImpl::GetConsentStatus() const {
+  return assistant_controller_->prefs_controller()->prefs()->GetInteger(
+      chromeos::assistant::prefs::kAssistantConsentStatus);
 }
 
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {

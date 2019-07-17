@@ -32,6 +32,8 @@ per-file network_sandbox_hook_linux.*.cc=file://sandbox/OWNERS
 per-file network_sandbox_win.*=file://sandbox/win/OWNERS
 
 per-file network_quality*=file://net/nqe/OWNERS
-per-file resource_scheduler*=tbansal@chromium.org
+
+per-file BUILD.gn=file://net/nqe/OWNERS
+per-file BUILD.gn=file://services/network/resource_scheduler/OWNERS
 
 # COMPONENT: Internals>Services>Network

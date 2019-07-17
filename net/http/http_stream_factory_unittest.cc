@@ -1186,7 +1186,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
                                host_port_pair.port());
     http_server_properties.SetQuicAlternativeService(
         server, alternative_service, expiration,
-        session_params.quic_supported_versions);
+        session_params.quic_params.supported_versions);
 
     HttpNetworkSession::Context session_context =
         SpdySessionDependencies::CreateSessionContext(&session_deps);
@@ -2253,13 +2253,14 @@ class HttpStreamFactoryBidirectionalQuicTest
   // Disable bidirectional stream over QUIC. This should be invoked before
   // Initialize().
   void DisableQuicBidirectionalStream() {
-    params_.quic_disable_bidirectional_streams = true;
+    params_.quic_params.disable_bidirectional_streams = true;
   }
 
   void Initialize() {
     params_.enable_quic = true;
-    params_.quic_supported_versions = quic::test::SupportedVersions(version_);
-    params_.quic_headers_include_h2_stream_dependency =
+    params_.quic_params.supported_versions =
+        quic::test::SupportedVersions(version_);
+    params_.quic_params.headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 
     HttpNetworkSession::Context session_context;
@@ -2296,7 +2297,7 @@ class HttpStreamFactoryBidirectionalQuicTest
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetQuicAlternativeService(
         url::SchemeHostPort(default_url_), alternative_service, expiration,
-        session_->params().quic_supported_versions);
+        session_->params().quic_params.supported_versions);
   }
 
   test::QuicTestPacketMaker& client_packet_maker() {

@@ -12,13 +12,13 @@ interface MediaControllerManager {
   // Creates a MediaController linked to a specific session with |request_id|.
   // This should match the |request_id| from the AudioFocusRequestState.
   CreateMediaControllerForSession(
-      MediaController& request,
+      pending_receiver<MediaController> receiver,
       mojo_base.mojom.UnguessableToken request_id);
 
   // Creates a MediaController linked to the active session. This will
   // automatically route commands to the correct session if the active session
   // changes. If there is no active session then commands will be no-ops.
-  CreateActiveMediaController(MediaController& request);
+  CreateActiveMediaController(pending_receiver<MediaController> receiver);
 
   // Suspends all media sessions.
   SuspendAllSessions();

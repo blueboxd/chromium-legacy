@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -64,7 +65,7 @@ class MediaController : public mojom::MediaController,
   void SetMediaSession(AudioFocusRequest* session);
   void ClearMediaSession();
 
-  void BindToInterface(mojom::MediaControllerRequest request);
+  void BindToInterface(mojo::PendingReceiver<mojom::MediaController> receiver);
   void FlushForTesting();
 
  private:
@@ -78,7 +79,7 @@ class MediaController : public mojom::MediaController,
   void Reset();
 
   // Holds mojo bindings for mojom::MediaController.
-  mojo::BindingSet<mojom::MediaController> bindings_;
+  mojo::ReceiverSet<mojom::MediaController> receivers_;
 
   // The current info for the |session_|.
   mojom::MediaSessionInfoPtr session_info_;

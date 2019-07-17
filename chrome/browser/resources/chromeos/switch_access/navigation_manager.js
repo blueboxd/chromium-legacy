@@ -104,6 +104,21 @@ class NavigationManager {
   }
 
   /**
+   * Get the currently highlighted node.
+   */
+  currentNode() {
+    return this.node_;
+  }
+
+  /**
+   * TODO(rosalindag): get rid of this after moving text selection to new file
+   * Get the text_input_manager.
+   */
+  textInputManager() {
+    return this.textInputManager_;
+  }
+
+  /**
    * Open the Switch Access menu for the currently highlighted node.
    */
   enterMenu() {

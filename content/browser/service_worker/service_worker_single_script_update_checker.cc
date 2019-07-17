@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/resource_type.h"
@@ -165,7 +166,8 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
   if (is_main_script_) {
     std::string service_worker_allowed;
     bool has_header = response_head.headers->EnumerateHeader(
-        nullptr, kServiceWorkerAllowed, &service_worker_allowed);
+        nullptr, ServiceWorkerConsts::kServiceWorkerAllowed,
+        &service_worker_allowed);
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
             scope_, script_url_, has_header ? &service_worker_allowed : nullptr,
             &error_message)) {
@@ -223,7 +225,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnComplete(
       ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted;
   if (status.error_code != net::OK) {
     Fail(blink::ServiceWorkerStatusCode::kErrorNetwork,
-         kServiceWorkerFetchScriptError);
+         ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -310,7 +312,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnWriteHeadersComplete(
   header_writer_state_ = ServiceWorkerNewScriptLoader::WriterState::kCompleted;
   if (error != net::OK) {
     Fail(blink::ServiceWorkerStatusCode::kErrorFailed,
-         kServiceWorkerFetchScriptError);
+         ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -437,7 +439,7 @@ void ServiceWorkerSingleScriptUpdateChecker::OnCompareDataComplete(
   if (error != net::OK) {
     // Something went wrong reading from the disk cache.
     Fail(blink::ServiceWorkerStatusCode::kErrorDiskCache,
-         kServiceWorkerFetchScriptError);
+         ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 

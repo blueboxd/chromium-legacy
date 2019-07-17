@@ -120,11 +120,14 @@ class CORE_EXPORT ApplicationCacheHost
   void SetSubresourceFactory(
       network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
 
+  // TODO(nhiroki): Move these virtual functions into
+  // ApplicationCacheHostForFrame after making DocumentLoader own only
+  // ApplicationCacheHostForFrame (not own ApplicationCacheHostForSharedWorker).
   virtual void WillStartLoadingMainResource(DocumentLoader* loader,
                                             const KURL& url,
                                             const String& method);
   virtual void SelectCacheWithoutManifest() {}
-  virtual void SelectCacheWithManifest(const KURL& manifest_url);
+  virtual void SelectCacheWithManifest(const KURL& manifest_url) {}
   virtual void DidReceiveResponseForMainResource(const ResourceResponse&) {}
   virtual void Trace(blink::Visitor*);
 

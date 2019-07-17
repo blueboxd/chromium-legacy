@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/bind.h"
@@ -24,8 +25,10 @@
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/utils.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -410,6 +413,26 @@ void CheckClientDownloadRequest::OnFileFeatureExtractionDone(
       results.archive_is_valid == FileAnalyzer::ArchiveValid::VALID) {
     FinishRequest(DownloadCheckResult::UNKNOWN,
                   REASON_ARCHIVE_WITHOUT_BINARIES);
+    return;
+  }
+
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(item_);
+  bool password_protected_allowed = true;
+  if (browser_context) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+    password_protected_allowed =
+        profile->GetPrefs()->GetBoolean(prefs::kPasswordProtectedAllowed);
+  }
+
+  if (!password_protected_allowed &&
+      std::any_of(results.archived_binaries.begin(),
+                  results.archived_binaries.end(),
+                  [](const ClientDownloadRequest::ArchivedBinary& binary) {
+                    return binary.is_encrypted();
+                  })) {
+    FinishRequest(DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED,
+                  REASON_BLOCKED_PASSWORD_PROTECTED);
     return;
   }
 

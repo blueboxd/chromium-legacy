@@ -40,6 +40,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -69,7 +70,7 @@ import java.util.List;
  * Tests for {@link GridTabSwitcherMediatorUnitTest}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
 @DisableFeatures(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
 @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class GridTabSwitcherMediatorUnitTest {
@@ -128,6 +129,7 @@ public class GridTabSwitcherMediatorUnitTest {
 
     @Before
     public void setUp() {
+        ShadowRecordHistogram.reset();
         RecordUserAction.setDisabledForTests(true);
         RecordHistogram.setDisabledForTests(true);
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
@@ -219,6 +221,41 @@ public class GridTabSwitcherMediatorUnitTest {
                 mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
         assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
         assertThat(mMediator.overviewVisible(), equalTo(true));
+
+        assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
+                           GridTabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
+                equalTo(1));
+        assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
+                           GridTabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 3),
+                equalTo(1));
+    }
+
+    @Test
+    public void showsWithoutAnimation_withTabGroups() {
+        doReturn(2).when(mTabModelFilter).getCount();
+
+        initAndAssertAllProperties();
+        mMediator.showOverview(false);
+
+        InOrder inOrder = inOrder(mPropertyObserver, mPropertyObserver);
+        inOrder.verify(mPropertyObserver)
+                .onPropertyChanged(mModel, TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES);
+        inOrder.verify(mPropertyObserver)
+                .onPropertyChanged(mModel, TabListContainerProperties.IS_VISIBLE);
+        inOrder.verify(mPropertyObserver)
+                .onPropertyChanged(mModel, TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES);
+
+        assertThat(
+                mModel.get(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES), equalTo(true));
+        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+        assertThat(mMediator.overviewVisible(), equalTo(true));
+
+        assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
+                           GridTabSwitcherMediator.TAB_COUNT_HISTOGRAM, 3),
+                equalTo(1));
+        assertThat(ShadowRecordHistogram.getHistogramValueCountForTesting(
+                           GridTabSwitcherMediator.TAB_ENTRIES_HISTOGRAM, 2),
+                equalTo(1));
     }
 
     @Test

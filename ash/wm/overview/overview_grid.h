@@ -248,13 +248,15 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // positioned, taking into account the availability of the Desks bar).
   gfx::Rect GetGridEffectiveBounds() const;
 
-  // Called when a window is being dragged in Overview Mode to update the drag
-  // details (screen_location, and whether that location intersects with the
-  // desks bar widget. |for_drop| should be set to true if this is called when
-  // the item is being dropped when the drag is complete
+  // Called when a window is being dragged in Overview Mode. If
+  // |update_desks_bar_drag_details| is true, it will update the drag details
+  // (screen_location, and whether that location intersects with the
+  // desks bar widget). |for_drop| should be set to true if this is called when
+  // the item is being dropped when the drag is complete.
   // Returns true if |screen_location| does intersect with the DesksBarView.
-  bool UpdateDesksBarDragDetails(const gfx::Point& screen_location,
-                                 bool for_drop);
+  bool IntersectsWithDesksBar(const gfx::Point& screen_location,
+                              bool update_desks_bar_drag_details,
+                              bool for_drop);
 
   // Updates the drag details for DesksBarView to end the drag and move the
   // window of |drag_item| to another desk if it was dropped on a mini_view of

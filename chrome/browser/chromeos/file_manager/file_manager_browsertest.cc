@@ -597,6 +597,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("dirRenameToExisting"),
         TestCase("dirRenameToExisting").InGuestMode(),
         TestCase("dirRenameToExisting").EnableDriveFs(),
+        TestCase("dirRenameRemovableWithKeyboard"),
+        TestCase("dirRenameRemovableWithKeyboard").InGuestMode(),
+        TestCase("dirRenameRemovableWithKeyboard").EnableDriveFs(),
+        TestCase("dirRenameRemovableWithContentMenu"),
+        TestCase("dirRenameRemovableWithContentMenu").InGuestMode(),
+        TestCase("dirRenameRemovableWithContentMenu").EnableDriveFs(),
         TestCase("dirCreateWithContextMenu"),
         TestCase("dirCreateWithContextMenu").EnableMyFilesVolume(),
         TestCase("dirCreateWithKeyboard"),
@@ -649,7 +655,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveBackupPhotos").EnableDriveFs(),
         TestCase("driveAvailableOfflineGearMenu").DisableDriveFs(),
         TestCase("driveAvailableOfflineGearMenu").EnableDriveFs(),
-        TestCase("driveAvailableOfflineDirectoryGearMenu")));
+        TestCase("driveAvailableOfflineDirectoryGearMenu"),
+        TestCase("driveLinkToDirectory").EnableDriveFs(),
+        TestCase("driveLinkOpenFileThroughLinkedDirectory").EnableDriveFs(),
+        TestCase("driveLinkOpenFileThroughTransitiveLink").EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Transfer, /* transfer.js */

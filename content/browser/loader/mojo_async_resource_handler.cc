@@ -26,7 +26,7 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
 
 namespace content {
 namespace {

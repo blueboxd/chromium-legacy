@@ -801,4 +801,34 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ScrollIntoView) {
 }
 #endif  // !defined(OS_ANDROID)
 
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, ClickSVG) {
+  // Create an svg link element that has the shape of a small, red square.
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <svg aria-label="svg" width="10" height="10" viewBox="0 0 10 10"
+        onclick="(function() {
+          let para = document.createElement('p');
+          para.innerHTML = 'SVG link was clicked!';
+          document.body.appendChild(para);})()">
+        <a xlink:href="#">
+          <path fill-opacity="1" fill="#ff0000"
+            d="M 0 0 L 10 0 L 10 10 L 0 10 Z"></path>
+        </a>
+      </svg>
+      )HTML");
+
+  AccessibilityNotificationWaiter click_waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kClicked);
+  BrowserAccessibility* target_node =
+      FindNode(ax::mojom::Role::kSvgRoot, "svg");
+  ASSERT_NE(target_node, nullptr);
+  GetManager()->DoDefaultAction(*target_node);
+  click_waiter.WaitForNotification();
+#if !defined(OS_ANDROID)
+  // This waiter times out on some Android try bots.
+  // TODO(akihiroota): Refactor test to be applicable to all platforms.
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "SVG link was clicked!");
+#endif  // !defined(OS_ANDROID)
+}
+
 }  // namespace content

@@ -49,7 +49,7 @@ class TestAppRegistrar : public AppRegistrar {
   bool HasExternalAppWithInstallSource(
       const AppId& app_id,
       InstallSource install_source) const override;
-  AppId FindAppIdForUrl(const GURL& url) const override;
+  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;
   std::string GetAppDescription(const AppId& app_id) const override;

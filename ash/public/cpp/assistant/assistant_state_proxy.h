@@ -44,8 +44,6 @@ class ASH_PUBLIC_EXPORT AssistantStateProxy
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnVoiceInteractionConsentStatusUpdated(
-      mojom::ConsentStatus consent_status) override;
   void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;

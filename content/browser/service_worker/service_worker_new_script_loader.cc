@@ -11,6 +11,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -105,7 +106,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   // |incumbent_cache_resource_id| is valid if the incumbent service worker
   // exists and it's required to do the byte-for-byte check.
-  int64_t incumbent_cache_resource_id = kInvalidServiceWorkerResourceId;
+  int64_t incumbent_cache_resource_id =
+      ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   scoped_refptr<ServiceWorkerRegistration> registration =
       version_->context()->GetLiveRegistration(version_->registration_id());
   // ServiceWorkerVersion keeps the registration alive while the service
@@ -142,7 +144,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   }
 
   ServiceWorkerStorage* storage = version_->context()->storage();
-  if (incumbent_cache_resource_id != kInvalidServiceWorkerResourceId) {
+  if (incumbent_cache_resource_id !=
+      ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     // Create response readers only when we have to do the byte-for-byte check.
     cache_writer_ = ServiceWorkerCacheWriter::CreateForComparison(
         storage->CreateResponseReader(incumbent_cache_resource_id),
@@ -274,7 +277,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   DCHECK_EQ(NetworkLoaderState::kLoadingHeader, network_loader_state_);
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
-                    kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -293,7 +296,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;
     bool has_header = response_head.headers->EnumerateHeader(
-        nullptr, kServiceWorkerAllowed, &service_worker_allowed);
+        nullptr, ServiceWorkerConsts::kServiceWorkerAllowed,
+        &service_worker_allowed);
     if (!ServiceWorkerUtils::IsPathRestrictionSatisfied(
             version_->scope(), request_url_,
             has_header ? &service_worker_allowed : nullptr, &error_message)) {
@@ -336,7 +340,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
   // Step 9.5: "Set request's redirect mode to "error"."
   // https://w3c.github.io/ServiceWorker/#update-algorithm
   CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
-                  kServiceWorkerRedirectError);
+                  ServiceWorkerConsts::kServiceWorkerRedirectError);
 }
 
 void ServiceWorkerNewScriptLoader::OnUploadProgress(
@@ -367,7 +371,7 @@ void ServiceWorkerNewScriptLoader::OnStartLoadingResponseBody(
   if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
       MOJO_RESULT_OK) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
-                    kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -384,7 +388,8 @@ void ServiceWorkerNewScriptLoader::OnComplete(
   NetworkLoaderState previous_state = network_loader_state_;
   network_loader_state_ = NetworkLoaderState::kCompleted;
   if (status.error_code != net::OK) {
-    CommitCompleted(status, kServiceWorkerFetchScriptError);
+    CommitCompleted(status,
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -504,7 +509,7 @@ void ServiceWorkerNewScriptLoader::OnClientWritable(MojoResult) {
     ServiceWorkerMetrics::CountWriteResponseResult(
         ServiceWorkerMetrics::WRITE_DATA_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
-                    kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
 
@@ -542,7 +547,7 @@ void ServiceWorkerNewScriptLoader::OnCacheWriterResumed(net::Error error) {
 
   if (error != net::OK) {
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
   // If the script has no body or all the body has already been read when it
@@ -608,7 +613,7 @@ void ServiceWorkerNewScriptLoader::OnWriteHeadersComplete(net::Error error) {
     ServiceWorkerMetrics::CountWriteResponseResult(
         ServiceWorkerMetrics::WRITE_HEADERS_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
   header_writer_state_ = WriterState::kCompleted;
@@ -693,7 +698,7 @@ void ServiceWorkerNewScriptLoader::WriteData(
       ServiceWorkerMetrics::CountWriteResponseResult(
           ServiceWorkerMetrics::WRITE_DATA_ERROR);
       CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
-                      kServiceWorkerFetchScriptError);
+                      ServiceWorkerConsts::kServiceWorkerFetchScriptError);
       return;
     case MOJO_RESULT_SHOULD_WAIT:
       // No data was written to |client_producer_| because the pipe was full.
@@ -732,7 +737,7 @@ void ServiceWorkerNewScriptLoader::OnWriteDataComplete(
     ServiceWorkerMetrics::CountWriteResponseResult(
         ServiceWorkerMetrics::WRITE_DATA_ERROR);
     CommitCompleted(network::URLLoaderCompletionStatus(error),
-                    kServiceWorkerFetchScriptError);
+                    ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
   DCHECK(pending_buffer);

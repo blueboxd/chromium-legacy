@@ -6,7 +6,7 @@
 #define COMPONENTS_CONTEXTUAL_SEARCH_CONTENT_RENDERER_CONTEXTUAL_SEARCH_WRAPPER_H_
 
 #include "base/macros.h"
-#include "components/contextual_search/content/common/contextual_search_js_api_service.mojom.h"
+#include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "gin/handle.h"

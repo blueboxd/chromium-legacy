@@ -45,11 +45,11 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
 
   // Sets the badge for |app_id| to be |content|. Note: If content is set, it
   // must be non-zero.
-  void UpdateAppBadge(const std::string& app_id,
+  void UpdateAppBadge(const base::Optional<std::string>& app_id,
                       base::Optional<uint64_t> content);
 
   // Clears the badge for |app_id|.
-  void ClearAppBadge(const std::string& app_id);
+  void ClearAppBadge(const base::Optional<std::string>& app_id);
 
  private:
   // The BindingContext of a mojo request. Allows mojo calls to be tied back to
@@ -61,6 +61,9 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
     int process_id;
     int frame_id;
   };
+
+  // Notifies |delegate_| that a badge change was ignored.
+  void BadgeChangeIgnored();
 
   // blink::mojom::BadgeService:
   // Note: These are private to stop them being called outside of mojo as they
@@ -78,6 +81,7 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   mojo::BindingSet<blink::mojom::BadgeService, BindingContext> bindings_;
 
   // Delegate which handles actual setting and clearing of the badge.
+  // Note: This is currently only set on Windows and MacOS.
   std::unique_ptr<BadgeManagerDelegate> delegate_;
 
   // Maps app id to badge contents.

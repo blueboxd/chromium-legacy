@@ -32,6 +32,9 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
   std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() override;
   mojo::ScopedSharedBufferHandle GetHandleForTransit(bool read_only) override;
   base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC() override;
+#if defined(OS_CHROMEOS)
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
+#endif
   uint32_t GetMemorySizeInBytes() override;
 
  private:

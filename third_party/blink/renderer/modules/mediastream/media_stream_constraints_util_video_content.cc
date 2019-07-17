@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <cmath>
 #include <utility>
-#include <vector>
 
 #include "media/base/limits.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"

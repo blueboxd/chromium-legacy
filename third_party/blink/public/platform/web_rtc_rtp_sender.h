@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SENDER_H_
 
 #include <memory>
-#include <vector>
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"

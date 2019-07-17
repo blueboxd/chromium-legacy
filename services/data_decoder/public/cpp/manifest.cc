@@ -40,9 +40,9 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "xml_parser",
               service_manager::Manifest::InterfaceList<mojom::XmlParser>())
-          .ExposeCapability("bundled_exchanges_parser",
+          .ExposeCapability("bundled_exchanges_parser_factory",
                             service_manager::Manifest::InterfaceList<
-                                mojom::BundledExchangesParser>());
+                                mojom::BundledExchangesParserFactory>());
 
 #ifdef OS_CHROMEOS
   manifest_builder.ExposeCapability(

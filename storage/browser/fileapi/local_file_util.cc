@@ -26,55 +26,51 @@ AsyncFileUtil* AsyncFileUtil::CreateForLocalFileSystem() {
   return new AsyncFileUtilAdapter(new LocalFileUtil());
 }
 
-class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
+class LocalFileUtil::LocalFileEnumerator
+    : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
-  LocalFileEnumerator(const base::FilePath& platform_root_path,
+  LocalFileEnumerator(const LocalFileUtil* file_util,
+                      const base::FilePath& platform_root_path,
                       const base::FilePath& virtual_root_path,
                       bool recursive,
                       int file_type)
-      : file_enum_(platform_root_path, recursive, file_type),
+      : file_util_(file_util),
+        file_enum_(platform_root_path, recursive, file_type),
         platform_root_path_(platform_root_path),
         virtual_root_path_(virtual_root_path) {}
 
   ~LocalFileEnumerator() override = default;
 
-  base::FilePath Next() override;
-  int64_t Size() override;
-  base::Time LastModifiedTime() override;
-  bool IsDirectory() override;
+  base::FilePath Next() override {
+    base::FilePath next = file_enum_.Next();
+    while (!next.empty() && file_util_->IsHiddenItem(next))
+      next = file_enum_.Next();
+    if (next.empty())
+      return next;
+    file_util_info_ = file_enum_.GetInfo();
+
+    base::FilePath path;
+    platform_root_path_.AppendRelativePath(next, &path);
+    return virtual_root_path_.Append(path);
+  }
+
+  int64_t Size() override { return file_util_info_.GetSize(); }
+
+  base::Time LastModifiedTime() override {
+    return file_util_info_.GetLastModifiedTime();
+  }
+
+  bool IsDirectory() override { return file_util_info_.IsDirectory(); }
 
  private:
+  // The |LocalFileUtil| producing |this| is expected to remain valid
+  // through the whole lifetime of the enumerator.
+  const LocalFileUtil* const file_util_;
   base::FileEnumerator file_enum_;
   base::FileEnumerator::FileInfo file_util_info_;
   base::FilePath platform_root_path_;
   base::FilePath virtual_root_path_;
 };
-
-base::FilePath LocalFileEnumerator::Next() {
-  base::FilePath next = file_enum_.Next();
-  // Don't return symlinks.
-  while (!next.empty() && base::IsLink(next))
-    next = file_enum_.Next();
-  if (next.empty())
-    return next;
-  file_util_info_ = file_enum_.GetInfo();
-
-  base::FilePath path;
-  platform_root_path_.AppendRelativePath(next, &path);
-  return virtual_root_path_.Append(path);
-}
-
-int64_t LocalFileEnumerator::Size() {
-  return file_util_info_.GetSize();
-}
-
-base::Time LocalFileEnumerator::LastModifiedTime() {
-  return file_util_info_.GetLastModifiedTime();
-}
-
-bool LocalFileEnumerator::IsDirectory() {
-  return file_util_info_.IsDirectory();
-}
 
 LocalFileUtil::LocalFileUtil() = default;
 
@@ -87,8 +83,7 @@ base::File LocalFileUtil::CreateOrOpen(
   base::File::Error error = GetLocalFilePath(context, url, &file_path);
   if (error != base::File::FILE_OK)
     return base::File(error);
-  // Disallow opening files in symlinked paths.
-  if (base::IsLink(file_path))
+  if (IsHiddenItem(file_path))
     return base::File(base::File::FILE_ERROR_NOT_FOUND);
 
   return NativeFileUtil::CreateOrOpen(file_path, file_flags);
@@ -126,8 +121,7 @@ base::File::Error LocalFileUtil::GetFileInfo(
   base::File::Error error = GetLocalFilePath(context, url, &file_path);
   if (error != base::File::FILE_OK)
     return error;
-  // We should not follow symbolic links in sandboxed file system.
-  if (base::IsLink(file_path))
+  if (IsHiddenItem(file_path))
     return base::File::FILE_ERROR_NOT_FOUND;
 
   error = NativeFileUtil::GetFileInfo(file_path, file_info);
@@ -146,7 +140,7 @@ LocalFileUtil::CreateFileEnumerator(FileSystemOperationContext* context,
     return base::WrapUnique(new EmptyFileEnumerator);
   }
   return std::make_unique<LocalFileEnumerator>(
-      file_path, root_url.path(), recursive,
+      this, file_path, root_url.path(), recursive,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
 }
 
@@ -261,6 +255,11 @@ storage::ScopedFile LocalFileUtil::CreateSnapshotFile(
   if (*error == base::File::FILE_OK && file_info->is_directory)
     *error = base::File::FILE_ERROR_NOT_A_FILE;
   return storage::ScopedFile();
+}
+
+bool LocalFileUtil::IsHiddenItem(const base::FilePath& local_file_path) const {
+  // We should not follow symbolic links in sandboxed file system.
+  return base::IsLink(local_file_path);
 }
 
 }  // namespace storage

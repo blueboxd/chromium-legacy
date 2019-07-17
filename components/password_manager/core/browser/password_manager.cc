@@ -511,11 +511,7 @@ void PasswordManager::ProvisionallySavePassword(
     return;
   }
 
-  bool should_block =
-      ShouldBlockPasswordForSameOriginButDifferentScheme(form.origin);
-  metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
-      should_block);
-  if (should_block) {
+  if (ShouldBlockPasswordForSameOriginButDifferentScheme(form.origin)) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS, form.origin,
         logger.get());
@@ -890,11 +886,7 @@ NewPasswordFormManager* PasswordManager::ProvisionallySaveForm(
   // empty.
 
   const GURL& origin = submitted_form.url;
-  bool should_block =
-      ShouldBlockPasswordForSameOriginButDifferentScheme(origin);
-  metrics_util::LogShouldBlockPasswordForSameOriginButDifferentScheme(
-      should_block);
-  if (should_block) {
+  if (ShouldBlockPasswordForSameOriginButDifferentScheme(origin)) {
     RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS, origin,
         logger.get());

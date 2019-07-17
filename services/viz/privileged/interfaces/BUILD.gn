@@ -10,7 +10,7 @@ mojom("interfaces") {
   ]
 
   public_deps = [
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//services/network/public/mojom",
     "//services/viz/privileged/interfaces/compositing",
     "//services/viz/privileged/interfaces/gl",

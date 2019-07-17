@@ -392,7 +392,8 @@ class AppListBackgroundShieldView : public views::View {
       layer()->SetBackgroundBlur(AppListConfig::instance().blur_radius());
       layer()->SetBackdropFilterQuality(kAppListBlurQuality);
       layer()->SetRoundedCornerRadius(
-          {kAppListBackgroundRadius, kAppListBackgroundRadius, 0, 0});
+          {AppListConfig::instance().background_radius(),
+           AppListConfig::instance().background_radius(), 0, 0});
     } else {
       layer()->SetBackgroundBlur(0);
     }
@@ -410,12 +411,13 @@ class AppListBackgroundShieldView : public views::View {
   }
 
   void UpdateBounds(const gfx::Rect& bounds) {
-    // Inset bottom by 2 * |kAppListBackgroundRadius| to account for the rounded
-    // corners on the top and bottom of the |app_list_background_shield_|.
-    // Only add the inset to the bottom to keep padding at the top of the
-    // AppList the same.
+    // Inset bottom by 2 * the background radius to account for the rounded
+    // corners on the top and bottom of the |app_list_background_shield_|. Only
+    // add the inset to the bottom to keep padding at the top of the AppList the
+    // same.
     gfx::Rect new_bounds = bounds;
-    new_bounds.Inset(0, 0, 0, -kAppListBackgroundRadius * 2);
+    new_bounds.Inset(0, 0, 0,
+                     -AppListConfig::instance().background_radius() * 2);
     SetBoundsRect(new_bounds);
   }
 
@@ -424,7 +426,8 @@ class AppListBackgroundShieldView : public views::View {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setColor(color_);
-    canvas->DrawRoundRect(GetContentsBounds(), kAppListBackgroundRadius, flags);
+    canvas->DrawRoundRect(GetContentsBounds(),
+                          AppListConfig::instance().background_radius(), flags);
   }
 
   SkColor GetColorForTest() const { return color_; }
@@ -1849,7 +1852,7 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
 
   gfx::Transform transform;
   if (ShouldHideRoundedCorners(new_bounds))
-    transform.Translate(0, -kAppListBackgroundRadius);
+    transform.Translate(0, -AppListConfig::instance().background_radius());
 
   app_list_background_shield_->SetTransform(transform);
   app_list_background_shield_->SchedulePaint();
@@ -2091,17 +2094,16 @@ void AppListView::UpdateAppListBackgroundYPosition() {
     float app_list_transition_progress = GetAppListTransitionProgress();
     if (app_list_transition_progress >= 1 &&
         app_list_transition_progress <= 2) {
-      // Translate background shield so that it ends drag at y position
-      // -|kAppListBackgroundRadius| when dragging between peeking and
-      // fullscreen.
-      transform.Translate(
-          0, -kAppListBackgroundRadius * (app_list_transition_progress - 1));
+      // Translate background shield so that it ends drag at a y position
+      // according to the background radius in peeking and fullscreen.
+      transform.Translate(0, -AppListConfig::instance().background_radius() *
+                                 (app_list_transition_progress - 1));
     }
   } else if (is_fullscreen() || ShouldHideRoundedCorners(GetBoundsInScreen())) {
     // AppListView::Layout may be called after OnWindowBoundsChanged. It may
     // reset the transform of |app_list_background_shield_|. So hide the rounded
     // corners here when ShouldHideRoundedCorners returns true.
-    transform.Translate(0, -kAppListBackgroundRadius);
+    transform.Translate(0, -AppListConfig::instance().background_radius());
   }
   app_list_background_shield_->SetTransform(transform);
 }

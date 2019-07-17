@@ -86,7 +86,7 @@ target(link_target_type, "child") {
     "//base",
     "//cc/paint",
     "//components/discardable_memory/client",
-    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/public/mojom",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/tracing/common:interfaces",

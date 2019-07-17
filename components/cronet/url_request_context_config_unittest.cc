@@ -189,28 +189,28 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   quic_connection_options.push_back(quic::kTIME);
   quic_connection_options.push_back(quic::kTBBR);
   quic_connection_options.push_back(quic::kREJ);
-  EXPECT_EQ(quic_connection_options, params->quic_connection_options);
+  EXPECT_EQ(quic_connection_options, params->quic_params.connection_options);
 
   // Check Custom QUIC User Agent Id.
-  EXPECT_EQ("Custom QUIC UAID", params->quic_user_agent_id);
+  EXPECT_EQ("Custom QUIC UAID", params->quic_params.user_agent_id);
 
   // Check max_server_configs_stored_in_properties.
-  EXPECT_EQ(2u, params->quic_max_server_configs_stored_in_properties);
+  EXPECT_EQ(2u, params->quic_params.max_server_configs_stored_in_properties);
 
   // Check idle_connection_timeout_seconds.
-  EXPECT_EQ(300, params->quic_idle_connection_timeout_seconds);
+  EXPECT_EQ(300, params->quic_params.idle_connection_timeout_seconds);
 
-  EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
-  EXPECT_FALSE(params->quic_goaway_sessions_on_ip_change);
-  EXPECT_FALSE(params->quic_allow_server_migration);
-  EXPECT_FALSE(params->quic_migrate_sessions_on_network_change_v2);
-  EXPECT_FALSE(params->quic_migrate_sessions_early_v2);
-  EXPECT_FALSE(params->quic_migrate_idle_sessions);
-  EXPECT_FALSE(params->quic_retry_on_alternate_network_before_handshake);
-  EXPECT_FALSE(params->quic_race_stale_dns_on_connection);
+  EXPECT_TRUE(params->quic_params.close_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_params.goaway_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_params.allow_server_migration);
+  EXPECT_FALSE(params->quic_params.migrate_sessions_on_network_change_v2);
+  EXPECT_FALSE(params->quic_params.migrate_sessions_early_v2);
+  EXPECT_FALSE(params->quic_params.migrate_idle_sessions);
+  EXPECT_FALSE(params->quic_params.retry_on_alternate_network_before_handshake);
+  EXPECT_FALSE(params->quic_params.race_stale_dns_on_connection);
 
   // Check race_cert_verification.
-  EXPECT_TRUE(params->quic_race_cert_verification);
+  EXPECT_TRUE(params->quic_params.race_cert_verification);
 
 #if defined(ENABLE_BUILT_IN_DNS)
   // Check AsyncDNS resolver is enabled (not supported on iOS).
@@ -336,8 +336,8 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
-  EXPECT_EQ(params->quic_supported_versions.size(), 1u);
-  EXPECT_EQ(params->quic_supported_versions[0],
+  EXPECT_EQ(params->quic_params.supported_versions.size(), 1u);
+  EXPECT_EQ(params->quic_params.supported_versions[0],
             quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                                     quic::QUIC_VERSION_46));
 }
@@ -389,8 +389,8 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
-  EXPECT_EQ(params->quic_supported_versions.size(), 1u);
-  EXPECT_EQ(params->quic_supported_versions[0],
+  EXPECT_EQ(params->quic_params.supported_versions.size(), 1u);
+  EXPECT_EQ(params->quic_params.supported_versions[0],
             quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
                                     quic::QUIC_VERSION_46));
 }
@@ -443,8 +443,8 @@ TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
-  EXPECT_TRUE(params->quic_allow_server_migration);
+  EXPECT_FALSE(params->quic_params.close_sessions_on_ip_change);
+  EXPECT_TRUE(params->quic_params.allow_server_migration);
 }
 
 // Test that goaway_sessions_on_ip_change is set on by default for iOS.
@@ -504,8 +504,8 @@ TEST(URLRequestContextConfigTest,
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
-  EXPECT_TRUE(params->quic_goaway_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_params.close_sessions_on_ip_change);
+  EXPECT_TRUE(params->quic_params.goaway_sessions_on_ip_change);
 }
 
 // Tests that goaway_sessions_on_ip_changes can be set on via
@@ -566,8 +566,8 @@ TEST(URLRequestContextConfigTest,
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
-  EXPECT_TRUE(params->quic_goaway_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_params.close_sessions_on_ip_change);
+  EXPECT_TRUE(params->quic_params.goaway_sessions_on_ip_change);
 }
 
 // Test that goaway_sessions_on_ip_change can be set to false via
@@ -628,8 +628,8 @@ TEST(URLRequestContextConfigTest,
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
-  EXPECT_FALSE(params->quic_goaway_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_params.close_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_params.goaway_sessions_on_ip_change);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
@@ -688,19 +688,21 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_TRUE(params->quic_migrate_sessions_on_network_change_v2);
-  EXPECT_TRUE(params->quic_migrate_sessions_early_v2);
-  EXPECT_TRUE(params->quic_retry_on_alternate_network_before_handshake);
-  EXPECT_EQ(1000, params->quic_retransmittable_on_wire_timeout_milliseconds);
-  EXPECT_TRUE(params->quic_migrate_idle_sessions);
+  EXPECT_TRUE(params->quic_params.migrate_sessions_on_network_change_v2);
+  EXPECT_TRUE(params->quic_params.migrate_sessions_early_v2);
+  EXPECT_TRUE(params->quic_params.retry_on_alternate_network_before_handshake);
+  EXPECT_EQ(1000,
+            params->quic_params.retransmittable_on_wire_timeout_milliseconds);
+  EXPECT_TRUE(params->quic_params.migrate_idle_sessions);
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
-            params->quic_idle_session_migration_period);
+            params->quic_params.idle_session_migration_period);
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            params->quic_max_time_on_non_default_network);
-  EXPECT_EQ(3,
-            params->quic_max_migrations_to_non_default_network_on_write_error);
+            params->quic_params.max_time_on_non_default_network);
   EXPECT_EQ(
-      4, params->quic_max_migrations_to_non_default_network_on_path_degrading);
+      3,
+      params->quic_params.max_migrations_to_non_default_network_on_write_error);
+  EXPECT_EQ(4, params->quic_params
+                   .max_migrations_to_non_default_network_on_path_degrading);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicStaleDNSracing) {
@@ -751,7 +753,7 @@ TEST(URLRequestContextConfigTest, SetQuicStaleDNSracing) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_TRUE(params->quic_race_stale_dns_on_connection);
+  EXPECT_TRUE(params->quic_params.race_stale_dns_on_connection);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
@@ -855,8 +857,9 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_EQ(7, params->quic_max_time_before_crypto_handshake_seconds);
-  EXPECT_EQ(11, params->quic_max_idle_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(7, params->quic_params.max_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(11,
+            params->quic_params.max_idle_time_before_crypto_handshake_seconds);
 }
 
 TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
@@ -912,12 +915,13 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
   connection_options.push_back(quic::kTIME);
   connection_options.push_back(quic::kTBBR);
   connection_options.push_back(quic::kREJ);
-  EXPECT_EQ(connection_options, params->quic_connection_options);
+  EXPECT_EQ(connection_options, params->quic_params.connection_options);
 
   quic::QuicTagVector client_connection_options;
   client_connection_options.push_back(quic::kTBBR);
   client_connection_options.push_back(quic::k1RTT);
-  EXPECT_EQ(client_connection_options, params->quic_client_connection_options);
+  EXPECT_EQ(client_connection_options,
+            params->quic_params.client_connection_options);
 }
 
 TEST(URLURLRequestContextConfigTest, SetAcceptLanguageAndUserAgent) {

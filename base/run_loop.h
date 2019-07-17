@@ -118,13 +118,13 @@ class BASE_EXPORT RunLoop {
   void Quit();
   void QuitWhenIdle();
 
-  // Returns a Closure that safely calls Quit() or QuitWhenIdle() (has no effect
-  // if the RunLoop instance is gone).
+  // Returns a RepeatingClosure that safely calls Quit() or QuitWhenIdle() (has
+  // no effect if the RunLoop instance is gone).
   //
   // These methods must be called from the thread on which the RunLoop was
   // created.
   //
-  // Returned Closures may be safely:
+  // Returned closures may be safely:
   //   * Passed to other threads.
   //   * Run() from other threads, though this will quit the RunLoop
   //     asynchronously.
@@ -141,8 +141,8 @@ class BASE_EXPORT RunLoop {
   // Note that Quit() itself is thread-safe and may be invoked directly if you
   // have access to the RunLoop reference from another thread (e.g. from a
   // capturing lambda or test observer).
-  Closure QuitClosure();
-  Closure QuitWhenIdleClosure();
+  RepeatingClosure QuitClosure();
+  RepeatingClosure QuitWhenIdleClosure();
 
   // Returns true if there is an active RunLoop on this thread.
   // Safe to call before RegisterDelegateForCurrentThread().
@@ -249,7 +249,7 @@ class BASE_EXPORT RunLoop {
   // instance and increase readability.
   static void QuitCurrentDeprecated();
   static void QuitCurrentWhenIdleDeprecated();
-  static Closure QuitCurrentWhenIdleClosureDeprecated();
+  static RepeatingClosure QuitCurrentWhenIdleClosureDeprecated();
 
   // Configures all RunLoop::Run() calls on the current thread to run the
   // supplied |on_timeout| callback if they run for longer than |timeout|.

@@ -142,11 +142,6 @@ void StreamTexture::ReleaseChannel() {
   sync_point_client_state_->Destroy();
   sync_point_client_state_ = nullptr;
   channel_ = nullptr;
-
-  // If the channel goes away, there is no need to keep the SurfaceTexture
-  // around. The GL texture will keep working regardless with the currently
-  // bound frame.
-  surface_owner_ = nullptr;
 }
 
 // gpu::gles2::GLStreamTextureMatrix implementation

@@ -5,12 +5,9 @@
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_replaced.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/element_timing_utils.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -77,7 +74,8 @@ void ImageElementTiming::NotifyImagePainted(
   if (!internal::IsExplicitlyRegisteredForTiming(layout_object))
     return;
 
-  auto result = images_notified_.insert(layout_object);
+  auto result =
+      images_notified_.insert(std::make_pair(layout_object, cached_image));
   if (result.is_new_entry && cached_image) {
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
                                *cached_image, current_paint_chunk_properties);
@@ -182,8 +180,8 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
   if (!cached_image || !cached_image->IsLoaded())
     return;
 
-  auto result = background_images_notified_.insert(
-      std::make_pair(layout_object, cached_image));
+  auto result =
+      images_notified_.insert(std::make_pair(layout_object, cached_image));
   if (result.is_new_entry) {
     NotifyImagePaintedInternal(node, *layout_object, *cached_image,
                                current_paint_chunk_properties);
@@ -206,13 +204,9 @@ void ImageElementTiming::ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
   element_timings_.clear();
 }
 
-void ImageElementTiming::NotifyWillBeDestroyed(const LayoutObject* image) {
-  images_notified_.erase(image);
-}
-
 void ImageElementTiming::NotifyImageRemoved(const LayoutObject* layout_object,
                                             const ImageResourceContent* image) {
-  background_images_notified_.erase(std::make_pair(layout_object, image));
+  images_notified_.erase(std::make_pair(layout_object, image));
 }
 
 void ImageElementTiming::Trace(blink::Visitor* visitor) {

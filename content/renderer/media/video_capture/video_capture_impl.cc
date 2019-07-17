@@ -55,6 +55,12 @@ struct VideoCaptureImpl::BufferContext
       case VideoFrameBufferHandleType::MAILBOX_HANDLES:
         InitializeFromMailbox(std::move(buffer_handle->get_mailbox_handles()));
         break;
+#if defined(OS_CHROMEOS)
+      case VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE:
+        // TODO(jcliang): Implement this.
+        NOTREACHED();
+        break;
+#endif
     }
   }
 
@@ -428,7 +434,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
     case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
       NOTREACHED();
       break;
-    case VideoFrameBufferHandleType::MAILBOX_HANDLES:
+    case VideoFrameBufferHandleType::MAILBOX_HANDLES: {
       gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
       CHECK_EQ(media::VideoFrame::kMaxPlanes,
                buffer_context->mailbox_holders().size());
@@ -440,6 +446,13 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
           media::VideoFrame::ReleaseMailboxCB(), info->coded_size,
           info->visible_rect, info->visible_rect.size(), info->timestamp);
       break;
+    }
+#if defined(OS_CHROMEOS)
+    case VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE:
+      // TODO(jcliang): Implement this.
+      NOTREACHED();
+      break;
+#endif
   }
   if (!frame) {
     OnFrameDropped(media::VideoCaptureFrameDropReason::

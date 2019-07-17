@@ -41,15 +41,13 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       AssistantNotificationModelObserver* observer) override;
   void AddUiModelObserver(AssistantUiModelObserver* observer) override;
   void RemoveUiModelObserver(AssistantUiModelObserver* observer) override;
-  void AddVoiceInteractionControllerObserver(
-      DefaultVoiceInteractionObserver* observer) override;
-  void RemoveVoiceInteractionControllerObserver(
-      DefaultVoiceInteractionObserver* observer) override;
+  void AddAssistantPrefsObserver(AssistantPrefsObserver* observer) override;
+  void RemoveAssistantPrefsObserver(AssistantPrefsObserver* observer) override;
   CaptionBarDelegate* GetCaptionBarDelegate() override;
   void DownloadImage(
       const GURL& url,
       AssistantImageDownloader::DownloadCallback callback) override;
-  mojom::ConsentStatus GetConsentStatus() const override;
+  int GetConsentStatus() const override;
   ::wm::CursorManager* GetCursorManager() override;
   void GetNavigableContentsFactoryForView(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)

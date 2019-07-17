@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CONTENT_RENDERER_DISTILLER_NATIVE_JAVASCRIPT_H_
 #define COMPONENTS_DOM_DISTILLER_CONTENT_RENDERER_DISTILLER_NATIVE_JAVASCRIPT_H_
 
-#include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "v8/include/v8.h"

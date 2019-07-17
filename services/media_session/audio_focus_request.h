@@ -51,7 +51,8 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   mojom::AudioFocusRequestStatePtr ToAudioFocusRequestState() const;
 
   // Bind a mojo media controller to control the underlying media session.
-  void BindToMediaController(mojom::MediaControllerRequest request);
+  void BindToMediaController(
+      mojo::PendingReceiver<mojom::MediaController> receiver);
 
   // Suspends the underlying media session.
   void Suspend(const EnforcementState& state);

@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 
@@ -29,13 +29,14 @@ ServiceWorkerScriptCacheMap::~ServiceWorkerScriptCacheMap() {
 int64_t ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   ResourceMap::const_iterator found = resource_map_.find(url);
   if (found == resource_map_.end())
-    return kInvalidServiceWorkerResourceId;
+    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   return found->second.resource_id;
 }
 
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
                                                        int64_t resource_id) {
-  DCHECK_EQ(kInvalidServiceWorkerResourceId, LookupResourceId(url));
+  DCHECK_EQ(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+            LookupResourceId(url));
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING)
       << owner_->status();
@@ -52,7 +53,8 @@ void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     int64_t size_bytes,
     net::Error net_error,
     const std::string& status_message) {
-  DCHECK_NE(kInvalidServiceWorkerResourceId, LookupResourceId(url));
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId,
+            LookupResourceId(url));
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING ||
@@ -115,7 +117,8 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
 
   auto found = resource_map_.find(url);
   if (found == resource_map_.end() ||
-      found->second.resource_id == kInvalidServiceWorkerResourceId) {
+      found->second.resource_id ==
+          ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
     std::move(callback).Run(net::ERR_FILE_NOT_FOUND);
     return;
   }

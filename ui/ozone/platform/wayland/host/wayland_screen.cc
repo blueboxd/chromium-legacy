@@ -107,7 +107,7 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
     return GetPrimaryDisplay();
 
   const auto* parent_window = window->parent_window();
-  const std::set<uint32_t> entered_outputs_ids = window->GetEnteredOutputsIds();
+  const auto entered_outputs_ids = window->entered_outputs_ids();
   // Although spec says a surface receives enter/leave surface events on
   // create/move/resize actions, this might be called right after a window is
   // created, but it has not been configured by a Wayland compositor and it has

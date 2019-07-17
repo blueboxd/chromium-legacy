@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
@@ -84,6 +85,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
     VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER,
     VIEW_ID_PAGE_INFO_BUTTON_END_VR,
     VIEW_ID_PAGE_INFO_HOVER_BUTTON_VR_PRESENTATION,
+    VIEW_ID_PAGE_INFO_BUTTON_LEAVE_SITE,
   };
 
   // Creates the appropriate page info bubble for the given |url|.
@@ -209,5 +211,13 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
 };
+
+// Creates and returns a safety tip bubble. Used in unit tests.
+PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
+    gfx::NativeView parent_view,
+    content::WebContents* web_contents,
+    safety_tips::SafetyTipType type,
+    const GURL& virtual_url,
+    const GURL& safe_url);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PAGE_INFO_BUBBLE_VIEW_H_

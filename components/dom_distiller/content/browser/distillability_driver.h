@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
-#include "components/dom_distiller/content/common/distillability_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

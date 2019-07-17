@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// NOTE: Header files that do not require the full definition of Callback or
-// Closure should #include "base/callback_forward.h" instead of this file.
+// NOTE: Header files that do not require the full definition of
+// base::{Once,Repeating}Callback or base::{Once,Repeating}Closure should
+// #include "base/callback_forward.h" instead of this file.
 
 #ifndef BASE_CALLBACK_H_
 #define BASE_CALLBACK_H_

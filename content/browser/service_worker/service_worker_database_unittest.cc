@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"

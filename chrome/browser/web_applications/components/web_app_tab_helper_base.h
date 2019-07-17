@@ -95,7 +95,7 @@ class WebAppTabHelperBase
   // Triggers a reinstall of a placeholder app for |url|.
   void ReinstallPlaceholderAppIfNecessary(const GURL& url);
 
-  AppId FindAppIdInScopeOfUrl(const GURL& url) const;
+  AppId FindAppIdWithUrlInScope(const GURL& url) const;
 
   // WebApp associated with this tab. Empty string if no app associated.
   AppId app_id_;

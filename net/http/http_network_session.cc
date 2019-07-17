@@ -98,46 +98,8 @@ HttpNetworkSession::Params::Params()
       enable_websocket_over_http2(false),
       enable_quic(false),
       enable_quic_proxies_for_https_urls(false),
-      quic_max_packet_length(quic::kDefaultMaxPacketSize),
-      quic_max_server_configs_stored_in_properties(0u),
-      quic_enable_socket_recv_optimization(false),
-      mark_quic_broken_when_network_blackholes(false),
-      retry_without_alt_svc_on_quic_errors(true),
-      support_ietf_format_quic_altsvc(false),
-      quic_close_sessions_on_ip_change(false),
-      quic_goaway_sessions_on_ip_change(false),
-      quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
-      quic_reduced_ping_timeout_seconds(quic::kPingTimeoutSecs),
-      quic_retransmittable_on_wire_timeout_milliseconds(0),
-      quic_max_time_before_crypto_handshake_seconds(
-          quic::kMaxTimeForCryptoHandshakeSecs),
-      quic_max_idle_time_before_crypto_handshake_seconds(
-          quic::kInitialIdleTimeoutSecs),
-      quic_migrate_sessions_on_network_change_v2(false),
-      quic_migrate_sessions_early_v2(false),
-      quic_retry_on_alternate_network_before_handshake(false),
-      quic_migrate_idle_sessions(false),
-      quic_idle_session_migration_period(base::TimeDelta::FromSeconds(
-          kDefaultIdleSessionMigrationPeriodSeconds)),
-      quic_max_time_on_non_default_network(
-          base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs)),
-      quic_max_migrations_to_non_default_network_on_write_error(
-          kMaxMigrationsToNonDefaultNetworkOnWriteError),
-      quic_max_migrations_to_non_default_network_on_path_degrading(
-          kMaxMigrationsToNonDefaultNetworkOnPathDegrading),
-      quic_allow_server_migration(false),
-      quic_allow_remote_alt_svc(true),
-      quic_race_stale_dns_on_connection(false),
-      quic_go_away_on_path_degrading(false),
-      quic_disable_bidirectional_streams(false),
-      quic_race_cert_verification(false),
-      quic_estimate_initial_rtt(false),
-      quic_headers_include_h2_stream_dependency(false),
-      quic_initial_rtt_for_handshake_milliseconds(0),
       http_09_on_non_default_ports_enabled(false),
       disable_idle_sockets_close_on_memory_pressure(false) {
-  quic_supported_versions.push_back(quic::ParsedQuicVersion(
-      quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46));
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }
@@ -210,42 +172,14 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                               : quic::QuicRandom::GetInstance(),
           context.quic_clock ? context.quic_clock
                              : quic::QuicChromiumClock::GetInstance(),
-          params.quic_max_packet_length,
-          params.quic_user_agent_id,
-          params.quic_max_server_configs_stored_in_properties > 0,
-          params.quic_close_sessions_on_ip_change,
-          params.quic_goaway_sessions_on_ip_change,
-          params.mark_quic_broken_when_network_blackholes,
-          params.quic_idle_connection_timeout_seconds,
-          params.quic_reduced_ping_timeout_seconds,
-          params.quic_retransmittable_on_wire_timeout_milliseconds,
-          params.quic_max_time_before_crypto_handshake_seconds,
-          params.quic_max_idle_time_before_crypto_handshake_seconds,
-          params.quic_migrate_sessions_on_network_change_v2,
-          params.quic_migrate_sessions_early_v2,
-          params.quic_retry_on_alternate_network_before_handshake,
-          params.quic_migrate_idle_sessions,
-          params.quic_idle_session_migration_period,
-          params.quic_max_time_on_non_default_network,
-          params.quic_max_migrations_to_non_default_network_on_write_error,
-          params.quic_max_migrations_to_non_default_network_on_path_degrading,
-          params.quic_allow_server_migration,
-          params.quic_race_stale_dns_on_connection,
-          params.quic_go_away_on_path_degrading,
-          params.quic_race_cert_verification,
-          params.quic_estimate_initial_rtt,
-          params.quic_headers_include_h2_stream_dependency,
-          params.quic_connection_options,
-          params.quic_client_connection_options,
-          params.quic_enable_socket_recv_optimization,
-          params.quic_initial_rtt_for_handshake_milliseconds),
+          params.quic_params),
       spdy_session_pool_(context.host_resolver,
                          context.ssl_config_service,
                          context.http_server_properties,
                          context.transport_security_state,
-                         params.quic_supported_versions,
+                         params.quic_params.supported_versions,
                          params.enable_spdy_ping_based_connection_checking,
-                         params.support_ietf_format_quic_altsvc,
+                         params.quic_params.support_ietf_format_quic_altsvc,
                          params.spdy_session_max_recv_window_size,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.greased_http2_frame,
@@ -274,7 +208,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   next_protos_.push_back(kProtoHTTP11);
 
   http_server_properties_->SetMaxServerConfigsStoredInProperties(
-      params.quic_max_server_configs_stored_in_properties);
+      params.quic_params.max_server_configs_stored_in_properties);
 
   if (!params_.disable_idle_sockets_close_on_memory_pressure) {
     memory_pressure_listener_.reset(
@@ -327,69 +261,77 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetBoolean("quic_enabled", IsQuicEnabled());
 
   auto connection_options(std::make_unique<base::ListValue>());
-  for (const auto& option : params_.quic_connection_options)
+  for (const auto& option : params_.quic_params.connection_options)
     connection_options->AppendString(quic::QuicTagToString(option));
   dict->Set("connection_options", std::move(connection_options));
 
   auto supported_versions(std::make_unique<base::ListValue>());
-  for (const auto& version : params_.quic_supported_versions)
+  for (const auto& version : params_.quic_params.supported_versions)
     supported_versions->AppendString(ParsedQuicVersionToString(version));
   dict->Set("supported_versions", std::move(supported_versions));
 
   auto origins_to_force_quic_on(std::make_unique<base::ListValue>());
-  for (const auto& origin : params_.origins_to_force_quic_on)
+  for (const auto& origin : params_.quic_params.origins_to_force_quic_on)
     origins_to_force_quic_on->AppendString(origin.ToString());
   dict->Set("origins_to_force_quic_on", std::move(origins_to_force_quic_on));
 
-  dict->SetInteger("max_packet_length", params_.quic_max_packet_length);
+  dict->SetInteger("max_packet_length", params_.quic_params.max_packet_length);
   dict->SetInteger("max_server_configs_stored_in_properties",
-                   params_.quic_max_server_configs_stored_in_properties);
+                   params_.quic_params.max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",
-                   params_.quic_idle_connection_timeout_seconds);
+                   params_.quic_params.idle_connection_timeout_seconds);
   dict->SetInteger("reduced_ping_timeout_seconds",
-                   params_.quic_reduced_ping_timeout_seconds);
-  dict->SetBoolean("mark_quic_broken_when_network_blackholes",
-                   params_.mark_quic_broken_when_network_blackholes);
+                   params_.quic_params.reduced_ping_timeout_seconds);
+  dict->SetBoolean(
+      "mark_quic_broken_when_network_blackholes",
+      params_.quic_params.mark_quic_broken_when_network_blackholes);
   dict->SetBoolean("retry_without_alt_svc_on_quic_errors",
-                   params_.retry_without_alt_svc_on_quic_errors);
+                   params_.quic_params.retry_without_alt_svc_on_quic_errors);
   dict->SetBoolean("race_cert_verification",
-                   params_.quic_race_cert_verification);
+                   params_.quic_params.race_cert_verification);
   dict->SetBoolean("disable_bidirectional_streams",
-                   params_.quic_disable_bidirectional_streams);
+                   params_.quic_params.disable_bidirectional_streams);
   dict->SetBoolean("close_sessions_on_ip_change",
-                   params_.quic_close_sessions_on_ip_change);
+                   params_.quic_params.close_sessions_on_ip_change);
   dict->SetBoolean("goaway_sessions_on_ip_change",
-                   params_.quic_goaway_sessions_on_ip_change);
+                   params_.quic_params.goaway_sessions_on_ip_change);
   dict->SetBoolean("migrate_sessions_on_network_change_v2",
-                   params_.quic_migrate_sessions_on_network_change_v2);
+                   params_.quic_params.migrate_sessions_on_network_change_v2);
   dict->SetBoolean("migrate_sessions_early_v2",
-                   params_.quic_migrate_sessions_early_v2);
-  dict->SetInteger("retransmittable_on_wire_timeout_milliseconds",
-                   params_.quic_retransmittable_on_wire_timeout_milliseconds);
-  dict->SetBoolean("retry_on_alternate_network_before_handshake",
-                   params_.quic_retry_on_alternate_network_before_handshake);
-  dict->SetBoolean("migrate_idle_sessions", params_.quic_migrate_idle_sessions);
-  dict->SetInteger("idle_session_migration_period_seconds",
-                   params_.quic_idle_session_migration_period.InSeconds());
-  dict->SetInteger("max_time_on_non_default_network_seconds",
-                   params_.quic_max_time_on_non_default_network.InSeconds());
+                   params_.quic_params.migrate_sessions_early_v2);
+  dict->SetInteger(
+      "retransmittable_on_wire_timeout_milliseconds",
+      params_.quic_params.retransmittable_on_wire_timeout_milliseconds);
+  dict->SetBoolean(
+      "retry_on_alternate_network_before_handshake",
+      params_.quic_params.retry_on_alternate_network_before_handshake);
+  dict->SetBoolean("migrate_idle_sessions",
+                   params_.quic_params.migrate_idle_sessions);
+  dict->SetInteger(
+      "idle_session_migration_period_seconds",
+      params_.quic_params.idle_session_migration_period.InSeconds());
+  dict->SetInteger(
+      "max_time_on_non_default_network_seconds",
+      params_.quic_params.max_time_on_non_default_network.InSeconds());
   dict->SetInteger(
       "max_num_migrations_to_non_default_network_on_write_error",
-      params_.quic_max_migrations_to_non_default_network_on_write_error);
+      params_.quic_params.max_migrations_to_non_default_network_on_write_error);
   dict->SetInteger(
       "max_num_migrations_to_non_default_network_on_path_degrading",
-      params_.quic_max_migrations_to_non_default_network_on_path_degrading);
+      params_.quic_params
+          .max_migrations_to_non_default_network_on_path_degrading);
   dict->SetBoolean("allow_server_migration",
-                   params_.quic_allow_server_migration);
+                   params_.quic_params.allow_server_migration);
   dict->SetBoolean("race_stale_dns_on_connection",
-                   params_.quic_race_stale_dns_on_connection);
+                   params_.quic_params.race_stale_dns_on_connection);
   dict->SetBoolean("go_away_on_path_degrading",
-                   params_.quic_go_away_on_path_degrading);
-  dict->SetBoolean("estimate_initial_rtt", params_.quic_estimate_initial_rtt);
+                   params_.quic_params.go_away_on_path_degrading);
+  dict->SetBoolean("estimate_initial_rtt",
+                   params_.quic_params.estimate_initial_rtt);
   dict->SetBoolean("server_push_cancellation",
                    params_.enable_server_push_cancellation);
   dict->SetInteger("initial_rtt_for_handshake_milliseconds",
-                   params_.quic_initial_rtt_for_handshake_milliseconds);
+                   params_.quic_params.initial_rtt_for_handshake_milliseconds);
 
   return std::move(dict);
 }
@@ -502,7 +444,7 @@ CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
                                      : ClientSocketFactory::GetDefaultFactory(),
       context_.host_resolver, &http_auth_cache_,
       context_.http_auth_handler_factory, &spdy_session_pool_,
-      &params_.quic_supported_versions, &quic_stream_factory_,
+      &params_.quic_params.supported_versions, &quic_stream_factory_,
       context_.proxy_delegate, context_.http_user_agent_settings,
       CreateClientSocketContext(context_, &ssl_client_session_cache_),
       CreateClientSocketContext(context_,

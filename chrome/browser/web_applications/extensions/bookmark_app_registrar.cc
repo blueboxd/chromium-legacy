@@ -63,13 +63,17 @@ bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
   return ExtensionPrefs::Get(profile())->IsExternalExtensionUninstalled(app_id);
 }
 
-web_app::AppId BookmarkAppRegistrar::FindAppIdForUrl(const GURL& url) const {
+base::Optional<web_app::AppId> BookmarkAppRegistrar::FindAppWithUrlInScope(
+    const GURL& url) const {
   const Extension* extension = util::GetInstalledPwaForUrl(profile(), url);
 
   if (!extension)
     extension = GetInstalledShortcutForUrl(profile(), url);
 
-  return extension ? extension->id() : web_app::AppId();
+  if (extension)
+    return extension->id();
+
+  return base::nullopt;
 }
 
 int BookmarkAppRegistrar::CountUserInstalledApps() const {

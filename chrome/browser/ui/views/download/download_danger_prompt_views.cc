@@ -252,6 +252,7 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
             IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
             download_->GetFileNameToReportUser().LossyDisplayName());
       }
+      case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
       case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
       case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
       case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:

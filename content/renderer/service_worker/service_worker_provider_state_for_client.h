@@ -22,6 +22,10 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
+namespace network {
+class WeakWrapperSharedURLLoaderFactory;
+}
+
 namespace content {
 
 // Holds state for ServiceWorkerProviderContext instances for service worker
@@ -42,6 +46,11 @@ struct ServiceWorkerProviderStateForClient {
 
   // Used when we create |subresource_loader_factory|.
   scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory;
+
+  // Used to ensure handed out loader factories are properly detached when the
+  // contained subresource_loader_factory goes away.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      weak_wrapped_subresource_loader_factory;
 
   // The Client#id value of the client.
   std::string client_id;

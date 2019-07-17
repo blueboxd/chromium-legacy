@@ -28,7 +28,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
-#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 
 namespace base {
 class WaitableEvent;

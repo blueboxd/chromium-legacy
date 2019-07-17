@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_item.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
@@ -74,8 +74,8 @@ class ASH_EXPORT MediaNotificationControllerImpl
 
   media_session::mojom::MediaControllerManagerPtr controller_manager_ptr_;
 
-  mojo::Binding<media_session::mojom::AudioFocusObserver>
-      audio_focus_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::AudioFocusObserver>
+      audio_focus_observer_receiver_{this};
 
   // Stores a |media_message_center::MediaNotificationItem| for each media
   // session keyed by its |request_id| in string format.

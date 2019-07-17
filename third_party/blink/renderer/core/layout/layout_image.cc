@@ -68,10 +68,6 @@ LayoutImage::~LayoutImage() = default;
 void LayoutImage::WillBeDestroyed() {
   DCHECK(image_resource_);
   image_resource_->Shutdown();
-  if (RuntimeEnabledFeatures::ElementTimingEnabled(&GetDocument())) {
-    if (LocalDOMWindow* window = GetDocument().domWindow())
-      ImageElementTiming::From(*window).NotifyWillBeDestroyed(this);
-  }
 
   LayoutReplaced::WillBeDestroyed();
 }

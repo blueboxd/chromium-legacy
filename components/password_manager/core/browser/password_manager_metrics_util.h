@@ -404,9 +404,6 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
-// Logs whether a password was rejected due to same origin but different scheme.
-void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);
-
 // Logs number of passwords migrated from HTTP to HTTPS.
 void LogCountHttpMigratedPasswords(int count);
 

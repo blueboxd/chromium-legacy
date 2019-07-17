@@ -31,10 +31,6 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
     return settings_enabled_;
   }
 
-  const base::Optional<mojom::ConsentStatus>& consent_status() const {
-    return consent_status_;
-  }
-
   const base::Optional<bool>& context_enabled() const {
     return context_enabled_;
   }
@@ -67,9 +63,6 @@ class ASH_PUBLIC_EXPORT AssistantStateBase {
   // Whether voice interaction is enabled in system settings. nullopt if the
   // data is not available yet.
   base::Optional<bool> settings_enabled_;
-
-  // The status of the user's consent. nullopt if the data is not available yet.
-  base::Optional<mojom::ConsentStatus> consent_status_;
 
   // Whether screen context is enabled. nullopt if the data is not available
   // yet.

@@ -54,7 +54,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/validation_message_client.h"
@@ -329,10 +329,12 @@ class MockDocumentValidationMessageClient
   // ValidationMessageClient::trace(visitor); }
 };
 
-class MockApplicationCacheHost : public blink::ApplicationCacheHost {
+class MockApplicationCacheHost final : public ApplicationCacheHostForFrame {
  public:
   MockApplicationCacheHost(DocumentLoader* loader)
-      : blink::ApplicationCacheHost(loader, nullptr, nullptr) {}
+      : ApplicationCacheHostForFrame(loader,
+                                     /*interface_broker=*/nullptr,
+                                     /*task_runner=*/nullptr) {}
   ~MockApplicationCacheHost() override = default;
 
   void SelectCacheWithoutManifest() override {

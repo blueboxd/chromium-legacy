@@ -83,9 +83,10 @@ bool TestAppRegistrar::HasExternalAppWithInstallSource(
   return it != installed_apps_.end();
 }
 
-AppId TestAppRegistrar::FindAppIdForUrl(const GURL& url) const {
+base::Optional<AppId> TestAppRegistrar::FindAppWithUrlInScope(
+    const GURL& url) const {
   NOTIMPLEMENTED();
-  return AppId();
+  return base::nullopt;
 }
 
 int TestAppRegistrar::CountUserInstalledApps() const {

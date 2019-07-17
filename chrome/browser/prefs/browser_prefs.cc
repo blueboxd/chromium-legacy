@@ -314,6 +314,7 @@
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #endif
 
 #else
@@ -395,10 +396,6 @@ const char kHttpServerProperties[] = "net.http_server_properties";
 // Deprecated 1/2019.
 const char kNextUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kLastUpdateCheck[] = "extensions.autoupdate.last_check";
-
-// Deprecated 2/2019.
-const char kVoiceInteractionActivityControlAcceptedDeprecated[] =
-    "settings.voice_interaction.activity_control.accepted";
 
 // Deprecated 3/2019.
 const char kCurrentThemeImages[] = "extensions.theme.images";
@@ -486,9 +483,6 @@ void RegisterProfilePrefsForMigration(
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterIntegerPref(kLastUpdateCheck, 0);
   registry->RegisterIntegerPref(kNextUpdateCheck, 0);
-
-  registry->RegisterBooleanPref(
-      kVoiceInteractionActivityControlAcceptedDeprecated, false);
 
   registry->RegisterDictionaryPref(kCurrentThemeImages);
   registry->RegisterDictionaryPref(kCurrentThemeColors);
@@ -877,7 +871,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ::onc::RegisterProfilePrefs(registry);
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
+  // TODO(b/110211045): Merge these two methods after migrating other Assistant
+  // related prefs.
   assistant::prefs::RegisterProfilePrefs(registry);
+  chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
 #endif
 
 #endif
@@ -965,28 +962,6 @@ void RegisterSigninProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ash::RegisterSigninProfilePrefs(registry);
 }
 
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-
-bool MigrateVoiceInteractionActivityControlAccepted(
-    PrefService* profile_prefs) {
-  const base::Value* activity_control_accepted =
-      profile_prefs->GetUserPrefValue(
-          kVoiceInteractionActivityControlAcceptedDeprecated);
-
-  if (!activity_control_accepted)
-    return false;
-
-  ash::mojom::ConsentStatus consent_status =
-      activity_control_accepted->GetBool()
-          ? ash::mojom::ConsentStatus::kActivityControlAccepted
-          : ash::mojom::ConsentStatus::kUnknown;
-
-  assistant::prefs::SetConsentStatus(profile_prefs, consent_status);
-  return true;
-}
-
-#endif
-
 #endif
 
 // This method should be periodically pruned of year+ old migrations.
@@ -1047,14 +1022,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Added 12/2018.
   profile_prefs->ClearPref(prefs::kDataSaverPromptsShown);
-
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  // Added 2/2019.
-  if (MigrateVoiceInteractionActivityControlAccepted(profile_prefs)) {
-    profile_prefs->ClearPref(
-        kVoiceInteractionActivityControlAcceptedDeprecated);
-  }
-#endif
 
   // Added 4/2019
   guest_os::GuestOsSharePath::MigratePersistedPathsToMultiVM(profile_prefs);

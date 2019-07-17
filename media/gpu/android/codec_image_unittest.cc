@@ -78,7 +78,7 @@ class CodecImageTest : public testing::Test {
   enum ImageKind { kOverlay, kTextureOwner };
   scoped_refptr<CodecImage> NewImage(
       ImageKind kind,
-      CodecImage::DestructionCb destruction_cb = base::DoNothing()) {
+      CodecImage::DestructionCB destruction_cb = base::DoNothing()) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
     scoped_refptr<CodecImage> image = new CodecImage();
@@ -87,7 +87,7 @@ class CodecImageTest : public testing::Test {
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));
 
-    image->SetDestructionCb(std::move(destruction_cb));
+    image->SetDestructionCB(std::move(destruction_cb));
     return image;
   }
 
@@ -114,8 +114,8 @@ class CodecImageTestExplicitBind : public CodecImageTest {
   bool BindsTextureOnUpdate() override { return false; }
 };
 
-TEST_F(CodecImageTest, DestructionCbRuns) {
-  base::MockCallback<CodecImage::DestructionCb> cb;
+TEST_F(CodecImageTest, DestructionCBRuns) {
+  base::MockCallback<CodecImage::DestructionCB> cb;
   auto i = NewImage(kOverlay, cb.Get());
   EXPECT_CALL(cb, Run(i.get()));
   i = nullptr;

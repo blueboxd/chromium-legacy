@@ -933,6 +933,7 @@ customize.richerPicker_deselectBackgroundTile = function(tile) {
     return;
   }
   customize.selectedOptions.background = null;
+  customize.selectedOptions.backgroundId = null;
   customize.richerPicker_removeSelectedState(tile);
   customize.richerPicker_maybeToggleDone();
   customize.richerPicker_unpreviewImage();
@@ -1419,8 +1420,11 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
 
   // Selecting a local image for the background should close the picker.
   if (configData.richerPicker) {
-    ntpApiHandle.onlocalbackgroundselected =
-        customize.richerPicker_applyCustomization;
+    ntpApiHandle.onlocalbackgroundselected = () => {
+      customize.richerPicker_deselectBackgroundTile(
+          customize.selectedOptions.background);
+      customize.richerPicker_applyCustomization();
+    };
   }
 
   // Edit gear icon interaction events.

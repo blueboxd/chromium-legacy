@@ -431,6 +431,10 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
     update.Get()->AppendString(domain);
   }
 
+  void SetPasswordProtectedAllowedPref(bool value) {
+    profile()->GetPrefs()->SetBoolean(prefs::kPasswordProtectedAllowed, value);
+  }
+
   // Helper function to simulate a user gesture, then a link click.
   // The usual NavigateAndCommit is unsuitable because it creates
   // browser-initiated navigations, causing us to drop the referrer.
@@ -2721,6 +2725,50 @@ TEST_F(DownloadProtectionServiceTest, DoesNotSendPingForCancelledDownloads) {
 
   EXPECT_TRUE(has_result_);
   EXPECT_FALSE(HasClientDownloadRequest());
+}
+
+TEST_F(DownloadProtectionServiceTest,
+       PasswordProtectedArchivesBlockedByPreference) {
+  base::FilePath test_zip;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_zip));
+  test_zip = test_zip.AppendASCII("safe_browsing")
+                 .AppendASCII("download_protection")
+                 .AppendASCII("encrypted.zip");
+
+  NiceMockDownloadItem item;
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/encrypted.zip"},  // url_chain
+      "http://www.google.com/",                      // referrer
+      test_zip,                                      // tmp_path
+      temp_dir_.GetPath().Append(
+          FILE_PATH_LITERAL("encrypted.zip")));  // final_path
+  content::DownloadItemUtils::AttachInfo(&item, profile(), nullptr);
+
+  {
+    SetPasswordProtectedAllowedPref(false);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED));
+    EXPECT_FALSE(HasClientDownloadRequest());
+  }
+
+  {
+    SetPasswordProtectedAllowedPref(true);
+    PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
+
+    RunLoop run_loop;
+    download_service_->CheckClientDownload(
+        &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                          base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    EXPECT_TRUE(IsResult(DownloadCheckResult::SAFE));
+    EXPECT_TRUE(HasClientDownloadRequest());
+    ClearClientDownloadRequest();
+  }
 }
 
 }  // namespace safe_browsing

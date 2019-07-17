@@ -14,11 +14,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/capture/video/mock_video_capture_device_client.h"
@@ -556,6 +556,7 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
 
+    scoped_refptr<base::SingleThreadTaskRunner> message_loop_task_runner;
     scoped_refptr<base::TestMockTimeTaskRunner> task_runner;
     int nb_frames = 0;
 
@@ -564,11 +565,12 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
     EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
     // On started is called from the capture thread.
     EXPECT_CALL(*client, OnStarted())
-        .WillOnce(InvokeWithoutArgs([this, &task_runner] {
+        .WillOnce(InvokeWithoutArgs([this, &task_runner,
+                                     &message_loop_task_runner] {
+          message_loop_task_runner = base::ThreadTaskRunnerHandle::Get();
           task_runner = new base::TestMockTimeTaskRunner(
               base::Time::Now(), base::TimeTicks::Now(),
               base::TestMockTimeTaskRunner::Type::kStandalone);
-
           capture_device_->SetMockTimeForTesting(
               task_runner, task_runner->GetMockTickClock());
         }));
@@ -577,8 +579,9 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
         .WillRepeatedly(DoAll(
             WithArg<2>(
                 Invoke(&format_checker, &FormatChecker::ExpectAcceptableSize)),
-            WithArg<7>(Invoke([&done_event, &nb_frames,
-                               &task_runner](base::TimeDelta timestamp) {
+            WithArg<7>(Invoke([&done_event, &nb_frames, &task_runner,
+                               &message_loop_task_runner](
+                                  base::TimeDelta timestamp) {
               ++nb_frames;
 
               // Simulate real device capture time. Indeed the time spent
@@ -598,17 +601,15 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
                 // 'PostNonNestable' is required to make sure the next one
                 // shot capture timer is already pushed when forwaring the
                 // virtual time by the next pending task delay.
-                base::MessageLoopCurrent::Get()
-                    ->task_runner()
-                    ->PostNonNestableTask(
-                        FROM_HERE,
-                        base::BindOnce(
-                            [](scoped_refptr<base::TestMockTimeTaskRunner>
-                                   task_runner) {
-                              task_runner->FastForwardBy(
-                                  task_runner->NextPendingTaskDelay());
-                            },
-                            task_runner));
+                message_loop_task_runner->PostNonNestableTask(
+                    FROM_HERE,
+                    base::BindOnce(
+                        [](scoped_refptr<base::TestMockTimeTaskRunner>
+                               task_runner) {
+                          task_runner->FastForwardBy(
+                              task_runner->NextPendingTaskDelay());
+                        },
+                        task_runner));
               }
             }))));
     media::VideoCaptureParams capture_params;

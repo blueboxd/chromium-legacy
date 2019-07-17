@@ -1054,8 +1054,8 @@ TEST_P(DesksTest, DragWindowToDesk) {
   EXPECT_EQ(target_bounds_before_drag, overview_item->target_bounds());
   EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
 
-  // Now drag it to desk_2's mini_view. The overview grid should now show the
-  // "no-windows" widget, and the window should move to desk_2.
+  // Now drag it to desk_2's mini_view. The overview grid should now have only
+  // `win2`, and `win1` should move to desk_2.
   auto* desk_2_mini_view = desks_bar_view->mini_views()[1].get();
   EXPECT_EQ(desk_2, desk_2_mini_view->desk());
   DragItemToPoint(overview_item,

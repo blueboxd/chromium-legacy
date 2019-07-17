@@ -155,7 +155,25 @@ void ApplicationCacheHostForFrame::SelectCacheWithoutManifest() {
 
 void ApplicationCacheHostForFrame::SelectCacheWithManifest(
     const KURL& manifest_url) {
-  ApplicationCacheHost::SelectCacheWithManifest(manifest_url);
+  LocalFrame* frame = GetDocumentLoader()->GetFrame();
+  Document* document = frame->GetDocument();
+  if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
+    // Prevent sandboxes from establishing application caches.
+    SelectCacheWithoutManifest();
+    return;
+  }
+  if (document->IsSecureContext()) {
+    UseCounter::Count(document,
+                      WebFeature::kApplicationCacheManifestSelectSecureOrigin);
+  } else {
+    Deprecation::CountDeprecation(
+        document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
+    Deprecation::CountDeprecationCrossOriginIframe(
+        *document, WebFeature::kApplicationCacheManifestSelectInsecureOrigin);
+    HostsUsingFeatures::CountAnyWorld(
+        *document, HostsUsingFeatures::Feature::
+                       kApplicationCacheManifestSelectInsecureHost);
+  }
 
   if (!backend_host_.is_bound())
     return;

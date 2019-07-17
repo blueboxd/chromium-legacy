@@ -17,14 +17,26 @@ TEST(ChromeOsAppsNavigationThrottleTest, TestGetDestinationPlatform) {
 
   // When the PickerAction is either ERROR or DIALOG_DEACTIVATED we MUST stay in
   // Chrome not taking into account the selected_app_package.
-  EXPECT_EQ(apps::AppsNavigationThrottle::Platform::CHROME,
-            ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
-                chrome_launch_name,
-                apps::AppsNavigationThrottle::PickerAction::PICKER_ERROR));
-  EXPECT_EQ(apps::AppsNavigationThrottle::Platform::CHROME,
-            ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
-                app_launch_name,
-                apps::AppsNavigationThrottle::PickerAction::PICKER_ERROR));
+  EXPECT_EQ(
+      apps::AppsNavigationThrottle::Platform::CHROME,
+      ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
+          chrome_launch_name,
+          apps::AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER));
+  EXPECT_EQ(
+      apps::AppsNavigationThrottle::Platform::CHROME,
+      ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
+          app_launch_name,
+          apps::AppsNavigationThrottle::PickerAction::ERROR_BEFORE_PICKER));
+  EXPECT_EQ(
+      apps::AppsNavigationThrottle::Platform::CHROME,
+      ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
+          chrome_launch_name,
+          apps::AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER));
+  EXPECT_EQ(
+      apps::AppsNavigationThrottle::Platform::CHROME,
+      ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
+          app_launch_name,
+          apps::AppsNavigationThrottle::PickerAction::ERROR_AFTER_PICKER));
   EXPECT_EQ(
       apps::AppsNavigationThrottle::Platform::CHROME,
       ChromeOsAppsNavigationThrottle::GetDestinationPlatform(

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/function_template.h"

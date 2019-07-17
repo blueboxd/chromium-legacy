@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

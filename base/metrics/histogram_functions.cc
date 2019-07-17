@@ -170,7 +170,7 @@ void UmaHistogramCustomMicrosecondsTimes(const std::string& name,
                                          TimeDelta min,
                                          TimeDelta max,
                                          int buckets) {
-  HistogramBase* histogram = Histogram::FactoryTimeGet(
+  HistogramBase* histogram = Histogram::FactoryMicrosecondsTimeGet(
       name, min, max, buckets, HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTimeMicrosecondsGranularity(sample);
 }
@@ -180,7 +180,7 @@ void UmaHistogramCustomMicrosecondsTimes(const char* name,
                                          TimeDelta min,
                                          TimeDelta max,
                                          int buckets) {
-  HistogramBase* histogram = Histogram::FactoryTimeGet(
+  HistogramBase* histogram = Histogram::FactoryMicrosecondsTimeGet(
       name, min, max, buckets, HistogramBase::kUmaTargetedHistogramFlag);
   histogram->AddTimeMicrosecondsGranularity(sample);
 }
@@ -195,6 +195,24 @@ void UmaHistogramMicrosecondsTimes(const char* name, TimeDelta sample) {
   UmaHistogramCustomMicrosecondsTimes(name, sample,
                                       TimeDelta::FromMicroseconds(1),
                                       TimeDelta::FromSeconds(10), 50);
+}
+
+// TODO(crbug.com/983261) Remove this method after moving to
+// UmaHistogramMicrosecondsTimes.
+void UmaHistogramMicrosecondsTimesUnderTenMilliseconds(const std::string& name,
+                                                       TimeDelta sample) {
+  UmaHistogramCustomMicrosecondsTimes(name, sample,
+                                      TimeDelta::FromMicroseconds(1),
+                                      TimeDelta::FromMilliseconds(10), 50);
+}
+
+// TODO(crbug.com/983261) Remove this method after moving to
+// UmaHistogramMicrosecondsTimes.
+void UmaHistogramMicrosecondsTimesUnderTenMilliseconds(const char* name,
+                                                       TimeDelta sample) {
+  UmaHistogramCustomMicrosecondsTimes(name, sample,
+                                      TimeDelta::FromMicroseconds(1),
+                                      TimeDelta::FromMilliseconds(10), 50);
 }
 
 void UmaHistogramMemoryKB(const std::string& name, int sample) {

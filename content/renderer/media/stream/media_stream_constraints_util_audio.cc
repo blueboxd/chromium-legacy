@@ -12,7 +12,6 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"

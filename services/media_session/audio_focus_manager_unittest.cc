@@ -149,9 +149,7 @@ class AudioFocusManagerTest
     std::unique_ptr<test::TestAudioFocusObserver> observer =
         std::make_unique<test::TestAudioFocusObserver>();
 
-    mojom::AudioFocusObserverPtr observer_ptr;
-    observer->BindToMojoRequest(mojo::MakeRequest(&observer_ptr));
-    GetService()->AddObserver(std::move(observer_ptr));
+    GetService()->AddObserver(observer->BindNewPipeAndPassRemote());
 
     audio_focus_ptr_.FlushForTesting();
     return observer;

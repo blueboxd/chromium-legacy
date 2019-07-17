@@ -81,55 +81,54 @@ void BadgeManager::BindRequest(blink::mojom::BadgeServiceRequest request,
                                       std::move(context));
 }
 
-void BadgeManager::UpdateAppBadge(const std::string& app_id,
+void BadgeManager::UpdateAppBadge(const base::Optional<std::string>& app_id,
                                   base::Optional<uint64_t> content) {
   // Badge content should never be 0 (it should be translated into a clear).
   DCHECK_NE(content.value_or(1), 0u);
 
-  badged_apps_[app_id] = content;
+  if (!app_id) {
+    BadgeChangeIgnored();
+    return;
+  }
+
+  badged_apps_[app_id.value()] = content;
 
   if (!delegate_)
     return;
 
-  delegate_->OnBadgeSet(app_id, content);
+  delegate_->OnBadgeSet(app_id.value(), content);
 }
 
-void BadgeManager::ClearAppBadge(const std::string& app_id) {
-  badged_apps_.erase(app_id);
+void BadgeManager::ClearAppBadge(const base::Optional<std::string>& app_id) {
+  if (!app_id) {
+    BadgeChangeIgnored();
+    return;
+  }
+
+  badged_apps_.erase(app_id.value());
   if (!delegate_)
     return;
 
-  delegate_->OnBadgeCleared(app_id);
+  delegate_->OnBadgeCleared(app_id.value());
+}
+
+void BadgeManager::BadgeChangeIgnored() {
+  if (!delegate_)
+    return;
+
+  delegate_->OnBadgeChangeIgnoredForTesting();
 }
 
 void BadgeManager::SetInteger(uint64_t content) {
-  auto app_id = GetAppIdToBadge(bindings_.dispatch_context());
-  if (!app_id) {
-    delegate_->OnBadgeChangeIgnoredForTesting();
-    return;
-  }
-
-  UpdateAppBadge(app_id.value(), content);
+  UpdateAppBadge(GetAppIdToBadge(bindings_.dispatch_context()), content);
 }
 
 void BadgeManager::SetFlag() {
-  auto app_id = GetAppIdToBadge(bindings_.dispatch_context());
-  if (!app_id) {
-    delegate_->OnBadgeChangeIgnoredForTesting();
-    return;
-  }
-
-  UpdateAppBadge(app_id.value(), base::nullopt);
+  UpdateAppBadge(GetAppIdToBadge(bindings_.dispatch_context()), base::nullopt);
 }
 
 void BadgeManager::ClearBadge() {
-  auto app_id = GetAppIdToBadge(bindings_.dispatch_context());
-  if (!app_id) {
-    delegate_->OnBadgeChangeIgnoredForTesting();
-    return;
-  }
-
-  ClearAppBadge(app_id.value());
+  ClearAppBadge(GetAppIdToBadge(bindings_.dispatch_context()));
 }
 
 base::Optional<std::string> BadgeManager::GetAppIdToBadge(

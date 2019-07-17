@@ -1204,9 +1204,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // necessarily sent yet.
   bool autoscroll_in_progress_ = false;
 
-  // TODO(crbug.com/976199): remove this, used in tracking a crash.
-  bool notifying_of_visibility_change_ = false;
-
   // Event IDs for touch event acks that should be ignored.
   std::unordered_set<uint32_t> touch_event_acks_to_ignore_;
 

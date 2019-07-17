@@ -19,7 +19,7 @@ namespace gfx {
 GFX_EXPORT std::vector<BufferFormat> GetBufferFormatsForTesting();
 
 // Returns the number of planes for |format|.
-GFX_EXPORT size_t NumberOfPlanesForBufferFormat(BufferFormat format);
+GFX_EXPORT size_t NumberOfPlanesForLinearBufferFormat(BufferFormat format);
 
 // Returns the subsampling factor applied to the given zero-indexed |plane| of
 // |format| both horizontally and vertically.

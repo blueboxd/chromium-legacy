@@ -152,7 +152,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   // TODO(ericrk): Make this generic in the future.
   bool allow_legacy_mailbox = false;
   SharedImageBackingFactory* factory = nullptr;
-  if (!using_vulkan_) {
+  if (backing_factory_for_testing_) {
+    factory = backing_factory_for_testing_;
+  } else if (!using_vulkan_) {
     allow_legacy_mailbox = true;
     factory = gl_backing_factory_.get();
   } else {
@@ -262,6 +264,11 @@ bool SharedImageFactory::OnMemoryDump(
   return true;
 }
 
+void SharedImageFactory::RegisterSharedImageBackingFactoryForTesting(
+    SharedImageBackingFactory* factory) {
+  backing_factory_for_testing_ = factory;
+}
+
 bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
   // If |shared_image_manager_| is thread safe, it means the display is running
   // on a separate thread (which uses a separate GL context or VkDeviceQueue).
@@ -273,6 +280,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
     bool* allow_legacy_mailbox,
     gfx::GpuMemoryBufferType gmb_type) {
+  if (backing_factory_for_testing_)
+    return backing_factory_for_testing_;
+
   bool using_dawn = usage & SHARED_IMAGE_USAGE_WEBGPU;
   bool vulkan_usage = using_vulkan_ && (usage & SHARED_IMAGE_USAGE_DISPLAY);
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;

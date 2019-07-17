@@ -1769,10 +1769,7 @@ bool WebContentsImpl::HasRecentInteractiveInputEvent() {
       ui::EventTimeForNow() - last_interactive_input_event_time_;
   // Note: the expectation is that the caller is typically expecting an input
   // event, e.g. validating that a WebUI message that requires a gesture is
-  // actually attached to a gesture. Logging to UMA here should hopefully give
-  // sufficient data if 5 seconds is actually sufficient (or even too high a
-  // threshhold).
-  UMA_HISTOGRAM_TIMES("Tabs.TimeSinceLastInteraction", delta);
+  // actually attached to a gesture.
   return delta <= kMaxInterval;
 }
 

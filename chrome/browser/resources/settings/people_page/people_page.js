@@ -151,6 +151,15 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private */
+    showParentalControls_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('showParentalControls') &&
+            loadTimeData.getBoolean('showParentalControls');
+      },
+    },
     // </if>
 
     /** @private {!Map<string, string>} */

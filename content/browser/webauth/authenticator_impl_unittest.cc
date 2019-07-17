@@ -341,7 +341,7 @@ std::vector<device::CableDiscoveryData> GetTestCableExtension() {
 }  // namespace
 
 class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
- public:
+ protected:
   AuthenticatorTestBase() { ResetVirtualDevice(); }
   ~AuthenticatorTestBase() override {}
 
@@ -354,19 +354,22 @@ class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
             std::move(virtual_device_factory));
   }
 
- protected:
   device::test::VirtualFidoDeviceFactory* virtual_device_factory_;
+
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
 };
 
 class AuthenticatorImplTest : public AuthenticatorTestBase {
- public:
+ protected:
   ~AuthenticatorImplTest() override {}
 
- protected:
   void TearDown() override {
     // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
     authenticator_impl_.reset();
-    content::RenderViewHostTestHarness::TearDown();
+    AuthenticatorTestBase::TearDown();
   }
 
   void NavigateAndCommit(const GURL& url) {
@@ -2309,9 +2312,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, WinIsUVPAA) {
     for (const bool is_uvpaa : {false, true}) {
       SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
 
-      device::ScopedFakeWinWebAuthnApi fake_api;
-      fake_api.set_available(enable_win_webauthn_api);
-      fake_api.set_is_uvpaa(is_uvpaa);
+      win_webauthn_api_.set_available(enable_win_webauthn_api);
+      win_webauthn_api_.set_is_uvpaa(is_uvpaa);
 
       mojo::Remote<blink::mojom::Authenticator> authenticator =
           ConnectToAuthenticator();
@@ -3954,13 +3956,15 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
   // The canned response returned by the Windows API fake is for acme.com.
   NavigateAndCommit(GURL("https://acme.com"));
   TestServiceManagerContext smc;
+  // AuthenticatorTestBase default-disables |win_webauthn_api_|.
+  win_webauthn_api_.set_available(true);
   for (const bool supports_cred_protect : {false, true}) {
     SCOPED_TRACE(testing::Message()
                  << "supports_cred_protect: " << supports_cred_protect);
 
-    device::ScopedFakeWinWebAuthnApi fake_api;
-    fake_api.set_version(supports_cred_protect ? WEBAUTHN_API_VERSION_2
-                                               : WEBAUTHN_API_VERSION_1);
+    win_webauthn_api_.set_version(supports_cred_protect
+                                      ? WEBAUTHN_API_VERSION_2
+                                      : WEBAUTHN_API_VERSION_1);
 
     PublicKeyCredentialCreationOptionsPtr options = make_credential_options();
     options->relying_party = device::PublicKeyCredentialRpEntity();
@@ -3988,10 +3992,9 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
 #endif  // defined(OS_WIN)
 
 class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
- public:
+ protected:
   InternalAuthenticatorImplTest() = default;
 
- protected:
   void TearDown() override {
     // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
     internal_authenticator_impl_.reset();

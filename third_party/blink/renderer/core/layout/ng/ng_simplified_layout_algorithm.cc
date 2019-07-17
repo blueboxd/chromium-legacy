@@ -187,8 +187,7 @@ void NGSimplifiedLayoutAlgorithm::HandleOutOfFlowPositioned(
         container_builder_.BfcLineOffset() +
             border_scrollbar_padding_.LineLeft(direction_),
         container_builder_.BfcBlockOffset().value_or(
-            ConstraintSpace().ForcedBfcBlockOffset().value_or(
-                ConstraintSpace().BfcOffset().block_offset)) +
+            ConstraintSpace().ExpectedBfcBlockOffset()) +
             static_block_offset_};
 
     static_offset.inline_offset += CalculateOutOfFlowStaticInlineLevelOffset(
@@ -236,8 +235,7 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
     NGBfcOffset container_bfc_offset = {
         container_builder_.BfcLineOffset(),
         container_builder_.BfcBlockOffset().value_or(
-            ConstraintSpace().ForcedBfcBlockOffset().value_or(
-                ConstraintSpace().BfcOffset().block_offset))};
+            ConstraintSpace().ExpectedBfcBlockOffset())};
 
     // Determine the offsets for the exclusion (the margin-box of the float).
     NGBfcOffset start_offset = {

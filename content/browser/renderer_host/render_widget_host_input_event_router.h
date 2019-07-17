@@ -132,6 +132,17 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       const gfx::PointF& point,
       gfx::PointF* transformed_point);
 
+  // Finds the RenderWidgetHostImpl inside the |root_view| at |point| where
+  // |point| is with respect to |root_view|'s coordinates. If a RWHI is found,
+  // it is passed along with the coordinate of the point with
+  // respect to the RWHI's coordinates to the callback function. If
+  // |root_view| is nullptr or RWHI is not found, the callback is called with
+  // nullptr and no location.
+  void GetRenderWidgetHostAtPointAsynchronously(
+      RenderWidgetHostViewBase* root_view,
+      const gfx::PointF& point,
+      RenderWidgetTargeter::RenderWidgetHostAtPointCallback callback);
+
   // RenderWidgetTargeter::Delegate:
   RenderWidgetHostViewBase* FindViewFromFrameSinkId(
       const viz::FrameSinkId& frame_sink_id) const override;
@@ -293,6 +304,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                       const RenderWidgetHostViewBase* view);
 
   // RenderWidgetTargeter::Delegate:
+  RenderWidgetTargetResult FindTargetSynchronouslyAtPoint(
+      RenderWidgetHostViewBase* root_view,
+      const gfx::PointF& location) override;
+
   RenderWidgetTargetResult FindTargetSynchronously(
       RenderWidgetHostViewBase* root_view,
       const blink::WebInputEvent& event) override;

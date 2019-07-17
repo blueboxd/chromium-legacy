@@ -233,7 +233,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
         }
 
-        if (mThumbnailBitmap == null) updateView();
+        if (mThumbnailBitmap == null) updateView(false);
 
         Context context = mDescriptionCompletedView.getContext();
         mFilenameCompletedView.setText(item.getDisplayFileName());
@@ -302,7 +302,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     private void setThumbnailBitmap(Bitmap thumbnail) {
         mThumbnailBitmap = thumbnail;
-        updateView();
+        updateView(false);
     }
 
     @Override
@@ -325,14 +325,14 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     }
 
     @Override
-    protected void updateView() {
+    protected void updateView(boolean animate) {
         if (isChecked()) {
             mIconView.setBackgroundResource(mIconBackgroundResId);
             mIconView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_selected));
             mIconView.setImageDrawable(mCheckDrawable);
             ApiCompatibilityUtils.setImageTintList(mIconView, mCheckedIconForegroundColorList);
-            mCheckDrawable.start();
+            if (animate) mCheckDrawable.start();
         } else if (mThumbnailBitmap != null) {
             assert !mThumbnailBitmap.isRecycled();
             mIconView.setBackground(null);

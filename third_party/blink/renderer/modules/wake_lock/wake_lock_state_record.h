@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 class ScriptPromiseResolver;
 
 // https://w3c.github.io/wake-lock/#concepts-and-state-record
@@ -21,7 +21,7 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT WakeLockStateRecord
     : public GarbageCollectedFinalized<WakeLockStateRecord> {
  public:
-  WakeLockStateRecord(Document*, WakeLockType);
+  WakeLockStateRecord(ExecutionContext*, WakeLockType);
 
   void AcquireWakeLock(ScriptPromiseResolver*);
   void ReleaseWakeLock(ScriptPromiseResolver*);
@@ -46,8 +46,8 @@ class MODULES_EXPORT WakeLockStateRecord
   device::mojom::blink::WakeLockPtr wake_lock_;
   device::mojom::blink::WakeLockType wake_lock_type_;
 
-  // Document from which we will connect to |wake_lock_service_|.
-  Member<Document> document_;
+  // ExecutionContext from which we will connect to |wake_lock_service_|.
+  Member<ExecutionContext> execution_context_;
 
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, AcquireWakeLock);
   FRIEND_TEST_ALL_PREFIXES(WakeLockStateRecordTest, ReleaseAllWakeLocks);

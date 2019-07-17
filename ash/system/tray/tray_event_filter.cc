@@ -63,7 +63,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
     // from message center.
     if (container_id == kShellWindowId_StatusContainer &&
         target->type() == aura::client::WINDOW_TYPE_POPUP && target_widget &&
-        target_widget->IsAlwaysOnTop()) {
+        target_widget->GetZOrderLevel() != ui::ZOrderLevel::kNormal) {
       return;
     }
     // Don't process events that occurred inside a virtual keyboard.

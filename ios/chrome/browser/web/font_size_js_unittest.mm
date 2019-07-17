@@ -5,6 +5,7 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
+#include "base/ios/ios_util.h"
 #include "base/macros.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -57,6 +58,15 @@ class FontSizeJsTest : public web::WebJsTest<web::WebTestWithWebState> {
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for any scale.
 TEST_F(FontSizeJsTest, TestAdjustFontSizeForScale) {
+  // TODO(crbug.com/983776): This test fails when compiled with Xcode 10 and
+  // running on iOS 13 because expected font size and actual font size don't
+  // match. Re-enable this test when Xcode 11 is used for compiling.
+#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    return;
+  }
+#endif
+
   float original_size = 0;
   float current_size = 0;
 
@@ -171,6 +181,15 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForScale) {
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for any CSS unit.
 TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
+  // TODO(crbug.com/983776): This test fails when compiled with Xcode 10 and
+  // running on iOS 13 because expected font size and actual font size don't
+  // match. Re-enable this test when Xcode 11 is used for compiling.
+#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    return;
+  }
+#endif
+
   float original_size = 0;
   float current_size = 0;
 
@@ -237,6 +256,15 @@ TEST_F(FontSizeJsTest, TestAdjustFontSizeForUnit) {
 
 // Tests that __gCrWeb.accessibility.adjustFontSize works for nested elements.
 TEST_F(FontSizeJsTest, TestAdjustFontSizeForNestedElements) {
+  // TODO(crbug.com/983776): This test fails when compiled with Xcode 10 and
+  // running on iOS 13 because expected font size and actual font size don't
+  // match. Re-enable this test when Xcode 11 is used for compiling.
+#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    return;
+  }
+#endif
+
   float original_size_1 = 0;
   float original_size_2 = 0;
   float current_size_1 = 0;

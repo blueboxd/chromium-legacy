@@ -197,8 +197,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Check max_server_configs_stored_in_properties.
   EXPECT_EQ(2u, params->quic_params.max_server_configs_stored_in_properties);
 
-  // Check idle_connection_timeout_seconds.
-  EXPECT_EQ(300, params->quic_params.idle_connection_timeout_seconds);
+  // Check idle_connection_timeout.
+  EXPECT_EQ(300, params->quic_params.idle_connection_timeout.InSeconds());
 
   EXPECT_TRUE(params->quic_params.close_sessions_on_ip_change);
   EXPECT_FALSE(params->quic_params.goaway_sessions_on_ip_change);
@@ -691,8 +691,9 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
   EXPECT_TRUE(params->quic_params.migrate_sessions_on_network_change_v2);
   EXPECT_TRUE(params->quic_params.migrate_sessions_early_v2);
   EXPECT_TRUE(params->quic_params.retry_on_alternate_network_before_handshake);
-  EXPECT_EQ(1000,
-            params->quic_params.retransmittable_on_wire_timeout_milliseconds);
+  EXPECT_EQ(
+      1000,
+      params->quic_params.retransmittable_on_wire_timeout.InMilliseconds());
   EXPECT_TRUE(params->quic_params.migrate_idle_sessions);
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
             params->quic_params.idle_session_migration_period);
@@ -857,9 +858,11 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
   const net::HttpNetworkSession::Params* params =
       context->GetNetworkSessionParams();
 
-  EXPECT_EQ(7, params->quic_params.max_time_before_crypto_handshake_seconds);
-  EXPECT_EQ(11,
-            params->quic_params.max_idle_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(7,
+            params->quic_params.max_time_before_crypto_handshake.InSeconds());
+  EXPECT_EQ(
+      11,
+      params->quic_params.max_idle_time_before_crypto_handshake.InSeconds());
 }
 
 TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {

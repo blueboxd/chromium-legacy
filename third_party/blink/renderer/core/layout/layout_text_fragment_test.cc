@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -442,6 +443,32 @@ TEST_P(ParameterizedLayoutTextFragmentTest, SetTextWithFirstLetter) {
                   ->IsRemainingTextLayoutObject());
   ASSERT_TRUE(letter_x.GetLayoutObject()->GetFirstLetterPart());
   EXPECT_EQ("x", letter_x.GetLayoutObject()->GetFirstLetterPart()->GetText());
+}
+
+// For http://crbug.com/984389
+TEST_P(ParameterizedLayoutTextFragmentTest, SplitTextWithZero) {
+  // Note: |V8TestingScope| is needed for |Text::splitText()|.
+  V8TestingScope scope;
+
+  SetBodyInnerHTML(
+      "<style>div::first-letter {color: red;}</style>"
+      "<div><b id=sample> x y</b></div>");
+  const Element& sample = *GetElementById("sample");
+  // Make " " "x y"
+  To<Text>(sample.firstChild())->splitText(1, ASSERT_NO_EXCEPTION);
+  UpdateAllLifecyclePhasesForTest();
+
+  // Make "" " " "x y"
+  To<Text>(sample.firstChild())->splitText(0, ASSERT_NO_EXCEPTION);
+  UpdateAllLifecyclePhasesForTest();
+
+  Text& xy = To<Text>(*sample.lastChild());
+  FirstLetterPseudoElement& first_letter_element =
+      *ToLayoutTextFragment(xy.GetLayoutObject())
+           ->GetFirstLetterPseudoElement();
+  EXPECT_EQ(first_letter_element.GetLayoutObject(),
+            xy.GetLayoutObject()->PreviousSibling())
+      << "first-letter remaining part should be next to first-letter part";
 }
 
 }  // namespace blink

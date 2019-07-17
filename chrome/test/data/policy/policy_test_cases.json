@@ -885,6 +885,14 @@
     "note": "This policy is deprecated and removed since Chrome 75."
   },
 
+  "BuiltinCertificateVerifierEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "BuiltinCertificateVerifierEnabled": true },
+    "pref_mappings": [
+      { "pref": "builtin_certificate_verifier_enabled" }
+    ]
+  },
+
   "AuthSchemes": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },

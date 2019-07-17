@@ -104,14 +104,6 @@ const char* PushUnregistrationStatusToString(
   return "";
 }
 
-// Returns whether |application_server_key| contains a valid application server
-// key, that is, a NIST P-256 public key in uncompressed format.
-bool IsApplicationServerKey(
-    const std::vector<uint8_t>& application_server_key) {
-  return application_server_key.size() == 65 &&
-         application_server_key[0] == 0x04;
-}
-
 // Returns application_server_key if non-empty, otherwise checks if
 // stored_sender_id may be used as a fallback and if so, returns
 // stored_sender_id instead.
@@ -177,9 +169,9 @@ class PushMessagingManager::Core {
   void GetSubscriptionDidGetInfoOnUI(GetSubscriptionCallback callback,
                                      const GURL& origin,
                                      int64_t service_worker_registration_id,
-                                     const GURL& endpoint,
                                      const std::string& application_server_key,
                                      bool is_valid,
+                                     const GURL& endpoint,
                                      const std::vector<uint8_t>& p256dh,
                                      const std::vector<uint8_t>& auth);
 
@@ -222,6 +214,7 @@ class PushMessagingManager::Core {
 
   void DidRegister(RegisterData data,
                    const std::string& push_subscription_id,
+                   const GURL& endpoint,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    blink::mojom::PushRegistrationStatus status);
@@ -281,12 +274,6 @@ PushMessagingManager::PushMessagingManager(
 
   PushMessagingService* service = ui_core_->service();
   service_available_ = !!service;
-
-  if (service_available_) {
-    default_endpoint_ = service->GetEndpoint(false /* standard_protocol */);
-    web_push_protocol_endpoint_ =
-        service->GetEndpoint(true /* standard_protocol */);
-  }
 }
 
 PushMessagingManager::~PushMessagingManager() {}
@@ -523,6 +510,7 @@ void PushMessagingManager::Core::DidRequestPermissionInIncognito(
 void PushMessagingManager::Core::DidRegister(
     RegisterData data,
     const std::string& push_subscription_id,
+    const GURL& endpoint,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
@@ -541,7 +529,7 @@ void PushMessagingManager::Core::DidRegister(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PushMessagingManager::PersistRegistrationOnIO,
                        io_parent_, std::move(data), push_subscription_id,
-                       p256dh, auth,
+                       endpoint, p256dh, auth,
                        subscription_changed
                            ? blink::mojom::PushRegistrationStatus::
                                  SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE
@@ -558,6 +546,7 @@ void PushMessagingManager::Core::DidRegister(
 void PushMessagingManager::PersistRegistrationOnIO(
     RegisterData data,
     const std::string& push_subscription_id,
+    const GURL& endpoint,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
@@ -573,21 +562,21 @@ void PushMessagingManager::PersistRegistrationOnIO(
       {{kPushRegistrationIdServiceWorkerKey, push_subscription_id},
        {kPushSenderIdServiceWorkerKey, application_server_key}},
       base::BindOnce(&PushMessagingManager::DidPersistRegistrationOnIO,
-                     weak_factory_.GetWeakPtr(), std::move(data),
-                     push_subscription_id, p256dh, auth, status));
+                     weak_factory_.GetWeakPtr(), std::move(data), endpoint,
+                     p256dh, auth, status));
 }
 
 void PushMessagingManager::DidPersistRegistrationOnIO(
     RegisterData data,
-    const std::string& push_subscription_id,
+    const GURL& endpoint,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus push_registration_status,
     blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == blink::ServiceWorkerStatusCode::kOk) {
-    SendSubscriptionSuccess(std::move(data), push_registration_status,
-                            push_subscription_id, p256dh, auth);
+    SendSubscriptionSuccess(std::move(data), push_registration_status, endpoint,
+                            p256dh, auth);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendSubscriptionError(std::move(data),
@@ -606,7 +595,7 @@ void PushMessagingManager::SendSubscriptionError(
 void PushMessagingManager::SendSubscriptionSuccess(
     RegisterData data,
     blink::mojom::PushRegistrationStatus status,
-    const std::string& push_subscription_id,
+    const GURL& endpoint,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -619,10 +608,6 @@ void PushMessagingManager::SendSubscriptionSuccess(
         blink::mojom::PushRegistrationStatus::SERVICE_NOT_AVAILABLE);
     return;
   }
-
-  const GURL endpoint = CreateEndpoint(
-      IsApplicationServerKey(data.options->application_server_key),
-      push_subscription_id);
 
   std::move(data.callback)
       .Run(status, blink::mojom::PushSubscription::New(
@@ -803,12 +788,6 @@ void PushMessagingManager::DidGetSubscription(
 
       const GURL origin = registration->scope().GetOrigin();
 
-      const bool uses_standard_protocol =
-          IsApplicationServerKey(std::vector<uint8_t>(
-              application_server_key.begin(), application_server_key.end()));
-      const GURL endpoint =
-          CreateEndpoint(uses_standard_protocol, push_subscription_id);
-
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&Core::GetSubscriptionInfoOnUI,
@@ -818,7 +797,7 @@ void PushMessagingManager::DidGetSubscription(
                          base::Bind(&Core::GetSubscriptionDidGetInfoOnUI,
                                     ui_core_weak_ptr_, base::Passed(&callback),
                                     origin, service_worker_registration_id,
-                                    endpoint, application_server_key)));
+                                    application_server_key)));
 
       return;
     }
@@ -863,9 +842,9 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
     GetSubscriptionCallback callback,
     const GURL& origin,
     int64_t service_worker_registration_id,
-    const GURL& endpoint,
     const std::string& application_server_key,
     bool is_valid,
+    const GURL& endpoint,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -947,24 +926,15 @@ void PushMessagingManager::Core::GetSubscriptionInfoOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingService* push_service = service();
   if (!push_service) {
-    std::move(callback).Run(false /* is_valid */,
-                            std::vector<uint8_t>() /* p256dh */,
-                            std::vector<uint8_t>() /* auth */);
+    std::move(callback).Run(
+        false /* is_valid */, GURL::EmptyGURL() /* endpoint */,
+        std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */);
     return;
   }
 
   push_service->GetSubscriptionInfo(origin, service_worker_registration_id,
                                     sender_id, push_subscription_id,
                                     std::move(callback));
-}
-
-GURL PushMessagingManager::CreateEndpoint(
-    bool standard_protocol,
-    const std::string& subscription_id) const {
-  const GURL& base =
-      standard_protocol ? web_push_protocol_endpoint_ : default_endpoint_;
-
-  return GURL(base.spec() + subscription_id);
 }
 
 PushMessagingService* PushMessagingManager::Core::service() {

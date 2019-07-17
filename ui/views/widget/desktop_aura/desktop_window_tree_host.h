@@ -130,8 +130,8 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   virtual bool HasCapture() const = 0;
 
-  virtual void SetAlwaysOnTop(bool always_on_top) = 0;
-  virtual bool IsAlwaysOnTop() const = 0;
+  virtual void SetZOrderLevel(ui::ZOrderLevel order) = 0;
+  virtual ui::ZOrderLevel GetZOrderLevel() const = 0;
 
   virtual void SetVisibleOnAllWorkspaces(bool always_visible) = 0;
   virtual bool IsVisibleOnAllWorkspaces() const = 0;

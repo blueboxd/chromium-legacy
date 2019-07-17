@@ -118,7 +118,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   ~BrowserThemePack() override;
 
   // Modifies |colors_| to set the entry with identifier |id| to |color|.  Only
-  // valid to call after BuildColorsFromJSON(), which creates |colors_|.
+  // valid to call after InitColors(), which creates |colors_|.
   void SetColor(int id, SkColor color);
 
   // If |colors_| does not already contain an entry with identifier |id|,
@@ -126,6 +126,14 @@ class BrowserThemePack : public CustomThemeSupplier {
   // entry for |id| already exists, does nothing.
   // Only valid to call after BuildColorsFromJSON(), which creates |colors_|.
   void SetColorIfUnspecified(int id, SkColor color);
+
+  // Sets the value for |id| in |tints_|. Only valid to call after InitTints(),
+  // which creates |tints_|.
+  void SetTint(int id, color_utils::HSL tint);
+
+  // Sets the value for |id| in |display_properties_|. Only valid to call after
+  // InitDisplayProperties(), which creates |display_properties_|.
+  void SetDisplayProperty(int id, int value);
 
   // Calculates the dominant color of the top |height| rows of |image|.
   SkColor ComputeImageColor(const gfx::Image& image, int height);
@@ -293,9 +301,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   // will point directly to mmapped data.
   struct TintEntry {
     int32_t id;
-    double h;
-    double s;
-    double l;
+    color_utils::HSL hsl;
   }* tints_ = nullptr;
 
   struct ColorPair {

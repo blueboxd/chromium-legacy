@@ -17411,6 +17411,7 @@ Called by update_net_error_codes.py.-->
   <int value="572" label="ExternalPrintServers"/>
   <int value="573" label="SelectToSpeakEnabled"/>
   <int value="574" label="BrowserGuestModeEnforced"/>
+  <int value="575" label="BuiltinCertificateVerifierEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -19927,6 +19928,7 @@ Called by update_net_error_codes.py.-->
   <int value="1359" label="ACTION_GETBADGEBACKGROUNDCOLOR"/>
   <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
   <int value="1361" label="AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE"/>
+  <int value="1362" label="ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -52952,6 +52954,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="GET_SHMEM_TEMP_DIR_FAILURE">
     Failure to get a temporary directory for shared memory.
   </int>
+</enum>
+
+<enum name="SharingMessageType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Ping"/>
+  <int value="2" label="Ack"/>
+  <int value="3" label="ClickToCall"/>
 </enum>
 
 <enum name="ShelfAlignmentValue">

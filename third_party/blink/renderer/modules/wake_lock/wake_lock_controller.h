@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -18,6 +19,7 @@
 namespace blink {
 
 class AbortSignal;
+class ExecutionContext;
 class ScriptPromiseResolver;
 class WakeLockStateRecord;
 
@@ -25,7 +27,7 @@ class WakeLockStateRecord;
 // Document changes appropriately.
 class MODULES_EXPORT WakeLockController final
     : public GarbageCollectedFinalized<WakeLockController>,
-      public Supplement<Document>,
+      public Supplement<ExecutionContext>,
       public ContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(WakeLockController);
@@ -34,8 +36,9 @@ class MODULES_EXPORT WakeLockController final
   static const char kSupplementName[];
 
   explicit WakeLockController(Document&);
+  explicit WakeLockController(DedicatedWorkerGlobalScope&);
 
-  static WakeLockController& From(Document&);
+  static WakeLockController& From(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;
 

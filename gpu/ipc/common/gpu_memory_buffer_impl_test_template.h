@@ -143,7 +143,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, Map) {
                 std::move(destroy_callback)));
     ASSERT_TRUE(buffer);
 
-    const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+    const size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
 
     // Map buffer into user space.
     ASSERT_TRUE(buffer->Map());
@@ -201,7 +201,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
     ASSERT_TRUE(buffer->Map());
 
     // Copy and compare mapped buffers.
-    size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+    size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
     for (size_t plane = 0; plane < num_planes; ++plane) {
       const size_t row_size_in_bytes =
           gfx::RowSizeForBufferFormat(kBufferSize.width(), format, plane);

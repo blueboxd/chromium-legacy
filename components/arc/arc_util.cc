@@ -179,6 +179,8 @@ bool IsArcAppWindow(const aura::Window* window) {
 }
 
 int GetWindowTaskId(const aura::Window* window) {
+  if (!window)
+    return kNoTaskId;
   const std::string* arc_app_id = exo::GetShellApplicationId(window);
   if (!arc_app_id)
     return kNoTaskId;

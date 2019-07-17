@@ -14,12 +14,6 @@ RootElement::RootElement(UIElementDelegate* ui_element_delegate)
 
 RootElement::~RootElement() {}
 
-std::vector<std::pair<std::string, std::string>>
-RootElement::GetCustomProperties() const {
-  NOTREACHED();
-  return {};
-}
-
 void RootElement::GetBounds(gfx::Rect* bounds) const {
   NOTREACHED();
 }

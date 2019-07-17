@@ -26,24 +26,25 @@ class OverviewAnimationsTest
   void SetUpOnMainThread() override {
     AshContentTest::SetUpOnMainThread();
 
-    int additional_browsers = std::get<0>(GetParam());
+    int n_browsers = std::get<0>(GetParam());
     bool browser = std::get<1>(GetParam());
     tablet_mode_ = std::get<2>(GetParam());
 
     if (tablet_mode_)
       ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
-    GURL ntp_url("chrome://newtab");
+    const GURL google_url("https://www.google.com");
 
-    for (int i = additional_browsers; i >= 0; i--) {
-      auto* window = browser ? CreateBrowserWindow() : CreateTestWindow();
+    for (int i = 0; i < n_browsers; ++i) {
+      auto* window = browser ? CreateBrowserWindow(google_url)
+                             : CreateBrowserWindow(GURL());
       if (!window_)
         window_ = window;
     }
 
     float cost_per_browser = browser ? 0.5 : 0.1;
     int wait_seconds = (base::SysInfo::IsRunningOnChromeOS() ? 5 : 0) +
-                       additional_browsers * cost_per_browser;
+                       n_browsers * cost_per_browser;
     base::RunLoop run_loop;
     base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
                           base::TimeDelta::FromSeconds(wait_seconds));
@@ -78,6 +79,7 @@ ASH_CONTENT_TEST_P(OverviewAnimationsTest, EnterExit) {
                             /*command=*/false);
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kEnterAnimationComplete);
+  // TODO(oshima): Wait until frame animation ends.
   ui_controls::SendKeyPress(window(), ui::VKEY_MEDIA_LAUNCH_APP1,
                             /*control=*/false,
                             /*shift=*/false,

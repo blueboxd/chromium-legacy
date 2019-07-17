@@ -404,69 +404,6 @@ TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
             widget->client_view()->bounds());
 }
 
-TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInOverviewMode) {
-  auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(delegate, desks_util::GetActiveDeskContainerId(),
-                       gfx::Rect(0, 0, 400, 500));
-
-  // Verify the header is not painted in overview mode and painted when not in
-  // overview mode.
-  Shell::Get()->overview_controller()->StartOverview();
-  EXPECT_FALSE(delegate->header_view()->should_paint());
-
-  Shell::Get()->overview_controller()->EndOverview();
-  EXPECT_TRUE(delegate->header_view()->should_paint());
-}
-
-TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
-  auto create_widget = [](NonClientFrameViewAshTestWidgetDelegate* delegate) {
-    std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-    // Windows need to be resizable and maximizable to be used in splitview.
-    widget->GetNativeWindow()->SetProperty(
-        aura::client::kResizeBehaviorKey,
-        aura::client::kResizeBehaviorCanMaximize |
-            aura::client::kResizeBehaviorCanResize);
-    return widget;
-  };
-
-  auto* delegate1 = new NonClientFrameViewAshTestWidgetDelegate();
-  auto widget1 = create_widget(delegate1);
-  auto* delegate2 = new NonClientFrameViewAshTestWidgetDelegate();
-  auto widget2 = create_widget(delegate2);
-
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-
-  // Verify that when one window is snapped, the header is drawn for the snapped
-  // window, but not drawn for the window still in overview.
-  Shell::Get()->overview_controller()->StartOverview();
-  Shell::Get()->split_view_controller()->SnapWindow(widget1->GetNativeWindow(),
-                                                    SplitViewController::LEFT);
-  EXPECT_TRUE(delegate1->header_view()->should_paint());
-  EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
-  EXPECT_FALSE(delegate2->header_view()->should_paint());
-
-  // Verify that when both windows are snapped, the header is drawn for both.
-  Shell::Get()->split_view_controller()->SnapWindow(widget2->GetNativeWindow(),
-                                                    SplitViewController::RIGHT);
-  EXPECT_TRUE(delegate1->header_view()->should_paint());
-  EXPECT_TRUE(delegate2->header_view()->should_paint());
-  EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
-  EXPECT_EQ(0, delegate2->GetNonClientFrameViewTopBorderHeight());
-
-  // Toggle overview mode so we return back to left snapped mode. Verify that
-  // the header is again drawn for the snapped window, but not for the unsnapped
-  // window.
-  Shell::Get()->overview_controller()->StartOverview();
-  ASSERT_EQ(SplitViewState::kLeftSnapped,
-            Shell::Get()->split_view_controller()->state());
-  EXPECT_TRUE(delegate1->header_view()->should_paint());
-  EXPECT_EQ(0, delegate1->GetNonClientFrameViewTopBorderHeight());
-  EXPECT_FALSE(delegate2->header_view()->should_paint());
-
-  Shell::Get()->split_view_controller()->EndSplitView();
-}
-
 TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInFullscreen) {
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
@@ -729,11 +666,6 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
   EXPECT_EQ(work_area.width(), frame_bounds.width());
   EXPECT_EQ(work_area.origin(), frame_bounds.origin());
   EXPECT_FALSE(header_view->should_paint());
-  EXPECT_TRUE(wide_header_view->should_paint());
-
-  Shell::Get()->overview_controller()->StartOverview();
-  EXPECT_FALSE(wide_header_view->should_paint());
-  Shell::Get()->overview_controller()->EndOverview();
   EXPECT_TRUE(wide_header_view->should_paint());
 
   // Test immersive.

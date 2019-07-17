@@ -204,7 +204,7 @@ TEST_P(GpuMemoryBufferTest, MapUnmap) {
   constexpr uint8_t color_rgba[] = {127u, 0u, 0u, 255u};
   constexpr uint8_t color_bgra[] = {0u, 0u, 127u, 255u};
 
-  const size_t num_planes = NumberOfPlanesForBufferFormat(buffer_format);
+  const size_t num_planes = NumberOfPlanesForLinearBufferFormat(buffer_format);
   for (size_t plane = 0; plane < num_planes; ++plane) {
     gl::GLImageTestSupport::SetBufferDataToColor(
         kImageWidth, kImageHeight, buffer->stride(plane), plane, buffer_format,
@@ -300,7 +300,7 @@ TEST_P(GpuMemoryBufferTest, Lifecycle) {
   ASSERT_NE(0, buffer->stride(0));
   constexpr uint8_t pixel[] = {255u, 0u, 0u, 255u};
 
-  const size_t num_planes = NumberOfPlanesForBufferFormat(buffer_format);
+  const size_t num_planes = NumberOfPlanesForLinearBufferFormat(buffer_format);
   for (size_t plane = 0; plane < num_planes; ++plane) {
     gl::GLImageTestSupport::SetBufferDataToColor(
         kImageWidth, kImageHeight, buffer->stride(plane), plane, buffer_format,

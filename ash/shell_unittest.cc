@@ -195,7 +195,8 @@ class ShellTest : public AshTestBase {
                         bool always_on_top,
                         aura::Window* expected_container) {
     views::Widget::InitParams widget_params(type);
-    widget_params.keep_on_top = always_on_top;
+    if (always_on_top)
+      widget_params.z_order = ui::ZOrderLevel::kFloatingWindow;
 
     views::Widget* widget = CreateTestWindow(widget_params);
     widget->Show();
@@ -281,11 +282,11 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
             widget.GetRestoredBounds().CenterPoint());
 }
 
-TEST_F(ShellTest, ChangeAlwaysOnTop) {
+TEST_F(ShellTest, ChangeZOrderLevel) {
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
 
-  // Creates a normal window
+  // Creates a normal window.
   views::Widget* widget = CreateTestWindow(widget_params);
   widget->Show();
 
@@ -293,19 +294,19 @@ TEST_F(ShellTest, ChangeAlwaysOnTop) {
   EXPECT_TRUE(
       GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
-  // Flip always-on-top flag.
-  widget->SetAlwaysOnTop(true);
+  // Set the z-order to float.
+  widget->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
   // And it should in always on top container now.
   EXPECT_EQ(GetAlwaysOnTopContainer(), widget->GetNativeWindow()->parent());
 
-  // Flip always-on-top flag.
-  widget->SetAlwaysOnTop(false);
+  // Put the z-order back to normal.
+  widget->SetZOrderLevel(ui::ZOrderLevel::kNormal);
   // It should go back to the active desk container.
   EXPECT_TRUE(
       GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));
 
-  // Set the same always-on-top flag again.
-  widget->SetAlwaysOnTop(false);
+  // Set the z-order again to the normal value.
+  widget->SetZOrderLevel(ui::ZOrderLevel::kNormal);
   // Should have no effect and we are still in the the active desk container.
   EXPECT_TRUE(
       GetActiveDeskContainer()->Contains(widget->GetNativeWindow()->parent()));

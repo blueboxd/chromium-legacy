@@ -445,9 +445,10 @@ void TabletModeWindowManager::OnWindowHierarchyChanged(
 void TabletModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
                                                       const void* key,
                                                       intptr_t old) {
-  // Stop managing |window| if the always-on-top property is added.
-  if (key == aura::client::kAlwaysOnTopKey &&
-      window->GetProperty(aura::client::kAlwaysOnTopKey)) {
+  // Stop managing |window| if it is moved to have a non-normal z-order.
+  if (key == aura::client::kZOrderingKey &&
+      window->GetProperty(aura::client::kZOrderingKey) !=
+          ui::ZOrderLevel::kNormal) {
     ForgetWindow(window, false /* destroyed */);
   }
 }
@@ -693,10 +694,12 @@ void TabletModeWindowManager::ForgetWindow(aura::Window* window,
 bool TabletModeWindowManager::ShouldHandleWindow(aura::Window* window) {
   DCHECK(window);
 
-  // Windows with the always-on-top property should be free-floating and thus
+  // Windows that don't have normal z-ordering should be free-floating and thus
   // not managed by us.
-  if (window->GetProperty(aura::client::kAlwaysOnTopKey))
+  if (window->GetProperty(aura::client::kZOrderingKey) !=
+      ui::ZOrderLevel::kNormal) {
     return false;
+  }
 
   // If the changing bounds in the maximized/fullscreen is allowed, then
   // let the client manage it even in tablet mode.

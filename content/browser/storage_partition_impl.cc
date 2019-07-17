@@ -38,6 +38,7 @@
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -519,8 +520,9 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     : public network::SharedURLLoaderFactory {
  public:
   explicit URLLoaderFactoryForBrowserProcess(
-      StoragePartitionImpl* storage_partition)
-      : storage_partition_(storage_partition) {}
+      StoragePartitionImpl* storage_partition,
+      bool corb_enabled)
+      : storage_partition_(storage_partition), corb_enabled_(corb_enabled) {}
 
   // mojom::URLLoaderFactory implementation:
 
@@ -535,7 +537,8 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     if (!storage_partition_)
       return;
-    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()
+    storage_partition_
+        ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
         ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
                                options, url_request, std::move(client),
                                traffic_annotation);
@@ -544,8 +547,9 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
   void Clone(network::mojom::URLLoaderFactoryRequest request) override {
     if (!storage_partition_)
       return;
-    storage_partition_->GetURLLoaderFactoryForBrowserProcessInternal()->Clone(
-        std::move(request));
+    storage_partition_
+        ->GetURLLoaderFactoryForBrowserProcessInternal(corb_enabled_)
+        ->Clone(std::move(request));
   }
 
   // SharedURLLoaderFactory implementation:
@@ -562,6 +566,7 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
   ~URLLoaderFactoryForBrowserProcess() override {}
 
   StoragePartitionImpl* storage_partition_;
+  const bool corb_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForBrowserProcess);
 };
@@ -763,6 +768,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_->Shutdown();
   }
+  if (shared_url_loader_factory_for_browser_process_with_corb_) {
+    shared_url_loader_factory_for_browser_process_with_corb_->Shutdown();
+  }
 
   if (GetDatabaseTracker()) {
     GetDatabaseTracker()->task_runner()->PostTask(
@@ -801,9 +809,13 @@ StoragePartitionImpl::~StoragePartitionImpl() {
     GetContentIndexContext()->Shutdown();
 
   if (GetAppCacheService()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
+    if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+      GetAppCacheService()->Shutdown();
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(&ChromeAppCacheService::Shutdown, appcache_service_));
+    }
   }
 
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
@@ -873,8 +885,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->service_worker_context_ = new ServiceWorkerContextWrapper(context);
   partition->service_worker_context_->set_storage_partition(partition.get());
 
-  partition->appcache_service_ =
-      base::MakeRefCounted<ChromeAppCacheService>(quota_manager_proxy.get());
+  partition->appcache_service_ = base::MakeRefCounted<ChromeAppCacheService>(
+      quota_manager_proxy.get(), partition->weak_factory_.GetWeakPtr());
 
   partition->shared_worker_service_ = std::make_unique<SharedWorkerServiceImpl>(
       partition.get(), partition->service_worker_context_,
@@ -1004,9 +1016,18 @@ scoped_refptr<network::SharedURLLoaderFactory>
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   if (!shared_url_loader_factory_for_browser_process_) {
     shared_url_loader_factory_for_browser_process_ =
-        new URLLoaderFactoryForBrowserProcess(this);
+        new URLLoaderFactoryForBrowserProcess(this, false /* corb_enabled */);
   }
   return shared_url_loader_factory_for_browser_process_;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() {
+  if (!shared_url_loader_factory_for_browser_process_with_corb_) {
+    shared_url_loader_factory_for_browser_process_with_corb_ =
+        new URLLoaderFactoryForBrowserProcess(this, true /* corb_enabled */);
+  }
+  return shared_url_loader_factory_for_browser_process_with_corb_;
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -1630,6 +1651,7 @@ void StoragePartitionImpl::Flush() {
 void StoragePartitionImpl::ResetURLLoaderFactories() {
   GetNetworkContext()->ResetURLLoaderFactories();
   url_loader_factory_for_browser_process_.reset();
+  url_loader_factory_for_browser_process_with_corb_.reset();
   url_loader_factory_getter_->Initialize(this);
 }
 
@@ -1642,6 +1664,8 @@ void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {
   network_context_.FlushForTesting();
   if (url_loader_factory_for_browser_process_)
     url_loader_factory_for_browser_process_.FlushForTesting();
+  if (url_loader_factory_for_browser_process_with_corb_)
+    url_loader_factory_for_browser_process_with_corb_.FlushForTesting();
   if (cookie_manager_for_browser_process_)
     cookie_manager_for_browser_process_.FlushForTesting();
   if (origin_policy_manager_for_browser_process_)
@@ -1721,39 +1745,45 @@ void StoragePartitionImpl::InitNetworkContext() {
 }
 
 network::mojom::URLLoaderFactory*
-StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
+StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal(
+    bool corb_enabled) {
+  auto& url_loader_factory =
+      corb_enabled ? url_loader_factory_for_browser_process_with_corb_
+                   : url_loader_factory_for_browser_process_;
+  auto& is_test_url_loader_factory =
+      corb_enabled ? is_test_url_loader_factory_for_browser_process_with_corb_
+                   : is_test_url_loader_factory_for_browser_process_;
+
   // Create the URLLoaderFactory as needed, but make sure not to reuse a
   // previously created one if the test override has changed.
-  if (url_loader_factory_for_browser_process_ &&
-      !url_loader_factory_for_browser_process_.encountered_error() &&
-      is_test_url_loader_factory_for_browser_process_ !=
+  if (url_loader_factory && !url_loader_factory.encountered_error() &&
+      is_test_url_loader_factory !=
           g_url_loader_factory_callback_for_test.Get().is_null()) {
-    return url_loader_factory_for_browser_process_.get();
+    return url_loader_factory.get();
   }
 
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
+  params->is_corb_enabled = corb_enabled;
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);
   if (g_url_loader_factory_callback_for_test.Get().is_null()) {
-    auto request = mojo::MakeRequest(&url_loader_factory_for_browser_process_);
+    auto request = mojo::MakeRequest(&url_loader_factory);
     GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
                                                 std::move(params));
-    is_test_url_loader_factory_for_browser_process_ = false;
-    return url_loader_factory_for_browser_process_.get();
+    is_test_url_loader_factory = false;
+    return url_loader_factory.get();
   }
 
   network::mojom::URLLoaderFactoryPtr original_factory;
   GetNetworkContext()->CreateURLLoaderFactory(
       mojo::MakeRequest(&original_factory), std::move(params));
-  url_loader_factory_for_browser_process_ =
-      g_url_loader_factory_callback_for_test.Get().Run(
-          std::move(original_factory));
-  is_test_url_loader_factory_for_browser_process_ = true;
-  return url_loader_factory_for_browser_process_.get();
+  url_loader_factory = g_url_loader_factory_callback_for_test.Get().Run(
+      std::move(original_factory));
+  is_test_url_loader_factory = true;
+  return url_loader_factory.get();
 }
 
 network::mojom::OriginPolicyManager*

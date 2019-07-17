@@ -25,6 +25,7 @@ enum class InstallResultCode;
 
 class AppRegistrar;
 class InstallFinalizer;
+class WebAppUiManager;
 
 // PendingAppManager installs, uninstalls, and updates apps.
 //
@@ -48,7 +49,9 @@ class PendingAppManager {
   PendingAppManager();
   virtual ~PendingAppManager();
 
-  void SetSubsystems(AppRegistrar* registrar, InstallFinalizer* finalizer);
+  void SetSubsystems(AppRegistrar* registrar,
+                     WebAppUiManager* ui_manager,
+                     InstallFinalizer* finalizer);
 
   virtual void Shutdown() = 0;
 
@@ -99,6 +102,7 @@ class PendingAppManager {
 
  protected:
   AppRegistrar* registrar() { return registrar_; }
+  WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
@@ -127,6 +131,7 @@ class PendingAppManager {
   void OnAppSynchronized(InstallSource source, const GURL& app_url);
 
   AppRegistrar* registrar_ = nullptr;
+  WebAppUiManager* ui_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 
   base::flat_map<InstallSource, SynchronizeRequest> synchronize_requests_;

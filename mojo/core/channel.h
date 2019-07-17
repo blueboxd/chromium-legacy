@@ -190,9 +190,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
     size_t num_handles() const;
     bool has_handles() const;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    bool has_mach_ports() const;
-#endif
 
     bool is_legacy_message() const;
     LegacyHeader* legacy_header() const;

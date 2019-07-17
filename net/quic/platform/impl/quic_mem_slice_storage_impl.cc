@@ -35,6 +35,11 @@ QuicMemSliceStorageImpl::QuicMemSliceStorageImpl(
   }
 }
 
+void QuicMemSliceStorageImpl::Append(QuicMemSliceImpl mem_slice) {
+  buffers_.push_back(*mem_slice.impl());
+  lengths_.push_back(mem_slice.length());
+}
+
 QuicMemSliceStorageImpl::QuicMemSliceStorageImpl(
     const QuicMemSliceStorageImpl& other) = default;
 QuicMemSliceStorageImpl::QuicMemSliceStorageImpl(

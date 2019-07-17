@@ -264,12 +264,14 @@ std::unique_ptr<gfx::GpuMemoryBuffer> LocalGpuMemoryBufferManager::ImportDmaBuf(
     const gfx::NativePixmapHandle& handle,
     const gfx::Size& size,
     gfx::BufferFormat format) {
-  if (handle.planes.size() != gfx::NumberOfPlanesForBufferFormat(format)) {
+  if (handle.planes.size() !=
+      gfx::NumberOfPlanesForLinearBufferFormat(format)) {
     // This could happen if e.g., we get a compressed RGBA buffer where one
     // plane is for metadata. We don't support this case.
     LOG(ERROR) << "Cannot import " << gfx::BufferFormatToString(format)
                << " with " << handle.planes.size() << " plane(s) (expected "
-               << gfx::NumberOfPlanesForBufferFormat(format) << " plane(s))";
+               << gfx::NumberOfPlanesForLinearBufferFormat(format)
+               << " plane(s))";
     return nullptr;
   }
   const uint32_t drm_format = GetDrmFormat(format);

@@ -167,7 +167,7 @@ void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
         LayoutUnit(Base::StyleRef().BorderBeforeWidth());
     for (const auto& child : physical_fragment->Children()) {
       PhysicalRect child_scrollable_overflow;
-      if (child->IsOutOfFlowPositioned()) {
+      if (child->IsFloatingOrOutOfFlowPositioned()) {
         child_scrollable_overflow =
             child->ScrollableOverflowForPropagation(this);
       } else if (children_inline && child->IsLineBox()) {

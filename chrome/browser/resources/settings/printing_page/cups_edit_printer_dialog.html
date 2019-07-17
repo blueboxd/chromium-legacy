@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/chromeos/onc_mojo.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
@@ -15,7 +16,7 @@
 
 <dom-module id="settings-cups-edit-printer-dialog">
   <template>
-    <style include="cups-printer-shared"></style>
+    <style include="cr-shared-style cups-printer-shared"></style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{editPrinterDialogTitle}
         <div id="general-error-container" hidden="[[!errorText_]]">
@@ -49,7 +50,9 @@
         </div>
         <div class="settings-box two-line">
           <div class="start">
-            <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
+            <div id="printerProtocol" class="cr-form-field-label">
+              $i18n{printerProtocol}
+            </div>
             <div class="secondary">
               <select class="md-select" aria-labelledby="printerProtocol"
                   value="[[pendingPrinter_.printerProtocol]]"
@@ -114,7 +117,7 @@
               readonly="[[!isOnline_]]">
           </cr-searchable-drop-down>
         </div>
-        <div id="ppdLabel" class="field-label">
+        <div id="ppdLabel" class="cr-form-field-label">
           <span>$i18n{selectDriver}</span>
           <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
               $i18n{learnMore}

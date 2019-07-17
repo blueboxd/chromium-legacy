@@ -7,6 +7,7 @@
 #include "chrome/browser/sharing/fcm_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 
@@ -71,6 +72,8 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
   }
   DCHECK(sharing_message.payload_case() != SharingMessage::PAYLOAD_NOT_SET)
       << "No payload set in SharingMessage received";
+
+  LogSharingMessageReceived(sharing_message.payload_case());
 
   auto it = sharing_handlers_.find(sharing_message.payload_case());
   if (it == sharing_handlers_.end()) {

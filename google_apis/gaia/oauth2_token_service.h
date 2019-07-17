@@ -5,32 +5,10 @@
 #ifndef GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_H_
 #define GOOGLE_APIS_GAIA_OAUTH2_TOKEN_SERVICE_H_
 
-#include <stddef.h>
-
-#include <map>
-#include <memory>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
-#include "base/time/time.h"
-#include "google_apis/gaia/core_account_id.h"
-#include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_consumer.h"
-#include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_observer.h"
-
-namespace network {
-class SharedURLLoaderFactory;
-}
 
 class OAuth2TokenServiceDelegate;
-class OAuth2AccessTokenManager;
 
 // Abstract base class for a service that fetches and caches OAuth2 access
 // tokens. Concrete subclasses should implement GetRefreshToken to return
@@ -55,37 +33,14 @@ class OAuth2AccessTokenManager;
 //
 // The caller of StartRequest() owns the returned request and is responsible to
 // delete the request even once the callback has been invoked.
-class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
+class OAuth2TokenService {
  public:
   explicit OAuth2TokenService(
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
-  ~OAuth2TokenService() override;
-
-  // Overridden from OAuth2AccessTokenManager::Delegate.
-  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
-      const CoreAccountId& account_id,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      OAuth2AccessTokenConsumer* consumer) override;
-  bool HasRefreshToken(const CoreAccountId& account_id) const override;
-  bool FixRequestErrorIfPossible() override;
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
-      const override;
-  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
-                                const std::string& client_id,
-                                const std::set<std::string>& scopes,
-                                const std::string& access_token) override;
-  void OnAccessTokenFetched(const CoreAccountId& account_id,
-                            const GoogleServiceAuthError& error) override;
+  ~OAuth2TokenService();
 
   OAuth2TokenServiceDelegate* GetDelegate();
   const OAuth2TokenServiceDelegate* GetDelegate() const;
-
-  OAuth2AccessTokenManager* GetAccessTokenManager();
-
- protected:
-  // TODO(https://crbug.com/967598): Remove this once OAuth2AccessTokenManager
-  // fully manages access tokens independently of OAuth2TokenService.
-  friend class OAuth2AccessTokenManager;
 
  private:
   // TODO(https://crbug.com/967598): Completely merge this class into
@@ -94,16 +49,6 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   friend class OAuth2TokenServiceDelegate;
 
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
-
-  // The depth of batch changes.
-  int batch_change_depth_;
-
-  std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
-
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, RequestParametersOrderTest);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest,
-                           SameScopesRequestedForDifferentClients);
-  FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, UpdateClearsCache);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };

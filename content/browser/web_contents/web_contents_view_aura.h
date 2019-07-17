@@ -73,6 +73,7 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            DragDropVirtualFilesOriginateFromRenderer);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropUrlData);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropOnOopif);
 
   class WindowObserver;
 
@@ -193,6 +194,18 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event,
                     std::unique_ptr<ui::OSExchangeData> data) override;
+  void DragEnteredCallback(ui::DropTargetEvent event,
+                           std::unique_ptr<DropData> drop_data,
+                           base::WeakPtr<RenderWidgetHostViewBase> target,
+                           base::Optional<gfx::PointF> transformed_pt);
+  void DragUpdatedCallback(ui::DropTargetEvent event,
+                           std::unique_ptr<DropData> drop_data,
+                           base::WeakPtr<RenderWidgetHostViewBase> target,
+                           base::Optional<gfx::PointF> transformed_pt);
+  void PerformDropCallback(ui::DropTargetEvent event,
+                           std::unique_ptr<ui::OSExchangeData> data,
+                           base::WeakPtr<RenderWidgetHostViewBase> target,
+                           base::Optional<gfx::PointF> transformed_pt);
 
   // Completes a drop operation by communicating the drop data to the renderer
   // process.
@@ -269,13 +282,16 @@ class CONTENT_EXPORT WebContentsViewAura
   // Responsible for handling gesture-nav and pull-to-refresh UI.
   std::unique_ptr<GestureNavSimple> gesture_nav_simple_;
 
+  // This is true when the drag is in process from the perspective of this
+  // class. It means it gets true when drag enters and gets reset when either
+  // drop happens or drag exits.
+  bool drag_in_progress_;
+
   bool init_rwhv_with_null_parent_for_testing_;
 
-#if defined(OS_WIN)
-  // Used to ensure that the virtual files retrieval callback bound to this
-  // object is canceled when this object is destroyed.
+  // Used to ensure the drag and drop callbacks bound to this
+  // object are canceled when this object is destroyed.
   base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

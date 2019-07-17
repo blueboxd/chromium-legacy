@@ -11,7 +11,9 @@
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -72,13 +74,24 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
   if (!ParseInputArguments(document))
     return nullptr;
 
+  // TODO(crbug.com/946515): Break dependency on LayoutObject.
+  const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
+
+  // TODO(crbug.com/716231): Remove this hack once zoom_for_dsf is enabled on
+  // all platforms (currently not enabled on Mac).
+  float device_scale_factor = 1;
+  if (layout_object.GetFrame() && layout_object.GetFrame()->GetPage()) {
+    // The value of DeviceScaleFactorDeprecated would be 1 on a platform where
+    // zoom_for_dsf is enabled, even if we run chrome with
+    // --force-device-scale-factor with a value that is not 1.
+    device_scale_factor =
+        layout_object.GetFrame()->GetPage()->DeviceScaleFactorDeprecated();
+  }
+
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
   if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
     if (paint_off_thread_) {
-      // TODO(crbug.com/946515): Break dependency on LayoutObject.
-      const LayoutObject& layout_object =
-          static_cast<const LayoutObject&>(client);
       Vector<CSSPropertyID> native_properties =
           generator_->NativeInvalidationProperties();
       Vector<AtomicString> custom_properties =
@@ -102,7 +115,8 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
     }
   }
 
-  return generator_->Paint(client, target_size, parsed_input_arguments_);
+  return generator_->Paint(client, target_size, parsed_input_arguments_,
+                           device_scale_factor);
 }
 
 void CSSPaintValue::BuildInputArgumentValues(

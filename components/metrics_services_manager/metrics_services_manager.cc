@@ -177,4 +177,8 @@ bool MetricsServicesManager::IsMetricsReportingEnabled() const {
   return client_->IsMetricsReportingEnabled();
 }
 
+bool MetricsServicesManager::IsMetricsConsentGiven() const {
+  return client_->IsMetricsConsentGiven();
+}
+
 }  // namespace metrics_services_manager

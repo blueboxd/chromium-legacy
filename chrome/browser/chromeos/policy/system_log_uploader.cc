@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "components/feedback/anonymizer_tool.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/user_manager/user_manager.h"
@@ -130,7 +131,8 @@ std::string ReadAndAnonymizeLogFile(feedback::AnonymizerTool* anonymizer,
 // as pairs (file name, data) and returns. Called on blocking thread.
 std::unique_ptr<SystemLogUploader::SystemLogs> ReadFiles() {
   auto system_logs = std::make_unique<SystemLogUploader::SystemLogs>();
-  feedback::AnonymizerTool anonymizer;
+  feedback::AnonymizerTool anonymizer(
+      extension_misc::kBuiltInFirstPartyExtensionIds);
   for (const char* file_path : kSystemLogFileNames) {
     if (!base::PathExists(base::FilePath(file_path)))
       continue;

@@ -35,6 +35,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
     : public network::mojom::URLLoaderClient {
  public:
   UpdateURLLoaderRequest(URLLoaderFactoryGetter* loader_factory_getter,
+                         base::WeakPtr<StoragePartitionImpl> partition,
                          const GURL& url,
                          int buffer_size,
                          URLFetcher* fetcher);
@@ -118,6 +119,9 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // Used to retrieve the network URLLoader interface to issue network
   // requests
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+  // If NavigationLoaderOnUI is enabled, |partition_| is used to get the network
+  // URLLoader.
+  base::WeakPtr<StoragePartitionImpl> partition_;
 
   network::ResourceRequest request_;
   network::ResourceResponseHead response_;

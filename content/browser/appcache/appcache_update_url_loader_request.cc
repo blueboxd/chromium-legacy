@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_update_url_fetcher.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_context.h"
@@ -55,12 +57,21 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   network::mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
 
-  loader_factory_getter_->GetNetworkFactoryWithCORBEnabled()
-      ->CreateLoaderAndStart(
-          mojo::MakeRequest(&url_loader_), -1, -1,
-          network::mojom::kURLLoadOptionSendSSLInfoWithResponse, request_,
-          std::move(client),
-          net::MutableNetworkTrafficAnnotationTag(kAppCacheTrafficAnnotation));
+  scoped_refptr<network::SharedURLLoaderFactory> loader;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    // The partition has shutdown, return without making the request.
+    if (!partition_)
+      return;
+    loader = partition_->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
+  } else {
+    loader = loader_factory_getter_->GetNetworkFactoryWithCORBEnabled();
+  }
+
+  loader->CreateLoaderAndStart(
+      mojo::MakeRequest(&url_loader_), -1, -1,
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse, request_,
+      std::move(client),
+      net::MutableNetworkTrafficAnnotationTag(kAppCacheTrafficAnnotation));
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::SetExtraRequestHeaders(
@@ -199,11 +210,13 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnComplete(
 
 AppCacheUpdateJob::UpdateURLLoaderRequest::UpdateURLLoaderRequest(
     URLLoaderFactoryGetter* loader_factory_getter,
+    base::WeakPtr<StoragePartitionImpl> partition,
     const GURL& url,
     int buffer_size,
     URLFetcher* fetcher)
     : fetcher_(fetcher),
       loader_factory_getter_(loader_factory_getter),
+      partition_(std::move(partition)),
       client_binding_(this),
       buffer_size_(buffer_size),
       handle_watcher_(FROM_HERE,

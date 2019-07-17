@@ -574,6 +574,34 @@ TEST(ParseInspectorMessage, Command) {
   ASSERT_EQ(1, key);
 }
 
+TEST(ParseInspectorError, EmptyError) {
+  Status status = internal::ParseInspectorError("");
+  ASSERT_EQ(kUnknownError, status.code());
+  ASSERT_EQ("unknown error: inspector error with no error message",
+            status.message());
+}
+
+TEST(ParseInspectorError, InvalidUrlError) {
+  Status status = internal::ParseInspectorError(
+      "{\"message\": \"Cannot navigate to invalid URL\"}");
+  ASSERT_EQ(kInvalidArgument, status.code());
+}
+
+TEST(ParseInspectorError, InvalidArgumentCode) {
+  Status status = internal::ParseInspectorError(
+      "{\"code\": -32602, \"message\": \"Error description\"}");
+  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_EQ("invalid argument: Error description", status.message());
+}
+
+TEST(ParseInspectorError, UnknownError) {
+  const std::string error("{\"code\": 10, \"message\": \"Error description\"}");
+  Status status = internal::ParseInspectorError(error);
+  ASSERT_EQ(kUnknownError, status.code());
+  ASSERT_EQ("unknown error: unhandled inspector error: " + error,
+            status.message());
+}
+
 TEST_F(DevToolsClientImplTest, HandleEventsUntil) {
   MockListener listener;
   SyncWebSocketFactory factory =

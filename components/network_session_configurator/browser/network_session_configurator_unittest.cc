@@ -112,14 +112,14 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.enable_server_push_cancellation);
   EXPECT_FALSE(params_.quic_params.close_sessions_on_ip_change);
   EXPECT_FALSE(params_.quic_params.goaway_sessions_on_ip_change);
-  EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
-            params_.quic_params.idle_connection_timeout_seconds);
-  EXPECT_EQ(quic::kPingTimeoutSecs,
-            params_.quic_params.reduced_ping_timeout_seconds);
-  EXPECT_EQ(quic::kMaxTimeForCryptoHandshakeSecs,
-            params_.quic_params.max_time_before_crypto_handshake_seconds);
-  EXPECT_EQ(quic::kInitialIdleTimeoutSecs,
-            params_.quic_params.max_idle_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(net::kIdleConnectionTimeout,
+            params_.quic_params.idle_connection_timeout);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs),
+            params_.quic_params.reduced_ping_timeout);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kMaxTimeForCryptoHandshakeSecs),
+            params_.quic_params.max_time_before_crypto_handshake);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs),
+            params_.quic_params.max_idle_time_before_crypto_handshake);
   EXPECT_FALSE(params_.quic_params.race_cert_verification);
   EXPECT_FALSE(params_.quic_params.estimate_initial_rtt);
   EXPECT_FALSE(params_.quic_params.migrate_sessions_on_network_change_v2);
@@ -127,11 +127,10 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_params.retry_on_alternate_network_before_handshake);
   EXPECT_FALSE(params_.quic_params.migrate_idle_sessions);
   EXPECT_FALSE(params_.quic_params.go_away_on_path_degrading);
-  EXPECT_EQ(0, params_.quic_params.initial_rtt_for_handshake_milliseconds);
+  EXPECT_TRUE(params_.quic_params.initial_rtt_for_handshake.is_zero());
   EXPECT_FALSE(params_.quic_params.allow_server_migration);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
-  EXPECT_EQ(0,
-            params_.quic_params.retransmittable_on_wire_timeout_milliseconds);
+  EXPECT_TRUE(params_.quic_params.retransmittable_on_wire_timeout.is_zero());
 
   net::HttpNetworkSession::Params default_params;
   EXPECT_EQ(default_params.quic_params.supported_versions,
@@ -237,8 +236,8 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_EQ(1000,
-            params_.quic_params.retransmittable_on_wire_timeout_milliseconds);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000),
+            params_.quic_params.retransmittable_on_wire_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -250,7 +249,8 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_EQ(300, params_.quic_params.idle_connection_timeout_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(300),
+            params_.quic_params.idle_connection_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -260,8 +260,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(quic::kPingTimeoutSecs,
-            params_.quic_params.reduced_ping_timeout_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs),
+            params_.quic_params.reduced_ping_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -271,8 +271,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(quic::kPingTimeoutSecs,
-            params_.quic_params.reduced_ping_timeout_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs),
+            params_.quic_params.reduced_ping_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -282,7 +282,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(10, params_.quic_params.reduced_ping_timeout_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(10),
+            params_.quic_params.reduced_ping_timeout);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -292,7 +293,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(7, params_.quic_params.max_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(7),
+            params_.quic_params.max_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -302,8 +304,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(quic::kMaxTimeForCryptoHandshakeSecs,
-            params_.quic_params.max_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kMaxTimeForCryptoHandshakeSecs),
+            params_.quic_params.max_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -313,8 +315,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(11,
-            params_.quic_params.max_idle_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(11),
+            params_.quic_params.max_idle_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
@@ -324,8 +326,8 @@ TEST_F(NetworkSessionConfiguratorTest,
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
-  EXPECT_EQ(quic::kInitialIdleTimeoutSecs,
-            params_.quic_params.max_idle_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs),
+            params_.quic_params.max_idle_time_before_crypto_handshake);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicRaceCertVerification) {
@@ -861,7 +863,8 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   ParseFieldTrials();
 
-  EXPECT_EQ(500, params_.quic_params.initial_rtt_for_handshake_milliseconds);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(500),
+            params_.quic_params.initial_rtt_for_handshake);
 }
 
 }  // namespace network_session_configurator

@@ -32,25 +32,12 @@ class InfobarBadgeTabHelper
   static void CreateForWebState(web::WebState* web_state);
   // Sets the InfobarBadgeTabHelperDelegate to |delegate|.
   void SetDelegate(id<InfobarBadgeTabHelperDelegate> delegate);
-  // Sets the LegacyInfobarBadgeTabHelperDelegate to |delegate|.
-  // TODO(crbug.com/980800): Remove once BadgeMediator is the receiver of
-  // |delegate_|.
-  void SetLegacyDelegate(
-      id<LegacyInfobarBadgeTabHelperDelegate> legacy_delegate);
   // Updates Infobar badge for the case where Infobar of |infobar_type| was
   // accepted.
   void UpdateBadgeForInfobarAccepted(InfobarType infobar_type);
 
   // Returns all BadgeItems for the TabHelper Webstate.
   std::vector<id<BadgeItem>> GetInfobarBadgeItems();
-
-  // Returns wheter an Infobar badge is being displayed for the TabHelper
-  // Webstate.
-  bool is_infobar_displaying();
-  // Returns whether the Infobar badge is accepted.
-  bool is_badge_accepted();
-  // Returns the type of the Infobar being displayed.
-  InfobarType infobar_type();
 
   ~InfobarBadgeTabHelper() override;
 
@@ -73,15 +60,6 @@ class InfobarBadgeTabHelper
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
   // Holds the state of each displaying badge keyed by its InfobarType.
   std::unordered_map<InfobarType, InfobarBadgeModel*> infobar_badge_models_;
-
-  // Returns wheter an Infobar is being displayed.
-  bool is_infobar_displaying_;
-  // The type of the Infobar being displayed.
-  InfobarType infobar_type_;
-  // Returns whether the Infobar badge is accepted.
-  bool is_badge_accepted_ = false;
-  // Legacy delegate which displays the Infobar badge.
-  __weak id<LegacyInfobarBadgeTabHelperDelegate> legacy_delegate_ = nil;
 
   WEB_STATE_USER_DATA_KEY_DECL();
   DISALLOW_COPY_AND_ASSIGN(InfobarBadgeTabHelper);

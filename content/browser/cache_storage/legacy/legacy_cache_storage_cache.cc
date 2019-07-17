@@ -2043,6 +2043,11 @@ void LegacyCacheStorageCache::GetAllMatchedEntriesDidQueryCache(
   std::move(callback).Run(CacheStorageError::kSuccess, std::move(entries));
 }
 
+CacheStorageCache::InitState LegacyCacheStorageCache::GetInitState() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return initializing_ ? InitState::Initializing : InitState::Initialized;
+}
+
 void LegacyCacheStorageCache::Delete(blink::mojom::BatchOperationPtr operation,
                                      ErrorCallback callback) {
   DCHECK(BACKEND_OPEN == backend_state_ || initializing_);
@@ -2250,6 +2255,7 @@ void LegacyCacheStorageCache::CreateBackendDidCreate(
 }
 
 void LegacyCacheStorageCache::InitBackend() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(BACKEND_UNINITIALIZED, backend_state_);
   DCHECK(!initializing_);
   DCHECK(!scheduler_->ScheduledOperations());
@@ -2337,6 +2343,7 @@ void LegacyCacheStorageCache::InitGotCacheSizeAndPadding(
     CacheStorageError cache_create_error,
     int64_t cache_size,
     int64_t cache_padding) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cache_size_ = cache_size;
   cache_padding_ = cache_padding;
 

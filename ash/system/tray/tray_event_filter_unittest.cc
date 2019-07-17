@@ -109,8 +109,8 @@ TEST_F(TrayEventFilterTest, ClickingOnPopupDoesNotCloseBubble) {
       CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
   popup_window->set_owned_by_parent(false);
   popup_widget->GetNativeView()->AddChild(popup_window.get());
-  popup_widget->GetNativeView()->SetProperty(aura::client::kAlwaysOnTopKey,
-                                             true);
+  popup_widget->GetNativeView()->SetProperty(aura::client::kZOrderingKey,
+                                             ui::ZOrderLevel::kFloatingWindow);
 
   ShowSystemTrayMainView();
   EXPECT_TRUE(IsBubbleShown());

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Screen wake lock should not be allowed in dedicated worker WakeLock is not defined
-Harness: the test ran to completion.
-

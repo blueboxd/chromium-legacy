@@ -628,6 +628,7 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
 }
 
 void QuicConnectionLogger::OnIncomingAck(
+    quic::QuicPacketNumber ack_packet_number,
     const quic::QuicAckFrame& frame,
     quic::QuicTime ack_receive_time,
     quic::QuicPacketNumber largest_observed,

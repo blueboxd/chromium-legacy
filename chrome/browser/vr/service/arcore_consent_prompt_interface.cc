@@ -7,17 +7,17 @@
 namespace vr {
 
 namespace {
-ArcoreConsentPromptInterface* g_arcore_consent_prompt = nullptr;
+ArCoreConsentPromptInterface* g_arcore_consent_prompt = nullptr;
 }
 
 // static
-void ArcoreConsentPromptInterface::SetInstance(
-    ArcoreConsentPromptInterface* instance) {
+void ArCoreConsentPromptInterface::SetInstance(
+    ArCoreConsentPromptInterface* instance) {
   g_arcore_consent_prompt = instance;
 }
 
 // static
-ArcoreConsentPromptInterface* ArcoreConsentPromptInterface::GetInstance() {
+ArCoreConsentPromptInterface* ArCoreConsentPromptInterface::GetInstance() {
   return g_arcore_consent_prompt;
 }
 

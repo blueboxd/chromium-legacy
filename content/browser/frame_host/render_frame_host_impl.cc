@@ -68,6 +68,7 @@
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/log_console_message.h"
@@ -4885,9 +4886,9 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
-    base::Optional<url::Origin> top_frame_origin =
-        frame_tree_node_->IsMainFrame() ? url::Origin::Create(common_params.url)
-                                        : frame_tree_->root()->current_origin();
+    url::Origin top_frame_origin = frame_tree_node_->IsMainFrame()
+                                       ? url::Origin::Create(common_params.url)
+                                       : frame_tree_->root()->current_origin();
     network_isolation_key_ = net::NetworkIsolationKey(top_frame_origin);
   }
 
@@ -5450,10 +5451,10 @@ RenderFrameHostImpl::GetMojoImageDownloader() {
   return mojo_image_downloader_;
 }
 
-const blink::mojom::FindInPageAssociatedPtr&
+const mojo::AssociatedRemote<blink::mojom::FindInPage>&
 RenderFrameHostImpl::GetFindInPage() {
   if (!find_in_page_ || !find_in_page_.is_bound() ||
-      find_in_page_.encountered_error())
+      !find_in_page_.is_connected())
     GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
   return find_in_page_;
 }
@@ -6254,13 +6255,19 @@ void RenderFrameHostImpl::RegisterAppCacheHost(
   auto* appcache_service_impl = static_cast<AppCacheServiceImpl*>(
       GetProcess()->GetStoragePartition()->GetAppCacheService());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
-                     appcache_service_impl->AsWeakPtr(),
-                     std::move(host_receiver), std::move(frontend_remote),
-                     host_id, routing_id_, GetProcess()->GetID(),
-                     mojo::GetBadMessageCallback()));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    appcache_service_impl->RegisterHostForFrame(
+        std::move(host_receiver), std::move(frontend_remote), host_id,
+        routing_id_, GetProcess()->GetID(), mojo::GetBadMessageCallback());
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheServiceImpl::RegisterHostForFrame,
+                       appcache_service_impl->AsWeakPtr(),
+                       std::move(host_receiver), std::move(frontend_remote),
+                       host_id, routing_id_, GetProcess()->GetID(),
+                       mojo::GetBadMessageCallback()));
+  }
 }
 
 std::unique_ptr<NavigationRequest>

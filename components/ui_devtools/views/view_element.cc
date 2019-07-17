@@ -59,30 +59,6 @@ void ViewElement::OnViewBoundsChanged(views::View* view) {
   delegate()->OnUIElementBoundsChanged(this);
 }
 
-std::vector<std::pair<std::string, std::string>>
-ViewElement::GetCustomProperties() const {
-  std::vector<std::pair<std::string, std::string>> ret;
-
-  views::metadata::ClassMetaData* metadata = view_->GetClassMetaData();
-  for (views::metadata::MemberMetaDataBase* member : *metadata) {
-    ret.emplace_back(member->member_name(),
-                     base::UTF16ToUTF8(member->GetValueAsString(view_)));
-  }
-
-  ret.emplace_back("is-drawn", view_->IsDrawn() ? "true" : "false");
-  ui::Layer* layer = view_->layer();
-  if (layer) {
-    ret.emplace_back("layer", layer->name());
-    AppendLayerProperties(layer, &ret);
-  }
-
-  base::string16 description = view_->GetTooltipText(gfx::Point());
-  if (!description.empty())
-    ret.emplace_back("tooltip", base::UTF16ToUTF8(description));
-
-  return ret;
-}
-
 std::vector<UIElement::ClassProperties>
 ViewElement::GetCustomPropertiesForMatchedStyle() const {
   std::vector<UIElement::ClassProperties> ret;

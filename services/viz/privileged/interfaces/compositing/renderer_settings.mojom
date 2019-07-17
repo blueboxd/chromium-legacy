@@ -20,7 +20,6 @@ struct RendererSettings {
   bool show_overdraw_feedback;
   int32 slow_down_compositing_scale_factor;
   bool use_skia_renderer;
-  bool use_skia_renderer_non_ddl;
   bool record_sk_picture;
   bool allow_overlays;
   bool requires_alpha_channel;

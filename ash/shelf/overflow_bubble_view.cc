@@ -31,7 +31,7 @@
 namespace ash {
 namespace {
 
-// Padding between the end of the shelf in overview mode and the arrow button
+// Padding between the end of the shelf in overflow mode and the arrow button
 // (if any).
 constexpr int kDistanceToArrowButton = kShelfButtonSpacing;
 
@@ -40,6 +40,10 @@ constexpr int kDistanceToMainShelf = 4;
 
 // Sum of the shelf button size and the gap between shelf buttons.
 constexpr int kUnit = kShelfButtonSize + kShelfButtonSpacing;
+
+// Decides whether the current first visible shelf icon of the overflow shelf
+// should be hidden or fully shown when gesture scroll ends.
+constexpr int kGestureDragThreshold = kShelfButtonSize / 2;
 
 }  // namespace
 
@@ -256,10 +260,31 @@ OverflowBubbleView::~OverflowBubbleView() = default;
 bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
   // Handle scroll-related events, but don't do anything special for begin and
   // end.
-  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event.type() == ui::ET_GESTURE_SCROLL_END) {
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     return true;
   }
+
+  // Make sure that no visible shelf button is partially shown after gestures.
+  if (event.type() == ui::ET_GESTURE_END ||
+      event.type() == ui::ET_GESTURE_SCROLL_END) {
+    int current_scroll_distance = shelf_->IsHorizontalAlignment()
+                                      ? scroll_offset_.x()
+                                      : scroll_offset_.y();
+    const int residue = current_scroll_distance % kUnit;
+
+    // if it does not need to adjust the location of the shelf view,
+    // return early.
+    if (current_scroll_distance == CalculateScrollUpperBound() || residue == 0)
+      return true;
+
+    int offset = residue > kGestureDragThreshold ? kUnit - residue : -residue;
+    if (shelf_->IsHorizontalAlignment())
+      ScrollByXOffset(offset, /*animate=*/true);
+    else
+      ScrollByYOffset(offset, /*animate=*/true);
+    return true;
+  }
+
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return false;
 

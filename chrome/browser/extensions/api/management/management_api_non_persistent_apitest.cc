@@ -7,8 +7,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "extensions/test/test_extension_dir.h"
 
 namespace extensions {
 
@@ -35,8 +37,6 @@ content::WebContents* AddTab(Browser* browser, const GURL& url) {
 
 // Tests management API from a non-persistent extension (event page or
 // Service Worker).
-//
-// TODO(lazyboy): Move ServiceWorkerBasedBackgroundTest.UninstallSelf here.
 class ManagementApiNonPersistentApiTest
     : public ExtensionApiTest,
       public testing::WithParamInterface<ContextType> {
@@ -48,6 +48,44 @@ class ManagementApiNonPersistentApiTest
                                       : kFlagRunAsServiceWorkerBasedExtension);
   }
 };
+
+// Tests chrome.management.uninstallSelf API.
+IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest, UninstallSelf) {
+  constexpr char kEventPageBackgroundScript[] = R"({"scripts": ["script.js"]})";
+  constexpr char kServiceWorkerBackgroundScript[] =
+      R"({"service_worker": "script.js"})";
+
+  constexpr char kManifest[] =
+      R"({
+           "name": "Test Extension",
+           "manifest_version": 2,
+           "version": "0.1",
+           "background": %s
+         })";
+  std::string manifest =
+      base::StringPrintf(kManifest, GetParam() == ContextType::kEventPage
+                                        ? kEventPageBackgroundScript
+                                        : kServiceWorkerBackgroundScript);
+
+  // This script uninstalls itself.
+  constexpr char kScript[] =
+      "chrome.management.uninstallSelf({showConfirmDialog: false});";
+
+  TestExtensionDir test_dir;
+
+  test_dir.WriteManifest(manifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("script.js"), kScript);
+
+  // Construct this before loading the extension, since the extension will
+  // immediately uninstall itself when it loads.
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
+
+  base::FilePath path = test_dir.Pack();
+  scoped_refptr<const Extension> extension = LoadExtension(path);
+
+  EXPECT_EQ(extension, observer.WaitForExtensionUninstalled());
+}
 
 // Tests chrome.management.uninstall with a real user gesture
 // (i.e. browserAction.onClicked event).

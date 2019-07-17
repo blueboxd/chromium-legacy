@@ -85,13 +85,14 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Called via PostTask from UI thread.
   void PersistRegistrationOnIO(RegisterData data,
                                const std::string& push_subscription_id,
+                               const GURL& endpoint,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth,
                                blink::mojom::PushRegistrationStatus status);
 
   void DidPersistRegistrationOnIO(
       RegisterData data,
-      const std::string& push_subscription_id,
+      const GURL& endpoint,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth,
       blink::mojom::PushRegistrationStatus push_registration_status,
@@ -103,7 +104,7 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   // Called both from IO thread, and via PostTask from UI thread.
   void SendSubscriptionSuccess(RegisterData data,
                                blink::mojom::PushRegistrationStatus status,
-                               const std::string& push_subscription_id,
+                               const GURL& endpoint,
                                const std::vector<uint8_t>& p256dh,
                                const std::vector<uint8_t>& auth);
 
@@ -127,11 +128,6 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
 
   // Helper methods on either thread -------------------------------------------
 
-  // Creates an endpoint for |subscription_id| with either the default protocol,
-  // or the standardized Web Push Protocol, depending on |standard_protocol|.
-  GURL CreateEndpoint(bool standard_protocol,
-                      const std::string& subscription_id) const;
-
   // Inner core of this message filter which lives on the UI thread.
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
 
@@ -146,9 +142,6 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
 
   // Will be ChildProcessHost::kInvalidUniqueID in requests from Service Worker.
   int render_frame_id_;
-
-  GURL default_endpoint_;
-  GURL web_push_protocol_endpoint_;
 
   mojo::ReceiverSet<blink::mojom::PushMessaging> receivers_;
 

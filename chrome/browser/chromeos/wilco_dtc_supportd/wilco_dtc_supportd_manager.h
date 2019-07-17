@@ -51,6 +51,7 @@ class WilcoDtcSupportdManager final
   // The nullptr should be passed to clear it.
   // Notifies the |wilco_dtc_supportd_bridge_| if it is created.
   void SetConfigurationData(std::unique_ptr<std::string> data);
+  const std::string& GetConfigurationDataForTesting() const;
 
  private:
   // session_manager::SessionManagerObserver override:

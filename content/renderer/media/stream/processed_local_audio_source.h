@@ -105,7 +105,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
   // Called on the AudioCapturerSource audio thread.
   void OnCaptureStarted() override;
   void Capture(const media::AudioBus* audio_source,
-               int audio_delay_milliseconds,
+               base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) override;
   void OnCaptureError(const std::string& message) override;
@@ -116,7 +116,7 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
  private:
   // Runs the audio through |audio_processor_| before sending it along.
   void CaptureUsingProcessor(const media::AudioBus* audio_source,
-                             int audio_delay_milliseconds,
+                             base::TimeTicks audio_capture_time,
                              double volume,
                              bool key_pressed);
 

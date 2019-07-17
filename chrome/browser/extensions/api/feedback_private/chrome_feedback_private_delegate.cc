@@ -33,8 +33,6 @@
 #include "chrome/browser/chromeos/system_logs/single_log_file_log_source.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "components/feedback/feedback_util.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "extensions/browser/extension_system.h"
@@ -200,8 +198,12 @@ void ChromeFeedbackPrivateDelegate::FetchExtraLogs(
   constexpr bool scrub = true;
 
   if (system_logs::ContainsIwlwifiLogs(feedback_data->sys_info())) {
+    // TODO (jkardatzke): Modify this so that we are using the same instance of
+    // the anonymizer for the rest of the logs.
+    // We can pass null for the 1st party IDs since we are just anonymizing
+    // wifi data here.
     system_logs::SystemLogsFetcher* fetcher =
-        new system_logs::SystemLogsFetcher(scrub);
+        new system_logs::SystemLogsFetcher(scrub, nullptr);
     fetcher->AddSource(std::make_unique<system_logs::IwlwifiDumpLogSource>());
     fetcher->Fetch(base::BindOnce(&OnFetchedExtraLogs, feedback_data,
                                   std::move(callback)));
@@ -221,11 +223,6 @@ void ChromeFeedbackPrivateDelegate::UnloadFeedbackExtension(
 api::feedback_private::LandingPageType
 ChromeFeedbackPrivateDelegate::GetLandingPageType(
     const feedback::FeedbackData& feedback_data) const {
-  if (KioskNextShellClient::Get() &&
-      KioskNextShellClient::Get()->has_launched()) {
-    return api::feedback_private::LANDING_PAGE_TYPE_NOLANDINGPAGE;
-  }
-
   // Googlers using eve get a custom landing page.
   if (!feedback_util::IsGoogleEmail(feedback_data.user_email()))
     return api::feedback_private::LANDING_PAGE_TYPE_NORMAL;

@@ -72,6 +72,7 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
       return kDropTargetFadeIn;
     case OVERVIEW_ANIMATION_NO_RECENTS_FADE:
     case OVERVIEW_ANIMATION_SELECTION_WINDOW:
+    case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
       return kOverviewHighlightTransition;
   }
   NOTREACHED();
@@ -155,6 +156,7 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
                                       ui::LayerAnimationElement::TRANSFORM);
       break;
     case OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER:
+    case OVERVIEW_ANIMATION_FRAME_HEADER_CLIP:
       animation_settings_->SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
       animation_settings_->SetPreemptionStrategy(
           ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);

@@ -82,6 +82,7 @@ extern const SkColor kMobileNotConnectedXIconColor;
 
 // Extra padding used to adjust hitting region around tray items.
 extern const int kHitRegionPadding;
+extern const int kHitRegionPaddingDense;
 
 // Width of lines used to separate menu items (e.g. input method menu).
 constexpr int kMenuSeparatorWidth = 1;
@@ -186,7 +187,7 @@ constexpr int kUnifiedTrayIconSize = 20;
 constexpr int kUnifiedTraySpacingBetweenIcons = 6;
 constexpr int kUnifiedTrayBatteryWidth = 10;
 constexpr int kUnifiedTrayCornerRadius = 20;
-constexpr int kUnifiedTrayContentPadding = 8;
+constexpr int kUnifiedTrayContentPadding = 12;
 constexpr int kUnifiedTopShortcutSpacing = 16;
 constexpr int kUnifiedNotificationHiddenLineHeight = 20;
 constexpr int kUnifiedTopShortcutContainerTopPadding = 12;
@@ -273,6 +274,22 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 // Constants used in the title row of a detailed view in UnifiedSystemTray.
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
+
+class TrayConstants {
+ public:
+  static int hit_region_padding() {
+    return UseNewDenseShelfUi() ? kHitRegionPaddingDense : kHitRegionPadding;
+  }
+
+ private:
+  static bool UseNewDenseShelfUi() {
+    static bool use_new_dense_shelf_ui =
+        chromeos::switches::ShouldShowShelfDenseClamshell();
+    return use_new_dense_shelf_ui;
+  }
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(TrayConstants);
+};
 
 }  // namespace ash
 

@@ -144,17 +144,6 @@ function findAncestor(node, predicate) {
   return last ? node : null;
 }
 
-function swapDomNodes(a, b) {
-  const afterA = a.nextSibling;
-  if (afterA == b) {
-    swapDomNodes(b, a);
-    return;
-  }
-  const aParent = a.parentNode;
-  b.parentNode.replaceChild(a, b);
-  aParent.insertBefore(b, afterA);
-}
-
 /**
  * Disables text selection and dragging, with optional whitelist callbacks.
  * @param {function(Event):boolean=} opt_allowSelectStart Unless this function

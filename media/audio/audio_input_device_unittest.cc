@@ -55,7 +55,7 @@ class MockCaptureCallback : public AudioCapturerSource::CaptureCallback {
   MOCK_METHOD0(OnCaptureStarted, void());
   MOCK_METHOD4(Capture,
                void(const AudioBus* audio_source,
-                    int audio_delay_milliseconds,
+                    base::TimeTicks audio_capture_time,
                     double volume,
                     bool key_pressed));
 

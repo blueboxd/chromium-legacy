@@ -18,7 +18,7 @@ using mojom::blink::PermissionService;
 using mojom::blink::PermissionStatus;
 
 WakeLockController::WakeLockController(Document& document)
-    : Supplement<Document>(document),
+    : Supplement<ExecutionContext>(document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
       state_records_{
@@ -27,14 +27,34 @@ WakeLockController::WakeLockController(Document& document)
           MakeGarbageCollected<WakeLockStateRecord>(&document,
                                                     WakeLockType::kSystem)} {}
 
+WakeLockController::WakeLockController(DedicatedWorkerGlobalScope& worker_scope)
+    : Supplement<ExecutionContext>(worker_scope),
+      ContextLifecycleObserver(&worker_scope),
+      PageVisibilityObserver(nullptr),
+      state_records_{
+          MakeGarbageCollected<WakeLockStateRecord>(&worker_scope,
+                                                    WakeLockType::kScreen),
+          MakeGarbageCollected<WakeLockStateRecord>(&worker_scope,
+                                                    WakeLockType::kSystem)} {}
+
 const char WakeLockController::kSupplementName[] = "WakeLockController";
 
-WakeLockController& WakeLockController::From(Document& document) {
-  WakeLockController* controller =
-      Supplement<Document>::From<WakeLockController>(document);
+// static
+WakeLockController& WakeLockController::From(
+    ExecutionContext* execution_context) {
+  DCHECK(execution_context->IsDocument() ||
+         execution_context->IsDedicatedWorkerGlobalScope());
+  auto* controller =
+      Supplement<ExecutionContext>::From<WakeLockController>(execution_context);
   if (!controller) {
-    controller = MakeGarbageCollected<WakeLockController>(document);
-    ProvideTo(document, controller);
+    if (execution_context->IsDocument()) {
+      controller = MakeGarbageCollected<WakeLockController>(
+          *To<Document>(execution_context));
+    } else {
+      controller = MakeGarbageCollected<WakeLockController>(
+          *To<DedicatedWorkerGlobalScope>(execution_context));
+    }
+    Supplement<ExecutionContext>::ProvideTo(*execution_context, controller);
   }
   return *controller;
 }
@@ -44,7 +64,7 @@ void WakeLockController::Trace(Visitor* visitor) {
     visitor->Trace(state_record);
   PageVisibilityObserver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
-  Supplement<Document>::Trace(visitor);
+  Supplement<ExecutionContext>::Trace(visitor);
 }
 
 void WakeLockController::RequestWakeLock(WakeLockType type,
@@ -192,16 +212,19 @@ void WakeLockController::ObtainPermission(
           mojom::blink::WakeLockType::kSystem,
       "WakeLockType and mojom::blink::WakeLockType must have identical values");
 
+  auto* local_frame = GetExecutionContext()->IsDocument()
+                          ? To<Document>(GetExecutionContext())->GetFrame()
+                          : nullptr;
+
   GetPermissionService().RequestPermission(
       CreateWakeLockPermissionDescriptor(
           static_cast<mojom::blink::WakeLockType>(type)),
-      LocalFrame::HasTransientUserActivation(GetSupplementable()->GetFrame()),
-      std::move(callback));
+      LocalFrame::HasTransientUserActivation(local_frame), std::move(callback));
 }
 
 PermissionService& WakeLockController::GetPermissionService() {
   if (!permission_service_) {
-    ConnectToPermissionService(GetSupplementable(),
+    ConnectToPermissionService(GetExecutionContext(),
                                mojo::MakeRequest(&permission_service_));
   }
   return *permission_service_;

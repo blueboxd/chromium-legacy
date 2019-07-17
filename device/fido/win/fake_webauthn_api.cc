@@ -123,4 +123,11 @@ ScopedFakeWinWebAuthnApi::~ScopedFakeWinWebAuthnApi() {
   WinWebAuthnApi::ClearDefaultForTesting();
 }
 
+// static
+ScopedFakeWinWebAuthnApi ScopedFakeWinWebAuthnApi::MakeUnavailable() {
+  ScopedFakeWinWebAuthnApi api;
+  api.set_available(false);
+  return api;
+}
+
 }  // namespace device

@@ -2382,14 +2382,25 @@ void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
       out_prefs, Profile::FromBrowserContext(browser_context));
 }
 
-bool ChromeContentBrowserClient::AllowAppCache(
+bool ChromeContentBrowserClient::AllowAppCacheOnIO(
     const GURL& manifest_url,
     const GURL& first_party,
     content::ResourceContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   return io_data->GetCookieSettings()->IsCookieAccessAllowed(manifest_url,
                                                              first_party);
+}
+
+bool ChromeContentBrowserClient::AllowAppCache(
+    const GURL& manifest_url,
+    const GURL& first_party,
+    content::BrowserContext* context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return CookieSettingsFactory::GetForProfile(
+             Profile::FromBrowserContext(context))
+      ->IsCookieAccessAllowed(manifest_url, first_party);
 }
 
 bool ChromeContentBrowserClient::AllowServiceWorker(

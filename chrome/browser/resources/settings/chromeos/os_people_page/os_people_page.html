@@ -224,6 +224,10 @@
           </settings-subpage>
         </template>
       </template>
+      <template is="dom-if" if="[[showParentalControls_]]">
+        <settings-parental-controls-page>
+        </settings-parental-controls-page>
+      </template>
       <template is="dom-if" route-path="/accounts">
         <settings-subpage
             associated-control="[[$$('#manage-other-people-subpage-trigger')]]"

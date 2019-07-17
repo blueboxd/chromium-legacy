@@ -576,7 +576,6 @@ if (is_win) {
         "/DELAYLOAD:dxgi.dll",
         "/DELAYLOAD:dxva2.dll",
         "/DELAYLOAD:esent.dll",
-        "/DELAYLOAD:gdi32.dll",
         "/DELAYLOAD:imm32.dll",
         "/DELAYLOAD:ole32.dll",
         "/DELAYLOAD:oleacc.dll",
@@ -1637,6 +1636,7 @@ group("extra_resources") {
     "//chrome/browser/resources:net_internals_resources",
     "//chrome/browser/resources:quota_internals_resources",
     "//chrome/browser/resources:webapks_ui_resources",
+    "//components/autofill/core/browser:autofill_address_rewriter_resources",
   ]
 
   if (!is_android) {

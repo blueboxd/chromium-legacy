@@ -129,7 +129,7 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
   TRACE_EVENT0("ui", "CreateIOSurface");
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
   base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
       kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
 

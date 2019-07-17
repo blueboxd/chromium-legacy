@@ -148,7 +148,7 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                            const scoped_refptr<gl::GLImage>& image,
                            bool can_bind_to_sampler) { return true; })),
         decoder_thread_("VaapiVideoDecodeAcceleratorTestThread"),
-        mock_decoder_(new MockAcceleratedVideoDecoder),
+        mock_decoder_(new ::testing::StrictMock<MockAcceleratedVideoDecoder>),
         mock_vaapi_picture_factory_(new MockVaapiPictureFactory()),
         mock_vaapi_wrapper_(new MockVaapiWrapper()),
         mock_vpp_vaapi_wrapper_(new MockVaapiWrapper()),
@@ -232,6 +232,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     const size_t kNumReferenceFrames = num_pictures / 2;
     EXPECT_CALL(*mock_decoder_, GetNumReferenceFrames())
         .WillOnce(Return(kNumReferenceFrames));
+    EXPECT_CALL(*mock_decoder_, GetVisibleRect())
+        .WillOnce(Return(gfx::Rect(picture_size)));
     if (vda_.buffer_allocation_mode_ !=
         VaapiVideoDecodeAccelerator::BufferAllocationMode::kNone) {
       EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContextAndSurfaces(_));

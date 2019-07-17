@@ -73,6 +73,33 @@ struct StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap> {
   static void SetToNull(SkBitmap* out);
 };
 
+template <>
+struct StructTraits<media_session::mojom::MediaPositionDataView,
+                    media_session::MediaPosition> {
+  static double playback_rate(
+      const media_session::MediaPosition& media_position) {
+    return media_position.playback_rate_;
+  }
+
+  static base::TimeDelta duration(
+      const media_session::MediaPosition& media_position) {
+    return media_position.duration_;
+  }
+
+  static base::TimeDelta position(
+      const media_session::MediaPosition& media_position) {
+    return media_position.position_;
+  }
+
+  static base::Time last_updated_time(
+      const media_session::MediaPosition& media_position) {
+    return media_position.last_updated_time_;
+  }
+
+  static bool Read(media_session::mojom::MediaPositionDataView data,
+                   media_session::MediaPosition* out);
+};
+
 }  // namespace mojo
 
 #endif  // SERVICES_MEDIA_SESSION_PUBLIC_CPP_MEDIA_SESSION_MOJOM_TRAITS_H_

@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
@@ -11,7 +12,7 @@
 
 <dom-module id="settings-credit-card-edit-dialog">
   <template>
-    <style include="settings-shared md-select">
+    <style include="cr-shared-style settings-shared md-select">
       cr-input {
         --cr-input-error-display: none;
         margin-bottom: var(--cr-form-field-bottom-spacing);
@@ -56,10 +57,6 @@
       #year {
         width: 100px;
       }
-
-      label {
-        @apply --cr-form-field-label;
-      }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">[[title_]]</div>
@@ -72,10 +69,12 @@
             value="{{creditCard.cardNumber}}"
             on-input="onCreditCardNameOrNumberChanged_">
         </cr-input>
-        <label>$i18n{creditCardExpiration}</label>
+        <label id="creditCardExpiration" class="cr-form-field-label">
+          $i18n{creditCardExpiration}
+        </label>
         <select class="md-select" id="month" value="[[expirationMonth_]]"
             on-change="onMonthChange_"
-            aria-label="$i18n{creditCardExpirationMonth}">
+            aria-labelledby="creditCardExpiration">
           <template is="dom-repeat" items="[[monthList_]]">
             <option>[[item]]</option>
           </template>

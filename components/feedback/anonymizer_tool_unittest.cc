@@ -10,6 +10,9 @@
 
 namespace feedback {
 
+const char kFakeFirstPartyID[] = "nkoccljplnhpfnfiajclkommnmllphnl";
+const char* const kFakeFirstPartyExtensionIDs[] = {kFakeFirstPartyID, nullptr};
+
 class AnonymizerToolTest : public testing::Test {
  protected:
   std::string AnonymizeMACAddresses(const std::string& input) {
@@ -35,7 +38,7 @@ class AnonymizerToolTest : public testing::Test {
                                                             space);
   }
 
-  AnonymizerTool anonymizer_;
+  AnonymizerTool anonymizer_{kFakeFirstPartyExtensionIDs};
 };
 
 TEST_F(AnonymizerToolTest, Anonymize) {
@@ -347,8 +350,16 @@ TEST_F(AnonymizerToolTest, AnonymizeChunk) {
        "aa:aa:aa:00:00:01"},
       {"chrome://resources/foo",  // Secure chrome resource, whitelisted.
        "chrome://resources/foo"},
+      {"chrome://settings/crisper.js",  // Whitelisted settings URLs.
+       "chrome://settings/crisper.js"},
+      // Whitelisted first party extension.
+      {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js",
+       "chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js"},
       {"chrome://resources/f?user=bar",  // Potentially PII in parameter.
-       "<URL: 2>"}};
+       "<URL: 2>"},
+      {"chrome-extension://nkoccljplnhpfnfiajclkommnmllphnl/foobar.js?bar=x",
+       "<URL: 3>"},  // Potentially PII in parameter.
+  };
   std::string anon_input;
   std::string anon_output;
   for (const auto& s : data) {

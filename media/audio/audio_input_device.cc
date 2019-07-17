@@ -460,9 +460,8 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   const base::TimeTicks now_time = base::TimeTicks::Now();
   DCHECK_GE(now_time, capture_time);
 
-  capture_callback_->Capture(audio_bus,
-                             (now_time - capture_time).InMilliseconds(),
-                             buffer->params.volume, buffer->params.key_pressed);
+  capture_callback_->Capture(audio_bus, capture_time, buffer->params.volume,
+                             buffer->params.key_pressed);
 
   if (++current_segment_id_ >= total_segments_)
     current_segment_id_ = 0u;

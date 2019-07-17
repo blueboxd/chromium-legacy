@@ -12,7 +12,7 @@
 
 namespace device {
 
-class PlatformSensorReaderWin;
+class PlatformSensorReaderWinBase;
 
 // Implementation of PlatformSensorProvider for Windows platform.
 // PlatformSensorProviderWin is responsible for following tasks:
@@ -40,13 +40,13 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
   void OnInitSensorManager(mojom::SensorType type,
                            SensorReadingSharedBuffer* reading_buffer,
                            const CreateSensorCallback& callback);
-  std::unique_ptr<PlatformSensorReaderWin> CreateSensorReader(
+  std::unique_ptr<PlatformSensorReaderWinBase> CreateSensorReader(
       mojom::SensorType type);
   void SensorReaderCreated(
       mojom::SensorType type,
       SensorReadingSharedBuffer* reading_buffer,
       const CreateSensorCallback& callback,
-      std::unique_ptr<PlatformSensorReaderWin> sensor_reader);
+      std::unique_ptr<PlatformSensorReaderWinBase> sensor_reader);
 
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;
   Microsoft::WRL::ComPtr<ISensorManager> sensor_manager_;

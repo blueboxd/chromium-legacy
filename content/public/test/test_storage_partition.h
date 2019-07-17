@@ -62,6 +62,9 @@ class TestStoragePartition : public StoragePartition {
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() override;
 
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() override;
+
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
 

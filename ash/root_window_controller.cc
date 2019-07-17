@@ -29,6 +29,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_settings.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -949,6 +950,7 @@ void RootWindowController::CreateContainers() {
         id, desks_util::GetDeskContainerName(id), non_lock_screen_containers);
     ::wm::SetChildWindowVisibilityChangesAnimated(container);
     container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+    container->SetProperty(kForceVisibleInMiniViewKey, true);
     wm::SetChildrenUseExtendedHitRegionForWindow(container);
 
     // Hide the non-active containers.

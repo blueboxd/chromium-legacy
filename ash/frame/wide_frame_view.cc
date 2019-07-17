@@ -84,7 +84,6 @@ void WideFrameView::SetCaptionButtonModel(
 
 WideFrameView::WideFrameView(views::Widget* target)
     : target_(target), widget_(std::make_unique<views::Widget>()) {
-  Shell::Get()->overview_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 
   aura::Window* target_window = target->GetNativeWindow();
@@ -105,6 +104,12 @@ WideFrameView::WideFrameView(views::Widget* target)
   widget_->Init(params);
 
   aura::Window* window = widget_->GetNativeWindow();
+  // Overview normally clips the caption container which exists on the same
+  // window. But this WideFrameView exists as a separate window, which we hide
+  // in overview using the `kHideInOverviewKey` property. However, we still want
+  // to show it in the desks mini_views.
+  window->SetProperty(kHideInOverviewKey, true);
+  window->SetProperty(kForceVisibleInMiniViewKey, true);
   window->SetEventTargeter(std::make_unique<WideFrameTargeter>(header_view()));
   set_owned_by_client();
 }
@@ -112,8 +117,6 @@ WideFrameView::WideFrameView(views::Widget* target)
 WideFrameView::~WideFrameView() {
   if (widget_)
     widget_->CloseNow();
-  if (Shell::Get()->overview_controller())
-    Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   if (target_) {
     GetTargetHeaderView()->SetShouldPaintHeader(true);
@@ -192,14 +195,6 @@ void WideFrameView::SetVisibleFraction(double visible_fraction) {
 
 std::vector<gfx::Rect> WideFrameView::GetVisibleBoundsInScreen() const {
   return header_view_->GetVisibleBoundsInScreen();
-}
-
-void WideFrameView::OnOverviewModeStarting() {
-  header_view_->SetShouldPaintHeader(false);
-}
-
-void WideFrameView::OnOverviewModeEnded() {
-  header_view_->SetShouldPaintHeader(true);
 }
 
 HeaderView* WideFrameView::GetTargetHeaderView() {

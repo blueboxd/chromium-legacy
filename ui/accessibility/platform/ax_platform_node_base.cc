@@ -1330,20 +1330,43 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
     AXPlatformNodeBase* endpoint_object,
     int endpoint_offset) {
   // There are three cases:
-  // 1. Either the selection endpoint is inside this object or is an ancestor
-  // of of this object. endpoint_offset should be returned.
-  // 2. The selection endpoint is a pure descendant of this object. The offset
-  // of the character corresponding to the subtree in which the endpoint is
-  // located should be returned.
+  // 1. The selection endpoint is inside this object but not one of its
+  // descendants, or is in an ancestor of this object. endpoint_offset should be
+  // returned, possibly adjusted from a child offset to a hypertext offset.
+  // 2. The selection endpoint is a descendant of this object. The offset of the
+  // character in this object's hypertext corresponding to the subtree in which
+  // the endpoint is located should be returned.
   // 3. The selection endpoint is in a completely different part of the tree.
-  // Either 0 or text_length should be returned depending on the direction
+  // Either 0 or hypertext length should be returned depending on the direction
   // that one needs to travel to find the endpoint.
+  //
+  // TODO(nektar): Replace all this logic with the use of AXNodePosition.
 
-  // Case 1.
+  // Case 1. Is the endpoint object equal to this object or an ancestor of this
+  // object?
   //
   // IsDescendantOf includes the case when endpoint_object == this.
-  if (IsDescendantOf(endpoint_object))
-    return endpoint_offset;
+  if (IsDescendantOf(endpoint_object)) {
+    if (endpoint_object->IsLeaf()) {
+      DCHECK_EQ(endpoint_object, this) << "Text objects cannot have children.";
+      return endpoint_offset;
+    } else {
+      DCHECK_GE(endpoint_offset, 0);
+      DCHECK_LE(endpoint_offset,
+                endpoint_object->GetDelegate()->GetChildCount());
+
+      // Adjust the |endpoint_offset| because the selection endpoint is a tree
+      // position, i.e. it represents a child index and not a text offset.
+      if (endpoint_offset == endpoint_object->GetDelegate()->GetChildCount()) {
+        return static_cast<int>(endpoint_object->GetHypertext().size());
+      } else {
+        auto* child = static_cast<AXPlatformNodeBase*>(FromNativeViewAccessible(
+            endpoint_object->GetDelegate()->ChildAtIndex(endpoint_offset)));
+        DCHECK(child);
+        return endpoint_object->GetHypertextOffsetFromChild(child);
+      }
+    }
+  }
 
   AXPlatformNodeBase* common_parent = this;
   int32_t index_in_common_parent = GetDelegate()->GetIndexInParent();
@@ -1358,24 +1381,28 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
   DCHECK_GE(index_in_common_parent, 0);
   DCHECK(!(common_parent->IsTextOnlyObject()));
 
-  // Case 2.
+  // Case 2. Is the selection endpoint inside a descendant of this object?
   //
-  // We already checked in case 1 if our endpoint is inside this object.
-  // We can safely assume that it is a descendant or in a completely different
-  // part of the tree.
+  // We already checked in case 1 if our endpoint object is equal to this
+  // object. We can safely assume that it is a descendant or in a completely
+  // different part of the tree.
   if (common_parent == this) {
     int32_t hypertext_offset =
         GetHypertextOffsetFromDescendant(endpoint_object);
     auto* parent = static_cast<AXPlatformNodeBase*>(
         FromNativeViewAccessible(endpoint_object->GetParent()));
     if (parent == this && endpoint_object->IsTextOnlyObject()) {
+      // Due to a historical design decision, the hypertext of the immediate
+      // parents of text objects includes all their text. We therefore need to
+      // adjust the hypertext offset in the parent by adding any text offset.
       hypertext_offset += endpoint_offset;
     }
 
     return hypertext_offset;
   }
 
-  // Case 3.
+  // Case 3. Is the selection endpoint in a completely different part of the
+  // tree?
   //
   // We can safely assume that the endpoint is in another part of the tree or
   // at common parent, and that this object is a descendant of common parent.
@@ -1641,4 +1668,45 @@ int AXPlatformNodeBase::NearestTextIndexToPoint(gfx::Point point) {
   }
   return nearest_index;
 }
+
+std::string AXPlatformNodeBase::GetInvalidValue() const {
+  const AXPlatformNodeBase* target = this;
+  // The aria-invalid=spelling/grammar need to be exposed as text attributes for
+  // a range matching the visual underline representing the error.
+  if (static_cast<ax::mojom::InvalidState>(
+          target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
+          ax::mojom::InvalidState::kNone &&
+      target->IsTextOnlyObject() && target->GetParent()) {
+    // Text nodes need to reflect the invalid state of their parent object,
+    // otherwise spelling and grammar errors communicated through aria-invalid
+    // won't be reflected in text attributes.
+    target = static_cast<AXPlatformNodeBase*>(
+        FromNativeViewAccessible(target->GetParent()));
+  }
+
+  std::string invalid_value("");
+  // Note: spelling+grammar errors case is disallowed and not supported. It
+  // could possibly arise with aria-invalid on the ancestor of a spelling error,
+  // but this is not currently described in any spec and no real-world use cases
+  // have been found.
+  switch (static_cast<ax::mojom::InvalidState>(
+      target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState))) {
+    case ax::mojom::InvalidState::kNone:
+    case ax::mojom::InvalidState::kFalse:
+      break;
+    case ax::mojom::InvalidState::kTrue:
+      invalid_value = "true";
+      break;
+    case ax::mojom::InvalidState::kOther: {
+      if (!target->GetStringAttribute(
+              ax::mojom::StringAttribute::kAriaInvalidValue, &invalid_value)) {
+        // Set the attribute to "true", since we cannot be more specific.
+        invalid_value = "true";
+      }
+      break;
+    }
+  }
+  return invalid_value;
+}
+
 }  // namespace ui

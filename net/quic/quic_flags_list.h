@@ -241,7 +241,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)
 // If true, ignore TLPR if there is no pending stream data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
-          false)
+          true)
 
 // If true, when detecting losses, use packets_acked of corresponding packet
 // number space.
@@ -305,3 +305,23 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
     false)
+
+// When true, QuicConnectionId::Hash uses SipHash instead of XOR.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, false)
+
+// If true, when RTO fires and there is no packet to be RTOed, let connection
+// send.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission, true)
+
+// If true, QuicSession::GetOrCreateDynamicStream() is deprecated, and its
+// contents are moved to GetOrCreateStream().
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_inline_getorcreatedynamicstream,
+          false)
+
+// Maximum number of tracked packets.
+QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
+
+// If true, HTTP request header names sent from QuicSpdyClientBase(and
+// descendents) will be automatically converted to lower case.
+QUIC_FLAG(bool, FLAGS_quic_client_convert_http_header_name_to_lowercase, true)

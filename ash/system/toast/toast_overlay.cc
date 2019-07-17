@@ -231,7 +231,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = true;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
   params.parent = Shell::GetRootWindowForNewWindows()->GetChildById(

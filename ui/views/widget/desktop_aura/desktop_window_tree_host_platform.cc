@@ -345,14 +345,14 @@ bool DesktopWindowTreeHostPlatform::HasCapture() const {
   return platform_window()->HasCapture();
 }
 
-void DesktopWindowTreeHostPlatform::SetAlwaysOnTop(bool always_on_top) {
+void DesktopWindowTreeHostPlatform::SetZOrderLevel(ui::ZOrderLevel order) {
   // TODO: needs PlatformWindow support.
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-bool DesktopWindowTreeHostPlatform::IsAlwaysOnTop() const {
+ui::ZOrderLevel DesktopWindowTreeHostPlatform::GetZOrderLevel() const {
   // TODO: needs PlatformWindow support.
-  return false;
+  return ui::ZOrderLevel::kNormal;
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibleOnAllWorkspaces(

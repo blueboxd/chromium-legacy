@@ -13,6 +13,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 namespace identity {
 

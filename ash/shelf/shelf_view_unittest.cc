@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_view.h"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -511,7 +512,7 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
   }
 
-  void AddButtonsUntilOverflow() {
+  void AddAppShortcutsUntilOverflow() {
     int items_added = 0;
     while (!shelf_view_->GetOverflowButton()->GetVisible()) {
       AddAppShortcut();
@@ -710,7 +711,7 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
 // Check the ideal bounds of several items in LTR and RTL UI.
 TEST_P(ShelfViewTextDirectionTest, GetIdealBoundsOfItemIcon) {
   ShelfID id_1 = AddAppShortcut();
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   ShelfID id_2 = AddAppShortcut();
   ShelfID id_3 = AddAppShortcut();
 
@@ -761,7 +762,7 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
 }
 
 TEST_F(ShelfViewTest, OverflowVisibleIndex) {
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   ASSERT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   const int last_visible_index = shelf_view_->last_visible_index();
 
@@ -925,7 +926,7 @@ TEST_F(ShelfViewTest, OverflowVisibleItemsInTabletMode) {
   };
 
   // Setup the shelf so the overflow bubble is visible.
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   test_api_->ShowOverflowBubble();
   ShelfViewTestAPI overflow_test_api(
       test_api_->overflow_bubble()->bubble_view()->shelf_view());
@@ -1171,7 +1172,7 @@ TEST_F(ShelfViewTest, ShelfRipOff) {
   // overflow. Add one more app (which is on the overflow shelf).
   ShelfID first_app_id = AddAppShortcut();
   ShelfID second_app_id = AddAppShortcut();
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   ShelfID overflow_app_id = AddAppShortcut();
 
   // Verify that dragging an app off the shelf will trigger the app getting
@@ -1328,7 +1329,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 }
 
 TEST_F(ShelfViewTest, ButtonTitlesTest) {
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   EXPECT_EQ(base::UTF8ToUTF16("Launcher"),
             shelf_view_->GetHomeButton()->GetAccessibleName());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_SHELF_BACK_BUTTON_TITLE),
@@ -1561,7 +1562,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
 // Checks the overflow bubble size when an item is ripped off and re-inserted.
 TEST_F(ShelfViewTest, OverflowBubbleSize) {
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/436131).
   AddAppShortcut();
@@ -1619,7 +1620,7 @@ TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
   const SkColor opaque_expected_color =
       wallpaper_test_api.ApplyColorProducingWallpaper();
 
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   test_api_->ShowOverflowBubble();
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
 
@@ -1630,7 +1631,7 @@ TEST_F(ShelfViewTest, OverflowShelfColorIsDerivedFromWallpaper) {
 TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
   UpdateDisplay("400x300");
 
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
@@ -1714,7 +1715,7 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
   // Speeds up animation for test.
   test_api_for_secondary.SetAnimationDuration(1);
 
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
 
   // Test #1: Test drag insertion bounds of primary shelf.
   // Show overflow bubble.
@@ -1769,31 +1770,40 @@ TEST_F(ShelfViewTest, CheckDragInsertBoundsWithMultiMonitor) {
 // Verifies that the arrow buttons of OverflowBubbleView work as expected.
 TEST_F(ShelfViewTest, CheckOverflowBubbleViewArrowButton) {
   UpdateDisplay("300x600");
-  AddButtonsUntilOverflow();
-
-  // Add enough shelf items to test the arrow button.
-  for (int i = 0; i < 5; i++)
-    AddAppShortcut();
+  AddAppShortcutsUntilOverflow();
 
   // Show overflow bubble.
   test_api_->ShowOverflowBubble();
   ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
 
   OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
-  int item_count = bubble_view->shelf_view()->last_visible_index() -
-                   bubble_view->shelf_view()->first_visible_index() + 1;
-  ASSERT_EQ(7, item_count);
-  OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
-  views::View* left_arrow_button = bubble_view->left_arrow();
-  views::View* right_arrow_button = bubble_view->right_arrow();
-  ShelfViewTestAPI test_for_overflow_view(
-      test_api_->overflow_bubble()->bubble_view()->shelf_view());
-  const gfx::Rect overflow_bubble_bounds = bubble_view->GetBoundsInScreen();
   const gfx::Size shelf_icon_size(kShelfButtonSize, kShelfButtonSize);
   const int arrow_button_size = OverflowBubbleView::kArrowButtonSize;
   const int bubble_view_min_margin = OverflowBubbleView::kMinimumMargin;
   const int end_padding = OverflowBubbleView::kEndPadding;
   const int unit = kShelfButtonSize + kShelfButtonSpacing;
+
+  // Add sufficient app icons to ensure that it needs to press the right arrow
+  // buttons twice to reach the end.
+  int current_item_count = bubble_view->shelf_view()->last_visible_index() -
+                           bubble_view->shelf_view()->first_visible_index() + 1;
+  const int available_width_for_shortcuts =
+      GetPrimaryDisplay().work_area().width() - 2 * bubble_view_min_margin -
+      2 * end_padding;
+  const int max_accommodated_shelf_num =
+      std::ceil(available_width_for_shortcuts / unit);
+  int additional_item_num =
+      2 * max_accommodated_shelf_num - 1 - current_item_count;
+  while (additional_item_num) {
+    AddAppShortcut();
+    additional_item_num--;
+  }
+
+  const gfx::Rect overflow_bubble_bounds = bubble_view->GetBoundsInScreen();
+  views::View* left_arrow_button = bubble_view->left_arrow();
+  views::View* right_arrow_button = bubble_view->right_arrow();
+  ShelfViewTestAPI test_for_overflow_view(
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
 
   // Verifies that the overflow bubble has the correct bounds. In detail:
   // (1) The width of the overflow bubble should be the multiple of |unit|.
@@ -1802,9 +1812,9 @@ TEST_F(ShelfViewTest, CheckOverflowBubbleViewArrowButton) {
   EXPECT_EQ(
       overflow_bubble_bounds.origin().x(),
       GetPrimaryDisplay().bounds().right() - overflow_bubble_bounds.right());
-  const int available_width =
+  const int available_width_for_bubble =
       GetPrimaryDisplay().bounds().width() - 2 * bubble_view_min_margin;
-  const int rd = available_width % unit;
+  const int rd = available_width_for_bubble % unit;
   EXPECT_EQ(rd / 2 + bubble_view_min_margin,
             overflow_bubble_bounds.origin().x());
   EXPECT_EQ(0, overflow_bubble_bounds.width() % unit);
@@ -1830,7 +1840,6 @@ TEST_F(ShelfViewTest, CheckOverflowBubbleViewArrowButton) {
   const gfx::Point right_button_center =
       right_arrow_button->GetBoundsInScreen().CenterPoint();
   GetEventGenerator()->GestureTapAt(right_button_center);
-  base::RunLoop().RunUntilIdle();
 
   // Verifies that the layout strategy is SHOW_BUTTONS.
   EXPECT_EQ(OverflowBubbleView::SHOW_BUTTONS, bubble_view->layout_strategy());
@@ -1863,7 +1872,6 @@ TEST_F(ShelfViewTest, CheckOverflowBubbleViewArrowButton) {
   // (3) The right button is invisible.
   // (4) The last visible shelf button has the expected bounds in screen.
   GetEventGenerator()->GestureTapAt(right_button_center);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OverflowBubbleView::SHOW_LEFT_ARROW_BUTTON,
             bubble_view->layout_strategy());
   EXPECT_FALSE(right_arrow_button->GetVisible());
@@ -1888,6 +1896,72 @@ TEST_F(ShelfViewTest, CheckOverflowBubbleViewArrowButton) {
             bubble_view->layout_strategy());
   EXPECT_TRUE(right_arrow_button->GetVisible());
   EXPECT_FALSE(left_arrow_button->GetVisible());
+}
+
+// Verifies that the overflow bubble view handles the gesture events correctly.
+TEST_F(ShelfViewTest, CheckGestureDraggingOverflowBubbleView) {
+  UpdateDisplay("300x600");
+  AddAppShortcutsUntilOverflow();
+
+  // Show overflow bubble.
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(shelf_view_->IsShowingOverflowBubble());
+  OverflowBubbleView* bubble_view = test_api_->overflow_bubble()->bubble_view();
+
+  const int bubble_view_min_margin = OverflowBubbleView::kMinimumMargin;
+  const int end_padding = OverflowBubbleView::kEndPadding;
+  const int unit = kShelfButtonSize + kShelfButtonSpacing;
+
+  // Calculates the start point of the gesture drag event. Ensures that the
+  // start point is not within the bounds of any shelf icon.
+  ShelfViewTestAPI test_for_overflow_view(
+      test_api_->overflow_bubble()->bubble_view()->shelf_view());
+  const gfx::Rect first_icon_bounds =
+      test_for_overflow_view
+          .GetButton(bubble_view->shelf_view()->first_visible_index())
+          ->GetBoundsInScreen();
+  gfx::Point gesture_drag_point = first_icon_bounds.right_center();
+  gesture_drag_point.Offset(1, 0);
+
+  // Verifies that gesture dragging is disabled when no arrow button shows.
+  ASSERT_EQ(OverflowBubbleView::NOT_SHOW_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+  gfx::Point gesture_end_point = gesture_drag_point;
+  gesture_end_point.Offset(-kShelfButtonSize, 0);
+  GetEventGenerator()->GestureScrollSequence(
+      gesture_drag_point, gesture_end_point,
+      base::TimeDelta::FromMilliseconds(100), 5);
+  EXPECT_EQ(0, bubble_view->scroll_offset().x());
+
+  // Adds enough shelf icons to show the right arrow button.
+  const int available_width_for_shortcuts =
+      GetPrimaryDisplay().bounds().width() - 2 * bubble_view_min_margin -
+      2 * end_padding;
+  int max_accommodated_shelf_num =
+      std::ceil(available_width_for_shortcuts / unit);
+  while (max_accommodated_shelf_num) {
+    AddAppShortcut();
+    max_accommodated_shelf_num--;
+  }
+  ASSERT_EQ(OverflowBubbleView::SHOW_RIGHT_ARROW_BUTTON,
+            bubble_view->layout_strategy());
+
+  // Verifies that the small gesutre offset will not scroll the overflow bubble.
+  gesture_end_point = gesture_drag_point;
+  gesture_end_point.Offset(-10, 0);
+  GetEventGenerator()->GestureScrollSequence(
+      gesture_drag_point, gesture_end_point,
+      base::TimeDelta::FromMilliseconds(100), 1);
+  EXPECT_EQ(0, bubble_view->scroll_offset().x());
+
+  // Verifies that the large gesture offset will scroll the overflow bubble. The
+  // scroll offset is adjusted to fully show all of shelf icons.
+  gesture_end_point = gesture_drag_point;
+  gesture_end_point.Offset(-kShelfButtonSize, 0);
+  GetEventGenerator()->GestureScrollSequence(
+      gesture_drag_point, gesture_end_point,
+      base::TimeDelta::FromMilliseconds(100), 1);
+  EXPECT_EQ(unit, bubble_view->scroll_offset().x());
 }
 
 // Checks the rip an item off from left aligned shelf in secondary monitor.
@@ -1928,7 +2002,7 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 // Checks various drag and drop operations from OverflowBubble to Shelf, and
 // vice versa.
 TEST_F(ShelfViewTest, CheckDragAndDropFromShelfToOtherShelf) {
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/425097).
   AddAppShortcut();
@@ -1947,7 +2021,7 @@ TEST_F(ShelfViewTest, CheckDragAndDropFromShelfToOtherShelf) {
 // Checks drag-reorder items within the overflow shelf.
 TEST_F(ShelfViewTest, TestDragWithinOverflow) {
   // Prepare the overflow and open it.
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   // Add a couple more to make sure we have things to drag.
   AddAppShortcut();
   AddAppShortcut();
@@ -1994,7 +2068,7 @@ TEST_F(ShelfViewTest, TestDragWithinOverflow) {
 // Checks creating app shortcut for an opened platform app in overflow bubble
 // should be invisible to the shelf. See crbug.com/605793.
 TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
 
   // Add a running Platform app.
   ShelfID platform_app_id = AddApp();
@@ -2068,7 +2142,7 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   // overflow. Add two more apps (which are on the overflow shelf).
   ShelfID first_app_id = AddAppShortcut();
   ShelfID second_app_id = AddAppShortcut();
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   ShelfID overflow_app_id1 = AddAppShortcut();
   ShelfID overflow_app_id2 = AddAppShortcut();
 
@@ -2138,7 +2212,7 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
 TEST_F(ShelfViewTest, UnpinningCancelsOverflow) {
   // Add just enough items for overflow; one fewer would not require overflow.
   const ShelfID first_shelf_id = AddAppShortcut();
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   test_api_->ShowOverflowBubble();
   EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
   EXPECT_TRUE(shelf_view_->IsShowingOverflowBubble());
@@ -2262,7 +2336,7 @@ TEST_F(ShelfViewTest, NoContextMenuOnBackButton) {
 // Tests that the overflow button does not show a context menu.
 TEST_F(ShelfViewTest, NoContextMenuOnOverflowButton) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   views::View* overflow_button = shelf_view_->GetOverflowButton();
 
   generator->MoveMouseTo(overflow_button->GetBoundsInScreen().CenterPoint());
@@ -3249,7 +3323,7 @@ class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
     views::test::InkDropHostViewTestApi(overflow_button_)
         .SetInkDrop(std::move(overflow_button_ink_drop));
 
-    AddButtonsUntilOverflow();
+    AddAppShortcutsUntilOverflow();
     EXPECT_TRUE(shelf_view_->GetOverflowButton()->GetVisible());
     EXPECT_FALSE(shelf_view_->IsShowingOverflowBubble());
   }
@@ -3775,7 +3849,7 @@ TEST_F(ShelfViewFocusTest, OverflowNotActivatedWhenOpened) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   ::wm::ActivateWindow(window.get());
 
-  AddButtonsUntilOverflow();
+  AddAppShortcutsUntilOverflow();
   test_api_->ShowOverflowBubble();
   EXPECT_TRUE(::wm::IsActiveWindow(window.get()));
 }
@@ -3827,7 +3901,7 @@ class ShelfViewOverflowFocusTest : public ShelfViewFocusTest {
 
     // Add app shortcuts until the overflow button is visible. At this point
     // there will be two items on the overflow shelf.
-    AddButtonsUntilOverflow();
+    AddAppShortcutsUntilOverflow();
 
     // Add two more shortcuts for a total of four items on the overflow shelf.
     AddAppShortcut();

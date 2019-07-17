@@ -1223,19 +1223,19 @@
     Battery isn't charging
   </message>
   <message name="IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE" desc="The message of the notification shown to inform the user that an unauthorized battery is connected to a Chromebook.">
-    To charge this Chromebook, use a compatible OEM battery.
+    To charge, use a battery by the maker of your Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_TITLE" desc="The title of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
     Power adapter issue
   </message>
   <message name="IDS_WILCO_NOTIFICATION_NON_WILCO_CHARGER_MESSAGE" desc="The message of the notification shown to inform the user that charger is unauthorized and battery will not charge.">
-    To avoid charging and performance issues use a compatible OEM or USB Type-C power adapter.
+    To avoid charging or performance issues, use a USB Type-C power adapter or an adapter by the maker of your Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_TITLE" desc="The title of the notification shown to inform the user that attached dock is incompatible.">
-    Dock isn't compatible
+    Not all features on this dock are supported
   </message>
   <message name="IDS_WILCO_NOTIFICATION_INCOMPATIBLE_DOCK_MESSAGE" desc="The message of the notification shown to inform the user that attached dock is incompatible.">
-    Use a OEM docking station designed to work with this Chromebook.
+    Use a docking station designed to work with this Chromebook.
   </message>
   <message name="IDS_WILCO_NOTIFICATION_DOCK_ERROR_TITLE" desc="The title of the notification shown to inform the user that attached dock presents hardware failures.">
     Dock has an issue

@@ -51,7 +51,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     quic::QuicPacketNumber original_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
-  void OnIncomingAck(const quic::QuicAckFrame& frame,
+  void OnIncomingAck(quic::QuicPacketNumber ack_packet_number,
+                     const quic::QuicAckFrame& frame,
                      quic::QuicTime ack_receive_time,
                      quic::QuicPacketNumber largest_observed,
                      bool rtt_updated,

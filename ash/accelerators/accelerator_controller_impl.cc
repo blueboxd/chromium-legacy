@@ -60,8 +60,8 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
+#include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "ash/wm/desks/hit_the_wall_desk_switch_animation.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
@@ -281,7 +281,7 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
   } else {
     const bool going_left = accelerator.key_code() == ui::VKEY_OEM_4;
     for (auto* root : Shell::GetAllRootWindows())
-      PerformHitTheWallDeskSwitchAnimation(root, going_left);
+      desks_animations::PerformHitTheWallAnimation(root, going_left);
   }
 }
 
@@ -323,9 +323,14 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
   if (!target_desk)
     return;
 
-  // TODO(afakhry): Finalize window movement animation to another desk outside
-  // of overview with UX. https://crbug.com/977434.
+  if (!in_overview) {
+    desks_animations::PerformWindowMoveToDeskAnimation(
+        window_to_move,
+        /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4);
+  }
+
   desks_controller->MoveWindowFromActiveDeskTo(window_to_move, target_desk);
+
   if (in_overview) {
     // We should not exit overview as a result of this shortcut.
     DCHECK(overview_controller->InOverviewSession());

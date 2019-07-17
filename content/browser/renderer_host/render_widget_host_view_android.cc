@@ -244,9 +244,10 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (using_browser_compositor_) {
     delegated_frame_host_client_ =
         std::make_unique<DelegatedFrameHostClientAndroid>(this);
+    DCHECK(features::IsSurfaceSynchronizationEnabled());
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
         &view_, GetHostFrameSinkManager(), delegated_frame_host_client_.get(),
-        host()->GetFrameSinkId(), features::IsSurfaceSynchronizationEnabled());
+        host()->GetFrameSinkId());
     if (is_showing_) {
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
@@ -1083,25 +1084,7 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
     base::Optional<viz::HitTestRegionList> hit_test_region_list) {
-  if (!delegated_frame_host_) {
-    DCHECK(!using_browser_compositor_);
-    return;
-  }
-
-  DCHECK(!frame.render_pass_list.empty());
-
-  viz::RenderPass* root_pass = frame.render_pass_list.back().get();
-  current_surface_size_ = root_pass->output_rect.size();
-  bool is_transparent = root_pass->has_transparent_background;
-
-  viz::CompositorFrameMetadata metadata = frame.metadata.Clone();
-
-  delegated_frame_host_->SubmitCompositorFrame(
-      local_surface_id, std::move(frame), std::move(hit_test_region_list));
-
-  // As the metadata update may trigger view invalidation, always call it after
-  // any potential compositor scheduling.
-  OnFrameMetadataUpdated(std::move(metadata), is_transparent);
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
@@ -1112,8 +1095,7 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
     DCHECK(!using_browser_compositor_);
     return;
   }
-
-  delegated_frame_host_->DidNotProduceFrame(ack);
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {

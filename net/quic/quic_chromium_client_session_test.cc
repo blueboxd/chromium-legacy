@@ -154,10 +154,9 @@ class QuicChromiumClientSessionTest
         /*migrate_session_on_network_change_v2=*/false,
         /*defaulet_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
         quic::QuicTime::Delta::FromMilliseconds(
-            kDefaultRetransmittableOnWireTimeoutMillisecs),
-        /*migrate_idle_session=*/false,
-        base::TimeDelta::FromSeconds(kDefaultIdleSessionMigrationPeriodSeconds),
-        base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
+            kDefaultRetransmittableOnWireTimeout.InMilliseconds()),
+        /*migrate_idle_session=*/false, kDefaultIdleSessionMigrationPeriod,
+        kMaxTimeOnNonDefaultNetwork,
         kMaxMigrationsToNonDefaultNetworkOnWriteError,
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         kQuicYieldAfterPacketsRead,

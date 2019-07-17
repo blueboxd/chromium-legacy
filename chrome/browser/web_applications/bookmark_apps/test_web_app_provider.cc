@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
@@ -53,6 +54,12 @@ void TestWebAppProvider::SetInstallFinalizer(
 void TestWebAppProvider::SetPendingAppManager(
     std::unique_ptr<PendingAppManager> pending_app_manager) {
   pending_app_manager_ = std::move(pending_app_manager);
+  ConnectSubsystems();
+}
+
+void TestWebAppProvider::SetWebAppUiManager(
+    std::unique_ptr<WebAppUiManager> ui_manager) {
+  ui_manager_ = std::move(ui_manager);
   ConnectSubsystems();
 }
 

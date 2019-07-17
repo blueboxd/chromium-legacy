@@ -476,4 +476,8 @@ AXPlatformNodeDelegateBase::GetDescendants() const {
   return {};
 }
 
+std::string AXPlatformNodeDelegateBase::GetLanguage() const {
+  return std::string();
+}
+
 }  // namespace ui

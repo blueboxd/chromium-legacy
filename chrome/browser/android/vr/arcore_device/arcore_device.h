@@ -22,7 +22,7 @@
 
 namespace vr {
 class MailboxToSurfaceBridge;
-class ArCoreInstallUtils;
+class ArCoreSessionUtils;
 }  // namespace vr
 
 namespace device {
@@ -37,7 +37,7 @@ class ArCoreDevice : public VRDeviceBase {
       std::unique_ptr<ArCoreFactory> arcore_factory,
       std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory,
       std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_to_surface_bridge,
-      std::unique_ptr<vr::ArCoreInstallUtils> arcore_install_utils);
+      std::unique_ptr<vr::ArCoreSessionUtils> arcore_session_utils);
   ArCoreDevice();
   ~ArCoreDevice() override;
 
@@ -51,9 +51,6 @@ class ArCoreDevice : public VRDeviceBase {
   }
 
  private:
-  void OnRequestInstallArModuleResult(bool success);
-  void OnRequestInstallSupportedArCoreResult(bool success);
-
   // VRDeviceBase implementation
   void OnMailboxBridgeReady();
   void OnArCoreGlThreadInitialized();
@@ -88,21 +85,11 @@ class ArCoreDevice : public VRDeviceBase {
 
   void RequestSessionAfterInitialization(int render_process_id,
                                          int render_frame_id);
-  void RequestArModule(int render_process_id, int render_frame_id);
-  void OnRequestArModuleResult(int render_process_id,
-                               int render_frame_id,
-                               bool success);
-  void RequestArCoreInstallOrUpdate(int render_process_id, int render_frame_id);
-  void OnRequestArCoreInstallOrUpdateResult(bool success);
   void CallDeferredRequestSessionCallback(bool success);
-  void OnRequestAndroidCameraPermissionResult(
-      base::OnceCallback<void(bool)> callback,
-      bool was_android_camera_permission_granted);
   void RequestArCoreGlInitialization(gfx::AcceleratedWidget window,
                                      int rotation,
                                      const gfx::Size& size);
   void OnArCoreGlInitializationComplete(bool success);
-  void RequestArSessionConsent(int render_process_id, int render_frame_id);
 
   void OnCreateSessionCallback(
       mojom::XRRuntime::RequestSessionCallback deferred_callback,
@@ -115,7 +102,7 @@ class ArCoreDevice : public VRDeviceBase {
   std::unique_ptr<ArCoreFactory> arcore_factory_;
   std::unique_ptr<ArImageTransportFactory> ar_image_transport_factory_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
-  std::unique_ptr<vr::ArCoreInstallUtils> arcore_install_utils_;
+  std::unique_ptr<vr::ArCoreSessionUtils> arcore_session_utils_;
 
   // Encapsulates data with session lifetime.
   struct SessionState {

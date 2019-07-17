@@ -7,6 +7,7 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drmMode.h>
+
 #include <memory>
 
 #include "base/files/platform_file.h"
@@ -106,6 +107,10 @@ size_t GbmPixmapWayland::GetDmaBufPlaneSize(size_t plane) const {
   return gbm_bo_->GetPlaneSize(plane);
 }
 
+size_t GbmPixmapWayland::GetNumberOfPlanes() const {
+  return gbm_bo_->GetNumPlanes();
+}
+
 uint64_t GbmPixmapWayland::GetBufferFormatModifier() const {
   return gbm_bo_->GetFormatModifier();
 }
@@ -148,7 +153,7 @@ gfx::NativePixmapHandle GbmPixmapWayland::ExportHandle() {
 
   // TODO(dcastagna): Use gbm_bo_get_plane_count once all the formats we use are
   // supported by gbm.
-  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  const size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
   std::vector<base::ScopedFD> scoped_fds(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     scoped_fds[i] = base::ScopedFD(HANDLE_EINTR(dup(GetDmaBufFd(i))));

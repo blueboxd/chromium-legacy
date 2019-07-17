@@ -22,6 +22,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/storage_partition.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -87,8 +88,14 @@ int GAIAInfoUpdateService::GetDesiredImageSideLength() const {
   return 256;
 }
 
-Profile* GAIAInfoUpdateService::GetBrowserProfile() {
-  return profile_;
+identity::IdentityManager* GAIAInfoUpdateService::GetIdentityManager() {
+  return IdentityManagerFactory::GetForProfile(profile_);
+}
+
+network::mojom::URLLoaderFactory* GAIAInfoUpdateService::GetURLLoaderFactory() {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetURLLoaderFactoryForBrowserProcess()
+      .get();
 }
 
 std::string GAIAInfoUpdateService::GetCachedPictureURL() const {

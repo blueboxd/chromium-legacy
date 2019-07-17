@@ -58,7 +58,7 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window,
   params.type = views::Widget::InitParams::TYPE_TOOLTIP;
   params.context = tooltip_window;
   DCHECK(params.context);
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.accept_events = false;
   params.bounds = bounds;
   if (CanUseTranslucentTooltipWidget())

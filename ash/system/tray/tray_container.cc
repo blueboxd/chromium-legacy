@@ -73,8 +73,9 @@ void TrayContainer::UpdateLayout() {
       is_horizontal ? views::BoxLayout::Orientation::kHorizontal
                     : views::BoxLayout::Orientation::kVertical;
 
-  gfx::Insets insets(is_horizontal ? gfx::Insets(0, kHitRegionPadding)
-                                   : gfx::Insets(kHitRegionPadding, 0));
+  gfx::Insets insets(is_horizontal
+                         ? gfx::Insets(0, TrayConstants::hit_region_padding())
+                         : gfx::Insets(TrayConstants::hit_region_padding(), 0));
   SetBorder(views::CreateEmptyBorder(insets));
 
   int horizontal_margin = main_axis_margin_;

@@ -16,7 +16,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
@@ -98,14 +98,14 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
 SystemWebAppManager::~SystemWebAppManager() = default;
 
 void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
-                                        AppRegistrar* registrar) {
+                                        AppRegistrar* registrar,
+                                        WebAppUiManager* ui_manager) {
   pending_app_manager_ = pending_app_manager;
   registrar_ = registrar;
+  ui_manager_ = ui_manager;
 }
 
-void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
-  ui_delegate_ = ui_delegate;
-
+void SystemWebAppManager::Start() {
   std::map<AppId, GURL> installed_apps =
       registrar_->GetExternallyInstalledApps(InstallSource::kSystemInstalled);
 
@@ -138,7 +138,7 @@ void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
 void SystemWebAppManager::InstallSystemAppsForTesting() {
   on_apps_synchronized_.reset(new base::OneShotEvent());
   system_app_infos_ = CreateSystemWebApps();
-  Start(ui_delegate_);
+  Start();
 
   // Wait for the System Web Apps to install.
   base::RunLoop run_loop;
@@ -218,7 +218,7 @@ bool SystemWebAppManager::NeedsUpdate() const {
 
 void SystemWebAppManager::MigrateSystemWebApps(
     std::set<SystemAppType> already_installed) {
-  DCHECK(ui_delegate_);
+  DCHECK(ui_manager_);
 
   for (const auto& type_and_info : system_app_infos_) {
     // Migrate if a migration source is specified and the app has been newly
@@ -235,8 +235,8 @@ void SystemWebAppManager::MigrateSystemWebApps(
                    << " could not be found when running migration.";
         continue;
       }
-      ui_delegate_->MigrateOSAttributes(type_and_info.second.migration_source,
-                                        *system_app_id);
+      ui_manager_->MigrateOSAttributes(type_and_info.second.migration_source,
+                                       *system_app_id);
     }
   }
 }

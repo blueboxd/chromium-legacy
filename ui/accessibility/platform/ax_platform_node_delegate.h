@@ -10,6 +10,7 @@
 #include <memory>
 #include <new>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -240,6 +241,17 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Return a vector of all the descendants of this delegate's node.
   virtual const std::vector<gfx::NativeViewAccessible> GetDescendants()
       const = 0;
+
+  // Return a string representing the language code.
+  //
+  // For web content, this will consider the language declared in the DOM, and
+  // may eventually attempt to automatically detect the language from the text.
+  //
+  // This language code will be BCP 47.
+  //
+  // Returns empty string if no appropriate language was found or if this node
+  // uses the default interface language.
+  virtual std::string GetLanguage() const = 0;
 
   //
   // Tables. All of these should be called on a node that's a table-like

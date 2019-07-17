@@ -696,7 +696,7 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestControllerInputRegistered) {
       t->GetFileUrlForHtmlTestFile("test_webxr_input"));
   t->EnterSessionWithUserGestureOrFail();
 
-  unsigned int num_iterations = 10;
+  unsigned int num_iterations = 5;
   t->RunJavaScriptOrFail("stepSetupListeners(" +
                          base::NumberToString(num_iterations) + ")");
 

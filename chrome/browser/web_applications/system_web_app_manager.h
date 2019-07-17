@@ -31,7 +31,7 @@ class Profile;
 
 namespace web_app {
 
-class WebAppUiDelegate;
+class WebAppUiManager;
 
 // An enum that lists the different System Apps that exist. Can be used to
 // retrieve the App ID from the underlying Web App system.
@@ -68,9 +68,10 @@ class SystemWebAppManager {
   virtual ~SystemWebAppManager();
 
   void SetSubsystems(PendingAppManager* pending_app_manager,
-                     AppRegistrar* registrar);
+                     AppRegistrar* registrar,
+                     WebAppUiManager* ui_manager);
 
-  void Start(WebAppUiDelegate* ui_delegate);
+  void Start();
 
   static bool IsEnabled();
 
@@ -127,7 +128,7 @@ class SystemWebAppManager {
 
   AppRegistrar* registrar_ = nullptr;
 
-  WebAppUiDelegate* ui_delegate_ = nullptr;
+  WebAppUiManager* ui_manager_ = nullptr;
 
   base::WeakPtrFactory<SystemWebAppManager> weak_ptr_factory_{this};
 

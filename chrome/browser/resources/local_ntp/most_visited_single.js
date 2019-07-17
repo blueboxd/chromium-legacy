@@ -111,12 +111,6 @@ const TileVisualType = {
 const RESIZE_TIMEOUT_DELAY = 66;
 
 /**
- * Timeout delay in ms before starting the reorder flow.
- * @const {number}
- */
-const REORDER_TIMEOUT_DELAY = 1000;
-
-/**
  * Maximum number of tiles if custom links is enabled.
  * @const {number}
  */
@@ -1109,40 +1103,14 @@ function stopReorder(tile) {
  * @param {!Element} tile Tile on which to set the event listeners.
  */
 function setupReorder(tile) {
-  // Starts the reorder flow after the user has held the mouse button down for
-  // |REORDER_TIMEOUT_DELAY|.
+  // Starts the reorder flow.
   tile.addEventListener('mousedown', (event) => {
     // Do not reorder if the edit menu was clicked or if ctrl/shift/alt/meta is
     // also held down.
     if (event.button == 0 /* LEFT CLICK */ && !event.ctrlKey &&
         !event.shiftKey && !event.altKey && !event.metaKey &&
-        !event.target.classList.contains(CLASSES.MD_MENU)) {
-      let timeout = -1;
-
-      // Cancel the timeout if the user drags the mouse off the tile and
-      // releases or if the mouse if released.
-      const dragend = () => {
-        window.clearTimeout(timeout);
-      };
-      document.addEventListener('dragend', dragend, {once: true});
-
-      const mouseup = () => {
-        if (event.button == 0 /* LEFT CLICK */) {
-          window.clearTimeout(timeout);
-        }
-      };
-      document.addEventListener('mouseup', mouseup, {once: true});
-
-      const timeoutFunc = (dragend_in, mouseup_in) => {
-        if (!reordering) {
-          startReorder(tile);
-        }
-        document.removeEventListener('dragend', dragend_in);
-        document.removeEventListener('mouseup', mouseup_in);
-      };
-      // Wait for |REORDER_TIMEOUT_DELAY| before starting the reorder flow.
-      timeout = window.setTimeout(
-          timeoutFunc.bind(dragend, mouseup), REORDER_TIMEOUT_DELAY);
+        !event.target.classList.contains(CLASSES.MD_MENU) && !reordering) {
+      startReorder(tile);
     }
   });
 

@@ -17,15 +17,6 @@
 
 namespace blink {
 
-namespace {
-
-Document* GetDocument(ScriptState* script_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  return To<Document>(execution_context);
-}
-
-}  // namespace
-
 // static
 ScriptPromise WakeLock::requestPermission(ScriptState* script_state,
                                           const String& type) {
@@ -38,9 +29,9 @@ ScriptPromise WakeLock::requestPermission(ScriptState* script_state,
   // 2.1. Let state be the result of running and waiting for the obtain
   //      permission steps with type.
   // 2.2. Resolve promise with state.
-  auto* document = GetDocument(script_state);
-  WakeLockController::From(*document).RequestPermission(ToWakeLockType(type),
-                                                        resolver);
+  auto* document = To<Document>(ExecutionContext::From(script_state));
+  WakeLockController::From(document).RequestPermission(ToWakeLockType(type),
+                                                       resolver);
   return promise;
 }
 
@@ -49,36 +40,21 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
                                 const String& type,
                                 WakeLockRequestOptions* options) {
   // https://w3c.github.io/wake-lock/#request-static-method
-  // We only support [Exposed=Window] for now.
-  DCHECK(ExecutionContext::From(script_state)->IsDocument());
-
-  // 2. Let document be the responsible document of the current settings object.
-  auto* document = GetDocument(script_state);
-
-  // 3. If the current global object is the DedicatedWorkerGlobalScope object:
-  // 3.1. If the current global object's owner set is empty, reject promise with
-  //      a "NotAllowedError" DOMException and return promise.
-  // 3.2. If type is "screen", reject promise with a "NotAllowedError"
-  //      DOMException, and return promise.
-
-  // 4. Otherwise, if the current global object is the Window object:
-  // 4.1. If the document's browsing context is null, reject promise with a
-  //      "NotAllowedError" DOMException and return promise.
-  if (!document) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotAllowedError,
-                          "The document has no associated browsing context"));
-  }
+  auto* context = ExecutionContext::From(script_state);
+  DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope());
 
   // 2.1. If document is not allowed to use the policy-controlled feature named
   //      "wake-lock", reject promise with a "NotAllowedError" DOMException and
   //      return promise.
+  // [N.B. Per https://github.com/w3c/webappsec-feature-policy/issues/207 there
+  // is no official support for workers in the Feature Policy spec, but we can
+  // perform FP checks in workers in Blink]
   // 2.2. If the user agent denies the wake lock of this type for document,
   //      reject promise with a "NotAllowedError" DOMException and return
   //      promise.
-  if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWakeLock,
-                                  ReportOptions::kReportOnFailure)) {
+  if (!context->GetSecurityContext().IsFeatureEnabled(
+          mojom::FeaturePolicyFeature::kWakeLock,
+          ReportOptions::kReportOnFailure)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         MakeGarbageCollected<DOMException>(
@@ -86,23 +62,51 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
             "Access to WakeLock features is disallowed by feature policy"));
   }
 
-  // 4.2. If document is not fully active, reject promise with a
-  //      "NotAllowedError" DOMException, and return promise.
-  if (!document->IsActive()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                           "The document is not active"));
-  }
-  // 4.3. If type is "screen" and the Document of the top-level browsing context
-  //      is hidden, reject promise with a "NotAllowedError" DOMException, and
-  //      return promise.
-  if (type == "screen" &&
-      !(document->GetPage() && document->GetPage()->IsPageVisible())) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotAllowedError,
-                          "The requesting page is not visible"));
+  if (context->IsDedicatedWorkerGlobalScope()) {
+    // 3. If the current global object is the DedicatedWorkerGlobalScope object:
+    // 3.1. If the current global object's owner set is empty, reject promise
+    //      with a "NotAllowedError" DOMException and return promise.
+    // 3.2. If type is "screen", reject promise with a "NotAllowedError"
+    //      DOMException, and return promise.
+    if (type == "screen") {
+      return ScriptPromise::RejectWithDOMException(
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kNotAllowedError,
+                            "Screen locks cannot be requested from workers"));
+    }
+  } else if (context->IsDocument()) {
+    // 2. Let document be the responsible document of the current settings
+    // object.
+    auto* document = To<Document>(context);
+
+    // 4. Otherwise, if the current global object is the Window object:
+    // 4.1. If the document's browsing context is null, reject promise with a
+    //      "NotAllowedError" DOMException and return promise.
+    if (!document) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kNotAllowedError,
+                            "The document has no associated browsing context"));
+    }
+
+    // 4.2. If document is not fully active, reject promise with a
+    //      "NotAllowedError" DOMException, and return promise.
+    if (!document->IsActive()) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
+                                             "The document is not active"));
+    }
+    // 4.3. If type is "screen" and the Document of the top-level browsing
+    //      context is hidden, reject promise with a "NotAllowedError"
+    //      DOMException, and return promise.
+    if (type == "screen" &&
+        !(document->GetPage() && document->GetPage()->IsPageVisible())) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kNotAllowedError,
+                            "The requesting page is not visible"));
+    }
   }
 
   // 5. If options' signal member is present, then run the following steps:
@@ -119,7 +123,7 @@ ScriptPromise WakeLock::request(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   WakeLockType wake_lock_type = ToWakeLockType(type);
-  WakeLockController& controller = WakeLockController::From(*document);
+  WakeLockController& controller = WakeLockController::From(context);
 
   // 5.3. Otherwise, add to signal:
   // 5.3.1. Run release a wake lock with promise and type.

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -47,6 +48,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/device_management_service_configuration.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/constants/chromeos_paths.h"
@@ -248,9 +250,12 @@ void BrowserPolicyConnectorChromeOS::Init(
   device_cloud_external_data_policy_handlers_.emplace_back(
       std::make_unique<policy::DeviceWallpaperImageExternalDataHandler>(
           local_state, GetPolicyService()));
-  device_cloud_external_data_policy_handlers_.emplace_back(
-      std::make_unique<policy::DeviceWilcoDtcConfigurationExternalDataHandler>(
-          GetPolicyService()));
+  if (base::FeatureList::IsEnabled(::features::kWilcoDtc)) {
+    device_cloud_external_data_policy_handlers_.emplace_back(
+        std::make_unique<
+            policy::DeviceWilcoDtcConfigurationExternalDataHandler>(
+            GetPolicyService()));
+  }
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {

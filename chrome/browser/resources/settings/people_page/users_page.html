@@ -10,10 +10,6 @@
 <link rel="import" href="user_list.html">
 <link rel="import" href="users_add_user_dialog.html">
 
-<if expr="chromeos">
-<link rel="import" href="../parental_controls_page/parental_controls_page.html">
-</if>
-
 <dom-module id="settings-users-page">
   <template>
     <style include="settings-shared action-link">
@@ -72,13 +68,6 @@
         </a>
       </div>
     </div>
-<if expr="chromeos">
-    <template is="dom-if" if="[[showParentalControls_]]">
-      <h2 id="header" class="title">$i18n{parentalControlsPageTitle}</h2>
-      <settings-parental-controls-page>
-      </settings-parental-controls-page>
-    </template>
-</if>
     <settings-users-add-user-dialog id="addUserDialog"
         on-close="onAddUserDialogClose_">
     </settings-users-add-user-dialog>

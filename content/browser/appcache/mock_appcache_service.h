@@ -16,7 +16,7 @@ namespace content {
 class MockAppCacheService : public AppCacheServiceImpl {
  public:
   MockAppCacheService()
-      : AppCacheServiceImpl(nullptr),
+      : AppCacheServiceImpl(nullptr, nullptr),
         mock_delete_appcaches_for_origin_result_(net::OK),
         delete_called_count_(0) {
     storage_ = std::make_unique<MockAppCacheStorage>(this);

@@ -170,7 +170,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                               ClearStorageTask::ClearStorageResult result);
   void OnPersistentPageConsistencyCheckDone(
       bool success,
-      const std::vector<int64_t>& pages_deleted);
+      const std::vector<PublishedArchiveId>& ids_of_deleted_pages);
 
   // Callback for when PublishArchive has completd.
   void PublishArchiveDone(SavePageCallback save_page_callback,
@@ -185,7 +185,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   // Method for unpublishing the page from downloads.
   static void Unpublish(OfflinePageArchivePublisher* publisher,
-                        const std::vector<int64_t>& system_download_ids);
+                        const std::vector<PublishedArchiveId>& publish_ids);
 
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);

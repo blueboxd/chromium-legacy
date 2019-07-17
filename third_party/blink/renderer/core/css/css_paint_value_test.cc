@@ -66,10 +66,11 @@ class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
         .WillByDefault(ReturnRef(input_argument_types_));
   }
 
-  MOCK_METHOD3(Paint,
+  MOCK_METHOD4(Paint,
                scoped_refptr<Image>(const ImageResourceObserver&,
                                     const FloatSize& container_size,
-                                    const CSSStyleValueVector*));
+                                    const CSSStyleValueVector*,
+                                    float device_scale_factor));
   MOCK_CONST_METHOD0(NativeInvalidationProperties, Vector<CSSPropertyID>&());
   MOCK_CONST_METHOD0(CustomInvalidationProperties, Vector<AtomicString>&());
   MOCK_CONST_METHOD0(HasAlpha, bool());
@@ -118,7 +119,7 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
 
   // Initially the generator is not ready, so GetImage should fail (and no paint
   // should happen).
-  EXPECT_CALL(*mock_generator, Paint(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_generator, Paint(_, _, _, _)).Times(0);
   EXPECT_FALSE(
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 
@@ -127,7 +128,7 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
   // In off-thread CSS Paint, the actual paint call is deferred and so will
   // never happen.
   if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    EXPECT_CALL(*mock_generator, Paint(_, _, _))
+    EXPECT_CALL(*mock_generator, Paint(_, _, _, _))
         .WillRepeatedly(
             Return(PaintGeneratedImage::Create(nullptr, target_size)));
   }

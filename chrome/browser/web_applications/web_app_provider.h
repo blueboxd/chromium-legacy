@@ -38,7 +38,7 @@ class WebAppAudioFocusIdMap;
 class WebAppTabHelperBase;
 class SystemWebAppManager;
 class AppRegistrar;
-class WebAppUiDelegate;
+class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabase;
@@ -79,7 +79,7 @@ class WebAppProvider : public WebAppProviderBase,
   InstallManager& install_manager() override;
   PendingAppManager& pending_app_manager() override;
   WebAppPolicyManager* policy_manager() override;
-  WebAppUiDelegate& ui_delegate() override;
+  WebAppUiManager& ui_manager() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncManager& sync_manager() { return *sync_manager_; }
@@ -88,10 +88,6 @@ class WebAppProvider : public WebAppProviderBase,
   void Shutdown() override;
 
   SystemWebAppManager& system_web_app_manager();
-
-  void set_ui_delegate(WebAppUiDelegate* ui_delegate) {
-    ui_delegate_ = ui_delegate;
-  }
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static WebAppTabHelperBase* CreateTabHelper(
@@ -131,7 +127,7 @@ class WebAppProvider : public WebAppProviderBase,
   std::unique_ptr<WebAppDatabase> database_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppSyncManager> sync_manager_;
-  WebAppUiDelegate* ui_delegate_ = nullptr;
+  std::unique_ptr<WebAppUiManager> ui_manager_;
 
   // New generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;

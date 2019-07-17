@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL 'TypeError' is thrown when the signal option is not an AbortSignal promise_test: Unhandled rejection with value: object "ReferenceError: WakeLock is not defined"
-FAIL A WakeLock request with an AbortSignal whose abort flag is set always aborts WakeLock is not defined
-FAIL The same AbortSignal can be used to cause multiple wake locks to abort promise_test: Unhandled rejection with value: object "ReferenceError: WakeLock is not defined"
-Harness: the test ran to completion.
-

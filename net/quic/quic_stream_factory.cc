@@ -180,20 +180,21 @@ void SetInitialRttEstimate(base::TimeDelta estimate,
 quic::QuicConfig InitializeQuicConfig(
     const quic::QuicTagVector& connection_options,
     const quic::QuicTagVector& client_connection_options,
-    int idle_connection_timeout_seconds,
-    int max_time_before_crypto_handshake_seconds,
-    int max_idle_time_before_crypto_handshake_seconds) {
-  DCHECK_GT(idle_connection_timeout_seconds, 0);
+    base::TimeDelta idle_connection_timeout,
+    base::TimeDelta max_time_before_crypto_handshake,
+    base::TimeDelta max_idle_time_before_crypto_handshake) {
+  DCHECK_GT(idle_connection_timeout, base::TimeDelta());
   quic::QuicConfig config;
-  config.SetIdleNetworkTimeout(
-      quic::QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds),
-      quic::QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds));
+  config.SetIdleNetworkTimeout(quic::QuicTime::Delta::FromMicroseconds(
+                                   idle_connection_timeout.InMicroseconds()),
+                               quic::QuicTime::Delta::FromMicroseconds(
+                                   idle_connection_timeout.InMicroseconds()));
   config.set_max_time_before_crypto_handshake(
-      quic::QuicTime::Delta::FromSeconds(
-          max_time_before_crypto_handshake_seconds));
+      quic::QuicTime::Delta::FromMicroseconds(
+          max_time_before_crypto_handshake.InMicroseconds()));
   config.set_max_idle_time_before_crypto_handshake(
-      quic::QuicTime::Delta::FromSeconds(
-          max_idle_time_before_crypto_handshake_seconds));
+      quic::QuicTime::Delta::FromMicroseconds(
+          max_idle_time_before_crypto_handshake.InMicroseconds()));
   config.SetConnectionOptionsToSend(connection_options);
   config.SetClientConnectionOptions(client_connection_options);
   return config;
@@ -227,41 +228,12 @@ class ServerIdOriginFilter
 
 QuicParams::QuicParams()
     : max_packet_length(quic::kDefaultMaxPacketSize),
-      max_server_configs_stored_in_properties(0u),
-      enable_socket_recv_optimization(false),
-      mark_quic_broken_when_network_blackholes(false),
-      retry_without_alt_svc_on_quic_errors(true),
-      support_ietf_format_quic_altsvc(false),
-      close_sessions_on_ip_change(false),
-      goaway_sessions_on_ip_change(false),
-      idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
-      reduced_ping_timeout_seconds(quic::kPingTimeoutSecs),
-      retransmittable_on_wire_timeout_milliseconds(0),
-      max_time_before_crypto_handshake_seconds(
-          quic::kMaxTimeForCryptoHandshakeSecs),
-      max_idle_time_before_crypto_handshake_seconds(
-          quic::kInitialIdleTimeoutSecs),
-      migrate_sessions_on_network_change_v2(false),
-      migrate_sessions_early_v2(false),
-      retry_on_alternate_network_before_handshake(false),
-      migrate_idle_sessions(false),
-      idle_session_migration_period(base::TimeDelta::FromSeconds(
-          kDefaultIdleSessionMigrationPeriodSeconds)),
-      max_time_on_non_default_network(
-          base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs)),
-      max_migrations_to_non_default_network_on_write_error(
-          kMaxMigrationsToNonDefaultNetworkOnWriteError),
-      max_migrations_to_non_default_network_on_path_degrading(
-          kMaxMigrationsToNonDefaultNetworkOnPathDegrading),
-      allow_server_migration(false),
-      allow_remote_alt_svc(true),
-      race_stale_dns_on_connection(false),
-      go_away_on_path_degrading(false),
-      disable_bidirectional_streams(false),
-      race_cert_verification(false),
-      estimate_initial_rtt(false),
-      headers_include_h2_stream_dependency(false),
-      initial_rtt_for_handshake_milliseconds(0) {
+      reduced_ping_timeout(
+          base::TimeDelta::FromSeconds(quic::kPingTimeoutSecs)),
+      max_time_before_crypto_handshake(
+          base::TimeDelta::FromSeconds(quic::kMaxTimeForCryptoHandshakeSecs)),
+      max_idle_time_before_crypto_handshake(
+          base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs)) {
   supported_versions.push_back(quic::ParsedQuicVersion(
       quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46));
 }
@@ -1112,22 +1084,22 @@ QuicStreamFactory::QuicStreamFactory(
       params_(params),
       clock_skew_detector_(base::TimeTicks::Now(), base::Time::Now()),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
-      config_(InitializeQuicConfig(
-          params.connection_options,
-          params.client_connection_options,
-          params.idle_connection_timeout_seconds,
-          params.max_time_before_crypto_handshake_seconds,
-          params.max_idle_time_before_crypto_handshake_seconds)),
+      config_(
+          InitializeQuicConfig(params.connection_options,
+                               params.client_connection_options,
+                               params.idle_connection_timeout,
+                               params.max_time_before_crypto_handshake,
+                               params.max_idle_time_before_crypto_handshake)),
       crypto_config_(
           std::make_unique<ProofVerifierChromium>(cert_verifier,
                                                   ct_policy_enforcer,
                                                   transport_security_state,
                                                   cert_transparency_verifier)),
       ping_timeout_(quic::QuicTime::Delta::FromSeconds(quic::kPingTimeoutSecs)),
-      reduced_ping_timeout_(quic::QuicTime::Delta::FromSeconds(
-          params.reduced_ping_timeout_seconds)),
-      retransmittable_on_wire_timeout_(quic::QuicTime::Delta::FromMilliseconds(
-          params.retransmittable_on_wire_timeout_milliseconds)),
+      reduced_ping_timeout_(quic::QuicTime::Delta::FromMicroseconds(
+          params.reduced_ping_timeout.InMicroseconds())),
+      retransmittable_on_wire_timeout_(quic::QuicTime::Delta::FromMicroseconds(
+          params.retransmittable_on_wire_timeout.InMicroseconds())),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(quic::QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
@@ -1162,10 +1134,10 @@ QuicStreamFactory::QuicStreamFactory(
       params.retry_on_alternate_network_before_handshake)
     DCHECK(params.migrate_sessions_on_network_change_v2);
 
-  if (params.retransmittable_on_wire_timeout_milliseconds == 0 &&
+  if (params.retransmittable_on_wire_timeout.is_zero() &&
       params.migrate_sessions_early_v2) {
-    retransmittable_on_wire_timeout_ = quic::QuicTime::Delta::FromMilliseconds(
-        kDefaultRetransmittableOnWireTimeoutMillisecs);
+    retransmittable_on_wire_timeout_ = quic::QuicTime::Delta::FromMicroseconds(
+        kDefaultRetransmittableOnWireTimeout.InMicroseconds());
   }
 
   // goaway_sessions_on_ip_change and close_sessions_on_ip_change should never
@@ -1968,10 +1940,11 @@ void QuicStreamFactory::ConfigureInitialRttEstimate(
     return;
   }
 
-  if (params_.initial_rtt_for_handshake_milliseconds > 0) {
-    SetInitialRttEstimate(base::TimeDelta::FromMilliseconds(
-                              params_.initial_rtt_for_handshake_milliseconds),
-                          INITIAL_RTT_DEFAULT, config);
+  if (params_.initial_rtt_for_handshake > base::TimeDelta()) {
+    SetInitialRttEstimate(
+        base::TimeDelta::FromMicroseconds(
+            params_.initial_rtt_for_handshake.InMicroseconds()),
+        INITIAL_RTT_DEFAULT, config);
     return;
   }
 

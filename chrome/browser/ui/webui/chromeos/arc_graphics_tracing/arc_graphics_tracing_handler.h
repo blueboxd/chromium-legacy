@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/exo/surface_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
@@ -36,7 +37,8 @@ namespace chromeos {
 class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
                                   public wm::ActivationChangeObserver,
                                   public aura::WindowObserver,
-                                  public ui::EventHandler {
+                                  public ui::EventHandler,
+                                  public exo::SurfaceObserver {
  public:
   ArcGraphicsTracingHandler();
   ~ArcGraphicsTracingHandler() override;
@@ -57,6 +59,10 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
+
+  // exo::SurfaceObserver:
+  void OnSurfaceDestroying(exo::Surface* surface) override;
+  void OnCommit(exo::Surface* surface) override;
 
  private:
   void Activate();
@@ -83,9 +89,6 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
 
   // Stops tracking ARC window for janks.
   void DiscardActiveArcWindow();
-
-  // Called from exo::Surface on commit.
-  void OnCommit(exo::Surface* surface);
 
   // Called in case jank is detected in active ARC window.
   void OnJankDetected(const base::Time& timestamp);

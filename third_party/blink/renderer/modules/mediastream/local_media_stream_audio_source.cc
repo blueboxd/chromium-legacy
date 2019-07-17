@@ -113,16 +113,11 @@ void LocalMediaStreamAudioSource::OnCaptureStarted() {
 }
 
 void LocalMediaStreamAudioSource::Capture(const media::AudioBus* audio_bus,
-                                          int audio_delay_milliseconds,
+                                          base::TimeTicks audio_capture_time,
                                           double volume,
                                           bool key_pressed) {
   DCHECK(audio_bus);
-  // TODO(miu): Plumbing is needed to determine the actual capture timestamp
-  // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync. https://crbug.com/335335
-  DeliverDataToTracks(
-      *audio_bus, base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(
-                                               audio_delay_milliseconds));
+  DeliverDataToTracks(*audio_bus, audio_capture_time);
 }
 
 void LocalMediaStreamAudioSource::OnCaptureError(const std::string& why) {

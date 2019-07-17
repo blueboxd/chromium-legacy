@@ -58,8 +58,17 @@ class AccessibilityPrivateDarkenScreenFunction
                              ACCESSIBILITY_PRIVATE_DARKENSCREEN)
 };
 
-// API function that sets the keys to be captured by Switch Access.
+// Opens a specified subpage in Chrome settings.
+class AccessibilityPrivateOpenSettingsSubpageFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateOpenSettingsSubpageFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.openSettingsSubpage",
+                             ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE)
+};
+
 #if defined(OS_CHROMEOS)
+// API function that sets the keys to be captured by Switch Access.
 class AccessibilityPrivateSetSwitchAccessKeysFunction
     : public UIThreadExtensionFunction {
   ~AccessibilityPrivateSetSwitchAccessKeysFunction() override {}

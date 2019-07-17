@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -21,24 +22,34 @@ AppCacheNavigationHandle::AppCacheNavigationHandle(
                                                            appcache_host_id_,
                                                            process_id)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AppCacheNavigationHandleCore::Initialize,
-                     base::Unretained(core_.get())));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    core_->Initialize();
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheNavigationHandleCore::Initialize,
+                       base::Unretained(core_.get())));
+  }
 }
 
 AppCacheNavigationHandle::~AppCacheNavigationHandle() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Delete the AppCacheNavigationHandleCore on the IO thread.
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_.release());
+  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    // Delete the AppCacheNavigationHandleCore on the IO thread.
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_.release());
+  }
 }
 
 void AppCacheNavigationHandle::SetProcessId(int process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AppCacheNavigationHandleCore::SetProcessId,
-                     base::Unretained(core_.get()), process_id));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    core_->SetProcessId(process_id);
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&AppCacheNavigationHandleCore::SetProcessId,
+                       base::Unretained(core_.get()), process_id));
+  }
 }
 
 }  // namespace content

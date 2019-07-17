@@ -147,7 +147,6 @@
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
-#include "chrome/browser/ui/web_applications/web_app_ui_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
@@ -405,7 +404,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   web_app::WebAppProviderFactory::GetInstance();
-  web_app::WebAppUiServiceFactory::GetInstance();
   web_app::WebAppMetricsFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();

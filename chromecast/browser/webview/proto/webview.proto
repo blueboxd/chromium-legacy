@@ -1,0 +1,126 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This provides an API to create and control webviews via gRPC.
+// Each webview is a separate bidirectional message stream, the client creates
+// a new one by sending a WebviewCreate message first. Subsequently, the client
+// navigates and injects input as desired and the server will respond with
+// event messages whenever page state changes, whether or not in direct response
+// to client actions, eg if the renderer crashes.
+
+syntax = "proto3";
+option optimize_for = LITE_RUNTIME;
+package chromecast.webview;
+
+message AccessibilityTreeInfo {
+  string ax_tree_id = 1;
+}
+
+// Create a new, empty webview
+message WebviewCreateRequest {
+  // This identifies the surface that this webview will display into.
+  // It should be unique and the same as whatever was set into
+  // |aura_surface_set_client_surface_id| on the wayland surface.
+  // It is an error to attempt to create a webview if the surface
+  // does not yet exist.
+  int32 webview_id = 1;
+  // This is the cast window ID that will be assigned to the web contents
+  // window.
+  int32 window_id = 2;
+}
+
+message WebviewCreateResponse {
+  AccessibilityTreeInfo accessibility_info = 1;
+}
+
+// These are a translation of ui::Event and children.
+message KeyInput {
+  int32 key_code = 1;
+  int32 dom_code = 2;
+  int32 dom_key = 3;
+  bool is_char = 4;
+}
+
+message TouchInput {
+  float x = 1;
+  float y = 2;
+  float root_x = 3;
+  float root_y = 4;
+  int32 pointer_type = 5;
+  int32 pointer_id = 6;
+  float radius_x = 7;
+  float radius_y = 8;
+  float force = 9;
+  float twist = 10;
+  float tilt_x = 11;
+  float tilt_y = 12;
+  float tangential_pressure = 13;
+}
+
+message MouseEvent {
+  float x = 1;
+  float y = 2;
+  float root_x = 3;
+  float root_y = 4;
+  int32 changed_button_flags = 5;
+}
+
+message InputEvent {
+  int32 event_type = 1;
+  int32 flags = 2;
+  int64 timestamp = 3;
+  KeyInput key = 4;
+  TouchInput touch = 5;
+  MouseEvent mouse = 6;
+}
+
+// Navigate this webview to the provided url.
+message NavigateRequest {
+  string url = 1;
+}
+
+message AsyncPageEvent {
+  enum State {
+    IDLE = 0;
+    LOADING = 1;
+    LOADED = 2;
+    CLOSED = 3;
+    DESTROYED = 4;
+    ERROR = 5;
+  }
+  // This is always set to the current state.
+  State current_page_state = 1;
+  // These will be set if the event just happened.
+  int32 stopped_error_code = 2;
+  bool resource_load_failed = 3;
+  bool did_first_visually_non_empty_paint = 4;
+}
+
+message StopPageRequest {
+  int32 error_code = 1;
+}
+
+message WebviewRequest {
+  oneof type {
+    // This must be the first message.
+    WebviewCreateRequest create = 1;
+    // No response.
+    InputEvent input = 2;
+    // Expect page events to follow.
+    NavigateRequest navigate = 3;
+    // Expect page events to follow.
+    StopPageRequest stop_page = 4;
+  }
+}
+
+message WebviewResponse {
+  oneof type {
+    WebviewCreateResponse create_response = 1;
+    AsyncPageEvent page_event = 2;
+  }
+}
+
+service WebviewService {
+  rpc CreateWebview(stream WebviewRequest) returns (stream WebviewResponse);
+}

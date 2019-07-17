@@ -9,8 +9,10 @@
 
 #include "ash/keyboard/test_keyboard_ui.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/session/test_pref_service_provider.h"
 #include "ash/shell.h"
+#include "ash/shell/content/client/shell_new_window_delegate.h"
 #include "ash/shell/content/embedded_browser.h"
 #include "ash/shell/example_app_list_client.h"
 #include "ash/shell/example_session_controller_client.h"
@@ -19,6 +21,7 @@
 #include "ash/shell/window_type_launcher.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
+#include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -35,6 +38,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/views/examples/examples_window_with_content.h"
 
 namespace ash {
@@ -81,14 +85,17 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
           content::GetSystemConnector());
 
   AshTestHelper::InitParams init_params;
+  // TODO(oshima): Separate the class for ash_shell to reduce the test binary
+  // size.
   if (parameters_.ui_task)
     init_params.config_type = AshTestHelper::kPerfTest;
-  else
+  else {
+    new_window_delegate_ = std::make_unique<ShellNewWindowDelegate>();
     init_params.config_type = AshTestHelper::kShell;
+  }
 
   ShellInitParams shell_init_params;
-  shell_init_params.delegate =
-      std::make_unique<ash::shell::ShellDelegateImpl>();
+  shell_init_params.delegate = std::make_unique<shell::ShellDelegateImpl>();
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
@@ -100,11 +107,17 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   window_watcher_ = std::make_unique<WindowWatcher>();
 
-  ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
+  Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
-  ash::Shell::Get()->InitWaylandServer(nullptr);
+  Shell::Get()->InitWaylandServer(nullptr);
 
   if (!parameters_.ui_task) {
+    // Install Rewriter so that function keys are properly re-mapped.
+    auto* event_rewriter_controller = EventRewriterController::Get();
+    event_rewriter_controller->AddEventRewriter(
+        std::make_unique<ui::EventRewriterChromeOS>(
+            nullptr, Shell::Get()->sticky_keys_controller()));
+
     // Initialize session controller client and create fake user sessions. The
     // fake user sessions makes ash into the logged in state.
     example_session_controller_client_ =
@@ -116,7 +129,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     example_app_list_client_ = std::make_unique<ExampleAppListClient>(
         Shell::Get()->app_list_controller());
 
-    ash::shell::InitWindowTypeLauncher(
+    shell::InitWindowTypeLauncher(
         base::BindRepeating(views::examples::ShowExamplesWindowWithContent,
                             base::Passed(base::OnceClosure()),
                             base::Unretained(browser_context_.get()), nullptr),

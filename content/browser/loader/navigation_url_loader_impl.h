@@ -110,6 +110,10 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // Returns true if URLLoaderRequestController will be run on the UI thread.
   static bool IsNavigationLoaderOnUIEnabled();
 
+  // Returns the BrowserThread::ID that the URLLoaderRequestController will be
+  // running on.
+  static BrowserThread::ID GetLoaderRequestControllerThreadID();
+
  private:
   class URLLoaderRequestController;
   void OnRequestStarted(base::TimeTicks timestamp);

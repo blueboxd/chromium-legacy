@@ -46,7 +46,11 @@ SerialPortImpl::SerialPortImpl(
   }
 }
 
-SerialPortImpl::~SerialPortImpl() = default;
+SerialPortImpl::~SerialPortImpl() {
+  // Cancel I/O operations so that |io_handler_| drops its self-reference.
+  io_handler_->CancelRead(mojom::SerialReceiveError::DISCONNECTED);
+  io_handler_->CancelWrite(mojom::SerialSendError::DISCONNECTED);
+}
 
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           mojo::ScopedDataPipeConsumerHandle in_stream,

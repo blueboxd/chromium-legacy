@@ -8,10 +8,12 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 
 namespace {
 // Which survey we're triggering
@@ -57,6 +59,11 @@ void HatsService::LaunchSatisfactionSurvey() {
 }
 
 bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
+  bool consent_given =
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven();
+  if (!consent_given)
+    return false;
+
   if ((trigger_ == trigger || trigger_ == kHatsSurveyTriggerDefault) &&
       !launch_hats_) {
     if (base::RandDouble() < probability_) {

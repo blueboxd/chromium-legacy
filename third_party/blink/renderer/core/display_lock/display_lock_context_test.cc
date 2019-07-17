@@ -4,6 +4,11 @@
 
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 
+#include <memory>
+#include <utility>
+
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_options.h"
@@ -27,17 +32,12 @@ namespace {
 class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
  public:
   DisplayLockTestFindInPageClient()
-      : find_results_are_ready_(false),
-        active_index_(-1),
-        count_(-1),
-        binding_(this) {}
+      : find_results_are_ready_(false), active_index_(-1), count_(-1) {}
 
   ~DisplayLockTestFindInPageClient() override = default;
 
   void SetFrame(WebLocalFrameImpl* frame) {
-    mojom::blink::FindInPageClientPtr client;
-    binding_.Bind(MakeRequest(&client));
-    frame->GetFindInPage()->SetClient(std::move(client));
+    frame->GetFindInPage()->SetClient(receiver_.BindNewPipeAndPassRemote());
   }
 
   void SetNumberOfMatches(
@@ -77,7 +77,7 @@ class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
   int active_index_;
 
   int count_;
-  mojo::Binding<mojom::blink::FindInPageClient> binding_;
+  mojo::Receiver<mojom::blink::FindInPageClient> receiver_{this};
 };
 
 class DisplayLockEmptyEventListener final : public NativeEventListener {

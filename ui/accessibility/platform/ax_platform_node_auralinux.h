@@ -7,6 +7,8 @@
 
 #include <atk/atk.h>
 
+#include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -15,7 +17,19 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_export.h"
+#include "ui/accessibility/ax_position.h"
+#include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
+
+// This deleter is used in order to ensure that we properly always free memory
+// used by AtkAttributeSet.
+struct AtkAttributeSetDeleter {
+  void operator()(AtkAttributeSet* attributes) {
+    atk_attribute_set_free(attributes);
+  }
+};
+
+using AtkAttributes = std::unique_ptr<AtkAttributeSet, AtkAttributeSetDeleter>;
 
 // Some ATK interfaces require returning a (const gchar*), use
 // this macro to make it safe to return a pointer to a temporary
@@ -168,6 +182,21 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void GetSelectionExtents(int* start_offset, int* end_offset);
   gchar* GetSelectionWithText(int* start_offset, int* end_offset);
 
+  // Return the text attributes for this node given an offset. The start
+  // and end attributes will be assigned to the start_offset and end_offset
+  // pointers if they are non-null. The return value AtkAttributeSet should
+  // be freed with atk_attribute_set_free.
+  AtkAttributeSet* GetTextAttributes(int offset,
+                                     int* start_offset,
+                                     int* end_offset);
+
+  // Return the default text attributes for this node. The default text
+  // attributes are the ones that apply to the entire node. Attributes found at
+  // a given offset can be thought of as overriding the default attribute.
+  // The return value AtkAttributeSet should be freed with
+  // atk_attribute_set_free.
+  AtkAttributeSet* GetDefaultTextAttributes();
+
   std::string accessible_name_;
 
  protected:
@@ -183,6 +212,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                           PlatformAttributeList* attributes) override;
 
  private:
+  using AXPositionInstance = AXNodePosition::AXPositionInstance;
+  using AXPositionInstanceType = typename AXPositionInstance::element_type;
+  using AXNodeRange = AXRange<AXPositionInstanceType>;
+
   enum AtkInterfaces {
     ATK_ACTION_INTERFACE,
     ATK_COMPONENT_INTERFACE,
@@ -209,6 +242,13 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool IsInLiveRegion();
   base::Optional<std::pair<int, int>> GetEmbeddedObjectIndicesForId(int id);
 
+  void ComputeStylesIfNeeded();
+  void MergeSpellingIntoAtkTextAttributesAtOffset(
+      int offset,
+      std::map<int, AtkAttributes>* text_attributes);
+  AtkAttributes ComputeTextAttributes() const;
+  int FindStartOfStyle(int start_offset, ui::TextBoundaryDirection direction);
+
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();
 
@@ -232,6 +272,13 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // this in order to avoid sending duplicate text-selection-changed
   // and text-caret-moved events.
   std::pair<int, int> text_selection_ = std::make_pair(-1, -1);
+
+  // A map which converts between an offset in the node's hypertext and the
+  // ATK text attributes at that offset.
+  std::map<int, AtkAttributes> offset_to_text_attributes_;
+
+  // The default ATK text attributes for this node.
+  AtkAttributes default_text_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };

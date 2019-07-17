@@ -644,14 +644,6 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   gfx::Point new_point(edge_to_show);
   gfx::Vector2d diff = edge_to_hide - edge_to_show;
   new_point.Offset(diff.x() * 3 / 10, diff.y() * 3 / 10);
-  /*
-  if (shelf->IsHorizontalAlignment())
-    end.set_y(start.y() + shelf_shown.height() * 3 / 10);
-  else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
-    end.set_x(start.x() - shelf_shown.width() * 3 / 10);
-  else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
-    end.set_x(start.x() + shelf_shown.width() * 3 / 10);
-  */
   generator->GestureScrollSequence(edge_to_show, new_point, kTimeDelta, 5);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -726,16 +718,9 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   EXPECT_EQ(window_bounds_with_noshelf.ToString(), window->bounds().ToString());
   EXPECT_EQ(shelf_hidden.ToString(),
             GetShelfWidget()->GetWindowBoundsInScreen().ToString());
-  // Swipe up from below the shelf where a bezel would be, this should show the
-  // shelf.
+  // Swipe up from the bottom of the shelf, this should show the shelf.
   gfx::Point below_start = edge_to_hide;
-  if (shelf->IsHorizontalAlignment())
-    below_start.set_y(GetShelfWidget()->GetWindowBoundsInScreen().bottom() - 1);
-  else if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
-    below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().x());
-  else if (SHELF_ALIGNMENT_RIGHT == shelf->alignment())
-    below_start.set_x(GetShelfWidget()->GetWindowBoundsInScreen().right() - 1);
-  generator->GestureScrollSequence(below_start, edge_to_show, kTimeDelta,
+  generator->GestureScrollSequence(edge_to_hide, edge_to_show, kTimeDelta,
                                    kNumScrollSteps);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -2247,8 +2232,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesToVisibleWhenGestureInComplete) {
     ui::ScopedAnimationDurationScaleMode regular_animations(
         ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
-    gfx::Point start =
-        GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
+    display::Display display =
+        display::Screen::GetScreen()->GetPrimaryDisplay();
+    gfx::Point start = display.bounds().bottom_center();
     gfx::Point end(start.x(), start.y() - 100);
     ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -2286,11 +2272,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesToHiddenWhenGestureOutComplete) {
     // Show the shelf first.
     display::Display display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
-    const int half_width = display.bounds().width() / 2;
-    const int bottom_edge = display.bounds().bottom();
-    generator->MoveMouseTo(half_width,
-                           bottom_edge - kHiddenShelfInScreenPortion / 2);
     ShelfAnimationWaiter waiter1(visible_bounds);
+    generator->MoveMouseTo(display.bounds().bottom_center());
     waiter1.WaitTillDoneAnimating();
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
@@ -2346,7 +2329,8 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
 
   wm::GetWindowState(window_two)
       ->set_autohide_shelf_when_maximized_or_fullscreen(true);
-  window_two->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window_two->SetProperty(aura::client::kZOrderingKey,
+                          ui::ZOrderLevel::kFloatingWindow);
 
   auto* shelf_window = shelf->GetWindow();
   aura::Window* container = shelf_window->GetRootWindow()->GetChildById(
@@ -2842,7 +2826,6 @@ TEST_F(ShelfLayoutManagerTest, SwipeUpAutoHideHiddenShelf) {
 
   const int time_deltas[] = {10, 50, 100, 500};
   const int num_scroll_steps[] = {2, 5, 10, 50};
-  const int y_bezel_start_offsets[] = {5, 10, 50};
   const int x_offsets[] = {10, 20, 50};
   const int y_offsets[] = {70, 100, 300, 500};
 
@@ -2850,21 +2833,17 @@ TEST_F(ShelfLayoutManagerTest, SwipeUpAutoHideHiddenShelf) {
     for (int num_scroll_steps : num_scroll_steps) {
       for (int x_offset : x_offsets) {
         for (int y_offset : y_offsets) {
-          for (int y_bezel_start_offset : y_bezel_start_offsets) {
-            const gfx::Point start(display_bounds.bottom_center() +
-                                   gfx::Vector2d(0, y_bezel_start_offset));
-            const gfx::Point end(start + gfx::Vector2d(x_offset, -y_offset));
-            generator->GestureScrollSequence(
-                start, end, base::TimeDelta::FromMilliseconds(time_delta),
-                num_scroll_steps);
-            EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState())
-                << "Failure to show shelf after a swipe up in " << time_delta
-                << "ms, " << num_scroll_steps << " steps, "
-                << y_bezel_start_offset << " Y bezel start offset, " << x_offset
-                << " X-offset and " << y_offset << " Y-offset.";
-            generator->GestureTapAt(tap_to_hide_shelf_location);
-            EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
-          }
+          const gfx::Point start(display_bounds.bottom_center());
+          const gfx::Point end(start + gfx::Vector2d(x_offset, -y_offset));
+          generator->GestureScrollSequence(
+              start, end, base::TimeDelta::FromMilliseconds(time_delta),
+              num_scroll_steps);
+          EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState())
+              << "Failure to show shelf after a swipe up in " << time_delta
+              << "ms, " << num_scroll_steps << " steps, " << x_offset
+              << " X-offset and " << y_offset << " Y-offset.";
+          generator->GestureTapAt(tap_to_hide_shelf_location);
+          EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
         }
       }
     }
@@ -3090,7 +3069,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   aura::Window* window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
   // Set always on top so it is put in the PIP container.
-  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->SetProperty(aura::client::kZOrderingKey,
+                      ui::ZOrderLevel::kFloatingWindow);
   window->Show();
   const wm::WMEvent pip_event(wm::WM_EVENT_PIP);
   wm::GetWindowState(window)->OnWMEvent(&pip_event);

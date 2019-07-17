@@ -81,7 +81,8 @@ LogSourceAccessManager::LogSourceAccessManager(content::BrowserContext* context)
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       anonymizer_container_(
           base::MakeRefCounted<feedback::AnonymizerToolContainer>(
-              task_runner_for_anonymizer_)),
+              task_runner_for_anonymizer_,
+              /* first_party_extension_ids= */ nullptr)),
       weak_factory_(this) {}
 
 LogSourceAccessManager::~LogSourceAccessManager() {}

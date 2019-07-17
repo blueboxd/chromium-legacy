@@ -134,7 +134,7 @@ class CC_EXPORT PictureLayerImpl
   ImageInvalidationResult InvalidateRegionForImages(
       const PaintImageIdFlatSet& images_to_invalidate);
 
-  bool RasterSourceUsesLCDTextForTesting() const { return can_use_lcd_text_; }
+  bool can_use_lcd_text() const { return can_use_lcd_text_; }
 
   const Region& InvalidationForTesting() const { return invalidation_; }
 

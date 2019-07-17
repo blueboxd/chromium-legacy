@@ -10,7 +10,7 @@ enum WakeLockType {
 // https://w3c.github.io/wake-lock/#the-wakelock-interface
 [
   SecureContext,
-  Exposed=Window,
+  Exposed=(DedicatedWorker,Window),
   RuntimeEnabled=WakeLock
 ] interface WakeLock {
   [CallWith=ScriptState, Exposed=Window] static Promise<PermissionState> requestPermission(WakeLockType type);

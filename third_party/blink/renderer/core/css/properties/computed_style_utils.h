@@ -197,6 +197,11 @@ class ComputedStyleUtils {
       const LayoutObject*,
       Node*,
       bool allow_visited_style);
+  static CSSValuePair* ValuesForPlaceShorthand(const StylePropertyShorthand&,
+                                               const ComputedStyle&,
+                                               const LayoutObject*,
+                                               Node*,
+                                               bool allow_visited_style);
   static CSSValue* ValuesForFontVariantProperty(const ComputedStyle&,
                                                 const LayoutObject*,
                                                 Node*,

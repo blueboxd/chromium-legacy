@@ -2085,7 +2085,8 @@ const char kWebrtcStunOriginDescription[] =
 const char kWebvrName[] = "WebVR";
 const char kWebvrDescription[] =
     "Enables access to experimental Virtual Reality functionality via the "
-    "WebVR 1.1 API. This feature will eventually be replaced by the WebXR "
+    "WebVR 1.1 API. This flag is deprecated and will be removed as soon as "
+    "Chrome 79. This feature will eventually be replaced by the WebXR "
     "Device API. Warning: Enabling this will also allow WebVR content on "
     "insecure origins to access these powerful APIs, and may pose a security "
     "risk. Controllers are exposed as Gamepads, and WebVR-specific attributes "

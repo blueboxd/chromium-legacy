@@ -35,6 +35,7 @@ class GFX_EXPORT NativePixmapDmaBuf : public gfx::NativePixmap {
   size_t GetDmaBufPlaneSize(size_t plane) const override;
   uint64_t GetBufferFormatModifier() const override;
   gfx::BufferFormat GetBufferFormat() const override;
+  size_t GetNumberOfPlanes() const override;
   gfx::Size GetBufferSize() const override;
   uint32_t GetUniqueId() const override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

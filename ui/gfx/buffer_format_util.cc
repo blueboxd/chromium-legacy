@@ -32,7 +32,7 @@ std::vector<BufferFormat> GetBufferFormatsForTesting() {
                                    kBufferFormats + base::size(kBufferFormats));
 }
 
-size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
+size_t NumberOfPlanesForLinearBufferFormat(BufferFormat format) {
   switch (format) {
     case BufferFormat::R_8:
     case BufferFormat::R_16:
@@ -165,7 +165,7 @@ bool BufferSizeForBufferFormatChecked(const Size& size,
                                       BufferFormat format,
                                       size_t* size_in_bytes) {
   base::CheckedNumeric<size_t> checked_size = 0;
-  size_t num_planes = NumberOfPlanesForBufferFormat(format);
+  size_t num_planes = NumberOfPlanesForLinearBufferFormat(format);
   for (size_t i = 0; i < num_planes; ++i) {
     size_t row_size = 0;
     if (!RowSizeForBufferFormatChecked(size.width(), format, i, &row_size))
@@ -186,7 +186,7 @@ bool BufferSizeForBufferFormatChecked(const Size& size,
 size_t BufferOffsetForBufferFormat(const Size& size,
                                    BufferFormat format,
                                    size_t plane) {
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format));
+  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format));
   switch (format) {
     case BufferFormat::R_8:
     case BufferFormat::R_16:

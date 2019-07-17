@@ -73,10 +73,14 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_with_flush_on_mac(
   };
 }
 
-const GLubyte* GetStringHook(const char* version_string, GLenum name) {
+const GLubyte* GetStringHook(const char* gl_version_string,
+                             const char* glsl_version_string,
+                             GLenum name) {
   switch (name) {
     case GL_VERSION:
-      return reinterpret_cast<const GLubyte*>(version_string);
+      return reinterpret_cast<const GLubyte*>(gl_version_string);
+    case GL_SHADING_LANGUAGE_VERSION:
+      return reinterpret_cast<const GLubyte*>(glsl_version_string);
     default:
       return glGetString(name);
   }
@@ -125,14 +129,17 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
                                       version_info.IsAtLeastGL(4, 2) ||
                                       version_info.IsAtLeastGLES(3, 1);
   if (apply_version_override) {
-    const char* fake_version = nullptr;
+    const char* fake_gl_version = nullptr;
+    const char* fake_glsl_version = nullptr;
     if (use_version_es2) {
-      fake_version = "OpenGL ES 2.0";
+      fake_gl_version = "OpenGL ES 2.0";
+      fake_glsl_version = "OpenGL ES GLSL ES 1.00";
     } else {
-      fake_version = version_info.is_es ? "OpenGL ES 3.0" : "4.1";
+      fake_gl_version = version_info.is_es ? "OpenGL ES 3.0" : "4.1";
+      fake_glsl_version = version_info.is_es ? "OpenGL ES GLSL ES 3.00" : "4.10";
     }
-    get_string = [fake_version](GLenum name) {
-      return GetStringHook(fake_version, name);
+    get_string = [fake_gl_version, fake_glsl_version](GLenum name) {
+      return GetStringHook(fake_gl_version, fake_glsl_version, name);
     };
   } else {
     get_string = bind(&gl::GLApi::glGetStringFn, api);

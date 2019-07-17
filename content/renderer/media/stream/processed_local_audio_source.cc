@@ -363,19 +363,16 @@ void ProcessedLocalAudioSource::OnCaptureStarted() {
 }
 
 void ProcessedLocalAudioSource::Capture(const media::AudioBus* audio_bus,
-                                        int audio_delay_milliseconds,
+                                        base::TimeTicks audio_capture_time,
                                         double volume,
                                         bool key_pressed) {
   if (audio_processor_) {
     // The data must be processed here.
-    CaptureUsingProcessor(audio_bus, audio_delay_milliseconds, volume,
-                          key_pressed);
+    CaptureUsingProcessor(audio_bus, audio_capture_time, volume, key_pressed);
   } else {
     // The audio is already processed in the audio service, just send it along.
     level_calculator_.Calculate(*audio_bus, false);
-    DeliverDataToTracks(
-        *audio_bus, base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(
-                                                 audio_delay_milliseconds));
+    DeliverDataToTracks(*audio_bus, audio_capture_time);
   }
 }
 
@@ -404,7 +401,7 @@ void ProcessedLocalAudioSource::SetOutputDeviceForAec(
 
 void ProcessedLocalAudioSource::CaptureUsingProcessor(
     const media::AudioBus* audio_bus,
-    int audio_delay_milliseconds,
+    base::TimeTicks audio_capture_time,
     double volume,
     bool key_pressed) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -418,13 +415,8 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
   DCHECK_LE(volume, 1.6);
 #endif
 
-  // TODO(miu): Plumbing is needed to determine the actual capture timestamp
-  // of the audio, instead of just snapshotting TimeTicks::Now(), for proper
-  // audio/video sync.  https://crbug.com/335335
-  const base::TimeTicks reference_clock_snapshot = base::TimeTicks::Now();
-  TRACE_EVENT2("audio", "ProcessedLocalAudioSource::Capture", "now (ms)",
-               (reference_clock_snapshot - base::TimeTicks()).InMillisecondsF(),
-               "delay (ms)", audio_delay_milliseconds);
+  TRACE_EVENT1("audio", "ProcessedLocalAudioSource::Capture", "capture-time",
+               audio_capture_time);
 
   // Map internal volume range of [0.0, 1.0] into [0, 255] used by AGC.
   // The volume can be higher than 255 on Linux, and it will be cropped to
@@ -453,8 +445,7 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
 
   // Push the data to the processor for processing.
   audio_processor_->PushCaptureData(
-      *audio_bus,
-      base::TimeDelta::FromMilliseconds(audio_delay_milliseconds));
+      *audio_bus, base::TimeTicks::Now() - audio_capture_time);
 
   // Process and consume the data in the processor until there is not enough
   // data in the processor.
@@ -468,8 +459,7 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
 
     level_calculator_.Calculate(*processed_data, force_report_nonzero_energy);
 
-    DeliverDataToTracks(*processed_data,
-                        reference_clock_snapshot - processed_data_audio_delay);
+    DeliverDataToTracks(*processed_data, audio_capture_time);
 
     if (new_volume) {
       GetTaskRunner()->PostTask(

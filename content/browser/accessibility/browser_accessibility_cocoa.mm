@@ -231,10 +231,27 @@ AXPlatformRange CreateRangeFromTextMarkerRange(
   return AXPlatformRange(std::move(anchor), std::move(focus));
 }
 
+BrowserAccessibilityPositionInstance CreateTreePosition(
+    const BrowserAccessibility& object,
+    int offset) {
+  // A tree position is one for which the |offset| argument refers to a child
+  // index instead of a character offset inside a text object.
+  if (!object.instance_active())
+    return BrowserAccessibilityPosition::CreateNullPosition();
+
+  const BrowserAccessibilityManager* manager = object.manager();
+  DCHECK(manager);
+  return BrowserAccessibilityPosition::CreateTreePosition(
+      manager->ax_tree_id(), object.GetId(), offset);
+}
+
 BrowserAccessibilityPositionInstance CreateTextPosition(
     const BrowserAccessibility& object,
     int offset,
     ax::mojom::TextAffinity affinity) {
+  // A text position is one for which the |offset| argument refers to a
+  // character offset inside a text object. As such, text positions are only
+  // valid on platform leaf objects, e.g. static text nodes and text fields.
   if (!object.instance_active())
     return BrowserAccessibilityPosition::CreateNullPosition();
 
@@ -244,16 +261,20 @@ BrowserAccessibilityPositionInstance CreateTextPosition(
       manager->ax_tree_id(), object.GetId(), offset, affinity);
 }
 
-AXPlatformRange CreateTextRange(const BrowserAccessibility& start_object,
-                                int start_offset,
-                                ax::mojom::TextAffinity start_affinity,
-                                const BrowserAccessibility& end_object,
-                                int end_offset,
-                                ax::mojom::TextAffinity end_affinity) {
+AXPlatformRange CreateAXPlatformRange(const BrowserAccessibility& start_object,
+                                      int start_offset,
+                                      ax::mojom::TextAffinity start_affinity,
+                                      const BrowserAccessibility& end_object,
+                                      int end_offset,
+                                      ax::mojom::TextAffinity end_affinity) {
   BrowserAccessibilityPositionInstance anchor =
-      CreateTextPosition(start_object, start_offset, start_affinity);
+      start_object.IsTextOnlyObject()
+          ? CreateTextPosition(start_object, start_offset, start_affinity)
+          : CreateTreePosition(start_object, start_offset);
   BrowserAccessibilityPositionInstance focus =
-      CreateTextPosition(end_object, end_offset, end_affinity);
+      end_object.IsTextOnlyObject()
+          ? CreateTextPosition(end_object, end_offset, end_affinity)
+          : CreateTreePosition(end_object, end_offset);
   // |AXPlatformRange| takes ownership of its anchor and focus.
   return AXPlatformRange(std::move(anchor), std::move(focus));
 }
@@ -2026,6 +2047,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (!focusObject)
     return nil;
 
+  // |anchorOffset| and / or |focusOffset| refer to a character offset if
+  // |anchorObject| / |focusObject| are text-only objects. Otherwise, they
+  // should be treated as child indices.
   int anchorOffset = manager->GetTreeData().sel_anchor_offset;
   int focusOffset = manager->GetTreeData().sel_focus_offset;
   if (anchorOffset < 0 || focusOffset < 0)
@@ -2036,9 +2060,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   ax::mojom::TextAffinity focusAffinity =
       manager->GetTreeData().sel_focus_affinity;
 
-  return CreateTextMarkerRange(CreateTextRange(*anchorObject, anchorOffset,
-                                               anchorAffinity, *focusObject,
-                                               focusOffset, focusAffinity));
+  return CreateTextMarkerRange(
+      CreateAXPlatformRange(*anchorObject, anchorOffset, anchorAffinity,
+                            *focusObject, focusOffset, focusAffinity));
 }
 
 - (NSValue*)size {

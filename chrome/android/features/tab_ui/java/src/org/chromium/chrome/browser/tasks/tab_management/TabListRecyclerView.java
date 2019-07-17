@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.features.start_surface.StartSurfaceLayout.ZOOMING_DURATION;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
@@ -11,6 +13,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -23,6 +26,7 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -33,6 +37,11 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
  * A custom RecyclerView implementation for the tab grid, to handle show/hide logic in class.
  */
 class TabListRecyclerView extends RecyclerView {
+    private static final String TAG = "TabListRecyclerView";
+
+    private static final String MAX_DUTY_CYCLE_PARAM = "max-duty-cycle";
+    private static final float DEFAULT_MAX_DUTY_CYCLE = 0.2f;
+
     public static final long BASE_ANIMATION_DURATION_MS = 218;
     public static final long FINAL_FADE_IN_DURATION_MS = 50;
 
@@ -214,16 +223,56 @@ class TabListRecyclerView extends RecyclerView {
      */
     void createDynamicView(DynamicResourceLoader loader) {
         mDynamicView = new ViewResourceAdapter(this) {
+            private long mSuppressedUntil;
+
             @Override
             public boolean isDirty() {
                 boolean dirty = super.isDirty();
-                if (dirty) mLastDirtyTime = SystemClock.elapsedRealtime();
+                if (dirty) {
+                    mLastDirtyTime = SystemClock.elapsedRealtime();
+                }
+                if (SystemClock.elapsedRealtime() < mSuppressedUntil) {
+                    if (dirty) {
+                        Log.d(TAG, "Dynamic View is dirty but suppressed");
+                    }
+                    return false;
+                }
                 return dirty;
+            }
+
+            @Override
+            public Bitmap getBitmap() {
+                long startTime = SystemClock.elapsedRealtime();
+                Bitmap bitmap = super.getBitmap();
+                long elapsed = SystemClock.elapsedRealtime() - startTime;
+                if (elapsed == 0) elapsed = 1;
+
+                float maxDutyCycle = getMaxDutyCycle();
+                Log.d(TAG, "MaxDutyCycle = " + getMaxDutyCycle());
+                assert maxDutyCycle > 0;
+                assert maxDutyCycle <= 1;
+                long suppressedFor = Math.min(
+                        (long) (elapsed * (1 - maxDutyCycle) / maxDutyCycle), ZOOMING_DURATION);
+
+                mSuppressedUntil = SystemClock.elapsedRealtime() + suppressedFor;
+                Log.d(TAG, "DynamicView: spent %dms on getBitmap, suppress updating for %dms.",
+                        elapsed, suppressedFor);
+                return bitmap;
             }
         };
         mDynamicView.setDownsamplingScale(getDownsamplingScale());
         assert mLoader == null : "createDynamicView should only be called once";
         mLoader = loader;
+    }
+
+    private float getMaxDutyCycle() {
+        String maxDutyCycle = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, MAX_DUTY_CYCLE_PARAM);
+        try {
+            return Float.valueOf(maxDutyCycle);
+        } catch (NumberFormatException e) {
+            return DEFAULT_MAX_DUTY_CYCLE;
+        }
     }
 
     private void registerDynamicView() {

@@ -35,6 +35,15 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
+#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "components/policy/policy_constants.h"
+#include "net/base/features.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Most tests for this class are in NetworkContextConfigurationBrowserTest.
@@ -163,5 +172,143 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
+
+#if defined(OS_CHROMEOS)
+// Base class for verifying which certificate verifier is being used on Chrome
+// OS depending on feature state and policies.
+class ProfileNetworkContextServiceCertVerifierBrowsertestBase
+    : public policy::LoginPolicyTestBase {
+ public:
+  ProfileNetworkContextServiceCertVerifierBrowsertestBase() = default;
+  ~ProfileNetworkContextServiceCertVerifierBrowsertestBase() override = default;
+
+ protected:
+  void SetPolicyValue(base::StringPiece policy_key, base::Value value) {
+    policy_values_.SetKey(policy_key, std::move(value));
+    user_policy_helper()->SetPolicy(policy_values_,
+                                    base::Value(base::Value::Type::DICTIONARY));
+  }
+
+  bool IsSigninProfileUsingBuiltinCertVerifier() {
+    Profile* const profile = chromeos::ProfileHelper::GetSigninProfile();
+    ProfileNetworkContextService* const service =
+        ProfileNetworkContextServiceFactory::GetForContext(profile);
+    return service->using_builtin_cert_verifier();
+  }
+
+  bool IsActiveProfileUsingBuiltinCertVerifier() {
+    Profile* const profile = GetProfileForActiveUser();
+    ProfileNetworkContextService* const service =
+        ProfileNetworkContextServiceFactory::GetForContext(profile);
+    return service->using_builtin_cert_verifier();
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+ private:
+  base::Value policy_values_{base::Value::Type::DICTIONARY};
+
+  DISALLOW_COPY_AND_ASSIGN(
+      ProfileNetworkContextServiceCertVerifierBrowsertestBase);
+};
+
+// When using this class, the built-in certificate verifier has been enabled
+// using the UseBuiltinCertVerifier feature.
+class ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest
+    : public ProfileNetworkContextServiceCertVerifierBrowsertestBase {
+ public:
+  ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest() = default;
+  ~ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest()
+      override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        net::features::kCertVerifierBuiltinFeature);
+    ProfileNetworkContextServiceCertVerifierBrowsertestBase::
+        SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest);
+};
+
+// If the built-in cert verifier is enabled and no policy is present, it should
+// be enabled on the sign-in screen and in the user profile.
+IN_PROC_BROWSER_TEST_F(
+    ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest,
+    TurnedOnByFeature) {
+  SkipToLoginScreen();
+  EXPECT_TRUE(IsSigninProfileUsingBuiltinCertVerifier());
+
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  EXPECT_TRUE(IsActiveProfileUsingBuiltinCertVerifier());
+}
+
+// If the built-in cert verifier is enabled, but user policy says to disable it,
+// it should be disabled in the user profile.
+IN_PROC_BROWSER_TEST_F(
+    ProfileNetworkContextServiceCertVerifierBuiltinEnabledBrowsertest,
+    TurnedOffByLegacyPolicy) {
+  SkipToLoginScreen();
+
+  SetPolicyValue(policy::key::kBuiltinCertificateVerifierEnabled,
+                 base::Value(false));
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  EXPECT_FALSE(IsActiveProfileUsingBuiltinCertVerifier());
+}
+
+// When using this class, the built-in certificate verifier has been disabled
+// using the UseBuiltinCertVerifier feature.
+class ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest
+    : public ProfileNetworkContextServiceCertVerifierBrowsertestBase {
+ public:
+  ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest() =
+      default;
+  ~ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest()
+      override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        net::features::kCertVerifierBuiltinFeature);
+    ProfileNetworkContextServiceCertVerifierBrowsertestBase::
+        SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest);
+};
+
+// If the built-in cert verifier is disabled, it should be disabled everywhere.
+IN_PROC_BROWSER_TEST_F(
+    ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest,
+    TurnedOffByFeature) {
+  SkipToLoginScreen();
+  EXPECT_FALSE(IsSigninProfileUsingBuiltinCertVerifier());
+
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  EXPECT_FALSE(IsActiveProfileUsingBuiltinCertVerifier());
+}
+
+// If the built-in cert verifier is disabled, but policy force-enables it for a
+// profile, it should be enabled in the profile.
+IN_PROC_BROWSER_TEST_F(
+    ProfileNetworkContextServiceCertVerifierBuiltinDisabledBrowsertest,
+    TurnedOffByFeatureOverrideByPolicy) {
+  SkipToLoginScreen();
+  EXPECT_FALSE(IsSigninProfileUsingBuiltinCertVerifier());
+
+  SetPolicyValue(policy::key::kBuiltinCertificateVerifierEnabled,
+                 base::Value(true));
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  EXPECT_TRUE(IsActiveProfileUsingBuiltinCertVerifier());
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace

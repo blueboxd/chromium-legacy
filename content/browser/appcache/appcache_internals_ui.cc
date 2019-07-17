@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_response.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_context.h"
@@ -162,9 +163,11 @@ AppCacheInternalsUI::Proxy::Proxy(
 
 void AppCacheInternalsUI::Proxy::Initialize(
     const scoped_refptr<ChromeAppCacheService>& chrome_appcache_service) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(
+          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&Proxy::Initialize, this, chrome_appcache_service));
     return;
   }
@@ -178,9 +181,12 @@ AppCacheInternalsUI::Proxy::~Proxy() {
 }
 
 void AppCacheInternalsUI::Proxy::Shutdown() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(&Proxy::Shutdown, this));
+  if (!BrowserThread::CurrentlyOn(
+          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
+    base::PostTaskWithTraits(
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
+        base::BindOnce(&Proxy::Shutdown, this));
     return;
   }
   shutdown_called_ = true;
@@ -192,9 +198,11 @@ void AppCacheInternalsUI::Proxy::Shutdown() {
 }
 
 void AppCacheInternalsUI::Proxy::RequestAllAppCacheInfo() {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(
+          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&Proxy::RequestAllAppCacheInfo, this));
     return;
   }
@@ -210,17 +218,23 @@ void AppCacheInternalsUI::Proxy::RequestAllAppCacheInfo() {
 void AppCacheInternalsUI::Proxy::OnAllAppCacheInfoReady(
     scoped_refptr<AppCacheInfoCollection> collection,
     int net_result_code) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&AppCacheInternalsUI::OnAllAppCacheInfoReady,
-                     appcache_internals_ui_, collection, partition_path_));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    appcache_internals_ui_->OnAllAppCacheInfoReady(collection, partition_path_);
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&AppCacheInternalsUI::OnAllAppCacheInfoReady,
+                       appcache_internals_ui_, collection, partition_path_));
+  }
 }
 
 void AppCacheInternalsUI::Proxy::DeleteAppCache(
     const std::string& manifest_url) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(
+          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&Proxy::DeleteAppCache, this, manifest_url));
     return;
   }
@@ -234,18 +248,25 @@ void AppCacheInternalsUI::Proxy::DeleteAppCache(
 void AppCacheInternalsUI::Proxy::OnAppCacheInfoDeleted(
     const std::string& manifest_url,
     int net_result_code) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&AppCacheInternalsUI::OnAppCacheInfoDeleted,
-                     appcache_internals_ui_, partition_path_, manifest_url,
-                     net_result_code == net::OK));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    appcache_internals_ui_->OnAppCacheInfoDeleted(partition_path_, manifest_url,
+                                                  net_result_code == net::OK);
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&AppCacheInternalsUI::OnAppCacheInfoDeleted,
+                       appcache_internals_ui_, partition_path_, manifest_url,
+                       net_result_code == net::OK));
+  }
 }
 
 void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
     const std::string& manifest_url) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(
+          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&Proxy::RequestAppCacheDetails, this, manifest_url));
     return;
   }
@@ -266,18 +287,25 @@ void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
     std::sort(resource_info_vector->begin(), resource_info_vector->end(),
               SortByResourceUrl);
   }
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&AppCacheInternalsUI::OnAppCacheDetailsReady,
-                     appcache_internals_ui_, partition_path_,
-                     manifest_gurl.spec(), std::move(resource_info_vector)));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    appcache_internals_ui_->OnAppCacheDetailsReady(
+        partition_path_, manifest_gurl.spec(), std::move(resource_info_vector));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&AppCacheInternalsUI::OnAppCacheDetailsReady,
+                       appcache_internals_ui_, partition_path_,
+                       manifest_gurl.spec(), std::move(resource_info_vector)));
+  }
 }
 
 void AppCacheInternalsUI::Proxy::RequestFileDetails(
     const ProxyResponseEnquiry& response_enquiry) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(
+          NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID())) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
         base::BindOnce(&Proxy::RequestFileDetails, this, response_enquiry));
     return;
   }
@@ -334,17 +362,27 @@ void AppCacheInternalsUI::Proxy::OnResponseDataReadComplete(
   if (shutdown_called_)
     return;
   if (!response_info || net_result_code < 0) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&AppCacheInternalsUI::OnFileDetailsFailed,
-                       appcache_internals_ui_, response_enquiry,
-                       net_result_code));
+    if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+      appcache_internals_ui_->OnFileDetailsFailed(response_enquiry,
+                                                  net_result_code);
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&AppCacheInternalsUI::OnFileDetailsFailed,
+                         appcache_internals_ui_, response_enquiry,
+                         net_result_code));
+    }
   } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&AppCacheInternalsUI::OnFileDetailsReady,
-                       appcache_internals_ui_, response_enquiry, response_info,
-                       response_data, net_result_code));
+    if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+      appcache_internals_ui_->OnFileDetailsReady(
+          response_enquiry, response_info, response_data, net_result_code);
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&AppCacheInternalsUI::OnFileDetailsReady,
+                         appcache_internals_ui_, response_enquiry,
+                         response_info, response_data, net_result_code));
+    }
   }
   preparing_response_ = false;
   HandleFileDetailsRequest();

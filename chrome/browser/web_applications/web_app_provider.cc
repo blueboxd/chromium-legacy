@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
@@ -84,6 +85,8 @@ WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
   else
     CreateBookmarkAppsSubsystems(profile_);
 
+  ui_manager_ = WebAppUiManager::Create(profile);
+
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
 
@@ -114,9 +117,9 @@ WebAppPolicyManager* WebAppProvider::policy_manager() {
   return web_app_policy_manager_.get();
 }
 
-WebAppUiDelegate& WebAppProvider::ui_delegate() {
-  DCHECK(ui_delegate_);
-  return *ui_delegate_;
+WebAppUiManager& WebAppProvider::ui_manager() {
+  DCHECK(ui_manager_);
+  return *ui_manager_;
 }
 
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
@@ -127,6 +130,7 @@ void WebAppProvider::Shutdown() {
   // Destroy subsystems.
   // The order of destruction is the reverse order of creation:
   // TODO(calamity): Make subsystem destruction happen in destructor.
+  ui_manager_.reset();
   web_app_policy_manager_.reset();
   system_web_app_manager_.reset();
   pending_app_manager_.reset();
@@ -189,11 +193,11 @@ void WebAppProvider::ConnectSubsystems() {
     return;
   }
 
-  pending_app_manager_->SetSubsystems(registrar_.get(),
+  pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                       install_finalizer_.get());
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
-                                         registrar_.get());
+                                         registrar_.get(), ui_manager_.get());
 }
 
 void WebAppProvider::OnRegistryReady() {
@@ -201,8 +205,7 @@ void WebAppProvider::OnRegistryReady() {
 
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     web_app_policy_manager_->Start();
-    DCHECK(ui_delegate_);
-    system_web_app_manager_->Start(ui_delegate_);
+    system_web_app_manager_->Start();
 
     // Start ExternalWebApps subsystem:
     ScanForExternalWebApps(

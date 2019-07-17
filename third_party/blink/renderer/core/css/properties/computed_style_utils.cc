@@ -2295,6 +2295,23 @@ CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
   return pair;
 }
 
+CSSValuePair* ComputedStyleUtils::ValuesForPlaceShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  const CSSValue* align_value =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* justify_value =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+
+  return MakeGarbageCollected<CSSValuePair>(align_value, justify_value,
+                                            CSSValuePair::kDropIdenticalValues);
+}
+
 static CSSValue* ExpandNoneLigaturesValue() {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kNoCommonLigatures));

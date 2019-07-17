@@ -30,6 +30,7 @@ class Error(Exception):
   pass
 
 UNIT_REWRITES = {
+  'mcs': 'microseconds',
   'microsecond': 'microseconds',
   'us': 'microseconds',
   'millisecond': 'ms',

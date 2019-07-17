@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "device/fido/credential_management.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
@@ -17,6 +18,10 @@
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/fake_webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 namespace device {
 namespace {
@@ -61,6 +66,11 @@ class CredentialManagementHandlerTest : public ::testing::Test {
   test::ValueCallbackReceiver<CtapDeviceResponseCode> delete_callback_;
   test::ValueCallbackReceiver<FidoReturnCode> finished_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
+
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
 };
 
 TEST_F(CredentialManagementHandlerTest, Test) {

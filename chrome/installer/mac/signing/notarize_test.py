@@ -40,6 +40,25 @@ class TestSubmit(unittest.TestCase):
             '--output-format', 'xml'
         ])
 
+    @mock.patch('signing.commands.run_command_output')
+    def test_valid_upload_with_asc_provider(self, run_command_output):
+        run_command_output.return_value = _make_plist({
+            'notarization-upload': {
+                'RequestUUID': '746f1537-0613-4e49-a9a0-869f2c9dc8e5'
+            },
+        })
+        config = test_config.TestConfig(
+            notary_asc_provider='[NOTARY-ASC-PROVIDER]')
+        uuid = notarize.submit('/tmp/file.dmg', config)
+
+        self.assertEqual('746f1537-0613-4e49-a9a0-869f2c9dc8e5', uuid)
+        run_command_output.assert_called_once_with([
+            'xcrun', 'altool', '--notarize-app', '--file', '/tmp/file.dmg',
+            '--primary-bundle-id', 'test.signing.bundle_id', '--username',
+            '[NOTARY-USER]', '--password', '[NOTARY-PASSWORD]',
+            '--output-format', 'xml', '--asc-provider', '[NOTARY-ASC-PROVIDER]'
+        ])
+
 
 class TestWaitForResults(unittest.TestCase):
 
@@ -63,6 +82,32 @@ class TestWaitForResults(unittest.TestCase):
             'xcrun', 'altool', '--notarization-info', uuid, '--username',
             '[NOTARY-USER]', '--password', '[NOTARY-PASSWORD]',
             '--output-format', 'xml'
+        ])
+
+    @mock.patch('signing.commands.run_command_output')
+    def test_success_with_asc_provider(self, run_command_output):
+        run_command_output.return_value = _make_plist({
+            'notarization-info': {
+                'Date': '2019-07-08T20:11:24Z',
+                'LogFileURL': 'https://example.com/log.json',
+                'RequestUUID': '0a88b2d8-4098-4d3a-8461-5b543b479d15',
+                'Status': 'success',
+                'Status Code': 0
+            }
+        })
+        uuid = '0a88b2d8-4098-4d3a-8461-5b543b479d15'
+        uuids = [uuid]
+        self.assertEqual(
+            uuids,
+            list(
+                notarize.wait_for_results(
+                    uuids,
+                    test_config.TestConfig(
+                        notary_asc_provider='[NOTARY-ASC-PROVIDER]'))))
+        run_command_output.assert_called_once_with([
+            'xcrun', 'altool', '--notarization-info', uuid, '--username',
+            '[NOTARY-USER]', '--password', '[NOTARY-PASSWORD]',
+            '--output-format', 'xml', '--asc-provider', '[NOTARY-ASC-PROVIDER]'
         ])
 
     @mock.patch('signing.commands.run_command_output')

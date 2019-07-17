@@ -588,8 +588,8 @@ TEST_P(WidgetWithDestroyedNativeViewTest, Test) {
   widget.Activate();
   widget.Deactivate();
   widget.IsActive();
-  widget.SetAlwaysOnTop(true);
-  widget.IsAlwaysOnTop();
+  widget.SetZOrderLevel(ui::ZOrderLevel::kNormal);
+  widget.GetZOrderLevel();
   widget.Maximize();
   widget.Minimize();
   widget.Restore();
@@ -3692,14 +3692,14 @@ TEST_F(DesktopWidgetTest, DISABLED_DestroyInSysCommandNCLButtonDownOnCaption) {
 
 #endif
 
-// Test that SetAlwaysOnTop and IsAlwaysOnTop are consistent.
-TEST_F(WidgetTest, AlwaysOnTop) {
+// Test that the z-order levels round-trip.
+TEST_F(WidgetTest, ZOrderLevel) {
   WidgetAutoclosePtr widget(CreateTopLevelNativeWidget());
-  EXPECT_FALSE(widget->IsAlwaysOnTop());
-  widget->SetAlwaysOnTop(true);
-  EXPECT_TRUE(widget->IsAlwaysOnTop());
-  widget->SetAlwaysOnTop(false);
-  EXPECT_FALSE(widget->IsAlwaysOnTop());
+  EXPECT_EQ(ui::ZOrderLevel::kNormal, widget->GetZOrderLevel());
+  widget->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow, widget->GetZOrderLevel());
+  widget->SetZOrderLevel(ui::ZOrderLevel::kNormal);
+  EXPECT_EQ(ui::ZOrderLevel::kNormal, widget->GetZOrderLevel());
 }
 
 namespace {

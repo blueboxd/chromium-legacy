@@ -137,7 +137,6 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
-  bool IsAlwaysOnTop() const;
 
   bool RunMoveLoop(const gfx::Vector2d& drag_offset, bool hide_on_escape);
   void EndMoveLoop();

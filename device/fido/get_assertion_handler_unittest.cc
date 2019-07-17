@@ -189,6 +189,11 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   TestGetAssertionRequestCallback get_assertion_cb_;
   base::flat_set<FidoTransportProtocol> supported_transports_ =
       GetAllTransportProtocols();
+
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {
@@ -788,6 +793,11 @@ TEST_F(FidoGetAssertionHandlerTest, DeviceFailsImmediately) {
 TEST(GetAssertionRequestHandlerTest, IncorrectTransportType) {
   base::test::ScopedTaskEnvironment scoped_task_environment{
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
+
   device::test::VirtualFidoDeviceFactory virtual_device_factory;
   virtual_device_factory.SetSupportedProtocol(device::ProtocolVersion::kCtap2);
   ASSERT_TRUE(virtual_device_factory.mutable_state()->InjectRegistration(

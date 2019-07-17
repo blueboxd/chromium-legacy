@@ -24,7 +24,7 @@ let requestSessionModes = [
   'immersive-vr',
 ];
 
-let testFunction = function(session, t, fakeDeviceController) {
+let testFunction = function(session, fakeDeviceController, t) {
   // Session must have a baseLayer or else frame requests will be ignored.
   session.updateRenderState({
     baseLayer: new XRWebGLLayer(session, gl)
@@ -94,6 +94,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
 
 </script>

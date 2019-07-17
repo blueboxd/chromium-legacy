@@ -14,7 +14,7 @@
 class Profile;
 
 namespace base {
-class DictionaryValue;
+class Value;
 }
 
 namespace chromeos {
@@ -32,8 +32,7 @@ class UserPolicyTestHelper {
       chromeos::LocalPolicyTestServerMixin* local_policy_server);
   virtual ~UserPolicyTestHelper();
 
-  void SetPolicy(const base::DictionaryValue& mandatory,
-                 const base::DictionaryValue& recommended);
+  void SetPolicy(const base::Value& mandatory, const base::Value& recommended);
 
   // Can be optionally used to wait for the initial policy to be applied to the
   // profile. Alternatively, a login can be simulated, which makes it
@@ -42,8 +41,8 @@ class UserPolicyTestHelper {
 
   // Update the policy test server with the given policy. Then refresh and wait
   // for the new policy being applied to |profile|.
-  void SetPolicyAndWait(const base::DictionaryValue& mandatory_policy,
-                        const base::DictionaryValue& recommended_policy,
+  void SetPolicyAndWait(const base::Value& mandatory_policy,
+                        const base::Value& recommended_policy,
                         Profile* profile);
 
  private:

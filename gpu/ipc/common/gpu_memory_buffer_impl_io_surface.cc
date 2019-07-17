@@ -113,7 +113,7 @@ bool GpuMemoryBufferImplIOSurface::Map() {
 
 void* GpuMemoryBufferImplIOSurface::memory(size_t plane) {
   DCHECK(mapped_);
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format_));
   return IOSurfaceGetBaseAddressOfPlane(io_surface_, plane);
 }
 
@@ -124,7 +124,7 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
 }
 
 int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format_));
   return IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
 }
 

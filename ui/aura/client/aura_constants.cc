@@ -12,6 +12,7 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, base::TimeDelta)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, base::UnguessableToken*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, base::string16*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, ui::ModalType)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, ui::ZOrderLevel)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::ImageSkia*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::NativeViewAccessible)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(AURA_EXPORT, gfx::Rect*)
@@ -39,7 +40,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool,
                              kAccessibilityTouchExplorationPassThrough,
                              false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kActivateOnPointerKey, true)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAlwaysOnTopKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kAnimationsDisabledKey, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kAppType, 0)
@@ -79,6 +79,9 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::string16, kTitleKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTopViewInset, 0)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia, kWindowIconKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kWindowCornerRadiusKey, -1)
+DEFINE_UI_CLASS_PROPERTY_KEY(ui::ZOrderLevel,
+                             kZOrderingKey,
+                             ui::ZOrderLevel::kNormal)
 
 }  // namespace client
 }  // namespace aura

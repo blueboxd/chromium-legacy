@@ -112,7 +112,7 @@ TEST_F(NGBlockNodeForTest, ChildFloatOnly) {
   )HTML");
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGLayoutInputNode child1 = container.FirstChild();
-  EXPECT_TRUE(child1 && child1.IsInline());
+  EXPECT_TRUE(child1 && child1.IsBlock());
   NGLayoutInputNode child2 = child1.NextSibling();
   EXPECT_EQ(child2, nullptr);
 }
@@ -129,7 +129,7 @@ TEST_F(NGBlockNodeForTest, ChildFloatWithSpaces) {
   )HTML");
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
   NGLayoutInputNode child1 = container.FirstChild();
-  EXPECT_TRUE(child1 && child1.IsInline());
+  EXPECT_TRUE(child1 && child1.IsBlock());
   NGLayoutInputNode child2 = child1.NextSibling();
   EXPECT_EQ(child2, nullptr);
 }

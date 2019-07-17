@@ -4,20 +4,17 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="network_config_element_behavior.html">
 <link rel="import" href="network_shared_css.html">
 
 <dom-module id="network-config-select">
   <template>
-    <style include="network-shared md-select">
+    <style include="cr-shared-style network-shared md-select">
       .md-select {
         color: var(--cr-primary-text-color);
         width: 100%;
-      }
-
-      #label {
-        @apply --cr-form-field-label;
       }
 
       #outer {
@@ -41,7 +38,7 @@
     </style>
 
     <div id="outer">
-      <div id="label">[[label]]</div>
+      <div id="label" class="cr-form-field-label">[[label]]</div>
       <div id="inner">
         <select class="md-select"
             disabled="[[getDisabled_(disabled, property)]]"

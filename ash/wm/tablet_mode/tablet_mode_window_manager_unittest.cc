@@ -1529,8 +1529,10 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect1));
   std::unique_ptr<aura::Window> w2(CreateFixedSizeNonMaximizableWindow(
       aura::client::WINDOW_TYPE_NORMAL, rect2));
-  w1->SetProperty(aura::client::kAlwaysOnTopKey, true);
-  w2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  w1->SetProperty(aura::client::kZOrderingKey,
+                  ui::ZOrderLevel::kFloatingWindow);
+  w2->SetProperty(aura::client::kZOrderingKey,
+                  ui::ZOrderLevel::kFloatingWindow);
   EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
   EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
@@ -1550,8 +1552,8 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   // Remove the always-on-top property from both windows while in maximize
   // mode. The windows should become managed, which means they should be
   // maximized/centered and no longer be draggable.
-  w1->SetProperty(aura::client::kAlwaysOnTopKey, false);
-  w2->SetProperty(aura::client::kAlwaysOnTopKey, false);
+  w1->SetProperty(aura::client::kZOrderingKey, ui::ZOrderLevel::kNormal);
+  w2->SetProperty(aura::client::kZOrderingKey, ui::ZOrderLevel::kNormal);
   EXPECT_EQ(2, manager->GetNumberOfManagedWindows());
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
@@ -1563,8 +1565,10 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   // Applying the always-on-top property to both windows while in maximize
   // mode should cause both windows to return to their original size,
   // position, and state.
-  w1->SetProperty(aura::client::kAlwaysOnTopKey, true);
-  w2->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  w1->SetProperty(aura::client::kZOrderingKey,
+                  ui::ZOrderLevel::kFloatingWindow);
+  w2->SetProperty(aura::client::kZOrderingKey,
+                  ui::ZOrderLevel::kFloatingWindow);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
   EXPECT_FALSE(wm::GetWindowState(w1.get())->IsMaximized());
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
@@ -1728,7 +1732,8 @@ TEST_F(TabletModeWindowManagerTest, SetPropertyOnUnmanagedWindow) {
   params.show_on_creation = false;
   std::unique_ptr<aura::Window> window(CreateWindowInWatchedContainer(params));
   wm::GetWindowState(window.get())->set_allow_set_bounds_direct(true);
-  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->SetProperty(aura::client::kZOrderingKey,
+                      ui::ZOrderLevel::kFloatingWindow);
   window->Show();
 }
 

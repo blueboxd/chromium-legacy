@@ -13,7 +13,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -34,8 +33,7 @@ namespace ash {
 // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
 class Shelf::AutoHideEventHandler : public ui::EventHandler {
  public:
-  explicit AutoHideEventHandler(ShelfLayoutManager* shelf_layout_manager)
-      : shelf_layout_manager_(shelf_layout_manager) {
+  explicit AutoHideEventHandler(Shelf* shelf) : shelf_(shelf) {
     Shell::Get()->AddPreTargetHandler(this);
   }
   ~AutoHideEventHandler() override {
@@ -44,16 +42,36 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override {
-    shelf_layout_manager_->UpdateAutoHideForMouseEvent(
+    shelf_->shelf_layout_manager()->UpdateAutoHideForMouseEvent(
         event, static_cast<aura::Window*>(event->target()));
   }
   void OnGestureEvent(ui::GestureEvent* event) override {
-    shelf_layout_manager_->ProcessGestureEventOfAutoHideShelf(
+    shelf_->shelf_layout_manager()->ProcessGestureEventOfAutoHideShelf(
         event, static_cast<aura::Window*>(event->target()));
+  }
+  void OnTouchEvent(ui::TouchEvent* event) override {
+    if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
+      return;
+
+    // The event target should be the shelf widget.
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    if (target != Shelf::ForWindow(target)->shelf_widget()->GetNativeView())
+      return;
+
+    // The touch-pressing event may hide the shelf. Lock the shelf's auto hide
+    // state to give the shelf a chance to handle the touch event before it
+    // being hidden.
+    ShelfLayoutManager* shelf_layout_manager = shelf_->shelf_layout_manager();
+    if (event->type() == ui::ET_TOUCH_PRESSED && shelf_->IsVisible()) {
+      shelf_layout_manager->LockAutoHideState(true);
+    } else if (event->type() == ui::ET_TOUCH_RELEASED ||
+               event->type() == ui::ET_TOUCH_CANCELLED) {
+      shelf_layout_manager->LockAutoHideState(false);
+    }
   }
 
  private:
-  ShelfLayoutManager* shelf_layout_manager_;
+  Shelf* shelf_;
   DISALLOW_COPY_AND_ASSIGN(AutoHideEventHandler);
 };
 
@@ -61,7 +79,6 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
 
 Shelf::Shelf()
     : shelf_locking_manager_(this),
-      bezel_event_handler_(std::make_unique<ShelfBezelEventHandler>(this)),
       shelf_focus_cycler_(std::make_unique<ShelfFocusCycler>(this)) {}
 
 Shelf::~Shelf() = default;
@@ -347,7 +364,6 @@ ShelfView* Shelf::GetShelfViewForTesting() {
 void Shelf::WillDeleteShelfLayoutManager() {
   // Clear event handlers that might forward events to the destroyed instance.
   auto_hide_event_handler_.reset();
-  bezel_event_handler_.reset();
 
   DCHECK(shelf_layout_manager_);
   shelf_layout_manager_->RemoveObserver(this);
@@ -360,8 +376,7 @@ void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
   if (new_state != SHELF_AUTO_HIDE) {
     auto_hide_event_handler_.reset();
   } else if (!auto_hide_event_handler_) {
-    auto_hide_event_handler_ =
-        std::make_unique<AutoHideEventHandler>(shelf_layout_manager());
+    auto_hide_event_handler_ = std::make_unique<AutoHideEventHandler>(this);
   }
 }
 

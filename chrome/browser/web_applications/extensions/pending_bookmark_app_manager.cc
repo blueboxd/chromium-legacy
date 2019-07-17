@@ -15,8 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_ui_delegate.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "content/public/browser/web_contents.h"
 
@@ -112,10 +111,6 @@ void PendingBookmarkAppManager::SetUrlLoaderForTesting(
   url_loader_ = std::move(url_loader);
 }
 
-web_app::WebAppUiDelegate& PendingBookmarkAppManager::GetUiDelegate() {
-  return web_app::WebAppProviderBase::GetProviderBase(profile_)->ui_delegate();
-}
-
 void PendingBookmarkAppManager::MaybeStartNextInstallation() {
   if (current_task_and_callback_)
     return;
@@ -145,8 +140,8 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
 
     if (registrar()->IsInstalled(app_id.value())) {
       if (install_options.wait_for_windows_closed &&
-          GetUiDelegate().GetNumWindowsForApp(app_id.value()) != 0) {
-        GetUiDelegate().NotifyOnAllAppWindowsClosed(
+          ui_manager()->GetNumWindowsForApp(app_id.value()) != 0) {
+        ui_manager()->NotifyOnAllAppWindowsClosed(
             app_id.value(),
             base::BindOnce(&PendingBookmarkAppManager::Install,
                            weak_ptr_factory_.GetWeakPtr(), install_options,

@@ -67,13 +67,6 @@ public class OfflineGroupHeaderView
     }
 
     @Override
-    public void setChecked(boolean checked) {
-        if (checked == isChecked()) return;
-        super.setChecked(checked);
-        updateCheckIcon(checked);
-    }
-
-    @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         if (mSelectionDelegate != null) {
@@ -98,7 +91,6 @@ public class OfflineGroupHeaderView
         mDescriptionTextView.setText(description);
         updateExpandIcon(header.isExpanded());
         setChecked(mSelectionDelegate.isHeaderSelected(header));
-        updateCheckIcon(isChecked());
     }
 
     private void updateExpandIcon(boolean expanded) {
@@ -109,15 +101,16 @@ public class OfflineGroupHeaderView
                                                   : R.string.accessibility_expand_section_header));
     }
 
-    private void updateCheckIcon(boolean checked) {
-        if (checked) {
+    @Override
+    protected void updateView(boolean animate) {
+        if (isChecked()) {
             mIconImageView.setBackgroundResource(mIconBackgroundResId);
             mIconImageView.getBackground().setLevel(
                     getResources().getInteger(R.integer.list_item_level_selected));
 
             mIconImageView.setImageDrawable(mCheckDrawable);
             ApiCompatibilityUtils.setImageTintList(mIconImageView, mCheckedIconForegroundColorList);
-            mCheckDrawable.start();
+            if (animate) mCheckDrawable.start();
         } else {
             mIconImageView.setBackgroundResource(mIconBackgroundResId);
             mIconImageView.getBackground().setLevel(

@@ -403,6 +403,18 @@
           }
         ],
         "platforms": ["chromeos"]
+      },
+      {
+        "name": "openSettingsSubpage",
+        "type": "function",
+        "description": "Opens a specified settings subpage. To open a page with url chrome://settings/manageAccessibility/tts, pass in the substring 'manageAccessibility/tts'.",
+        "parameters": [
+          {
+            "name": "subpage",
+            "type": "string"
+          }
+        ],
+        "platforms": ["chromeos"]
       }
     ],
     "events": [

@@ -310,8 +310,8 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
       self.traitCollection.preferredContentSizeCategory) {
     [self.collectionViewLayout invalidateLayout];
     [self.headerSynchronizer updateFakeOmniboxOnCollectionScroll];
-    [self.headerSynchronizer updateConstraints];
   }
+  [self.headerSynchronizer updateConstraints];
   [self updateOverscrollActionsState];
 }
 

@@ -38,7 +38,7 @@ function setupProgram(gl, vertexSrc, fragmentSrc) {
 }
 
 let testFunction =
-  (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
+  (session, fakeDeviceController, t) => new Promise((resolve, reject) => {
   // Setup simple WebGL geometry to draw with.
   let program = setupProgram(gl,
     "attribute vec4 vPosition; void main() { gl_Position = vPosition; }",
@@ -95,6 +95,6 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
 
 </script>

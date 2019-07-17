@@ -272,13 +272,7 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
 
   exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
   DCHECK(surface);
-  surface->SetCommitCallback(base::BindRepeating(
-      &ArcGraphicsTracingHandler::OnCommit, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  jank_detector_->OnSample();
+  surface->AddSurfaceObserver(this);
 }
 
 void ArcGraphicsTracingHandler::OnJankDetected(const base::Time& timestamp) {
@@ -318,6 +312,15 @@ void ArcGraphicsTracingHandler::OnKeyEvent(ui::KeyEvent* event) {
   }
 }
 
+void ArcGraphicsTracingHandler::OnSurfaceDestroying(exo::Surface* surface) {
+  DiscardActiveArcWindow();
+}
+
+void ArcGraphicsTracingHandler::OnCommit(exo::Surface* surface) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  jank_detector_->OnSample();
+}
+
 void ArcGraphicsTracingHandler::UpdateActiveArcWindowInfo() {
   DCHECK(arc_active_window_);
   base::DictionaryValue task_information;
@@ -348,8 +351,8 @@ void ArcGraphicsTracingHandler::DiscardActiveArcWindow() {
     return;
 
   exo::Surface* const surface = exo::GetShellMainSurface(arc_active_window_);
-  DCHECK(surface);
-  surface->SetCommitCallback(exo::Surface::CommitCallback());
+  if (surface)
+    surface->RemoveSurfaceObserver(this);
 
   arc_active_window_->RemovePreTargetHandler(this);
   arc_active_window_->RemoveObserver(this);

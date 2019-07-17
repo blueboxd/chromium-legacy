@@ -906,7 +906,6 @@ bool EventTarget::FireEventListeners(Event& event,
       break;
 
     event.SetHandlingPassive(EventPassiveMode(registered_listener));
-    bool passive_forced = registered_listener.PassiveForcedForDocumentTarget();
 
     probe::UserCallback probe(context, nullptr, event.type(), false, this);
     probe::AsyncTask async_task(context, listener, "event",
@@ -925,17 +924,6 @@ bool EventTarget::FireEventListeners(Event& event,
         !event.defaultPrevented()) {
       ReportBlockedEvent(*this, event, &entry[i - 1],
                          now - event.PlatformTimeStamp());
-    }
-
-    if (passive_forced) {
-      DEFINE_STATIC_LOCAL(EnumerationHistogram, passive_forced_histogram,
-                          ("Event.PassiveForcedEventDispatchCancelled",
-                           kPassiveForcedListenerResultTypeMax));
-      PassiveForcedListenerResultType breakage_type = kPreventDefaultNotCalled;
-      if (event.PreventDefaultCalledDuringPassive())
-        breakage_type = kDocumentLevelTouchPreventDefaultCalled;
-
-      passive_forced_histogram.Count(breakage_type);
     }
 
     event.SetHandlingPassive(Event::PassiveMode::kNotPassive);

@@ -105,6 +105,9 @@ extern const char kMediaRouterStableExtensionId[];
 // The extension id of the Chrome Reporting extension.
 extern const char kCloudReportingExtensionId[];
 
+// A list of all the first party extension IDs, last entry is null.
+extern const char* const kBuiltInFirstPartyExtensionIds[];
+
 // The buckets used for app launches.
 enum AppLaunchBucket {
   // Launch from NTP apps section while maximized.

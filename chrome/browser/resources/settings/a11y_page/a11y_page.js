@@ -137,7 +137,7 @@ Polymer({
   },
 
   /** @private */
-  onTapCaptions_: function() {
+  onCaptionsClick_: function() {
     // Open the system captions dialog for Mac.
     // <if expr="is_macosx">
     settings.CaptionsBrowserProxyImpl.getInstance().openSystemCaptionsDialog();

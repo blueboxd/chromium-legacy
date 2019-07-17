@@ -33,6 +33,7 @@ class CONTENT_EXPORT PushMessagingService {
  public:
   using RegisterCallback =
       base::OnceCallback<void(const std::string& registration_id,
+                              const GURL& endpoint,
                               const std::vector<uint8_t>& p256dh,
                               const std::vector<uint8_t>& auth,
                               blink::mojom::PushRegistrationStatus status)>;
@@ -40,6 +41,7 @@ class CONTENT_EXPORT PushMessagingService {
       base::OnceCallback<void(blink::mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
       base::Callback<void(bool is_valid,
+                          const GURL& endpoint,
                           const std::vector<uint8_t>& p256dh,
                           const std::vector<uint8_t>& auth)>;
   using StringCallback = base::Callback<void(const std::string& data,
@@ -47,11 +49,6 @@ class CONTENT_EXPORT PushMessagingService {
                                              bool not_found)>;
 
   virtual ~PushMessagingService() {}
-
-  // Returns the absolute URL to the endpoint of the push service where messages
-  // should be posted to. Should return an endpoint compatible with the Web Push
-  // Protocol when |standard_protocol| is true.
-  virtual GURL GetEndpoint(bool standard_protocol) = 0;
 
   // Subscribes the given |options->sender_info| with the push messaging service
   // in a document context. The frame is known and a permission UI may be

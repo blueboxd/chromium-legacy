@@ -97,6 +97,9 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
                        bool allow_legacy_mailbox);
 
+  void RegisterSharedImageBackingFactoryForTesting(
+      SharedImageBackingFactory* factory);
+
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
   SharedImageBackingFactory* GetFactoryByUsage(
@@ -128,6 +131,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   // Used for creating DXGI Swap Chain.
   std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
 #endif  // OS_WIN
+
+  SharedImageBackingFactory* backing_factory_for_testing_ = nullptr;
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationFactory {

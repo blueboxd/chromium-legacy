@@ -338,9 +338,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       mode, output_surface_->context_provider(), bitmap_manager_,
       enable_shared_images);
-  const bool use_skia_renderer =
-      settings_.use_skia_renderer || settings_.use_skia_renderer_non_ddl;
-  if (use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
+  if (settings_.use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
     // Default to use DDL if skia_output_surface is not null.
     if (skia_output_surface_) {
       renderer_ = std::make_unique<SkiaRenderer>(

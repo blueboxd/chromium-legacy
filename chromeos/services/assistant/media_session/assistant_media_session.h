@@ -82,12 +82,10 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   // Returns information about |this|.
   media_session::mojom::MediaSessionInfoPtr GetMediaSessionInfoInternal();
 
-  // Sets |audio_focus_state_| and notifies observers about the state change.
-  void set_audio_focus_state(State audio_focus_state);
-
-  // Sets |audio_focus_type_|.
-  void set_audio_focus_type(
-      media_session::mojom::AudioFocusType audio_focus_type);
+  // Sets |audio_focus_state_|, |audio_focus_type_| and notifies observers about
+  // the state change.
+  void SetAudioFocusInfo(State audio_focus_state,
+                         media_session::mojom::AudioFocusType audio_focus_type);
 
   // Notifies mojo observers that the MediaSessionInfo has changed.
   void NotifyMediaSessionInfoChanged();

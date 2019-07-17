@@ -1778,7 +1778,6 @@ void PrintRenderFrameHelper::PrintPages() {
   }
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
 bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                               int page_count,
                                               bool is_pdf) {
@@ -1794,9 +1793,18 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   CHECK(metafile.Init());
 
   PrintHostMsg_DidPrintDocument_Params page_params;
+  gfx::Size* page_size_in_dpi;
+  gfx::Rect* content_area_in_dpi;
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  page_size_in_dpi = &page_params.page_size;
+  content_area_in_dpi = &page_params.content_area;
+#else
+  page_size_in_dpi = nullptr;
+  content_area_in_dpi = nullptr;
+#endif
   PrintPageInternal(print_params, printed_pages[0], page_count,
-                    print_params.scale_factor, frame, &metafile,
-                    &page_params.page_size, &page_params.content_area);
+                    GetScaleFactor(print_params.scale_factor, is_pdf), frame,
+                    &metafile, page_size_in_dpi, content_area_in_dpi);
   for (size_t i = 1; i < printed_pages.size(); ++i) {
     PrintPageInternal(print_params, printed_pages[i], page_count,
                       GetScaleFactor(print_params.scale_factor, is_pdf), frame,
@@ -1819,7 +1827,6 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   Send(new PrintHostMsg_DidPrintDocument(routing_id(), page_params));
   return true;
 }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
 void PrintRenderFrameHelper::FinishFramePrinting() {
   prep_frame_view_.reset();

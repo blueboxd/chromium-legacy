@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
-#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client_impl.h"
@@ -202,11 +201,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
-
-  if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
-    kiosk_next_shell_client_ = std::make_unique<KioskNextShellClient>();
-    kiosk_next_shell_client_->Init();
-  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
@@ -242,7 +236,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   display_settings_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
-  kiosk_next_shell_client_.reset();
 
   // Initialized in PreProfileInit:
   system_tray_client_.reset();

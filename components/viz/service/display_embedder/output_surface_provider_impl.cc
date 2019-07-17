@@ -111,21 +111,16 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
-  } else if (renderer_settings.use_skia_renderer ||
-             renderer_settings.use_skia_renderer_non_ddl) {
+  } else if (renderer_settings.use_skia_renderer) {
 #if defined(OS_MACOSX)
     // TODO(penghuang): Support SkiaRenderer for all platforms.
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    if (renderer_settings.use_skia_renderer_non_ddl) {
-      NOTIMPLEMENTED();
-    } else {
-      output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-          std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
-                                                            surface_handle),
-          renderer_settings);
-    }
+    output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
+        std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
+                                                          surface_handle),
+        renderer_settings);
 #endif
   } else {
     DCHECK(task_executor_);

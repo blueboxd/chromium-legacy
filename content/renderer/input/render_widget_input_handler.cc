@@ -126,12 +126,6 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency",
                                   GetEventLatencyMicros(event_timestamp, now),
                                   1, 10000000, 100);
-    } else if (enum_value ==
-               PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.PassiveListeners.ForcedNonBlockingLatencyDueToFling",
-          GetEventLatencyMicros(event_timestamp, now), 1, 10000000, 100);
     }
   }
 }

@@ -60,7 +60,6 @@ class ProfileReportGenerator {
   void OnPluginsLoaded(const std::vector<content::WebPluginInfo>& plugins);
 
   void CheckReportStatus();
-  void CheckReportStatusAsync();
 
   Profile* profile_;
   base::Value policies_;

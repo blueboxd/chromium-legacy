@@ -564,9 +564,9 @@ class BrowserSanityTest(RemoteTest):
               '--gtest_repeat')]
 
     if self._additional_args:
-      raise TestFormatError(
-          'Sanity test should not have additional args: %s' % (
-              self._additional_args))
+      logging.error(
+          'Sanity test should not have additional args: These will be '
+          'ignored: %s', self._additional_args)
 
     # VMs don't have the disk space for an unstripped version of Chrome
     # instrumented for code coverage, so only strip in that case.

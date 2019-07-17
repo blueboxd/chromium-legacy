@@ -223,7 +223,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     // creating dedicated workers, as there might be no ancestor frame.
     auto* host =
         RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
-    base::Optional<url::Origin> top_frame_origin(
+    url::Origin top_frame_origin(
         host->frame_tree_node()->frame_tree()->root()->current_origin());
 
     process->CreateURLLoaderFactory(

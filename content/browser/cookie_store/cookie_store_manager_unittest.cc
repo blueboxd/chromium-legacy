@@ -130,9 +130,13 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
            worker_helper_->install_subscription_batches_) {
         worker_helper_->cookie_store_service_->AppendSubscriptions(
             worker_helper_->service_worker_registration_id_,
-            std::move(subscriptions), base::BindOnce([](bool success) {
-              CHECK(success) << "AppendSubscriptions failed";
-            }));
+            std::move(subscriptions),
+            base::BindOnce(
+                [](bool expect_success, bool success) {
+                  EXPECT_EQ(expect_success, success)
+                      << "AppendSubscriptions wrong result";
+                },
+                worker_helper_->expect_subscription_success_));
       }
       worker_helper_->install_subscription_batches_.clear();
 
@@ -177,9 +181,11 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   // Sets the cookie change subscriptions requested in the next install event.
   void SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions> subscription_batches,
-      blink::mojom::CookieStore* cookie_store_service) {
+      blink::mojom::CookieStore* cookie_store_service,
+      bool expect_subscription_success = true) {
     install_subscription_batches_ = std::move(subscription_batches);
     cookie_store_service_ = cookie_store_service;
+    expect_subscription_success_ = expect_subscription_success;
   }
 
   // Spins inside a run loop until a service worker activate event is received.
@@ -200,6 +206,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   // Used to add cookie change subscriptions during OnInstallEvent().
   blink::mojom::CookieStore* cookie_store_service_ = nullptr;
   std::vector<CookieStoreSync::Subscriptions> install_subscription_batches_;
+  bool expect_subscription_success_ = true;
   int64_t service_worker_registration_id_;
 
   // Set by WaitForActivateEvent(), used in OnActivateEvent().
@@ -435,6 +442,31 @@ TEST_P(CookieStoreManagerTest, OneSubscription) {
   EXPECT_EQ(::network::mojom::CookieMatchType::STARTS_WITH,
             all_subscriptions[0]->match_type);
   EXPECT_EQ(GURL(kExampleScope), all_subscriptions[0]->url);
+}
+
+TEST_P(CookieStoreManagerTest, WrongDomainSubscription) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "cookie";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kGoogleScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 example_service_ptr_.get(),
+                                                 false /* expecting failure */);
+  int64_t registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name", "cookie-value", "google.com", "/"));
+  thread_bundle_.RunUntilIdle();
+
+  ASSERT_EQ(0u, worker_test_helper_->changes().size());
 }
 
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterEmptyInstall) {

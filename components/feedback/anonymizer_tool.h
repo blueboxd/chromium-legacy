@@ -32,7 +32,10 @@ struct CustomPatternWithoutContext {
 
 class AnonymizerTool {
  public:
-  AnonymizerTool();
+  // |first_party_extension_ids| is a null terminated array of all the 1st
+  // party extension IDs whose URLs won't be redacted. It is OK to pass null for
+  // that value if it's OK to redact those URLs or they won't be present.
+  AnonymizerTool(const char* const* first_party_extension_ids);
   ~AnonymizerTool();
 
   // Returns an anonymized version of |input|. PII-sensitive data (such as MAC
@@ -56,6 +59,10 @@ class AnonymizerTool {
       const std::string& input,
       const CustomPatternWithoutContext& pattern,
       std::map<std::string, std::string>* identifier_space);
+
+  // Null-terminated list of first party extension IDs. We need to have this
+  // passed into us because we can't refer to the code where these are defined.
+  const char* const* first_party_extension_ids_;  // Not owned.
 
   // Map of MAC addresses discovered in anonymized strings to anonymized
   // representations. 11:22:33:44:55:66 gets anonymized to 11:22:33:00:00:01,
@@ -88,7 +95,8 @@ class AnonymizerToolContainer
     : public base::RefCountedThreadSafe<AnonymizerToolContainer> {
  public:
   explicit AnonymizerToolContainer(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      const char* const* first_party_extension_ids);
 
   // Returns a pointer to the instance of this anonymier. May only be called
   // on |task_runner_|.

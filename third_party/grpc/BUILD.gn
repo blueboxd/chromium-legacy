@@ -33,8 +33,11 @@ config("nanopb_config") {
 # The gRPC library. Note that server side code will not be built. You probably
 # want to use cc_grpc_library() from grpc_library.gni directly.
 static_library("grpcpp") {
-  # This is currently only used by remoting.
-  visibility = [ "//remoting/*" ]
+  # This is currently only used by remoting and chromecast.
+  visibility = [
+    "//chromecast/*",
+    "//remoting/*",
+  ]
   sources = [
     "src/src/cpp/client/channel_cc.cc",
     "src/src/cpp/client/client_context.cc",

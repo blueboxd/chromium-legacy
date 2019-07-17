@@ -16,8 +16,6 @@ class UI_DEVTOOLS_EXPORT RootElement : public UIElement {
   ~RootElement() override;
 
   // UIElement:
-  std::vector<std::pair<std::string, std::string>> GetCustomProperties()
-      const override;
   void GetBounds(gfx::Rect* bounds) const override;
   void SetBounds(const gfx::Rect& bounds) override;
   void GetVisible(bool* visible) const override;

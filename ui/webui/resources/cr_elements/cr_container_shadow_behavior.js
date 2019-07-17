@@ -67,6 +67,7 @@ const CrContainerShadowBehavior = {
       // The element holding the drop shadow effect to be shown.
       const shadow = document.createElement('div');
       shadow.id = `cr-container-shadow-${side}`;
+      shadow.classList.add('cr-container-shadow');
       this.dropShadows_.set(side, shadow);
       this.intersectionProbes_.set(side, document.createElement('div'));
     });

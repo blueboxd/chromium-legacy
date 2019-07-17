@@ -1193,7 +1193,7 @@ void TryChromeDialog::OnContextInitialized() {
   // This propagation can cause views to change their size requirements.
   const gfx::Size preferred = popup_->GetContentsView()->GetPreferredSize();
   popup_->SetBounds(context_->ComputePopupBounds(popup_, preferred));
-  popup_->SetAlwaysOnTop(true);
+  popup_->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
 
   popup_->ShowInactive();
   delegate_->SetToastLocation(context_->GetToastLocation());

@@ -851,7 +851,7 @@ void ThreadState::FinishSnapshot() {
 void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
                                           BlinkGC::MarkingType marking_type,
                                           BlinkGC::GCReason reason) {
-  ThreadHeapStatsCollector::Scope mark_prologue_scope(
+  ThreadHeapStatsCollector::EnabledScope mark_prologue_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_,
       "forced", reason == BlinkGC::GCReason::kForcedGCForTesting);
@@ -1439,7 +1439,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
 void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
                                        BlinkGC::MarkingType marking_type,
                                        BlinkGC::GCReason reason) {
-  ThreadHeapStatsCollector::Scope advance_tracing_scope(
+  ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPauseMarkRoots,
       "epoch", gc_age_, "forced",
       current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
@@ -1448,7 +1448,7 @@ void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::AtomicPauseMarkTransitiveClosure() {
-  ThreadHeapStatsCollector::Scope advance_tracing_scope(
+  ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure, "epoch",
       gc_age_, "forced",
@@ -1457,7 +1457,7 @@ void ThreadState::AtomicPauseMarkTransitiveClosure() {
 }
 
 void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
-  ThreadHeapStatsCollector::Scope stats_scope(
+  ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_,
       "forced",

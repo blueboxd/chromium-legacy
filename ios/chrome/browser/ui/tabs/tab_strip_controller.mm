@@ -69,7 +69,7 @@ const NSTimeInterval kTabStripFadeAnimationDuration = 0.15;
 const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 
 // Tab dimensions.
-const CGFloat kTabOverlap = 26.0;
+const CGFloat kTabOverlap = 32.0;
 const CGFloat kTabOverlapForCompactLayout = 30.0;
 
 const CGFloat kNewTabOverlap = 13.0;

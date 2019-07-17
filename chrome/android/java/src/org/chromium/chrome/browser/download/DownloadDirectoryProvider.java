@@ -267,6 +267,7 @@ public class DownloadDirectoryProvider {
                 Environment.DIRECTORY_DOWNLOADS);
         if (dirs.length <= 1 || TextUtils.isEmpty(filePath)) return false;
         for (int i = 1; i < dirs.length; ++i) {
+            if (dirs[i] == null) continue;
             if (filePath.startsWith(dirs[i].getAbsolutePath())) return true;
         }
         return false;

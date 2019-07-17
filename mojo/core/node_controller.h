@@ -207,7 +207,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                    PlatformHandle channel_handle) override;
   void OnBroadcast(const ports::NodeName& from_node,
                    Channel::MessagePtr message) override;
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
   void OnRelayEventMessage(const ports::NodeName& from_node,
                            base::ProcessHandle from_process,
                            const ports::NodeName& destination,

@@ -376,19 +376,6 @@ bool Channel::Message::has_handles() const {
                               : header()->num_handles) > 0;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-bool Channel::Message::has_mach_ports() const {
-  if (!has_handles())
-    return false;
-
-  for (const auto& handle : handle_vector_) {
-    if (handle.is_mach_port_name() || handle.handle().is_mach_port())
-      return true;
-  }
-  return false;
-}
-#endif
-
 bool Channel::Message::is_legacy_message() const {
   return legacy_header()->message_type == MessageType::NORMAL_LEGACY;
 }

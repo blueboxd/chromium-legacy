@@ -45,11 +45,6 @@
 
   cell.textLabel.text = self.title;
   cell.detailTextLabel.text = self.detailText;
-  UIColor* cellBackgroundColor = styler.cellBackgroundColor
-                                     ? styler.cellBackgroundColor
-                                     : styler.tableViewBackgroundColor;
-  cell.imageView.backgroundColor = cellBackgroundColor;
-  cell.textLabel.backgroundColor = cellBackgroundColor;
   if (self.textColor) {
     cell.textLabel.textColor = self.textColor;
   } else if (styler.cellTitleColor) {

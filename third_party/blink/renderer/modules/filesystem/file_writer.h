@@ -127,7 +127,7 @@ class FileWriter final : public EventTargetWithInlineData,
   uint64_t truncate_length_;
   uint64_t num_aborts_;
   uint8_t recursion_depth_;
-  double last_progress_notification_time_ms_;
+  base::TimeTicks last_progress_notification_time_;
   Member<Blob> blob_being_written_;
   int request_id_;
 };

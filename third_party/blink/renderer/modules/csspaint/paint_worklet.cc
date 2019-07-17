@@ -101,7 +101,8 @@ wtf_size_t PaintWorklet::SelectNewGlobalScope() {
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
                                          const FloatSize& container_size,
-                                         const CSSStyleValueVector* data) {
+                                         const CSSStyleValueVector* data,
+                                         float device_scale_factor) {
   if (!document_definition_map_.Contains(name))
     return nullptr;
 
@@ -120,17 +121,6 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   const LayoutObject& layout_object =
       static_cast<const LayoutObject&>(observer);
   float zoom = layout_object.StyleRef().EffectiveZoom();
-
-  // TODO(crbug.com/716231): Remove this hack once zoom_for_dsf is enabled on
-  // all platforms (currently not enabled on Mac).
-  float device_scale_factor = 1;
-  if (layout_object.GetFrame() && layout_object.GetFrame()->GetPage()) {
-    // The value of DeviceScaleFactorDeprecated would be 1 on a platform where
-    // zoom_for_dsf is enabled, even if we run chrome with
-    // --force-device-scale-factor with a value that is not 1.
-    device_scale_factor =
-        layout_object.GetFrame()->GetPage()->DeviceScaleFactorDeprecated();
-  }
 
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(

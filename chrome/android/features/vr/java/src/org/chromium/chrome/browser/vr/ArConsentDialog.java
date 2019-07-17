@@ -73,7 +73,7 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
                                       .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                                       .build();
         mModalDialogManager = activity.getModalDialogManager();
-        mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogManager.showDialog(model, ModalDialogManager.ModalDialogType.TAB);
     }
 
     @Override
@@ -142,6 +142,6 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
 
     @NativeMethods
     /* package */ interface Natives {
-        void onUserConsentResult(long nativeArcoreConsentPrompt, boolean allowed);
+        void onUserConsentResult(long nativeArCoreConsentPrompt, boolean allowed);
     }
 }

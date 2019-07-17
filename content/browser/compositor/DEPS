@@ -16,5 +16,8 @@ specific_include_rules = {
   ],
   "reflector_impl_unittest\.cc": [
     "+ui/ozone/public",
+  ],
+  "viz_process_transport_factory\.cc": [
+    "+ui/ozone/public",
   ]
 }

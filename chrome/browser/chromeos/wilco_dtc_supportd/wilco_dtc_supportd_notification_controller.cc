@@ -84,7 +84,7 @@ WilcoDtcSupportdNotificationController::ShowBatteryAuthNotification() const {
                       IDS_WILCO_NOTIFICATION_BATTERY_AUTH_MESSAGE,
                       message_center::SYSTEM_PRIORITY, kNotificationBatteryIcon,
                       message_center::SystemNotificationWarningLevel::WARNING,
-                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_BATTERY_CHARGER);
   return kWilcoDtcSupportdNotificationIdBatteryAuth;
 }
 
@@ -97,7 +97,7 @@ WilcoDtcSupportdNotificationController::ShowNonWilcoChargerNotification()
                       message_center::DEFAULT_PRIORITY,
                       kNotificationBatteryIcon,
                       message_center::SystemNotificationWarningLevel::WARNING,
-                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_BATTERY_CHARGER);
   return kWilcoDtcSupportdNotificationIdNonWilcoCharger;
 }
 
@@ -110,7 +110,7 @@ WilcoDtcSupportdNotificationController::ShowIncompatibleDockNotification()
                       message_center::DEFAULT_PRIORITY,
                       vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
-                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_DOCK);
   return kWilcoDtcSupportdNotificationIdIncompatibleDock;
 }
 
@@ -122,7 +122,7 @@ std::string WilcoDtcSupportdNotificationController::ShowDockErrorNotification()
                       message_center::DEFAULT_PRIORITY,
                       vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
-                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_DOCK);
   return kWilcoDtcSupportdNotificationIdDockHardwareError;
 }
 
@@ -134,7 +134,7 @@ WilcoDtcSupportdNotificationController::ShowDockDisplayNotification() const {
                       message_center::DEFAULT_PRIORITY,
                       vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
-                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_DOCK);
   return kWilcoDtcSupportdNotificationIdDockDisplay;
 }
 
@@ -147,7 +147,7 @@ WilcoDtcSupportdNotificationController::ShowDockThunderboltNotification()
                       message_center::DEFAULT_PRIORITY,
                       vector_icons::kSettingsIcon,
                       message_center::SystemNotificationWarningLevel::NORMAL,
-                      HelpAppLauncher::HelpTopic::HELP_WILCO);
+                      HelpAppLauncher::HelpTopic::HELP_WILCO_DOCK);
   return kWilcoDtcSupportdNotificationIdDockThunderbolt;
 }
 

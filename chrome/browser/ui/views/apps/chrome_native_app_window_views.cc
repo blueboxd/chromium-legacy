@@ -120,7 +120,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
     if (IsFrameless())
       init_params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   }
-  init_params.keep_on_top = create_params.always_on_top;
+  if (create_params.always_on_top)
+    init_params.z_order = ui::ZOrderLevel::kFloatingWindow;
   init_params.visible_on_all_workspaces =
       create_params.visible_on_all_workspaces;
 
@@ -205,8 +206,8 @@ ui::WindowShowState ChromeNativeAppWindowViews::GetRestoredState() const {
   return ui::SHOW_STATE_NORMAL;
 }
 
-bool ChromeNativeAppWindowViews::IsAlwaysOnTop() const {
-  return widget()->IsAlwaysOnTop();
+ui::ZOrderLevel ChromeNativeAppWindowViews::GetZOrderLevel() const {
+  return widget()->GetZOrderLevel();
 }
 
 // views::WidgetDelegate implementation.

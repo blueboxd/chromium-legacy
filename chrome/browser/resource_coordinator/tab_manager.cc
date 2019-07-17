@@ -35,6 +35,7 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -222,6 +223,10 @@ void TabManager::Start() {
                        std::make_unique<ResourceCoordinatorSignalObserver>(
                            weak_ptr_factory_.GetWeakPtr())));
   }
+
+  g_browser_process->resource_coordinator_parts()
+      ->tab_lifecycle_unit_source()
+      ->Start();
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {

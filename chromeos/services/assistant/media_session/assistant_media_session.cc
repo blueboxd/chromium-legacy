@@ -77,7 +77,7 @@ void AssistantMediaSession::Suspend(SuspendType suspend_type) {
   if (!IsActive())
     return;
 
-  set_audio_focus_state(State::SUSPENDED);
+  SetAudioFocusInfo(State::SUSPENDED, audio_focus_type_);
   assistant_manager_service_->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPause);
 }
@@ -86,7 +86,7 @@ void AssistantMediaSession::Resume(SuspendType suspend_type) {
   if (!IsSuspended())
     return;
 
-  set_audio_focus_state(State::ACTIVE);
+  SetAudioFocusInfo(State::ACTIVE, audio_focus_type_);
   assistant_manager_service_->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPlay);
 }
@@ -128,7 +128,7 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE)
     return;
 
-  set_audio_focus_state(State::INACTIVE);
+  SetAudioFocusInfo(State::INACTIVE, audio_focus_type_);
 
   if (!request_client_ptr_.is_bound())
     return;
@@ -155,8 +155,7 @@ void AssistantMediaSession::FinishAudioFocusRequest(
     AudioFocusType audio_focus_type) {
   DCHECK(request_client_ptr_.is_bound());
 
-  set_audio_focus_type(audio_focus_type);
-  set_audio_focus_state(State::ACTIVE);
+  SetAudioFocusInfo(State::ACTIVE, audio_focus_type);
 }
 
 void AssistantMediaSession::FinishInitialAudioFocusRequest(
@@ -165,20 +164,16 @@ void AssistantMediaSession::FinishInitialAudioFocusRequest(
   FinishAudioFocusRequest(audio_focus_type);
 }
 
-void AssistantMediaSession::set_audio_focus_state(State audio_focus_state) {
-  if (audio_focus_state == audio_focus_state_)
+void AssistantMediaSession::SetAudioFocusInfo(State audio_focus_state,
+                                              AudioFocusType audio_focus_type) {
+  if (audio_focus_state == audio_focus_state_ &&
+      audio_focus_type == audio_focus_type_) {
     return;
+  }
 
   audio_focus_state_ = audio_focus_state;
-  NotifyMediaSessionInfoChanged();
-}
-
-void AssistantMediaSession::set_audio_focus_type(
-    AudioFocusType audio_focus_type) {
-  if (audio_focus_type == audio_focus_type_)
-    return;
-
   audio_focus_type_ = audio_focus_type;
+  NotifyMediaSessionInfoChanged();
 }
 
 void AssistantMediaSession::NotifyMediaSessionMetadataChanged(

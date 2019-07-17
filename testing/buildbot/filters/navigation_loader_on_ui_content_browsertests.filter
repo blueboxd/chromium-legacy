@@ -1,17 +1,5 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
 
-# http://crbug.com/824856
--AppCacheNetworkServiceBrowserTest.CacheableResourcesReuse
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_InitiatorEnforcement/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_NetworkFallback/0
--WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_NoNavigationsEnforcement/0
--WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AppCache_InitiatorEnforcement/0
--WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AppCache_NetworkFallback/0
--WithoutCORBProtectionSniffing/CrossSiteDocumentBlockingTest.AppCache_NoNavigationsEnforcement/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_InitiatorEnforcement/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_NetworkFallback/0
--WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.AppCache_NoNavigationsEnforcement/0
-
 # http://crbug.com/824858
 -AcceptHeaderTest.Check
 -ReloadCacheControlBrowserTest.BypassingReload_ControlledByServiceWorker

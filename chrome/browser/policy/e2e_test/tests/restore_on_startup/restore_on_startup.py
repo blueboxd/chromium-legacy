@@ -36,7 +36,7 @@ class RestoreOnStartupTest(ChromeEnterpriseTestCase):
     user_data_dir = r'c:\temp\user1'
     self.RunCommand(
         'client2012',
-        'if exist %s rmdir /s /q %s' % (user_data_dir, user_data_dir))
+        'cmd /C if exist %s rmdir /s /q %s' % (user_data_dir, user_data_dir))
     dir = os.path.dirname(os.path.abspath(__file__))
     user_data_dir_arg = '--user_data_dir=%s' % user_data_dir
     urls = ['https://www.cnn.com/', 'https://www.youtube.com/']

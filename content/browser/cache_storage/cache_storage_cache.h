@@ -143,6 +143,11 @@ class CONTENT_EXPORT CacheStorageCache {
       int64_t trace_id,
       CacheEntriesCallback callback) = 0;
 
+  // Try to determine the initialization state of the cache.  Unknown may be
+  // returned for cross-sequence clients using the cross-sequence wrappers.
+  enum class InitState { Unknown, Initializing, Initialized };
+  virtual InitState GetInitState() const = 0;
+
  protected:
   virtual ~CacheStorageCache() = default;
 };

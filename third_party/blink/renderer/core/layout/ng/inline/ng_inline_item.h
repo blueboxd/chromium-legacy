@@ -87,6 +87,13 @@ class CORE_EXPORT NGInlineItem {
   bool IsEmptyItem() const { return is_empty_item_; }
   void SetIsEmptyItem(bool value) { is_empty_item_ = value; }
 
+  // If this item is either a float or OOF-positioned node. If an inline
+  // formatting-context *only* contains these types of nodes we consider it
+  // block-level, and run the |NGBlockLayoutAlgorithm| instead of the
+  // |NGInlineLayoutAlgorithm|.
+  bool IsBlockLevel() const { return is_block_level_; }
+  void SetIsBlockLevel(bool value) { is_block_level_ = value; }
+
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.
   bool ShouldCreateBoxFragment() const {
@@ -239,6 +246,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
+  unsigned is_block_level_ : 1;
   unsigned style_variant_ : 2;
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned is_end_collapsible_newline_ : 1;

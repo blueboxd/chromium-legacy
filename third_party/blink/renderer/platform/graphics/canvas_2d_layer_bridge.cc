@@ -535,7 +535,11 @@ void Canvas2DLayerBridge::FlushRecording() {
     FinishRasterTimers(gl_interface);
   }
 
-  bool measure_raster_metric = gl_interface && is_deferral_enabled_ &&
+  // Sample one out of every kRasterMetricProbability frames to time
+  // This measurement only makes sense if deferral is enabled
+  // If the canvas is accelerated, we also need access to the gl_interface
+  bool measure_raster_metric = (gl_interface || !IsAccelerated()) &&
+                               is_deferral_enabled_ &&
                                bernoulli_distribution_(random_generator_);
   RasterTimer rasterTimer;
   base::Optional<base::ElapsedTimer> timer;

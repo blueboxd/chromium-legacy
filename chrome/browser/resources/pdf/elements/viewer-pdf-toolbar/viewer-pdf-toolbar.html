@@ -204,8 +204,8 @@
               title$="{{strings.tooltipDownload}}"></cr-icon-button>
 
           <cr-icon-button id="print" iron-icon="cr:print" on-click="print"
-              aria-label$="{{strings.tooltipPrint}}"
-              title$="{{strings.tooltipPrint}}"></cr-icon-button>
+              hidden="[[!printingEnabled]]" title$="{{strings.tooltipPrint}}"
+              aria-label$="{{strings.tooltipPrint}}"></cr-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"
                                    selected

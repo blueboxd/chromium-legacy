@@ -53,7 +53,6 @@ class ExternalBeginFrameControllerClientImpl;
 }
 
 namespace viz {
-class Display;
 class FrameSinkId;
 class HostDisplayClient;
 class OutputSurface;
@@ -221,8 +220,6 @@ class CONTENT_EXPORT CompositorImpl
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
-  std::unique_ptr<viz::Display> display_;
-
   gfx::ColorSpace display_color_space_;
   gfx::Size size_;
   bool requires_alpha_channel_ = false;
@@ -253,12 +250,6 @@ class CONTENT_EXPORT CompositorImpl
   std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash>
       pending_child_frame_sink_ids_;
   bool has_submitted_frame_since_became_visible_ = false;
-
-  // If true, we are using surface synchronization.
-  const bool enable_surface_synchronization_;
-
-  // If true, we are using a Viz process.
-  const bool enable_viz_;
 
   // Viz-specific members for communicating with the display.
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;

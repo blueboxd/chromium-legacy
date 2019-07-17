@@ -29,6 +29,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -44,12 +45,12 @@ class SpeculationsPumpSession : public NestingLevelIncrementer {
   SpeculationsPumpSession(unsigned& nesting_level);
   ~SpeculationsPumpSession();
 
-  double ElapsedTime() const;
+  base::TimeDelta ElapsedTime() const;
   void AddedElementTokens(size_t count);
   size_t ProcessedElementTokens() const { return processed_element_tokens_; }
 
  private:
-  double start_time_;
+  base::ElapsedTimer start_time_;
   size_t processed_element_tokens_;
 };
 

@@ -41,9 +41,12 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_sink.h"
@@ -87,9 +90,26 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
         shell()->web_contents());
   }
 
+  void SetUpOnMainThread() override {
+    // Setup the server to allow serving separate sites, so we can perform
+    // cross-process navigation.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitchASCII(switches::kTouchEventFeatureDetection,
                            switches::kTouchEventFeatureDetectionEnabled);
+  }
+
+  void OnDropComplete(RenderWidgetHostImpl* target_rwh,
+                      const DropData& drop_data,
+                      const gfx::PointF& client_pt,
+                      const gfx::PointF& screen_pt,
+                      int key_modifiers,
+                      bool drop_allowed) {
+    // Cache the data for verification.
+    drop_target_widget_ = target_rwh;
+    std::move(async_drop_closure_).Run();
   }
 
   void TestOverscrollNavigation(bool touch_handler) {
@@ -230,6 +250,11 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     StopObserveringFrames();
     ContentBrowserTest::PostRunTestOnMainThread();
   }
+
+  RenderWidgetHostImpl* drop_target_widget_;
+
+  // A closure indicating that async drop operation has completed.
+  base::OnceClosure async_drop_closure_;
 
  private:
   std::unique_ptr<RenderFrameSubmissionObserver> frame_observer_;
@@ -485,6 +510,73 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       1);
 
   window->AddChild(shell()->web_contents()->GetContentNativeView());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, DragDropOnOopif) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/overlapping_cross_site_iframe.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  WebContentsViewAura* view =
+      static_cast<WebContentsViewAura*>(contents->GetView());
+
+  // Drop on the root frame.
+  {
+    std::unique_ptr<ui::OSExchangeData> data =
+        std::make_unique<ui::OSExchangeData>();
+    view->RegisterDropCallbackForTesting(base::BindOnce(
+        &WebContentsViewAuraTest::OnDropComplete, base::Unretained(this)));
+    base::RunLoop run_loop;
+    async_drop_closure_ = run_loop.QuitClosure();
+
+    gfx::PointF point = {10, 10};
+    ui::DropTargetEvent event(*data.get(), point, point,
+                              ui::DragDropTypes::DRAG_COPY);
+    view->OnDragEntered(event);
+    view->OnPerformDrop(event, std::move(data));
+
+    run_loop.Run();
+
+    EXPECT_EQ(drop_target_widget_,
+              RenderWidgetHostImpl::From(contents->GetFrameTree()
+                                             ->root()
+                                             ->current_frame_host()
+                                             ->GetRenderWidgetHost()));
+  }
+  // Drop on the element in the root frame overlapping the embedded OOPIF.
+  {
+    std::unique_ptr<ui::OSExchangeData> data =
+        std::make_unique<ui::OSExchangeData>();
+    view->RegisterDropCallbackForTesting(base::BindOnce(
+        &WebContentsViewAuraTest::OnDropComplete, base::Unretained(this)));
+    base::RunLoop run_loop;
+    async_drop_closure_ = run_loop.QuitClosure();
+
+    int left =
+        EvalJs(contents,
+               "document.getElementById('target').getBoundingClientRect().left")
+            .ExtractInt();
+    int top =
+        EvalJs(contents,
+               "document.getElementById('target').getBoundingClientRect().top")
+            .ExtractInt();
+    gfx::PointF point = {left + 5, top + 5};
+    ui::DropTargetEvent event(*data.get(), point, point,
+                              ui::DragDropTypes::DRAG_COPY);
+    view->OnDragEntered(event);
+    view->OnPerformDrop(event, std::move(data));
+
+    run_loop.Run();
+
+    EXPECT_EQ(drop_target_widget_,
+              RenderWidgetHostImpl::From(contents->GetFrameTree()
+                                             ->root()
+                                             ->current_frame_host()
+                                             ->GetRenderWidgetHost()));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {

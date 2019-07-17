@@ -62,6 +62,8 @@ class NGInlineItemsBuilderTemplate {
   // <span></span> or <span><float></float></span>.
   bool IsEmptyInline() const { return is_empty_inline_; }
 
+  bool IsBlockLevel() const { return is_block_level_; }
+
   // True if changes to an item may affect different layout of earlier lines.
   // May not be able to use line caches even when the line or earlier lines are
   // not dirty.
@@ -178,6 +180,7 @@ class NGInlineItemsBuilderTemplate {
 
   bool has_bidi_controls_ = false;
   bool is_empty_inline_ = true;
+  bool is_block_level_ = true;
   bool changes_may_affect_earlier_lines_ = false;
 
   // Append a character.

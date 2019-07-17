@@ -417,7 +417,7 @@ bool VADisplayState::InitializeOnce() {
   // the version with which the chromium is built since libva is only
   // guaranteed to be backward (and not forward) compatible.
   if (VA_MAJOR_VERSION > major_version ||
-     (VA_MAJOR_VERSION == major_version && VA_MINOR_VERSION > minor_version)) {
+      (VA_MAJOR_VERSION == major_version && VA_MINOR_VERSION > minor_version)) {
     LOG(ERROR) << "The system version " << major_version << "." << minor_version
                << " should be greater than or equal to "
                << VA_MAJOR_VERSION << "." << VA_MINOR_VERSION;
@@ -1357,7 +1357,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
   va_attrib_extbuf.width = size.width();
   va_attrib_extbuf.height = size.height();
 
-  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(buffer_format);
+  const size_t num_planes = pixmap->GetNumberOfPlanes();
   for (size_t i = 0; i < num_planes; ++i) {
     va_attrib_extbuf.pitches[i] = pixmap->GetDmaBufPitch(i);
     va_attrib_extbuf.offsets[i] = pixmap->GetDmaBufOffset(i);

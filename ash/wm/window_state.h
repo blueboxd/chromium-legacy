@@ -174,12 +174,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // TODO(oshima): Change to use RESTORE event.
   void Restore();
 
-  // Caches, then disables always on top state and then stacks |window_| below
-  // |window_on_top| if a |window_| is currently in always on top state.
-  void DisableAlwaysOnTop(aura::Window* window_on_top);
+  // Caches, then disables z-ordering state and then stacks |window_| below
+  // |window_on_top| if |window_| currently has a special z-order.
+  void DisableZOrdering(aura::Window* window_on_top);
 
-  // Restores always on top state that a window might have cached.
-  void RestoreAlwaysOnTop();
+  // Restores the z-ordering state that a window might have cached.
+  void RestoreZOrdering();
 
   // Invoked when a WMevent occurs, which drives the internal
   // state machine.
@@ -376,8 +376,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   bool HasMaximumWidthOrHeight() const;
 
-  // Returns the window's current always_on_top state.
-  bool GetAlwaysOnTop() const;
+  // Returns the window's current z-ordering state.
+  ui::ZOrderLevel GetZOrdering() const;
 
   // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
@@ -451,7 +451,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignore_keyboard_bounds_change_ = false;
   bool hide_shelf_when_fullscreen_;
   bool autohide_shelf_when_maximized_or_fullscreen_;
-  bool cached_always_on_top_;
+  ui::ZOrderLevel cached_z_order_;
   bool allow_set_bounds_direct_ = false;
 
   // A property to save the ratio between snapped window width and display

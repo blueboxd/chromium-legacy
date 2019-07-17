@@ -140,66 +140,7 @@ API will be reimplemented with these new classes:
   - Wrapper class around the actual Windows.Devices.Sensors APIs, functional
     equivalent of PlatformSensorReaderWin.
 
-#### 4.2.1 PlatformSensorProviderWinrt
-
-Similar to PlatformSensorProviderWin, but with the ISensorManager
-references removed. This is the header for the class:
-
-```cpp
-class PlatformSensorProviderWinrt final : public PlatformSensorProvider {
- public:
-  static PlatformSensorProviderWinrt* GetInstance();
-
-  void SetSensorReaderCreatorForTesting(
-      std::unique_ptr<SensorReaderCreator> sensor_reader_creator);
-
- protected:
-  ~PlatformSensorProviderWinrt() override;
-
-  // Base class calls this function to create sensor instances.
-  void CreateSensorInternal(mojom::SensorType type,
-                            SensorReadingSharedBuffer* reading_buffer,
-                            const CreateSensorCallback& callback) override;
-
- private:
-  friend struct base::DefaultSingletonTraits<PlatformSensorProviderWinrt>;
-
-  PlatformSensorProviderWinrt();
-
-  std::unique_ptr<PlatformSensorReaderWin> CreateSensorReader(
-      mojom::SensorType type);
-  void SensorReaderCreated(
-      mojom::SensorType type,
-      SensorReadingSharedBuffer* reading_buffer,
-      const CreateSensorCallback& callback,
-      std::unique_ptr<PlatformSensorReaderWin> sensor_reader);
-
-  scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;
-
-  std::unique_ptr<SensorReaderCreator> sensor_reader_creator_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderWinrt);
-};
-```
-
-The `SensorReaderCreator` interface is simply a wrapper around the
-`PlatformSensorReaderWinrt::Create(type)` call and allows unit tests
-to mock it out.
-
-For brevity, the implementation has been deferred to section 8.1 in
-the appendix.
-
-Required mocks for unit testing:
-
-- Create a mock PlatformSensorReaderWinrt class.
-- Mock `PlatformSensorReaderWinrt::Create()` by injecting a
-  `MockSensorReaderCreator` so when PlatformSensorProviderWinrt
-  attempts to create a sensor reader, it returns a mocked instance
-  instead of one that calls into the Windows.Devices.Sensors APIs.
-
-Unit test cases for this class are detailed in section 7.
-
-#### 4.2.2 PlatformSensorReaderWinrt
+#### 4.2.1 PlatformSensorReaderWinrt
 
 The existing PlatformSensorReaderWin class will be pulled out into
 its own interface:
@@ -328,8 +269,8 @@ class PlatformSensorReaderWinrtLightSensor final
 ```
 
 The implementation for PlatformSensorReaderWinrtBase and
-PlatformSensorReaderWinrtLightSensor have been deferred to section 8.2
-and 8.3 of the appendix for brevity.
+PlatformSensorReaderWinrtLightSensor have been deferred to section 8.1
+and 8.2 of the appendix for brevity.
 
 Lastly, PlatformSensorReaderWinrt::Create will choose which derived
 PlatformSensorReaderWin class to instantiate based on the requested
@@ -415,24 +356,6 @@ thresholding.
 The modernization changes will be broken down into several incremental
 changes to keep change lists to a reviewable size:
 
-#### Change list 2: Implement PlatformSensorProviderWinrt
-
-- Feature Work:
-  - Fill in the implementation for PlatformSensorProviderWinrt as
-    defined in section 8.1.
-- Testing:
-  - Add unit tests for PlatformSensorProviderWinrt:
-    - Validate `CreateSensorCallback()` is given null if the sensor
-      type does not exist on system. This involves mocking
-      `PlatformSensorReaderWinrt::Create()` so it returns null.
-    - Validate `CreateSensorCallback()` is given non-null if the
-      sensor does exist on system. This involves mocking
-      `PlatformSensorReaderWinrt::Create()` so it returns a non-null
-      PlatformSensorReaderWinrt.
-    - Validate `CreateSensorCallback()` is given null if the sensor
-      type is not supported (e.g. SensorType::PRESSURE). This involves
-      mocking `PlatformSensorReaderWinrt::Create()` so it returns null.
-
 #### Change list 3: Define the interface for PlatformSensorReaderWinBase and implement PlatformSensorReaderWinrtBase
 
 - Feature Work:
@@ -502,111 +425,7 @@ section actually represents four separate CLs.
 
 ## 8. Appendix
 
-### 8.1 PlatformSensorProviderWinrt Implementation
-
-`platform_sensor_provider_winrt.h`
-
-Located in section 4.2.1 above.
-
-`platform_sensor_provider_winrt.cc`
-
-```cpp
-std::unique_ptr<PlatformSensorReaderWin>
-SensorReaderCreator::CreateSensorReader(mojom::SensorType type) {
-  return PlatformSensorReaderWinrt::Create(type);
-}
-
-// static
-PlatformSensorProviderWinrt* PlatformSensorProviderWinrt::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderWinrt,
-      base::LeakySingletonTraits<PlatformSensorProviderWinrt>>::get();
-}
-
-PlatformSensorProviderWinrt::PlatformSensorProviderWinrt()
-    : com_sta_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
-          base::TaskPriority::USER_VISIBLE)),
-      sensor_reader_creator_(std::make_unique<SensorReaderCreator>()) {}
-
-PlatformSensorProviderWinrt::~PlatformSensorProviderWinrt() = default;
-
-void PlatformSensorProviderWinrt::SetSensorReaderCreatorForTesting(
-    std::unique_ptr<SensorReaderCreator> sensor_reader_creator) {
-  sensor_reader_creator_ = std::move(sensor_reader_creator);
-}
-
-void PlatformSensorProviderWinrt::CreateSensorInternal(
-    mojom::SensorType type,
-    SensorReadingSharedBuffer* reading_buffer,
-    const CreateSensorCallback& callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  switch (type) {
-    // Fusion sensor.
-    case mojom::SensorType::LINEAR_ACCELERATION: {
-      auto linear_acceleration_fusion_algorithm = std::make_unique<
-          LinearAccelerationFusionAlgorithmUsingAccelerometer>();
-      // If this PlatformSensorFusion object is successfully initialized,
-      // |callback| will be run with a reference to this object.
-      PlatformSensorFusion::Create(
-          reading_buffer, this, std::move(linear_acceleration_fusion_algorithm),
-          callback);
-      break;
-    }
-
-    // Try to create low-level sensors by default.
-    default: {
-      base::PostTaskAndReplyWithResult(
-          com_sta_task_runner_.get(), FROM_HERE,
-          base::Bind(&PlatformSensorProviderWinrt::CreateSensorReader,
-                     base::Unretained(this), type),
-          base::Bind(&PlatformSensorProviderWinrt::SensorReaderCreated,
-                     base::Unretained(this), type, reading_buffer, callback));
-      break;
-    }
-  }
-}
-
-void PlatformSensorProviderWinrt::SensorReaderCreated(
-    mojom::SensorType type,
-    SensorReadingSharedBuffer* reading_buffer,
-    const CreateSensorCallback& callback,
-    std::unique_ptr<PlatformSensorReaderWin> sensor_reader) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!sensor_reader) {
-    // Fallback options for sensors that can be implemented using sensor
-    // fusion. Note that it is important not to generate a cycle by adding a
-    // fallback here that depends on one of the other fallbacks provided.
-    switch (type) {
-      case mojom::SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES: {
-        auto algorithm = std::make_unique<
-            OrientationEulerAnglesFusionAlgorithmUsingQuaternion>(
-            true /* absolute */);
-        PlatformSensorFusion::Create(reading_buffer, this, std::move(algorithm),
-                                     std::move(callback));
-        return;
-      }
-      default:
-        callback.Run(nullptr);
-        return;
-    }
-  }
-
-  scoped_refptr<PlatformSensor> sensor =
-      new PlatformSensorWin(type, reading_buffer, this, com_sta_task_runner_,
-                            std::move(sensor_reader));
-  callback.Run(sensor);
-}
-
-std::unique_ptr<PlatformSensorReaderWin>
-PlatformSensorProviderWinrt::CreateSensorReader(mojom::SensorType type) {
-  DCHECK(com_sta_task_runner_->RunsTasksInCurrentSequence());
-
-  return sensor_reader_creator_->CreateSensorReader(type);
-}
-```
-
-### 8.2 PlatformSensorReaderWinrtBase Implementation
+### 8.1 PlatformSensorReaderWinrtBase Implementation
 
 `platform_sensor_reader_winrt.h`:
 
@@ -811,7 +630,7 @@ void PlatformSensorReaderWinrtBase<
 }
 ```
 
-### 8.3 PlatformSensorReaderWinrtLightSensor Implementation
+### 8.2 PlatformSensorReaderWinrtLightSensor Implementation
 
 `platform_sensor_reader_winrt.h`:
 

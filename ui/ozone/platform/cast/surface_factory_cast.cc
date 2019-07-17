@@ -58,6 +58,7 @@ class CastPixmap : public gfx::NativePixmap {
   gfx::BufferFormat GetBufferFormat() const override {
     return gfx::BufferFormat::BGRA_8888;
   }
+  size_t GetNumberOfPlanes() const override { return 1; }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
   uint32_t GetUniqueId() const override { return 0; }
 

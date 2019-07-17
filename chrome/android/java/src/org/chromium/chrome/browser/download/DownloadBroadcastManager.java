@@ -194,7 +194,9 @@ public class DownloadBroadcastManager extends Service {
                     }
                 }
 
-                DownloadStartupUtils.ensureDownloadSystemInitialized(browserStarted);
+                DownloadStartupUtils.ensureDownloadSystemInitialized(
+                        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                                .isFullBrowserStarted());
                 propagateInteraction(intent);
             }
 

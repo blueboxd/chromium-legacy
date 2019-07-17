@@ -373,7 +373,6 @@ configData.translatedStrings.clickToViewDoodle;
 configData.translatedStrings.connectionError;
 configData.translatedStrings.connectionErrorNoPeriod;
 configData.translatedStrings.copyLink;
-configData.translatedStrings.customizeBackground;
 configData.translatedStrings.customizeButtonLabel;
 configData.translatedStrings.customizeThisPage;
 configData.translatedStrings.dailyRefresh;

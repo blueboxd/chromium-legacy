@@ -2554,7 +2554,8 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
-  session_params_.quic_params.idle_connection_timeout_seconds = 5;
+  session_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(5);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -3001,7 +3002,8 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   session_params_.quic_params.mark_quic_broken_when_network_blackholes = true;
-  session_params_.quic_params.idle_connection_timeout_seconds = 5;
+  session_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(5);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -3139,7 +3141,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 // connection times out, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
-  session_params_.quic_params.idle_connection_timeout_seconds = 5;
+  session_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(5);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -3281,7 +3284,8 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 TEST_P(QuicNetworkTransactionTest,
        TimeoutAfterHandshakeConfirmedAndHeadersThenBrokenNotRetried) {
   session_params_.quic_params.mark_quic_broken_when_network_blackholes = true;
-  session_params_.quic_params.idle_connection_timeout_seconds = 5;
+  session_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(5);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -3721,7 +3725,8 @@ TEST_P(QuicNetworkTransactionTest,
 // retried over TCP and the QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBroken) {
-  session_params_.quic_params.idle_connection_timeout_seconds = 5;
+  session_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(5);
 
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);

@@ -51,11 +51,6 @@ void MessageLoopCurrent::RemoveDestructionObserver(
   current_->RemoveDestructionObserver(destruction_observer);
 }
 
-scoped_refptr<SingleThreadTaskRunner> MessageLoopCurrent::task_runner() const {
-  DCHECK(current_->IsBoundToCurrentThread());
-  return current_->GetTaskRunner();
-}
-
 void MessageLoopCurrent::SetTaskRunner(
     scoped_refptr<SingleThreadTaskRunner> task_runner) {
   DCHECK(current_->IsBoundToCurrentThread());

@@ -31,6 +31,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -167,11 +168,12 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     TitleWatcher watcher(shell()->web_contents(), ready_title);
     ignore_result(watcher.WaitAndGetTitle());
 
-    // We need to wait until at least one frame has been composited
-    // otherwise the injection of the synthetic gestures may get
-    // dropped because of MainThread/Impl thread sync of touch event
-    // regions.
-    frame_observer_->WaitForAnyFrameSubmission();
+    // We need to wait until hit test data is available. We use our own
+    // HitTestRegionObserver here, rather than
+    // WaitForHitTestDataOrChildSurfaceReady, because we have the
+    // RenderWidgetHostImpl available.
+    HitTestRegionObserver observer(host->GetFrameSinkId());
+    observer.WaitForHitTestData();
   }
 
   // ContentBrowserTest:

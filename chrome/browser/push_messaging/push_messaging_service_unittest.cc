@@ -104,10 +104,12 @@ class PushMessagingServiceTest : public ::testing::Test {
 
   // Callback to use when the subscription may have been subscribed.
   void DidRegister(std::string* subscription_id_out,
+                   GURL* endpoint_out,
                    std::vector<uint8_t>* p256dh_out,
                    std::vector<uint8_t>* auth_out,
                    base::Closure done_callback,
                    const std::string& registration_id,
+                   const GURL& endpoint,
                    const std::vector<uint8_t>& p256dh,
                    const std::vector<uint8_t>& auth,
                    blink::mojom::PushRegistrationStatus status) {
@@ -115,6 +117,7 @@ class PushMessagingServiceTest : public ::testing::Test {
               status);
 
     *subscription_id_out = registration_id;
+    *endpoint_out = endpoint;
     *p256dh_out = p256dh;
     *auth_out = auth;
 
@@ -161,6 +164,7 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
             push_service->GetPermissionStatus(origin, true));
 
   std::string subscription_id;
+  GURL endpoint;
   std::vector<uint8_t> p256dh, auth;
 
   base::RunLoop run_loop;
@@ -175,13 +179,16 @@ TEST_F(PushMessagingServiceTest, PayloadEncryptionTest) {
   push_service->SubscribeFromWorker(
       origin, kTestServiceWorkerId, std::move(options),
       base::Bind(&PushMessagingServiceTest::DidRegister, base::Unretained(this),
-                 &subscription_id, &p256dh, &auth, run_loop.QuitClosure()));
+                 &subscription_id, &endpoint, &p256dh, &auth,
+                 run_loop.QuitClosure()));
 
   EXPECT_EQ(0u, subscription_id.size());  // this must be asynchronous
 
   run_loop.Run();
 
   ASSERT_GT(subscription_id.size(), 0u);
+  ASSERT_TRUE(endpoint.is_valid());
+  ASSERT_GT(endpoint.spec().size(), 0u);
   ASSERT_GT(p256dh.size(), 0u);
   ASSERT_GT(auth.size(), 0u);
 

@@ -320,7 +320,8 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
 
   if (staging_buffer->gpu_memory_buffer) {
     gfx::GpuMemoryBuffer* buffer = staging_buffer->gpu_memory_buffer.get();
-    DCHECK_EQ(1u, gfx::NumberOfPlanesForBufferFormat(buffer->GetFormat()));
+    DCHECK_EQ(1u,
+              gfx::NumberOfPlanesForLinearBufferFormat(buffer->GetFormat()));
     bool rv = buffer->Map();
     DCHECK(rv);
     DCHECK(buffer->memory(0));

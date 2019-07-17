@@ -230,7 +230,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       base::win::ScopedCOMInitializer::kMTA);
 
   if (base::FeatureList::IsEnabled(features::kGpuProcessHighPriorityWin))
-    ::SetPriorityClass(::GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+    ::SetPriorityClass(::GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 #endif
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);

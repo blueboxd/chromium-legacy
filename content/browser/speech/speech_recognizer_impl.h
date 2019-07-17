@@ -143,7 +143,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // media::AudioCapturerSource::CaptureCallback methods.
   void OnCaptureStarted() final {}
   void Capture(const media::AudioBus* audio_bus,
-               int audio_delay_milliseconds,
+               base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) final;
   void OnCaptureError(const std::string& message) final;

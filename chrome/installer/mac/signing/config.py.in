@@ -22,7 +22,8 @@ class CodeSignConfig(object):
                  identity,
                  keychain=None,
                  notary_user=None,
-                 notary_password=None):
+                 notary_password=None,
+                 notary_asc_provider=None):
         """Creates a CodeSignConfig that will sign the product using the static
         properties on the class, using the code signing identity passed to the
         constructor, which is found in the specified keychain.
@@ -38,12 +39,16 @@ class CodeSignConfig(object):
             notary_password: Optional string password or password reference
                 (e.g. @keychain, see `xcrun altool -h`) that will be used to
                 authenticate to Apple's notary service if notarizing.
+            notary_asc_provider: Optitonal string that will be used as the
+                `--asc-provider` argument to `xcrun altool`, to be used when
+                notary_user is associatetd with multiple Apple developer teams.
         """
         assert identity
         self._identity = identity
         self._keychain = keychain
         self._notary_user = notary_user
         self._notary_password = notary_password
+        self._notary_asc_provider = notary_asc_provider
 
     @property
     def identity(self):
@@ -70,6 +75,13 @@ class CodeSignConfig(object):
         Apple's notary service.
         """
         return self._notary_password
+
+    @property
+    def notary_asc_provider(self):
+        """Returns the ASC provider for authenticating to Apple's notary service
+        when notary_user is associatetd with multiple Apple developer teams.
+        """
+        return self._notary_asc_provider
 
     @property
     def app_product(self):

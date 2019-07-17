@@ -147,6 +147,14 @@ public class StartSurfaceLayoutPerfTest {
 
     @Test
     @EnormousTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/max-duty-cycle/1"})
+    public void testTabToGridFromLiveTabWith10TabsNoRateLimit() throws InterruptedException {
+        prepareTabs(10, NTP_URL);
+        reportTabToGridPerf(mUrl, "Tab-to-Grid from live tab with 10 tabs (no rate-limit)");
+    }
+
+    @Test
+    @EnormousTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTabWith10TabsWithoutThumbnail() throws InterruptedException {
         // Note that most of the tabs won't have thumbnails.

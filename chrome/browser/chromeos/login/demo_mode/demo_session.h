@@ -73,9 +73,15 @@ class DemoSession : public session_manager::SessionManagerObserver,
     kMaxValue = kExtensionApi
   };
 
-  // The list of countries that Demo Mode supports.
+  // The list of countries that Demo Mode supports, ie the countries we have
+  // created OUs and admin users for in the admin console.
+  // Sorted by the English name of the country (not the country code), except US
+  // is first.
+  // TODO(crbug.com/983359): Sort these by country name in the current locale
+  // instead of using this hard-coded US-centric order.
   static constexpr char kSupportedCountries[][3] = {
-      "us", "be", "ca", "dk", "fi", "fr", "ie", "lu", "nl", "no", "se", "gb"};
+      "us", "be", "ca", "dk", "fi", "fr", "de",
+      "ie", "jp", "lu", "nl", "no", "se", "gb"};
 
   static std::string DemoConfigToString(DemoModeConfig config);
 

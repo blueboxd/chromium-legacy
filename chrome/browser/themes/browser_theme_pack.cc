@@ -599,6 +599,42 @@ void BrowserThemePack::SetColorIfUnspecified(int id, SkColor color) {
     SetColor(id, color);
 }
 
+void BrowserThemePack::SetTint(int id, color_utils::HSL tint) {
+  DCHECK(tints_);
+
+  int first_available_index = -1;
+  for (size_t i = 0; i < kTintTableLength; ++i) {
+    if (tints_[i].id == id) {
+      tints_[i].hsl = tint;
+      return;
+    }
+    if (tints_[i].id == -1 && first_available_index == -1)
+      first_available_index = i;
+  }
+
+  DCHECK_NE(-1, first_available_index);
+  tints_[first_available_index].id = id;
+  tints_[first_available_index].hsl = tint;
+}
+
+void BrowserThemePack::SetDisplayProperty(int id, int value) {
+  DCHECK(display_properties_);
+
+  int first_available_index = -1;
+  for (size_t i = 0; i < kDisplayPropertiesSize; ++i) {
+    if (display_properties_[i].id == id) {
+      display_properties_[i].property = value;
+      return;
+    }
+    if (display_properties_[i].id == -1 && first_available_index == -1)
+      first_available_index = i;
+  }
+
+  DCHECK_NE(-1, first_available_index);
+  display_properties_[first_available_index].id = id;
+  display_properties_[first_available_index].property = value;
+}
+
 SkColor BrowserThemePack::ComputeImageColor(const gfx::Image& image,
                                             int height) {
   // Include all colors in the analysis.
@@ -760,6 +796,14 @@ void BrowserThemePack::GenerateFrameAndTabColors(SkColor color,
 
   pack->SetColor(TP::COLOR_TOOLBAR, colors.active_tab_color);
   pack->SetColor(TP::COLOR_TAB_TEXT, colors.active_tab_text_color);
+
+  // Always use alternate logo (not colorful one) even for white/grey/black
+  // backgrounds.
+  pack->SetDisplayProperty(TP::NTP_LOGO_ALTERNATE, 1);
+
+  // Don't change frame color for inactive window.
+  pack->SetTint(TP::TINT_FRAME_INACTIVE, {-1, -1, -1});
+  pack->SetTint(TP::TINT_FRAME_INCOGNITO_INACTIVE, {-1, -1, -1});
 }
 
 BrowserThemePack::BrowserThemePack(ThemeType theme_type)
@@ -811,9 +855,7 @@ bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
   if (tints_) {
     for (size_t i = 0; i < kTintTableLength; ++i) {
       if (tints_[i].id == id) {
-        hsl->h = tints_[i].h;
-        hsl->s = tints_[i].s;
-        hsl->l = tints_[i].l;
+        *hsl = tints_[i].hsl;
         return true;
       }
     }
@@ -1035,9 +1077,7 @@ void BrowserThemePack::InitTints() {
   tints_ = new TintEntry[kTintTableLength];
   for (size_t i = 0; i < kTintTableLength; ++i) {
     tints_[i].id = -1;
-    tints_[i].h = -1;
-    tints_[i].s = -1;
-    tints_[i].l = -1;
+    tints_[i].hsl = {-1, -1, -1};
   }
 }
 
@@ -1103,9 +1143,7 @@ void BrowserThemePack::SetTintsFromJSON(
        it != temp_tints.end() && count < kTintTableLength;
        ++it, ++count) {
     tints_[count].id = it->first;
-    tints_[count].h = it->second.h;
-    tints_[count].s = it->second.s;
-    tints_[count].l = it->second.l;
+    tints_[count].hsl = it->second;
   }
 }
 

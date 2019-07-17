@@ -33,12 +33,15 @@ def submit(path, config):
     Returns:
         A UUID from the notary service that represents the request.
     """
-    output = commands.run_command_output([
+    command = [
         'xcrun', 'altool', '--notarize-app', '--file', path,
         '--primary-bundle-id', config.base_bundle_id, '--username',
         config.notary_user, '--password', config.notary_password,
         '--output-format', 'xml'
-    ])
+    ]
+    if config.notary_asc_provider is not None:
+        command.extend(['--asc-provider', config.notary_asc_provider])
+    output = commands.run_command_output(command)
     plist = plistlib.loads(output)
     uuid = plist['notarization-upload']['RequestUUID']
     print('Submitted {} for notarization, request UUID: {}.'.format(path, uuid))
@@ -71,11 +74,15 @@ def wait_for_results(uuids, config):
     while len(wait_set) > 0:
         for uuid in list(wait_set):
             try:
-                output = commands.run_command_output([
+                command = [
                     'xcrun', 'altool', '--notarization-info', uuid,
                     '--username', config.notary_user, '--password',
                     config.notary_password, '--output-format', 'xml'
-                ])
+                ]
+                if config.notary_asc_provider is not None:
+                    command.extend(
+                        ['--asc-provider', config.notary_asc_provider])
+                output = commands.run_command_output(command)
             except subprocess.CalledProcessError as e:
                 # A notarization request might report as "not found" immediately
                 # after submission, which causes altool to exit non-zero. Check

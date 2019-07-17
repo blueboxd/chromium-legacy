@@ -31,18 +31,11 @@ class OfflinePageArchivePublisherImpl : public OfflinePageArchivePublisher {
     // Returns true if a system download manager is available on this platform.
     virtual bool IsDownloadManagerInstalled();
 
-    // Returns the download manager ID of the download, which we will place in
-    // the offline pages database as part of the offline page item.
-    // TODO(petewil): it might make sense to move all these params into a
-    // struct.
-    virtual int64_t AddCompletedDownload(const std::string& title,
-                                         const std::string& description,
-                                         const std::string& path,
-                                         int64_t length,
-                                         const std::string& uri,
-                                         const std::string& referer);
+    // Adds the archive to downloads.
+    virtual PublishArchiveResult AddCompletedDownload(
+        const OfflinePageItem& page);
 
-    // Returns the number of pages removed.
+    // Removes pages from downloads, returning the number of pages removed.
     virtual int Remove(
         const std::vector<int64_t>& android_download_manager_ids);
 
@@ -63,7 +56,7 @@ class OfflinePageArchivePublisherImpl : public OfflinePageArchivePublisher {
       PublishArchiveDoneCallback publish_done_callback) const override;
 
   void UnpublishArchives(
-      const std::vector<int64_t>& download_manager_ids) const override;
+      const std::vector<PublishedArchiveId>& publish_ids) const override;
 
  private:
   ArchiveManager* archive_manager_;

@@ -17,12 +17,15 @@ namespace ash {
 // Size of the shelf when visible (height when the shelf is horizontal and
 // width when the shelf is vertical).
 constexpr int kShelfSize = 56;
+constexpr int kShelfSizeDense = 48;
 
 // Size of the icons within shelf buttons.
 constexpr int kShelfButtonIconSize = 44;
+constexpr int kShelfButtonIconSizeDense = 36;
 
 // Size for controls like the home button, back button, etc.
 constexpr int kShelfControlSize = 40;
+constexpr int kShelfControlSizeDense = 36;
 
 ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
     SkColorSetA(SK_ColorWHITE, 26);  // 10%
@@ -51,13 +54,20 @@ ASH_EXPORT constexpr SkColor kShelfDefaultBaseColor = gfx::kGoogleGrey900;
 
 // Size allocated for each app button on the shelf.
 ASH_EXPORT constexpr int kShelfButtonSize = kShelfSize;
+ASH_EXPORT constexpr int kShelfButtonSizeDense = kShelfSizeDense;
 
 // Size of the space between buttons on the shelf.
 ASH_EXPORT constexpr int kShelfButtonSpacing = 8;
 
+// Size of the space between edge of screen and home button.
+ASH_EXPORT constexpr int kShelfHomeButtonEdgeSpacing = 8;
+ASH_EXPORT constexpr int kShelfHomeButtonEdgeSpacingDense = 6;
+
 // The margin around the overflow button on the shelf.
 constexpr int kShelfOverflowButtonMargin =
     (kShelfButtonSize - kShelfControlSize) / 2;
+constexpr int kShelfOverflowButtonMarginDense =
+    (kShelfButtonSizeDense - kShelfControlSizeDense) / 2;
 
 // Ink drop color for shelf items.
 constexpr SkColor kShelfInkDropBaseColor = SK_ColorWHITE;
@@ -97,28 +107,53 @@ class ShelfConstants {
  public:
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
-  static int shelf_size() { return kShelfSize; }
+  static int shelf_size() {
+    return UseNewDenseShelfUi() ? kShelfSizeDense : kShelfSize;
+  }
 
   // Size allocated for each app button on the shelf.
-  static int button_size() { return kShelfButtonSize; }
+  static int button_size() {
+    return UseNewDenseShelfUi() ? kShelfButtonSizeDense : kShelfButtonSize;
+  }
 
   // Size of the space between buttons on the shelf.
   static int button_spacing() { return kShelfButtonSpacing; }
 
   // Size of the icons within shelf buttons.
-  static int button_icon_size() { return kShelfButtonIconSize; }
+  static int button_icon_size() {
+    return UseNewDenseShelfUi() ? kShelfButtonIconSizeDense
+                                : kShelfButtonIconSize;
+  }
 
   // Size for controls like the home button, back button, etc.
-  static int control_size() { return kShelfControlSize; }
+  static int control_size() {
+    return UseNewDenseShelfUi() ? kShelfControlSizeDense : kShelfControlSize;
+  }
 
   // The radius of shelf control buttons.
-  static int control_border_radius() { return kShelfControlSize / 2; }
+  static int control_border_radius() { return control_size() / 2; }
 
-  static int overflow_button_margin() { return kShelfOverflowButtonMargin; }
+  static int overflow_button_margin() {
+    return UseNewDenseShelfUi() ? kShelfOverflowButtonMarginDense
+                                : kShelfOverflowButtonMargin;
+  }
 
   // The distance between the edge of the shelf and the status indicators.
   static int status_indicator_offset_from_edge() {
     return kStatusIndicatorOffsetFromShelfEdge;
+  }
+
+  // The distance between the edge of the shelf and the home and back button.
+  static int home_button_edge_spacing() {
+    return UseNewDenseShelfUi() ? kShelfHomeButtonEdgeSpacingDense
+                                : kShelfHomeButtonEdgeSpacing;
+  }
+
+ private:
+  static bool UseNewDenseShelfUi() {
+    static bool use_new_dense_shelf_ui =
+        chromeos::switches::ShouldShowShelfDenseClamshell();
+    return use_new_dense_shelf_ui;
   }
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShelfConstants);

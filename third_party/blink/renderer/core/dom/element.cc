@@ -4473,7 +4473,10 @@ void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {
   }
 
   StyleRecalcChange change(StyleRecalcChange::kRecalcDescendants);
-  if (text_node_changed)
+  // Remaining text part should be next to first-letter pseudo element.
+  // See http://crbug.com/984389 for details.
+  if (text_node_changed || remaining_text_layout_object->PreviousSibling() !=
+                               element->GetLayoutObject())
     change = change.ForceReattachLayoutTree();
   element->RecalcStyle(change);
 

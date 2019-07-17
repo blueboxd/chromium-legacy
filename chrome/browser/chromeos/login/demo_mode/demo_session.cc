@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -346,10 +345,6 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
 // static
 base::Value DemoSession::GetCountryList() {
   base::Value country_list(base::Value::Type::LIST);
-  if (!base::FeatureList::IsEnabled(
-          switches::kSupportCountryCustomizationInDemoMode)) {
-    return country_list;
-  }
   const std::string current_country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
   const std::string current_locale = g_browser_process->GetApplicationLocale();
@@ -506,19 +501,15 @@ void DemoSession::InstallAppFromUpdateUrl(const std::string& id) {
 void DemoSession::OnSessionStateChanged() {
   switch (session_manager::SessionManager::Get()->session_state()) {
     case session_manager::SessionState::LOGIN_PRIMARY:
-      if (base::FeatureList::IsEnabled(switches::kShowSplashScreenInDemoMode)) {
-        EnsureOfflineResourcesLoaded(base::BindOnce(
-            &DemoSession::ShowSplashScreen, weak_ptr_factory_.GetWeakPtr()));
-      }
+      EnsureOfflineResourcesLoaded(base::BindOnce(
+          &DemoSession::ShowSplashScreen, weak_ptr_factory_.GetWeakPtr()));
       break;
     case session_manager::SessionState::ACTIVE:
       if (ShouldRemoveSplashScreen())
         RemoveSplashScreen();
 
       // SystemTrayClient may not exist in unit tests.
-      if (SystemTrayClient::Get() &&
-          base::FeatureList::IsEnabled(
-              switches::kShowLanguageToggleInDemoMode)) {
+      if (SystemTrayClient::Get()) {
         const std::string current_locale_iso_code =
             ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
                 language::prefs::kApplicationLocale);
@@ -566,8 +557,7 @@ void DemoSession::RemoveSplashScreen() {
 bool DemoSession::ShouldRemoveSplashScreen() {
   // TODO(crbug.com/934979): Launch screensaver after active session starts, so
   // that there's no need to check session state here.
-  return base::FeatureList::IsEnabled(switches::kShowSplashScreenInDemoMode) &&
-         session_manager::SessionManager::Get()->session_state() ==
+  return session_manager::SessionManager::Get()->session_state() ==
              session_manager::SessionState::ACTIVE &&
          screensaver_activated_;
 }

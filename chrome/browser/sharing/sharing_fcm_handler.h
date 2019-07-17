@@ -37,11 +37,13 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   virtual void StopListening();
 
   // Registers |handler| for handling |payload_case| SharingMessage.
-  void AddSharingHandler(const SharingMessage::PayloadCase& payload_case,
-                         SharingMessageHandler* handler);
+  virtual void AddSharingHandler(
+      const SharingMessage::PayloadCase& payload_case,
+      SharingMessageHandler* handler);
 
   // Removes SharingMessageHandler registered for |payload_case|.
-  void RemoveSharingHandler(const SharingMessage::PayloadCase& payload_case);
+  virtual void RemoveSharingHandler(
+      const SharingMessage::PayloadCase& payload_case);
 
   // GCMAppHandler overrides.
   void ShutdownHandler() override;

@@ -84,11 +84,7 @@ def main():
   sdk_dir = os.path.join(
       dev_dir, 'Platforms/MacOSX.platform/Developer/SDKs')
 
-  # Xcode must be installed, its license agreement must be accepted, and its
-  # command-line tools must be installed. Stand-alone installations (in
-  # /Library/Developer/CommandLineTools) are not supported.
-  # https://bugs.chromium.org/p/chromium/issues/detail?id=729990#c1
-  if not os.path.isdir(sdk_dir) or not '.app/Contents/Developer' in sdk_dir:
+  if not os.path.isdir(sdk_dir):
     raise SdkError('Install Xcode, launch it, accept the license ' +
       'agreement, and run `sudo xcode-select -s /path/to/Xcode.app` ' +
       'to continue.')

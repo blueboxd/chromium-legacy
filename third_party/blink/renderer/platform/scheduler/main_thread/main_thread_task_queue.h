@@ -313,7 +313,6 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   void ShutdownTaskQueue() override;
 
   FrameSchedulerImpl* GetFrameScheduler() const;
-  void DetachFromFrameScheduler();
 
   scoped_refptr<base::SingleThreadTaskRunner> CreateTaskRunner(
       TaskType task_type) {

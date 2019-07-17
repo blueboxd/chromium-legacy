@@ -63,10 +63,21 @@ class FakeWinWebAuthnApi : public WinWebAuthnApi {
 };
 
 // ScopedFakeWinWebAuthnApi overrides the value returned
-// by WinWebAuthnApi::GetDefault with itself for the duration of its
+// by WinWebAuthnApi::GetDefault() with itself for the duration of its
 // lifetime.
 class ScopedFakeWinWebAuthnApi : public FakeWinWebAuthnApi {
  public:
+  // MakeUnavailable() returns a ScopedFakeWinWebAuthnApi that simulates a
+  // system where the native WebAuthn API is unavailable.
+  //
+  // Tests that instantiate a FidoDiscoveryFactory and FidoRequestHandler
+  // should instantiate a ScopedFakeWinWebAuthnApi with this method to avoid
+  // invoking the real Windows WebAuthn API on systems where it is available.
+  // Note that individual tests can call set_available(true) prior to
+  // instantiating the FidoRequestHandler in order to make the fake simulate an
+  // available API.
+  static ScopedFakeWinWebAuthnApi MakeUnavailable();
+
   ScopedFakeWinWebAuthnApi();
   ~ScopedFakeWinWebAuthnApi() override;
 };

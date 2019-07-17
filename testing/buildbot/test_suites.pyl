@@ -155,26 +155,6 @@
     },
 
     'android_webview_gpu_telemetry_tests': {
-      'pixel': {
-        'name': 'android_webview_pixel_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
-          '--os-type',
-          '${os_type}',
-          '--build-revision',
-          '${got_revision}',
-          '--test-machine-name',
-          '${buildername}',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
-        'precommit_args': [
-          '--download-refimg-from-cloud-storage',
-        ],
-      },
       'pixel_skia': {
         'name': 'android_webview_pixel_skia_gold_test',
         'args': [
@@ -207,7 +187,6 @@
         'swarming': {
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
-        'experiment_percentage': 100,
         'telemetry_test_name': 'pixel',
       },
     },
@@ -3685,27 +3664,6 @@
     },
 
     'gpu_skia_renderer_vulkan_telemetry_tests': {
-      'pixel': {
-        'name': 'pixel_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
-          '--os-type',
-          '${os_type}',
-          '--build-revision',
-          '${got_revision}',
-          '--test-machine-name',
-          '${buildername}',
-          '--extra-browser-args="--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer"',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
-        'precommit_args': [
-          '--download-refimg-from-cloud-storage',
-        ],
-      },
       'pixel_skia': {
         'name': 'pixel_skia_gold_test',
         'args': [
@@ -3739,7 +3697,6 @@
         'swarming': {
           'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
         },
-        'experiment_percentage': 100,
         'telemetry_test_name': 'pixel',
       },
     },

@@ -28,6 +28,7 @@ constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
 
 void RenderViewTestAdapter::SetUp() {
   RenderViewTest::SetUp();
+  CreateFakeWebURLLoaderFactory();
 }
 
 Env::Env() {

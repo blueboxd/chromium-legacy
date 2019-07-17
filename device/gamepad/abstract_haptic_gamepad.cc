@@ -24,6 +24,8 @@ AbstractHapticGamepad::~AbstractHapticGamepad() {
 
 void AbstractHapticGamepad::Shutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (is_shut_down_)
+    return;
   if (playing_effect_callback_) {
     sequence_id_++;
     SetZeroVibration();

@@ -5,6 +5,7 @@
 #include "ash/shell/content/embedded_browser.h"
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/wm/window_state.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -30,10 +31,12 @@ class BrowserWidgetDelegateView : public views::WidgetDelegateView {
 
   // views::WidgetDelegateView:
   base::string16 GetWindowTitle() const override {
-    const static base::string16 title =
-        base::ASCIIToUTF16("Classic: Embed by NativeViewHost");
+    const static base::string16 title = base::ASCIIToUTF16("WebView Browser");
     return title;
   }
+  bool CanResize() const override { return true; }
+  bool CanMaximize() const override { return true; }
+  bool CanMinimize() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserWidgetDelegateView);
@@ -45,9 +48,11 @@ EmbeddedBrowser::EmbeddedBrowser(content::BrowserContext* context,
                                  const GURL& url)
     : widget_(new views::Widget) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.bounds = gfx::Rect(20, 0, 800, 600);
+  params.bounds = gfx::Rect(20, 20, 800, 600);
   params.delegate = new BrowserWidgetDelegateView(context, url);
   widget_->Init(params);
+  wm::GetWindowState(widget_->GetNativeWindow())
+      ->SetWindowPositionManaged(true);
   widget_->Show();
 }
 

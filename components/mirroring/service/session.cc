@@ -44,14 +44,14 @@
 #include "net/base/ip_endpoint.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
 
-using media::cast::FrameSenderConfig;
-using media::cast::RtpPayloadType;
 using media::cast::CastTransportStatus;
 using media::cast::Codec;
 using media::cast::FrameEvent;
-using media::cast::PacketEvent;
+using media::cast::FrameSenderConfig;
 using media::cast::OperationalStatus;
 using media::cast::Packet;
+using media::cast::PacketEvent;
+using media::cast::RtpPayloadType;
 using media::mojom::RemotingSinkAudioCapability;
 using media::mojom::RemotingSinkVideoCapability;
 using mirroring::mojom::SessionError;
@@ -347,7 +347,7 @@ class Session::AudioCapturingCallback final
 
   // Called on audio thread.
   void Capture(const media::AudioBus* audio_bus,
-               int audio_delay_milliseconds,
+               base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) override {
     // TODO(xjz): Don't copy the audio data. Instead, send |audio_bus| directly
@@ -355,10 +355,7 @@ class Session::AudioCapturingCallback final
     std::unique_ptr<media::AudioBus> captured_audio =
         media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
     audio_bus->CopyTo(captured_audio.get());
-    const base::TimeTicks recorded_time =
-        base::TimeTicks::Now() -
-        base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
-    audio_data_callback_.Run(std::move(captured_audio), recorded_time);
+    audio_data_callback_.Run(std::move(captured_audio), audio_capture_time);
   }
 
   void OnCaptureError(const std::string& message) override {

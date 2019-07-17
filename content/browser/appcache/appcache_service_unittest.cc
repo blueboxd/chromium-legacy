@@ -100,7 +100,7 @@ class AppCacheServiceImplTest : public testing::Test {
       : kOriginURL("http://hello/"),
         kOrigin(url::Origin::Create(kOriginURL)),
         kManifestUrl(kOriginURL.Resolve("manifest")),
-        service_(std::make_unique<AppCacheServiceImpl>(nullptr)),
+        service_(std::make_unique<AppCacheServiceImpl>(nullptr, nullptr)),
         delete_result_(net::OK),
         delete_completion_count_(0) {
     // Setup to use mock storage.
@@ -342,7 +342,7 @@ TEST_F(AppCacheServiceImplTest, ScheduleReinitialize) {
   const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
 
   // Do things get initialized as expected?
-  auto service = std::make_unique<AppCacheServiceImpl>(nullptr);
+  auto service = std::make_unique<AppCacheServiceImpl>(nullptr, nullptr);
   EXPECT_TRUE(service->last_reinit_time_.is_null());
   EXPECT_FALSE(service->reinit_timer_.IsRunning());
   EXPECT_EQ(kNoDelay, service->next_reinit_delay_);

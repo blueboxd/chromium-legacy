@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -148,8 +147,6 @@ class DemoSetupTest : public LoginManagerTest {
   // LoginTestManager:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     LoginManagerTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::switches::kSupportCountryCustomizationInDemoMode);
     command_line->AppendSwitchASCII(switches::kArcAvailability,
                                     "officially-supported");
     ASSERT_TRUE(arc::IsArcAvailable());
@@ -460,7 +457,6 @@ class DemoSetupTest : public LoginManagerTest {
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
@@ -604,7 +600,9 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest,
        {"dk", "Denmark"},
        {"fi", "Finland"},
        {"fr", "France"},
+       {"de", "Germany"},
        {"ie", "Ireland"},
+       {"jp", "Japan"},
        {"lu", "Luxembourg"},
        {"nl", "Netherlands"},
        {"no", "Norway"},

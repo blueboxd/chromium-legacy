@@ -11,18 +11,15 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 
 <dom-module id="files-format-dialog">
   <template>
-    <style include="md-select">
+    <style include="cr-shared-style md-select">
       .md-select {
         width: 100%;
-      }
-
-      .label {
-        @apply --cr-form-field-label;
       }
 
       [slot='body'] > div {
@@ -57,9 +54,9 @@
             id="label" value="{{label_}}" auto-validate="true">
         </cr-input>
         <div id="disk-format">
-          <div id="format-type-label" class="label">
+          <label id="format-type-label" class="cr-form-field-label">
             [[i18n('FORMAT_DIALOG_FORMAT_LABEL')]]
-          </div>
+          </label>
           <select class="md-select" aria-labelledby="format-type-label"
               value="{{formatType_::change}}">
             <option value="vfat">FAT32</option>

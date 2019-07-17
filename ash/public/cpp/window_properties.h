@@ -109,6 +109,12 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kHideInDeskMiniViewKey;
 
+// If true, the mirror of the window in the mini_view will be forced to be
+// visible and its visibility won't be synced with visibility changes of the
+// source.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kForceVisibleInMiniViewKey;
+
 // A property key to store the window state the window had before entering PIP.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
     kPrePipWindowStateTypeKey;

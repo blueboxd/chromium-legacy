@@ -8,15 +8,17 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-WakeLockStateRecord::WakeLockStateRecord(Document* document, WakeLockType type)
-    : wake_lock_type_(ToMojomWakeLockType(type)), document_(document) {
-  DCHECK_NE(document, nullptr);
+WakeLockStateRecord::WakeLockStateRecord(ExecutionContext* execution_context,
+                                         WakeLockType type)
+    : wake_lock_type_(ToMojomWakeLockType(type)),
+      execution_context_(execution_context) {
+  DCHECK_NE(execution_context, nullptr);
 }
 
 void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
@@ -35,7 +37,7 @@ void WakeLockStateRecord::AcquireWakeLock(ScriptPromiseResolver* resolver) {
   // 4.3. Add lockPromise to record.[[WakeLockStateRecord]].
   // 5. Return active.
   if (!wake_lock_) {
-    auto* interface_provider = document_->GetInterfaceProvider();
+    auto* interface_provider = execution_context_->GetInterfaceProvider();
     DCHECK(interface_provider);
     mojom::blink::WakeLockServicePtr wake_lock_service;
     interface_provider->GetInterface(mojo::MakeRequest(&wake_lock_service));
@@ -96,7 +98,7 @@ void WakeLockStateRecord::OnWakeLockConnectionError() {
 }
 
 void WakeLockStateRecord::Trace(blink::Visitor* visitor) {
-  visitor->Trace(document_);
+  visitor->Trace(execution_context_);
   visitor->Trace(active_locks_);
 }
 

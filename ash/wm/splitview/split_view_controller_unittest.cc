@@ -597,11 +597,13 @@ TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
   EXPECT_TRUE(!split_view_divider());
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   EXPECT_TRUE(split_view_divider());
-  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
   EXPECT_TRUE(split_view_divider());
-  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
 
   // Test that activating an non-snappable window ends the split view mode.
   std::unique_ptr<aura::Window> window3(CreateNonSnappableWindow(bounds));
@@ -2132,7 +2134,8 @@ TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
 TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> always_on_top_window(CreateWindow(bounds));
-  always_on_top_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
+                                    ui::ZOrderLevel::kFloatingWindow);
   std::unique_ptr<aura::Window> normal_window(CreateWindow(bounds));
 
   split_view_controller()->SnapWindow(always_on_top_window.get(),
@@ -2140,15 +2143,18 @@ TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
   split_view_controller()->SnapWindow(normal_window.get(),
                                       SplitViewController::RIGHT);
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
-  EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
+            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
 
   wm::ActivateWindow(always_on_top_window.get());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
-  EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
+            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
 
   wm::ActivateWindow(normal_window.get());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
-  EXPECT_TRUE(always_on_top_window->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
+            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
 }
 
 // Test that pinning a window ends split view mode.
@@ -2708,18 +2714,18 @@ TEST_F(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
                                       SplitViewController::RIGHT);
   views::Widget* split_divider_widget =
       split_view_controller()->split_view_divider()->divider_widget();
-  EXPECT_TRUE(split_divider_widget->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal, split_divider_widget->GetZOrderLevel());
 
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(window1.get(), window1.get());
   ASSERT_TRUE(resizer.get());
-  EXPECT_FALSE(split_divider_widget->IsAlwaysOnTop());
+  EXPECT_EQ(ui::ZOrderLevel::kNormal, split_divider_widget->GetZOrderLevel());
 
   resizer->Drag(gfx::Point(), 0);
-  EXPECT_FALSE(split_divider_widget->IsAlwaysOnTop());
+  EXPECT_EQ(ui::ZOrderLevel::kNormal, split_divider_widget->GetZOrderLevel());
 
   CompleteDrag(std::move(resizer));
-  EXPECT_TRUE(split_divider_widget->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal, split_divider_widget->GetZOrderLevel());
 }
 
 // Test the functionalities that are related to dragging a maximized window's
@@ -4071,7 +4077,8 @@ TEST_F(SplitViewTabDraggingTest, DragActiveWindow) {
 
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
 }
 
 // Tests that the divider bar should be placed on top after the drag ends, no
@@ -4094,7 +4101,8 @@ TEST_F(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
   DragWindowWithOffset(resizer.get(), 10, 10);
   CompleteDrag(std::move(resizer));
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
-  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
 
   // If the dragged window is destroyed after drag ends:
   resizer = StartDrag(dragged_window.get(), dragged_window.get());
@@ -4104,7 +4112,8 @@ TEST_F(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
   dragged_window.reset();
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kRightSnapped);
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_TRUE(split_view_divider()->divider_widget()->IsAlwaysOnTop());
+  EXPECT_NE(ui::ZOrderLevel::kNormal,
+            split_view_divider()->divider_widget()->GetZOrderLevel());
 }
 
 TEST_F(SplitViewTabDraggingTest, IgnoreActivatedTabDraggingWindow) {

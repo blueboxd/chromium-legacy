@@ -1422,6 +1422,7 @@ enum HistogramValue {
   ACTION_GETBADGEBACKGROUNDCOLOR = 1359,
   ACTION_SETBADGEBACKGROUNDCOLOR = 1360,
   AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE = 1361,
+  ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE = 1362,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

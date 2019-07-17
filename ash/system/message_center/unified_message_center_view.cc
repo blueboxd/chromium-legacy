@@ -19,6 +19,7 @@
 #include "ash/system/unified/rounded_label_button.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -130,9 +131,16 @@ class StackingBarClearAllButton : public views::LabelButton {
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
     SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
-    SkScalar radii[8] = {0, 0, top_radius, top_radius, 0, 0, 0, 0};
+    SkRect bounds = gfx::RectToSkRect(GetContentsBounds());
     SkPath path;
-    path.addRoundRect(gfx::RectToSkRect(GetContentsBounds()), radii);
+
+    if (base::i18n::IsRTL()) {
+      SkScalar radii[8] = {top_radius, top_radius, 0, 0, 0, 0, 0, 0};
+      path.addRoundRect(bounds, radii);
+    } else {
+      SkScalar radii[8] = {0, 0, top_radius, top_radius, 0, 0, 0, 0};
+      path.addRoundRect(bounds, radii);
+    }
 
     return std::make_unique<views::PathInkDropMask>(size(), path);
   }

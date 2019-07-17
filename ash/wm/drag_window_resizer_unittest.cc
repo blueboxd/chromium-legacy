@@ -83,7 +83,8 @@ class DragWindowResizerTest : public AshTestBase {
 
     always_on_top_window_ = window_factory::NewWindow(&delegate2_);
     always_on_top_window_->SetType(aura::client::WINDOW_TYPE_NORMAL);
-    always_on_top_window_->SetProperty(aura::client::kAlwaysOnTopKey, true);
+    always_on_top_window_->SetProperty(aura::client::kZOrderingKey,
+                                       ui::ZOrderLevel::kFloatingWindow);
     always_on_top_window_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(always_on_top_window_.get());
     always_on_top_window_->set_id(2);

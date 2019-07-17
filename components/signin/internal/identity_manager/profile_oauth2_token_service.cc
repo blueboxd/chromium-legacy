@@ -13,8 +13,10 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
+#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using signin_metrics::SourceForRefreshTokenOperation;
@@ -71,11 +73,54 @@ ProfileOAuth2TokenService::ProfileOAuth2TokenService(
       user_prefs_(user_prefs),
       all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
+  DCHECK(delegate_);
+  token_manager_ = std::make_unique<OAuth2AccessTokenManager>(
+      this /* OAuth2AccessTokenManager::Delegate* */);
   AddObserver(this);
 }
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
   RemoveObserver(this);
+}
+
+std::unique_ptr<OAuth2AccessTokenFetcher>
+ProfileOAuth2TokenService::CreateAccessTokenFetcher(
+    const CoreAccountId& account_id,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    OAuth2AccessTokenConsumer* consumer) {
+  return delegate_->CreateAccessTokenFetcher(account_id, url_loader_factory,
+                                             consumer);
+}
+
+bool ProfileOAuth2TokenService::FixRequestErrorIfPossible() {
+  return delegate_->FixRequestErrorIfPossible();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ProfileOAuth2TokenService::GetURLLoaderFactory() const {
+  return delegate_->GetURLLoaderFactory();
+}
+
+void ProfileOAuth2TokenService::OnAccessTokenInvalidated(
+    const CoreAccountId& account_id,
+    const std::string& client_id,
+    const std::set<std::string>& scopes,
+    const std::string& access_token) {
+  delegate_->OnAccessTokenInvalidated(account_id, client_id, scopes,
+                                      access_token);
+}
+
+void ProfileOAuth2TokenService::OnAccessTokenFetched(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error) {
+  // Update the auth error state so auth errors are appropriately communicated
+  // to the user.
+  delegate_->UpdateAuthError(account_id, error);
+}
+
+bool ProfileOAuth2TokenService::HasRefreshToken(
+    const CoreAccountId& account_id) const {
+  return RefreshTokenIsAvailable(account_id);
 }
 
 // static
@@ -308,6 +353,10 @@ size_t ProfileOAuth2TokenService::GetNumPendingRequestsForTesting(
 void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
     std::unique_ptr<OAuth2AccessTokenManager> token_manager) {
   token_manager_ = std::move(token_manager);
+}
+
+OAuth2AccessTokenManager* ProfileOAuth2TokenService::GetAccessTokenManager() {
+  return token_manager_.get();
 }
 
 void ProfileOAuth2TokenService::OnRefreshTokenAvailable(

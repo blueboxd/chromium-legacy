@@ -374,13 +374,13 @@ class CORE_EXPORT NGConstraintSpace final {
   }
 
   // If present, and the current layout hasn't resolved its BFC block-offset
-  // yet (see BfcOffset), the layout should position all of its unpositioned
-  // floats at this offset.
+  // yet (see BfcOffset), the layout should position all of its floats at this
+  // offset.
   //
   // This value is present if:
   //   - An ancestor had clearance past adjoining floats. In this case this
   //     value is calculated ahead of time.
-  //   - A second layout pass is required as there were unpositioned floats
+  //   - A second layout pass is required as there were adjoining-floats
   //     within the tree, and an arbitrary sibling determined their BFC
   //     block-offset.
   //
@@ -388,6 +388,33 @@ class CORE_EXPORT NGConstraintSpace final {
   // hasn't resolved its BFC offset yet.
   base::Optional<LayoutUnit> ForcedBfcBlockOffset() const {
     return HasRareData() ? rare_data_->forced_bfc_block_offset : base::nullopt;
+  }
+
+  // If present, this is a hint as to where place any adjoining objects. This
+  // isn't necessarily the final position, just where they ended up in a
+  // previous layout pass.
+  base::Optional<LayoutUnit> OptimisticBfcBlockOffset() const {
+    return HasRareData() ? rare_data_->optimistic_bfc_block_offset
+                         : base::nullopt;
+  }
+
+  // The "expected" BFC block-offset is:
+  //  - The |ForcedBfcBlockOffset| if set.
+  //  - The |OptimisticBfcBlockOffset| if set.
+  //  - Otherwise the |BfcOffset|.
+  //
+  // This represents where any adjoining-objects should be placed (potentially
+  // optimistically)
+  LayoutUnit ExpectedBfcBlockOffset() const {
+    // A short-circuit optimization (must equivalent to below).
+    if (!HasRareData()) {
+      DCHECK(!ForcedBfcBlockOffset());
+      DCHECK(!OptimisticBfcBlockOffset());
+      return bfc_offset_.block_offset;
+    }
+
+    return ForcedBfcBlockOffset().value_or(
+        OptimisticBfcBlockOffset().value_or(BfcOffset().block_offset));
   }
 
   // Returns the types of preceding adjoining objects.
@@ -525,6 +552,7 @@ class CORE_EXPORT NGConstraintSpace final {
     NGBfcOffset bfc_offset;
     NGMarginStrut margin_strut;
 
+    base::Optional<LayoutUnit> optimistic_bfc_block_offset;
     base::Optional<LayoutUnit> forced_bfc_block_offset;
     LayoutUnit clearance_offset = LayoutUnit::Min();
 

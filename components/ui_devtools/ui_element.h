@@ -87,10 +87,6 @@ class UI_DEVTOOLS_EXPORT UIElement {
   template <class T>
   int FindUIElementIdForBackendElement(T* element) const;
 
-  // Returns properties' names and values.
-  virtual std::vector<std::pair<std::string, std::string>> GetCustomProperties()
-      const = 0;
-
   // Returns properties grouped by the class they are from.
   virtual std::vector<ClassProperties> GetCustomPropertiesForMatchedStyle()
       const;

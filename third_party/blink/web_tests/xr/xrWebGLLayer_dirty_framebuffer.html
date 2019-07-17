@@ -19,7 +19,7 @@ let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 let requestSessionModes =  ['immersive-vr'];
 
 let testFunction =
-  (session, t, fakeDeviceController) => new Promise((resolve, reject) => {
+  (session, fakeDeviceController, t) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or else frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl);
   session.updateRenderState({ baseLayer: webglLayer });
@@ -63,6 +63,6 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
 
 </script>

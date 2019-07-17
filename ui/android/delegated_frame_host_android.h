@@ -9,13 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "cc/layers/deadline_policy.h"
 #include "components/viz/client/frame_evictor.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_client.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/android/ui_android_export.h"
 
 namespace cc {
@@ -24,7 +23,6 @@ enum class SurfaceDrawStatus;
 }  // namespace cc
 
 namespace viz {
-class CompositorFrame;
 class HostFrameSinkManager;
 }  // namespace viz
 
@@ -33,22 +31,12 @@ class ViewAndroid;
 class WindowAndroidCompositor;
 
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
-    : public viz::mojom::CompositorFrameSinkClient,
-      public viz::ExternalBeginFrameSourceClient,
-      public viz::HostFrameSinkClient,
+    : public viz::HostFrameSinkClient,
       public viz::FrameEvictorClient {
  public:
   class Client {
    public:
     virtual ~Client() {}
-    virtual void SetBeginFrameSource(
-        viz::BeginFrameSource* begin_frame_source) = 0;
-    virtual void DidPresentCompositorFrames(
-        const viz::FrameTimingDetailsMap& timing_details) = 0;
-    virtual void DidReceiveCompositorFrameAck(
-        const std::vector<viz::ReturnedResource>& resources) = 0;
-    virtual void ReclaimResources(
-        const std::vector<viz::ReturnedResource>& resources) = 0;
     virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
     virtual void WasEvicted() = 0;
   };
@@ -56,8 +44,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   DelegatedFrameHostAndroid(ViewAndroid* view,
                             viz::HostFrameSinkManager* host_frame_sink_manager,
                             Client* client,
-                            const viz::FrameSinkId& frame_sink_id,
-                            bool enable_surface_synchronization);
+                            const viz::FrameSinkId& frame_sink_id);
 
   ~DelegatedFrameHostAndroid() override;
 
@@ -80,12 +67,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   static constexpr int64_t ResizeTimeoutFrames() {
     return ResizeTimeout() / viz::BeginFrameArgs::DefaultInterval();
   }
-
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list);
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
   // FrameEvictorClient implementation.
   void EvictDelegatedFrame() override;
@@ -138,23 +119,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void DidNavigate();
 
  private:
-  // viz::mojom::CompositorFrameSinkClient implementation.
-  void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override;
-  void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::FrameTimingDetailsMap& timing_details) override;
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override;
-  void OnBeginFramePausedChanged(bool paused) override;
-
-  // viz::ExternalBeginFrameSourceClient implementation.
-  void OnNeedsBeginFrames(bool needs_begin_frames) override;
-
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
-
-  void CreateCompositorFrameSinkSupport();
 
   void ProcessCopyOutputRequest(
       std::unique_ptr<viz::CopyOutputRequest> request);
@@ -167,15 +134,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 
-  std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
-  viz::ExternalBeginFrameSource begin_frame_source_;
-
-  bool has_transparent_background_ = false;
-
   scoped_refptr<cc::SurfaceLayer> content_layer_;
-
-  const bool enable_surface_synchronization_;
-  const bool enable_viz_;
 
   // Whether we've received a frame from the renderer since navigating.
   // Only used when surface synchronization is on.

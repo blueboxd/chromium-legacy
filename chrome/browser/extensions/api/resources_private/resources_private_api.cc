@@ -20,7 +20,10 @@
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "pdf/pdf_features.h"
-#endif
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/common/chrome_features.h"
@@ -125,7 +128,14 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
   dict->SetKey("pdfAnnotationsEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kPDFAnnotations)));
-#endif
+
+  bool enable_printing = true;
+#if defined(OS_CHROMEOS)
+  // For Chrome OS, enable printing only if we are not at OOBE.
+  enable_printing = !chromeos::LoginDisplayHost::default_host();
+#endif  // defined(OS_CHROMEOS)
+  dict->SetKey("printingEnabled", base::Value(enable_printing));
+#endif  // BUILDFLAG(ENABLE_PDF)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   dict->SetKey("newPrintPreviewLayoutEnabled",
                base::Value(base::FeatureList::IsEnabled(

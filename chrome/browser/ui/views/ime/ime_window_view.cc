@@ -38,7 +38,7 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
   params.delegate = this;
   params.wants_mouse_events_when_inactive = true;
   params.remove_standard_frame = false;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.visible_on_all_workspaces = false;
   params.bounds = bounds;

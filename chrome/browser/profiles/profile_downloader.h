@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/image_decoder.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -111,6 +112,8 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   // Starts fetching OAuth2 access token. This is needed before the GAIA info
   // can be downloaded.
   void StartFetchingOAuth2AccessToken();
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   ProfileDownloaderDelegate* delegate_;
   std::string account_id_;

@@ -194,8 +194,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     // Custom Backgrounds
     AddString(translated_strings.get(), "customizeButtonLabel",
               IDS_NTP_CUSTOMIZE_BUTTON_LABEL);
-    AddString(translated_strings.get(), "customizeBackground",
-              IDS_NTP_CUSTOM_BG_CUSTOMIZE_BACKGROUND);
     AddString(translated_strings.get(), "defaultWallpapers",
               IDS_NTP_CUSTOM_BG_CHROME_WALLPAPERS);
     AddString(translated_strings.get(), "uploadImage",

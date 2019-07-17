@@ -52,7 +52,7 @@ class BLINK_MODULES_EXPORT LocalMediaStreamAudioSource
   // media::AudioCapturerSource::CaptureCallback implementation.
   void OnCaptureStarted() final;
   void Capture(const media::AudioBus* audio_bus,
-               int audio_delay_milliseconds,
+               base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) final;
   void OnCaptureError(const std::string& message) final;

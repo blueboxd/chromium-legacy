@@ -16,6 +16,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -29,6 +30,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -127,6 +129,8 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @MediumTest
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "https://crbug.com/984943")
     public void test2dtoVrShellNfcUnsupported() {
         enterVrShellNfc(false /* supported */);
     }
@@ -194,6 +198,8 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @MediumTest
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "https://crbug.com/984943")
     public void test2dtoVrShellto2dUnsupported() {
         enterExitVrShell(false /* supported */);
     }

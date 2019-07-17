@@ -33,11 +33,11 @@ enum class MessageType : uint32_t {
   REQUEST_PORT_MERGE,
   REQUEST_INTRODUCTION,
   INTRODUCE,
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
   RELAY_EVENT_MESSAGE,
 #endif
   BROADCAST_EVENT,
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
   EVENT_MESSAGE_FROM_RELAY,
 #endif
   ACCEPT_PEER,
@@ -110,7 +110,7 @@ struct IntroductionData {
   ports::NodeName name;
 };
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
 // This struct is followed by the full payload of a message to be relayed.
 struct RelayEventMessageData {
   ports::NodeName destination;
@@ -373,7 +373,7 @@ void NodeChannel::Broadcast(Channel::MessagePtr message) {
   WriteChannelMessage(std::move(broadcast_message));
 }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
 void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
                                     Channel::MessagePtr message) {
 #if defined(OS_WIN)
@@ -437,7 +437,7 @@ void NodeChannel::EventMessageFromRelay(const ports::NodeName& source,
   relayed_message->SetHandles(message->TakeHandles());
   WriteChannelMessage(std::move(relayed_message));
 }
-#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // defined(OS_WIN)
 
 NodeChannel::NodeChannel(Delegate* delegate,
                          ConnectionParams connection_params,
@@ -606,7 +606,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
       break;
     }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
     case MessageType::RELAY_EVENT_MESSAGE: {
       base::ProcessHandle from_process;
       {
@@ -630,9 +630,6 @@ void NodeChannel::OnChannelMessage(const void* payload,
           DLOG(ERROR) << "Dropping invalid relay message.";
           break;
         }
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-        message->SetHandles(std::move(handles));
-#endif
         delegate_->OnRelayEventMessage(remote_node_name_, from_process,
                                        data->destination, std::move(message));
         return;
@@ -656,7 +653,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
       return;
     }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
     case MessageType::EVENT_MESSAGE_FROM_RELAY:
       const EventMessageFromRelayData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
@@ -676,7 +673,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
       }
       break;
 
-#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // defined(OS_WIN)
 
     case MessageType::ACCEPT_PEER: {
       const AcceptPeerData* data;

@@ -25,6 +25,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
+import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -36,8 +37,6 @@ import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
@@ -131,15 +130,6 @@ public class BottomSheet
     /** The height ratio for the sheet in the SheetState.HALF state. */
     private static final float HALF_HEIGHT_RATIO = 0.75f;
 
-    /** The fraction of the width of the screen that, when swiped, will cause the sheet to move. */
-    private static final float SWIPE_ALLOWED_FRACTION = 0.2f;
-
-    /**
-     * The minimum swipe velocity (dp/ms) that should be considered as a user opening the bottom
-     * sheet intentionally. This is specifically for the 'velocity' swipe logic.
-     */
-    private static final float SHEET_SWIPE_MIN_DP_PER_MS = 0.2f;
-
     /** The desired height of a content that has just been shown or whose height was invalidated. */
     private static final float HEIGHT_UNSPECIFIED = -1.0f;
 
@@ -201,7 +191,7 @@ public class BottomSheet
     private int mTargetState = SheetState.NONE;
 
     /** Used for getting the current tab. */
-    protected TabModelSelector mTabModelSelector;
+    protected Supplier<Tab> mTabSupplier;
 
     /** The fullscreen manager for information about toolbar offsets. */
     private ChromeFullscreenManager mFullscreenManager;
@@ -559,7 +549,7 @@ public class BottomSheet
      * @param activity The activity displaying the bottom sheet.
      */
     public void init(View root, ChromeActivity activity) {
-        mTabModelSelector = activity.getTabModelSelector();
+        mTabSupplier = activity.getActivityTabProvider();
         mFullscreenManager = activity.getFullscreenManager();
 
         int colorId = R.color.sheet_bg_color;
@@ -723,17 +713,9 @@ public class BottomSheet
     public int loadUrl(LoadUrlParams params, boolean incognito) {
         for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
 
-        assert mTabModelSelector != null;
-
         int tabLoadStatus = TabLoadStatus.DEFAULT_PAGE_LOAD;
 
-        if (getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
-            tabLoadStatus = getActiveTab().loadUrl(params);
-        } else {
-            // If no compatible tab is active behind the sheet, open a new one.
-            mTabModelSelector.openNewTab(
-                    params, TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
-        }
+        if (getActiveTab() != null) tabLoadStatus = getActiveTab().loadUrl(params);
 
         return tabLoadStatus;
     }
@@ -751,7 +733,7 @@ public class BottomSheet
 
     @Override
     public Tab getActiveTab() {
-        return mTabModelSelector != null ? mTabModelSelector.getCurrentTab() : null;
+        return mTabSupplier != null ? mTabSupplier.get() : null;
     }
 
     @Override

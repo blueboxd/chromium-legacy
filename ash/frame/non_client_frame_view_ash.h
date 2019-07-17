@@ -34,9 +34,7 @@ class NonClientFrameViewAshImmersiveHelper;
 // The window header overlay slides onscreen when the user hovers the mouse at
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
-class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
-                                         public OverviewObserver,
-                                         public SplitViewObserver {
+class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -103,27 +101,12 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   // header of v2 and ARC apps.
   virtual void SetShouldPaintHeader(bool paint);
 
-  // OverviewObserver:
-  void OnOverviewModeStarting() override;
-  void OnOverviewModeEnded() override;
-
-  // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewState previous_state,
-                               SplitViewState state) override;
-
   const views::View* GetAvatarIconViewForTest() const;
 
   SkColor GetActiveFrameColorForTest() const;
   SkColor GetInactiveFrameColorForTest() const;
 
   views::Widget* frame() { return frame_; }
-
- protected:
-  // Called when overview mode or split view state changed. If overview mode
-  // and split view mode are both active at the same time, the header of the
-  // window in split view should be visible, but the headers of other windows
-  // in overview are not.
-  void UpdateHeaderView();
 
  private:
   class OverlayView;
@@ -149,13 +132,6 @@ class ASH_EXPORT NonClientFrameViewAsh : public views::NonClientFrameView,
   HeaderView* header_view_ = nullptr;
 
   OverlayView* overlay_view_ = nullptr;
-
-  // Track whether the device is in overview mode. Set this to true when
-  // overview mode started and false when overview mode finished. Use this to
-  // check whether we should paint when splitview state changes instead of
-  // Shell::Get()->overview_controller()->InOverviewSession() because the
-  // later actually may be still be false after overview mode has started.
-  bool in_overview_ = false;
 
   std::unique_ptr<NonClientFrameViewAshImmersiveHelper> immersive_helper_;
 

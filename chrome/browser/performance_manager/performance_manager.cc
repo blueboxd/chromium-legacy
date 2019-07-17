@@ -23,7 +23,7 @@
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
+#include "chrome/browser/performance_manager/observers/working_set_trimmer_observer_win.h"
 #include "content/public/browser/system_connector.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 

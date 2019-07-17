@@ -43,7 +43,8 @@
 namespace blink {
 
 static const int kMaxRecursionDepth = 3;
-static const double kProgressNotificationIntervalMS = 50;
+static const base::TimeDelta kProgressNotificationInterval =
+    base::TimeDelta::FromMilliseconds(50);
 static constexpr uint64_t kMaxTruncateLength =
     std::numeric_limits<uint64_t>::max();
 
@@ -57,7 +58,6 @@ FileWriter::FileWriter(ExecutionContext* context)
       truncate_length_(kMaxTruncateLength),
       num_aborts_(0),
       recursion_depth_(0),
-      last_progress_notification_time_ms_(0),
       request_id_(0) {}
 
 FileWriter::~FileWriter() {
@@ -182,11 +182,11 @@ void FileWriter::DidWriteImpl(int64_t bytes, bool complete) {
   uint64_t num_aborts = num_aborts_;
   // We could get an abort in the handler for this event. If we do, it's
   // already handled the cleanup and signalCompletion call.
-  double now = CurrentTimeMS();
-  if (complete || !last_progress_notification_time_ms_ ||
-      (now - last_progress_notification_time_ms_ >
-       kProgressNotificationIntervalMS)) {
-    last_progress_notification_time_ms_ = now;
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (complete || !last_progress_notification_time_.is_null() ||
+      (now - last_progress_notification_time_ >
+       kProgressNotificationInterval)) {
+    last_progress_notification_time_ = now;
     FireEvent(event_type_names::kProgress);
   }
 

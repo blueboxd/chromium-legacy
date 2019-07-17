@@ -39,7 +39,7 @@ MockRuntime.prototype.requestHitTest = function(Ray) {
   return new Promise((resolve,reject) => { });
 }
 
-let testFunction = function(session, t, controller) {
+let testFunction = function(session, fakeDeviceController, t) {
   return session.requestReferenceSpace('local')
     .then((referenceSpace) => {
       refSpace = referenceSpace;
@@ -51,7 +51,7 @@ let testFunction = function(session, t, controller) {
     .then(() => {
       immediatelyResolveHitTest = false;
       let hitTestPromise = session.requestHitTest(ray, refSpace);
-      controller.closeEnvironmentIntegrationProvider();
+      fakeDeviceController.closeEnvironmentIntegrationProvider();
       return hitTestPromise;
     })
     .then(() => {
@@ -63,6 +63,6 @@ let testFunction = function(session, t, controller) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
 
 </script>

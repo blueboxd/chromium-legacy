@@ -105,11 +105,6 @@ class BASE_EXPORT MessageLoopCurrent {
   // DestructionObserver is receiving a notification callback.
   void RemoveDestructionObserver(DestructionObserver* destruction_observer);
 
-  // Forwards to MessageLoop::task_runner().
-  // DEPRECATED(https://crbug.com/616447): Use ThreadTaskRunnerHandle::Get()
-  // instead of MessageLoopCurrent::Get()->task_runner().
-  scoped_refptr<SingleThreadTaskRunner> task_runner() const;
-
   // Forwards to MessageLoop::SetTaskRunner().
   // DEPRECATED(https://crbug.com/825327): only owners of the MessageLoop
   // instance should replace its TaskRunner.

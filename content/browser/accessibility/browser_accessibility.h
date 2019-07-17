@@ -482,6 +482,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
 
+  std::string GetLanguage() const override;
+
   bool IsTable() const override;
   base::Optional<int> GetTableColCount() const override;
   base::Optional<int> GetTableRowCount() const override;

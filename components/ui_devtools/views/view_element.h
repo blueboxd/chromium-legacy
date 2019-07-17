@@ -31,8 +31,6 @@ class ViewElement : public views::ViewObserver, public UIElement {
   void OnViewBoundsChanged(views::View* view) override;
 
   // UIElement:
-  std::vector<std::pair<std::string, std::string>> GetCustomProperties()
-      const override;
   std::vector<UIElement::ClassProperties> GetCustomPropertiesForMatchedStyle()
       const override;
   void GetBounds(gfx::Rect* bounds) const override;

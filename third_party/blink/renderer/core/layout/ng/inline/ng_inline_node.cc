@@ -491,6 +491,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   // doesn't contain any RTL characters.
   data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
   data->is_empty_inline_ = builder.IsEmptyInline();
+  data->is_block_level_ = builder.IsBlockLevel();
   data->changes_may_affect_earlier_lines_ =
       builder.ChangesMayAffectEarlierLines();
 }
@@ -885,13 +886,8 @@ void NGInlineNode::ClearAssociatedFragments(
   auto* block_flow = To<LayoutBlockFlow>(fragment.GetMutableLayoutObject());
   if (!block_flow->ChildrenInline())
     return;
+  DCHECK(AreNGBlockFlowChildrenInline(block_flow));
   NGInlineNode node = NGInlineNode(block_flow);
-#if DCHECK_IS_ON()
-  // We assume this function is called for the LayoutObject of an NGInlineNode.
-  NGLayoutInputNode first_child = NGBlockNode(block_flow).FirstChild();
-  DCHECK(first_child && first_child.IsInline());
-  DCHECK(first_child == node);
-#endif
 
   DCHECK(node.IsPrepareLayoutFinished());
   const Vector<NGInlineItem>& items = node.MaybeDirtyData().items;

@@ -44,8 +44,7 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
       bool mapped = client_pixmap->Map();
       EXPECT_TRUE(mapped);
 
-      for (size_t plane = 0; plane < NumberOfPlanesForBufferFormat(format);
-           ++plane) {
+      for (size_t plane = 0; plane < pixmap->GetNumberOfPlanes(); ++plane) {
         void* data = client_pixmap->GetMemoryAddress(plane);
         GLImageTestSupport::SetBufferDataToColor(
             size.width(), size.height(), pixmap->GetDmaBufPitch(plane), plane,

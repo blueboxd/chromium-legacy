@@ -25,6 +25,8 @@ constexpr int kAnimationDurationMs = 250;
 
 constexpr int kPaddingBetweenWidgetsNewUi = 8;
 
+constexpr int kPaddingBetweenWidgetAndRightScreenEdge = 6;
+
 class StatusAreaWidgetDelegateAnimationSettings
     : public ui::ScopedLayerAnimationSettings {
  public:
@@ -125,13 +127,15 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>());
 
-  // Update tray border based on layout.
-  bool is_child_on_edge = true;
+  const auto it = std::find_if(children().crbegin(), children().crend(),
+                               [](const View* v) { return v->GetVisible(); });
+  const View* last_visible_child = it == children().crend() ? nullptr : *it;
+
+  // Set the border for each child, with a different border for the edge child.
   for (auto* child : children()) {
     if (!child->GetVisible())
       continue;
-    SetBorderOnChild(child, is_child_on_edge);
-    is_child_on_edge = false;
+    SetBorderOnChild(child, last_visible_child == child);
   }
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -184,7 +188,7 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 }
 
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
-                                                bool extend_border_to_edge) {
+                                                bool is_child_on_edge) {
   const int vertical_padding =
       (ShelfConstants::shelf_size() - kTrayItemSize) / 2;
 
@@ -195,6 +199,8 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // Add some extra space so that borders don't overlap. This padding between
   // items also takes care of padding at the edge of the shelf.
   int right_edge = kPaddingBetweenWidgetsNewUi;
+  if (is_child_on_edge && chromeos::switches::ShouldShowShelfDenseClamshell())
+    right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

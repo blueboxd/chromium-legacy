@@ -16,7 +16,7 @@ let testName = "Inline session ends if magic window data provider disconnects.";
 let fakeDeviceInitParams = VALID_NON_IMMERSIVE_DEVICE;
 let requestSessionModes = ['inline'];
 
-let testFunction = function(session, t, fakeDeviceController) {
+let testFunction = function(session, fakeDeviceController, t) {
   return new Promise((resolve) => {
     // Session must have a baseLayer or frame requests will be ignored.
     session.updateRenderState({
@@ -36,6 +36,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 }
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
 
 </script>

@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_P(RenderThreadImplGpuMemoryBufferBrowserTest,
   ASSERT_TRUE(buffer->Map());
 
   // Write to buffer and check result.
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
   for (size_t plane = 0; plane < num_planes; ++plane) {
     ASSERT_TRUE(buffer->memory(plane));
     ASSERT_TRUE(buffer->stride(plane));

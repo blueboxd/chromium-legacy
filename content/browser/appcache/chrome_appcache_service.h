@@ -30,6 +30,7 @@ class URLRequestContextGetter;
 }
 
 namespace content {
+class BrowserContext;
 class ResourceContext;
 
 struct ChromeAppCacheServiceDeleter;
@@ -51,11 +52,17 @@ class CONTENT_EXPORT ChromeAppCacheService
       public AppCacheServiceImpl,
       public AppCachePolicy {
  public:
-  explicit ChromeAppCacheService(storage::QuotaManagerProxy* proxy);
+  ChromeAppCacheService(storage::QuotaManagerProxy* proxy,
+                        base::WeakPtr<StoragePartitionImpl> partition);
 
-  // If |cache_path| is empty we will use in-memory structs.
-  void InitializeOnIOThread(
+  // If |cache_path| is empty we will use in-memory structs. If the
+  // NavigationLoaderOnUI feature is enabled, this is run on the UI thread with
+  // |browser_context| set and |resource_context| null. If it is disabled, this
+  // is run on the IO thread with |resource_context| set and |browser_context|
+  // null.
+  void InitializeOnLoaderThread(
       const base::FilePath& cache_path,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
@@ -103,7 +110,8 @@ class CONTENT_EXPORT ChromeAppCacheService
 
   void DeleteOnCorrectThread() const;
 
-  ResourceContext* resource_context_;
+  BrowserContext* browser_context_ = nullptr;
+  ResourceContext* resource_context_ = nullptr;
   base::FilePath cache_path_;
   mojo::UniqueReceiverSet<blink::mojom::AppCacheBackend> receivers_;
 

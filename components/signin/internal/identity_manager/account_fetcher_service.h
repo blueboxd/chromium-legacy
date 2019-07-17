@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 
 class AccountInfoFetcher;
 class AccountTrackerService;

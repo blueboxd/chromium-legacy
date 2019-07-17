@@ -41,6 +41,7 @@ class TestWebAppProvider : public WebAppProvider {
   void SetInstallFinalizer(std::unique_ptr<InstallFinalizer> install_finalizer);
   void SetPendingAppManager(
       std::unique_ptr<PendingAppManager> pending_app_manager);
+  void SetWebAppUiManager(std::unique_ptr<WebAppUiManager> ui_manager);
   void SetSystemWebAppManager(
       std::unique_ptr<SystemWebAppManager> system_web_app_manager);
   void SetWebAppPolicyManager(

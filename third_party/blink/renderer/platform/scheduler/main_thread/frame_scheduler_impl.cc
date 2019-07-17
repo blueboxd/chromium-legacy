@@ -235,7 +235,7 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
   DCHECK(queue);
 
   queue->DetachFromMainThreadScheduler();
-  queue->DetachFromFrameScheduler();
+  DCHECK(!queue->GetFrameScheduler());
   queue->SetBlameContext(nullptr);
 }
 

@@ -44,6 +44,10 @@
 #include "ui/gfx/win/rendering_window_manager.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -190,8 +194,13 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
 
     // GPU process access is disabled. Start a new thread to run the display
     // compositor in-process and connect HostFrameSinkManager to it.
-    viz_compositor_thread_ = std::make_unique<viz::VizCompositorThreadRunner>(
-        base::MessageLoop::TYPE_DEFAULT);
+    base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+#if defined(USE_OZONE)
+    message_loop_type =
+        ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
+#endif
+    viz_compositor_thread_ =
+        std::make_unique<viz::VizCompositorThreadRunner>(message_loop_type);
 
     viz::mojom::FrameSinkManagerParamsPtr params =
         viz::mojom::FrameSinkManagerParams::New();

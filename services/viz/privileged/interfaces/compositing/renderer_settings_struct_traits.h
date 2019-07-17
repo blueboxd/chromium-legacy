@@ -67,10 +67,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.use_skia_renderer;
   }
 
-  static bool use_skia_renderer_non_ddl(const viz::RendererSettings& input) {
-    return input.use_skia_renderer_non_ddl;
-  }
-
   static bool record_sk_picture(const viz::RendererSettings& input) {
     return input.record_sk_picture;
   }

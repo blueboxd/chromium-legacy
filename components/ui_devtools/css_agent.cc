@@ -42,31 +42,12 @@ std::unique_ptr<protocol::Array<int>> BuildDefaultMatchingSelectors() {
 }
 
 std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
-                                                   int value) {
-  return CSS::CSSProperty::create()
-      .setRange(BuildDefaultSourceRange())
-      .setName(name)
-      .setValue(base::NumberToString(value))
-      .build();
-}
-
-std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
                                                    const std::string& value) {
   return CSS::CSSProperty::create()
       .setRange(BuildDefaultSourceRange())
       .setName(name)
       .setValue(value)
       .build();
-}
-
-std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSPropertyArray(
-    const gfx::Rect& bounds) {
-  auto cssProperties = std::make_unique<Array<CSS::CSSProperty>>();
-  cssProperties->emplace_back(BuildCSSProperty(kHeight, bounds.height()));
-  cssProperties->emplace_back(BuildCSSProperty(kWidth, bounds.width()));
-  cssProperties->emplace_back(BuildCSSProperty(kX, bounds.x()));
-  cssProperties->emplace_back(BuildCSSProperty(kY, bounds.y()));
-  return cssProperties;
 }
 
 std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSProperties(
@@ -77,32 +58,6 @@ std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSProperties(
         BuildCSSProperty(property.name_, property.value_));
   }
   return css_properties;
-}
-
-std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element) {
-  gfx::Rect bounds;
-  ui_element->GetBounds(&bounds);
-  std::unique_ptr<Array<CSS::CSSProperty>> css_properties(
-      BuildCSSPropertyArray(bounds));
-
-  if (ui_element->type() != VIEW) {
-    bool visible;
-    ui_element->GetVisible(&visible);
-    css_properties->emplace_back(BuildCSSProperty(kVisibility, visible));
-  }
-
-  const std::vector<std::pair<std::string, std::string>> properties(
-      ui_element->GetCustomProperties());
-  for (const auto& it : properties)
-    css_properties->emplace_back(BuildCSSProperty(it.first, it.second));
-
-  return CSS::CSSStyle::create()
-      .setRange(BuildDefaultSourceRange())
-      .setStyleSheetId(base::NumberToString(ui_element->node_id()))
-      .setCssProperties(std::move(css_properties))
-      .setShorthandEntries(
-          std::make_unique<Array<protocol::CSS::ShorthandEntry>>())
-      .build();
 }
 
 std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(
@@ -286,15 +241,6 @@ Response CSSAgent::setStyleTexts(
 
 void CSSAgent::OnElementBoundsChanged(UIElement* ui_element) {
   InvalidateStyleSheet(ui_element);
-}
-
-std::unique_ptr<CSS::CSSStyle> CSSAgent::GetStylesForUIElement(
-    UIElement* ui_element) {
-  gfx::Rect bounds;
-  bool visible = false;
-  return GetPropertiesForUIElement(ui_element, &bounds, &visible)
-             ? BuildCSSStyle(ui_element)
-             : nullptr;
 }
 
 void CSSAgent::InvalidateStyleSheet(UIElement* ui_element) {

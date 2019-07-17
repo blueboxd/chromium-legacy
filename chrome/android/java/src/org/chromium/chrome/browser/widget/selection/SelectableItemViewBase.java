@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.selection;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,7 +38,7 @@ public abstract class SelectableItemViewBase<E>
 
     private SelectionDelegate<E> mSelectionDelegate;
     private E mItem;
-    private boolean mIsChecked;
+    private @Nullable Boolean mIsChecked;
 
     // Controls whether selection should happen during onLongClick.
     private boolean mSelectOnLongClick = true;
@@ -121,7 +122,7 @@ public abstract class SelectableItemViewBase<E>
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        setChecked(false);
+        resetCheckedState();
     }
 
     // OnTouchListener implementation.
@@ -187,7 +188,7 @@ public abstract class SelectableItemViewBase<E>
     // Checkable implementations.
     @Override
     public boolean isChecked() {
-        return mIsChecked;
+        return mIsChecked != null && mIsChecked;
     }
 
     @Override
@@ -195,11 +196,28 @@ public abstract class SelectableItemViewBase<E>
         setChecked(!isChecked());
     }
 
+    /**
+     * Sets whether the item is checked. Note that if the views to be updated run animations, you
+     * should override {@link #updateView(boolean)} to get the correct animation state instead of
+     * overriding this method to update the views.
+     * @param checked Whether the item is checked.
+     */
     @Override
     public void setChecked(boolean checked) {
-        if (checked == mIsChecked) return;
+        if (mIsChecked != null && checked == mIsChecked) return;
+
+        // We shouldn't run the animation when mIsChecked is first initialized to the correct state.
+        final boolean animate = mIsChecked != null;
         mIsChecked = checked;
-        updateView();
+        updateView(animate);
+    }
+
+    /**
+     * Resets the checked state to be uninitialized.
+     */
+    private void resetCheckedState() {
+        setChecked(false);
+        mIsChecked = null;
     }
 
     // SelectionObserver implementation.
@@ -210,8 +228,9 @@ public abstract class SelectableItemViewBase<E>
 
     /**
      * Update the view based on whether this item is selected.
+     * @param animate Whether to animate the selection state changing if applicable.
      */
-    protected void updateView() {}
+    protected void updateView(boolean animate) {}
 
     /**
      * Same as {@link OnClickListener#onClick(View)} on this.

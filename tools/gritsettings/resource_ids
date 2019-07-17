@@ -217,6 +217,9 @@
   "components/embedder_suppport/android/java/strings/web_contents_delegate_android_strings.grd": {
     "messages": [17600],
   },
+  "components/autofill/core/browser/autofill_address_rewriter_resources.grd":{
+    "includes": [18000]
+  },
   # END components/ section.
 
   # START content/ section.

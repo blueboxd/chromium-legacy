@@ -358,7 +358,12 @@ void HttpCache::OnExternalCacheHit(
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = http_method;
-  request_info.network_isolation_key = NetworkIsolationKey(top_frame_origin);
+
+  if (top_frame_origin.has_value()) {
+    request_info.network_isolation_key =
+        NetworkIsolationKey(top_frame_origin.value());
+  }
+
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
 }

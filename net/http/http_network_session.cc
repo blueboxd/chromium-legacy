@@ -279,9 +279,9 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
   dict->SetInteger("max_server_configs_stored_in_properties",
                    params_.quic_params.max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",
-                   params_.quic_params.idle_connection_timeout_seconds);
+                   params_.quic_params.idle_connection_timeout.InSeconds());
   dict->SetInteger("reduced_ping_timeout_seconds",
-                   params_.quic_params.reduced_ping_timeout_seconds);
+                   params_.quic_params.reduced_ping_timeout.InSeconds());
   dict->SetBoolean(
       "mark_quic_broken_when_network_blackholes",
       params_.quic_params.mark_quic_broken_when_network_blackholes);
@@ -301,7 +301,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_params.migrate_sessions_early_v2);
   dict->SetInteger(
       "retransmittable_on_wire_timeout_milliseconds",
-      params_.quic_params.retransmittable_on_wire_timeout_milliseconds);
+      params_.quic_params.retransmittable_on_wire_timeout.InMilliseconds());
   dict->SetBoolean(
       "retry_on_alternate_network_before_handshake",
       params_.quic_params.retry_on_alternate_network_before_handshake);
@@ -330,8 +330,9 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_params.estimate_initial_rtt);
   dict->SetBoolean("server_push_cancellation",
                    params_.enable_server_push_cancellation);
-  dict->SetInteger("initial_rtt_for_handshake_milliseconds",
-                   params_.quic_params.initial_rtt_for_handshake_milliseconds);
+  dict->SetInteger(
+      "initial_rtt_for_handshake_milliseconds",
+      params_.quic_params.initial_rtt_for_handshake.InMilliseconds());
 
   return std::move(dict);
 }

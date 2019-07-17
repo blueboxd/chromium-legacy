@@ -289,7 +289,7 @@ def sign_all(orig_paths, config, package_dmg=True, do_notarization=True):
                                             dist_config.dmg_basename + '.zip')
                     commands.run_command([
                         'zip', '--recurse-paths', '--symlinks', '--quiet',
-                        '--no-dir-entries', zip_file, dist_config.app_dir
+                        zip_file, dist_config.app_dir
                     ],
                                          cwd=dest_dir)
                     uuid = notarize.submit(zip_file, dist_config)

@@ -915,10 +915,14 @@ void OverviewGrid::CalculateWindowListAnimationStates(
   // Preserves ordering if the category is the same.
   std::sort(items.begin(), items.end(),
             [&selected_item](OverviewItem* a, OverviewItem* b) {
+              // NB: This treats all non-normal z-ordered windows the same. If
+              // Aura ever adopts z-order levels, this will need to be changed.
               const bool a_on_top =
-                  a->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey);
+                  a->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
+                  ui::ZOrderLevel::kNormal;
               const bool b_on_top =
-                  b->GetWindow()->GetProperty(aura::client::kAlwaysOnTopKey);
+                  b->GetWindow()->GetProperty(aura::client::kZOrderingKey) !=
+                  ui::ZOrderLevel::kNormal;
               if (selected_item && a_on_top && b_on_top)
                 return a == selected_item;
               if (a_on_top)

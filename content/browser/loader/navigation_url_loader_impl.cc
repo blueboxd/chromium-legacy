@@ -100,14 +100,6 @@ namespace content {
 
 namespace {
 
-// Returns the BrowserThread::ID that the URLLoaderRequestController will be
-// running on.
-BrowserThread::ID GetLoaderRequestControllerThreadID() {
-  return NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()
-             ? BrowserThread::UI
-             : BrowserThread::IO;
-}
-
 class NavigationLoaderInterceptorBrowserContainer
     : public NavigationLoaderInterceptor {
  public:
@@ -670,7 +662,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     if (IsNavigationLoaderOnUIEnabled()) {
-      CreateInterceptorsForUI(request_info, service_worker_navigation_handle);
+      CreateInterceptorsForUI(request_info, service_worker_navigation_handle,
+                              appcache_handle_core);
     } else {
       CreateInterceptorsForIO(
           request_info, service_worker_navigation_handle_core,
@@ -701,7 +694,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void CreateInterceptorsForUI(
       NavigationRequestInfo* request_info,
-      ServiceWorkerNavigationHandle* service_worker_navigation_handle) {
+      ServiceWorkerNavigationHandle* service_worker_navigation_handle,
+      AppCacheNavigationHandleCore* appcache_handle_core) {
     // Set up an interceptor for service workers.
     if (service_worker_navigation_handle) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
@@ -712,6 +706,17 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // is not secure).
       if (service_worker_interceptor)
         interceptors_.push_back(std::move(service_worker_interceptor));
+    }
+
+    // Set-up an interceptor for AppCache if non-null |appcache_handle_core|
+    // is given.
+    if (appcache_handle_core) {
+      CHECK(appcache_handle_core->host());
+      std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
+          AppCacheRequestHandler::InitializeForMainResourceNetworkService(
+              *resource_request_, appcache_handle_core->host()->GetWeakPtr());
+      if (appcache_interceptor)
+        interceptors_.push_back(std::move(appcache_interceptor));
     }
 
     // See if embedders want to add interceptors.
@@ -1127,7 +1132,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       base::Optional<url::Origin> origin =
           url::Origin::Create(resource_request_->url);
       resource_request_->trusted_network_isolation_key =
-          net::NetworkIsolationKey(origin, origin);
+          net::NetworkIsolationKey(origin.value(), origin);
     }
 
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
@@ -1925,6 +1930,13 @@ GlobalRequestID NavigationURLLoaderImpl::MakeGlobalRequestID() {
 bool NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) &&
          base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI);
+}
+
+// static
+BrowserThread::ID
+NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID() {
+  return IsNavigationLoaderOnUIEnabled() ? BrowserThread::UI
+                                         : BrowserThread::IO;
 }
 
 void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {

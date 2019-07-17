@@ -66,7 +66,7 @@ bool AccountManagerWelcomeDialog::ShowIfRequired() {
 
 void AccountManagerWelcomeDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
-  params->keep_on_top = false;
+  params->z_order = ui::ZOrderLevel::kNormal;
   params->type = views::Widget::InitParams::Type::TYPE_WINDOW_FRAMELESS;
   params->shadow_type = views::Widget::InitParams::ShadowType::SHADOW_TYPE_DROP;
   params->shadow_elevation = wm::kShadowElevationActiveWindow;

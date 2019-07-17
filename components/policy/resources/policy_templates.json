@@ -6767,6 +6767,26 @@
       See https://g.co/chrome/symantecpkicerts for more details on this deprecation.''',
     },
     {
+      'name': 'BuiltinCertificateVerifierEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:77-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 575,
+      'caption': '''Determines whether the built-in certificate verifier will be used to verify server certificates''',
+      'tags': [],
+      'desc': '''When this setting is enabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will perform verification of server certificates using the built-in certificate verifier.
+      When this setting is disabled, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
+      When this setting is not set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> the built-in or the legacy certificate verifier may be used.
+
+      This policy is planned to be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 81, when support for the legacy certificate verifier on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is planned to be removed.
+      ''',
+    },
+    {
       'name': 'ForceEphemeralProfiles',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -9242,7 +9262,7 @@
 
           If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
 
-          When accessiblity features are enabled (by other means, e.g by a key combination), Accessibility options will always appear in system tray menu.'''
+          When accessiblity features are enabled by other means (e.g by a key combination), Accessibility options will always appear in system tray menu.'''
     },
     {
       'name': 'LargeCursorEnabled',
@@ -17024,6 +17044,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 574,
+  'highest_id_currently_used': 575,
   'highest_atomic_group_id_currently_used': 37
 }

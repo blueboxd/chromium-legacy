@@ -444,8 +444,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,
                                    BSTR* value_bstr);
 
-  base::string16 GetInvalidValue() const;
-
   // Merges the given spelling attributes, i.e. document marker information,
   // into the given text attributes starting at the given character offset. This
   // is required for two reasons: 1. Document markers that are present on text

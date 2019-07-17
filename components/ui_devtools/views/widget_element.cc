@@ -46,11 +46,6 @@ void WidgetElement::OnWidgetDestroyed(views::Widget* widget) {
   widget_ = nullptr;
 }
 
-std::vector<std::pair<std::string, std::string>>
-WidgetElement::GetCustomProperties() const {
-  return {};
-}
-
 void WidgetElement::GetBounds(gfx::Rect* bounds) const {
   *bounds = widget_->GetRestoredBounds();
 }

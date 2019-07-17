@@ -36,12 +36,13 @@ struct LayerData {
   // or minimized windows' layers, should all be skipped.
   bool should_skip_layer = false;
 
-  // If true, we will reset the mirrored layer transform to identity. This is
-  // because windows are transformed in overview mode to position them in their
-  // places in the overview mode grid. However, in the desk's mini_view, we
-  // should show those windows in their original locations on the screen as if
-  // overview mode is inactive.
-  bool should_reset_transform = false;
+  // If true, we will force the mirror layers to be visible even if the source
+  // layers are not, and we will disable visibility change synchronization
+  // between the source and mirror layers.
+  // This is used, for example, for the desks container windows whose mirrors
+  // should always be visible (even for inactive desks) to be able to see their
+  // contents in the mini_views.
+  bool should_force_mirror_visible = false;
 };
 
 // Returns true if |window| can be shown in the desk's preview according to its
@@ -79,16 +80,19 @@ void MirrorLayerTree(ui::Layer* source_layer,
   for (auto* child : source_layer->children())
     MirrorLayerTree(child, mirror, layers_data);
 
-  // Force the mirrored layers to be visible (in order to show windows on
-  // inactive desks).
-  // TODO(afakhry): See if we need to avoid this in certain cases.
-  mirror->SetVisible(true);
-  mirror->SetOpacity(1);
   mirror->set_sync_bounds_with_source(true);
-  mirror->set_sync_visibility_with_source(false);
+  if (layer_data.should_force_mirror_visible) {
+    mirror->SetVisible(true);
+    mirror->SetOpacity(1);
+    mirror->set_sync_visibility_with_source(false);
+  }
 
-  if (layer_data.should_reset_transform)
-    mirror->SetTransform(gfx::Transform());
+  // Windows in overview mode are transformed into their positions in the grid,
+  // but we want to show a preview of the windows in their untransformed state
+  // outside of overview mode.
+  // TODO(afakhry): Is it safe to do this for all layers in the subtree, or
+  // should we limit this for the mirrors of the top level windows' layers.
+  mirror->SetTransform(gfx::Transform());
 }
 
 // Gathers the needed data about the layers in the subtree rooted at the layer
@@ -121,8 +125,8 @@ void GetLayersData(aura::Window* window,
   // Windows transformed into position in the overview mode grid should be
   // mirrored and the transforms of the mirrored layers should be reset to
   // identity.
-  if (window->GetProperty(kIsShowingInOverviewKey))
-    layer_data.should_reset_transform = true;
+  if (window->GetProperty(kForceVisibleInMiniViewKey))
+    layer_data.should_force_mirror_visible = true;
 
   for (auto* child : window->children())
     GetLayersData(child, out_layers_data);

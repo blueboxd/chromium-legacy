@@ -202,7 +202,8 @@ class SystemPerfettoTest : public testing::Test {
   const char* old_tmp_dir_ = nullptr;
 };
 
-TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
+// TODO(crbug.com/983509): test is flaky.
+TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEnd) {
   auto system_service = CreateMockSystemService();
 
   // Set up the producer to talk to the system.
@@ -278,6 +279,7 @@ TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEndRealService) {
   EXPECT_EQ(0, remove(path.c_str()));
 }
 
+// TODO(crbug.com/983509): test is flaky.
 TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   auto system_service = CreateMockSystemService();
 
@@ -366,7 +368,9 @@ TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
+// TODO(crbug.com/983509): test is flaky.
+TEST_F(SystemPerfettoTest,
+       DISABLED_MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   auto system_service = CreateMockSystemService();
 
   base::RunLoop local_no_more_packets_runloop;
@@ -461,7 +465,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
+// TODO(crbug.com/983509): test is flaky.
+TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSources) {
   auto system_service = CreateMockSystemService();
 
   // Start a trace using the system Perfetto service.
@@ -552,7 +557,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
+// TODO(crbug.com/983509): test is flaky.
+TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSourcesLocalFirst) {
   auto system_service = CreateMockSystemService();
 
   // We construct it up front so it connects to the service before the local
@@ -639,7 +645,8 @@ TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
+// TODO(crbug.com/983509): test is flaky.
+TEST_F(SystemPerfettoTest, DISABLED_SystemToLowAPILevel) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
     LOG(INFO) << "Skipping SystemToLowAPILevel test, this phone supports the "
@@ -689,7 +696,8 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
   EXPECT_EQ(0u, run_test(/* check_sdk_level = */ true));
 }
 
-TEST_F(SystemPerfettoTest, RespectsFeatureList) {
+// TODO(crbug.com/983509): test is flaky.
+TEST_F(SystemPerfettoTest, DISABLED_RespectsFeatureList) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);

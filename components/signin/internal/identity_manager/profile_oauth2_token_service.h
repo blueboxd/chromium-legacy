@@ -6,15 +6,21 @@
 #define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "build/buildflag.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "net/base/backoff_entry.h"
 
 namespace identity {
@@ -23,6 +29,8 @@ class IdentityManager;
 
 class PrefService;
 class PrefRegistrySimple;
+class OAuth2AccessTokenConsumer;
+class OAuth2TokenServiceDelegate;
 
 // ProfileOAuth2TokenService is a KeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
@@ -38,6 +46,7 @@ class PrefRegistrySimple;
 //
 // Note: requests should be started from the UI thread.
 class ProfileOAuth2TokenService : public OAuth2TokenService,
+                                  public OAuth2AccessTokenManager::Delegate,
                                   public OAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
@@ -52,6 +61,22 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
       PrefService* user_prefs,
       std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
   ~ProfileOAuth2TokenService() override;
+
+  // Overridden from OAuth2AccessTokenManager::Delegate.
+  std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
+      const CoreAccountId& account_id,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      OAuth2AccessTokenConsumer* consumer) override;
+  bool HasRefreshToken(const CoreAccountId& account_id) const override;
+  bool FixRequestErrorIfPossible() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      const override;
+  void OnAccessTokenInvalidated(const CoreAccountId& account_id,
+                                const std::string& client_id,
+                                const std::set<std::string>& scopes,
+                                const std::string& access_token) override;
+  void OnAccessTokenFetched(const CoreAccountId& account_id,
+                            const GoogleServiceAuthError& error) override;
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -223,6 +248,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   void OverrideAccessTokenManagerForTesting(
       std::unique_ptr<OAuth2AccessTokenManager> token_manager);
 
+ protected:
+  OAuth2AccessTokenManager* GetAccessTokenManager();
+
  private:
   friend class identity::IdentityManager;
 
@@ -253,6 +281,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
   // Whether all credentials have been loaded.
   bool all_credentials_loaded_;
+
+  std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 
   // Callbacks to invoke, if set, for refresh token-related events.
   RefreshTokenAvailableFromSourceCallback on_refresh_token_available_callback_;

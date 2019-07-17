@@ -4,7 +4,9 @@
 
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
+#include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // static

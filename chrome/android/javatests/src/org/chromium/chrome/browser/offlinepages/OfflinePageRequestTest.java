@@ -69,7 +69,7 @@ public class OfflinePageRequestTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         // Load and save an offline page.
-        savePage(testUrl);
+        savePage(testUrl, CLIENT_ID);
         Assert.assertFalse(isErrorPage(tab));
         Assert.assertFalse(isOfflinePage(tab));
 
@@ -101,7 +101,7 @@ public class OfflinePageRequestTest {
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
         // Load and save an offline page for the url with a fragment.
-        savePage(testUrlWithFragment);
+        savePage(testUrlWithFragment, CLIENT_ID);
         Assert.assertFalse(isErrorPage(tab));
         Assert.assertFalse(isOfflinePage(tab));
 
@@ -116,13 +116,47 @@ public class OfflinePageRequestTest {
         Assert.assertTrue(isOfflinePage(tab));
     }
 
-    private void savePage(String url) throws InterruptedException {
+    @Test
+    @SmallTest
+    @DisabledTest(message = "crbug.com/786233")
+    public void testLoadOfflinePageFromDownloadsOnDisconnectedNetwork() throws Exception {
+        // Specifically tests saving to and loading from Downloads.
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        String testUrl = testServer.getURL(TEST_PAGE);
+        String aboutUrl = testServer.getURL(ABOUT_PAGE);
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Load and save a persistent offline page using a persistent namespace so that the archive
+        // will be published.
+        savePage(testUrl, new ClientId(OfflinePageBridge.DOWNLOAD_NAMESPACE, "1234"));
+        Assert.assertFalse(isErrorPage(tab));
+        Assert.assertFalse(isOfflinePage(tab));
+
+        // Load another page.
+        mActivityTestRule.loadUrl(aboutUrl);
+        Assert.assertFalse(isErrorPage(tab));
+        Assert.assertFalse(isOfflinePage(tab));
+
+        // Stop the server and also disconnect the network.
+        testServer.stopAndDestroyServer();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { NetworkChangeNotifier.forceConnectivityState(false); });
+
+        // Load the page that has an offline copy. The offline page should be shown.
+        mActivityTestRule.loadUrl(testUrl);
+        Assert.assertFalse(isErrorPage(tab));
+        Assert.assertTrue(isOfflinePage(tab));
+    }
+
+    private void savePage(String url, ClientId clientId) throws InterruptedException {
         mActivityTestRule.loadUrl(url);
 
         final Semaphore semaphore = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mOfflinePageBridge.savePage(
-                    mActivityTestRule.getWebContents(), CLIENT_ID, new SavePageCallback() {
+                    mActivityTestRule.getWebContents(), clientId, new SavePageCallback() {
                         @Override
                         public void onSavePageDone(int savePageResult, String url, long offlineId) {
                             Assert.assertEquals(

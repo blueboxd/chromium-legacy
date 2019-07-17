@@ -142,7 +142,7 @@ AssistantOptInDialog::~AssistantOptInDialog() {
 
 void AssistantOptInDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
-  params->keep_on_top = false;
+  params->z_order = ui::ZOrderLevel::kNormal;
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {

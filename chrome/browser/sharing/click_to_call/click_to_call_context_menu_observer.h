@@ -65,7 +65,7 @@ class ClickToCallContextMenuObserver
 
   void SendClickToCallMessage(int chosen_device_index);
 
-  void OnMessageSent(base::Optional<std::string> message_id) const;
+  void OnMessageSent(bool sucess) const;
 
   gfx::ImageSkia GetContextMenuIcon() const;
 

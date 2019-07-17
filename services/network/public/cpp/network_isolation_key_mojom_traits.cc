@@ -19,7 +19,7 @@ bool StructTraits<network::mojom::NetworkIsolationKeyDataView,
   // given the flags set).  The constructor verifies this, so if the top-frame
   // origin is populated, we call the full constructor, otherwise, the empty.
   if (top_frame_origin.has_value()) {
-    *out = net::NetworkIsolationKey(top_frame_origin, frame_origin);
+    *out = net::NetworkIsolationKey(top_frame_origin.value(), frame_origin);
   } else {
     *out = net::NetworkIsolationKey();
   }

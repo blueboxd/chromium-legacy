@@ -219,7 +219,6 @@ def RealMain(mapping, device_arg, package, status, hide_summary, workdir):
 
 
 def main():
-  devil_chromium.Initialize()
   parser = argparse.ArgumentParser(description="""
 List Java classes in an APK which fail ART class verification.
 """)
@@ -262,7 +261,7 @@ List Java classes in an APK which fail ART class verification.
   logging_common.AddLoggingArguments(parser)
 
   args = parser.parse_args()
-  script_common.InitializeEnvironment(args)
+  devil_chromium.Initialize(adb_path=args.adb_path)
   logging_common.InitializeLogging(args)
 
   if args.workdir:

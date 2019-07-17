@@ -41,10 +41,6 @@ const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the SkiaRenderer without DDL.
-const base::Feature kUseSkiaRendererNonDDL{"UseSkiaRendererNonDDL",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use the SkiaRenderer to record SkPicture.
 const base::Feature kRecordSkPicture{"RecordSkPicture",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -95,18 +91,6 @@ bool IsUsingSkiaRenderer() {
 #if !defined(OS_ANDROID)
   if (enabled && !IsVizDisplayCompositorEnabled()) {
     DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";
-    return false;
-  }
-#endif  // !defined(OS_ANDROID)
-  return enabled;
-}
-
-bool IsUsingSkiaRendererNonDDL() {
-  // We require OOP-D everywhere but WebView.
-  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRendererNonDDL);
-#if !defined(OS_ANDROID)
-  if (enabled && !IsVizDisplayCompositorEnabled()) {
-    DLOG(ERROR) << "UseSkiaRendererNonDDL requires VizDisplayCompositor.";
     return false;
   }
 #endif  // !defined(OS_ANDROID)

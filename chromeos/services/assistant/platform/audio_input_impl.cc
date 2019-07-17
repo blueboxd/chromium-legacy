@@ -216,7 +216,7 @@ void AudioInputImpl::RecreateStateManager() {
 
 // Runs on audio service thread.
 void AudioInputImpl::Capture(const media::AudioBus* audio_source,
-                             int audio_delay_milliseconds,
+                             base::TimeTicks audio_capture_time,
                              double volume,
                              bool key_pressed) {
   DCHECK_EQ(g_current_format.num_channels, audio_source->channels());
@@ -230,10 +230,8 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
   int64_t time = 0;
   // Only provide accurate timestamp when eraser is enabled, otherwise it seems
   // break normal libassistant voice recognition.
-  if (features::IsAudioEraserEnabled()) {
-    time = base::TimeTicks::Now().since_origin().InMicroseconds() -
-           1000 * audio_delay_milliseconds;
-  }
+  if (features::IsAudioEraserEnabled())
+    time = audio_capture_time.since_origin().InMicroseconds();
   AudioInputBufferImpl input_buffer(buffer.data(), audio_source->frames());
   {
     base::AutoLock lock(lock_);

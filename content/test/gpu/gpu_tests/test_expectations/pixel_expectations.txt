@@ -66,10 +66,6 @@ crbug.com/805739 [ android-webview-instrumentation ] Pixel_CanvasLowLatencyWebGL
 # expectation below is removed.
 # crbug.com/575305  [ android-webview-instrumentation ] Pixel_WebGLSadCanvas [ Skip ]
 
-# Uncomment this when crbug.com/925744 is fixed and conflicting
-# expectation below is removed.
-# crbug.com/925744  [ android-webview-instrumentation ] Pixel_Video_Context_Loss_VP9 [ Skip ]
-
 crbug.com/521588 [ android ] Pixel_ScissorTestWithPreserveDrawingBuffer [ Failure ]
 
 # TODO(vmiura) check / generate reference images for Android devices
@@ -151,13 +147,8 @@ crbug.com/911413 [ mac amd-0x679e ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/927107 [ android no-skia-renderer ] Pixel_CSS3DBlueBox [ Failure ]
 
 # Fail on Nexus 5, 5X, 6, 6P, 9 and Shield TV.
-crbug.com/925744 [ android ] Pixel_Video_MP4 [ Skip ]
-crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
 crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/925744 [ android ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/925744 [ android ] Pixel_Video_VP9 [ Skip ]
-crbug.com/925744 [ android ] Pixel_Video_Context_Loss_VP9 [ Skip ]
 
 # Skip on platforms where DXVA vs D3D11 decoder doesn't matter.
 crbug.com/927901 [ linux ] Pixel_Video_MP4_DXVA [ Skip ]
@@ -174,6 +165,12 @@ crbug.com/929425 [ win nvidia ] Pixel_DirectComposition_ComplexOverlays [ RetryO
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] * [ RetryOnFailure ]
+
+# Mark 1 webview test as Failure. This test is failing instead of flaking. It
+# might have the same Nexus 5x driver bug as crbug.com/950932 but that
+# should have made this test flaky instead of always failing. Need to
+# investigate later. Filed a bug to track the debug.
+crbug.com/984734 [ android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_Video_Context_Loss_VP9 [ Failure ]
 
 # Producing black images on Nexus 5Xs in Android Webview.
 crbug.com/984352 [ android android-webview-instrumentation qualcomm-adreno-(tm)-418 ] Pixel_CanvasLowLatency2D [ Failure ]

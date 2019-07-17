@@ -34,8 +34,7 @@ class ImmersiveFullscreenController;
 class ASH_EXPORT WideFrameView : public views::WidgetDelegateView,
                                  public aura::WindowObserver,
                                  public display::DisplayObserver,
-                                 public ImmersiveFullscreenControllerDelegate,
-                                 public OverviewObserver {
+                                 public ImmersiveFullscreenControllerDelegate {
  public:
   explicit WideFrameView(views::Widget* target);
   ~WideFrameView() override;
@@ -73,10 +72,6 @@ class ASH_EXPORT WideFrameView : public views::WidgetDelegateView,
   void OnImmersiveFullscreenExited() override;
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
-
-  // OverviewObserver:
-  void OnOverviewModeStarting() override;
-  void OnOverviewModeEnded() override;
 
   HeaderView* GetTargetHeaderView();
 

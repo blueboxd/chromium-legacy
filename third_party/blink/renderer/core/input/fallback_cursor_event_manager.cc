@@ -392,6 +392,8 @@ void FallbackCursorEventManager::HandleMousePressEvent(const WebMouseEvent& e) {
   HitTestResult hit_test_result =
       HitTest(root_frame_->GetDocument()->GetLayoutView(), location);
   Node* node = hit_test_result.InnerNode();
+  if (!node)
+    return;
 
   // Click on input boxes or media node should hide the cursor.
   if (HasEditableStyle(*node) || node->IsMediaElement()) {

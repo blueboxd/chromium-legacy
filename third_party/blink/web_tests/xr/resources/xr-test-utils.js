@@ -2,7 +2,7 @@
 // performs tests. If func returns a promise, test will only pass if the promise
 // resolves.
 function xr_session_promise_test(
-    func, deviceOptions, sessionModes, name, properties) {
+    name, func, deviceOptions, sessionModes, properties) {
   if (document.getElementById('webgl-canvas') ||
       document.getElementById('webgl2-canvas')) {
     webglCanvasSetup();
@@ -42,7 +42,7 @@ function xr_session_promise_test(
                   .then((session) => {
                     testSession = session;
                     testSession.mode = nextMode;
-                    return func(session, t, fakeDeviceController);
+                    return func(session, fakeDeviceController, t);
                   })
                   .then(() => {
                     // End the session. Silence any errors generated if the

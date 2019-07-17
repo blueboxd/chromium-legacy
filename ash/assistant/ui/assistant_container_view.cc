@@ -312,7 +312,7 @@ void AssistantContainerView::OnBeforeBubbleWidgetInit(
     views::Widget* widget) const {
   params->context = delegate_->GetRootWindowForNewWindows();
   params->corner_radius = kCornerRadiusDip;
-  params->keep_on_top = true;
+  params->z_order = ui::ZOrderLevel::kFloatingWindow;
 }
 
 views::ClientView* AssistantContainerView::CreateClientView(

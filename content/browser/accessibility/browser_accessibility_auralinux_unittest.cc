@@ -294,4 +294,238 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
   manager.reset();
 }
 
+TEST_F(BrowserAccessibilityAuraLinuxTest,
+       TestTextAttributesInContentEditables) {
+  auto has_attribute = [](AtkAttributeSet* attributes,
+                          AtkTextAttribute text_attribute,
+                          base::Optional<const char*> expected_value) {
+    const char* name = atk_text_attribute_get_name(text_attribute);
+    while (attributes) {
+      const AtkAttribute* attribute =
+          static_cast<AtkAttribute*>(attributes->data);
+      if (!g_strcmp0(attribute->name, name)) {
+        if (!expected_value.has_value())
+          return true;
+        if (!g_strcmp0(attribute->value, *expected_value))
+          return true;
+      }
+      attributes = g_slist_next(attributes);
+    }
+    return false;
+  };
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddState(ax::mojom::State::kFocusable);
+
+  ui::AXNodeData div_editable;
+  div_editable.id = 2;
+  div_editable.role = ax::mojom::Role::kGenericContainer;
+  div_editable.AddState(ax::mojom::State::kEditable);
+  div_editable.AddState(ax::mojom::State::kFocusable);
+  div_editable.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily,
+                                  "Helvetica");
+
+  ui::AXNodeData text_before;
+  text_before.id = 3;
+  text_before.role = ax::mojom::Role::kStaticText;
+  text_before.AddState(ax::mojom::State::kEditable);
+  text_before.SetName("Before ");
+  text_before.AddTextStyle(ax::mojom::TextStyle::kBold);
+  text_before.AddTextStyle(ax::mojom::TextStyle::kItalic);
+
+  ui::AXNodeData link;
+  link.id = 4;
+  link.role = ax::mojom::Role::kLink;
+  link.AddState(ax::mojom::State::kEditable);
+  link.AddState(ax::mojom::State::kFocusable);
+  link.AddState(ax::mojom::State::kLinked);
+  link.SetName("lnk");
+  link.AddTextStyle(ax::mojom::TextStyle::kUnderline);
+
+  ui::AXNodeData link_text;
+  link_text.id = 5;
+  link_text.role = ax::mojom::Role::kStaticText;
+  link_text.AddState(ax::mojom::State::kEditable);
+  link_text.AddState(ax::mojom::State::kFocusable);
+  link_text.AddState(ax::mojom::State::kLinked);
+  link_text.SetName("lnk");
+  link_text.AddTextStyle(ax::mojom::TextStyle::kUnderline);
+  link_text.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "fr");
+
+  // The name "lnk" is misspelled.
+  std::vector<int32_t> marker_types{
+      static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)};
+  std::vector<int32_t> marker_starts{0};
+  std::vector<int32_t> marker_ends{3};
+  link_text.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
+                                marker_types);
+  link_text.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
+                                marker_starts);
+  link_text.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                                marker_ends);
+
+  ui::AXNodeData text_after;
+  text_after.id = 6;
+  text_after.role = ax::mojom::Role::kStaticText;
+  text_after.AddState(ax::mojom::State::kEditable);
+  text_after.SetName(" after.");
+  // Leave text style as normal.
+
+  root.child_ids.push_back(div_editable.id);
+  div_editable.child_ids = {text_before.id, link.id, text_after.id};
+  link.child_ids.push_back(link_text.id);
+
+  ui::AXTreeUpdate update = MakeAXTreeUpdate(root, div_editable, text_before,
+                                             link, link_text, text_after);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          update, test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityAuraLinux* ax_root =
+      ToBrowserAccessibilityAuraLinux(manager->GetRoot());
+  ASSERT_NE(nullptr, ax_root);
+  ASSERT_EQ(1U, ax_root->PlatformChildCount());
+
+  BrowserAccessibilityAuraLinux* ax_div =
+      ToBrowserAccessibilityAuraLinux(ax_root->PlatformGetChild(0));
+  ASSERT_NE(nullptr, ax_div);
+  ASSERT_EQ(3U, ax_div->PlatformChildCount());
+
+  BrowserAccessibilityAuraLinux* ax_before =
+      ToBrowserAccessibilityAuraLinux(ax_div->PlatformGetChild(0));
+  ASSERT_NE(nullptr, ax_before);
+  BrowserAccessibilityAuraLinux* ax_link =
+      ToBrowserAccessibilityAuraLinux(ax_div->PlatformGetChild(1));
+  ASSERT_NE(nullptr, ax_link);
+  ASSERT_EQ(1U, ax_link->PlatformChildCount());
+  BrowserAccessibilityAuraLinux* ax_after =
+      ToBrowserAccessibilityAuraLinux(ax_div->PlatformGetChild(2));
+  ASSERT_NE(nullptr, ax_after);
+
+  BrowserAccessibilityAuraLinux* ax_link_text =
+      ToBrowserAccessibilityAuraLinux(ax_link->PlatformGetChild(0));
+  ASSERT_NE(nullptr, ax_link_text);
+
+  AtkObject* root_atk_object = ax_root->GetNode()->GetNativeViewAccessible();
+  AtkObject* ax_div_atk_object = ax_div->GetNode()->GetNativeViewAccessible();
+
+  ASSERT_EQ(1, atk_text_get_character_count(ATK_TEXT(root_atk_object)));
+  ASSERT_EQ(15, atk_text_get_character_count(ATK_TEXT(ax_div_atk_object)));
+
+  // Test the style of the root.
+  int start_offset, end_offset;
+  AtkAttributeSet* attributes = atk_text_get_run_attributes(
+      ATK_TEXT(root_atk_object), 0, &start_offset, &end_offset);
+
+  ASSERT_EQ(0, start_offset);
+  ASSERT_EQ(1, end_offset);
+
+  ASSERT_TRUE(
+      has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
+  atk_attribute_set_free(attributes);
+
+  // Test the style of text_before.
+  for (int offset = 0; offset < 7; ++offset) {
+    start_offset = end_offset = -1;
+    attributes = atk_text_get_run_attributes(
+        ATK_TEXT(ax_div_atk_object), offset, &start_offset, &end_offset);
+
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(7, end_offset);
+
+    ASSERT_TRUE(
+        has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
+    ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, "700"));
+    ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, "italic"));
+
+    atk_attribute_set_free(attributes);
+  }
+
+  // Test the style of the link.
+  AtkObject* ax_link_text_atk_object =
+      ax_link_text->GetNode()->GetNativeViewAccessible();
+  for (int offset = 0; offset < 3; offset++) {
+    start_offset = end_offset = -1;
+    attributes = atk_text_get_run_attributes(
+        ATK_TEXT(ax_link_text_atk_object), offset, &start_offset, &end_offset);
+
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(3, end_offset);
+
+    ASSERT_TRUE(
+        has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
+    ASSERT_FALSE(
+        has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, base::nullopt));
+    ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, base::nullopt));
+    ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, "single"));
+    ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_LANGUAGE, "fr"));
+
+    // For compatibility with Firefox, spelling attributes should also be
+    // propagated to the parent of static text leaves.
+    ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, "error"));
+    ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_INVALID, "spelling"));
+
+    atk_attribute_set_free(attributes);
+  }
+
+  // Test the style of text_after.
+  for (int offset = 8; offset < 15; ++offset) {
+    start_offset = end_offset = -1;
+    attributes = atk_text_get_run_attributes(
+        ATK_TEXT(ax_div_atk_object), offset, &start_offset, &end_offset);
+    EXPECT_EQ(8, start_offset);
+    EXPECT_EQ(15, end_offset);
+
+    ASSERT_TRUE(
+        has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
+    ASSERT_FALSE(
+        has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, base::nullopt));
+    ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, base::nullopt));
+    ASSERT_FALSE(
+        has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, base::nullopt));
+    ASSERT_FALSE(
+        has_attribute(attributes, ATK_TEXT_ATTR_INVALID, base::nullopt));
+
+    atk_attribute_set_free(attributes);
+  }
+
+  // Test the style of the static text nodes.
+  AtkObject* ax_before_atk_object =
+      ax_before->GetNode()->GetNativeViewAccessible();
+  start_offset = end_offset = -1;
+  attributes = atk_text_get_run_attributes(ATK_TEXT(ax_before_atk_object), 6,
+                                           &start_offset, &end_offset);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(7, end_offset);
+  ASSERT_TRUE(
+      has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
+  ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, "700"));
+  ASSERT_TRUE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, "italic"));
+  ASSERT_FALSE(
+      has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, base::nullopt));
+  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_INVALID, base::nullopt));
+  atk_attribute_set_free(attributes);
+
+  AtkObject* ax_after_atk_object =
+      ax_after->GetNode()->GetNativeViewAccessible();
+  attributes = atk_text_get_run_attributes(ATK_TEXT(ax_after_atk_object), 6,
+                                           &start_offset, &end_offset);
+  EXPECT_EQ(0, start_offset);
+  EXPECT_EQ(7, end_offset);
+  ASSERT_TRUE(
+      has_attribute(attributes, ATK_TEXT_ATTR_FAMILY_NAME, "Helvetica"));
+  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_WEIGHT, base::nullopt));
+  ASSERT_FALSE(has_attribute(attributes, ATK_TEXT_ATTR_STYLE, "italic"));
+  ASSERT_FALSE(
+      has_attribute(attributes, ATK_TEXT_ATTR_UNDERLINE, base::nullopt));
+  atk_attribute_set_free(attributes);
+
+  manager.reset();
+}
+
 }  // namespace content

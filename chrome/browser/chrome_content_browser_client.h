@@ -216,9 +216,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void UpdateRendererPreferencesForWorker(
       content::BrowserContext* browser_context,
       blink::mojom::RendererPreferences* out_prefs) override;
+  bool AllowAppCacheOnIO(const GURL& manifest_url,
+                         const GURL& first_party,
+                         content::ResourceContext* context) override;
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
-                     content::ResourceContext* context) override;
+                     content::BrowserContext* context) override;
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,

@@ -88,7 +88,6 @@ class LayoutAnalyzer {
  private:
   const char* NameForCounter(Counter) const;
 
-  double start_ms_;
   unsigned depth_;
   unsigned counters_[kNumCounters];
   DISALLOW_COPY_AND_ASSIGN(LayoutAnalyzer);

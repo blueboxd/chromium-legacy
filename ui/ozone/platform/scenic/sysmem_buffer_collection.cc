@@ -37,6 +37,10 @@ class SysmemNativePixmap : public gfx::NativePixmap {
     NOTREACHED();
     return 0;
   }
+  size_t GetNumberOfPlanes() const override {
+    NOTREACHED();
+    return 0;
+  }
   uint64_t GetBufferFormatModifier() const override {
     NOTREACHED();
     return 0;

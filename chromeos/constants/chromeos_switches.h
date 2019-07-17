@@ -208,22 +208,9 @@ extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kParentalControlsSettings;
 
-// Controls whether to show the system tray language toggle in Demo Mode.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kShowLanguageToggleInDemoMode;
-
 // Controls whether to show the Play Store icon in Demo Mode.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kShowPlayInDemoMode;
-
-// Controls whether to show a static splash screen instead of the user pods
-// before demo sessions log in.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kShowSplashScreenInDemoMode;
-
-// Controls whether to support country-level customization in Demo Mode.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kSupportCountryCustomizationInDemoMode;
 
 // Returns true if the system should wake in response to wifi traffic.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool WakeOnWifiEnabled();

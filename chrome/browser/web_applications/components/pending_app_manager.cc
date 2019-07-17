@@ -35,8 +35,10 @@ PendingAppManager::PendingAppManager() = default;
 PendingAppManager::~PendingAppManager() = default;
 
 void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
+                                      WebAppUiManager* ui_manager,
                                       InstallFinalizer* finalizer) {
   registrar_ = registrar;
+  ui_manager_ = ui_manager;
   finalizer_ = finalizer;
 }
 

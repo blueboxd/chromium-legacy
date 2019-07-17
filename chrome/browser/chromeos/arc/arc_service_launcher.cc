@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/arc/print_spooler/arc_print_spooler_bridge.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/screen_capture/arc_screen_capture_bridge.h"
+#include "chrome/browser/chromeos/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_tracing_bridge.h"
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
@@ -204,6 +205,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcSettingsService::GetForBrowserContext(profile);
   ArcTimerBridge::GetForBrowserContext(profile);
   ArcTracingBridge::GetForBrowserContext(profile);
+  ArcAppPerformanceTracing::GetForBrowserContext(profile);
   ArcTtsService::GetForBrowserContext(profile);
   ArcUsbHostBridge::GetForBrowserContext(profile);
   ArcUsbHostPermissionManager::GetForBrowserContext(profile);

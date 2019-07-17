@@ -32,6 +32,7 @@ class AshTestHelper;
 namespace shell {
 class ExampleAppListClient;
 class ExampleSessionControllerClient;
+class ShellNewWindowDelegate;
 class WindowWatcher;
 
 class ShellBrowserMainParts : public content::BrowserMainParts {
@@ -61,6 +62,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
   std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
       network_config_helper_;
+  std::unique_ptr<ShellNewWindowDelegate> new_window_delegate_;
   content::MainFunctionParams parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);

@@ -6,6 +6,18 @@ import("//build/config/chrome_build.gni")
 import("//build/config/jumbo.gni")
 import("//build/util/version.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//tools/grit/grit_rule.gni")
+
+grit("autofill_address_rewriter_resources") {
+  source = "autofill_address_rewriter_resources.grd"
+  outputs = [
+    "grit/autofill_address_rewriter_resources.h",
+    "grit/autofill_address_rewriter_resources_map.cc",
+    "grit/autofill_address_rewriter_resources_map.h",
+    "autofill_address_rewriter_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/components/autofill/core/browser"
+}
 
 jumbo_static_library("browser") {
   sources = [
@@ -16,7 +28,6 @@ jumbo_static_library("browser") {
     "address_normalizer_impl.h",
     "address_rewriter.cc",
     "address_rewriter.h",
-    "address_rewriter_rules.cc",
     "autocomplete_history_manager.cc",
     "autocomplete_history_manager.h",
     "autofill-inl.h",
@@ -327,6 +338,7 @@ jumbo_static_library("browser") {
     "//third_party/libaddressinput",
   ]
   deps = [
+    ":autofill_address_rewriter_resources",
     "proto:legacy_proto_bridge",
     "//base",
     "//base:i18n",
@@ -356,6 +368,7 @@ jumbo_static_library("browser") {
     "//third_party/icu",
     "//third_party/libphonenumber",
     "//third_party/re2",
+    "//third_party/zlib/google:compression_utils",
     "//ui/accessibility:accessibility",
     "//ui/base",
     "//ui/gfx",
@@ -448,6 +461,7 @@ jumbo_static_library("test_support") {
   ]
 
   deps = [
+    ":autofill_address_rewriter_resources",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
@@ -617,6 +631,7 @@ source_set("unit_tests") {
   defines = [ "CHROME_VERSION_MAJOR=" + chrome_version_major ]
 
   deps = [
+    ":autofill_address_rewriter_resources",
     ":browser",
     ":test_support",
     ":unit_tests_bundle_data",

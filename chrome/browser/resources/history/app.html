@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
@@ -19,7 +20,7 @@
 
 <dom-module id="history-app">
   <template>
-    <style include="shared-style">
+    <style include="cr-shared-style shared-style">
       :host {
         color: var(--cr-primary-text-color);
         display: block;
@@ -48,10 +49,6 @@
         height: 100%;
       }
 
-      #drop-shadow {
-        @apply --cr-container-shadow;
-      }
-
       :host([toolbar-shadow_]) #drop-shadow {
         opacity: var(--cr-container-shadow-max-opacity);
       }
@@ -76,7 +73,7 @@
                                              queryState_.searchTerm)]]">
     </history-toolbar>
 
-    <div id="drop-shadow"></div>
+    <div id="drop-shadow" class="cr-container-shadow"></div>
     <div id="main-container">
       <history-side-bar id="content-side-bar" selected-page="{{selectedPage_}}"
           footer-info="[[footerInfo]]"

@@ -36,7 +36,7 @@ class FrameSinkElement : public VizElement {
   bool has_created_frame_sink() const { return has_created_frame_sink_; }
 
   // UIElement:
-  std::vector<std::pair<std::string, std::string>> GetCustomProperties()
+  std::vector<UIElement::ClassProperties> GetCustomPropertiesForMatchedStyle()
       const override;
   void GetBounds(gfx::Rect* bounds) const override;
   void SetBounds(const gfx::Rect& bounds) override;

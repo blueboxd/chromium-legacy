@@ -257,7 +257,7 @@ class Distribution(object):
 
         return DistributionCodeSignConfig(
             base_config.identity, base_config.keychain, base_config.notary_user,
-            base_config.notary_password)
+            base_config.notary_password, base_config.notary_asc_provider)
 
 
 class Paths(object):

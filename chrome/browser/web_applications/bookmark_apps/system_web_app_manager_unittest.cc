@@ -20,7 +20,7 @@
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -83,6 +83,10 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<TestSystemWebAppManager>(profile());
     system_web_app_manager_ = system_web_app_manager.get();
     provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+
+    auto ui_manager = std::make_unique<TestWebAppUiManager>();
+    ui_manager_ = ui_manager.get();
+    provider->SetWebAppUiManager(std::move(ui_manager));
   }
 
   void SimulatePreviouslyInstalledApp(
@@ -104,14 +108,14 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     return system_web_app_manager_;
   }
 
-  TestWebAppUiDelegate* ui_delegate() { return &ui_delegate_; }
+  TestWebAppUiManager* ui_manager() { return ui_manager_; }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   TestSystemWebAppManager* system_web_app_manager_ = nullptr;
-  TestWebAppUiDelegate ui_delegate_;
+  TestWebAppUiManager* ui_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerTest);
 };
@@ -127,7 +131,7 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
 
@@ -146,7 +150,7 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
   system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
   const auto& apps_to_install = pending_app_manager()->install_requests();
@@ -164,7 +168,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
 
@@ -189,7 +193,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
@@ -198,7 +202,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   // install.
   system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
@@ -208,14 +212,14 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
     base::test::ScopedFeatureList disable_feature_list;
     disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-    system_web_app_manager()->Start(ui_delegate());
+    system_web_app_manager()->Start();
 
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
   }
 
   // Re-enabling System Web Apps installs without a version change.
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
@@ -233,7 +237,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, install_requests.size());
@@ -245,7 +249,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // force reinstall.
   system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3u, install_requests.size());
@@ -257,7 +261,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // Bump the version number, and an update will trigger, and force
   // reinstallation of both apps.
   system_web_app_manager()->set_current_version(base::Version("2.0.0.0"));
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(5u, install_requests.size());
@@ -271,7 +275,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     base::test::ScopedFeatureList disable_feature_list;
     disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-    system_web_app_manager()->Start(ui_delegate());
+    system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
@@ -280,7 +284,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   }
 
   // Re-enabling System Web Apps installs even without a version change.
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(7u, install_requests.size());
@@ -293,7 +297,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   // change.
   system_apps[SystemAppType::SETTINGS] = {kAppUrl3};
   system_web_app_manager()->SetSystemApps(system_apps);
-  system_web_app_manager()->Start(ui_delegate());
+  system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(9u, install_requests.size());
@@ -313,7 +317,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
 
     histograms.ExpectTotalCount(
         SystemWebAppManager::kInstallResultHistogramName, 0);
-    system_web_app_manager()->Start(ui_delegate());
+    system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
 
     histograms.ExpectTotalCount(
@@ -330,7 +334,7 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kInstallManagerDestroyed);
 
-    system_web_app_manager()->Start(ui_delegate());
+    system_web_app_manager()->Start();
     base::RunLoop().RunUntilIdle();
     histograms.ExpectTotalCount(
         SystemWebAppManager::kInstallResultHistogramName, 3);

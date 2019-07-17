@@ -35,8 +35,8 @@ UserPolicyTestHelper::UserPolicyTestHelper(
 UserPolicyTestHelper::~UserPolicyTestHelper() {
 }
 
-void UserPolicyTestHelper::SetPolicy(const base::DictionaryValue& mandatory,
-                                     const base::DictionaryValue& recommended) {
+void UserPolicyTestHelper::SetPolicy(const base::Value& mandatory,
+                                     const base::Value& recommended) {
   ASSERT_TRUE(local_policy_server_->UpdateUserPolicy(mandatory, recommended,
                                                      account_id_));
 }
@@ -71,8 +71,8 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
 }
 
 void UserPolicyTestHelper::SetPolicyAndWait(
-    const base::DictionaryValue& mandatory_policy,
-    const base::DictionaryValue& recommended_policy,
+    const base::Value& mandatory_policy,
+    const base::Value& recommended_policy,
     Profile* profile) {
   SetPolicy(mandatory_policy, recommended_policy);
 

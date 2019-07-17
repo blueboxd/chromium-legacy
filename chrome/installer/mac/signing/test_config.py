@@ -10,15 +10,17 @@ THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 config = imp.load_source('signing.config', os.path.join(THIS_DIR,
                                                         'config.py.in'))
 
+
 class TestConfig(config.CodeSignConfig):
 
     def __init__(self,
                  identity='[IDENTITY]',
                  keychain='[KEYCHAIN]',
                  notary_user='[NOTARY-USER]',
-                 notary_password='[NOTARY-PASSWORD]'):
+                 notary_password='[NOTARY-PASSWORD]',
+                 notary_asc_provider=None):
         super(TestConfig, self).__init__(identity, keychain, notary_user,
-                                         notary_password)
+                                         notary_password, notary_asc_provider)
 
     @property
     def app_product(self):

@@ -828,7 +828,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   std::unique_ptr<aura::Window> masked_window(
       aura::test::CreateTestWindowWithDelegate(
           &masked_window_delegate, 10, bounds, browser_window->parent()));
-  masked_window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  masked_window->SetProperty(aura::client::kZOrderingKey,
+                             ui::ZOrderLevel::kFloatingWindow);
   auto targeter = std::make_unique<aura::WindowTargeter>();
   targeter->SetInsets(gfx::Insets(0, bounds.width() - 10, 0, 0));
   masked_window->SetEventTargeter(std::move(targeter));

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/skia_util.h"
@@ -88,6 +89,9 @@ class TestPixmap : public gfx::NativePixmap {
   size_t GetDmaBufPlaneSize(size_t plane) const override { return 0; }
   uint64_t GetBufferFormatModifier() const override { return 0; }
   gfx::BufferFormat GetBufferFormat() const override { return format_; }
+  size_t GetNumberOfPlanes() const override {
+    return gfx::NumberOfPlanesForLinearBufferFormat(format_);
+  }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
   uint32_t GetUniqueId() const override { return 0; }
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
@@ -157,7 +161,7 @@ base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
   if (base_path_.empty() || base_path_ == base::FilePath(kDevNull))
     return base_path_;
 
-  // Disambiguate multiple window output files with the window id.
+    // Disambiguate multiple window output files with the window id.
 #if defined(OS_WIN)
   std::string path =
       base::NumberToString(reinterpret_cast<int>(widget)) + ".png";

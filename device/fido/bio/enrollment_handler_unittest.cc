@@ -10,10 +10,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "device/fido/bio/enrollment_handler.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_fido_device_factory.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/fake_webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 namespace device {
 namespace {
@@ -68,6 +73,11 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
   test::TestCallbackReceiver<> ready_callback_;
   test::ValueCallbackReceiver<FidoReturnCode> error_callback_;
   test::VirtualFidoDeviceFactory virtual_device_factory_;
+
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
 };
 
 // Tests bio enrollment handler against device without PIN support.

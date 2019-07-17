@@ -87,15 +87,18 @@ RemoteSuggestion::CreateFromContentSuggestionsDictionary(
   snippet->fetch_date_ = fetch_date;
 
   if (!(dict.GetString("title", &snippet->title_) &&
-        dict.GetString("snippet", &snippet->snippet_) &&
         GetTimeValue(dict, "creationTime", &snippet->publish_date_) &&
         GetTimeValue(dict, "expirationTime", &snippet->expiry_date_) &&
-        GetURLValue(dict, "imageUrl", &snippet->salient_image_url_) &&
         dict.GetString("attribution", &snippet->publisher_name_) &&
         GetURLValue(dict, "fullPageUrl", &snippet->url_))) {
     return nullptr;
   }
-  GetURLValue(dict, "ampUrl", &snippet->amp_url_);  // May fail; OK.
+
+  // Optional fields.
+  dict.GetString("snippet", &snippet->snippet_);
+  GetURLValue(dict, "imageUrl", &snippet->salient_image_url_);
+  GetURLValue(dict, "ampUrl", &snippet->amp_url_);
+
   // TODO(sfiera): also favicon URL.
 
   const base::Value* image_dominant_color_value =

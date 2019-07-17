@@ -167,8 +167,6 @@ Examples:
                     help='If no errors occur, write the mappings to disk.')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Print warnings.')
-  parser.add_option('-f', '--force_print', action='store_true',
-                    help='Print the mappings despite errors.')
   parser.add_option('-o', '--output_file', help='Specify file to write the '
                     'mappings to instead of the default: <CWD>/'
                     'component_map.json (implies -w)')
@@ -189,14 +187,11 @@ Examples:
     root = _DEFAULT_SRC_LOCATION
 
   scrape_result = scrape_owners(root, include_subdirs=options.include_subdirs)
-  mappings, warnings, errors, stats = aggregate_components_from_owners(
-      scrape_result, root, include_subdirs=options.include_subdirs)
+  mappings, warnings, stats = aggregate_components_from_owners(scrape_result,
+                                                               root)
   if options.verbose:
     for w in warnings:
       print w
-
-  for e in errors:
-    print e
 
   if options.stat_coverage or options.complete_coverage:
     display_stat(stats, root, options)
@@ -208,16 +203,11 @@ Examples:
   mappings['AAA-README']= _README
   mapping_file_contents = json.dumps(mappings, sort_keys=True, indent=2)
   if options.write or options.output_file:
-    if errors:
-      print 'Not writing to file due to errors'
-      if options.force_print:
-        print mapping_file_contents
-    else:
-      write_results(options.output_file, mapping_file_contents)
+    write_results(options.output_file, mapping_file_contents)
   else:
     print mapping_file_contents
 
-  return len(errors)
+  return 0
 
 
 if __name__ == '__main__':

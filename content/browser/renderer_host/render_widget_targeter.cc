@@ -22,17 +22,6 @@ namespace content {
 
 namespace {
 
-bool MergeEventIfPossible(const blink::WebInputEvent& event,
-                          ui::WebScopedInputEvent* blink_event) {
-  if (!blink::WebInputEvent::IsTouchEventType(event.GetType()) &&
-      !blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
-      ui::CanCoalesce(event, **blink_event)) {
-    ui::Coalesce(event, blink_event->get());
-    return true;
-  }
-  return false;
-}
-
 gfx::PointF ComputeEventLocation(const blink::WebInputEvent& event) {
   if (blink::WebInputEvent::IsMouseEventType(event.GetType()) ||
       event.GetType() == blink::WebInputEvent::kMouseWheel) {
@@ -118,7 +107,24 @@ RenderWidgetTargetResult::RenderWidgetTargetResult(
 
 RenderWidgetTargetResult::~RenderWidgetTargetResult() = default;
 
-RenderWidgetTargeter::TargetingRequest::TargetingRequest() = default;
+RenderWidgetTargeter::TargetingRequest::TargetingRequest(
+    base::WeakPtr<RenderWidgetHostViewBase> root_view,
+    const blink::WebInputEvent& event,
+    const ui::LatencyInfo& latency) {
+  this->root_view = std::move(root_view);
+  this->location = ComputeEventLocation(event);
+  this->event = ui::WebInputEventTraits::Clone(event);
+  this->latency = latency;
+}
+
+RenderWidgetTargeter::TargetingRequest::TargetingRequest(
+    base::WeakPtr<RenderWidgetHostViewBase> root_view,
+    const gfx::PointF& location,
+    RenderWidgetHostAtPointCallback callback) {
+  this->root_view = std::move(root_view);
+  this->location = location;
+  this->callback = std::move(callback);
+}
 
 RenderWidgetTargeter::TargetingRequest::TargetingRequest(
     TargetingRequest&& request) = default;
@@ -127,6 +133,68 @@ RenderWidgetTargeter::TargetingRequest& RenderWidgetTargeter::TargetingRequest::
 operator=(TargetingRequest&&) = default;
 
 RenderWidgetTargeter::TargetingRequest::~TargetingRequest() = default;
+
+void RenderWidgetTargeter::TargetingRequest::RunCallback(
+    RenderWidgetHostViewBase* target,
+    base::Optional<gfx::PointF> point) {
+  if (!callback.is_null()) {
+    std::move(callback).Run(target ? target->GetWeakPtr() : nullptr, point);
+  }
+}
+
+bool RenderWidgetTargeter::TargetingRequest::MergeEventIfPossible(
+    const blink::WebInputEvent& new_event) {
+  if (event && !blink::WebInputEvent::IsTouchEventType(new_event.GetType()) &&
+      !blink::WebInputEvent::IsGestureEventType(new_event.GetType()) &&
+      ui::CanCoalesce(new_event, *event.get())) {
+    ui::Coalesce(new_event, event.get());
+    return true;
+  }
+  return false;
+}
+
+void RenderWidgetTargeter::TargetingRequest::StartQueueingTimeTracker() {
+  tracker =
+      std::make_unique<TracingUmaTracker>("Event.AsyncTargeting.TimeInQueue");
+}
+
+void RenderWidgetTargeter::TargetingRequest::StopQueueingTimeTracker() {
+  if (tracker)
+    tracker->Stop();
+}
+
+bool RenderWidgetTargeter::TargetingRequest::IsWebInputEventRequest() const {
+  return !!event;
+}
+
+const blink::WebInputEvent& RenderWidgetTargeter::TargetingRequest::GetEvent()
+    const {
+  return *event.get();
+}
+
+RenderWidgetHostViewBase* RenderWidgetTargeter::TargetingRequest::GetRootView()
+    const {
+  return root_view.get();
+}
+
+gfx::PointF RenderWidgetTargeter::TargetingRequest::GetLocation() const {
+  return location;
+}
+
+viz::FrameSinkId
+RenderWidgetTargeter::TargetingRequest::GetExpectedFrameSinkId() const {
+  return expected_frame_sink_id;
+}
+
+void RenderWidgetTargeter::TargetingRequest::SetExpectedFrameSinkId(
+    const viz::FrameSinkId& id) {
+  expected_frame_sink_id = id;
+}
+
+const ui::LatencyInfo& RenderWidgetTargeter::TargetingRequest::GetLatency()
+    const {
+  return latency;
+}
 
 RenderWidgetTargeter::RenderWidgetTargeter(Delegate* delegate)
     : trace_id_(base::RandUint64()),
@@ -151,35 +219,48 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
            static_cast<const blink::WebGestureEvent&>(event).SourceDevice() ==
                blink::WebGestureDevice::kTouchpad)));
 
+  if (!requests_.empty()) {
+    auto& request = requests_.back();
+    if (request.MergeEventIfPossible(event))
+      return;
+  }
+
+  TargetingRequest request(root_view->GetWeakPtr(), event, latency);
+
+  ResolveTargetingRequest(std::move(request));
+}
+
+void RenderWidgetTargeter::FindTargetAndCallback(
+    RenderWidgetHostViewBase* root_view,
+    const gfx::PointF& point,
+    RenderWidgetHostAtPointCallback callback) {
+  TargetingRequest request(root_view->GetWeakPtr(), point, std::move(callback));
+
+  ResolveTargetingRequest(std::move(request));
+}
+
+void RenderWidgetTargeter::ResolveTargetingRequest(TargetingRequest request) {
   if (request_in_flight_) {
-    if (!requests_.empty()) {
-      auto& request = requests_.back();
-      if (MergeEventIfPossible(event, &request.event))
-        return;
-    }
-    TargetingRequest request;
-    request.root_view = root_view->GetWeakPtr();
-    request.event = ui::WebInputEventTraits::Clone(event);
-    request.latency = latency;
-    request.tracker =
-        std::make_unique<TracingUmaTracker>("Event.AsyncTargeting.TimeInQueue");
+    request.StartQueueingTimeTracker();
     requests_.push(std::move(request));
     return;
   }
 
-  RenderWidgetTargetResult result =
-      delegate_->FindTargetSynchronously(root_view, event);
-
-  const gfx::PointF event_location = ComputeEventLocation(event);
-
+  RenderWidgetTargetResult result;
+  if (request.IsWebInputEventRequest()) {
+    result = delegate_->FindTargetSynchronously(request.GetRootView(),
+                                                request.GetEvent());
+  } else {
+    result = delegate_->FindTargetSynchronouslyAtPoint(request.GetRootView(),
+                                                       request.GetLocation());
+  }
   RenderWidgetHostViewBase* target = result.view;
-  auto* event_ptr = &event;
   async_depth_ = 0;
   if (result.should_query_view) {
     TRACE_EVENT_WITH_FLOW2(
         "viz,benchmark", "Event.Pipeline", TRACE_ID_GLOBAL(trace_id_),
         TRACE_EVENT_FLAG_FLOW_OUT, "step", "QueryClient(Start)",
-        "event_location", event_location.ToString());
+        "event_location", request.GetLocation().ToString());
 
     // TODO(kenrb, sadrul): When all event types support asynchronous hit
     // testing, we should be able to have FindTargetSynchronously return the
@@ -189,17 +270,15 @@ void RenderWidgetTargeter::FindTargetAndDispatch(
     // root_view and the original event location for the initial query.
     // Do not compare hit test results if we are forced to do async hit testing
     // by HitTestQuery.
-    QueryClient(root_view, root_view, *event_ptr, latency, event_location,
-                nullptr, gfx::PointF());
+    QueryClient(std::move(request));
   } else {
-    FoundTarget(root_view, target, *event_ptr, latency, result.target_location,
-                result.latched_target, viz::FrameSinkId());
+    FoundTarget(target, result.target_location, result.latched_target,
+                &request);
     // Verify the event targeting results from surface layer viz hit testing if
     // --use-viz-hit-test-surface-layer is enabled.
     if (result.should_verify_result && !target->IsRenderWidgetHostViewGuest()) {
-      QueryAndVerifyClient(root_view, root_view, *event_ptr, latency,
-                           event_location, nullptr, gfx::PointF(),
-                           target->GetFrameSinkId());
+      request.SetExpectedFrameSinkId(target->GetFrameSinkId());
+      QueryAndVerifyClient(std::move(request));
     }
   }
 }
@@ -213,17 +292,14 @@ bool RenderWidgetTargeter::HasEventsPendingDispatch() const {
 }
 
 void RenderWidgetTargeter::QueryClientInternal(
-    RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
-    const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency,
     const gfx::PointF& target_location,
     RenderWidgetHostViewBase* last_request_target,
     const gfx::PointF& last_target_location,
-    const viz::FrameSinkId& expected_frame_sink_id) {
+    TargetingRequest request) {
   // Async event targeting and verifying use two different queues, so they don't
   // block each other.
-  bool is_verifying = expected_frame_sink_id.is_valid();
+  bool is_verifying = request.GetExpectedFrameSinkId().is_valid();
   DCHECK((!is_verifying && !request_in_flight_) ||
          (is_verifying && !verify_request_in_flight_));
 
@@ -232,15 +308,14 @@ void RenderWidgetTargeter::QueryClientInternal(
   // understand why this happens. https://crbug.com/859492.
   // We do not verify hit testing result under this circumstance.
   if (!target_client) {
-    FoundTarget(root_view, target, event, latency, target_location, false,
-                viz::FrameSinkId());
+    FoundTarget(target, target_location, false, &request);
     return;
   }
 
   if (is_verifying) {
-    verify_request_in_flight_ = true;
+    verify_request_in_flight_ = std::move(request);
   } else {
-    request_in_flight_ = true;
+    request_in_flight_ = std::move(request);
     async_depth_++;
   }
   TracingUmaTracker tracker("Event.AsyncTargeting.ResponseTime");
@@ -249,67 +324,46 @@ void RenderWidgetTargeter::QueryClientInternal(
   hit_test_timeout.reset(new OneShotTimeoutMonitor(
       base::BindOnce(
           &RenderWidgetTargeter::AsyncHitTestTimedOut,
-          weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-          target->GetWeakPtr(), target_location,
+          weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(), target_location,
           last_request_target ? last_request_target->GetWeakPtr() : nullptr,
-          last_target_location, ui::WebInputEventTraits::Clone(event), latency,
-          expected_frame_sink_id),
+          last_target_location, is_verifying),
       async_hit_test_timeout_delay_));
 
   TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Event.Pipeline", TRACE_ID_GLOBAL(trace_id_),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "QueryClient", "event", blink::WebInputEvent::GetName(event.GetType()));
+      "QueryClient", "event_location", request.GetLocation().ToString());
 
   target_client->FrameSinkIdAt(
       target_location, trace_id_,
       base::BindOnce(
           &RenderWidgetTargeter::FoundFrameSinkId,
-          weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
-          target->GetWeakPtr(), ui::WebInputEventTraits::Clone(event), latency,
+          weak_ptr_factory_.GetWeakPtr(), target->GetWeakPtr(),
           is_verifying ? ++last_verify_request_id_ : ++last_request_id_,
-          target_location, std::move(tracker), expected_frame_sink_id));
+          target_location, std::move(tracker), is_verifying));
 }
 
-void RenderWidgetTargeter::QueryClient(
-    RenderWidgetHostViewBase* root_view,
-    RenderWidgetHostViewBase* target,
-    const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency,
-    const gfx::PointF& target_location,
-    RenderWidgetHostViewBase* last_request_target,
-    const gfx::PointF& last_target_location) {
-  QueryClientInternal(root_view, target, event, latency, target_location,
-                      last_request_target, last_target_location,
-                      viz::FrameSinkId());
+void RenderWidgetTargeter::QueryClient(TargetingRequest request) {
+  auto* target = request.GetRootView();
+  auto target_location = request.GetLocation();
+  QueryClientInternal(target, target_location, nullptr, gfx::PointF(),
+                      std::move(request));
 }
 
-void RenderWidgetTargeter::QueryAndVerifyClient(
-    RenderWidgetHostViewBase* root_view,
-    RenderWidgetHostViewBase* target,
-    const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency,
-    const gfx::PointF& target_location,
-    RenderWidgetHostViewBase* last_request_target,
-    const gfx::PointF& last_target_location,
-    const viz::FrameSinkId& expected_frame_sink_id) {
+void RenderWidgetTargeter::QueryAndVerifyClient(TargetingRequest request) {
   if (verify_request_in_flight_) {
-    TargetingRequest request;
-    request.root_view = root_view->GetWeakPtr();
-    request.event = ui::WebInputEventTraits::Clone(event);
-    request.latency = latency;
-    request.expected_frame_sink_id = expected_frame_sink_id;
     verify_requests_.push(std::move(request));
     return;
   }
-  QueryClientInternal(root_view, target, event, latency, target_location,
-                      last_request_target, last_target_location,
-                      expected_frame_sink_id);
+  auto* target = request.GetRootView();
+  auto target_location = request.GetLocation();
+  QueryClientInternal(target, target_location, nullptr, gfx::PointF(),
+                      std::move(request));
 }
 
 void RenderWidgetTargeter::FlushEventQueue(bool is_verifying) {
   bool events_being_flushed = false;
-  bool& request_in_flight =
+  base::Optional<TargetingRequest>& request_in_flight =
       is_verifying ? verify_request_in_flight_ : request_in_flight_;
   auto* requests = is_verifying ? &verify_requests_ : &requests_;
   while (!request_in_flight && !requests->empty()) {
@@ -317,11 +371,10 @@ void RenderWidgetTargeter::FlushEventQueue(bool is_verifying) {
     requests->pop();
     // The root-view has gone away. Ignore this event, and try to process the
     // next event.
-    if (!request.root_view) {
+    if (!request.GetRootView()) {
       continue;
     }
-    if (request.tracker)
-      request.tracker->Stop();
+    request.StopQueueingTimeTracker();
     // Only notify the delegate once that the current event queue is being
     // flushed. Once all the events are flushed, notify the delegate again.
     if (!is_verifying && !events_being_flushed) {
@@ -329,13 +382,9 @@ void RenderWidgetTargeter::FlushEventQueue(bool is_verifying) {
       events_being_flushed = true;
     }
     if (is_verifying) {
-      QueryAndVerifyClient(request.root_view.get(), request.root_view.get(),
-                           *request.event, request.latency,
-                           ComputeEventLocation(*request.event), nullptr,
-                           gfx::PointF(), request.expected_frame_sink_id);
+      QueryAndVerifyClient(std::move(request));
     } else {
-      FindTargetAndDispatch(request.root_view.get(), *request.event,
-                            request.latency);
+      ResolveTargetingRequest(std::move(request));
     }
   }
   if (!is_verifying)
@@ -343,25 +392,24 @@ void RenderWidgetTargeter::FlushEventQueue(bool is_verifying) {
 }
 
 void RenderWidgetTargeter::FoundFrameSinkId(
-    base::WeakPtr<RenderWidgetHostViewBase> root_view,
     base::WeakPtr<RenderWidgetHostViewBase> target,
-    ui::WebScopedInputEvent event,
-    const ui::LatencyInfo& latency,
     uint32_t request_id,
     const gfx::PointF& target_location,
     TracingUmaTracker tracker,
-    const viz::FrameSinkId& expected_frame_sink_id,
+    const bool is_verification_request,
     const viz::FrameSinkId& frame_sink_id,
     const gfx::PointF& transformed_location) {
-  if (expected_frame_sink_id.is_valid()) {
+  if (is_verification_request) {
     tracker.Stop();
   } else {
     tracker.StopAndRecord();
   }
-  uint32_t last_id = expected_frame_sink_id.is_valid() ? last_verify_request_id_
-                                                       : last_request_id_;
-  bool in_flight = expected_frame_sink_id.is_valid() ? verify_request_in_flight_
-                                                     : request_in_flight_;
+
+  uint32_t last_id =
+      is_verification_request ? last_verify_request_id_ : last_request_id_;
+  bool in_flight = is_verification_request
+                       ? verify_request_in_flight_.has_value()
+                       : request_in_flight_.has_value();
   if (request_id != last_id || !in_flight) {
     // This is a response to a request that already timed out, so the event
     // should have already been dispatched. Mark the renderer as responsive
@@ -370,15 +418,20 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     return;
   }
 
-  if (expected_frame_sink_id.is_valid()) {
-    verify_request_in_flight_ = false;
+  TargetingRequest request = is_verification_request
+                                 ? std::move(verify_request_in_flight_.value())
+                                 : std::move(request_in_flight_.value());
+
+  if (request.GetExpectedFrameSinkId().is_valid()) {
+    verify_request_in_flight_.reset();
     async_verify_hit_test_timeout_.reset(nullptr);
   } else {
-    request_in_flight_ = false;
+    request_in_flight_.reset();
     async_hit_test_timeout_.reset(nullptr);
 
-    if (is_viz_hit_testing_debug_enabled_ &&
-        event->GetType() == blink::WebInputEvent::Type::kMouseDown) {
+    if (is_viz_hit_testing_debug_enabled_ && request.IsWebInputEventRequest() &&
+        request.GetEvent().GetType() ==
+            blink::WebInputEvent::Type::kMouseDown) {
       hit_test_async_queried_debug_queue_.push_back(target->GetFrameSinkId());
     }
   }
@@ -399,46 +452,45 @@ void RenderWidgetTargeter::FoundFrameSinkId(
                              TRACE_EVENT_FLAG_FLOW_IN, "step", "FoundTarget");
     }
 
-    FoundTarget(root_view.get(), view, *event, latency, transformed_location,
-                false, expected_frame_sink_id);
+    FoundTarget(view, transformed_location, false, &request);
   } else {
-    QueryClientInternal(root_view.get(), view, *event, latency,
-                        transformed_location, target.get(), target_location,
-                        expected_frame_sink_id);
+    QueryClientInternal(view, transformed_location, target.get(),
+                        target_location, std::move(request));
   }
 }
 
 void RenderWidgetTargeter::FoundTarget(
-    RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
-    const blink::WebInputEvent& event,
-    const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location,
     bool latched_target,
-    const viz::FrameSinkId& expected_frame_sink_id) {
+    TargetingRequest* request) {
+  DCHECK(request);
+
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-      !latched_target && !expected_frame_sink_id.is_valid()) {
+      !latched_target && !request->GetExpectedFrameSinkId().is_valid()) {
     UMA_HISTOGRAM_COUNTS_100("Event.AsyncTargeting.AsyncClientDepth",
                              async_depth_);
   }
 
   // RenderWidgetHostViewMac can be deleted asynchronously, in which case the
   // View will be valid but there will no longer be a RenderWidgetHostImpl.
-  if (!root_view || !root_view->GetRenderWidgetHost())
+  if (!request->GetRootView() || !request->GetRootView()->GetRenderWidgetHost())
     return;
 
   if (is_viz_hit_testing_debug_enabled_ &&
       !hit_test_async_queried_debug_queue_.empty()) {
     GetHostFrameSinkManager()->SetHitTestAsyncQueriedDebugRegions(
-        root_view->GetRootFrameSinkId(), hit_test_async_queried_debug_queue_);
+        request->GetRootView()->GetRootFrameSinkId(),
+        hit_test_async_queried_debug_queue_);
     hit_test_async_queried_debug_queue_.clear();
   }
 
   if (features::IsVizHitTestingSurfaceLayerEnabled() &&
-      expected_frame_sink_id.is_valid()) {
+      request->GetExpectedFrameSinkId().is_valid()) {
     static const char* kResultsMatchHistogramName =
         "Event.VizHitTestSurfaceLayer.ResultsMatch";
-    bool results_match = target->GetFrameSinkId() == expected_frame_sink_id;
+    bool results_match =
+        target->GetFrameSinkId() == request->GetExpectedFrameSinkId();
     HitTestResultsMatch match_result =
         HitTestResultsMatch::kHitTestResultChanged;
     if (results_match) {
@@ -447,10 +499,17 @@ void RenderWidgetTargeter::FoundTarget(
       // If the results do not match, it is possible that the hit test data
       // changed during verification. We do synchronous hit test again to make
       // sure the result is reliable.
-      RenderWidgetTargetResult result =
-          delegate_->FindTargetSynchronously(root_view, event);
+      RenderWidgetTargetResult result;
+      if (request->IsWebInputEventRequest()) {
+        result = delegate_->FindTargetSynchronously(request->GetRootView(),
+                                                    request->GetEvent());
+      } else {
+        result = delegate_->FindTargetSynchronouslyAtPoint(
+            request->GetRootView(), request->GetLocation());
+      }
+
       if (!result.should_query_view && result.view &&
-          expected_frame_sink_id == result.view->GetFrameSinkId()) {
+          request->GetExpectedFrameSinkId() == result.view->GetFrameSinkId()) {
         // If the result did not change, it is likely that viz hit test finds
         // the wrong target.
         match_result = HitTestResultsMatch::kDoNotMatch;
@@ -465,48 +524,54 @@ void RenderWidgetTargeter::FoundTarget(
     return;
   }
 
-  delegate_->DispatchEventToTarget(root_view, target, event, latency,
-                                   target_location);
+  if (request->IsWebInputEventRequest()) {
+    delegate_->DispatchEventToTarget(request->GetRootView(), target,
+                                     request->GetEvent(), request->GetLatency(),
+                                     target_location);
+  } else {
+    request->RunCallback(target, target_location);
+  }
+
   FlushEventQueue(false);
 }
 
 void RenderWidgetTargeter::AsyncHitTestTimedOut(
-    base::WeakPtr<RenderWidgetHostViewBase> current_request_root_view,
     base::WeakPtr<RenderWidgetHostViewBase> current_request_target,
     const gfx::PointF& current_target_location,
     base::WeakPtr<RenderWidgetHostViewBase> last_request_target,
     const gfx::PointF& last_target_location,
-    ui::WebScopedInputEvent event,
-    const ui::LatencyInfo& latency,
-    const viz::FrameSinkId& expected_frame_sink_id) {
+    const bool is_verification_request) {
   DCHECK(request_in_flight_ || verify_request_in_flight_);
+
+  TargetingRequest request = is_verification_request
+                                 ? std::move(verify_request_in_flight_.value())
+                                 : std::move(request_in_flight_.value());
+
   // If we time out during a verification, we early out to avoid dispatching
   // event to root frame.
-  if (expected_frame_sink_id.is_valid()) {
-    verify_request_in_flight_ = false;
+  if (request.GetExpectedFrameSinkId().is_valid()) {
+    verify_request_in_flight_.reset();
     return;
   } else {
-    request_in_flight_ = false;
+    request_in_flight_.reset();
   }
 
-  if (!current_request_root_view)
+  if (!request.GetRootView())
     return;
 
   // Mark view as unresponsive so further events will not be sent to it.
   if (current_request_target)
     unresponsive_views_.insert(current_request_target.get());
 
-  if (current_request_root_view.get() == current_request_target.get()) {
+  if (request.GetRootView() == current_request_target.get()) {
     // When a request to the top-level frame times out then the event gets
     // sent there anyway. It will trigger the hung renderer dialog if the
     // renderer fails to process it.
-    FoundTarget(current_request_root_view.get(),
-                current_request_root_view.get(), *event, latency,
-                current_target_location, false, viz::FrameSinkId());
+    FoundTarget(current_request_target.get(), current_target_location, false,
+                &request);
   } else {
-    FoundTarget(current_request_root_view.get(), last_request_target.get(),
-                *event, latency, last_target_location, false,
-                viz::FrameSinkId());
+    FoundTarget(last_request_target.get(), last_target_location, false,
+                &request);
   }
 }
 

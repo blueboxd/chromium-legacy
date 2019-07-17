@@ -30,7 +30,6 @@ class MouseEvent;
 namespace ash {
 
 enum class AnimationChangeType;
-class ShelfBezelEventHandler;
 class ShelfFocusCycler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
@@ -220,9 +219,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
   std::unique_ptr<AutoHideEventHandler> auto_hide_event_handler_;
-
-  // Forwards touch gestures on a bezel sensor to the shelf.
-  std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
 
   // Hands focus off to different parts of the shelf.
   std::unique_ptr<ShelfFocusCycler> shelf_focus_cycler_;

@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
@@ -15,7 +16,7 @@
 
 <dom-module id="add-printer-discovery-dialog">
   <template>
-    <style include="cups-printer-shared">
+    <style include="cr-shared-style cups-printer-shared">
       add-printer-list {
         max-height: 310px;
         overflow-y: auto;
@@ -101,7 +102,9 @@
         </div>
         <div class="settings-box two-line">
           <div class="start">
-            <div id="printerProtocol" class="label">$i18n{printerProtocol}</div>
+            <div id="printerProtocol" class="cr-form-field-label">
+              $i18n{printerProtocol}
+            </div>
             <div class="secondary">
               <select class="md-select" aria-labelledby="printerProtocol"
                   value="[[newPrinter.printerProtocol]]"
@@ -186,7 +189,7 @@
               value="{{activePrinter.ppdModel}}">
           </cr-searchable-drop-down>
         </div>
-        <div id="ppdLabel" class="field-label">
+        <div id="ppdLabel" class="cr-form-field-label">
           <span>$i18n{selectDriver}</span>
           <a href="$i18n{printingCUPSPrintPpdLearnMoreUrl}" target="_blank">
               $i18n{learnMore}

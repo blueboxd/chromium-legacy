@@ -4,6 +4,7 @@
 
 #include "chrome/browser/offline_pages/android/offline_page_archive_publisher_impl.h"
 
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -86,14 +87,11 @@ class TestArchivePublisherDelegate
       : download_id_(id_to_use), last_removed_id_(0), installed_(installed) {}
 
   bool IsDownloadManagerInstalled() override { return installed_; }
-  int64_t AddCompletedDownload(const std::string& title,
-                               const std::string& description,
-                               const std::string& path,
-                               int64_t length,
-                               const std::string& uri,
-                               const std::string& referer) override {
-    return download_id_;
+  PublishArchiveResult AddCompletedDownload(
+      const OfflinePageItem& page) override {
+    return {SavePageResult::SUCCESS, {download_id_, page.file_path}};
   }
+
   int Remove(
       const std::vector<int64_t>& android_download_manager_ids) override {
     int count = static_cast<int>(android_download_manager_ids.size());
@@ -144,16 +142,26 @@ TEST_F(OfflinePageArchivePublisherImplTest, PublishArchive) {
   PumpLoop();
 
   EXPECT_EQ(SavePageResult::SUCCESS, publish_archive_result().move_result);
-  EXPECT_EQ(kDownloadId, publish_archive_result().download_id);
-  // Check there is a file in the new location.
-  EXPECT_TRUE(public_archive_dir_path().IsParent(
-      publish_archive_result().new_file_path));
-  EXPECT_TRUE(base::PathExists(publish_archive_result().new_file_path));
-  // Check there is no longer a file in the old location.
-  EXPECT_FALSE(base::PathExists(old_file_path));
+  EXPECT_EQ(kDownloadId, publish_archive_result().id.download_id);
+
+  // The file move should not happen on Android Q and later.
+  if (!base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+    // Check there is a file in the new location.
+    EXPECT_TRUE(public_archive_dir_path().IsParent(
+        publish_archive_result().id.new_file_path));
+    EXPECT_TRUE(base::PathExists(publish_archive_result().id.new_file_path));
+    // Check there is no longer a file in the old location.
+    EXPECT_FALSE(base::PathExists(old_file_path));
+  } else {
+    EXPECT_FALSE(public_archive_dir_path().IsParent(
+        publish_archive_result().id.new_file_path));
+    // new_file_path should be the same as the page's file path.
+    EXPECT_TRUE(base::PathExists(publish_archive_result().id.new_file_path));
+    EXPECT_TRUE(base::PathExists(old_file_path));
+  }
 }
 
-TEST_F(OfflinePageArchivePublisherImplTest, UnpublishArchive) {
+TEST_F(OfflinePageArchivePublisherImplTest, UnpublishArchives) {
   ArchiveManager archive_manager(temporary_dir_path(),
                                  private_archive_dir_path(),
                                  public_archive_dir_path(), task_runner());
@@ -162,7 +170,14 @@ TEST_F(OfflinePageArchivePublisherImplTest, UnpublishArchive) {
   OfflinePageArchivePublisherImpl publisher(&archive_manager);
   publisher.SetDelegateForTesting(&delegate);
 
-  std::vector<int64_t> ids_to_remove = {kDownloadId};
+  // This needs to be very close to a real content URI or DeleteContentUri will
+  // throw an exception.
+  base::FilePath test_content_uri =
+      base::FilePath("content://downloads/download/43");
+
+  std::vector<PublishedArchiveId> ids_to_remove{
+      {kDownloadId, base::FilePath()},
+      {kArchivePublishedWithoutDownloadId, test_content_uri}};
   publisher.UnpublishArchives(std::move(ids_to_remove));
 
   EXPECT_EQ(kDownloadId, delegate.last_removed_id());

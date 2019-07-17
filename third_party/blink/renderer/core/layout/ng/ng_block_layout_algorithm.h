@@ -284,9 +284,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // need to abort layout.
   bool NeedsAbortOnBfcBlockOffsetChange() const;
 
-  // Positions pending floats starting from {@origin_block_offset}.
-  void PositionPendingFloats(LayoutUnit origin_block_offset);
-
   // Positions a list marker for the specified block content.
   // Return false if it aborts when resolving BFC block offset for LI.
   bool PositionOrPropagateListMarker(const NGLayoutResult&,
@@ -344,7 +341,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool has_processed_first_child_ = false;
 
   NGExclusionSpace exclusion_space_;
-  Vector<NGUnpositionedFloat, 1> unpositioned_floats_;
 };
 
 }  // namespace blink

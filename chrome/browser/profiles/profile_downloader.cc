@@ -21,21 +21,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/base/avatar_icon_util.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "skia/ext/image_operations.h"
 #include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -47,8 +42,7 @@ constexpr char kAuthorizationHeader[] = "Bearer %s";
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
     : delegate_(delegate),
       picture_status_(PICTURE_FAILED),
-      identity_manager_(IdentityManagerFactory::GetForProfile(
-          delegate_->GetBrowserProfile())),
+      identity_manager_(delegate_->GetIdentityManager()),
       identity_manager_observer_(this),
       waiting_for_account_info_(false) {
   DCHECK(delegate_);
@@ -60,8 +54,8 @@ void ProfileDownloader::Start() {
 }
 
 void ProfileDownloader::StartForAccount(const std::string& account_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << "Starting profile downloader...";
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!identity_manager_) {
     // This can happen in some test paths.
@@ -228,10 +222,7 @@ void ProfileDownloader::FetchImageData() {
   }
 
   network::mojom::URLLoaderFactory* loader_factory =
-      content::BrowserContext::GetDefaultStoragePartition(
-          delegate_->GetBrowserProfile())
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get();
+      delegate_->GetURLLoaderFactory();
 
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);
@@ -242,7 +233,7 @@ void ProfileDownloader::FetchImageData() {
 
 void ProfileDownloader::OnURLLoaderComplete(
     std::unique_ptr<std::string> response_body) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int response_code = -1;
   if (simple_loader_->ResponseInfo() && simple_loader_->ResponseInfo()->headers)
     response_code = simple_loader_->ResponseInfo()->headers->response_code();
@@ -272,7 +263,7 @@ void ProfileDownloader::OnURLLoaderComplete(
 }
 
 void ProfileDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int image_size = delegate_->GetDesiredImageSideLength();
   profile_picture_ = skia::ImageOperations::Resize(
       decoded_image,
@@ -284,7 +275,7 @@ void ProfileDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
 }
 
 void ProfileDownloader::OnDecodeImageFailed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_->OnProfileDownloadFailure(
       this, ProfileDownloaderDelegate::IMAGE_DECODE_FAILED);
 }

@@ -25,7 +25,7 @@ class AshContentTest : public content::ContentBrowserTest {
   void PostRunTestOnMainThread() override;
 
  protected:
-  aura::Window* CreateBrowserWindow();
+  aura::Window* CreateBrowserWindow(const GURL& url);
   aura::Window* CreateTestWindow();
 
   virtual std::vector<std::string> GetUMAHistogramNames() const;

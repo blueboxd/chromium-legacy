@@ -192,11 +192,13 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   int delay_ms = 65;
   bool key_pressed = true;
   double volume = 0.9;
+  const base::TimeTicks capture_time =
+      base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(delay_ms);
   std::unique_ptr<media::AudioBus> audio_bus =
       media::AudioBus::Create(2, kExpectedSourceBufferSize);
   audio_bus->Zero();
   EXPECT_CALL(*sink, OnDataCallback()).Times(AtLeast(1));
-  capture_source_callback()->Capture(audio_bus.get(), delay_ms, volume,
+  capture_source_callback()->Capture(audio_bus.get(), capture_time, volume,
                                      key_pressed);
 
   // Expect the ProcessedLocalAudioSource to auto-stop the MockCapturerSource

@@ -211,7 +211,7 @@ StickyKeysOverlay::StickyKeysOverlay()
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.bounds = CalculateOverlayBounds();
   params.parent = Shell::GetContainer(Shell::GetRootWindowForNewWindows(),
                                       kShellWindowId_OverlayContainer);

@@ -105,10 +105,6 @@ TYPED_TEST_P_WITH_EXPANSION(GLImageNativePixmapToDmabufTest,
 
   gfx::NativePixmapHandle native_pixmap_handle = image->ExportHandle();
 
-  size_t num_planes =
-      gfx::NumberOfPlanesForBufferFormat(this->delegate_.GetBufferFormat());
-  EXPECT_EQ(num_planes, native_pixmap_handle.planes.size());
-
   for (auto& plane : native_pixmap_handle.planes) {
     EXPECT_TRUE(plane.fd.is_valid());
   }

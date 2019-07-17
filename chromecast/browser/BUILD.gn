@@ -381,8 +381,16 @@ cast_source_set("browser") {
       "exo/wayland_server_controller.h",
       "exo/wm_helper_cast_shell.cc",
       "exo/wm_helper_cast_shell.h",
+      "webview/webview_controller.cc",
+      "webview/webview_controller.h",
+      "webview/webview_grpc_service.cc",
+      "webview/webview_grpc_service.h",
+      "webview/webview_layout_manager.cc",
+      "webview/webview_layout_manager.h",
     ]
+    configs += [ "//third_party/grpc:grpc_config" ]
     deps += [
+      "//chromecast/browser/webview/proto",
       "//components/exo",
       "//components/exo/wayland",
       "//services/viz/privileged/interfaces/compositing",

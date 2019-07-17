@@ -178,9 +178,7 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
     bool has_dma_buf_import_modifier = gl::GLSurfaceEGL::HasEGLExtension(
         "EGL_EXT_image_dma_buf_import_modifiers");
 
-    for (size_t attrs_plane = 0;
-         attrs_plane <
-         gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
+    for (size_t attrs_plane = 0; attrs_plane < pixmap->GetNumberOfPlanes();
          ++attrs_plane) {
       attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + attrs_plane * 3);
 
@@ -266,13 +264,6 @@ gfx::NativePixmapHandle GLImageNativePixmap::ExportHandle() {
   }
 
   gfx::BufferFormat format = GetBufferFormatFromFourCCFormat(fourcc);
-  if (num_planes > 0 && static_cast<size_t>(num_planes) !=
-                            gfx::NumberOfPlanesForBufferFormat(format)) {
-    LOG(ERROR) << "Invalid number of planes: " << num_planes
-               << " for format: " << gfx::BufferFormatToString(format);
-    return gfx::NativePixmapHandle();
-  }
-
   if (format != format_) {
     // A driver has returned a format different than what has been requested.
     // This can happen if RGBX is implemented using RGBA. Otherwise there is

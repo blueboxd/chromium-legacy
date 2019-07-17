@@ -13,6 +13,7 @@
 #include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
@@ -47,8 +48,8 @@ struct Env {
 
   void InitializeAppCacheService(
       network::TestURLLoaderFactory* mock_url_loader_factory) {
-    appcache_service =
-        base::MakeRefCounted<ChromeAppCacheService>(/*proxy=*/nullptr);
+    appcache_service = base::MakeRefCounted<ChromeAppCacheService>(
+        /*proxy=*/nullptr, /*partition=*/nullptr);
 
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter =
         base::MakeRefCounted<URLLoaderFactoryGetter>();
@@ -58,9 +59,11 @@ struct Env {
         loader_factory_getter.get());
 
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ChromeAppCacheService::InitializeOnIOThread,
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
+        base::BindOnce(&ChromeAppCacheService::InitializeOnLoaderThread,
                        appcache_service, base::FilePath(),
+                       /*browser_context=*/nullptr,
                        /*resource_context=*/nullptr,
                        /*request_context_getter=*/nullptr,
                        /*special_storage_policy=*/nullptr));

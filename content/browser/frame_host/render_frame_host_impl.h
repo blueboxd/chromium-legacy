@@ -739,8 +739,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Returns the Mojo ImageDownloader service.
   const blink::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
 
-  // Returns pointer to renderer side FindInPage associated with this frame.
-  const blink::mojom::FindInPageAssociatedPtr& GetFindInPage();
+  // Returns remote to renderer side FindInPage associated with this frame.
+  const mojo::AssociatedRemote<blink::mojom::FindInPage>& GetFindInPage();
 
   // Resets the loading state. Following this call, the RenderFrameHost will be
   // in a non-loading state.
@@ -1895,7 +1895,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::mojom::ImageDownloaderPtr mojo_image_downloader_;
 
   // Holder of Mojo connection with FindInPage service in Blink.
-  blink::mojom::FindInPageAssociatedPtr find_in_page_;
+  mojo::AssociatedRemote<blink::mojom::FindInPage> find_in_page_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
   // OnCrossDocumentCommitProcessed has returned a positive answer for this

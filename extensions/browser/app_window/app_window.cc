@@ -729,7 +729,9 @@ void AppWindow::SetAlwaysOnTop(bool always_on_top) {
        ExtensionsBrowserClient::Get()->IsScreensaverInDemoMode(
            extension_id())) &&
       !IntersectsWithTaskbar()) {
-    native_app_window_->SetAlwaysOnTop(always_on_top);
+    native_app_window_->SetZOrderLevel(always_on_top
+                                           ? ui::ZOrderLevel::kFloatingWindow
+                                           : ui::ZOrderLevel::kNormal);
   }
 
   OnNativeWindowChanged();
@@ -854,18 +856,19 @@ bool AppWindow::IntersectsWithTaskbar() const {
 
 void AppWindow::UpdateNativeAlwaysOnTop() {
   DCHECK(cached_always_on_top_);
-  bool is_on_top = native_app_window_->IsAlwaysOnTop();
+  bool is_on_top =
+      native_app_window_->GetZOrderLevel() == ui::ZOrderLevel::kFloatingWindow;
   bool fullscreen = IsFullscreen();
   bool intersects_taskbar = IntersectsWithTaskbar();
 
   if (is_on_top && (fullscreen || intersects_taskbar)) {
     // When entering fullscreen or overlapping the taskbar, ensure windows are
     // not always-on-top.
-    native_app_window_->SetAlwaysOnTop(false);
+    native_app_window_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
   } else if (!is_on_top && !fullscreen && !intersects_taskbar) {
     // When exiting fullscreen and moving away from the taskbar, reinstate
     // always-on-top.
-    native_app_window_->SetAlwaysOnTop(true);
+    native_app_window_->SetZOrderLevel(ui::ZOrderLevel::kFloatingWindow);
   }
 }
 

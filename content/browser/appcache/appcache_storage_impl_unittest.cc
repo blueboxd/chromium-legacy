@@ -169,51 +169,9 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheStorageImplTest* test_;
   };
 
-  class MockQuotaManager : public storage::QuotaManager {
-   public:
-    MockQuotaManager()
-        : QuotaManager(true /* is_incognito */,
-                       base::FilePath(),
-                       io_runner.get(),
-                       nullptr,
-                       storage::GetQuotaSettingsFunc()),
-          async_(false) {}
-
-    void GetUsageAndQuota(const url::Origin& /* origin */,
-                          StorageType type,
-                          UsageAndQuotaCallback callback) override {
-      EXPECT_EQ(StorageType::kTemporary, type);
-      if (async_) {
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&MockQuotaManager::CallCallback,
-                           base::Unretained(this), std::move(callback)));
-        return;
-      }
-      CallCallback(std::move(callback));
-    }
-
-    void CallCallback(UsageAndQuotaCallback callback) {
-      std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, 0,
-                              kMockQuota);
-    }
-
-    bool async_;
-
-   protected:
-    ~MockQuotaManager() override {}
-  };
-
   class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
    public:
-    MockQuotaManagerProxy()
-        : QuotaManagerProxy(nullptr, nullptr),
-          notify_storage_accessed_count_(0),
-          notify_storage_modified_count_(0),
-          last_delta_(0),
-          mock_manager_(base::MakeRefCounted<MockQuotaManager>()) {
-      manager_ = mock_manager_.get();
-    }
+    MockQuotaManagerProxy() : QuotaManagerProxy(nullptr, nullptr) {}
 
     void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                const url::Origin& origin,
@@ -246,13 +204,24 @@ class AppCacheStorageImplTest : public testing::Test {
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const url::Origin& origin,
                           StorageType type,
-                          UsageAndQuotaCallback callback) override {}
+                          UsageAndQuotaCallback callback) override {
+      EXPECT_EQ(StorageType::kTemporary, type);
+      if (async_) {
+        original_task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::mojom::QuotaStatusCode::kOk, 0, kMockQuota));
+        return;
+      }
+      std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, 0,
+                              kMockQuota);
+    }
 
-    int notify_storage_accessed_count_;
-    int notify_storage_modified_count_;
+    int notify_storage_accessed_count_ = 0;
+    int notify_storage_modified_count_ = 0;
     url::Origin last_origin_;
-    int last_delta_;
-    scoped_refptr<MockQuotaManager> mock_manager_;
+    int last_delta_ = 0;
+    bool async_ = false;
 
    protected:
     ~MockQuotaManagerProxy() override {}
@@ -335,7 +304,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
   void SetUpTest() {
     DCHECK(io_runner->BelongsToCurrentThread());
-    service_ = std::make_unique<AppCacheServiceImpl>(nullptr);
+    service_ = std::make_unique<AppCacheServiceImpl>(nullptr, nullptr);
     service_->Initialize(base::FilePath());
     mock_quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>();
     service_->quota_manager_proxy_ = mock_quota_manager_proxy_;
@@ -565,7 +534,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // and hold a ref to the group to simulate the CacheHost holding that ref.
 
     // Have the quota manager return asynchronously for this test.
-    mock_quota_manager_proxy_->mock_manager_->async_ = true;
+    mock_quota_manager_proxy_->async_ = true;
 
     // Conduct the store test.
     storage()->StoreGroupAndNewestCache(group_.get(), cache_.get(), delegate());
@@ -1657,7 +1626,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Recreate the service to point at the db and corruption on disk.
-    service_ = std::make_unique<AppCacheServiceImpl>(nullptr);
+    service_ = std::make_unique<AppCacheServiceImpl>(nullptr, nullptr);
     auto loader_factory_getter = base::MakeRefCounted<URLLoaderFactoryGetter>();
     loader_factory_getter->SetNetworkFactoryForTesting(
         &mock_url_loader_factory_, /* is_corb_enabled = */ true);

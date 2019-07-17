@@ -57,6 +57,11 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
         return sArCoreInstance;
     }
 
+    @CalledByNative
+    private static ArCoreInstallUtils create(long nativeArCoreInstallUtils) {
+        return new ArCoreInstallUtils(nativeArCoreInstallUtils);
+    }
+
     private ArCoreInstallUtils(long nativeArCoreInstallUtils) {
         mNativeArCoreInstallUtils = nativeArCoreInstallUtils;
         // Need to be called before trying to access the AR module.

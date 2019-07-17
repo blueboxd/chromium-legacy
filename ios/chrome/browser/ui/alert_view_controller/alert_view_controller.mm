@@ -19,9 +19,6 @@
 
 namespace {
 
-// The alpha of the black chrome behind the alert view.
-constexpr CGFloat kBackgroundAlpha = 0.4;
-
 // Properties of the alert shadow.
 constexpr CGFloat kShadowOffsetX = 0;
 constexpr CGFloat kShadowOffsetY = 15;
@@ -60,9 +57,6 @@ constexpr CGFloat kTextfieldStackInsetLeading = 12;
 constexpr CGFloat kTextfieldStackInsetTrailing = 12;
 
 constexpr CGFloat kTextfieldInset = 8;
-
-// Colors for the action buttons.
-constexpr int kButtonTextDestructiveColor = 0xdf322f;
 
 // This is how many bits UIViewAnimationCurve needs to be shifted to be in
 // UIViewAnimationOptions format. Must match the one in UIView.h.
@@ -136,8 +130,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
 
 - (void)loadView {
   [super loadView];
-  self.view.backgroundColor =
-      [[UIColor blackColor] colorWithAlphaComponent:kBackgroundAlpha];
+  self.view.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.view.accessibilityViewIsModal = YES;
 
   self.tapRecognizer = [[UITapGestureRecognizer alloc]
@@ -399,7 +392,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
       textColor = [UIColor colorNamed:kTintColor];
     } else {  // Style is UIAlertActionStyleDestructive
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = UIColorFromRGB(kButtonTextDestructiveColor);
+      textColor = [UIColor colorNamed:kDestructiveTintColor];
     }
     button.titleLabel.font = font;
     button.titleLabel.adjustsFontForContentSizeCategory = YES;

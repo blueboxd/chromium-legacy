@@ -335,6 +335,12 @@ public class ApiCompatibilityUtils {
             }
         }
         ImageViewCompat.setImageTintList(view, tintList);
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+            // Work around that the tint list is not cleared when setting tint list to null on L in
+            // some cases. See https://crbug.com/983686.
+            if (tintList == null) view.refreshDrawableState();
+        }
     }
 
     /**

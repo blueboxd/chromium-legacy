@@ -498,12 +498,6 @@ void PushMessagingServiceImpl::OnMessageDecryptionFailed(
       /* was_encrypted= */ true, error_message, "" /* payload */);
 }
 
-// GetEndpoint method ----------------------------------------------------------
-
-GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) {
-  return GURL(kPushMessagingGcmEndpoint);
-}
-
 // Subscribe and GetPermissionStatus methods -----------------------------------
 
 void PushMessagingServiceImpl::SubscribeFromDocument(
@@ -647,16 +641,18 @@ void PushMessagingServiceImpl::DoSubscribe(
 void PushMessagingServiceImpl::SubscribeEnd(
     RegisterCallback callback,
     const std::string& subscription_id,
+    const GURL& endpoint,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
-  std::move(callback).Run(subscription_id, p256dh, auth, status);
+  std::move(callback).Run(subscription_id, endpoint, p256dh, auth, status);
 }
 
 void PushMessagingServiceImpl::SubscribeEndWithError(
     RegisterCallback callback,
     blink::mojom::PushRegistrationStatus status) {
   SubscribeEnd(std::move(callback), std::string() /* subscription_id */,
+               GURL::EmptyGURL() /* endpoint */,
                std::vector<uint8_t>() /* p256dh */,
                std::vector<uint8_t>() /* auth */, status);
 }
@@ -673,7 +669,9 @@ void PushMessagingServiceImpl::DidSubscribe(
       blink::mojom::PushRegistrationStatus::SERVICE_ERROR;
 
   switch (result) {
-    case InstanceID::SUCCESS:
+    case InstanceID::SUCCESS: {
+      const GURL endpoint = CreateEndpoint(subscription_id);
+
       // Make sure that this subscription has associated encryption keys prior
       // to returning it to the developer - they'll need this information in
       // order to send payloads to the user.
@@ -682,8 +680,9 @@ void PushMessagingServiceImpl::DidSubscribe(
           base::BindOnce(
               &PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo,
               weak_factory_.GetWeakPtr(), app_identifier, std::move(callback),
-              subscription_id));
+              subscription_id, endpoint));
       return;
+    }
     case InstanceID::INVALID_PARAMETER:
     case InstanceID::DISABLED:
     case InstanceID::ASYNC_OPERATION_PENDING:
@@ -705,6 +704,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
     const PushMessagingAppIdentifier& app_identifier,
     RegisterCallback callback,
     const std::string& subscription_id,
+    const GURL& endpoint,
     std::string p256dh,
     std::string auth_secret) {
   if (p256dh.empty()) {
@@ -718,7 +718,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
 
   IncreasePushSubscriptionCount(1, false /* is_pending */);
 
-  SubscribeEnd(std::move(callback), subscription_id,
+  SubscribeEnd(std::move(callback), subscription_id, endpoint,
                std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
                std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()),
                blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
@@ -737,15 +737,17 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
           profile_, origin, service_worker_registration_id);
 
   if (app_identifier.is_null()) {
-    callback.Run(false /* is_valid */, std::vector<uint8_t>() /* p256dh */,
+    callback.Run(false /* is_valid */, GURL::EmptyGURL() /*endpoint*/,
+                 std::vector<uint8_t>() /* p256dh */,
                  std::vector<uint8_t>() /* auth */);
     return;
   }
 
+  const GURL endpoint = CreateEndpoint(subscription_id);
   const std::string& app_id = app_identifier.app_id();
-  base::Callback<void(bool)> validate_cb =
-      base::Bind(&PushMessagingServiceImpl::DidValidateSubscription,
-                 weak_factory_.GetWeakPtr(), app_id, sender_id, callback);
+  base::Callback<void(bool)> validate_cb = base::Bind(
+      &PushMessagingServiceImpl::DidValidateSubscription,
+      weak_factory_.GetWeakPtr(), app_id, sender_id, endpoint, callback);
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->ValidateToken(
@@ -760,10 +762,12 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
 void PushMessagingServiceImpl::DidValidateSubscription(
     const std::string& app_id,
     const std::string& sender_id,
+    const GURL& endpoint,
     const SubscriptionInfoCallback& callback,
     bool is_valid) {
   if (!is_valid) {
-    callback.Run(false /* is_valid */, std::vector<uint8_t>() /* p256dh */,
+    callback.Run(false /* is_valid */, GURL::EmptyGURL() /* endpoint */,
+                 std::vector<uint8_t>() /* p256dh */,
                  std::vector<uint8_t>() /* auth */);
     return;
   }
@@ -771,16 +775,18 @@ void PushMessagingServiceImpl::DidValidateSubscription(
   GetEncryptionInfoForAppId(
       app_id, sender_id,
       base::BindOnce(&PushMessagingServiceImpl::DidGetEncryptionInfo,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), endpoint, callback));
 }
 
 void PushMessagingServiceImpl::DidGetEncryptionInfo(
+    const GURL& endpoint,
     const SubscriptionInfoCallback& callback,
     std::string p256dh,
     std::string auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
   bool is_valid = !p256dh.empty();
-  callback.Run(is_valid, std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
+  callback.Run(is_valid, endpoint,
+               std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
                std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
 }
 
@@ -1129,6 +1135,13 @@ void PushMessagingServiceImpl::GetEncryptionInfoForAppId(
   } else {
     GetGCMDriver()->GetEncryptionInfo(app_id, std::move(callback));
   }
+}
+
+GURL PushMessagingServiceImpl::CreateEndpoint(
+    const std::string& subscription_id) const {
+  const GURL endpoint(kPushMessagingGcmEndpoint + subscription_id);
+  DCHECK(endpoint.is_valid());
+  return endpoint;
 }
 
 gcm::GCMDriver* PushMessagingServiceImpl::GetGCMDriver() const {

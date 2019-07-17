@@ -220,7 +220,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
-  if (gfx::NumberOfPlanesForBufferFormat(buffer_format) != 1) {
+  if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
     DLOG(ERROR) << "Invalid image format.";
     return nullptr;
   }

@@ -17,6 +17,8 @@ _EXCLUDED_PATHS = (
     r"^skia[\\/].*",
     r"^third_party[\\/]blink[\\/].*",
     r"^third_party[\\/]breakpad[\\/].*",
+    # sqlite is an imported third party dependency.
+    r"^third_party[\\/]sqlite[\\/].*",
     r"^v8[\\/].*",
     r".*MakeFile$",
     r".+_autogen\.h$",
@@ -1935,7 +1937,9 @@ def _CheckTeamTags(input_api, output_api):
            'OWNERS']
   try:
     if files:
-      input_api.subprocess.check_output(args + files)
+      warnings = input_api.subprocess.check_output(args + files).splitlines()
+      if warnings:
+        return [output_api.PresubmitPromptWarning(warnings[0], warnings[1:])]
     return []
   except input_api.subprocess.CalledProcessError as error:
     return [output_api.PresubmitError(
@@ -4263,7 +4267,7 @@ def _CheckTranslationScreenshots(input_api, output_api):
     """
     doc = grit.grd_reader.Parse(grd_path_or_string, dir_path,
         stop_after=None, first_ids_file=None,
-        debug=False, defines=None,
+        debug=False, defines={'_chromium': 1},
         tags_to_ignore=set([PART_FILE_TAG]))
     return {
       msg.attrs['name']:msg for msg in doc.GetChildrenOfType(

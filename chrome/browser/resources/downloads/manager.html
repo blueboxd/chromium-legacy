@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
@@ -20,7 +21,7 @@
 
 <dom-module id="downloads-manager">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-shared-style cr-hidden-style">
       :host {
         display: flex;
         flex: 1 0;
@@ -40,10 +41,6 @@
 
       #toolbar {
         z-index: 1;
-      }
-
-      #drop-shadow {
-        @apply --cr-container-shadow;
       }
 
       :host([has-shadow_]) #drop-shadow {
@@ -125,7 +122,7 @@
     <downloads-toolbar id="toolbar" spinner-active="{{spinnerActive_}}"
         role="none" on-search-changed="onSearchChanged_">
     </downloads-toolbar>
-    <div id="drop-shadow"></div>
+    <div id="drop-shadow" class="cr-container-shadow"></div>
     <div id="mainContainer" on-scroll="onScroll_">
       <managed-footnote hidden="[[inSearchMode_]]"></managed-footnote>
       <iron-list id="downloadsList" items="[[items_]]"

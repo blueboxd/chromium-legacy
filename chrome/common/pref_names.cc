@@ -2695,6 +2695,12 @@ const char kAllowPopupsDuringPageUnload[] = "allow_popups_during_page_unload";
 // Controlled by ClientCertificateManagementAllowed policy.
 const char kClientCertificateManagementAllowed[] =
     "certificate_management_allowed";
+
+// Boolean that specifies whether the built-in certificate verifier should be
+// used. If false, Chrome will use the platform certificate verifier. If not
+// set, Chrome will choose the certificate verifier based on experiments.
+const char kBuiltinCertificateVerifierEnabled[] =
+    "builtin_certificate_verifier_enabled";
 #endif
 
 const char kSharingVapidKey[] = "sharing.vapid_key";

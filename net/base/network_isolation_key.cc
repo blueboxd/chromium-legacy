@@ -17,7 +17,7 @@ std::string GetOriginDebugString(const base::Optional<url::Origin>& origin) {
 }  // namespace
 
 NetworkIsolationKey::NetworkIsolationKey(
-    const base::Optional<url::Origin>& top_frame_origin,
+    const url::Origin& top_frame_origin,
     const base::Optional<url::Origin>& frame_origin)
     : use_frame_origin_(base::FeatureList::IsEnabled(
           net::features::kAppendFrameOriginToNetworkIsolationKey)),

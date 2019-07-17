@@ -20,8 +20,11 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -75,6 +78,27 @@ AccessibilityPrivateSetNativeAccessibilityEnabledFunction::Run() {
     content::BrowserAccessibilityState::GetInstance()->
         DisableAccessibility();
   }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
+  using extensions::api::accessibility_private::OpenSettingsSubpage::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+#if defined(OS_CHROMEOS)
+  Profile* profile = chromeos::AccessibilityManager::Get()->profile();
+  if (chrome::IsOSSettingsSubPage(params->subpage)) {
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        profile, params->subpage);
+  } else {
+    chrome::ShowSettingsSubPageForProfile(profile, params->subpage);
+  }
+#else
+  // This function should only be available on ChromeOS.
+  EXTENSION_FUNCTION_VALIDATE(false);
+#endif  // OS_CHROMEOS
   return RespondNow(NoArguments());
 }
 

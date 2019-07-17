@@ -116,19 +116,6 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
     }
   }
 
-  // Overridden from aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override {
-    // When window bounds are changed, we need to update the header view so that
-    // the window mask layer bounds can be set correctly in function
-    // SetShouldPaintHeader(). Note: this can be removed if the layer mask in
-    // CustomFrameView becomes unnecessary.
-    // TODO(oshima): Investigate if we can eliminate this.
-    NonClientFrameViewAsh::UpdateHeaderView();
-  }
-
   void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(frame()->GetNativeWindow(), window);
     window->RemoveObserver(this);

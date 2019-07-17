@@ -29,7 +29,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.show_overdraw_feedback = true;
   input.highp_threshold_min = -1;
   input.use_skia_renderer = true;
-  input.use_skia_renderer_non_ddl = true;
 
   RendererSettings output;
   mojom::RendererSettings::Deserialize(
@@ -48,7 +47,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
   EXPECT_EQ(input.use_skia_renderer, output.use_skia_renderer);
-  EXPECT_EQ(input.use_skia_renderer_non_ddl, output.use_skia_renderer_non_ddl);
 }
 
 }  // namespace

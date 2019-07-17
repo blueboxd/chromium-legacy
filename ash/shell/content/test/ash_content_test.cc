@@ -162,10 +162,9 @@ void AshContentTest::TearDownOnMainThread() {
   content::ContentBrowserTest::TearDownOnMainThread();
 }
 
-aura::Window* AshContentTest::CreateBrowserWindow() {
+aura::Window* AshContentTest::CreateBrowserWindow(const GURL& url) {
   return ash::shell::EmbeddedBrowser::Create(
-      ash::shell::ShellBrowserMainParts::GetBrowserContext(),
-      GURL("https://www.google.com"));
+      ash::shell::ShellBrowserMainParts::GetBrowserContext(), url);
 }
 
 aura::Window* AshContentTest::CreateTestWindow() {

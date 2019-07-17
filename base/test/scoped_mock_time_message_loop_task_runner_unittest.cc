@@ -17,6 +17,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_pending_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +25,7 @@ namespace base {
 namespace {
 
 TaskRunner* GetCurrentTaskRunner() {
-  return MessageLoopCurrent::Get()->task_runner().get();
+  return ThreadTaskRunnerHandle::Get().get();
 }
 
 void AssignTrue(bool* out) {

@@ -35,7 +35,7 @@ class OfflinePageTestArchivePublisher : public OfflinePageArchivePublisher {
       PublishArchiveDoneCallback publish_done_callback) const override;
 
   void UnpublishArchives(
-      const std::vector<int64_t>& download_manager_ids) const override;
+      const std::vector<PublishedArchiveId>& archive_ids) const override;
 
   void set_archive_attempt_failure(bool fail) {
     archive_attempt_failure_ = fail;
@@ -47,7 +47,7 @@ class OfflinePageTestArchivePublisher : public OfflinePageArchivePublisher {
 
   void use_verbatim_archive_path(bool use) { use_verbatim_archive_path_ = use; }
 
-  int64_t last_removed_id() const { return last_removed_id_; }
+  PublishedArchiveId last_removed_id() const { return last_removed_id_; }
 
  private:
   bool expect_publish_archive_called_;
@@ -55,7 +55,7 @@ class OfflinePageTestArchivePublisher : public OfflinePageArchivePublisher {
   bool archive_attempt_failure_;
   bool use_verbatim_archive_path_;
   int64_t download_id_;
-  mutable int64_t last_removed_id_;
+  mutable PublishedArchiveId last_removed_id_;
 
   ArchiveManager* archive_manager_;
 };

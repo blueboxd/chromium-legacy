@@ -80,6 +80,14 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Whether the Printing feature is enabled.
+     */
+    printingEnabled: {
+      type: Boolean,
+      value: false,
+    },
+
     strings: Object,
   },
 

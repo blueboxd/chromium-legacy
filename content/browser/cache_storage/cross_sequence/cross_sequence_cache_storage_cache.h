@@ -76,6 +76,8 @@ class CrossSequenceCacheStorageCache
                             int64_t trace_id,
                             CacheEntriesCallback callback) override;
 
+  InitState GetInitState() const override;
+
  private:
   friend class base::RefCounted<CrossSequenceCacheStorageCache>;
   ~CrossSequenceCacheStorageCache() override;

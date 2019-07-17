@@ -1403,7 +1403,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   const menu = $(customize.IDS.MENU);
 
   $(customize.IDS.OPTIONS_TITLE).textContent =
-      configData.translatedStrings.customizeBackground;
+      configData.translatedStrings.customizeThisPage;
 
   if (configData.richerPicker) {
     // Store the main menu title so it can be restored if needed.
@@ -1411,12 +1411,12 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
         $(customize.IDS.MENU_TITLE).textContent;
   }
 
-  $(customize.IDS.EDIT_BG_ICON)
+  $(customize.IDS.EDIT_BG)
       .setAttribute(
           'aria-label', configData.translatedStrings.customizeThisPage);
 
-  $(customize.IDS.EDIT_BG_ICON)
-      .setAttribute('title', configData.translatedStrings.customizeBackground);
+  $(customize.IDS.EDIT_BG)
+      .setAttribute('title', configData.translatedStrings.customizeThisPage);
 
   // Selecting a local image for the background should close the picker.
   if (configData.richerPicker) {

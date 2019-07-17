@@ -532,9 +532,13 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.
+  virtual bool AllowAppCacheOnIO(const GURL& manifest_url,
+                                 const GURL& first_party,
+                                 ResourceContext* context);
+  // Same as above but called on UI thread.
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,
-                             ResourceContext* context);
+                             BrowserContext* context);
 
   // Allows the embedder to control if a service worker is allowed at the given
   // |scope| and can be accessed from |first_party|. This function is called

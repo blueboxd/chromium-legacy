@@ -42,6 +42,7 @@ constexpr struct UserLogs {
   const char* log_file_relative_path;
 } kUserLogs[] = {
     {"chrome_user_log", "log/chrome"},
+    {"chrome_user_log.PREVIOUS", "log/chrome.PREVIOUS"},
     {"libassistant_user_log", "log/libassistant.log"},
     {"login-times", "login-times"},
     {"logout-times", "logout-times"},

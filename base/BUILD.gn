@@ -308,8 +308,6 @@ jumbo_component("base") {
     "guid.h",
     "hash/hash.cc",
     "hash/hash.h",
-    "hash/sha1.cc",
-    "hash/sha1.h",
     "immediate_crash.h",
     "ios/block_types.h",
     "ios/crb_protocol_observers.h",
@@ -1593,16 +1591,19 @@ jumbo_component("base") {
     "hash/md5.h",
     "hash/md5_constexpr.h",
     "hash/md5_constexpr_internal.h",
+    "hash/sha1.h",
   ]
   if (is_nacl) {
     sources += [
       "hash/md5_nacl.cc",
       "hash/md5_nacl.h",
+      "hash/sha1.cc",
     ]
   } else {
     sources += [
       "hash/md5_boringssl.cc",
       "hash/md5_boringssl.h",
+      "hash/sha1_boringssl.cc",
     ]
     public_deps += [ "//third_party/boringssl" ]
   }
@@ -2222,6 +2223,7 @@ component("i18n") {
 
 test("base_perftests") {
   sources = [
+    "hash/sha1_perftest.cc",
     "message_loop/message_pump_perftest.cc",
     "observer_list_perftest.cc",
     "strings/string_util_perftest.cc",

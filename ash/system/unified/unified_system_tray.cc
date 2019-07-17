@@ -133,7 +133,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       notification_counter_item_(new NotificationCounterView(shelf)),
       quiet_mode_view_(new QuietModeView(shelf)),
       time_view_(new tray::TimeTrayItemView(shelf)) {
-  tray_container()->SetMargin(kUnifiedTrayContentPadding, 0);
+  tray_container()->SetMargin(
+      kUnifiedTrayContentPadding - TrayConstants::hit_region_padding(), 0);
   tray_container()->AddChildView(current_locale_view_);
   tray_container()->AddChildView(ime_mode_view_);
   tray_container()->AddChildView(managed_device_view_);

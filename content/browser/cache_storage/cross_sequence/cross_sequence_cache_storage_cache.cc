@@ -242,6 +242,13 @@ void CrossSequenceCacheStorageCache::GetAllMatchedEntries(
               WrapCallbackForCurrentSequence(std::move(callback)));
 }
 
+CacheStorageCache::InitState CrossSequenceCacheStorageCache::GetInitState()
+    const {
+  // We don't really know when the real cache on the other sequence becomes
+  // initialized.
+  return InitState::Unknown;
+}
+
 CrossSequenceCacheStorageCache::~CrossSequenceCacheStorageCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }

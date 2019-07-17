@@ -43,7 +43,6 @@
 namespace ash {
 namespace {
 
-constexpr int kShelfRoundedCornerRadius = 28;
 constexpr int kShelfBlurRadius = 30;
 // The maximum size of the opaque layer during an "overshoot" (drag away from
 // the screen edge).
@@ -225,7 +224,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   // when dragged away.
   // To achieve this, we extend the layer in the same direction where the shelf
   // is aligned (downwards for a bottom shelf, etc.).
-  const int radius = kShelfRoundedCornerRadius;
+  const int radius = ShelfConstants::shelf_size() / 2;
   // We can easily round only 2 corners out of 4 which means we don't need as
   // much extra shelf height.
   const int safety_margin = kShelfMaxOvershootHeight;
@@ -304,7 +303,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_, this)),
+      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_)),
       login_shelf_view_(
           new LoginShelfView(RootWindowController::ForWindow(shelf_container)
                                  ->lock_screen_action_background_controller())),

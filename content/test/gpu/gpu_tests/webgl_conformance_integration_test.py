@@ -16,8 +16,10 @@ from gpu_tests import webgl_test_util
 # expectations files.
 EXPECTATIONS_DRIVER_TAGS = frozenset([
     'intel_lt_25.20.100.6444',
+    'intel_lt_25.20.100.6577',
+    'mesa_lt_17.1.6',
     'mesa_lt_17.3.9',
-    'mesa_lt_17.1.6'
+    'mesa_lt_19.1.2'
 ])
 
 # Driver tag format: VENDOR_OPERATION_VERSION

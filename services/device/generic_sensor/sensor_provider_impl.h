@@ -17,9 +17,9 @@ class PlatformSensorProvider;
 class PlatformSensor;
 
 // Implementation of SensorProvider mojo interface. Owns an instance of
-// PlatformSensorProvider singleton to create platform specific instances
-// of PlatformSensor which are used by SensorImpl. A single instance of this
-// class is owned by DeviceService.
+// PlatformSensorProvider to create platform specific instances of
+// PlatformSensor which are used by SensorImpl. A single instance of this class
+// is owned by DeviceService.
 class SensorProviderImpl final : public mojom::SensorProvider {
  public:
   explicit SensorProviderImpl(std::unique_ptr<PlatformSensorProvider> provider);

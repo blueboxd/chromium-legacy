@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/core/offline_page_archive_publisher.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/task/task.h"
 
@@ -23,20 +24,20 @@ class OfflinePageMetadataStore;
 // missing entries back to normal.
 class PersistentPageConsistencyCheckTask : public Task {
  public:
-  using PersistentPageConsistencyCheckCallback =
-      base::OnceCallback<void(bool success,
-                              const std::vector<int64_t>& pages_deleted)>;
+  using PersistentPageConsistencyCheckCallback = base::OnceCallback<void(
+      bool success,
+      const std::vector<PublishedArchiveId>& ids_of_deleted_pages)>;
 
   struct CheckResult {
     CheckResult();
     CheckResult(SyncOperationResult result,
-                const std::vector<int64_t>& system_download_ids);
+                const std::vector<PublishedArchiveId>& ids_of_deleted_pages);
     CheckResult(const CheckResult& other);
     CheckResult& operator=(const CheckResult& other);
     ~CheckResult();
 
     SyncOperationResult result;
-    std::vector<int64_t> download_ids_of_deleted_pages;
+    std::vector<PublishedArchiveId> ids_of_deleted_pages;
   };
 
   PersistentPageConsistencyCheckTask(

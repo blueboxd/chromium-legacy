@@ -571,6 +571,14 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               ReplacedWillBeRemoved("Atomics.wake", "Atomics.notify", kM76,
                                     "6228189936353280")};
 
+    case WebFeature::kVRGetDisplays:
+      return {"WebVR", kM79,
+              String::Format("WebVR is deprecated and will be removed as soon "
+                             "as %s. Please use WebXR instead.  See "
+                             "https://www.chromestatus.com/feature/"
+                             "4532810371039232 for details.",
+                             MilestoneString(kM79))};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

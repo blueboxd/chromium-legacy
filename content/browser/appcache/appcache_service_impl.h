@@ -49,6 +49,7 @@ class AppCachePolicy;
 class AppCacheServiceImplTest;
 class AppCacheStorageImplTest;
 class AppCacheStorage;
+class StoragePartitionImpl;
 
 // Refcounted container to manage the lifetime of the old storage instance
 // during Reinitialization.
@@ -96,7 +97,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   };
 
   // If not using quota management, the proxy may be NULL.
-  explicit AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy);
+  AppCacheServiceImpl(storage::QuotaManagerProxy* quota_manager_proxy,
+                      base::WeakPtr<StoragePartitionImpl> partition);
   ~AppCacheServiceImpl() override;
 
   void Initialize(const base::FilePath& cache_directory);
@@ -194,6 +196,8 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
     return url_loader_factory_getter_.get();
   }
 
+  base::WeakPtr<StoragePartitionImpl> partition() { return partition_; }
+
   // Returns a pointer to a registered host. It retains ownership.
   AppCacheHost* GetHost(const base::UnguessableToken& host_id);
   bool EraseHost(const base::UnguessableToken& host_id);
@@ -242,6 +246,9 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
   // URLLoaderFactoryGetter instance which is used to get to the network
   // URL loader factory.
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
+  // If NavigationLoaderOnUI is enabled, |partition_| will be used to get the
+  // network URL loader factory.
+  base::WeakPtr<StoragePartitionImpl> partition_;
 
  private:
   // TODO: Once we remove 'blink::mojom::AppCacheBackend', remove this together.

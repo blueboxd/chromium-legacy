@@ -47,12 +47,9 @@ group("wpt_tests_isolate") {
     "//third_party/blink/tools/update_wpt_output.py",
     "//third_party/blink/tools/blinkpy/",
 
-    # The WPT root directory contains both the test runner codebase
-    # and the tests themselves.
-    "//third_party/blink/web_tests/external/wpt/",
-
-    # Include the checked-in WPT manifest.
-    "//third_party/blink/web_tests/external/WPT_BASE_MANIFEST_6.json",
+    # The web_tests/external directory contains all WPT components including
+    # the test runner codebase, manifest file, and the tests themselves.
+    "//third_party/blink/web_tests/external/",
 
     # Include the various Test Expectations files.
     "//third_party/blink/web_tests/ASANExpectations",

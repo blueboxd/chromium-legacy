@@ -23,25 +23,6 @@
 
 namespace content {
 
-namespace {
-
-// Returns a transform from root to |frame_sink_id|. If no HitTestQuery contains
-// |frame_sink_id| then this will return an empty optional.
-base::Optional<gfx::Transform> GetRootToTargetTransform(
-    const viz::FrameSinkId& frame_sink_id) {
-  for (auto& it : GetHostFrameSinkManager()->display_hit_test_query()) {
-    if (it.second->ContainsActiveFrameSinkId(frame_sink_id)) {
-      base::Optional<gfx::Transform> transform(base::in_place);
-      it.second->GetTransformToTarget(frame_sink_id, &transform.value());
-      return transform;
-    }
-  }
-
-  return base::nullopt;
-}
-
-}  // namespace
-
 void WaitForHitTestDataOrChildSurfaceReady(RenderFrameHost* child_frame) {
   RenderWidgetHostViewBase* child_view =
       static_cast<RenderFrameHostImpl*>(child_frame)
@@ -134,45 +115,6 @@ HitTestRegionObserver::GetHitTestData() {
   const auto iter = hit_test_query_map.find(frame_sink_id_);
   DCHECK(iter != hit_test_query_map.end());
   return iter->second.get()->GetHitTestData();
-}
-
-HitTestTransformChangeObserver::HitTestTransformChangeObserver(
-    const viz::FrameSinkId& frame_sink_id)
-    : target_frame_sink_id_(frame_sink_id),
-      cached_transform_(GetRootToTargetTransform(frame_sink_id)) {
-  DCHECK(frame_sink_id.is_valid());
-}
-
-HitTestTransformChangeObserver::~HitTestTransformChangeObserver() = default;
-
-void HitTestTransformChangeObserver::WaitForTransformChangeInHitTestData() {
-  DCHECK(!run_loop_);
-
-  // If the transform has already changed then don't run RunLoop.
-  base::Optional<gfx::Transform> transform =
-      GetRootToTargetTransform(target_frame_sink_id_);
-  if (transform != cached_transform_) {
-    cached_transform_ = transform;
-    return;
-  }
-
-  GetHostFrameSinkManager()->AddHitTestRegionObserver(this);
-  run_loop_ = std::make_unique<base::RunLoop>();
-  run_loop_->Run();
-  run_loop_.reset();
-  GetHostFrameSinkManager()->RemoveHitTestRegionObserver(this);
-}
-
-void HitTestTransformChangeObserver::OnAggregatedHitTestRegionListUpdated(
-    const viz::FrameSinkId& frame_sink_id,
-    const std::vector<viz::AggregatedHitTestRegion>& hit_test_data) {
-  // Check if the transform has changed since it was cached.
-  base::Optional<gfx::Transform> transform =
-      GetRootToTargetTransform(target_frame_sink_id_);
-  if (transform != cached_transform_) {
-    cached_transform_ = transform;
-    run_loop_->Quit();
-  }
 }
 
 }  // namespace content

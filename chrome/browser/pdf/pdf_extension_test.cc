@@ -683,8 +683,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
 IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, MAYBE_AnnotationsFeatureEnabled) {
   RunTestsInFile("annotations_feature_enabled_test.js", "test.pdf");
 }
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
   RunTestsInFile("annotations_feature_disabled_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Printing) {
+  RunTestsInFile("printing_icon_test.js", "test.pdf");
 }
 #endif
 

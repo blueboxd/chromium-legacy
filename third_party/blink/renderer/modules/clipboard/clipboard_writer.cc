@@ -59,7 +59,7 @@ class ClipboardImageWriter final : public ClipboardWriter {
     SkBitmap bitmap;
     image->asLegacyBitmap(&bitmap);
     SystemClipboard::GetInstance().WriteImage(std::move(bitmap));
-    promise_->WriteNextRepresentation();
+    promise_->CompleteWriteRepresentation();
   }
 };
 
@@ -91,7 +91,7 @@ class ClipboardTextWriter final : public ClipboardWriter {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     SystemClipboard::GetInstance().WritePlainText(text);
 
-    promise_->WriteNextRepresentation();
+    promise_->CompleteWriteRepresentation();
   }
 };
 

@@ -193,6 +193,8 @@ bool ParseInspectorMessage(
     InspectorEvent* event,
     InspectorCommandResponse* command_response);
 
+Status ParseInspectorError(const std::string& error_json);
+
 }  // namespace internal
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_CLIENT_IMPL_H_

@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 
@@ -23,6 +24,8 @@ class SharedURLLoaderFactory;
 }
 
 class OAuth2AccessTokenFetcher;
+class OAuth2AccessTokenConsumer;
+class OAuth2TokenServiceObserver;
 
 // Abstract base class to fetch and maintain refresh tokens from various
 // entities. Concrete subclasses should implement RefreshTokenIsAvailable and

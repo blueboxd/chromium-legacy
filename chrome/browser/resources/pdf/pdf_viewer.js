@@ -777,6 +777,7 @@ PDFViewer.prototype = {
     $('toolbar').strings = strings;
     $('toolbar').pdfAnnotationsEnabled =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
+    $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
     $('zoom-toolbar').setStrings(strings);
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;

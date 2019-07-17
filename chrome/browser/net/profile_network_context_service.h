@@ -51,6 +51,8 @@ class ProfileNetworkContextService
   void UpdateAdditionalCertificates(
       const net::CertificateList& all_additional_certificates,
       const net::CertificateList& trust_anchors);
+
+  bool using_builtin_cert_verifier() { return using_builtin_cert_verifier_; }
 #endif
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -134,6 +136,10 @@ class ProfileNetworkContextService
   // or not allowed for this profile.
   std::unique_ptr<TrialComparisonCertVerifierController>
       trial_comparison_cert_verifier_controller_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  bool using_builtin_cert_verifier_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);

@@ -111,8 +111,6 @@ component("cpp") {
     "keyboard_shortcut_viewer.h",
     "kiosk_app_menu.cc",
     "kiosk_app_menu.h",
-    "kiosk_next_shell.cc",
-    "kiosk_next_shell.h",
     "locale_update_controller.cc",
     "locale_update_controller.h",
     "lock_screen_widget_factory.cc",

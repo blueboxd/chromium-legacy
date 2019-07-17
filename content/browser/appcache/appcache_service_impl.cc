@@ -28,6 +28,7 @@
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_storage_impl.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "net/base/io_buffer.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -371,7 +372,8 @@ AppCacheStorageReference::~AppCacheStorageReference() {}
 // AppCacheServiceImpl -------
 
 AppCacheServiceImpl::AppCacheServiceImpl(
-    storage::QuotaManagerProxy* quota_manager_proxy)
+    storage::QuotaManagerProxy* quota_manager_proxy,
+    base::WeakPtr<StoragePartitionImpl> partition)
     : db_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
@@ -379,7 +381,8 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       quota_client_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
       request_context_(nullptr),
-      force_keep_session_state_(false) {
+      force_keep_session_state_(false),
+      partition_(std::move(partition)) {
   if (quota_manager_proxy_.get()) {
     // The operator new is used here because this AppCacheQuotaClient instance
     // deletes itself after both the QuotaManager and the AppCacheService are
@@ -531,7 +534,8 @@ void AppCacheServiceImpl::RegisterHostInternal(
     int32_t render_frame_id,
     int process_id,
     mojo::ReportBadMessageCallback bad_message_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(
+      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
   if (GetHost(host_id)) {
     std::move(bad_message_callback).Run("ACSI_REGISTER");
     return;

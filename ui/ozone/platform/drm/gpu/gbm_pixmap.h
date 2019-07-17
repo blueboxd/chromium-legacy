@@ -30,6 +30,7 @@ class GbmPixmap : public gfx::NativePixmap {
   uint32_t GetDmaBufPitch(size_t plane) const override;
   size_t GetDmaBufOffset(size_t plane) const override;
   size_t GetDmaBufPlaneSize(size_t plane) const override;
+  size_t GetNumberOfPlanes() const override;
   uint64_t GetBufferFormatModifier() const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;

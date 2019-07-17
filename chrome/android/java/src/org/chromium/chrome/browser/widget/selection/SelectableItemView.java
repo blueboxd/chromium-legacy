@@ -69,7 +69,7 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
      */
     protected void setIconDrawable(Drawable iconDrawable) {
         mIconDrawable = iconDrawable;
-        updateView();
+        updateView(false);
     }
 
     /**
@@ -83,7 +83,7 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
      * Update icon image and background based on whether this item is selected.
      */
     @Override
-    protected void updateView() {
+    protected void updateView(boolean animate) {
         // TODO(huayinz): Refactor this method so that mIconView is not exposed to subclass.
         if (mIconView == null) return;
 
@@ -91,7 +91,7 @@ public abstract class SelectableItemView<E> extends SelectableItemViewBase<E> {
             mIconView.getBackground().setLevel(mSelectedLevel);
             mIconView.setImageDrawable(mCheckDrawable);
             ApiCompatibilityUtils.setImageTintList(mIconView, mIconColorList);
-            mCheckDrawable.start();
+            if (animate) mCheckDrawable.start();
         } else {
             mIconView.getBackground().setLevel(mDefaultLevel);
             mIconView.setImageDrawable(mIconDrawable);

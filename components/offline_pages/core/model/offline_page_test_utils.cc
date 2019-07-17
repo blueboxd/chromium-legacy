@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/offline_pages/core/offline_page_archive_publisher.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_visuals.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -69,7 +70,7 @@ std::ostream& operator<<(std::ostream& out, const OfflinePageItem& item) {
   if (!item.request_origin.empty()) {
     value.SetKey("request_origin", Value(item.request_origin));
   }
-  if (item.system_download_id != 0) {
+  if (item.system_download_id != kArchiveNotPublished) {
     value.SetKey("system_download_id",
                  Value(std::to_string(item.system_download_id)));
   }

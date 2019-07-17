@@ -36,14 +36,17 @@ class ClipboardPromise final
   explicit ClipboardPromise(ScriptState*);
   virtual ~ClipboardPromise();
 
-  // Called to begin writing a type, or after writing each type.
-  void WriteNextRepresentation();
+  // Completes current write and starts next write.
+  void CompleteWriteRepresentation();
   // For rejections originating from ClipboardWriter.
   void RejectFromReadOrDecodeFailure();
 
   void Trace(blink::Visitor*) override;
 
  private:
+  // Called to begin writing a type.
+  void StartWriteRepresentation();
+
   // Checks Read/Write permission (interacting with PermissionService).
   void HandleRead();
   void HandleReadText();

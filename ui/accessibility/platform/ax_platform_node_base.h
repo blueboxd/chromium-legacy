@@ -406,6 +406,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   base::Optional<int> GetPosInSet() const;
   base::Optional<int> GetSetSize() const;
 
+  std::string GetInvalidValue() const;
+
   AXHypertext hypertext_;
 
  private:

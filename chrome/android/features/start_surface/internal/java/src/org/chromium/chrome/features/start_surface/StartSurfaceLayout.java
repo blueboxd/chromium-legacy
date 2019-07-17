@@ -54,8 +54,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
     private static final String TAG = "SSLayout";
 
     // Duration of the transition animation
-    @VisibleForTesting
-    static final long ZOOMING_DURATION = 300;
+    public static final long ZOOMING_DURATION = 300;
     private static final int BACKGROUND_FADING_DURATION_MS = 150;
 
     // Field trial parameter for whether skipping slow zooming animation.

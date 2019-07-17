@@ -353,8 +353,9 @@ bool FindAndConsumeAndGetSkipped(re2::StringPiece* input,
 
 }  // namespace
 
-AnonymizerTool::AnonymizerTool()
-    : custom_patterns_with_context_(base::size(kCustomPatternsWithContext)),
+AnonymizerTool::AnonymizerTool(const char* const* first_party_extension_ids)
+    : first_party_extension_ids_(first_party_extension_ids),
+      custom_patterns_with_context_(base::size(kCustomPatternsWithContext)),
       custom_patterns_without_context_(
           base::size(kCustomPatternsWithoutContext)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -477,11 +478,49 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithContext(
   return result;
 }
 
-bool WhitelistMatchedId(re2::StringPiece matched_id) {
-  bool is_safe_chrome_resource =
-      matched_id.starts_with("chrome://resources/") &&
-      !matched_id.contains("?");
-  return is_safe_chrome_resource;
+// This takes a |url| argument and returns true if the URL is whitelisted and
+// does NOT need to be redacted, returns false otherwise.
+bool IsUrlWhitelisted(re2::StringPiece url,
+                      const char* const* first_party_extension_ids) {
+  // We do not whitelist anything with a query parameter.
+  if (url.contains("?"))
+    return false;
+
+  // Check for whitelisting of chrome:// URLs.
+  if (url.starts_with("chrome://")) {
+    // We allow everything in chrome://resources/.
+    if (url.starts_with("chrome://resources/"))
+      return true;
+
+    // We allow chrome://*/crisper.js.
+    if (url.ends_with("/crisper.js"))
+      return true;
+
+    return false;
+  }
+
+  // If the whitelist is null, then don't check it.
+  if (!first_party_extension_ids)
+    return false;
+
+  // Whitelist URLs of the format chrome-extension://<first-party-id>/*.js
+  if (!url.starts_with("chrome-extension://"))
+    return false;
+
+  // These must end with a .js extension.
+  if (!url.ends_with(".js"))
+    return false;
+
+  int i = 0;
+  const char* test_id = first_party_extension_ids[i];
+  const re2::StringPiece url_sub =
+      url.substr(sizeof("chrome-extension://") - 1);
+  while (test_id) {
+    if (url_sub.starts_with(test_id))
+      return true;
+    test_id = first_party_extension_ids[++i];
+  }
+  return false;
 }
 
 std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
@@ -499,7 +538,7 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
   re2::StringPiece skipped;
   re2::StringPiece matched_id;
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &matched_id)) {
-    if (WhitelistMatchedId(matched_id)) {
+    if (IsUrlWhitelisted(matched_id, first_party_extension_ids_)) {
       skipped.AppendToString(&result);
       matched_id.AppendToString(&result);
       continue;
@@ -527,8 +566,10 @@ std::string AnonymizerTool::AnonymizeCustomPatternWithoutContext(
 }
 
 AnonymizerToolContainer::AnonymizerToolContainer(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : anonymizer_(new AnonymizerTool), task_runner_(task_runner) {}
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const char* const* first_party_extension_ids)
+    : anonymizer_(new AnonymizerTool(first_party_extension_ids)),
+      task_runner_(task_runner) {}
 
 AnonymizerToolContainer::~AnonymizerToolContainer() {
   task_runner_->DeleteSoon(FROM_HERE, std::move(anonymizer_));

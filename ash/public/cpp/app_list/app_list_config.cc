@@ -7,6 +7,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_palette.h"
 
 namespace app_list {
@@ -59,7 +60,8 @@ AppListConfig::AppListConfig()
       grid_tile_spacing_in_folder_(8),
       // TODO(manucornet): Share the value with ShelfConstants and use
       // 48 when the new shelf UI is turned off.
-      shelf_height_(56),
+      shelf_height_(chromeos::switches::ShouldShowShelfDenseClamshell() ? 48
+                                                                        : 56),
       background_radius_(shelf_height_ / 2),
       blur_radius_(30),
       contents_background_color_(SkColorSetRGB(0xF2, 0xF2, 0xF2)),

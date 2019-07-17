@@ -90,7 +90,6 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   bool CanHandle(const std::string& app_id) const override;
 
   // content::PushMessagingService implementation:
-  GURL GetEndpoint(bool standard_protocol) override;
   void SubscribeFromDocument(const GURL& requesting_origin,
                              int64_t service_worker_registration_id,
                              int renderer_id,
@@ -173,6 +172,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void SubscribeEnd(RegisterCallback callback,
                     const std::string& subscription_id,
+                    const GURL& endpoint,
                     const std::vector<uint8_t>& p256dh,
                     const std::vector<uint8_t>& auth,
                     blink::mojom::PushRegistrationStatus status);
@@ -190,6 +190,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       RegisterCallback callback,
       const std::string& subscription_id,
+      const GURL& endpoint,
       std::string p256dh,
       std::string auth_secret);
 
@@ -197,10 +198,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   void DidValidateSubscription(const std::string& app_id,
                                const std::string& sender_id,
+                               const GURL& endpoint,
                                const SubscriptionInfoCallback& callback,
                                bool is_valid);
 
-  void DidGetEncryptionInfo(const SubscriptionInfoCallback& callback,
+  void DidGetEncryptionInfo(const GURL& endpoint,
+                            const SubscriptionInfoCallback& callback,
                             std::string p256dh,
                             std::string auth_secret) const;
 
@@ -253,6 +256,10 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& app_id,
       const std::string& sender_id,
       gcm::GCMEncryptionProvider::EncryptionInfoCallback callback);
+
+  // Returns the URL used to send push messages to the subscription identified
+  // by |subscription_id|.
+  GURL CreateEndpoint(const std::string& subscription_id) const;
 
   gcm::GCMDriver* GetGCMDriver() const;
 

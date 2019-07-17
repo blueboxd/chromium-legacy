@@ -93,6 +93,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   bool IsEmptyInline() { return EnsureData().is_empty_inline_; }
 
+  bool IsBlockLevel() { return EnsureData().is_block_level_; }
+
   // @return if this node can contain the "first formatted line".
   // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
   bool CanContainFirstFormattedLine() const {

@@ -36,8 +36,14 @@ if (generate_linker_map) {
 
 # The path to the hermetic install of Xcode. Only relevant when
 # use_system_xcode = false.
-hermetic_xcode_path =
-    rebase_path("//build/${target_os}_files/Xcode.app", "", root_build_dir)
+if (is_ios) {
+  hermetic_xcode_path =
+      rebase_path("//build/${target_os}_files/Xcode.app", "", root_build_dir)
+} else {
+  hermetic_xcode_path = rebase_path("//build/${target_os}_files/xcode_binaries",
+                                    "",
+                                    root_build_dir)
+}
 
 declare_args() {
   if (is_clang) {

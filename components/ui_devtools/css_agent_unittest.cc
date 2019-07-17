@@ -19,11 +19,6 @@ class FakeUIElement : public UIElement {
       : UIElement(UIElementType::ROOT, ui_element_delegate, nullptr) {}
 
   ~FakeUIElement() override {}
-  // Return a vector of pairs of properties' names and values.
-  std::vector<std::pair<std::string, std::string>> GetCustomProperties()
-      const override {
-    return {};
-  }
   void GetBounds(gfx::Rect* bounds) const override { *bounds = bounds_; }
   void SetBounds(const gfx::Rect& bounds) override { bounds_ = bounds; }
   void GetVisible(bool* visible) const override { *visible = visible_; }

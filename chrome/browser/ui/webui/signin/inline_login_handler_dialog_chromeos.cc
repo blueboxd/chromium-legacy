@@ -49,7 +49,7 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
 
 void InlineLoginHandlerDialogChromeOS::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
-  params->keep_on_top = false;
+  params->z_order = ui::ZOrderLevel::kNormal;
 }
 
 gfx::Size InlineLoginHandlerDialogChromeOS::GetMaximumDialogSize() {

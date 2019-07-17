@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"

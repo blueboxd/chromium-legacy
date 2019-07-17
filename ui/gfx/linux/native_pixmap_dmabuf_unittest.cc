@@ -23,7 +23,7 @@ class NativePixmapDmaBufTest
       const gfx::BufferFormat format) {
     gfx::NativePixmapHandle handle;
     handle.modifier = 1;
-    const int num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+    const int num_planes = gfx::NumberOfPlanesForLinearBufferFormat(format);
     for (int i = 0; i < num_planes; ++i) {
       // These values are arbitrarily chosen to be different from each other.
       const int stride = (i + 1) * image_size.width();
@@ -61,7 +61,7 @@ TEST_P(NativePixmapDmaBufTest, Convert) {
   EXPECT_EQ(native_pixmap_dmabuf->GetBufferFormatModifier(),
             handle_clone.modifier);
   // NativePixmap to NativePixmapHandle.
-  const size_t num_planes = gfx::NumberOfPlanesForBufferFormat(
+  const size_t num_planes = gfx::NumberOfPlanesForLinearBufferFormat(
       native_pixmap_dmabuf->GetBufferFormat());
   for (size_t i = 0; i < num_planes; ++i) {
     EXPECT_EQ(native_pixmap_dmabuf->GetDmaBufPitch(i),

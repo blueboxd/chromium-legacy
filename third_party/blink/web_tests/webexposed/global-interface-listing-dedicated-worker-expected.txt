@@ -1445,6 +1445,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter hasBeenActive
 [Worker]     getter isActive
 [Worker]     method constructor
+[Worker] interface WakeLock
+[Worker]     static method request
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
 [Worker] interface WebGL2ComputeRenderingContext
 [Worker]     attribute @@toStringTag
 [Worker]     attribute ACTIVE_ATOMIC_COUNTER_BUFFERS

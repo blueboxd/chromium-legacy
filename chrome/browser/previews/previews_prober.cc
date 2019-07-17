@@ -15,6 +15,9 @@
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/previews/proto/previews_prober_cache_entry.pb.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
@@ -32,11 +35,19 @@
 
 namespace {
 
+const char kCachePrefKeyPrefix[] = "previews.prober.cache";
+
 std::string NameForClient(PreviewsProber::ClientName name) {
   switch (name) {
     case PreviewsProber::ClientName::kLitepages:
       return "litepages";
   }
+  NOTREACHED();
+  return std::string();
+}
+
+std::string PrefKeyForName(const std::string& name) {
+  return base::StringPrintf("%s.%s", kCachePrefKeyPrefix, name.c_str());
 }
 
 std::string HttpMethodToString(PreviewsProber::HttpMethod http_method) {
@@ -187,6 +198,7 @@ PreviewsProber::TimeoutPolicy::TimeoutPolicy(
 PreviewsProber::PreviewsProber(
     Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service,
     const ClientName name,
     const GURL& url,
     const HttpMethod http_method,
@@ -197,6 +209,7 @@ PreviewsProber::PreviewsProber(
     base::TimeDelta revalidate_cache_after)
     : PreviewsProber(delegate,
                      url_loader_factory,
+                     pref_service,
                      name,
                      url,
                      http_method,
@@ -211,6 +224,7 @@ PreviewsProber::PreviewsProber(
 PreviewsProber::PreviewsProber(
     Delegate* delegate,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service,
     const ClientName name,
     const GURL& url,
     const HttpMethod http_method,
@@ -223,6 +237,7 @@ PreviewsProber::PreviewsProber(
     const base::Clock* clock)
     : delegate_(delegate),
       name_(NameForClient(name)),
+      pref_key_(PrefKeyForName(NameForClient(name))),
       url_(url),
       http_method_(http_method),
       headers_(headers),
@@ -237,8 +252,11 @@ PreviewsProber::PreviewsProber(
       clock_(clock),
       is_active_(false),
       network_connection_tracker_(nullptr),
-      url_loader_factory_(url_loader_factory) {
+      pref_service_(pref_service),
+      url_loader_factory_(url_loader_factory),
+      weak_factory_(this) {
   DCHECK(delegate_);
+  DCHECK(pref_service_);
 
   // The NetworkConnectionTracker can only be used directly on the UI thread.
   // Otherwise we use the cross-thread call.
@@ -250,12 +268,23 @@ PreviewsProber::PreviewsProber(
         base::BindOnce(&PreviewsProber::AddSelfAsNetworkConnectionObserver,
                        weak_factory_.GetWeakPtr()));
   }
+  cached_probe_results_ =
+      pref_service_->GetDictionary(pref_key_)->CreateDeepCopy();
 }
 
 PreviewsProber::~PreviewsProber() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (network_connection_tracker_)
     network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+}
+
+// static
+void PreviewsProber::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  for (int i = 0; i <= static_cast<int>(PreviewsProber::ClientName::kMaxValue);
+       i++) {
+    registry->RegisterDictionaryPref(PrefKeyForName(
+        NameForClient(static_cast<PreviewsProber::ClientName>(i))));
+  }
 }
 
 void PreviewsProber::AddSelfAsNetworkConnectionObserver(
@@ -485,6 +514,11 @@ base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() {
   return entry.value().is_success();
 }
 
+void PreviewsProber::SetOnCompleteCallback(
+    PreviewsProberOnCompleteCallback callback) {
+  on_complete_callback_ = std::move(callback);
+}
+
 void PreviewsProber::RecordProbeResult(bool success) {
   PreviewsProberCacheEntry entry;
   entry.set_is_success(success);
@@ -497,11 +531,16 @@ void PreviewsProber::RecordProbeResult(bool success) {
     return;
   }
 
-  cached_probe_results_->SetKey(GetCacheKeyForCurrentNetwork(),
-                                std::move(encoded.value()));
+  DictionaryPrefUpdate update(pref_service_, pref_key_);
+  update->SetKey(GetCacheKeyForCurrentNetwork(), std::move(encoded.value()));
 
-  if (cached_probe_results_->DictSize() > max_cache_entries_)
-    RemoveOldestDictionaryEntry(cached_probe_results_.get());
+  if (update.Get()->DictSize() > max_cache_entries_)
+    RemoveOldestDictionaryEntry(update.Get());
+
+  cached_probe_results_ = update.Get()->CreateDeepCopy();
+
+  if (on_complete_callback_)
+    on_complete_callback_.Run(success);
 }
 
 std::string PreviewsProber::GetCacheKeyForCurrentNetwork() const {

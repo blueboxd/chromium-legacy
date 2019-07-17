@@ -83,7 +83,13 @@ inline bool IsSVGGeometryElement(const SVGElement& element) {
   return element.IsSVGGeometryElement();
 }
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGeometryElement);
+template <>
+struct DowncastTraits<SVGGeometryElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* element = DynamicTo<SVGElement>(node);
+    return element && element->IsSVGGeometryElement();
+  }
+};
 
 }  // namespace blink
 

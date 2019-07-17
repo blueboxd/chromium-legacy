@@ -112,8 +112,7 @@ development.
 
   args = parser.parse_args()
   logging_common.InitializeLogging(args)
-  devil_chromium.Initialize()
-  script_common.InitializeEnvironment(args)
+  devil_chromium.Initialize(adb_path=args.adb_path)
 
   devices = device_utils.DeviceUtils.HealthyDevices(device_arg=args.devices)
   device_utils.DeviceUtils.parallel(devices).pMap(RemovePreinstalledWebViews)

@@ -707,8 +707,9 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
   // or we're currently in entering overview animation.
   bool should_show = true;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (disable_mask_ || !overview_controller ||
-      !overview_controller->InOverviewSession() ||
+  const bool is_shutting_down =
+      !overview_controller || !overview_controller->InOverviewSession();
+  if (disable_mask_ || is_shutting_down ||
       overview_controller->IsInStartAnimation()) {
     should_show = false;
   }
@@ -725,7 +726,8 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
            ->GetAnimator()
            ->is_animating();
 
-  transform_window_.UpdateRoundedCorners(should_show);
+  transform_window_.UpdateRoundedCorners(should_show,
+                                         /*update_clip=*/!is_shutting_down);
   SetShadowBounds(should_show_shadow
                       ? base::make_optional(gfx::ToEnclosedRect(
                             transform_window_.GetTransformedBounds()))

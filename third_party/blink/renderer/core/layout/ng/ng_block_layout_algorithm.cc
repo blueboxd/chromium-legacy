@@ -676,7 +676,6 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     // clearance past adjoining floats, or a re-layout), we can safely set our
     // BFC block-offset now.
     if (ConstraintSpace().ForcedBfcBlockOffset()) {
-      DCHECK(unpositioned_floats_.IsEmpty());
       container_builder_.SetBfcBlockOffset(
           *ConstraintSpace().ForcedBfcBlockOffset());
     }
@@ -689,26 +688,13 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
       ConstraintSpace().HasBlockFragmentation())
     FinalizeForFragmentation();
 
-  // Only layout absolute and fixed children if we aren't going to revisit this
-  // layout.
-  if (!container_builder_.AdjoiningObjectTypes() ||
-      ConstraintSpace().ForcedBfcBlockOffset()) {
-    NGBoxStrut borders_and_scrollbars =
-        container_builder_.Borders() + container_builder_.Scrollbar();
-    NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_and_scrollbars,
-                          &container_builder_)
-        .Run();
-  }
+  NGOutOfFlowLayoutPart(
+      Node(), ConstraintSpace(),
+      container_builder_.Borders() + container_builder_.Scrollbar(),
+      &container_builder_)
+      .Run();
 
 #if DCHECK_IS_ON()
-  // If we have any unpositioned floats at this stage, our parent will pick up
-  // this by examining adjoining object types returned, so that we get relayout
-  // with a forced BFC block-offset once it's known.
-  if (!unpositioned_floats_.IsEmpty()) {
-    DCHECK(!container_builder_.BfcBlockOffset());
-    DCHECK(container_builder_.AdjoiningObjectTypes());
-  }
-
   // If we're not participating in a fragmentation context, no block
   // fragmentation related fields should have been set.
   if (!ConstraintSpace().HasBlockFragmentation())
@@ -738,7 +724,7 @@ const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
     return nullptr;
 
   // If floats are intruding into this node, re-layout may be needed.
-  if (!exclusion_space_.IsEmpty() || !unpositioned_floats_.IsEmpty())
+  if (!exclusion_space_.IsEmpty())
     return nullptr;
 
   // Laying out from a break token is not supported yet, because this logic
@@ -834,8 +820,7 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
 
     LayoutUnit origin_bfc_block_offset =
         container_builder_.BfcBlockOffset().value_or(
-            ConstraintSpace().ForcedBfcBlockOffset().value_or(
-                ConstraintSpace().BfcOffset().block_offset)) +
+            ConstraintSpace().ExpectedBfcBlockOffset()) +
         static_offset.block_offset;
 
     NGBfcOffset origin_bfc_offset = {
@@ -861,29 +846,47 @@ void NGBlockLayoutAlgorithm::HandleFloat(
 
   NGUnpositionedFloat unpositioned_float(child, child_break_token);
 
-  // We shouldn't have seen this float yet.
-  DCHECK(!unpositioned_floats_.Contains(unpositioned_float));
-
   if (!container_builder_.BfcBlockOffset()) {
     container_builder_.AddAdjoiningObjectTypes(
         unpositioned_float.IsLineLeft(ConstraintSpace().Direction())
             ? kAdjoiningFloatLeft
             : kAdjoiningFloatRight);
+    // If we don't have a forced BFC block-offset yet, we'll optimistically
+    // place floats at the "expected" BFC block-offset. If this differs from
+    // our final BFC block-offset we'll need to re-layout.
+    if (!ConstraintSpace().ForcedBfcBlockOffset())
+      abort_when_bfc_block_offset_updated_ = true;
   }
-  unpositioned_floats_.push_back(std::move(unpositioned_float));
 
-  // No need to postpone the positioning if we know the correct offset.
-  if (container_builder_.BfcBlockOffset() ||
-      ConstraintSpace().ForcedBfcBlockOffset()) {
-    // Adjust origin point to the margins of the last child.
-    // Example: <div style="margin-bottom: 20px"><float></div>
-    //          <div style="margin-bottom: 30px"></div>
-    LayoutUnit origin_block_offset =
-        container_builder_.BfcBlockOffset()
-            ? NextBorderEdge(previous_inflow_position)
-            : *ConstraintSpace().ForcedBfcBlockOffset();
-    PositionPendingFloats(origin_block_offset);
-  }
+  // If we don't have a BFC block-offset yet, the "expected" BFC block-offset
+  // is used to optimistically place floats.
+  NGBfcOffset origin_bfc_offset = {
+      ConstraintSpace().BfcOffset().line_offset +
+          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
+      container_builder_.BfcBlockOffset()
+          ? NextBorderEdge(previous_inflow_position)
+          : ConstraintSpace().ExpectedBfcBlockOffset()};
+
+  NGPositionedFloat positioned_float = PositionFloat(
+      child_available_size_, child_percentage_size_,
+      replaced_child_percentage_size_, origin_bfc_offset, &unpositioned_float,
+      ConstraintSpace(), Style(), &exclusion_space_);
+
+  const auto& physical_fragment =
+      positioned_float.layout_result->PhysicalFragment();
+  LayoutUnit float_inline_size =
+      NGFragment(ConstraintSpace().GetWritingMode(), physical_fragment)
+          .InlineSize();
+
+  NGBfcOffset bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
+                            container_builder_.BfcBlockOffset().value_or(
+                                ConstraintSpace().ExpectedBfcBlockOffset())};
+
+  LogicalOffset logical_offset = LogicalFromBfcOffsets(
+      positioned_float.bfc_offset, bfc_offset, float_inline_size,
+      container_builder_.Size().inline_size, ConstraintSpace().Direction());
+
+  container_builder_.AddResult(*positioned_float.layout_result, logical_offset);
 }
 
 bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
@@ -929,10 +932,11 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   bool bfc_offset_already_resolved = false;
   bool child_determined_bfc_offset = false;
   bool child_margin_got_separated = false;
-  bool had_pending_floats = false;
+  bool has_adjoining_floats = false;
 
   if (!container_builder_.BfcBlockOffset()) {
-    had_pending_floats = !unpositioned_floats_.IsEmpty();
+    has_adjoining_floats =
+        container_builder_.AdjoiningObjectTypes() & kAdjoiningFloatBoth;
 
     // If this node, or an arbitrary ancestor had clearance past adjoining
     // floats, we consider the margin "separated". We should *never* attempt to
@@ -1018,7 +1022,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                             non_adjoining_bfc_offset_estimate,
                             /* forced_bfc_block_offset */ base::nullopt);
 
-      if ((bfc_offset_already_resolved || had_pending_floats) &&
+      if ((bfc_offset_already_resolved || has_adjoining_floats) &&
           old_offset != *container_builder_.BfcBlockOffset()) {
         // The first BFC block offset resolution turned out to be wrong, and we
         // positioned preceding adjacent floats based on that. Now we have to
@@ -1427,22 +1431,17 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
           !child_space.ForcedBfcBlockOffset())
         self_collapsing_child_needs_relayout = true;
     }
-  } else if (!child_had_clearance) {
-    // We shouldn't have any pending floats here, since an in-flow child found
-    // its BFC block offset.
-    DCHECK(unpositioned_floats_.IsEmpty());
-
-    // Only non self-collapsing children are allowed resolve the BFC
+  } else if (!child_had_clearance && !is_self_collapsing) {
+    // Only non self-collapsing children are allowed resolve their parent's BFC
     // block-offset. We check the BFC block-offset at the end of layout
     // determine if this fragment is self-collapsing.
-    if (!is_self_collapsing) {
-      // The child's BFC block offset is known, and since there's no clearance,
-      // this container will get the same offset, unless it has already been
-      // resolved.
-      if (!ResolveBfcBlockOffset(previous_inflow_position,
-                                 *child_bfc_block_offset))
-        return false;
-    }
+    //
+    // The child's BFC block-offset is known, and since there's no clearance,
+    // this container will get the same offset, unless it has already been
+    // resolved.
+    if (!ResolveBfcBlockOffset(previous_inflow_position,
+                               *child_bfc_block_offset))
+      return false;
   }
 
   // We need to re-layout a self-collapsing child if it was affected by
@@ -2191,7 +2190,38 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   if (!has_bfc_block_offset && ConstraintSpace().ForcedBfcBlockOffset())
     builder.SetForcedBfcBlockOffset(*ConstraintSpace().ForcedBfcBlockOffset());
   if (forced_bfc_block_offset)
-    builder.SetForcedBfcBlockOffset(forced_bfc_block_offset);
+    builder.SetForcedBfcBlockOffset(*forced_bfc_block_offset);
+
+  if (has_bfc_block_offset && child.IsBlock()) {
+    // Typically we aren't allowed to look at the previous layout result within
+    // a layout algorithm. However this is fine (honest), as it is just a hint
+    // to the child algorithm for where floats should be placed. If it doesn't
+    // have this flag, or gets this estimate wrong, it'll relayout with the
+    // appropriate "forced" BFC block-offset.
+    if (const NGLayoutResult* previous_result =
+            child.GetLayoutBox()->GetCachedLayoutResult()) {
+      const NGConstraintSpace& prev_space =
+          previous_result->GetConstraintSpaceForCaching();
+
+      // To increase the hit-rate we adjust the previous "optimistic"/"forced"
+      // BFC block-offset by how much the child has shifted from the previous
+      // layout.
+      LayoutUnit bfc_block_delta = child_data.bfc_offset_estimate.block_offset -
+                                   prev_space.BfcOffset().block_offset;
+      if (prev_space.ForcedBfcBlockOffset()) {
+        builder.SetOptimisticBfcBlockOffset(*prev_space.ForcedBfcBlockOffset() +
+                                            bfc_block_delta);
+      } else if (prev_space.OptimisticBfcBlockOffset()) {
+        builder.SetOptimisticBfcBlockOffset(
+            *prev_space.OptimisticBfcBlockOffset() + bfc_block_delta);
+      }
+    }
+  } else if (ConstraintSpace().OptimisticBfcBlockOffset()) {
+    // Propagate the |NGConstraintSpace::OptimisticBfcBlockOffset| down to our
+    // children.
+    builder.SetOptimisticBfcBlockOffset(
+        *ConstraintSpace().OptimisticBfcBlockOffset());
+  }
 
   // Propagate the |NGConstraintSpace::AncestorHasClearancePastAdjoiningFloats|
   // flag down to our children.
@@ -2342,10 +2372,8 @@ bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(
     NGPreviousInflowPosition* previous_inflow_position,
     LayoutUnit bfc_block_offset,
     base::Optional<LayoutUnit> forced_bfc_block_offset) {
-  if (container_builder_.BfcBlockOffset()) {
-    DCHECK(unpositioned_floats_.IsEmpty());
+  if (container_builder_.BfcBlockOffset())
     return true;
-  }
 
   bfc_block_offset = forced_bfc_block_offset.value_or(bfc_block_offset);
 
@@ -2356,11 +2384,6 @@ bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(
 
   if (NeedsAbortOnBfcBlockOffsetChange())
     return false;
-
-  // If our BFC block offset was updated, we may have been affected by
-  // clearance ourselves. We need to adjust the origin point to accomodate
-  // this.
-  PositionPendingFloats(bfc_block_offset);
 
   // Reset the previous inflow position. Clear the margin strut and set the
   // offset to our block-start border edge.
@@ -2381,55 +2404,10 @@ bool NGBlockLayoutAlgorithm::NeedsAbortOnBfcBlockOffsetChange() const {
   DCHECK(container_builder_.BfcBlockOffset());
   if (!abort_when_bfc_block_offset_updated_)
     return false;
-  // If no previous BFC block offset was set, we need to abort.
-  if (!ConstraintSpace().ForcedBfcBlockOffset())
-    return true;
 
-  // If the previous BFC block offset matches the new one, we can continue.
-  // Otherwise, we need to abort.
+  // If our position differs from our (potentially optimistic) estimate, abort.
   return *container_builder_.BfcBlockOffset() !=
-         *ConstraintSpace().ForcedBfcBlockOffset();
-}
-
-void NGBlockLayoutAlgorithm::PositionPendingFloats(
-    LayoutUnit origin_block_offset) {
-  DCHECK(container_builder_.BfcBlockOffset() ||
-         ConstraintSpace().ForcedBfcBlockOffset())
-      << "The parent BFC block offset should be known here.";
-
-  NGBfcOffset origin_bfc_offset = {
-      ConstraintSpace().BfcOffset().line_offset +
-          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
-      origin_block_offset};
-
-  LayoutUnit bfc_block_offset = container_builder_.BfcBlockOffset()
-                                    ? *container_builder_.BfcBlockOffset()
-                                    : *ConstraintSpace().ForcedBfcBlockOffset();
-
-  NGBfcOffset bfc_offset = {ConstraintSpace().BfcOffset().line_offset,
-                            bfc_block_offset};
-
-  for (auto& unpositioned_float : unpositioned_floats_) {
-    NGPositionedFloat positioned_float = PositionFloat(
-        child_available_size_, child_percentage_size_,
-        replaced_child_percentage_size_, origin_bfc_offset, &unpositioned_float,
-        ConstraintSpace(), Style(), &exclusion_space_);
-
-    const auto& physical_fragment =
-        positioned_float.layout_result->PhysicalFragment();
-    LayoutUnit float_inline_size =
-        NGFragment(ConstraintSpace().GetWritingMode(), physical_fragment)
-            .InlineSize();
-
-    LogicalOffset logical_offset = LogicalFromBfcOffsets(
-        positioned_float.bfc_offset, bfc_offset, float_inline_size,
-        container_builder_.Size().inline_size, ConstraintSpace().Direction());
-
-    container_builder_.AddResult(*positioned_float.layout_result,
-                                 logical_offset);
-  }
-
-  unpositioned_floats_.Shrink(0);
+         ConstraintSpace().ExpectedBfcBlockOffset();
 }
 
 LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(

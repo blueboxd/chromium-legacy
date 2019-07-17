@@ -2591,9 +2591,7 @@ const CSSValue* PlaceContent::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) const {
-  // TODO (jfernandez): The spec states that we should return the specified
-  // value.
-  return ComputedStyleUtils::ValuesForShorthandProperty(
+  return ComputedStyleUtils::ValuesForPlaceShorthand(
       placeContentShorthand(), style, layout_object, styled_node,
       allow_visited_style);
 }
@@ -2645,9 +2643,7 @@ const CSSValue* PlaceItems::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) const {
-  // TODO (jfernandez): The spec states that we should return the specified
-  // value.
-  return ComputedStyleUtils::ValuesForShorthandProperty(
+  return ComputedStyleUtils::ValuesForPlaceShorthand(
       placeItemsShorthand(), style, layout_object, styled_node,
       allow_visited_style);
 }
@@ -2698,9 +2694,7 @@ const CSSValue* PlaceSelf::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) const {
-  // TODO (jfernandez): The spec states that we should return the specified
-  // value.
-  return ComputedStyleUtils::ValuesForShorthandProperty(
+  return ComputedStyleUtils::ValuesForPlaceShorthand(
       placeSelfShorthand(), style, layout_object, styled_node,
       allow_visited_style);
 }

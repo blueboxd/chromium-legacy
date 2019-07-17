@@ -24,14 +24,17 @@ base::string16 FidoDevice::GetDisplayName() const {
 }
 
 bool FidoDevice::IsInPairingMode() const {
+  NOTREACHED();
   return false;
 }
 
 bool FidoDevice::IsPaired() const {
+  NOTREACHED();
   return false;
 }
 
 bool FidoDevice::RequiresBlePairingPin() const {
+  NOTREACHED();
   return true;
 }
 

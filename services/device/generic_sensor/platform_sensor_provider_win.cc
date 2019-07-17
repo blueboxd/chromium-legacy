@@ -108,7 +108,7 @@ void PlatformSensorProviderWin::SensorReaderCreated(
     mojom::SensorType type,
     SensorReadingSharedBuffer* reading_buffer,
     const CreateSensorCallback& callback,
-    std::unique_ptr<PlatformSensorReaderWin> sensor_reader) {
+    std::unique_ptr<PlatformSensorReaderWinBase> sensor_reader) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!sensor_reader) {
     // Fallback options for sensors that can be implemented using sensor
@@ -135,12 +135,12 @@ void PlatformSensorProviderWin::SensorReaderCreated(
   callback.Run(sensor);
 }
 
-std::unique_ptr<PlatformSensorReaderWin>
+std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorProviderWin::CreateSensorReader(mojom::SensorType type) {
   DCHECK(com_sta_task_runner_->RunsTasksInCurrentSequence());
   if (!sensor_manager_)
     return nullptr;
-  return PlatformSensorReaderWin::Create(type, sensor_manager_);
+  return PlatformSensorReaderWin32::Create(type, sensor_manager_);
 }
 
 }  // namespace device

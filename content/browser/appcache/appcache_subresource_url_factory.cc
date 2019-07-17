@@ -15,6 +15,8 @@
 #include "content/browser/appcache/appcache_url_loader_job.h"
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
@@ -65,7 +67,8 @@ class SubresourceLoader : public network::mojom::URLLoader,
         network_loader_factory_(std::move(network_loader_factory)),
         local_client_binding_(this),
         host_(appcache_host) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(
+        NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
     remote_binding_.set_connection_error_handler(base::BindOnce(
         &SubresourceLoader::OnConnectionError, base::Unretained(this)));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -339,10 +342,20 @@ void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
     base::WeakPtr<AppCacheHost> host,
     network::mojom::URLLoaderFactoryPtr* loader_factory) {
   DCHECK(host.get());
-  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory =
-      host->service()
-          ->url_loader_factory_getter()
-          ->GetNetworkFactoryWithCORBEnabled();
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    // The partition has shutdown, return without binding |loader_factory|.
+    if (!host->service()->partition())
+      return;
+    network_loader_factory =
+        host->service()
+            ->partition()
+            ->GetURLLoaderFactoryForBrowserProcessWithCORBEnabled();
+  } else {
+    network_loader_factory = host->service()
+                                 ->url_loader_factory_getter()
+                                 ->GetNetworkFactoryWithCORBEnabled();
+  }
   // This instance is effectively reference counted by the number of pipes open
   // to it and will get deleted when all clients drop their connections.
   // Please see OnConnectionError() for details.
@@ -363,7 +376,8 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(
+      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
 
   // TODO(943887): Replace HasSecurityState() call with something that can
   // preserve security state after process shutdown. The security state check

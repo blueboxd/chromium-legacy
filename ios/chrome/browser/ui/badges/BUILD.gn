@@ -14,8 +14,6 @@ source_set("badges") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "badge_consumer.h",
-    "badge_coordinator.h",
-    "badge_coordinator.mm",
     "badge_mediator.h",
     "badge_mediator.mm",
   ]

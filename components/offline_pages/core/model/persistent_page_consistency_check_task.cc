@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -80,12 +81,12 @@ PersistentPageConsistencyCheckSync(
     const ClientPolicyController* policy_controller,
     base::Time check_time,
     sql::Database* db) {
-  std::vector<int64_t> download_ids_of_deleted_pages;
+  std::vector<PublishedArchiveId> publish_ids_of_deleted_pages;
 
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return {SyncOperationResult::TRANSACTION_BEGIN_ERROR,
-            download_ids_of_deleted_pages};
+            publish_ids_of_deleted_pages};
 
   std::vector<OfflinePageItem> persistent_page_infos =
       GetPersistentPages(policy_controller, db);
@@ -103,7 +104,9 @@ PersistentPageConsistencyCheckSync(
       } else {
         if (check_time - item.file_missing_time > kExpireThreshold) {
           page_ids_to_delete.push_back(item.offline_id);
-          download_ids_of_deleted_pages.push_back(item.system_download_id);
+
+          publish_ids_of_deleted_pages.emplace_back(item.system_download_id,
+                                                    item.file_path);
         }
       }
     }
@@ -113,7 +116,7 @@ PersistentPageConsistencyCheckSync(
       !MarkPagesAsMissing(pages_found_missing, check_time, db) ||
       !MarkPagesAsReappeared(pages_reappeared, db)) {
     return {SyncOperationResult::DB_OPERATION_ERROR,
-            download_ids_of_deleted_pages};
+            publish_ids_of_deleted_pages};
   }
 
   if (page_ids_to_delete.size() > 0) {
@@ -134,9 +137,9 @@ PersistentPageConsistencyCheckSync(
 
   if (!transaction.Commit())
     return {SyncOperationResult::TRANSACTION_COMMIT_ERROR,
-            download_ids_of_deleted_pages};
+            publish_ids_of_deleted_pages};
 
-  return {SyncOperationResult::SUCCESS, download_ids_of_deleted_pages};
+  return {SyncOperationResult::SUCCESS, publish_ids_of_deleted_pages};
 }
 
 }  // namespace
@@ -145,8 +148,8 @@ PersistentPageConsistencyCheckTask::CheckResult::CheckResult() = default;
 
 PersistentPageConsistencyCheckTask::CheckResult::CheckResult(
     SyncOperationResult result,
-    const std::vector<int64_t>& system_download_ids)
-    : result(result), download_ids_of_deleted_pages(system_download_ids) {}
+    const std::vector<PublishedArchiveId>& ids_of_deleted_pages)
+    : result(result), ids_of_deleted_pages(ids_of_deleted_pages) {}
 
 PersistentPageConsistencyCheckTask::CheckResult::CheckResult(
     const CheckResult& other) = default;
@@ -196,7 +199,7 @@ void PersistentPageConsistencyCheckTask::OnPersistentPageConsistencyCheckDone(
   if (check_result.result != SyncOperationResult::SUCCESS) {
     std::move(callback_).Run(false, {});
   } else {
-    std::move(callback_).Run(true, check_result.download_ids_of_deleted_pages);
+    std::move(callback_).Run(true, check_result.ids_of_deleted_pages);
   }
   TaskComplete();
 }

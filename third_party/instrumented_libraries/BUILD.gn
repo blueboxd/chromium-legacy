@@ -155,8 +155,11 @@ if (use_locally_built_instrumented_libraries) {
     ]
     if (is_msan) {
       deps += [
+        ":libcgmanager0",
         ":libcups2",
         ":libgnutls26",
+        ":libnih-dbus1",
+        ":libnih1",
       ]
     }
     if (!is_tsan) {
@@ -370,6 +373,13 @@ if (use_locally_built_instrumented_libraries) {
   instrumented_library("libcap2") {
     extra_configure_flags = [ "--disable-static" ]
     build_method = "custom_libcap"
+  }
+
+  instrumented_library("libcgmanager0") {
+    extra_configure_flags = [ "--disable-static" ]
+
+    # Required on Trusty due to autoconf version mismatch.
+    pre_build = "scripts/pre-build/autoreconf.sh"
   }
 
   instrumented_library("libcredentialkit_pkcs11") {
@@ -592,6 +602,18 @@ if (use_locally_built_instrumented_libraries) {
       "--disable-introspection",
     ]
     pre_build = "scripts/pre-build/autogen.sh"
+  }
+
+  instrumented_library("libnih1") {
+    extra_configure_flags = [ "--disable-static" ]
+
+    pre_build = "scripts/pre-build/libnih1.sh"
+  }
+
+  instrumented_library("libnih-dbus1") {
+    extra_configure_flags = [ "--disable-static" ]
+
+    pre_build = "scripts/pre-build/libnih1.sh"
   }
 
   instrumented_library("libnspr4") {

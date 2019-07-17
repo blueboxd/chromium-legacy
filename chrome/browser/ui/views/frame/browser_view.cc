@@ -706,11 +706,11 @@ void BrowserView::FlashFrame(bool flash) {
   frame_->FlashFrame(flash);
 }
 
-bool BrowserView::IsAlwaysOnTop() const {
-  return false;
+ui::ZOrderLevel BrowserView::GetZOrderLevel() const {
+  return ui::ZOrderLevel::kNormal;
 }
 
-void BrowserView::SetAlwaysOnTop(bool always_on_top) {
+void BrowserView::SetZOrderLevel(ui::ZOrderLevel level) {
   // Not implemented for browser windows.
   NOTIMPLEMENTED();
 }

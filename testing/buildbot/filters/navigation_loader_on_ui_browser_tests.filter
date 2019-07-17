@@ -41,10 +41,6 @@
 -DiceBrowserTest.SignoutMainAccount
 -DiceBrowserTest.SignoutSecondaryAccount
 
-# http://crbug.com/824856
--NoStatePrefetchBrowserTest.AppCacheHtmlInitialized
--NoStatePrefetchBrowserTest.AppCacheRegistered
-
 # http://crbug.com/824854
 -ChromeAcceptHeaderTest.Check
 -SignedExchangePageLoadMetricsBrowserTest.UkmSignedExchangeMetric

@@ -50,85 +50,32 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
     viz::HostFrameSinkManager* host_frame_sink_manager,
     Client* client,
-    const viz::FrameSinkId& frame_sink_id,
-    bool enable_surface_synchronization)
+    const viz::FrameSinkId& frame_sink_id)
     : frame_sink_id_(frame_sink_id),
       view_(view),
       host_frame_sink_manager_(host_frame_sink_manager),
       client_(client),
-      begin_frame_source_(this),
-      enable_surface_synchronization_(enable_surface_synchronization),
-      enable_viz_(features::IsVizDisplayCompositorEnabled()),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   DCHECK(view_);
   DCHECK(client_);
+  DCHECK(features::IsVizDisplayCompositorEnabled());
 
-  if (enable_surface_synchronization_) {
-    constexpr bool is_transparent = false;
-    content_layer_ = CreateSurfaceLayer(
-        viz::SurfaceId(), viz::SurfaceId(), gfx::Size(),
-        cc::DeadlinePolicy::UseDefaultDeadline(), is_transparent);
-    view_->GetLayer()->AddChild(content_layer_);
-  }
+  constexpr bool is_transparent = false;
+  content_layer_ = CreateSurfaceLayer(
+      viz::SurfaceId(), viz::SurfaceId(), gfx::Size(),
+      cc::DeadlinePolicy::UseDefaultDeadline(), is_transparent);
+  view_->GetLayer()->AddChild(content_layer_);
 
   host_frame_sink_manager_->RegisterFrameSinkId(
       frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
                                                    "DelegatedFrameHostAndroid");
-  CreateCompositorFrameSinkSupport();
 }
 
 DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   EvictDelegatedFrame();
   DetachFromCompositor();
-  support_.reset();
   host_frame_sink_manager_->InvalidateFrameSinkId(frame_sink_id_);
-}
-
-void DelegatedFrameHostAndroid::SubmitCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
-  DCHECK(!enable_viz_);
-
-  bool id_changed = (local_surface_id_ != local_surface_id);
-  viz::RenderPass* root_pass = frame.render_pass_list.back().get();
-  const bool has_transparent_background = root_pass->has_transparent_background;
-  const gfx::Size surface_size_in_pixels = frame.size_in_pixels();
-  // Reset |content_layer_| only if surface-sync is not used. When surface-sync
-  // is turned on, |content_layer_| is updated with the appropriate states (see
-  // in EmbedSurface()) instead of being recreated.
-  if (!enable_surface_synchronization_ && content_layer_ && id_changed) {
-    EvictDelegatedFrame();
-  }
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list));
-  if (enable_surface_synchronization_) {
-    DCHECK(content_layer_);
-    return;
-  }
-
-  if (!content_layer_) {
-    local_surface_id_ = local_surface_id;
-    surface_size_in_pixels_ = surface_size_in_pixels;
-    has_transparent_background_ = has_transparent_background;
-    content_layer_ = CreateSurfaceLayer(
-        viz::SurfaceId(frame_sink_id_, local_surface_id_),
-        viz::SurfaceId(frame_sink_id_, local_surface_id_),
-        surface_size_in_pixels_, cc::DeadlinePolicy::UseDefaultDeadline(),
-        !has_transparent_background_);
-    view_->GetLayer()->AddChild(content_layer_);
-  }
-  content_layer_->SetContentsOpaque(!has_transparent_background_);
-
-  if (id_changed)
-    frame_evictor_->OnNewSurfaceEmbedded();
-}
-
-void DelegatedFrameHostAndroid::DidNotProduceFrame(
-    const viz::BeginFrameAck& ack) {
-  DCHECK(!enable_viz_);
-  support_->DidNotProduceFrame(ack);
 }
 
 const viz::FrameSinkId& DelegatedFrameHostAndroid::GetFrameSinkId() const {
@@ -183,10 +130,6 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   if (content_layer_) {
     content_layer_->SetSurfaceId(viz::SurfaceId(),
                                  cc::DeadlinePolicy::UseDefaultDeadline());
-    if (!enable_surface_synchronization_) {
-      content_layer_->RemoveFromParent();
-      content_layer_ = nullptr;
-    }
   }
   if (!HasSavedFrame() || frame_evictor_->visible())
     return;
@@ -225,7 +168,6 @@ bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
   EvictDelegatedFrame();
-  CreateCompositorFrameSinkSupport();
   if (registered_parent_compositor_)
     AttachToCompositor(registered_parent_compositor_);
 }
@@ -235,18 +177,12 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
   if (registered_parent_compositor_)
     DetachFromCompositor();
   compositor->AddChildFrameSink(frame_sink_id_);
-  if (!enable_viz_)
-    client_->SetBeginFrameSource(&begin_frame_source_);
   registered_parent_compositor_ = compositor;
 }
 
 void DelegatedFrameHostAndroid::DetachFromCompositor() {
   if (!registered_parent_compositor_)
     return;
-  if (!enable_viz_) {
-    client_->SetBeginFrameSource(nullptr);
-    support_->SetNeedsBeginFrame(false);
-  }
   registered_parent_compositor_->RemoveChildFrameSink(frame_sink_id_);
   registered_parent_compositor_ = nullptr;
 }
@@ -268,9 +204,6 @@ void DelegatedFrameHostAndroid::WasShown(
     const gfx::Size& new_size_in_pixels) {
   frame_evictor_->SetVisible(true);
 
-  if (!enable_surface_synchronization_)
-    return;
-
   EmbedSurface(
       new_local_surface_id, new_size_in_pixels,
       cc::DeadlinePolicy::UseSpecifiedDeadline(FirstFrameTimeoutFrames()));
@@ -280,9 +213,6 @@ void DelegatedFrameHostAndroid::EmbedSurface(
     const viz::LocalSurfaceId& new_local_surface_id,
     const gfx::Size& new_size_in_pixels,
     cc::DeadlinePolicy deadline_policy) {
-  if (!enable_surface_synchronization_)
-    return;
-
   // We should never attempt to embed an invalid surface. Catch this here to
   // track down the root cause. Otherwise we will have vague crashes later on
   // at serialization time.
@@ -333,36 +263,6 @@ void DelegatedFrameHostAndroid::EmbedSurface(
   }
 }
 
-void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
-    const std::vector<viz::ReturnedResource>& resources) {
-  client_->DidReceiveCompositorFrameAck(resources);
-}
-
-void DelegatedFrameHostAndroid::OnBeginFrame(
-    const viz::BeginFrameArgs& args,
-    const viz::FrameTimingDetailsMap& timing_details) {
-  client_->DidPresentCompositorFrames(timing_details);
-  if (enable_viz_) {
-    NOTREACHED();
-    return;
-  }
-  begin_frame_source_.OnBeginFrame(args);
-}
-
-void DelegatedFrameHostAndroid::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
-  client_->ReclaimResources(resources);
-}
-
-void DelegatedFrameHostAndroid::OnBeginFramePausedChanged(bool paused) {
-  begin_frame_source_.OnSetBeginFrameSourcePaused(paused);
-}
-
-void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
-  DCHECK(!enable_viz_);
-  support_->SetNeedsBeginFrame(needs_begin_frames);
-}
-
 void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   NOTREACHED();
@@ -370,17 +270,6 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
 
 void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
   client_->OnFrameTokenChanged(frame_token);
-}
-
-void DelegatedFrameHostAndroid::CreateCompositorFrameSinkSupport() {
-  if (enable_viz_)
-    return;
-
-  constexpr bool is_root = false;
-  constexpr bool needs_sync_points = true;
-  support_.reset();
-  support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
-      this, frame_sink_id_, is_root, needs_sync_points);
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
@@ -401,45 +290,21 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
   if (HasFallbackSurface() || !other->HasPrimarySurface())
     return;
 
-  if (enable_surface_synchronization_) {
-    const viz::SurfaceId& other_primary = other->content_layer_->surface_id();
-    const base::Optional<viz::SurfaceId>& other_fallback =
-        other->content_layer_->oldest_acceptable_fallback();
-    viz::SurfaceId desired_fallback;
-    if (!other->HasFallbackSurface() ||
-        !other_primary.IsSameOrNewerThan(*other_fallback)) {
-      desired_fallback = other_primary.ToSmallestId();
-    } else {
-      desired_fallback = *other_fallback;
-    }
-    content_layer_->SetOldestAcceptableFallback(
-        other->content_layer_->surface_id().ToSmallestId());
-    return;
-  }
-
-  if (content_layer_) {
-    content_layer_->SetSurfaceId(
-        *other->content_layer_->oldest_acceptable_fallback(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
+  const viz::SurfaceId& other_primary = other->content_layer_->surface_id();
+  const base::Optional<viz::SurfaceId>& other_fallback =
+      other->content_layer_->oldest_acceptable_fallback();
+  viz::SurfaceId desired_fallback;
+  if (!other->HasFallbackSurface() ||
+      !other_primary.IsSameOrNewerThan(*other_fallback)) {
+    desired_fallback = other_primary.ToSmallestId();
   } else {
-    const auto& surface_id = other->SurfaceId();
-    local_surface_id_ = surface_id.local_surface_id();
-    surface_size_in_pixels_ = other->surface_size_in_pixels_;
-    has_transparent_background_ = other->has_transparent_background_;
-    content_layer_ = CreateSurfaceLayer(
-        surface_id, surface_id, other->content_layer_->bounds(),
-        cc::DeadlinePolicy::UseDefaultDeadline(),
-        other->content_layer_->contents_opaque());
-    view_->GetLayer()->AddChild(content_layer_);
+    desired_fallback = *other_fallback;
   }
   content_layer_->SetOldestAcceptableFallback(
-      *other->content_layer_->oldest_acceptable_fallback());
+      other->content_layer_->surface_id().ToSmallestId());
 }
 
 void DelegatedFrameHostAndroid::DidNavigate() {
-  if (!enable_surface_synchronization_)
-    return;
-
   first_local_surface_id_after_navigation_ = local_surface_id_;
 }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_SERVICE_H_
 #define CHROME_BROWSER_SHARING_SHARING_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -40,10 +41,11 @@ class VapidKeyManager;
 
 // Class to manage lifecycle of sharing feature, and provide APIs to send
 // sharing messages to other devices.
-class SharingService : public KeyedService, syncer::SyncServiceObserver {
+class SharingService : public KeyedService,
+                       syncer::SyncServiceObserver,
+                       AckMessageHandler::AckMessageObserver {
  public:
-  using SendMessageCallback =
-      base::OnceCallback<void(base::Optional<std::string>)>;
+  using SendMessageCallback = base::OnceCallback<void(bool)>;
 
   enum class State {
     // Device is unregistered with FCM and Sharing is unavailable.
@@ -95,10 +97,16 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   void OnSyncShutdown(syncer::SyncService* sync) override;
   void OnStateChanged(syncer::SyncService* sync) override;
 
+  // AckMessageHandler::AckMessageObserver override.
+  void OnAckReceived(const std::string& message_id) override;
+
   void RegisterDevice();
   void UnregisterDevice();
   void OnDeviceRegistered(SharingDeviceRegistration::Result result);
   void OnDeviceUnregistered(SharingDeviceRegistration::Result result);
+  void OnMessageSent(SendMessageCallback callback,
+                     base::Optional<std::string> message_id);
+  void InvokeSendMessageCallback(const std::string& message_id, bool result);
 
   // Returns true if sync is active and sync preference is enabled.
   bool IsSyncEnabled() const;
@@ -115,6 +123,7 @@ class SharingService : public KeyedService, syncer::SyncServiceObserver {
   PingMessageHandler ping_message_handler_;
   net::BackoffEntry backoff_entry_;
   State state_;
+  std::map<std::string, SendMessageCallback> send_message_callbacks_;
 
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;

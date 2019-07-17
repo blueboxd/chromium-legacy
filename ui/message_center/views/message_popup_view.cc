@@ -105,7 +105,7 @@ void MessagePopupView::AutoCollapse() {
 
 void MessagePopupView::Show() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingWindow;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Make the widget explicitly activatable as TYPE_POPUP is not activatable by
   // default but we need focus for the inline reply textarea.

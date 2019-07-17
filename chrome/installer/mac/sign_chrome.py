@@ -73,6 +73,13 @@ def main():
         help='The password or password reference (e.g. @keychain, see '
         '`xcrun altool -h`) used to authenticate to the Apple notary service.')
     parser.add_argument(
+        '--notary-asc-provider',
+        help='The ASC provider string to be used as the `--asc-provider` '
+        'argument to `xcrun altool`, to be used when --notary-user is '
+        'associated with multiple Apple developer teams. See `xcrun altool -h. '
+        'Run `iTMSTransporter -m provider -account_type itunes_connect -v off '
+        '-u USERNAME -p PASSWORD` to list valid providers.')
+    parser.add_argument(
         '--development',
         action='store_true',
         help='The specified identity is for development. Certain codesign '
@@ -114,9 +121,9 @@ def main():
             parser.error('The --notary-user and --notary-password arguments '
                          'are required with --notarize.')
 
-    config = create_config(
-        (args.identity, args.keychain, args.notary_user, args.notary_password),
-        args.development)
+    config = create_config((args.identity, args.keychain, args.notary_user,
+                            args.notary_password, args.notary_asc_provider),
+                           args.development)
     paths = model.Paths(args.input, args.output, None)
 
     if not os.path.exists(paths.output):

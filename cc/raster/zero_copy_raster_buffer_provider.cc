@@ -129,7 +129,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
         return;
     }
 
-    DCHECK_EQ(1u, gfx::NumberOfPlanesForBufferFormat(
+    DCHECK_EQ(1u, gfx::NumberOfPlanesForLinearBufferFormat(
                       gpu_memory_buffer_->GetFormat()));
     bool rv = gpu_memory_buffer_->Map();
     DCHECK(rv);

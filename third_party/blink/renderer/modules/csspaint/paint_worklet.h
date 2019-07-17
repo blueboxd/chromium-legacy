@@ -42,7 +42,8 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   scoped_refptr<Image> Paint(const String& name,
                              const ImageResourceObserver&,
                              const FloatSize& container_size,
-                             const CSSStyleValueVector*);
+                             const CSSStyleValueVector*,
+                             float device_scale_factor);
 
   int WorkletId() const { return worklet_id_; }
   void Trace(blink::Visitor*) override;

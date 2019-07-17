@@ -133,8 +133,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void Activate() override;
   void Deactivate() override;
   bool IsActive() const override;
-  void SetAlwaysOnTop(bool always_on_top) override;
-  bool IsAlwaysOnTop() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   void Maximize() override;
@@ -232,6 +232,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
 
   // Internal name.
   std::string name_;
+
+  Widget::InitParams::Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMac);
 };

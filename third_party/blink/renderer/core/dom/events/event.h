@@ -279,10 +279,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   void SetHandlingPassive(PassiveMode);
 
-  bool PreventDefaultCalledDuringPassive() const {
-    return prevent_default_called_during_passive_;
-  }
-
   bool PreventDefaultCalledOnUncancelableEvent() const {
     return prevent_default_called_on_uncancelable_event_;
   }
@@ -332,9 +328,6 @@ class CORE_EXPORT Event : public ScriptWrappable {
   unsigned was_initialized_ : 1;
   unsigned is_trusted_ : 1;
 
-  // Whether preventDefault was called when |handling_passive_| is
-  // true. This field is reset on each call to SetHandlingPassive.
-  unsigned prevent_default_called_during_passive_ : 1;
   // Whether preventDefault was called on uncancelable event.
   unsigned prevent_default_called_on_uncancelable_event_ : 1;
 

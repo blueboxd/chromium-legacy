@@ -122,6 +122,7 @@ void LegacyRegisterCallback(const base::Closure& done_callback,
 
 void DidRegister(base::Closure done_callback,
                  const std::string& registration_id,
+                 const GURL& endpoint,
                  const std::vector<uint8_t>& p256dh,
                  const std::vector<uint8_t>& auth,
                  blink::mojom::PushRegistrationStatus status) {
@@ -488,8 +489,7 @@ void PushMessagingBrowserTest::EndpointToToken(const std::string& endpoint,
                                                std::string* out_token) {
   size_t last_slash = endpoint.rfind('/');
 
-  ASSERT_EQ(push_service()->GetEndpoint(standard_protocol).spec(),
-            endpoint.substr(0, last_slash + 1));
+  ASSERT_EQ(kPushMessagingGcmEndpoint, endpoint.substr(0, last_slash + 1));
 
   ASSERT_LT(last_slash + 1, endpoint.length());  // Token must not be empty.
 

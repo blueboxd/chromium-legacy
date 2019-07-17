@@ -147,8 +147,10 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   void UpdateWindowDimensionsType();
 
   // Updates the rounded corners on the window. Makes the rounded corners if
-  // |show| is true, otherwise removes it.
-  void UpdateRoundedCorners(bool show);
+  // |show| is true, otherwise removes it. If |update_clip| is true, it will
+  // clip the top portion of the window that normally contains the caption (if
+  // any), otherwise it will skip updating that clip.
+  void UpdateRoundedCorners(bool show, bool update_clip);
 
   // Stop listening to any animations to finish.
   void CancelAnimationsListener();

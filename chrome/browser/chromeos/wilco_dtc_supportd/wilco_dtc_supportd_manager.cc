@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -124,6 +125,11 @@ void WilcoDtcSupportdManager::SetConfigurationData(
     return;
   }
   wilco_dtc_supportd_mojo_proxy->NotifyConfigurationDataChanged();
+}
+
+const std::string& WilcoDtcSupportdManager::GetConfigurationDataForTesting()
+    const {
+  return configuration_data_ ? *configuration_data_ : base::EmptyString();
 }
 
 void WilcoDtcSupportdManager::OnSessionStateChanged() {

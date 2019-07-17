@@ -205,12 +205,14 @@ void XRDeviceImpl::RequestSession(
 #if BUILDFLAG(ENABLE_ARCORE)
     if (!render_frame_host_) {
       // Reject promise.
-      std::move(callback).Run(nullptr);
+      std::move(callback).Run(
+          device::mojom::RequestSessionResult::NewFailureReason(
+              device::mojom::RequestSessionError::INVALID_CLIENT));
     } else {
       if (IsXrDeviceConsentPromptDisabledForTesting()) {
         DoRequestSession(std::move(options), std::move(callback));
       } else {
-        ArcoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
+        ArCoreConsentPromptInterface::GetInstance()->ShowConsentPrompt(
             render_frame_host_->GetProcess()->GetID(),
             render_frame_host_->GetRoutingID(),
             base::BindOnce(&XRDeviceImpl::OnConsentResult,

@@ -20,7 +20,7 @@ namespace blink {
 TEST(WakeLockControllerTest, RequestWakeLockGranted) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -46,7 +46,7 @@ TEST(WakeLockControllerTest, RequestWakeLockGranted) {
 TEST(WakeLockControllerTest, RequestWakeLockDenied) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kSystem, mojom::blink::PermissionStatus::DENIED);
@@ -80,7 +80,7 @@ TEST(WakeLockControllerTest, RequestWakeLockDenied) {
 TEST(WakeLockControllerTest, RequestWakeLockAbortEarly) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -121,7 +121,7 @@ TEST(WakeLockControllerTest, RequestWakeLockAbortEarly) {
 TEST(WakeLockControllerTest, AcquireScreenWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   controller.AcquireWakeLock(
       WakeLockType::kScreen,
@@ -136,7 +136,7 @@ TEST(WakeLockControllerTest, AcquireScreenWakeLock) {
 TEST(WakeLockControllerTest, AcquireSystemWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   controller.AcquireWakeLock(
       WakeLockType::kSystem,
@@ -151,7 +151,7 @@ TEST(WakeLockControllerTest, AcquireSystemWakeLock) {
 TEST(WakeLockControllerTest, AcquireMultipleLocks) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   controller.AcquireWakeLock(
       WakeLockType::kScreen,
@@ -177,7 +177,7 @@ TEST(WakeLockControllerTest, AcquireMultipleLocks) {
 TEST(WakeLockControllerTest, ReleaseUnaquiredWakeLockRejectsPromise) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -200,7 +200,7 @@ TEST(WakeLockControllerTest, ReleaseUnaquiredWakeLockRejectsPromise) {
 TEST(WakeLockControllerTest, ReleaseWakeLock) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -229,7 +229,7 @@ TEST(WakeLockControllerTest, ReleaseWakeLock) {
 TEST(WakeLockControllerTest, AbortSignal) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -262,7 +262,7 @@ TEST(WakeLockControllerTest, AbortSignal) {
 TEST(WakeLockControllerTest, LossOfDocumentActivity) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   MockWakeLock& screen_lock =
       wake_lock_service.get_wake_lock(WakeLockType::kScreen);
@@ -308,7 +308,7 @@ TEST(WakeLockControllerTest, LossOfDocumentActivity) {
 TEST(WakeLockControllerTest, PageVisibilityHidden) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -368,7 +368,7 @@ TEST(WakeLockControllerTest, PageVisibilityHidden) {
 TEST(WakeLockControllerTest, PageVisibilityHiddenBeforeLockAcquisition) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -409,7 +409,7 @@ TEST(WakeLockControllerTest, PageVisibilityHiddenBeforeLockAcquisition) {
 TEST(WakeLockControllerTest, PageVisibilityAndAbortSignal) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
@@ -446,7 +446,7 @@ TEST(WakeLockControllerTest, PageVisibilityAndAbortSignal) {
 TEST(WakeLockControllerTest, RequestPermissionGranted) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kSystem, mojom::blink::PermissionStatus::GRANTED);
@@ -467,7 +467,7 @@ TEST(WakeLockControllerTest, RequestPermissionGranted) {
 TEST(WakeLockControllerTest, RequestPermissionDenied) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
-  auto& controller = WakeLockController::From(*context.GetDocument());
+  auto& controller = WakeLockController::From(context.GetDocument());
 
   context.GetPermissionService().SetPermissionResponse(
       WakeLockType::kSystem, mojom::blink::PermissionStatus::DENIED);

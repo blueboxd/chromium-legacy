@@ -30,19 +30,6 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    /** @private */
-    showParentalControls_: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
-  /** @override */
-  ready: function() {
-    this.showParentalControls_ =
-        loadTimeData.valueExists('showParentalControls') &&
-        loadTimeData.getBoolean('showParentalControls');
   },
 
   /** @override */

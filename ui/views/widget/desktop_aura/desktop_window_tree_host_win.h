@@ -95,8 +95,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   bool HasCapture() const override;
-  void SetAlwaysOnTop(bool always_on_top) override;
-  bool IsAlwaysOnTop() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   bool SetWindowTitle(const base::string16& title) override;
@@ -306,6 +306,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // Indicates if current window will receive mouse events when should not
   // become activated.
   bool wants_mouse_events_when_inactive_ = false;
+
+  // The z-order level of the window; the window exhibits "always on top"
+  // behavior if > 0.
+  ui::ZOrderLevel z_order_ = ui::ZOrderLevel::kNormal;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostWin);
 };

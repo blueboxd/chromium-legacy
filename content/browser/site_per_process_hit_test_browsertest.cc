@@ -2729,13 +2729,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
-// TODO(https://crbug.com/968970): Flaky failures on all bots.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       DISABLED_SurfaceHitTestPointerEventsNoneChanged) {
-  // In /2 hit testing, OOPIFs with pointer-events: none are ignored and no hit
-  // test data is submitted. To make sure we wait enough time until child frame
-  // fully loaded, we add a 1x1 pixel OOPIF for the test to track the process of
-  // /2 hit testing.
+                       SurfaceHitTestPointerEventsNoneChanged) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2786,35 +2781,26 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
               kHitTestTolerance);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 
-  // Remove pointer-events: none property from iframe, also remove child2 to
-  // properly notify the observer the update.
-  // Wait for the confirmation of the deletion so that surface hit test is aware
-  // of the change of pointer-events property. When viz hit testing is enabled,
-  // we do not need to wait.
-  EXPECT_TRUE(ExecuteScript(web_contents(),
-                            "document.getElementsByTagName('iframe')[0].style."
-                            "pointerEvents = 'auto';\n"));
+  HitTestRegionObserver hit_test_data_change_observer(
+      root_view->GetRootFrameSinkId());
+  hit_test_data_change_observer.WaitForHitTestData();
 
+  // Remove pointer-events: none property from iframe to check that it can claim
+  // the input event now.
+  EXPECT_TRUE(
+      ExecuteScript(web_contents(),
+                    "setTimeout(function() {\n"
+                    "  document.getElementsByTagName('iframe')[0].style."
+                    "      pointerEvents = 'auto';\n"
+                    "}, 100);"));
   ASSERT_EQ(2U, root->child_count());
 
-  {
-    MainThreadFrameObserver observer(
-        root->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
-  {
-    MainThreadFrameObserver observer(
-        root->child_at(0)->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
-  {
-    MainThreadFrameObserver observer(
-        root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
-    observer.Wait();
-  }
+  MainThreadFrameObserver observer(
+      root->current_frame_host()->GetRenderWidgetHost());
+  observer.Wait();
 
-  WaitForHitTestDataOrChildSurfaceReady(child_node1->current_frame_host());
-  WaitForHitTestDataOrChildSurfaceReady(child_node2->current_frame_host());
+  hit_test_data_change_observer.WaitForHitTestDataChange();
+
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
   InputEventAckWaiter child_waiter(

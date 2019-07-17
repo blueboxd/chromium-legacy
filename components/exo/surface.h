@@ -66,8 +66,6 @@ class Surface final : public ui::PropertyHandler {
  public:
   using PropertyDeallocator = void (*)(int64_t value);
 
-  using CommitCallback = base::RepeatingCallback<void(Surface*)>;
-
   Surface();
   ~Surface();
 
@@ -225,9 +223,6 @@ class Surface final : public ui::PropertyHandler {
   void AddSurfaceObserver(SurfaceObserver* observer);
   void RemoveSurfaceObserver(SurfaceObserver* observer);
   bool HasSurfaceObserver(const SurfaceObserver* observer) const;
-
-  // Sets/resets commit callback. Used by |ArcGraphicsTracingHandler|.
-  void SetCommitCallback(CommitCallback callback);
 
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
@@ -432,8 +427,6 @@ class Surface final : public ui::PropertyHandler {
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
-  // Called on each commit. May not be set.
-  CommitCallback commit_callback_;
 
   // Whether this surface is tracking occlusion for the client.
   bool is_tracking_occlusion_ = false;

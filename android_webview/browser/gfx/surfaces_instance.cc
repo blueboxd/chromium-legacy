@@ -207,7 +207,6 @@ SurfacesInstance::SurfacesInstance()
   settings.should_clear_root_render_pass = false;
 
   settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-  settings.use_skia_renderer_non_ddl = features::IsUsingSkiaRendererNonDDL();
 
   // The SharedBitmapManager is null as we do not support or use software
   // compositing on Android.
@@ -222,8 +221,6 @@ SurfacesInstance::SurfacesInstance()
       this, frame_sink_manager_.get(), frame_sink_id_, is_root,
       needs_sync_points);
 
-  const bool use_skia_renderer =
-      settings.use_skia_renderer || settings.use_skia_renderer_non_ddl;
   auto* command_line = base::CommandLine::ForCurrentProcess();
   const bool enable_vulkan =
       command_line->HasSwitch(switches::kWebViewEnableVulkan);
@@ -232,7 +229,7 @@ SurfacesInstance::SurfacesInstance()
   LOG_IF(FATAL, enable_vulkan && !enable_shared_image)
       << "--webview-enable-vulkan only works with shared image "
          "(--webview-enable-shared-image).";
-  LOG_IF(FATAL, enable_vulkan && !use_skia_renderer)
+  LOG_IF(FATAL, enable_vulkan && !settings.use_skia_renderer)
       << "--webview-enable-vulkan only works with skia renderer "
          "(--enable-features=UseSkiaRenderer or UseSkiaRendererNonDDL).";
 
@@ -240,7 +237,7 @@ SurfacesInstance::SurfacesInstance()
       enable_vulkan ? AwVulkanContextProvider::GetOrCreateInstance() : nullptr;
   std::unique_ptr<viz::OutputSurface> output_surface;
   gl_surface_ = base::MakeRefCounted<AwGLSurface>();
-  if (settings.use_skia_renderer || settings.use_skia_renderer_non_ddl) {
+  if (settings.use_skia_renderer) {
     auto* task_executor = DeferredGpuCommandService::GetInstance();
     gpu::GpuDriverBugWorkarounds workarounds(
         task_executor->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
@@ -256,14 +253,10 @@ SurfacesInstance::SurfacesInstance()
       shared_context_state_->InitializeGrContext(workarounds,
                                                  nullptr /* gr_shader_cache */);
     }
-    if (settings.use_skia_renderer_non_ddl) {
-      NOTIMPLEMENTED();
-    } else {
-      output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-          std::make_unique<SkiaOutputSurfaceDependencyWebView>(
-              task_executor, workarounds, shared_context_state_, gl_surface_),
-          settings);
-    }
+    output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+        std::make_unique<SkiaOutputSurfaceDependencyWebView>(
+            task_executor, workarounds, shared_context_state_, gl_surface_),
+        settings);
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
         gl_surface_, DeferredGpuCommandService::GetInstance());

@@ -73,7 +73,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   // PhantomWindowController is used by FrameMaximizeButton to highlight the
   // launcher button. Put the phantom in the same window as the launcher so that
   // the phantom is visible.
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "PhantomWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;

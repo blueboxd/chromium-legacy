@@ -69,6 +69,7 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       bidi_level_(UBIDI_LTR),
       shape_options_(kPreContext | kPostContext),
       is_empty_item_(false),
+      is_block_level_(false),
       style_variant_(static_cast<unsigned>(NGStyleVariant::kStandard)),
       end_collapse_type_(kNotCollapsible),
       is_end_collapsible_newline_(false),
@@ -91,6 +92,7 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       bidi_level_(other.bidi_level_),
       shape_options_(other.shape_options_),
       is_empty_item_(other.is_empty_item_),
+      is_block_level_(other.is_block_level_),
       style_variant_(other.style_variant_),
       end_collapse_type_(other.end_collapse_type_),
       is_end_collapsible_newline_(other.is_end_collapsible_newline_),
@@ -124,6 +126,9 @@ void NGInlineItem::ComputeBoxProperties() {
     is_empty_item_ = false;
     return;
   }
+
+  if (type_ == kOutOfFlowPositioned || type_ == kFloating)
+    is_block_level_ = true;
 
   is_empty_item_ = true;
 }

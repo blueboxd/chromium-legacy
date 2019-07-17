@@ -25,7 +25,6 @@ std::unique_ptr<Widget> CreateDragWidget(aura::Window* root_window) {
   Widget::InitParams params;
   params.type = Widget::InitParams::TYPE_TOOLTIP;
   params.name = "DragWidget";
-  params.keep_on_top = true;
   params.accept_events = false;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
@@ -48,7 +47,6 @@ DragImageView::DragImageView(aura::Window* root_window,
   DCHECK(root_window);
   widget_ = CreateDragWidget(root_window);
   widget_->SetContentsView(this);
-  widget_->SetAlwaysOnTop(true);
 
   // We are owned by the DragDropController.
   set_owned_by_client();

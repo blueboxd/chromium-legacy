@@ -882,7 +882,8 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesWithCriteria) {
   EXPECT_EQ(last_deleted_page().offline_id, page1.offline_id);
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(page1.system_download_id, publisher()->last_removed_id());
+  EXPECT_EQ(page1.system_download_id,
+            publisher()->last_removed_id().download_id);
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.DeletePageCount",
       static_cast<int>(
@@ -1493,7 +1494,8 @@ TEST_F(OfflinePageModelTaskifiedTest, PersistentPageConsistencyCheckExecuted) {
   EXPECT_EQ(0UL,
             test_utils::GetFileCountInDirectory(public_archive_dir_path()));
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
-  EXPECT_EQ(page.system_download_id, publisher()->last_removed_id());
+  EXPECT_EQ(page.system_download_id,
+            publisher()->last_removed_id().download_id);
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ConsistencyCheck.Persistent.Result", 3);
 }

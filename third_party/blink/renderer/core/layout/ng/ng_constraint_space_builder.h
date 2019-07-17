@@ -233,13 +233,28 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
     return *this;
   }
+
+  NGConstraintSpaceBuilder& SetOptimisticBfcBlockOffset(
+      LayoutUnit optimistic_bfc_block_offset) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_optimistic_bfc_block_offset_set_);
+    is_optimistic_bfc_block_offset_set_ = true;
+#endif
+    if (LIKELY(!is_new_fc_)) {
+      space_.EnsureRareData()->optimistic_bfc_block_offset =
+          optimistic_bfc_block_offset;
+    }
+
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetForcedBfcBlockOffset(
-      const base::Optional<LayoutUnit>& forced_bfc_block_offset) {
+      LayoutUnit forced_bfc_block_offset) {
 #if DCHECK_IS_ON()
     DCHECK(!is_forced_bfc_block_offset_set_);
     is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_ && forced_bfc_block_offset != base::nullopt)) {
+    if (LIKELY(!is_new_fc_)) {
       space_.EnsureRareData()->forced_bfc_block_offset =
           forced_bfc_block_offset;
     }
@@ -334,6 +349,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_fragmentainer_space_at_bfc_start_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
+  bool is_optimistic_bfc_block_offset_set_ = false;
   bool is_forced_bfc_block_offset_set_ = false;
   bool is_clearance_offset_set_ = false;
 

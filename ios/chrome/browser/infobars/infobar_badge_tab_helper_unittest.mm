@@ -9,10 +9,11 @@
 #include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_container_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
-#include "ios/chrome/browser/infobars/legacy_infobar_badge_tab_helper_delegate.h"
+#import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_confirm_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container_consumer.h"
@@ -30,16 +31,27 @@
 
 // InfobarTabHelperDelegate for testing.
 @interface InfobarBadgeTabHelperTestDelegate
-    : NSObject <LegacyInfobarBadgeTabHelperDelegate>
+    : NSObject <InfobarBadgeTabHelperDelegate>
 @property(nonatomic, assign) BOOL displayingBadge;
-@property(nonatomic, assign) InfobarType infobarType;
+@property(nonatomic, assign) BOOL badgeIsTappable;
+@property(nonatomic, assign) BOOL badgeIsAccepted;
+@property(nonatomic, assign) BadgeType badgeType;
 @end
 
 @implementation InfobarBadgeTabHelperTestDelegate
-@synthesize badgeState = _badgeState;
-- (void)displayBadge:(BOOL)display type:(InfobarType)infobarType {
-  self.displayingBadge = display;
-  self.infobarType = infobarType;
+- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
+  self.badgeIsTappable = badgeItem.isTappable;
+  self.badgeIsAccepted = badgeItem.isAccepted;
+  self.badgeType = badgeItem.badgeType;
+}
+- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
+  self.displayingBadge = YES;
+  self.badgeIsTappable = badgeItem.isTappable;
+  self.badgeIsAccepted = badgeItem.isAccepted;
+  self.badgeType = badgeItem.badgeType;
+}
+- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
+  self.displayingBadge = NO;
 }
 @end
 
@@ -123,7 +135,7 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
 
     // Create the InfobarBadgeTabHelper for web_state_ and set its delegate.
     InfobarBadgeTabHelper::CreateForWebState(&web_state_);
-    tab_helper()->SetLegacyDelegate(infobar_badge_tab_delegate_);
+    tab_helper()->SetDelegate(infobar_badge_tab_delegate_);
 
     // Configure the fake InfobarContainerCoordinator, and set its baseVC as
     // rootVC.
@@ -140,7 +152,20 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
     infobar_container_model_.reset(
         new InfoBarContainerIOS(infobar_container_coordinator_, nil));
     infobar_container_model_->ChangeInfoBarManager(GetInfobarManager());
+  }
 
+  ~InfobarBadgeTabHelperTest() override {
+    if (infobar_container_coordinator_.bannerIsPresenting) {
+      [infobar_container_coordinator_ dismissBanner];
+      EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+          base::test::ios::kWaitForUIElementTimeout, ^bool {
+            return !infobar_container_coordinator_.bannerIsPresenting;
+          }));
+    }
+  }
+
+  // Adds an Infobar to the InfobarManager.
+  void AddInfoBar() {
     // Create and configure the InfobarCoordinator.
     TestInfoBarDelegate* test_infobar_delegate =
         new TestInfoBarDelegate(@"Title");
@@ -156,16 +181,6 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
         std::unique_ptr<ConfirmInfoBarDelegate>(test_infobar_delegate);
     GetInfobarManager()->AddInfoBar(
         std::make_unique<InfoBarIOS>(coordinator, std::move(infobar_delegate)));
-  }
-
-  ~InfobarBadgeTabHelperTest() override {
-    if (infobar_container_coordinator_.bannerIsPresenting) {
-      [infobar_container_coordinator_ dismissBanner];
-      EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
-          base::test::ios::kWaitForUIElementTimeout, ^bool {
-            return !infobar_container_coordinator_.bannerIsPresenting;
-          }));
-    }
   }
 
   // Returns InfobarBadgeTabHelper attached to web_state_.
@@ -190,45 +205,40 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
   ScopedKeyWindow scoped_key_window_;
 };
 
-// Test each UpdateBadge public method individually.
-TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStates) {
+// Test the badge state after changes to the state of an Infobar. Infobar badges
+// should always be tappable.
+TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeState) {
+  EXPECT_FALSE(infobar_badge_tab_delegate_.displayingBadge);
+  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsTappable);
+  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  AddInfoBar();
+  EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
+  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsTappable);
+  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
   // Test that accepting the Infobar sets the badge to accepted state.
   tab_helper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateAccepted);
+  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsTappable);
+  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsAccepted);
 }
 
-// Test the initial badge state once the banner has been presented.
-TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStateOnBannerPresentation) {
-  EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState);
-}
-
-// Test that the correct InfobarType is set.
-TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeType) {
-  EXPECT_EQ(infobar_badge_tab_delegate_.infobarType,
-            InfobarType::kInfobarTypePasswordSave);
-}
-
-// Tests that the InfobarBadge is still being displayed after dismissing the
+// Tests that the InfobarBadge has not been removed after dismissing the
 // InfobarBanner.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerDismissal) {
+  AddInfoBar();
   [infobar_container_coordinator_ dismissBanner];
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return !infobar_container_coordinator_.bannerIsPresenting;
       }));
   EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
-               InfobarBadgeStateSelected);
 }
 
 // Test that the Accepted badge state remains after dismissing the
 // InfobarBanner.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerAccepted) {
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeState &
-               InfobarBadgeStateAccepted);
+  AddInfoBar();
+  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
   tab_helper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
   [infobar_container_coordinator_ dismissBanner];
@@ -236,12 +246,12 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerAccepted) {
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return !infobar_container_coordinator_.bannerIsPresenting;
       }));
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeState &
-              InfobarBadgeStateAccepted);
+  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsAccepted);
 }
 
 // Test that removing the InfobarView doesn't stop displaying the badge.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnInfobarViewRemoval) {
+  AddInfoBar();
   [infobar_container_coordinator_ dismissBanner];
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
@@ -253,6 +263,7 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnInfobarViewRemoval) {
 
 // Test that destroying the InfobarView stops displaying the badge.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnInfobarDestroyal) {
+  AddInfoBar();
   [infobar_container_coordinator_ dismissBanner];
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {

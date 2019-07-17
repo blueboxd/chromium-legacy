@@ -4491,7 +4491,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -4524,51 +4523,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=android-webview-instrumentation",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "android",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "android_webview_pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "idempotent": false
         }
       },
       {
@@ -6819,7 +6773,6 @@
           "${buildername}",
           "--use-skia-gold"
         ],
-        "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
@@ -6853,52 +6806,6 @@
           ],
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
-        }
-      },
-      {
-        "args": [
-          "pixel",
-          "--show-stdout",
-          "--browser=android-chromium",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer\"",
-          "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
-          "--os-type",
-          "android",
-          "--build-revision",
-          "${got_revision}",
-          "--test-machine-name",
-          "${buildername}"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
-        "precommit_args": [
-          "--download-refimg-from-cloud-storage"
-        ],
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "device_os": "P",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "idempotent": false
         }
       }
     ]

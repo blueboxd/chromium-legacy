@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL 'TypeError' is thrown when set an empty wake lock type promise_test: Unhandled rejection with value: object "ReferenceError: WakeLock is not defined"
-FAIL 'TypeError' is thrown when set an invalid wake lock type WakeLock is not defined
-Harness: the test ran to completion.
-

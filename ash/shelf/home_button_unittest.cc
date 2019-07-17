@@ -152,7 +152,8 @@ TEST_F(HomeButtonTest, ButtonPositionInTabletMode) {
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   test_api.RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(ShelfConstants::button_spacing(), home_button()->bounds().x());
+  EXPECT_EQ(ShelfConstants::home_button_edge_spacing(),
+            home_button()->bounds().x());
 }
 
 TEST_F(HomeButtonTest, LongPressGesture) {

@@ -28,7 +28,7 @@
 #include "components/offline_pages/core/model/persistent_page_consistency_check_task.h"
 #include "components/offline_pages/core/model/startup_maintenance_task.h"
 #include "components/offline_pages/core/model/store_visuals_task.h"
-#include "components/offline_pages/core/model/update_file_path_task.h"
+#include "components/offline_pages/core/model/update_publish_id_task.h"
 #include "components/offline_pages/core/model/visuals_availability_task.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -478,8 +478,8 @@ void OfflinePageModelTaskified::PublishArchiveDone(
                           add_page_start_time - publish_start_time);
 
   OfflinePageItem page = offline_page;
-  page.file_path = publish_results.new_file_path;
-  page.system_download_id = publish_results.download_id;
+  page.file_path = publish_results.id.new_file_path;
+  page.system_download_id = publish_results.id.download_id;
 
   AddPage(page, base::BindOnce(
                     &OfflinePageModelTaskified::OnAddPageForSavePageDone,
@@ -501,21 +501,22 @@ void OfflinePageModelTaskified::PublishInternalArchiveDone(
     PublishPageCallback publish_done_callback,
     const OfflinePageItem& offline_page,
     PublishArchiveResult publish_results) {
-  base::FilePath file_path = publish_results.new_file_path;
   SavePageResult result = publish_results.move_result;
   // Call the callback with success == false if we failed to move the page.
   if (result != SavePageResult::SUCCESS) {
-    std::move(publish_done_callback).Run(file_path, result);
+    std::move(publish_done_callback)
+        .Run(publish_results.id.new_file_path, result);
     return;
   }
 
   // Update the OfflinePageModel with the new location for the page, which is
-  // found in move_results.new_file_path, and with the download ID found at
-  // move_results.download_id.  Return the updated offline_page to the callback.
-  auto task = std::make_unique<UpdateFilePathTask>(
-      store_.get(), offline_page.offline_id, file_path,
+  // found in move_results.id.new_file_path, and with the download ID found at
+  // move_results.id.download_id.  Return the updated offline_page to the
+  // callback.
+  auto task = std::make_unique<UpdatePublishIdTask>(
+      store_.get(), offline_page.offline_id, publish_results.id,
       base::BindOnce(&OnUpdateFilePathDone, std::move(publish_done_callback),
-                     file_path, result));
+                     publish_results.id.new_file_path, result));
   task_queue_.AddTask(std::move(task));
 }
 
@@ -566,7 +567,7 @@ void OfflinePageModelTaskified::OnDeleteDone(
     DeletePageResult result,
     const std::vector<OfflinePageItem>& deleted_items) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.DeletePageResult", result);
-  std::vector<int64_t> system_download_ids;
+  std::vector<PublishedArchiveId> publish_ids;
 
   // Notify observers and run callback.
   for (const auto& item : deleted_items) {
@@ -576,15 +577,15 @@ void OfflinePageModelTaskified::OnDeleteDone(
     offline_event_logger_.RecordPageDeleted(item.offline_id);
     for (Observer& observer : observers_)
       observer.OfflinePageDeleted(item);
-    if (item.system_download_id != 0)
-      system_download_ids.push_back(item.system_download_id);
+
+    publish_ids.emplace_back(item.system_download_id, item.file_path);
   }
 
   // Remove the page from the system download manager. We don't need to wait for
   // completion before calling the delete page callback.
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&OfflinePageModelTaskified::Unpublish,
-                                archive_publisher_.get(), system_download_ids));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&OfflinePageModelTaskified::Unpublish,
+                                        archive_publisher_.get(), publish_ids));
 
   if (!callback.is_null())
     std::move(callback).Run(result);
@@ -610,9 +611,9 @@ void OfflinePageModelTaskified::OnStoreFaviconDone(int64_t offline_id,
 
 void OfflinePageModelTaskified::Unpublish(
     OfflinePageArchivePublisher* publisher,
-    const std::vector<int64_t>& system_download_ids) {
-  if (system_download_ids.size() > 0)
-    publisher->UnpublishArchives(system_download_ids);
+    const std::vector<PublishedArchiveId>& publish_ids) {
+  if (!publish_ids.empty())
+    publisher->UnpublishArchives(publish_ids);
 }
 
 void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
@@ -662,10 +663,8 @@ void OfflinePageModelTaskified::RunMaintenanceTasks(base::Time now,
 
 void OfflinePageModelTaskified::OnPersistentPageConsistencyCheckDone(
     bool success,
-    const std::vector<int64_t>& pages_deleted) {
-  // TODO(https://crbug.com/834909): Use the temporary hidden bit in
-  // DownloadUIAdapter instead of removing directly.
-  Unpublish(archive_publisher_.get(), pages_deleted);
+    const std::vector<PublishedArchiveId>& ids_of_deleted_pages) {
+  Unpublish(archive_publisher_.get(), ids_of_deleted_pages);
 }
 
 void OfflinePageModelTaskified::OnClearCachedPagesDone(

@@ -377,25 +377,26 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       int quic_idle_connection_timeout_seconds = 0;
       if (quic_args->GetInteger(kQuicIdleConnectionTimeoutSeconds,
                                 &quic_idle_connection_timeout_seconds)) {
-        session_params->quic_params.idle_connection_timeout_seconds =
-            quic_idle_connection_timeout_seconds;
+        session_params->quic_params.idle_connection_timeout =
+            base::TimeDelta::FromSeconds(quic_idle_connection_timeout_seconds);
       }
 
       int quic_max_time_before_crypto_handshake_seconds = 0;
       if (quic_args->GetInteger(
               kQuicMaxTimeBeforeCryptoHandshakeSeconds,
               &quic_max_time_before_crypto_handshake_seconds)) {
-        session_params->quic_params.max_time_before_crypto_handshake_seconds =
-            quic_max_time_before_crypto_handshake_seconds;
+        session_params->quic_params.max_time_before_crypto_handshake =
+            base::TimeDelta::FromSeconds(
+                quic_max_time_before_crypto_handshake_seconds);
       }
 
       int quic_max_idle_time_before_crypto_handshake_seconds = 0;
       if (quic_args->GetInteger(
               kQuicMaxIdleTimeBeforeCryptoHandshakeSeconds,
               &quic_max_idle_time_before_crypto_handshake_seconds)) {
-        session_params->quic_params
-            .max_idle_time_before_crypto_handshake_seconds =
-            quic_max_idle_time_before_crypto_handshake_seconds;
+        session_params->quic_params.max_idle_time_before_crypto_handshake =
+            base::TimeDelta::FromSeconds(
+                quic_max_idle_time_before_crypto_handshake_seconds);
       }
 
       bool quic_close_sessions_on_ip_change = false;
@@ -495,9 +496,9 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       if (quic_args->GetInteger(
               kQuicRetransmittableOnWireTimeoutMilliseconds,
               &quic_retransmittable_on_wire_timeout_milliseconds)) {
-        session_params->quic_params
-            .retransmittable_on_wire_timeout_milliseconds =
-            quic_retransmittable_on_wire_timeout_milliseconds;
+        session_params->quic_params.retransmittable_on_wire_timeout =
+            base::TimeDelta::FromMilliseconds(
+                quic_retransmittable_on_wire_timeout_milliseconds);
       }
 
       bool quic_retry_on_alternate_network_before_handshake = false;

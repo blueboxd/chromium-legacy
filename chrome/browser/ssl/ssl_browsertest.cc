@@ -189,7 +189,13 @@
 #if defined(OS_CHROMEOS)
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/session_manager/core/session_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -5920,9 +5926,20 @@ IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
   EXPECT_FALSE(IsShowingInterstitial(tab));
 }
 
+// Certificate Verifier to be used for SSLUITestCustomCACerts.
+enum class CertVerifierChosenByPolicy {
+  // Explicitly disable the built-in cert verifier and use the legacy platform
+  // verifier.
+  kPlatform,
+  // Explicitly enable the built-in cert verifier
+  kBuiltin
+};
+
 // A test class which prepares two profiles and allows importing certificates
 // into their NSS databases.
-class SSLUITestCustomCACerts : public SSLUITestNoCert {
+class SSLUITestCustomCACerts
+    : public SSLUITestNoCert,
+      public ::testing::WithParamInterface<CertVerifierChosenByPolicy> {
  public:
   SSLUITestCustomCACerts() = default;
   ~SSLUITestCustomCACerts() override = default;
@@ -5935,6 +5952,19 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
                                     "false");
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    SSLUITestNoCert::SetUpInProcessBrowserTestFixture();
+
+    // Enable/disable built-in cert verifier depending on the test parameter.
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy::key::kBuiltinCertificateVerifierEnabled,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   std::make_unique<base::Value>(UseBuiltinCertVerifier()),
+                   nullptr);
+    policy_provider_.UpdateChromePolicy(policy_map);
+  }
+
   void SetUpOnMainThread() override {
     SSLUITestNoCert::SetUpOnMainThread();
 
@@ -5945,6 +5975,11 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
       static const char kSecondProfileAccount[] = "profile2@test.com";
       static const char kSecondProfileGaiaId[] = "9876543210";
       static const char kSecondProfileHash[] = "testProfile2";
+
+      EXPECT_CALL(policy_for_profile_2_, IsInitializationComplete(testing::_))
+          .WillRepeatedly(testing::Return(true));
+      policy::PushProfilePolicyConnectorProviderForTesting(
+          &policy_for_profile_2_);
 
       base::FilePath user_data_directory;
       base::PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
@@ -6002,6 +6037,16 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
     ASSERT_TRUE(failures.empty());
   }
 
+  bool IsProfileUsingBuiltinCertVerifier(Profile* profile) {
+    ProfileNetworkContextService* const service =
+        ProfileNetworkContextServiceFactory::GetForContext(profile);
+    return service->using_builtin_cert_verifier();
+  }
+
+  bool UseBuiltinCertVerifier() {
+    return GetParam() == CertVerifierChosenByPolicy::kBuiltin;
+  }
+
   // The first profile.
   Profile* profile_1_;
   // The second profile.
@@ -6012,6 +6057,9 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
 
   // The NSSCertDatabase for |profile_2_|.
   net::NSSCertDatabase* profile_2_cert_db_;
+
+  // Policy provider for |profile_2_|. Overrides any other policy providers.
+  policy::MockConfigurationPolicyProvider policy_for_profile_2_;
 
  private:
   void DidGetCertDatabase(base::RunLoop* loop,
@@ -6029,7 +6077,7 @@ class SSLUITestCustomCACerts : public SSLUITestNoCert {
 // imported for.
 // Verifies that the certificate is *not* trusted in the context of a different
 // profile.
-IN_PROC_BROWSER_TEST_F(SSLUITestCustomCACerts,
+IN_PROC_BROWSER_TEST_P(SSLUITestCustomCACerts,
                        TrustedCertOnlyRespectedInProfileThatOwnsIt) {
   ASSERT_TRUE(https_server_.Start());
 
@@ -6040,13 +6088,29 @@ IN_PROC_BROWSER_TEST_F(SSLUITestCustomCACerts,
   // reflected in the network service.
   content::FlushNetworkServiceInstanceForTesting();
 
+  // Sanity check the active certificate verifier.
+  EXPECT_EQ(UseBuiltinCertVerifier(),
+            IsProfileUsingBuiltinCertVerifier(profile_1_));
+  EXPECT_EQ(UseBuiltinCertVerifier(),
+            IsProfileUsingBuiltinCertVerifier(profile_2_));
+  // Sanity check that |profile_2_| did not have a policy value for
+  // BuiltinCertificateVerifierEnabled. This ensures that the primary profile's
+  // policy is respected.
+  EXPECT_EQ(
+      nullptr,
+      profile_2_->GetProfilePolicyConnector()
+          ->policy_service()
+          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                /*component_id=*/std::string()))
+          .GetValue(policy::key::kBuiltinCertificateVerifierEnabled));
+
   // The certificate that is trusted in |profile_2_| should not be respected in
   // browsers that belong to |profile_1_|.
-  ui_test_utils::NavigateToURL(browser(),
+  Browser* browser_for_profile_1 = CreateBrowser(profile_1_);
+  ui_test_utils::NavigateToURL(browser_for_profile_1,
                                https_server_.GetURL("/ssl/google.html"));
-
   WebContents* tab_for_profile_1 =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      browser_for_profile_1->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(tab_for_profile_1);
   CheckAuthenticationBrokenState(tab_for_profile_1,
                                  net::CERT_STATUS_AUTHORITY_INVALID,
@@ -6061,6 +6125,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITestCustomCACerts,
       browser_for_profile_2->tab_strip_model()->GetActiveWebContents();
   CheckAuthenticatedState(tab_for_profile_2, AuthState::NONE);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    SSLUITestCustomCACerts,
+    ::testing::Values(CertVerifierChosenByPolicy::kBuiltin,
+                      CertVerifierChosenByPolicy::kPlatform));
 
 #endif  // defined(OS_CHROMEOS)
 

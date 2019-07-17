@@ -314,6 +314,9 @@ void IconLabelBubbleView::OnBlur() {
 }
 
 void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
+  if (animation != &slide_animation_)
+    return views::LabelButton::AnimationEnded(animation);
+
   if (!is_animation_paused_) {
     // If there is no separator to show, then that means we want the text to
     // disappear after animating.
@@ -326,11 +329,17 @@ void IconLabelBubbleView::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void IconLabelBubbleView::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation != &slide_animation_)
+    return views::LabelButton::AnimationProgressed(animation);
+
   if (!is_animation_paused_)
     PreferredSizeChanged();
 }
 
 void IconLabelBubbleView::AnimationCanceled(const gfx::Animation* animation) {
+  if (animation != &slide_animation_)
+    return views::LabelButton::AnimationCanceled(animation);
+
   AnimationEnded(animation);
 }
 

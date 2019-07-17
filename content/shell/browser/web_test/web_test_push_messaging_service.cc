@@ -47,11 +47,6 @@ WebTestPushMessagingService::WebTestPushMessagingService()
 
 WebTestPushMessagingService::~WebTestPushMessagingService() {}
 
-GURL WebTestPushMessagingService::GetEndpoint(bool standard_protocol) {
-  return GURL(standard_protocol ? "https://example.com/StandardizedEndpoint/"
-                                : "https://example.com/LayoutTestEndpoint/");
-}
-
 void WebTestPushMessagingService::SubscribeFromDocument(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
@@ -86,14 +81,17 @@ void WebTestPushMessagingService::SubscribeFromWorker(
     std::vector<uint8_t> auth(kAuthentication,
                               kAuthentication + base::size(kAuthentication));
 
+    const std::string subscription_id = "layoutTestRegistrationId";
+    const GURL endpoint = CreateEndpoint(subscription_id);
+
     subscribed_service_worker_registration_ = service_worker_registration_id;
     std::move(callback).Run(
-        "layoutTestRegistrationId", p256dh, auth,
+        subscription_id, endpoint, p256dh, auth,
         blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
   } else {
     std::move(callback).Run(
-        "registration_id", std::vector<uint8_t>() /* p256dh */,
-        std::vector<uint8_t>() /* auth */,
+        "registration_id", GURL::EmptyGURL() /* endpoint */,
+        std::vector<uint8_t>() /* p256dh */, std::vector<uint8_t>() /* auth */,
         blink::mojom::PushRegistrationStatus::PERMISSION_DENIED);
   }
 }
@@ -109,7 +107,8 @@ void WebTestPushMessagingService::GetSubscriptionInfo(
   std::vector<uint8_t> auth(kAuthentication,
                             kAuthentication + base::size(kAuthentication));
 
-  callback.Run(true /* is_valid */, p256dh, auth);
+  const GURL endpoint = CreateEndpoint(subscription_id);
+  callback.Run(true /* is_valid */, endpoint, p256dh, auth);
 }
 
 bool WebTestPushMessagingService::SupportNonVisibleMessages() {
@@ -152,6 +151,11 @@ void WebTestPushMessagingService::DidDeleteServiceWorkerRegistration(
 void WebTestPushMessagingService::DidDeleteServiceWorkerDatabase() {
   subscribed_service_worker_registration_ =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
+}
+
+GURL WebTestPushMessagingService::CreateEndpoint(
+    const std::string& subscription_id) const {
+  return GURL("https://example.com/StandardizedEndpoint/" + subscription_id);
 }
 
 }  // namespace content

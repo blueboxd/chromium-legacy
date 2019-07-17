@@ -17,10 +17,6 @@
         align-items: flex-start;
       }
 
-      [slot='dialog-body'] .settings-box .start .label {
-        @apply --cr-form-field-label;
-      }
-
       [slot='dialog-body'] .settings-box cr-input {
         width: 100%;
       }
@@ -77,12 +73,12 @@
         border: none;
         box-sizing: border-box;
         color: var(--paper-grey-800);
+        cursor: pointer;
         font: inherit;
         min-height: 32px;
         padding: 0 24px;
         text-align: start;
         width: 100%;
-        @apply --cr-actionable;
       }
 
       .list-item:focus {
@@ -94,9 +90,8 @@
         font: inherit;
       }
 
-      .field-label {
+      #ppdLabel {
         padding-inline-start: 20px;
-        @apply --cr-form-field-label;
       }
 
       #general-error-container {

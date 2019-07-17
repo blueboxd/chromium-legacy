@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -13,7 +14,7 @@
 
 <dom-module id="settings-address-edit-dialog">
   <template>
-    <style include="settings-shared md-select">
+    <style include="cr-shared-style settings-shared md-select">
       :host {
         white-space: nowrap;
       }
@@ -35,14 +36,6 @@
 
       .md-select {
         --md-select-width: var(--settings-input-max-width);
-      }
-
-      #select-label {
-        @apply --cr-form-field-label;
-      }
-
-      :host-context([dir=rtl]) #select-label {
-        transform-origin: right;
       }
 
       .long {
@@ -93,7 +86,9 @@
           </div>
         </template>
         <div id="select-row" class="address-row">
-          <div id="select-label">$i18n{addressCountry}</div>
+          <label id="select-label" class="cr-form-field-label">
+            $i18n{addressCountry}
+          </label>
           <select class="md-select" aria-labelledby="select-label"
               value="[[countryCode_]]" on-change="onCountryChange_">
             <option value=""></option>

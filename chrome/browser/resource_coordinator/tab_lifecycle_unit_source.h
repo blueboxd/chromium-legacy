@@ -46,6 +46,10 @@ class TabLifecycleUnitSource : public BrowserListObserver,
       UsageClock* usage_clock);
   ~TabLifecycleUnitSource() override;
 
+  // Should be called once all the dependencies of this class have been created
+  // (e.g. the global PerformanceManager instance).
+  void Start();
+
   // Returns the TabLifecycleUnitExternal instance associated with
   // |web_contents|, or nullptr if |web_contents| isn't a tab.
   static TabLifecycleUnitExternal* GetTabLifecycleUnitExternal(

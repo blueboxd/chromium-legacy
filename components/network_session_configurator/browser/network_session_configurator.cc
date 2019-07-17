@@ -477,27 +477,29 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     int idle_connection_timeout_seconds =
         GetQuicIdleConnectionTimeoutSeconds(quic_trial_params);
     if (idle_connection_timeout_seconds != 0) {
-      params->quic_params.idle_connection_timeout_seconds =
-          idle_connection_timeout_seconds;
+      params->quic_params.idle_connection_timeout =
+          base::TimeDelta::FromSeconds(idle_connection_timeout_seconds);
     }
     int reduced_ping_timeout_seconds =
         GetQuicReducedPingTimeoutSeconds(quic_trial_params);
     if (reduced_ping_timeout_seconds > 0 &&
         reduced_ping_timeout_seconds < quic::kPingTimeoutSecs) {
-      params->quic_params.reduced_ping_timeout_seconds =
-          reduced_ping_timeout_seconds;
+      params->quic_params.reduced_ping_timeout =
+          base::TimeDelta::FromSeconds(reduced_ping_timeout_seconds);
     }
     int max_time_before_crypto_handshake_seconds =
         GetQuicMaxTimeBeforeCryptoHandshakeSeconds(quic_trial_params);
     if (max_time_before_crypto_handshake_seconds > 0) {
-      params->quic_params.max_time_before_crypto_handshake_seconds =
-          max_time_before_crypto_handshake_seconds;
+      params->quic_params.max_time_before_crypto_handshake =
+          base::TimeDelta::FromSeconds(
+              max_time_before_crypto_handshake_seconds);
     }
     int max_idle_time_before_crypto_handshake_seconds =
         GetQuicMaxIdleTimeBeforeCryptoHandshakeSeconds(quic_trial_params);
     if (max_idle_time_before_crypto_handshake_seconds > 0) {
-      params->quic_params.max_idle_time_before_crypto_handshake_seconds =
-          max_idle_time_before_crypto_handshake_seconds;
+      params->quic_params.max_idle_time_before_crypto_handshake =
+          base::TimeDelta::FromSeconds(
+              max_idle_time_before_crypto_handshake_seconds);
     }
     params->quic_params.race_cert_verification =
         ShouldQuicRaceCertVerification(quic_trial_params);
@@ -516,14 +518,16 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     int initial_rtt_for_handshake_milliseconds =
         GetQuicInitialRttForHandshakeMilliseconds(quic_trial_params);
     if (initial_rtt_for_handshake_milliseconds > 0) {
-      params->quic_params.initial_rtt_for_handshake_milliseconds =
-          initial_rtt_for_handshake_milliseconds;
+      params->quic_params.initial_rtt_for_handshake =
+          base::TimeDelta::FromMilliseconds(
+              initial_rtt_for_handshake_milliseconds);
     }
     int retransmittable_on_wire_timeout_milliseconds =
         GetQuicRetransmittableOnWireTimeoutMilliseconds(quic_trial_params);
     if (retransmittable_on_wire_timeout_milliseconds > 0) {
-      params->quic_params.retransmittable_on_wire_timeout_milliseconds =
-          retransmittable_on_wire_timeout_milliseconds;
+      params->quic_params.retransmittable_on_wire_timeout =
+          base::TimeDelta::FromMilliseconds(
+              retransmittable_on_wire_timeout_milliseconds);
     }
     params->quic_params.migrate_idle_sessions =
         ShouldQuicMigrateIdleSessions(quic_trial_params);

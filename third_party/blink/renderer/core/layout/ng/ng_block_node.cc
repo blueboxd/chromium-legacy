@@ -424,8 +424,9 @@ void NGBlockNode::FinishLayout(
 
   box_->SetCachedLayoutResult(*layout_result, break_token);
   if (block_flow) {
-    NGLayoutInputNode first_child = FirstChild();
-    bool has_inline_children = first_child && first_child.IsInline();
+    auto* child = GetLayoutObjectForFirstChildNode(block_flow);
+    bool has_inline_children =
+        child && AreNGBlockFlowChildrenInline(block_flow);
 
     // Don't consider display-locked objects as having any children.
     if (has_inline_children &&
@@ -595,11 +596,23 @@ MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
 
 NGLayoutInputNode NGBlockNode::NextSibling() const {
   LayoutObject* next_sibling = GetLayoutObjectForNextSiblingNode(box_);
-  if (next_sibling) {
-    DCHECK(!next_sibling->IsInline());
-    return NGBlockNode(ToLayoutBox(next_sibling));
+
+  // We may have some LayoutInline(s) still within the tree (due to treating
+  // inline-level floats and/or OOF-positioned nodes as block-level), we need
+  // to skip them and clear layout.
+  while (next_sibling && next_sibling->IsInline()) {
+    // TODO(layout-dev): Clearing needs-layout within this accessor is an
+    // unexpected side-effect. There may be additional invalidations that need
+    // to be performed.
+    DCHECK(next_sibling->IsText());
+    next_sibling->ClearNeedsLayout();
+    next_sibling = next_sibling->NextSibling();
   }
-  return nullptr;
+
+  if (!next_sibling)
+    return nullptr;
+
+  return NGBlockNode(ToLayoutBox(next_sibling));
 }
 
 NGLayoutInputNode NGBlockNode::FirstChild() const {
@@ -607,8 +620,33 @@ NGLayoutInputNode NGBlockNode::FirstChild() const {
   auto* child = GetLayoutObjectForFirstChildNode(block);
   if (!child)
     return nullptr;
-  if (AreNGBlockFlowChildrenInline(block))
-    return NGInlineNode(To<LayoutBlockFlow>(block));
+  if (!AreNGBlockFlowChildrenInline(block))
+    return NGBlockNode(ToLayoutBox(child));
+
+  NGInlineNode inline_node(To<LayoutBlockFlow>(block));
+  if (!inline_node.IsBlockLevel())
+    return inline_node;
+
+  // At this point we have a node which is empty or only has floats and
+  // OOF-positioned nodes. We treat all children as block-level, even though
+  // they are within a inline-level LayoutBlockFlow.
+
+  // We may have some LayoutInline(s) still within the tree (due to treating
+  // inline-level floats and/or OOF-positioned nodes as block-level), we need
+  // to skip them and clear layout.
+  while (child && child->IsInline()) {
+    // TODO(layout-dev): Clearing needs-layout within this accessor is an
+    // unexpected side-effect. There may be additional invalidations that need
+    // to be performed.
+    DCHECK(child->IsText());
+    child->ClearNeedsLayout();
+    child = child->NextSibling();
+  }
+
+  if (!child)
+    return nullptr;
+
+  DCHECK(child->IsFloatingOrOutOfFlowPositioned());
   return NGBlockNode(ToLayoutBox(child));
 }
 

@@ -13,6 +13,7 @@ namespace arc {
 
 // Please keep alphabetized.
 extern const base::Feature kAvailableForChildAccountFeature;
+extern const base::Feature kAppRuntimePerormanceStatistics;
 extern const base::Feature kBootCompletedBroadcastFeature;
 extern const base::Feature kCleanArcDataOnRegularToChildTransitionFeature;
 extern const base::Feature kCustomTabsExperimentFeature;

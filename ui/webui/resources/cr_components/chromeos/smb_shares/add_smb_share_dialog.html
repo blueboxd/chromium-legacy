@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
@@ -15,17 +16,13 @@
 
 <dom-module id="add-smb-share-dialog">
   <template>
-    <style include="md-select">
+    <style include="cr-shared-style md-select">
       #dialog [slot=body] {
         height: 440px;
       }
 
       .md-select {
         width: 100%;
-      }
-
-      .label {
-        @apply --cr-form-field-label;
       }
 
       cr-searchable-drop-down {
@@ -86,9 +83,9 @@
             value="{{mountName_}}" maxlength="64">
         </cr-input>
         <div id="authentication-method" hidden="[[!isActiveDirectory_]]">
-          <div id="authentication-label" class="label">
+          <label id="authentication-label" class="cr-form-field-label">
             [[i18n('smbShareAuthenticationMethod')]]
-          </div>
+          </label>
           <select class="md-select" aria-labelledby="authentication-label"
               value="{{authenticationMethod_::change}}">
             <option value="kerberos">

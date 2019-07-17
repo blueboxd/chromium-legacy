@@ -130,7 +130,8 @@ ui::XWindow::Configuration ConvertInitParamsToX11WindowConfig(
   config.activatable =
       params.activatable == Widget::InitParams::ACTIVATABLE_YES;
   config.force_show_in_taskbar = params.force_show_in_taskbar;
-  config.keep_on_top = params.keep_on_top;
+  config.keep_on_top =
+      params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal;
   config.visible_on_all_workspaces = params.visible_on_all_workspaces;
   config.remove_standard_frame = params.remove_standard_frame;
 
@@ -666,12 +667,25 @@ bool DesktopWindowTreeHostX11::HasCapture() const {
   return g_current_capture == this;
 }
 
-void DesktopWindowTreeHostX11::SetAlwaysOnTop(bool always_on_top) {
-  x11_window_->SetAlwaysOnTop(always_on_top);
+void DesktopWindowTreeHostX11::SetZOrderLevel(ui::ZOrderLevel order) {
+  z_order_ = order;
+
+  // Emulate the multiple window levels provided by other platforms by
+  // collapsing the z-order enum into kNormal = normal, everything else = always
+  // on top.
+  x11_window_->SetAlwaysOnTop(order != ui::ZOrderLevel::kNormal);
 }
 
-bool DesktopWindowTreeHostX11::IsAlwaysOnTop() const {
-  return x11_window_->is_always_on_top();
+ui::ZOrderLevel DesktopWindowTreeHostX11::GetZOrderLevel() const {
+  bool window_always_on_top = x11_window_->is_always_on_top();
+  bool level_always_on_top = z_order_ != ui::ZOrderLevel::kNormal;
+
+  if (window_always_on_top == level_always_on_top)
+    return z_order_;
+
+  // Something external has forced a window to be always-on-top; map it to
+  // kFloatingWindow as a reasonable equivalent.
+  return ui::ZOrderLevel::kFloatingWindow;
 }
 
 void DesktopWindowTreeHostX11::SetVisible(bool visible) {

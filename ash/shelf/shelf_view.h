@@ -18,6 +18,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
@@ -54,7 +55,6 @@ class DragImageView;
 class OverflowBubble;
 class OverflowButton;
 class ScopedRootWindowForNewWindows;
-class Shelf;
 class ShelfAppButton;
 class ShelfButton;
 class ShelfModel;
@@ -118,7 +118,7 @@ class ASH_EXPORT ShelfView : public views::View,
                              public ash::TabletModeObserver,
                              public VirtualKeyboardModel::Observer {
  public:
-  ShelfView(ShelfModel* model, Shelf* shelf, ShelfWidget* shelf_widget);
+  ShelfView(ShelfModel* model, Shelf* shelf);
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -315,7 +315,7 @@ class ASH_EXPORT ShelfView : public views::View,
     else
       return std::max(0, last_visible_index_ + 1);
   }
-  ShelfWidget* shelf_widget() const { return shelf_widget_; }
+  ShelfWidget* shelf_widget() const { return shelf_->shelf_widget(); }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
 
@@ -546,10 +546,6 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The shelf controller; owned by RootWindowController.
   Shelf* shelf_;
-
-  // The shelf widget for this view. For overflow bubbles, this is the widget
-  // for the shelf, not for the bubble.
-  ShelfWidget* shelf_widget_;
 
   // Used to manage the set of active launcher buttons. There is a view per
   // item in |model_|.

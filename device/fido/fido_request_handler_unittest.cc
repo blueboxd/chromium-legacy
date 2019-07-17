@@ -333,6 +333,11 @@ class FidoRequestHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   FakeHandlerCallbackReceiver cb_;
+
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
 };
 
 TEST_F(FidoRequestHandlerTest, TestSingleDeviceSuccess) {
@@ -705,24 +710,28 @@ TEST_F(FidoRequestHandlerTest, EmbedderNotifiedWhenAuthenticatorIdChanges) {
 
 #if defined(OS_WIN)
 TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
-  ScopedFakeWinWebAuthnApi scoped_fake_win_webauthn_api;
-  scoped_fake_win_webauthn_api.set_available(true);
+  for (const bool api_available : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "api_available=" << api_available);
+    win_webauthn_api_.set_available(api_available);
 
-  TestObserver observer;
-  ForgeNextHidDiscovery();
-  EmptyRequestHandler request_handler(
-      {FidoTransportProtocol::kUsbHumanInterfaceDevice},
-      &fake_discovery_factory_);
-  request_handler.SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
-  request_handler.set_observer(&observer);
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    TestObserver observer;
+    ForgeNextHidDiscovery();
+    EmptyRequestHandler request_handler(
+        {FidoTransportProtocol::kUsbHumanInterfaceDevice},
+        &fake_discovery_factory_);
+    request_handler.SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
+    request_handler.set_observer(&observer);
+    scoped_task_environment_.FastForwardUntilNoTasksRemain();
 
-  auto transport_availability_info =
-      observer.WaitForTransportAvailabilityInfo();
-  EXPECT_TRUE(transport_availability_info.available_transports.empty());
-  EXPECT_TRUE(transport_availability_info.has_win_native_api_authenticator);
-  EXPECT_EQ("WinWebAuthnApiAuthenticator",
-            transport_availability_info.win_native_api_authenticator_id);
+    auto transport_availability_info =
+        observer.WaitForTransportAvailabilityInfo();
+    EXPECT_EQ(transport_availability_info.available_transports.empty(),
+              api_available);
+    EXPECT_EQ(transport_availability_info.has_win_native_api_authenticator,
+              api_available);
+    EXPECT_EQ(transport_availability_info.win_native_api_authenticator_id,
+              api_available ? "WinWebAuthnApiAuthenticator" : "");
+  }
 }
 #endif  // defined(OS_WIN)
 

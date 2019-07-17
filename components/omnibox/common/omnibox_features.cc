@@ -149,7 +149,7 @@ const base::Feature kOmniboxSuggestionTransparencyOptions{
 // other search suggestions provided by the default search provider. This
 // feature is a narrow subset of kOmniboxSuggestionTransparencyOptions.
 const base::Feature kOmniboxUICuesForSearchHistoryMatches{
-    "OmniboxUICuesForSearchHistoryMatches", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxUICuesForSearchHistoryMatches", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature that shows an alternate separator before the description of
 // omnibox matches. In English, this changes the separator from '-' to '|'.
@@ -240,7 +240,7 @@ const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly{
 // are exceptions in this regard and this experiment makes this more consistent.
 const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing{
     "OmniboxUIExperimentShowPlaceholderWhenCaretShowing",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a

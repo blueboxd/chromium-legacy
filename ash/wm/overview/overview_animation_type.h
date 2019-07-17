@@ -45,6 +45,8 @@ enum OverviewAnimationType {
   // Used to animate the overview highlight which is activated by using tab or
   // the arrow keys.
   OVERVIEW_ANIMATION_SELECTION_WINDOW,
+  // Used to animate the clipping of the windows frame header.
+  OVERVIEW_ANIMATION_FRAME_HEADER_CLIP,
 };
 
 }  // namespace ash

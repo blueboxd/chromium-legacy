@@ -78,13 +78,13 @@ void LayoutSVGShape::WillBeDestroyed() {
 void LayoutSVGShape::CreatePath() {
   if (!path_)
     path_ = std::make_unique<Path>();
-  *path_ = ToSVGGeometryElement(GetElement())->AsPath();
+  *path_ = To<SVGGeometryElement>(GetElement())->AsPath();
 }
 
 float LayoutSVGShape::DashScaleFactor() const {
   if (StyleRef().SvgStyle().StrokeDashArray()->data.IsEmpty())
     return 1;
-  return ToSVGGeometryElement(*GetElement()).PathLengthScaleFactor();
+  return To<SVGGeometryElement>(*GetElement()).PathLengthScaleFactor();
 }
 
 void LayoutSVGShape::UpdateShapeFromElement() {

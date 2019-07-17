@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -20,6 +21,10 @@
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/fake_webauthn_api.h"
+#endif  // defined(OS_WIN)
 
 namespace device {
 
@@ -137,6 +142,12 @@ class FidoBleAdapterManagerTest : public ::testing::Test {
       std::make_unique<MockObserver>();
   std::unique_ptr<FidoDiscoveryFactory> fido_discovery_factory_ =
       std::make_unique<FidoDiscoveryFactory>();
+
+#if defined(OS_WIN)
+  device::ScopedFakeWinWebAuthnApi win_webauthn_api_ =
+      device::ScopedFakeWinWebAuthnApi::MakeUnavailable();
+#endif  // defined(OS_WIN)
+
   std::unique_ptr<FakeFidoRequestHandlerBase> fake_request_handler_ =
       std::make_unique<FakeFidoRequestHandlerBase>(
           mock_observer_.get(),

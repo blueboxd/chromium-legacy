@@ -271,7 +271,7 @@ SpeechRecognizerImpl::~SpeechRecognizerImpl() {
 }
 
 void SpeechRecognizerImpl::Capture(const AudioBus* data,
-                                   int audio_delay_milliseconds,
+                                   base::TimeTicks audio_capture_time,
                                    double volume,
                                    bool key_pressed) {
   // Convert audio from native format to fixed format used by WebSpeech.

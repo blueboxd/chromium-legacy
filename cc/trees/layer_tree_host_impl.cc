@@ -1453,10 +1453,19 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   if (client_name) {
     size_t total_memory_in_bytes = 0;
     size_t total_gpu_memory_for_tilings_in_bytes = 0;
+    int layers_with_text_count = 0;
+    int layers_with_text_no_lcd_text_count = 0;
     for (const PictureLayerImpl* layer : active_tree()->picture_layers()) {
       total_memory_in_bytes += layer->GetRasterSource()->GetMemoryUsage();
       total_gpu_memory_for_tilings_in_bytes += layer->GPUMemoryUsageInBytes();
+      if (layer->GetRasterSource()->HasText()) {
+        layers_with_text_count++;
+        if (!layer->can_use_lcd_text()) {
+          layers_with_text_no_lcd_text_count++;
+        }
+      }
     }
+
     if (total_memory_in_bytes != 0) {
       UMA_HISTOGRAM_COUNTS_1M(
           base::StringPrintf("Compositing.%s.PictureMemoryUsageKb",
@@ -1473,6 +1482,34 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                            client_name),
         base::saturated_cast<int>(active_tree_->picture_layers().size()), 1,
         400, 20);
+
+    if (layers_with_text_count > 0) {
+      int percent =
+          100.0 * layers_with_text_no_lcd_text_count / layers_with_text_count;
+
+      if (layers_with_text_count < 10) {
+        UMA_HISTOGRAM_PERCENTAGE(
+            base::StringPrintf(
+                "Compositing.%s.PercentPictureLayersWithTextButLCDTextDisabled."
+                "LessThan10",
+                client_name),
+            percent);
+      } else if (layers_with_text_count <= 30) {
+        UMA_HISTOGRAM_PERCENTAGE(
+            base::StringPrintf(
+                "Compositing.%s.PercentPictureLayersWithTextButLCDTextDisabled."
+                "10To30",
+                client_name),
+            percent);
+      } else {
+        UMA_HISTOGRAM_PERCENTAGE(
+            base::StringPrintf(
+                "Compositing.%s."
+                "PercentPictureLayersWithTextButLCDTextDisabled.MoreThan30",
+                client_name),
+            percent);
+      }
+    }
 
     // TODO(yigu): Maybe we should use the same check above. Need to figure out
     // why exactly we skip 0.

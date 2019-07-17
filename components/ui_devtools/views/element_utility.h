@@ -21,10 +21,6 @@ namespace ui_devtools {
 // Appends Layer properties to ret (ex: layer-type, layer-mask, etc).
 // This is used to display information about the layer on devtools.
 // Note that ret may not be empty when it's passed in.
-void AppendLayerProperties(
-    const ui::Layer* layer,
-    std::vector<std::pair<std::string, std::string>>* ret);
-
 void AppendLayerPropertiesMatchedStyle(const ui::Layer* layer,
                                        std::vector<UIElement::UIProperty>* ret);
 

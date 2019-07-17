@@ -31,6 +31,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
+class BrowserActivityWatcher;
 class PluginMetricsProvider;
 class Profile;
 class PrefRegistrySimple;
@@ -176,21 +177,21 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   std::unique_ptr<IncognitoObserver> incognito_observer_;
 
   // Whether we registered all notification listeners successfully.
-  bool notification_listeners_active_;
+  bool notification_listeners_active_ = false;
 
   // Saved callback received from CollectFinalMetricsForLog().
   base::Closure collect_final_metrics_done_callback_;
 
   // Indicates that collect final metrics step is running.
-  bool waiting_for_collect_final_metrics_step_;
+  bool waiting_for_collect_final_metrics_step_ = false;
 
   // Number of async histogram fetch requests in progress.
-  int num_async_histogram_fetches_in_progress_;
+  int num_async_histogram_fetches_in_progress_ = 0;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // The PluginMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
-  PluginMetricsProvider* plugin_metrics_provider_;
+  PluginMetricsProvider* plugin_metrics_provider_ = nullptr;
 #endif
 
   // Callback to determine whether or not a cellular network is currently being
@@ -201,6 +202,10 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // omnibox.
   std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
       omnibox_url_opened_subscription_;
+
+#if !defined(OS_ANDROID)
+  std::unique_ptr<BrowserActivityWatcher> browser_activity_watcher_;
+#endif
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_{this};
 

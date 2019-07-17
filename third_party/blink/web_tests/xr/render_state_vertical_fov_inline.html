@@ -25,7 +25,7 @@ function assertApproximatelyEqual(a, b, step, epsilon = FLOAT_EPSILON) {
   assert_less_than(Math.abs(a - b), epsilon, step);
 }
 
-let testFunction = function(session, t, fakeDeviceController) {
+let testFunction = function(session, fakeDeviceController, t) {
   // Session must have a baseLayer or frame requests will be ignored.
   session.updateRenderState({
     baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
@@ -89,6 +89,6 @@ let testFunction = function(session, t, fakeDeviceController) {
 };
 
 xr_session_promise_test(
-  testFunction, fakeDeviceInitParams, requestSessionModes, testName);
+  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
 
 </script>

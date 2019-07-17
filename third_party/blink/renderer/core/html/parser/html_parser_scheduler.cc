@@ -37,13 +37,12 @@ namespace blink {
 
 SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nesting_level)
     : NestingLevelIncrementer(nesting_level),
-      start_time_(CurrentTime()),
       processed_element_tokens_(0) {}
 
 SpeculationsPumpSession::~SpeculationsPumpSession() = default;
 
-inline double SpeculationsPumpSession::ElapsedTime() const {
-  return CurrentTime() - start_time_;
+inline base::TimeDelta SpeculationsPumpSession::ElapsedTime() const {
+  return start_time_.Elapsed();
 }
 
 void SpeculationsPumpSession::AddedElementTokens(size_t count) {
@@ -103,7 +102,8 @@ inline bool HTMLParserScheduler::ShouldYield(
   if (ThreadScheduler::Current()->ShouldYieldForHighPriorityWork())
     return true;
 
-  const double kParserTimeLimit = 0.5;
+  const base::TimeDelta kParserTimeLimit =
+      base::TimeDelta::FromMilliseconds(500);
   if (session.ElapsedTime() > kParserTimeLimit)
     return true;
 

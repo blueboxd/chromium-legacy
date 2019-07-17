@@ -72,7 +72,7 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
   gfx::Insets insets;
   // "Primary" is the same direction as the shelf, "secondary" is orthogonal.
   const int primary_padding = 0;
-  const int secondary_padding = -ash::kHitRegionPadding;
+  const int secondary_padding = -ash::TrayConstants::hit_region_padding();
 
   if (is_shelf_horizontal) {
     insets.Set(secondary_padding, primary_padding, secondary_padding,

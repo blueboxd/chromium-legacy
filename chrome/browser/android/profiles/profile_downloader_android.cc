@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -62,8 +63,14 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
     return desired_image_side_pixels_;
   }
 
-  Profile* GetBrowserProfile() override {
-    return profile_;
+  identity::IdentityManager* GetIdentityManager() override {
+    return IdentityManagerFactory::GetForProfile(profile_);
+  }
+
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory() override {
+    return content::BrowserContext::GetDefaultStoragePartition(profile_)
+        ->GetURLLoaderFactoryForBrowserProcess()
+        .get();
   }
 
   std::string GetCachedPictureURL() const override {

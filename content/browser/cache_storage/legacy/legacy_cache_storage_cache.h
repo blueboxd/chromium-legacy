@@ -163,6 +163,8 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                             int64_t trace_id,
                             CacheEntriesCallback callback) override;
 
+  InitState GetInitState() const override;
+
   // Async operations in progress will cancel and not run their callbacks.
   ~LegacyCacheStorageCache() override;
 

@@ -15,7 +15,7 @@ from signing.config import CodeSignConfig
 
 def main():
     parser = argparse.ArgumentParser(
-        'Notarize and staple an application binary or archive.')
+        description='Notarize and staple an application binary or archive.')
     parser.add_argument(
         '--user',
         '-u',
@@ -27,6 +27,13 @@ def main():
         required=True,
         help='The password or password reference (e.g. @keychain, see '
         '`xcrun altool -h`) to access the Apple notary service.')
+    parser.add_argument(
+        '--asc-provider',
+        help='The ASC provider string to be used as the `--asc-provider` '
+        'argument to `xcrun altool`, to be used when --user is associated with '
+        'with multiple Apple developer teams. See `xcrun altool -h`. Run '
+        '`iTMSTransporter -m provider -account_type itunes_connect -v off -u '
+        'USERNAME -p PASSWORD` to list valid providers.')
     parser.add_argument(
         '--no-staple',
         action='store_true',
@@ -56,7 +63,8 @@ def main():
 
         config_class = OverrideBundleIDConfig
 
-    config = config_class('notused', None, args.user, args.password)
+    config = config_class('notused', None, args.user, args.password,
+                          args.asc_provider)
 
     uuids = []
     for path in args.file:

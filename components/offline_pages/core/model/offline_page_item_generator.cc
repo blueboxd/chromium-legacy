@@ -33,9 +33,11 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   item.access_count = access_count_;
   item.digest = digest_;
   item.file_missing_time = file_missing_time_;
-  if (use_offline_id_as_system_download_id_) {
+  if (use_offline_id_as_system_download_id_)
     item.system_download_id = item.offline_id;
-  }
+  else
+    item.system_download_id = system_download_id_;
+
   return item;
 }
 
@@ -106,6 +108,10 @@ void OfflinePageItemGenerator::SetFileMissingTime(
 
 void OfflinePageItemGenerator::SetUseOfflineIdAsSystemDownloadId(bool enable) {
   use_offline_id_as_system_download_id_ = enable;
+}
+
+void OfflinePageItemGenerator::SetSystemDownloadId(int64_t system_download_id) {
+  system_download_id_ = system_download_id;
 }
 
 }  // namespace offline_pages

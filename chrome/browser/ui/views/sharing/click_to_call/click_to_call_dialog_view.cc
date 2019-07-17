@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -141,6 +143,7 @@ void ClickToCallDialogView::PopulateDialogView() {
       views::BoxLayout::Orientation::kVertical));
   AddChildView(dialog_view);
   // Devices:
+  LogClickToCallDevicesToShow(devices_.size());
   for (const auto& device : devices_) {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device.device_type()),
@@ -153,6 +156,7 @@ void ClickToCallDialogView::PopulateDialogView() {
   }
 
   // Apps:
+  LogClickToCallAppsToShow(apps_.size());
   for (const auto& app : apps_) {
     auto dialog_button = std::make_unique<HoverButton>(this, app.name);
     // TODO(yasmo): Create Icon View.

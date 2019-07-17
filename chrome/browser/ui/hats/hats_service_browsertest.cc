@@ -5,15 +5,37 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "content/public/test/browser_test.h"
 
 namespace {
+
+class ScopedEnableMetricsConsent {
+ public:
+  ScopedEnableMetricsConsent() {
+    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+        &enable_metrics_consent_);
+  }
+
+  ~ScopedEnableMetricsConsent() {
+    ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+        nullptr);
+  }
+
+ private:
+  const bool enable_metrics_consent_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedEnableMetricsConsent);
+};
 
 class HatsServiceBrowserTestBase : public InProcessBrowserTest {
  protected:
@@ -35,6 +57,8 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
     return HatsServiceFactory::GetForProfile(browser()->profile(), true);
   }
 
+  void EnableMetricsConsent() { enable_metrics_consent_.emplace(); }
+
   bool HatsDialogShowRequested() { return hats_dialog_show_requested_; }
 
  private:
@@ -47,6 +71,7 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
 
   bool hats_dialog_show_requested_ = false;
   base::ActionCallback on_hats_dialog_show_;
+  base::Optional<ScopedEnableMetricsConsent> enable_metrics_consent_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsServiceBrowserTestBase);
 };
@@ -117,7 +142,17 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
 
 }  // namespace
 
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, NoShowConsentNotGiven) {
+  ASSERT_FALSE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_FALSE(HatsDialogShowRequested());
+}
+
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
+  EnableMetricsConsent();
+  ASSERT_TRUE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
   GetHatsService()->LaunchSatisfactionSurvey();
   EXPECT_TRUE(HatsDialogShowRequested());
 }

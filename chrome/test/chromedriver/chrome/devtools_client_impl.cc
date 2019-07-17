@@ -27,25 +27,7 @@ const char kInspectorDefaultContextError[] =
 const char kInspectorContextError[] =
     "Cannot find execution context with given id";
 const char kInspectorInvalidURL[] = "Cannot navigate to invalid URL";
-
-Status ParseInspectorError(const std::string& error_json) {
-  std::unique_ptr<base::Value> error =
-      base::JSONReader::ReadDeprecated(error_json);
-  base::DictionaryValue* error_dict;
-  if (!error || !error->GetAsDictionary(&error_dict))
-    return Status(kUnknownError, "inspector error with no error message");
-  std::string error_message;
-  bool error_found = error_dict->GetString("message", &error_message);
-  if (error_found) {
-    if (error_message == kInspectorDefaultContextError ||
-        error_message == kInspectorContextError) {
-      return Status(kNoSuchExecutionContext);
-    } else if (error_message == kInspectorInvalidURL) {
-      return Status(kInvalidArgument);
-    }
-  }
-  return Status(kUnknownError, "unhandled inspector error: " + error_json);
-}
+static constexpr int kInvalidParamsInspectorCode = -32602;
 
 class ScopedIncrementer {
  public:
@@ -358,7 +340,7 @@ Status DevToolsClientImpl::SendCommandInternal(
       CHECK_EQ(response_info->state, kReceived);
       internal::InspectorCommandResponse& response = response_info->response;
       if (!response.result)
-        return ParseInspectorError(response.error);
+        return internal::ParseInspectorError(response.error);
       *result = std::move(response.result);
     }
   } else {
@@ -640,6 +622,28 @@ bool ParseInspectorMessage(
     return true;
   }
   return false;
+}
+
+Status ParseInspectorError(const std::string& error_json) {
+  std::unique_ptr<base::Value> error =
+      base::JSONReader::ReadDeprecated(error_json);
+  base::DictionaryValue* error_dict;
+  if (!error || !error->GetAsDictionary(&error_dict))
+    return Status(kUnknownError, "inspector error with no error message");
+  std::string error_message;
+  bool error_found = error_dict->GetString("message", &error_message);
+  if (error_found) {
+    if (error_message == kInspectorDefaultContextError ||
+        error_message == kInspectorContextError) {
+      return Status(kNoSuchExecutionContext);
+    } else if (error_message == kInspectorInvalidURL) {
+      return Status(kInvalidArgument);
+    }
+    base::Optional<int> error_code = error_dict->FindIntPath("code");
+    if (error_code == kInvalidParamsInspectorCode)
+      return Status(kInvalidArgument, error_message);
+  }
+  return Status(kUnknownError, "unhandled inspector error: " + error_json);
 }
 
 }  // namespace internal

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
@@ -47,7 +48,9 @@ WorkerScriptLoader::WorkerScriptLoader(
       interceptors_.push_back(std::move(service_worker_interceptor));
   }
 
-  if (appcache_host) {
+  // TODO(http://crbug.com/824858): Run interceptors on UI thread.
+  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() &&
+      appcache_host) {
     std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
         AppCacheRequestHandler::InitializeForMainResourceNetworkService(
             resource_request_, appcache_host);

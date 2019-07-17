@@ -64,8 +64,7 @@ void PolicyStatisticsCollector::RecordPolicyUse(int id) {
 }
 
 void PolicyStatisticsCollector::RecordPolicyGroupWithConflicts(int id) {
-  base::UmaHistogramSparse("Enterprise.Policies.AtomicGroupSourceConflicts",
-                           id);
+  base::UmaHistogramSparse("Enterprise.Policies.SourceConflicts", id);
 }
 
 void PolicyStatisticsCollector::RecordPolicyIgnoredByAtomicGroup(int id) {

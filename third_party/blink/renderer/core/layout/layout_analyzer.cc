@@ -47,7 +47,6 @@ LayoutAnalyzer::BlockScope::~BlockScope() {
 }
 
 void LayoutAnalyzer::Reset() {
-  start_ms_ = CurrentTimeMS();
   depth_ = 0;
   for (size_t i = 0; i < kNumCounters; ++i) {
     counters_[i] = 0;

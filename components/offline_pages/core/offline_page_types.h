@@ -110,7 +110,6 @@ typedef base::OnceCallback<void(bool)> CleanupVisualsCallback;
 // Callbacks used for publishing an offline page.
 using PublishPageCallback =
     base::OnceCallback<void(const base::FilePath&, SavePageResult)>;
-using UpdateFilePathDoneCallback = base::OnceCallback<void(bool)>;
 
 }  // namespace offline_pages
 

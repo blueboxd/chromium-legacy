@@ -5,6 +5,7 @@
 #include "services/media_session/public/cpp/media_session_mojom_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
+#include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
@@ -88,6 +89,25 @@ bool StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap>::
 void StructTraits<media_session::mojom::MediaImageBitmapDataView,
                   SkBitmap>::SetToNull(SkBitmap* out) {
   out->reset();
+}
+
+// static
+bool StructTraits<media_session::mojom::MediaPositionDataView,
+                  media_session::MediaPosition>::
+    Read(media_session::mojom::MediaPositionDataView data,
+         media_session::MediaPosition* out) {
+  if (!data.ReadDuration(&out->duration_))
+    return false;
+
+  if (!data.ReadPosition(&out->position_))
+    return false;
+
+  if (!data.ReadLastUpdatedTime(&out->last_updated_time_))
+    return false;
+
+  out->playback_rate_ = data.playback_rate();
+
+  return true;
 }
 
 }  // namespace mojo

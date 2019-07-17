@@ -86,8 +86,9 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   // lap with the native mouse cursor.
   if (!command_line_->GetProcessCommandLine()->HasSwitch(
           ::switches::kHostWindowBounds)) {
+    // TODO(oshima): Disable native events instead of adding offset.
     command_line_->GetProcessCommandLine()->AppendSwitchASCII(
-        ::switches::kHostWindowBounds, "1+1-800x600");
+        ::switches::kHostWindowBounds, "10+10-800x600");
   }
 
   // Pre shell creation config init.
@@ -183,7 +184,8 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   app_list_test_helper_ = std::make_unique<AppListTestHelper>();
 
-  new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
+  if (!NewWindowDelegate::GetInstance())
+    new_window_delegate_ = std::make_unique<TestNewWindowDelegate>();
 
   // Post shell creation config init.
   switch (init_params.config_type) {

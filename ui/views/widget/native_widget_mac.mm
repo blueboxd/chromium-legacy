@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/crash/core/common/crash_key.h"
@@ -25,7 +26,6 @@
 #include "ui/events/gestures/gesture_recognizer_impl_mac.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-#import "ui/gfx/mac/nswindow_frame_controls.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_mac.h"
 #import "ui/views/cocoa/drag_drop_client_mac.h"
@@ -37,6 +37,7 @@
 using remote_cocoa::mojom::WindowVisibilityState;
 
 namespace views {
+
 namespace {
 
 base::LazyInstance<ui::GestureRecognizerImplMac>::Leaky
@@ -63,6 +64,42 @@ NSInteger StyleMaskForParams(const Widget::InitParams& params) {
            NSTexturedBackgroundWindowMask;
   }
   return NSBorderlessWindowMask;
+}
+
+CGWindowLevel CGWindowLevelForZOrderLevel(ui::ZOrderLevel level,
+                                          Widget::InitParams::Type type) {
+  switch (level) {
+    case ui::ZOrderLevel::kNormal:
+      return kCGNormalWindowLevel;
+    case ui::ZOrderLevel::kFloatingWindow:
+      if (type == Widget::InitParams::TYPE_MENU)
+        return kCGPopUpMenuWindowLevel;
+      else
+        return kCGFloatingWindowLevel;
+    case ui::ZOrderLevel::kFloatingUIElement:
+      if (type == Widget::InitParams::TYPE_DRAG)
+        return kCGDraggingWindowLevel;
+      else
+        return kCGStatusWindowLevel;
+    case ui::ZOrderLevel::kSecuritySurface:
+      return kCGScreenSaverWindowLevel - 1;
+  }
+}
+
+ui::ZOrderLevel ZOrderLevelForCGWindowLevel(CGWindowLevel level) {
+  switch (level) {
+    case kCGNormalWindowLevel:
+      return ui::ZOrderLevel::kNormal;
+    case kCGFloatingWindowLevel:
+    case kCGPopUpMenuWindowLevel:
+    default:
+      return ui::ZOrderLevel::kFloatingWindow;
+    case kCGStatusWindowLevel:
+    case kCGDraggingWindowLevel:
+      return ui::ZOrderLevel::kFloatingUIElement;
+    case kCGScreenSaverWindowLevel - 1:
+      return ui::ZOrderLevel::kSecuritySurface;
+  }
 }
 
 }  // namespace
@@ -125,6 +162,7 @@ bool NativeWidgetMac::ExecuteCommand(
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   name_ = params.name;
+  type_ = params.type;
   NativeWidgetMacNSWindowHost* parent_host =
       NativeWidgetMacNSWindowHost::GetFromNativeView(params.parent);
 
@@ -154,10 +192,10 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ns_window_host_->InitWindow(params);
   OnWindowInitialized();
 
-  // Only set always-on-top here if it is true since setting it may affect how
-  // the window is treated by Expose.
-  if (params.keep_on_top)
-    SetAlwaysOnTop(true);
+  // Only set the z-order here if it is non-default since setting it may affect
+  // how the window is treated by Expose.
+  if (params.EffectiveZOrderLevel() != ui::ZOrderLevel::kNormal)
+    SetZOrderLevel(params.EffectiveZOrderLevel());
 
   delegate_->OnNativeWidgetCreated();
 
@@ -473,13 +511,21 @@ bool NativeWidgetMac::IsActive() const {
   return ns_window_host_ ? ns_window_host_->IsWindowKey() : false;
 }
 
-void NativeWidgetMac::SetAlwaysOnTop(bool always_on_top) {
-  gfx::SetNSWindowAlwaysOnTop(GetNativeWindow().GetNativeNSWindow(),
-                              always_on_top);
+void NativeWidgetMac::SetZOrderLevel(ui::ZOrderLevel order) {
+  NSWindow* window = GetNativeWindow().GetNativeNSWindow();
+  [window setLevel:CGWindowLevelForZOrderLevel(order, type_)];
+
+  // Windows that have a higher window level than NSNormalWindowLevel default to
+  // NSWindowCollectionBehaviorTransient. Set the value explicitly here to match
+  // normal windows.
+  NSWindowCollectionBehavior behavior =
+      [window collectionBehavior] | NSWindowCollectionBehaviorManaged;
+  [window setCollectionBehavior:behavior];
 }
 
-bool NativeWidgetMac::IsAlwaysOnTop() const {
-  return gfx::IsNSWindowAlwaysOnTop(GetNativeWindow().GetNativeNSWindow());
+ui::ZOrderLevel NativeWidgetMac::GetZOrderLevel() const {
+  return ZOrderLevelForCGWindowLevel(
+      [GetNativeWindow().GetNativeNSWindow() level]);
 }
 
 void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {

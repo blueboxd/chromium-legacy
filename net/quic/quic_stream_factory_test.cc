@@ -559,7 +559,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   // Verifies that the QUIC stream factory is initialized correctly.
   void VerifyInitialization() {
     test_params_.quic_params.max_server_configs_stored_in_properties = 1;
-    test_params_.quic_params.idle_connection_timeout_seconds = 500;
+    test_params_.quic_params.idle_connection_timeout =
+        base::TimeDelta::FromSeconds(500);
     Initialize();
     factory_->set_require_confirmation(false);
     ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -7260,17 +7261,18 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
   base::RunLoop().RunUntilIdle();
 
   // Ack delay time.
-  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
-  EXPECT_GT(kDefaultRetransmittableOnWireTimeoutMillisecs, delay);
+  base::TimeDelta delay = task_runner->NextPendingTaskDelay();
+  EXPECT_GT(kDefaultRetransmittableOnWireTimeout, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
-  delay = kDefaultRetransmittableOnWireTimeoutMillisecs - delay;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
-            task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  delay = kDefaultRetransmittableOnWireTimeout - delay;
+  EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   socket_data1.Resume();
@@ -7298,8 +7300,9 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
 // enabled, and a custom retransmittable on wire timeout is specified, the
 // custom value is used.
 TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
-  int custom_timeout_value = 200;
-  test_params_.quic_params.retransmittable_on_wire_timeout_milliseconds =
+  constexpr base::TimeDelta custom_timeout_value =
+      base::TimeDelta::FromMilliseconds(200);
+  test_params_.quic_params.retransmittable_on_wire_timeout =
       custom_timeout_value;
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
@@ -7405,17 +7408,18 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
   base::RunLoop().RunUntilIdle();
 
   // Ack delay time.
-  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(custom_timeout_value, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = custom_timeout_value - delay;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
-            task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   socket_data1.Resume();
@@ -7443,8 +7447,9 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
 // retransmittable-on-wire timeout is specified, the ping alarm is set up to
 // send retransmittable pings with the custom value.
 TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
-  int custom_timeout_value = 200;
-  test_params_.quic_params.retransmittable_on_wire_timeout_milliseconds =
+  constexpr base::TimeDelta custom_timeout_value =
+      base::TimeDelta::FromMilliseconds(200);
+  test_params_.quic_params.retransmittable_on_wire_timeout =
       custom_timeout_value;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -7534,17 +7539,18 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
   base::RunLoop().RunUntilIdle();
 
   // Ack delay time.
-  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(custom_timeout_value, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = custom_timeout_value - delay;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
-            task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   socket_data1.Resume();
@@ -7654,17 +7660,19 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
   base::RunLoop().RunUntilIdle();
 
   // Ack delay time.
-  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
-  EXPECT_GT(kDefaultRetransmittableOnWireTimeoutMillisecs, delay);
+  base::TimeDelta delay = task_runner->NextPendingTaskDelay();
+  EXPECT_GT(kDefaultRetransmittableOnWireTimeout, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Verify that the ping alarm is not set with any default value.
-  int wrong_delay = kDefaultRetransmittableOnWireTimeoutMillisecs - delay;
-  delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  base::TimeDelta wrong_delay = kDefaultRetransmittableOnWireTimeout - delay;
+  delay = task_runner->NextPendingTaskDelay();
   EXPECT_NE(wrong_delay, delay);
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Verify that response headers on the migrated socket were delivered to the
@@ -7688,8 +7696,9 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
 // send retransmittable pings to the peer with custom value.
 TEST_P(QuicStreamFactoryTest,
        CustomeRetransmittableOnWireTimeoutWithMigrationOnNetworkChangeOnly) {
-  int custom_timeout_value = 200;
-  test_params_.quic_params.retransmittable_on_wire_timeout_milliseconds =
+  constexpr base::TimeDelta custom_timeout_value =
+      base::TimeDelta::FromMilliseconds(200);
+  test_params_.quic_params.retransmittable_on_wire_timeout =
       custom_timeout_value;
   test_params_.quic_params.migrate_sessions_on_network_change_v2 = true;
   Initialize();
@@ -7780,17 +7789,18 @@ TEST_P(QuicStreamFactoryTest,
   base::RunLoop().RunUntilIdle();
 
   // Ack delay time.
-  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(custom_timeout_value, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = custom_timeout_value - delay;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(delay),
-            task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   socket_data1.Resume();
@@ -7902,17 +7912,19 @@ TEST_P(QuicStreamFactoryTest,
   base::RunLoop().RunUntilIdle();
 
   // Ack delay time.
-  int delay = task_runner->NextPendingTaskDelay().InMilliseconds();
-  EXPECT_GT(kDefaultRetransmittableOnWireTimeoutMillisecs, delay);
+  base::TimeDelta delay = task_runner->NextPendingTaskDelay();
+  EXPECT_GT(kDefaultRetransmittableOnWireTimeout, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Verify ping alarm is not set with default value.
-  int wrong_delay = kDefaultRetransmittableOnWireTimeoutMillisecs - delay;
-  delay = task_runner->NextPendingTaskDelay().InMilliseconds();
+  base::TimeDelta wrong_delay = kDefaultRetransmittableOnWireTimeout - delay;
+  delay = task_runner->NextPendingTaskDelay();
   EXPECT_NE(wrong_delay, delay);
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(delay));
+  clock_.AdvanceTime(
+      quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Verify that response headers on the migrated socket were delivered to the
@@ -8843,7 +8855,8 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
 }
 
 TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
-  test_params_.quic_params.reduced_ping_timeout_seconds = 10;
+  test_params_.quic_params.reduced_ping_timeout =
+      base::TimeDelta::FromSeconds(10);
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -9747,12 +9760,14 @@ TEST_P(QuicStreamFactoryTest, HostResolverRequestReprioritizedOnSetPriority) {
   EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_->request_priority(2));
 }
 
-// Passes |quic_max_time_before_crypto_handshake_seconds| and
-// |quic_max_idle_time_before_crypto_handshake_seconds| to QuicStreamFactory,
+// Passes |quic_max_time_before_crypto_handshake| and
+// |quic_max_idle_time_before_crypto_handshake| to QuicStreamFactory,
 // checks that its internal quic::QuicConfig is correct.
 TEST_P(QuicStreamFactoryTest, ConfigMaxTimeBeforeCryptoHandshake) {
-  test_params_.quic_params.max_time_before_crypto_handshake_seconds = 11;
-  test_params_.quic_params.max_idle_time_before_crypto_handshake_seconds = 13;
+  test_params_.quic_params.max_time_before_crypto_handshake =
+      base::TimeDelta::FromSeconds(11);
+  test_params_.quic_params.max_idle_time_before_crypto_handshake =
+      base::TimeDelta::FromSeconds(13);
   Initialize();
 
   const quic::QuicConfig* config =
@@ -11070,8 +11085,9 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
 }
 
 TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
-  int kInitialRtt = 400;
-  test_params_.quic_params.initial_rtt_for_handshake_milliseconds = kInitialRtt;
+  constexpr base::TimeDelta kInitialRtt =
+      base::TimeDelta::FromMilliseconds(400);
+  test_params_.quic_params.initial_rtt_for_handshake = kInitialRtt;
   crypto_client_stream_factory_.set_handshake_mode(
       MockCryptoClientStream::COLD_START_WITH_CHLO_SENT);
   Initialize();
@@ -11110,19 +11126,17 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
 
   // The pending task is scheduled for handshake timeout retransmission,
   // which is 2 * 400ms with crypto frames and 1.5 * 400ms otherwise.
-  int handshake_timeout =
+  base::TimeDelta handshake_timeout =
       QuicVersionUsesCryptoFrames(version_.transport_version)
           ? 2 * kInitialRtt
           : 1.5 * kInitialRtt;
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(handshake_timeout),
-            task_runner->NextPendingTaskDelay());
+  EXPECT_EQ(handshake_timeout, task_runner->NextPendingTaskDelay());
 
   // The alarm factory dependes on |clock_|, so clock is advanced to trigger
   // retransmission alarm.
-  clock_.AdvanceTime(
-      quic::QuicTime::Delta::FromMilliseconds(handshake_timeout));
-  task_runner->FastForwardBy(
-      base::TimeDelta::FromMilliseconds(handshake_timeout));
+  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(
+      handshake_timeout.InMilliseconds()));
+  task_runner->FastForwardBy(handshake_timeout);
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       quic::QuicSession::HANDSHAKE_CONFIRMED);

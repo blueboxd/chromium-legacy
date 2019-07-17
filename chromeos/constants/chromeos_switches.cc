@@ -53,17 +53,8 @@ const base::Feature kAssistantFeature{"ChromeOSAssistant",
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kShowLanguageToggleInDemoMode{
-    "ShowLanguageToggleInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kShowSplashScreenInDemoMode{
-    "ShowSplashScreenInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kSupportCountryCustomizationInDemoMode{
-    "SupportCountryCustomizationInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).

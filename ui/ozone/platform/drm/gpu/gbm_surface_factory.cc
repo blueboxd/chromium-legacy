@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 
 #include <gbm.h>
+
 #include <memory>
 #include <utility>
 
@@ -311,12 +312,9 @@ GbmSurfaceFactory::CreateNativePixmapFromHandleInternal(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::NativePixmapHandle handle) {
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-  DCHECK_GE(num_planes, handle.planes.size());
-  if (handle.planes.size() != num_planes) {
+  if (handle.planes.size() > GBM_MAX_PLANES) {
     return nullptr;
   }
-
 
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;

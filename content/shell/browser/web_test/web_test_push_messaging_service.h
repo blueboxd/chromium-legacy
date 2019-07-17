@@ -22,7 +22,6 @@ class WebTestPushMessagingService : public PushMessagingService {
   ~WebTestPushMessagingService() override;
 
   // PushMessagingService implementation:
-  GURL GetEndpoint(bool standard_protocol) override;
   void SubscribeFromDocument(const GURL& requesting_origin,
                              int64_t service_worker_registration_id,
                              int renderer_id,
@@ -51,6 +50,8 @@ class WebTestPushMessagingService : public PushMessagingService {
   void DidDeleteServiceWorkerDatabase() override;
 
  private:
+  GURL CreateEndpoint(const std::string& subscription_id) const;
+
   int64_t subscribed_service_worker_registration_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestPushMessagingService);

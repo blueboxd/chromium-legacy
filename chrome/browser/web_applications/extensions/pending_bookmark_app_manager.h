@@ -30,7 +30,7 @@ class WebContents;
 namespace web_app {
 class AppRegistrar;
 class InstallFinalizer;
-class WebAppUiDelegate;
+class WebAppUiManager;
 }  // namespace web_app
 
 namespace extensions {
@@ -70,7 +70,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager {
  private:
   struct TaskAndCallback;
 
-  web_app::WebAppUiDelegate& GetUiDelegate();
+  web_app::WebAppUiManager& GetUiManager();
 
   void MaybeStartNextInstallation();
 

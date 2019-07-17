@@ -537,8 +537,8 @@ bool Surface::HasPendingAcquireFence() const {
 void Surface::Commit() {
   TRACE_EVENT0("exo", "Surface::Commit");
 
-  if (!commit_callback_.is_null())
-    commit_callback_.Run(this);
+  for (auto& observer : observers_)
+    observer.OnCommit(this);
 
   needs_commit_surface_ = true;
   if (delegate_)
@@ -783,10 +783,6 @@ void Surface::RemoveSurfaceObserver(SurfaceObserver* observer) {
 
 bool Surface::HasSurfaceObserver(const SurfaceObserver* observer) const {
   return observers_.HasObserver(observer);
-}
-
-void Surface::SetCommitCallback(CommitCallback callback) {
-  commit_callback_ = std::move(callback);
 }
 
 std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {

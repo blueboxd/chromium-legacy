@@ -53,7 +53,9 @@
   <Type Name="std::__1::basic_string&lt;char,*&gt;">
     <!--<Intrinsic Name="is_long"
             Expression="((__rep*)&amp;__r_)-&gt;__s.__size_ &amp; 0x80" />-->
-    <!-- The above doesn't work for reasons I don't understand.
+    <!-- The above doesn't work because of https://llvm.org/PR41615
+         TODO(thakis): Now that we have clang r362038, try the above approach
+                       again.
          The below assumes the alternate string layout and little endianness :/
     -->
     <Intrinsic Name="is_long"

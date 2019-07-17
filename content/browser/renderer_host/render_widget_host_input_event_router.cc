@@ -1389,6 +1389,13 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
                                         .view->GetRenderWidgetHost());
 }
 
+void RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPointAsynchronously(
+    RenderWidgetHostViewBase* root_view,
+    const gfx::PointF& point,
+    RenderWidgetTargeter::RenderWidgetHostAtPointCallback callback) {
+  event_targeter_->FindTargetAndCallback(root_view, point, std::move(callback));
+}
+
 RenderWidgetTargetResult
 RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
     RenderWidgetHostViewBase* root_view,
@@ -1759,6 +1766,16 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostViewsForTests() const {
 RenderWidgetTargeter*
 RenderWidgetHostInputEventRouter::GetRenderWidgetTargeterForTests() {
   return event_targeter_.get();
+}
+
+RenderWidgetTargetResult
+RenderWidgetHostInputEventRouter::FindTargetSynchronouslyAtPoint(
+    RenderWidgetHostViewBase* root_view,
+    const gfx::PointF& location) {
+  gfx::PointF transformed_pt;
+  // The transformed point is already in the return value of FindViewAtLocation.
+  return FindViewAtLocation(root_view, location, viz::EventSource::MOUSE,
+                            &transformed_pt);
 }
 
 RenderWidgetTargetResult

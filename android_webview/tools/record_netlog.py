@@ -79,8 +79,7 @@ https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/net-d
 
   args = parser.parse_args()
   logging_common.InitializeLogging(args)
-  devil_chromium.Initialize()
-  script_common.InitializeEnvironment(args)
+  devil_chromium.Initialize(adb_path=args.adb_path)
 
   # Only use a single device, for the sake of simplicity (of implementation and
   # user experience).

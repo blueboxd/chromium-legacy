@@ -40,6 +40,8 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
@@ -4802,17 +4804,12 @@ TEST_F(WebFrameTest, ExecuteScriptDuringDidCreateScriptContext) {
 class TestFindInPageClient : public mojom::blink::FindInPageClient {
  public:
   TestFindInPageClient()
-      : find_results_are_ready_(false),
-        count_(-1),
-        active_index_(-1),
-        binding_(this) {}
+      : find_results_are_ready_(false), count_(-1), active_index_(-1) {}
 
   ~TestFindInPageClient() override = default;
 
   void SetFrame(WebLocalFrameImpl* frame) {
-    mojom::blink::FindInPageClientPtr client;
-    binding_.Bind(MakeRequest(&client));
-    frame->GetFindInPage()->SetClient(std::move(client));
+    frame->GetFindInPage()->SetClient(receiver_.BindNewPipeAndPassRemote());
   }
 
   void SetNumberOfMatches(
@@ -4841,7 +4838,7 @@ class TestFindInPageClient : public mojom::blink::FindInPageClient {
   bool find_results_are_ready_;
   int count_;
   int active_index_;
-  mojo::Binding<mojom::blink::FindInPageClient> binding_;
+  mojo::Receiver<mojom::blink::FindInPageClient> receiver_{this};
 };
 
 TEST_F(WebFrameTest, FindInPageMatchRects) {

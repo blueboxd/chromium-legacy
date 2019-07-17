@@ -73,7 +73,8 @@ ScopedJavaLocalRef<jobject> JNI_SnippetsBridge_ToJavaSuggestionList(
             suggestion.publish_date().ToJavaTime(), suggestion.score(),
             suggestion.fetch_date().ToJavaTime(),
             suggestion.is_video_suggestion(),
-            suggestion.optional_image_dominant_color().value_or(0));
+            suggestion.optional_image_dominant_color().value_or(0),
+            !suggestion.salient_image_url().is_empty());
   }
 
   return result;

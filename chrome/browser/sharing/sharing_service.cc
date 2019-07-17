@@ -31,6 +31,12 @@
 namespace {
 // TODO(knollr): Should this be configurable or shared between similar features?
 constexpr base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(2);
+
+// Amount of time before a message is considered timeout if no ack is received.
+constexpr base::TimeDelta kSendMessageTimeout =
+    base::TimeDelta::FromSeconds(10);
+
+// Backoff policy for registration retry.
 constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.
@@ -87,6 +93,7 @@ SharingService::SharingService(
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       &ack_message_handler_);
+  ack_message_handler_.AddObserver(this);
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kPingMessage,
       &ping_message_handler_);
@@ -116,6 +123,8 @@ SharingService::SharingService(
 }
 
 SharingService::~SharingService() {
+  ack_message_handler_.RemoveObserver(this);
+
   if (sync_service_ && sync_service_->HasObserver(this))
     sync_service_->RemoveObserver(this);
 }
@@ -180,8 +189,41 @@ void SharingService::SendMessageToDevice(
     base::TimeDelta time_to_live,
     chrome_browser_sharing::SharingMessage message,
     SendMessageCallback callback) {
-  fcm_sender_->SendMessageToDevice(device_guid, time_to_live,
-                                   std::move(message), std::move(callback));
+  fcm_sender_->SendMessageToDevice(
+      device_guid, time_to_live, std::move(message),
+      base::BindOnce(&SharingService::OnMessageSent,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SharingService::OnMessageSent(SendMessageCallback callback,
+                                   base::Optional<std::string> message_id) {
+  if (!message_id) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  send_message_callbacks_.emplace(*message_id, std::move(callback));
+
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
+      base::BindOnce(&SharingService::InvokeSendMessageCallback,
+                     weak_ptr_factory_.GetWeakPtr(), *message_id, false),
+      kSendMessageTimeout);
+}
+
+void SharingService::OnAckReceived(const std::string& message_id) {
+  InvokeSendMessageCallback(message_id, /*success=*/true);
+}
+
+void SharingService::InvokeSendMessageCallback(const std::string& message_id,
+                                               bool result) {
+  auto iter = send_message_callbacks_.find(message_id);
+  if (iter == send_message_callbacks_.end())
+    return;
+
+  SendMessageCallback callback = std::move(iter->second);
+  send_message_callbacks_.erase(iter);
+  std::move(callback).Run(result);
 }
 
 void SharingService::RegisterHandler(

@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -39,6 +40,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
@@ -791,8 +793,16 @@ int UserImageManagerImpl::GetDesiredImageSideLength() const {
   return GetCurrentUserImageSize();
 }
 
-Profile* UserImageManagerImpl::GetBrowserProfile() {
-  return ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser());
+identity::IdentityManager* UserImageManagerImpl::GetIdentityManager() {
+  return IdentityManagerFactory::GetForProfile(
+      ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser()));
+}
+
+network::mojom::URLLoaderFactory* UserImageManagerImpl::GetURLLoaderFactory() {
+  return content::BrowserContext::GetDefaultStoragePartition(
+             ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser()))
+      ->GetURLLoaderFactoryForBrowserProcess()
+      .get();
 }
 
 std::string UserImageManagerImpl::GetCachedPictureURL() const {

@@ -31,7 +31,7 @@
         return registerAndSubscribePushWithString(test, '0123456789')
             .then(function(pushSubscription) {
               assert_true(
-                  pushSubscription.endpoint.includes('LayoutTestEndpoint'));
+                  pushSubscription.endpoint.includes('StandardizedEndpoint'));
             });
       }, 'Subscribing with a valid numeric sender ID should succeed');
 

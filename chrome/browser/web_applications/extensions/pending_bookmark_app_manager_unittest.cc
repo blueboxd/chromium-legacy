@@ -25,7 +25,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
-#include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -185,12 +185,9 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     registrar_ = std::make_unique<web_app::TestAppRegistrar>();
-    ui_delegate_ = std::make_unique<web_app::TestWebAppUiDelegate>();
+    ui_manager_ = std::make_unique<web_app::TestWebAppUiManager>();
     install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
     task_factory_ = std::make_unique<TestBookmarkAppInstallationTaskFactory>();
-
-    web_app::WebAppProvider::Get(profile())->set_ui_delegate(
-        ui_delegate_.get());
   }
 
   void TearDown() override {
@@ -262,7 +259,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<PendingBookmarkAppManager>
   GetPendingBookmarkAppManagerWithTestMocks() {
     auto manager = std::make_unique<PendingBookmarkAppManager>(profile());
-    manager->SetSubsystems(registrar_.get(), install_finalizer_.get());
+    manager->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                           install_finalizer_.get());
     manager->SetTaskFactoryForTesting(base::BindRepeating(
         &TestBookmarkAppInstallationTaskFactory::CreateInstallationTask,
         base::Unretained(task_factory_.get())));
@@ -305,7 +303,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   web_app::TestAppRegistrar* registrar() { return registrar_.get(); }
 
-  web_app::TestWebAppUiDelegate* ui_delegate() { return ui_delegate_.get(); }
+  web_app::TestWebAppUiManager* ui_manager() { return ui_manager_.get(); }
 
   web_app::TestWebAppUrlLoader* url_loader() { return url_loader_; }
 
@@ -316,7 +314,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  private:
   std::unique_ptr<TestBookmarkAppInstallationTaskFactory> task_factory_;
   std::unique_ptr<web_app::TestAppRegistrar> registrar_;
-  std::unique_ptr<web_app::TestWebAppUiDelegate> ui_delegate_;
+  std::unique_ptr<web_app::TestWebAppUiManager> ui_manager_;
   std::unique_ptr<web_app::TestInstallFinalizer> install_finalizer_;
 
   web_app::TestWebAppUrlLoader* url_loader_ = nullptr;
@@ -1284,7 +1282,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.wait_for_windows_closed = true;
     task_factory()->SetNextInstallationTaskResult(
         kFooWebAppUrl, web_app::InstallResultCode::kSuccess);
-    ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
+    ui_manager()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -1327,7 +1325,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.wait_for_windows_closed = true;
     task_factory()->SetNextInstallationTaskResult(
         kFooWebAppUrl, web_app::InstallResultCode::kSuccess);
-    ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 1);
+    ui_manager()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 1);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
     install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,

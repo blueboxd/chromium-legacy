@@ -34,8 +34,6 @@ class WindowElement : public aura::WindowObserver, public UIElement {
                              ui::PropertyChangeReason reason) override;
 
   // UIElement:
-  std::vector<std::pair<std::string, std::string>> GetCustomProperties()
-      const override;
   std::vector<UIElement::ClassProperties> GetCustomPropertiesForMatchedStyle()
       const override;
   void GetBounds(gfx::Rect* bounds) const override;

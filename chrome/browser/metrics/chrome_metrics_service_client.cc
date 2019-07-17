@@ -105,6 +105,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/android_metrics_provider.h"
 #include "chrome/browser/metrics/page_load_metrics_provider.h"
+#else
+#include "chrome/browser/metrics/browser_activity_watcher.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -395,17 +397,9 @@ const char kUKMFieldTrialSuffix[] = "UKM";
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
-    : metrics_state_manager_(state_manager),
-      waiting_for_collect_final_metrics_step_(false),
-      num_async_histogram_fetches_in_progress_(0)
-#if BUILDFLAG(ENABLE_PLUGINS)
-      ,
-      plugin_metrics_provider_(nullptr)
-#endif
-{
+    : metrics_state_manager_(state_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
-  notification_listeners_active_ = RegisterForNotifications();
   incognito_observer_ = std::make_unique<IncognitoObserver>(
       base::BindRepeating(&ChromeMetricsServiceClient::UpdateRunningServices,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -576,9 +570,10 @@ void ChromeMetricsServiceClient::Initialize() {
   local_state->ClearPref(prefs::kCrashReportingEnabled);
 #endif
 
-  metrics_service_.reset(
-      new metrics::MetricsService(metrics_state_manager_, this, local_state));
+  metrics_service_ = std::make_unique<metrics::MetricsService>(
+      metrics_state_manager_, this, local_state);
 
+  notification_listeners_active_ = RegisterForNotifications();
   RegisterMetricsServiceProviders();
 
   if (IsMetricsReportingForceEnabled() ||
@@ -886,10 +881,6 @@ void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
 }
 
 bool ChromeMetricsServiceClient::RegisterForNotifications() {
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_PARENTED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CLOSING,
@@ -902,15 +893,19 @@ bool ChromeMetricsServiceClient::RegisterForNotifications() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
                  content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 
   omnibox_url_opened_subscription_ =
       OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
           base::Bind(&ChromeMetricsServiceClient::OnURLOpenedFromOmnibox,
                      base::Unretained(this)));
 
-  // Observe history deletions for all profiles.
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
-                 content::NotificationService::AllBrowserContextsAndSources());
+#if !defined(OS_ANDROID)
+  browser_activity_watcher_ = std::make_unique<BrowserActivityWatcher>(
+      base::BindRepeating(&metrics::MetricsService::OnApplicationNotIdle,
+                          base::Unretained(metrics_service_.get())));
+#endif
 
   bool all_profiles_succeeded = true;
   for (Profile* profile :
@@ -964,10 +959,6 @@ void ChromeMetricsServiceClient::Observe(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_OPENED:
-      metrics_service_->OnApplicationNotIdle();
-      break;
-    case chrome::NOTIFICATION_BROWSER_CLOSED:
     case chrome::NOTIFICATION_TAB_PARENTED:
     case chrome::NOTIFICATION_TAB_CLOSING:
     case content::NOTIFICATION_LOAD_STOP:

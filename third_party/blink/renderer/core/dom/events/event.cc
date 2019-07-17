@@ -245,7 +245,6 @@ bool Event::IsErrorEvent() const {
 void Event::preventDefault() {
   if (handling_passive_ != PassiveMode::kNotPassive &&
       handling_passive_ != PassiveMode::kNotPassiveDefault) {
-    prevent_default_called_during_passive_ = true;
 
     const LocalDOMWindow* window =
         event_path_ ? event_path_->GetWindowEventContext().Window() : nullptr;
@@ -312,7 +311,6 @@ HeapVector<Member<EventTarget>> Event::composedPath(
 
 void Event::SetHandlingPassive(PassiveMode mode) {
   handling_passive_ = mode;
-  prevent_default_called_during_passive_ = false;
 }
 
 HeapVector<Member<EventTarget>> Event::PathInternal(ScriptState* script_state,

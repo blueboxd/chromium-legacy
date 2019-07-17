@@ -283,6 +283,13 @@ chrome.accessibilityPrivate.toggleDictation = function() {};
 chrome.accessibilityPrivate.setVirtualKeyboardVisible = function(isVisible) {};
 
 /**
+ * Opens a settings subpage, specified by the portion of the page's URL after
+ * "chrome://settings/"
+ * @param {string} subpage
+ */
+chrome.accessibilityPrivate.openSettingsSubpage = function (subpage) {}
+
+/**
  * Fired whenever ChromeVox should output introduction.
  * @type {!ChromeEvent}
  */

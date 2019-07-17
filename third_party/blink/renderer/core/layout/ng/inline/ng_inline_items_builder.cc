@@ -245,7 +245,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextItem(
   mapping_builder_.AppendIdentityMapping(string.length());
   AppendItem(items_, type, start_offset, text_.length(), layout_object);
   DCHECK(!items_->back().IsEmptyItem());
-  is_empty_inline_ = false;  // text item is not empty.
+  // text item is not empty.
+  is_empty_inline_ = false;
+  is_block_level_ = false;
 }
 
 // Empty text items are not needed for the layout purposes, but all LayoutObject
@@ -260,6 +262,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendEmptyTextItem(
   NGInlineItem& item = items_->back();
   item.SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
   item.SetIsEmptyItem(true);
+  item.SetIsBlockLevel(true);
 }
 
 // Same as AppendBreakOpportunity, but mark the item as IsGenerated().
@@ -390,6 +393,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
     if (item.StartOffset() == start) {
       items_->push_back(item);
       is_empty_inline_ &= item.IsEmptyItem();
+      is_block_level_ &= item.IsBlockLevel();
       continue;
     }
 
@@ -420,6 +424,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
 
     items_->push_back(adjusted_item);
     is_empty_inline_ &= adjusted_item.IsEmptyItem();
+    is_block_level_ &= adjusted_item.IsBlockLevel();
   }
   return true;
 }
@@ -677,7 +682,9 @@ void NGInlineItemsBuilderTemplate<
   NGInlineItem& item = items_->back();
   item.SetEndCollapseType(end_collapse, space_run_has_newline);
   DCHECK(!item.IsEmptyItem());
-  is_empty_inline_ = false;  // text item is not empty.
+  // text item is not empty.
+  is_empty_inline_ = false;
+  is_block_level_ = false;
 }
 
 template <typename OffsetMappingBuilder>
@@ -857,6 +864,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
   AppendItem(items_, type, end_offset - 1, end_offset, layout_object);
 
   is_empty_inline_ &= items_->back().IsEmptyItem();
+  is_block_level_ &= items_->back().IsBlockLevel();
 }
 
 template <typename OffsetMappingBuilder>
@@ -922,6 +930,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
   NGInlineItem& item = items_->back();
   item.SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
   is_empty_inline_ &= item.IsEmptyItem();
+  is_block_level_ &= item.IsBlockLevel();
 }
 
 template <typename OffsetMappingBuilder>
@@ -934,6 +943,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
   NGInlineItem& item = items_->back();
   item.SetEndCollapseType(NGInlineItem::kOpaqueToCollapsing);
   is_empty_inline_ &= item.IsEmptyItem();
+  is_block_level_ &= item.IsBlockLevel();
 }
 
 // Removes the collapsible space at the end of |text_| if exists.
@@ -1084,8 +1094,10 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
   }
 
   if (style->Display() == EDisplay::kListItem &&
-      style->ListStyleType() != EListStyleType::kNone)
+      style->ListStyleType() != EListStyleType::kNone) {
     is_empty_inline_ = false;
+    is_block_level_ = false;
+  }
 }
 
 template <typename OffsetMappingBuilder>

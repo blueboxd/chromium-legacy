@@ -539,10 +539,14 @@ void AuthenticatorRequestDialogModel::AddAuthenticator(
     return;
   }
 
+  bool is_ble = *authenticator.AuthenticatorTransport() ==
+                AuthenticatorTransport::kBluetoothLowEnergy;
   AuthenticatorReference authenticator_reference(
       authenticator.GetId(), authenticator.GetDisplayName(),
-      *authenticator.AuthenticatorTransport(), authenticator.IsInPairingMode(),
-      authenticator.IsPaired(), authenticator.RequiresBlePairingPin());
+      *authenticator.AuthenticatorTransport(),
+      is_ble && authenticator.IsInPairingMode(),
+      is_ble && authenticator.IsPaired(),
+      is_ble && authenticator.RequiresBlePairingPin());
 
   if (authenticator_reference.is_paired &&
       authenticator_reference.transport ==

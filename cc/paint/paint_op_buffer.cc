@@ -2203,6 +2203,10 @@ bool DrawRecordOp::HasDiscardableImages() const {
   return record->HasDiscardableImages();
 }
 
+bool DrawRecordOp::HasText() const {
+  return record->HasText();
+}
+
 DrawTextBlobOp::DrawTextBlobOp() : PaintOpWithFlags(kType) {}
 
 DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
@@ -2240,7 +2244,9 @@ PaintOpBuffer::CompositeIterator::CompositeIterator(CompositeIterator&& other) =
     default;
 
 PaintOpBuffer::PaintOpBuffer()
-    : has_non_aa_paint_(false), has_discardable_images_(false) {}
+    : has_non_aa_paint_(false),
+      has_discardable_images_(false),
+      has_text_(false) {}
 
 PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
   *this = std::move(other);
@@ -2260,6 +2266,7 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   subrecord_op_count_ = other.subrecord_op_count_;
   has_non_aa_paint_ = other.has_non_aa_paint_;
   has_discardable_images_ = other.has_discardable_images_;
+  has_text_ = other.has_text_;
 
   // Make sure the other pob can destruct safely.
   other.used_ = 0;
@@ -2281,6 +2288,7 @@ void PaintOpBuffer::Reset() {
   subrecord_bytes_used_ = 0;
   subrecord_op_count_ = 0;
   has_discardable_images_ = false;
+  has_text_ = false;
 }
 
 // When |op| is a nested PaintOpBuffer, this returns the PaintOp inside
@@ -2542,6 +2550,8 @@ bool PaintOpBuffer::operator==(const PaintOpBuffer& other) const {
   if (has_non_aa_paint_ != other.has_non_aa_paint_)
     return false;
   if (has_discardable_images_ != other.has_discardable_images_)
+    return false;
+  if (has_text_ != other.has_text_)
     return false;
 
   auto left_iter = Iterator(this);

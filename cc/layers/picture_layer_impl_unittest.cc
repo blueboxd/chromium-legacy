@@ -4934,7 +4934,7 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
       FakeRasterSource::CreateFilledLCD(layer_bounds);
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
 
-  EXPECT_TRUE(pending_layer()->RasterSourceUsesLCDTextForTesting());
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   std::vector<Tile*> tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();
@@ -4942,7 +4942,7 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
   pending_layer()->SetContentsOpaque(false);
   pending_layer()->UpdateCanUseLCDTextAfterCommit();
 
-  EXPECT_FALSE(pending_layer()->RasterSourceUsesLCDTextForTesting());
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   std::vector<Tile*> new_tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();

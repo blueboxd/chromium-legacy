@@ -115,14 +115,6 @@ const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
-// A boolean pref that stores whether the user is eligible to start the Kiosk
-// Next shell.
-const char kKioskNextShellEligible[] = "ash.kiosk_next_shell.eligible";
-
-// A boolean pref that stores whether the Kiosk Next Shell is enabled. When it
-// is, we start it after sign in.
-const char kKioskNextShellEnabled[] = "ash.kiosk_next_shell.enabled";
-
 // A boolean pref storing the enabled status of the Docked Magnifier feature.
 const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
 // A double pref storing the scale value of the Docked Magnifier feature by

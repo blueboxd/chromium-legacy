@@ -25,7 +25,6 @@ OfflinePageTestArchivePublisher::OfflinePageTestArchivePublisher(
       archive_attempt_failure_(false),
       use_verbatim_archive_path_(false),
       download_id_(download_id_to_use),
-      last_removed_id_(0LL),
       archive_manager_(archive_manager) {}
 
 OfflinePageTestArchivePublisher::~OfflinePageTestArchivePublisher() {
@@ -42,7 +41,6 @@ void OfflinePageTestArchivePublisher::PublishArchive(
 
   if (archive_attempt_failure_) {
     publish_archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
-    publish_archive_result.download_id = 0LL;
   } else {
     publish_archive_result.move_result = SavePageResult::SUCCESS;
 
@@ -51,13 +49,13 @@ void OfflinePageTestArchivePublisher::PublishArchive(
     // published archive path is built using publish_directory. The tests should
     // be fixed and this special case should be removed.
     if (use_verbatim_archive_path_) {
-      publish_archive_result.new_file_path = offline_page.file_path;
+      publish_archive_result.id.new_file_path = offline_page.file_path;
     } else {
-      publish_archive_result.new_file_path =
+      publish_archive_result.id.new_file_path =
           archive_manager_->GetPublicArchivesDir().Append(
               offline_page.file_path.BaseName());
     }
-    publish_archive_result.download_id = download_id_;
+    publish_archive_result.id.download_id = download_id_;
   }
 
   background_task_runner->PostTask(
@@ -66,9 +64,9 @@ void OfflinePageTestArchivePublisher::PublishArchive(
 }
 
 void OfflinePageTestArchivePublisher::UnpublishArchives(
-    const std::vector<int64_t>& download_manager_ids) const {
-  if (!download_manager_ids.empty())
-    last_removed_id_ = download_manager_ids.back();
+    const std::vector<PublishedArchiveId>& archive_ids) const {
+  if (!archive_ids.empty())
+    last_removed_id_ = archive_ids.back();
 }
 
 }  // namespace offline_pages

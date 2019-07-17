@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/optional.h"
@@ -177,6 +178,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
       ax::mojom::TextAffinity affinity) const override;
 
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+
+  std::string GetLanguage() const override;
 
   //
   // Tables. All of these should be called on a node that's a table-like

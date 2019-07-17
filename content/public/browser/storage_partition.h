@@ -98,6 +98,8 @@ class CONTENT_EXPORT StoragePartition {
   // network process restarts.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryForBrowserProcess() = 0;
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() = 0;
   virtual std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() = 0;
   virtual network::mojom::CookieManager*

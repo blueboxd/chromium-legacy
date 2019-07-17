@@ -31,6 +31,7 @@
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
@@ -535,17 +536,28 @@ void StoragePartitionImplMap::PostCreateInitialization(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     request_context_getter = partition->GetURLRequestContext();
 
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    partition->GetAppCacheService()->InitializeOnLoaderThread(
+        in_memory ? base::FilePath()
+                  : partition->GetPath().Append(kAppCacheDirname),
+        browser_context_, nullptr /* resource_context */,
+        request_context_getter, browser_context_->GetSpecialStoragePolicy());
+  }
+
   // Check first to avoid memory leak in unittests.
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ChromeAppCacheService::InitializeOnIOThread,
-            partition->GetAppCacheService(),
-            in_memory ? base::FilePath()
-                      : partition->GetPath().Append(kAppCacheDirname),
-            browser_context_->GetResourceContext(), request_context_getter,
-            base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
+    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(
+              &ChromeAppCacheService::InitializeOnLoaderThread,
+              partition->GetAppCacheService(),
+              in_memory ? base::FilePath()
+                        : partition->GetPath().Append(kAppCacheDirname),
+              nullptr /* browser_context */,
+              browser_context_->GetResourceContext(), request_context_getter,
+              base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
+    }
 
     partition->GetCacheStorageContext()->SetBlobParametersForCache(
         ChromeBlobStorageContext::GetFor(browser_context_));

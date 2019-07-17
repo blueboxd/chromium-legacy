@@ -42,7 +42,6 @@ source_set("badge") {
     "infobar_badge_tab_helper.h",
     "infobar_badge_tab_helper.mm",
     "infobar_badge_tab_helper_delegate.h",
-    "legacy_infobar_badge_tab_helper_delegate.h",
   ]
   deps = [
     ":infobars",

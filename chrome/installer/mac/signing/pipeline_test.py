@@ -483,8 +483,7 @@ class TestSignAll(unittest.TestCase):
             # Prepare the app for notarization.
             mock.call.run_command([
                 'zip', '--recurse-paths', '--symlinks', '--quiet',
-                '--no-dir-entries', '$W_1/AppProduct-99.0.9999.99.zip',
-                'App Product.app'
+                '$W_1/AppProduct-99.0.9999.99.zip', 'App Product.app'
             ],
                                   cwd='$W_1/AppProduct-99.0.9999.99'),
             mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
@@ -531,8 +530,7 @@ class TestSignAll(unittest.TestCase):
             # Prepare the app for notarization.
             mock.call.run_command([
                 'zip', '--recurse-paths', '--symlinks', '--quiet',
-                '--no-dir-entries', '$W_1/AppProduct-99.0.9999.99.zip',
-                'App Product.app'
+                '$W_1/AppProduct-99.0.9999.99.zip', 'App Product.app'
             ],
                                   cwd='$W_1/AppProduct-99.0.9999.99'),
             mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),

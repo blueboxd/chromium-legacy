@@ -129,7 +129,6 @@ class ImeController;
 class ImmersiveContext;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
-class KioskNextShellControllerImpl;
 class KeyboardControllerImpl;
 class LaserPointerController;
 class LocaleUpdateControllerImpl;
@@ -380,9 +379,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
-  }
-  KioskNextShellControllerImpl* kiosk_next_shell_controller() {
-    return kiosk_next_shell_controller_.get();
   }
   KeyboardControllerImpl* keyboard_controller() {
     return keyboard_controller_.get();
@@ -667,7 +663,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
-  std::unique_ptr<KioskNextShellControllerImpl> kiosk_next_shell_controller_;
   std::unique_ptr<LocaleUpdateControllerImpl> locale_update_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;

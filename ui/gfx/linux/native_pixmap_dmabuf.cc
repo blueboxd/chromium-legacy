@@ -56,6 +56,10 @@ gfx::BufferFormat NativePixmapDmaBuf::GetBufferFormat() const {
   return format_;
 }
 
+size_t NativePixmapDmaBuf::GetNumberOfPlanes() const {
+  return handle_.planes.size();
+}
+
 gfx::Size NativePixmapDmaBuf::GetBufferSize() const {
   return size_;
 }

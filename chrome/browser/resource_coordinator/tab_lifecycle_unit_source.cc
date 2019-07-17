@@ -116,10 +116,14 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
   // instantiated. No TabLifecycleUnit is created for these tabs.
 
   DCHECK(intervention_policy_database_);
-  browser_tab_strip_tracker_.Init();
 
-  auto* perf_man = performance_manager::PerformanceManager::GetInstance();
-  if (perf_man) {
+  browser_tab_strip_tracker_.Init();
+}
+
+TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
+
+void TabLifecycleUnitSource::Start() {
+  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
     // The performance manager dies on its own sequence, so posting unretained
     // is fine.
     perf_man->CallOnGraph(
@@ -132,8 +136,6 @@ TabLifecycleUnitSource::TabLifecycleUnitSource(
                        std::make_unique<TabLifecycleStateObserver>()));
   }
 }
-
-TabLifecycleUnitSource::~TabLifecycleUnitSource() = default;
 
 // static
 TabLifecycleUnitExternal* TabLifecycleUnitSource::GetTabLifecycleUnitExternal(

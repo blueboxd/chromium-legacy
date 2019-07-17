@@ -637,13 +637,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
-  storage::QuotaManager* quota_manager = nullptr;
-  if (storage_->service()->quota_manager_proxy()) {
-    quota_manager =
-        storage_->service()->quota_manager_proxy()->quota_manager();
-  }
-
-  if (!quota_manager) {
+  if (!storage_->service()->quota_manager_proxy()) {
     if (storage_->service()->special_storage_policy() &&
         storage_->service()->special_storage_policy()->IsStorageUnlimited(
             group_record_.origin.GetURL()))
@@ -654,8 +648,9 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
 
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);
-  quota_manager->GetUsageAndQuota(
-      group_record_.origin, blink::mojom::StorageType::kTemporary,
+  storage_->service()->quota_manager_proxy()->GetUsageAndQuota(
+      base::ThreadTaskRunnerHandle::Get().get(), group_record_.origin,
+      blink::mojom::StorageType::kTemporary,
       base::BindOnce(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 

@@ -179,13 +179,14 @@ public class SnippetsBridge implements SuggestionsSource {
     @CalledByNative
     private static SnippetArticle addSuggestion(List<SnippetArticle> suggestions, int category,
             String id, String title, String publisher, String url, long timestamp, float score,
-            long fetchTime, boolean isVideoSuggestion, int thumbnailDominantColor) {
+            long fetchTime, boolean isVideoSuggestion, int thumbnailDominantColor,
+            boolean hasThumbnail) {
         int position = suggestions.size();
         // thumbnailDominantColor equal to 0 encodes absence of the value. 0 is not a valid color,
         // because the passed color cannot be fully transparent.
-        suggestions.add(new SnippetArticle(category, id, title, publisher, url, timestamp, score,
-                fetchTime, isVideoSuggestion,
-                thumbnailDominantColor == 0 ? null : thumbnailDominantColor));
+        suggestions.add(new SnippetArticle(category, id, title, /*snippet=*/"", publisher, url,
+                timestamp, score, fetchTime, isVideoSuggestion,
+                thumbnailDominantColor == 0 ? null : thumbnailDominantColor, hasThumbnail));
         return suggestions.get(position);
     }
 

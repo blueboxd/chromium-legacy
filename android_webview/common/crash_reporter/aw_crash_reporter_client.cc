@@ -74,7 +74,8 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   unsigned int GetCrashDumpPercentage() override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableCrashReporterForTesting)) {
+            switches::kEnableCrashReporterForTesting) ||
+        base::android::BuildInfo::GetInstance()->is_debug_android()) {
       return 100;
     }
 

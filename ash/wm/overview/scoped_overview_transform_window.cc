@@ -137,7 +137,9 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
     targeting_policy_map_.erase(it);
   }
 
-  UpdateRoundedCorners(/*show=*/false);
+  // No need to update the clip since we're about to restore it to
+  // `original_clip_rect_`.
+  UpdateRoundedCorners(/*show=*/false, /*update_clip=*/false);
   StopObservingImplicitAnimations();
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
   window_->layer()->SetClipRect(original_clip_rect_);
@@ -379,7 +381,8 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   overview_bounds_.reset();
 }
 
-void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
+void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
+                                                         bool update_clip) {
   // Minimized windows have their corners rounded in CaptionContainerView.
   if (IsMinimized())
     return;
@@ -392,13 +395,20 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
                                         : 0.0f);
   layer->SetRoundedCornerRadius(radii);
   layer->SetIsFastRoundedCorner(true);
-  if (!layer->GetAnimator()->is_animating()) {
-    int top_inset = GetTopInset();
-    if (top_inset > 0) {
-      gfx::Rect clip_rect(window_->bounds().size());
-      clip_rect.Inset(0, top_inset, 0, 0);
-      layer->SetClipRect(clip_rect);
-    }
+
+  if (!update_clip || layer->GetAnimator()->is_animating())
+    return;
+
+  const int top_inset = GetTopInset();
+  if (top_inset > 0) {
+    gfx::Rect clip_rect(window_->bounds().size());
+    // We add 1 to the top_inset, because in some cases, the header is not
+    // clipped fully due to what seems to be a rounding error.
+    // TODO(afakhry|sammiequon): Investigate a proper fix for this.
+    clip_rect.Inset(0, top_inset + 1, 0, 0);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
+    layer->SetClipRect(clip_rect);
   }
 }
 

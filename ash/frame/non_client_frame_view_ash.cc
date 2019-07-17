@@ -255,18 +255,11 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     immersive_helper_ =
         std::make_unique<NonClientFrameViewAshImmersiveHelper>(frame, this);
   }
-  Shell::Get()->overview_controller()->AddObserver(this);
-  Shell::Get()->split_view_controller()->AddObserver(this);
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
 }
 
-NonClientFrameViewAsh::~NonClientFrameViewAsh() {
-  if (Shell::Get()->overview_controller())
-    Shell::Get()->overview_controller()->RemoveObserver(this);
-  if (Shell::Get()->split_view_controller())
-    Shell::Get()->split_view_controller()->RemoveObserver(this);
-}
+NonClientFrameViewAsh::~NonClientFrameViewAsh() = default;
 
 // static
 NonClientFrameViewAsh* NonClientFrameViewAsh::Get(aura::Window* window) {
@@ -437,38 +430,8 @@ SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
   return frame_->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
 }
 
-void NonClientFrameViewAsh::UpdateHeaderView() {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  if (in_overview_ && split_view_controller->InSplitViewMode() &&
-      split_view_controller->GetDefaultSnappedWindow() ==
-          frame_->GetNativeWindow()) {
-    // TODO(sammiequon): This works for now, but we may have to check if
-    // |frame_|'s native window is in the overview list instead.
-    SetShouldPaintHeader(true);
-  } else {
-    SetShouldPaintHeader(!in_overview_);
-  }
-}
-
 void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
-}
-
-void NonClientFrameViewAsh::OnOverviewModeStarting() {
-  in_overview_ = true;
-  UpdateHeaderView();
-}
-
-void NonClientFrameViewAsh::OnOverviewModeEnded() {
-  in_overview_ = false;
-  UpdateHeaderView();
-}
-
-void NonClientFrameViewAsh::OnSplitViewStateChanged(
-    SplitViewState /* previous_state */,
-    SplitViewState /* current_state */) {
-  UpdateHeaderView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -21,12 +21,25 @@ TEST(AddressRewriterTest, InvalidCountryCode) {
   EXPECT_NE(ad.Rewrite(kSomeRandomText), ad.Rewrite(kOtherRandomText));
 }
 
+TEST(AddressRewriterTest, LastRule) {
+  AddressRewriter last_rule = AddressRewriter::ForCustomRules("1\t2\n3\t4\n");
+  AddressRewriter large_rewrite =
+      AddressRewriter::ForCustomRules("1\tonelongrewrite\n2\tshort\n");
+
+  EXPECT_EQ(last_rule.Rewrite(UTF8ToUTF16("3")),
+            last_rule.Rewrite(UTF8ToUTF16("4")));
+  // Checks if last rule works when previous rewrite is larger than last rule.
+  EXPECT_EQ(large_rewrite.Rewrite(UTF8ToUTF16("2")),
+            large_rewrite.Rewrite(UTF8ToUTF16("short")));
+}
+
 TEST(AddressRewriterTest, AD) {
   AddressRewriter ad = AddressRewriter::ForCountryCode(UTF8ToUTF16("ad"));
   EXPECT_EQ(ad.Rewrite(UTF8ToUTF16("parroquia de andorra la vella")),
             ad.Rewrite(UTF8ToUTF16("andorra la vella")));
   EXPECT_EQ(ad.Rewrite(UTF8ToUTF16("principal de andorra")),
             ad.Rewrite(UTF8ToUTF16("an")));
+  EXPECT_EQ(ad.Rewrite(UTF8ToUTF16("or")), ad.Rewrite(UTF8ToUTF16("ordino")));
 }
 
 TEST(AddressRewriterTest, AR) {

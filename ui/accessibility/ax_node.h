@@ -253,7 +253,8 @@ class AX_EXPORT AXNode final {
   base::string16 GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
 
-  // Return a pointer to a string for the language code.
+  // Return a string representing the language code.
+  //
   // This will consider the language declared in the DOM, and may eventually
   // attempt to automatically detect the language from the text.
   //

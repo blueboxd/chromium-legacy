@@ -1809,48 +1809,6 @@ void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeWin::Init(delegate);
 }
 
-base::string16 BrowserAccessibilityComWin::GetInvalidValue() const {
-  const BrowserAccessibilityWin* target = owner();
-  // The aria-invalid=spelling/grammar need to be exposed as text attributes for
-  // a range matching the visual underline representing the error.
-  if (static_cast<ax::mojom::InvalidState>(
-          target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
-          ax::mojom::InvalidState::kNone &&
-      target->IsTextOnlyObject() && target->PlatformGetParent()) {
-    // Text nodes need to reflect the invalid state of their parent object,
-    // otherwise spelling and grammar errors communicated through aria-invalid
-    // won't be reflected in text attributes.
-    target = static_cast<BrowserAccessibilityWin*>(target->PlatformGetParent());
-  }
-
-  base::string16 invalid_value;
-  // Note: spelling+grammar errors case is disallowed and not supported. It
-  // could possibly arise with aria-invalid on the ancestor of a spelling error,
-  // but this is not currently described in any spec and no real-world use cases
-  // have been found.
-  switch (static_cast<ax::mojom::InvalidState>(
-      target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState))) {
-    case ax::mojom::InvalidState::kNone:
-    case ax::mojom::InvalidState::kFalse:
-      break;
-    case ax::mojom::InvalidState::kTrue:
-      return invalid_value = L"true";
-    case ax::mojom::InvalidState::kOther: {
-      base::string16 aria_invalid_value;
-      if (target->GetString16Attribute(
-              ax::mojom::StringAttribute::kAriaInvalidValue,
-              &aria_invalid_value)) {
-        SanitizeStringAttributeForIA2(aria_invalid_value, &aria_invalid_value);
-        invalid_value = aria_invalid_value;
-      } else {
-        // Set the attribute to L"true", since we cannot be more specific.
-        invalid_value = L"true";
-      }
-    }
-  }
-  return invalid_value;
-}
-
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
     const {
   std::vector<base::string16> attributes;
@@ -1936,7 +1894,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
   // Screen readers look at the text attributes to determine if something is
   // misspelled, so we need to propagate any spelling attributes from immediate
   // parents of text-only objects.
-  base::string16 invalid_value = GetInvalidValue();
+  base::string16 invalid_value = base::UTF8ToUTF16(GetInvalidValue());
   if (!invalid_value.empty())
     attributes.push_back(L"invalid:" + invalid_value);
 

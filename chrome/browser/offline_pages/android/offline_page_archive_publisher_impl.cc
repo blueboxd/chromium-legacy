@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <utility>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -17,16 +18,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/android/chrome_jni_headers/OfflinePageArchivePublisherBridge_jni.h"
+#include "chrome/browser/offline_pages/android/offline_page_bridge.h"
 #include "components/offline_pages/core/archive_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-
-using base::android::ScopedJavaLocalRef;
 
 namespace offline_pages {
 
 namespace {
 
+using base::android::ScopedJavaLocalRef;
 using offline_pages::SavePageResult;
 
 // Creates a singleton Delegate.
@@ -35,15 +36,25 @@ OfflinePageArchivePublisherImpl::Delegate* GetDefaultDelegate() {
   return &delegate;
 }
 
+bool ShouldUseDownloadsCollection() {
+  return base::android::BuildInfo::GetInstance()->is_at_least_q();
+}
+
 // Helper function to do the move and register synchronously. Make sure this is
 // called from a background thread.
 PublishArchiveResult MoveAndRegisterArchive(
     const offline_pages::OfflinePageItem& offline_page,
     const base::FilePath& publish_directory,
     OfflinePageArchivePublisherImpl::Delegate* delegate) {
-  PublishArchiveResult archive_result;
+  // For Android Q+, use the downloads collection rather than DownloadManager.
+  if (ShouldUseDownloadsCollection()) {
+    return delegate->AddCompletedDownload(offline_page);
+  }
+
+  OfflinePageItem published_page(offline_page);
+
   // Calculate the new file name.
-  base::FilePath new_file_path =
+  published_page.file_path =
       offline_pages::model_utils::GenerateUniqueFilenameForOfflinePage(
           offline_page.title, offline_page.url, publish_directory);
 
@@ -54,9 +65,8 @@ PublishArchiveResult MoveAndRegisterArchive(
   }
 
   // Move the file.
-  bool moved = base::Move(offline_page.file_path, new_file_path);
+  bool moved = base::Move(offline_page.file_path, published_page.file_path);
   if (!moved) {
-    archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
     DVPLOG(0) << "OfflinePage publishing file move failure " << __func__;
 
     if (!base::PathExists(offline_page.file_path)) {
@@ -67,37 +77,25 @@ PublishArchiveResult MoveAndRegisterArchive(
       DVLOG(0) << "Target directory does not exist, " << publish_directory
                << " " << __func__;
     }
-    return archive_result;
+    return PublishArchiveResult::Failure(SavePageResult::FILE_MOVE_FAILED);
   }
 
   // Tell the download manager about our file, get back an id.
   if (!delegate->IsDownloadManagerInstalled()) {
-    archive_result.move_result = SavePageResult::ADD_TO_DOWNLOAD_MANAGER_FAILED;
-    return archive_result;
+    return PublishArchiveResult::Failure(
+        SavePageResult::ADD_TO_DOWNLOAD_MANAGER_FAILED);
   }
 
-  // TODO(petewil): Handle empty page title.
-  std::string page_title = base::UTF16ToUTF8(offline_page.title);
-  // We use the title for a description, since the add to the download manager
-  // fails without a description, and we don't have anything better to use.
-  int64_t download_id = delegate->AddCompletedDownload(
-      page_title, page_title,
-      offline_pages::store_utils::ToDatabaseFilePath(new_file_path),
-      offline_page.file_size, offline_page.url.spec(), std::string());
-  if (download_id == 0LL) {
-    archive_result.move_result = SavePageResult::ADD_TO_DOWNLOAD_MANAGER_FAILED;
-    return archive_result;
-  }
-
-  // Put results into the result object.
-  archive_result.move_result = SavePageResult::SUCCESS;
-  archive_result.new_file_path = new_file_path;
-  archive_result.download_id = download_id;
-
-  return archive_result;
+  return delegate->AddCompletedDownload(published_page);
 }
 
 }  // namespace
+
+// static
+PublishArchiveResult PublishArchiveResult::Failure(
+    SavePageResult save_page_result) {
+  return {save_page_result, PublishedArchiveId()};
+}
 
 OfflinePageArchivePublisherImpl::OfflinePageArchivePublisherImpl(
     ArchiveManager* archive_manager)
@@ -122,7 +120,18 @@ void OfflinePageArchivePublisherImpl::PublishArchive(
 }
 
 void OfflinePageArchivePublisherImpl::UnpublishArchives(
-    const std::vector<int64_t>& download_manager_ids) const {
+    const std::vector<PublishedArchiveId>& publish_ids) const {
+  std::vector<int64_t> download_manager_ids;
+
+  for (auto& id : publish_ids) {
+    if (id.download_id == kArchivePublishedWithoutDownloadId) {
+      DCHECK(id.new_file_path.IsContentUri());
+      base::DeleteFile(id.new_file_path, false);
+    } else if (id.download_id != kArchiveNotPublished) {
+      download_manager_ids.push_back(id.download_id);
+    }
+  }
+
   delegate_->Remove(download_manager_ids);
 }
 
@@ -136,28 +145,51 @@ bool OfflinePageArchivePublisherImpl::Delegate::IsDownloadManagerInstalled() {
   return is_installed;
 }
 
-int64_t OfflinePageArchivePublisherImpl::Delegate::AddCompletedDownload(
-    const std::string& title,
-    const std::string& description,
-    const std::string& path,
-    int64_t length,
-    const std::string& uri,
-    const std::string& referer) {
+PublishArchiveResult
+OfflinePageArchivePublisherImpl::Delegate::AddCompletedDownload(
+    const OfflinePageItem& page) {
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  if (ShouldUseDownloadsCollection()) {
+    base::FilePath new_file_path = base::FilePath(ConvertJavaStringToUTF8(
+        Java_OfflinePageArchivePublisherBridge_publishArchiveToDownloadsCollection(
+            env,
+            android::OfflinePageBridge::ConvertToJavaOfflinePage(env, page))));
+
+    if (new_file_path.empty())
+      return PublishArchiveResult::Failure(SavePageResult::FILE_MOVE_FAILED);
+
+    return {SavePageResult::SUCCESS,
+            {kArchivePublishedWithoutDownloadId, new_file_path}};
+  }
+
+  // TODO(petewil): Handle empty page title.
+  std::string page_title = base::UTF16ToUTF8(page.title);
+
   // Convert strings to jstring references.
   ScopedJavaLocalRef<jstring> j_title =
-      base::android::ConvertUTF8ToJavaString(env, title);
+      base::android::ConvertUTF8ToJavaString(env, page_title);
+  // We use the title for a description, since the add to the download manager
+  // fails without a description, and we don't have anything better to use.
   ScopedJavaLocalRef<jstring> j_description =
-      base::android::ConvertUTF8ToJavaString(env, description);
-  ScopedJavaLocalRef<jstring> j_path =
-      base::android::ConvertUTF8ToJavaString(env, path);
+      base::android::ConvertUTF8ToJavaString(env, page_title);
+  ScopedJavaLocalRef<jstring> j_path = base::android::ConvertUTF8ToJavaString(
+      env, offline_pages::store_utils::ToDatabaseFilePath(page.file_path));
   ScopedJavaLocalRef<jstring> j_uri =
-      base::android::ConvertUTF8ToJavaString(env, uri);
+      base::android::ConvertUTF8ToJavaString(env, page.url.spec());
   ScopedJavaLocalRef<jstring> j_referer =
-      base::android::ConvertUTF8ToJavaString(env, referer);
+      base::android::ConvertUTF8ToJavaString(env, std::string());
 
-  return Java_OfflinePageArchivePublisherBridge_addCompletedDownload(
-      env, j_title, j_description, j_path, length, j_uri, j_referer);
+  int64_t download_id =
+      Java_OfflinePageArchivePublisherBridge_addCompletedDownload(
+          env, j_title, j_description, j_path, page.file_size, j_uri,
+          j_referer);
+  DCHECK_NE(download_id, kArchivePublishedWithoutDownloadId);
+  if (download_id == kArchiveNotPublished)
+    return PublishArchiveResult::Failure(
+        SavePageResult::ADD_TO_DOWNLOAD_MANAGER_FAILED);
+
+  return {SavePageResult::SUCCESS, {download_id, page.file_path}};
 }
 
 int OfflinePageArchivePublisherImpl::Delegate::Remove(

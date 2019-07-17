@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/grit/generated_resources.h"
@@ -59,6 +60,7 @@ void ClickToCallContextMenuObserver::InitMenu(
   url_ = params.link_url;
   devices_ = sharing_service_->GetDeviceCandidates(
       static_cast<int>(SharingDeviceCapability::kTelephony));
+  LogClickToCallDevicesToShow(devices_.size());
   if (devices_.empty())
     return;
 
@@ -148,8 +150,7 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
                      AsWeakPtr()));
 }
 
-void ClickToCallContextMenuObserver::OnMessageSent(
-    base::Optional<std::string> message_id) const {
+void ClickToCallContextMenuObserver::OnMessageSent(bool sucess) const {
   // TODO(himanshujaju) Add metrics.
 }
 

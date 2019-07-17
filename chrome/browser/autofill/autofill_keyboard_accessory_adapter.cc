@@ -10,12 +10,29 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 
 namespace autofill {
+
+constexpr base::char16 kLabelSeparator = ' ';
+constexpr size_t kMaxBulletCount = 8;
+
+namespace {
+base::string16 CreateLabel(const Suggestion& suggestion) {
+  base::string16 password =
+      suggestion.additional_label.substr(0, kMaxBulletCount);
+  // The label contains the signon_realm or is empty. The additional_label can
+  // never be empty since it must contain a password.
+  if (suggestion.label.empty())
+    return password;
+  return suggestion.label + kLabelSeparator + password;
+}
+
+}  // namespace
 
 AutofillKeyboardAccessoryAdapter::AutofillKeyboardAccessoryAdapter(
     AutofillPopupController* controller,
@@ -49,14 +66,19 @@ void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
   DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
   DCHECK(view_) << "OnSuggestionsChanged called before a View was set!";
 
+  labels_.clear();
   front_element_ = base::nullopt;
   for (int i = 0; i < GetLineCount(); ++i) {
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (suggestion.frontend_id != POPUP_ITEM_ID_CLEAR_FORM &&
-        suggestion.frontend_id != POPUP_ITEM_ID_CREATE_HINT)
+        suggestion.frontend_id != POPUP_ITEM_ID_CREATE_HINT) {
+      labels_.push_back(CreateLabel(suggestion));
       continue;
+    }
     DCHECK(!front_element_.has_value()) << "Additional front item at: " << i;
     front_element_ = base::Optional<int>(i);
+    // If there is a special popup item, just reuse the previously used label.
+    labels_.push_back(controller_->GetElidedLabelAt(i));
   }
 
   view_->Show();
@@ -75,24 +97,21 @@ int AutofillKeyboardAccessoryAdapter::GetLineCount() const {
 
 const autofill::Suggestion& AutofillKeyboardAccessoryAdapter::GetSuggestionAt(
     int row) const {
-  DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
+  DCHECK(controller_) << "Call GetSuggestionAt only from its owner!";
   return controller_->GetSuggestionAt(OffsetIndexFor(row));
 }
 
 const base::string16& AutofillKeyboardAccessoryAdapter::GetElidedValueAt(
     int row) const {
-  DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
+  DCHECK(controller_) << "Call GetElidedValueAt only from its owner!";
   return controller_->GetElidedValueAt(OffsetIndexFor(row));
 }
 
 const base::string16& AutofillKeyboardAccessoryAdapter::GetElidedLabelAt(
     int row) const {
-  DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
-  const base::string16& label =
-      controller_->GetElidedLabelAt(OffsetIndexFor(row));
-  if (label.empty())
-    return GetSuggestionAt(row).additional_label;
-  return label;
+  DCHECK(controller_) << "Call GetElidedLabelAt only from its owner!";
+  DCHECK(static_cast<size_t>(row) < labels_.size());
+  return labels_[OffsetIndexFor(row)];
 }
 
 bool AutofillKeyboardAccessoryAdapter::GetRemovalConfirmationText(

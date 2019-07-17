@@ -14,7 +14,7 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 
 namespace base {

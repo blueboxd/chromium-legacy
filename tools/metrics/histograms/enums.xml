@@ -52940,6 +52940,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="ALREADY_EXISTS">
     The shared memory region already exists.
   </int>
+  <int value="9" label="ALLOCATE_FILE_REGION_FAILURE">
+    Failure to allocate disk space for the file.
+  </int>
+  <int value="10" label="FSTAT_FAILURE">
+    Failure to fstat the file descriptor.
+  </int>
+  <int value="11" label="INODES_MISMATCH">
+    Writable and read-only inodes don't match.
+  </int>
+  <int value="12" label="GET_SHMEM_TEMP_DIR_FAILURE">
+    Failure to get a temporary directory for shared memory.
+  </int>
 </enum>
 
 <enum name="ShelfAlignmentValue">

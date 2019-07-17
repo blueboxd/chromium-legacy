@@ -19,7 +19,7 @@
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/resource_entry_conversion.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_url.h"
 

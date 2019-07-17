@@ -240,6 +240,15 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
     ASSERT_NE(nullptr, link);
     ASSERT_TRUE(ATK_IS_HYPERLINK(link));
 
+    AtkObject* link_object = atk_hyperlink_get_object(link, 0);
+    ASSERT_NE(link_object, nullptr);
+    ASSERT_TRUE(ATK_IS_HYPERLINK_IMPL(link_object));
+
+    AtkHyperlink* link_from_object =
+        atk_hyperlink_impl_get_hyperlink(ATK_HYPERLINK_IMPL(link_object));
+    ASSERT_EQ(link_from_object, link);
+    g_object_unref(link_from_object);
+
     ASSERT_EQ(atk_hyperlink_get_start_index(link), expected_start_index);
     ASSERT_EQ(atk_hyperlink_get_end_index(link), expected_start_index + 1);
 

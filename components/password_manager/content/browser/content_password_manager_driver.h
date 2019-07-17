@@ -64,11 +64,8 @@ class ContentPasswordManagerDriver
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;
-  void FillIntoFocusedField(
-      bool is_password,
-      const base::string16& credential,
-      base::OnceCallback<void(autofill::mojom::FillingStatus)>
-          compeleted_callback) override;
+  void FillIntoFocusedField(bool is_password,
+                            const base::string16& credential) override;
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
   void ShowInitialPasswordAccountSuggestions(
@@ -80,7 +77,7 @@ class ContentPasswordManagerDriver
   void SendLoggingAvailability() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
-  GURL GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedURL() const override;
 
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
   // Notify the renderer that the user wants to generate password manually.

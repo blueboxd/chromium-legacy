@@ -30,7 +30,7 @@
 #include "chrome/browser/media_galleries/win/mtp_device_operations_util.h"
 #include "chrome/browser/media_galleries/win/portable_device_map_service.h"
 #include "chrome/browser/media_galleries/win/snapshot_file_details.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

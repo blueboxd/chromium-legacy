@@ -2699,5 +2699,6 @@ const char kClientCertificateManagementAllowed[] =
 
 const char kSharingVapidKey[] = "sharing.vapid_key";
 const char kSharingSyncedDevices[] = "sharing.synced_devices";
+const char kSharingFCMRegistration[] = "sharing.fcm_registration";
 
 }  // namespace prefs

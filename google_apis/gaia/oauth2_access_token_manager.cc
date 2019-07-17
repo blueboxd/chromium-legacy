@@ -396,6 +396,7 @@ OAuth2AccessTokenManager::OAuth2AccessTokenManager(
 }
 
 OAuth2AccessTokenManager::~OAuth2AccessTokenManager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Release all the pending fetchers.
   pending_fetchers_.clear();
 }

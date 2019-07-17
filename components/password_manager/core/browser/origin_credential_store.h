@@ -5,12 +5,9 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ORIGIN_CREDENTIAL_STORE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_ORIGIN_CREDENTIAL_STORE_H_
 
-#include <map>
-#include <utility>
 #include <vector>
 
 #include "base/containers/span.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -27,13 +24,14 @@ struct CredentialPair {
   CredentialPair(const CredentialPair&);
   CredentialPair& operator=(CredentialPair&&);
   CredentialPair& operator=(const CredentialPair&);
-  bool operator==(const CredentialPair& rhs) const;
 
   base::string16 username;
   base::string16 password;
   GURL origin_url;  // Could be android:// which url::Origin doesn't support.
-  bool is_public_suffix_match;
+  bool is_public_suffix_match = false;
 };
+
+bool operator==(const CredentialPair& lhs, const CredentialPair& rhs);
 
 std::ostream& operator<<(std::ostream& os, const CredentialPair& pair);
 
@@ -43,9 +41,9 @@ std::ostream& operator<<(std::ostream& os, const CredentialPair& pair);
 class OriginCredentialStore {
  public:
   explicit OriginCredentialStore(url::Origin origin);
-  ~OriginCredentialStore();
   OriginCredentialStore(const OriginCredentialStore&) = delete;
   OriginCredentialStore& operator=(const OriginCredentialStore&) = delete;
+  ~OriginCredentialStore();
 
   // Saves credentials so that they can be used in the UI.
   void SaveCredentials(std::vector<CredentialPair> credentials);

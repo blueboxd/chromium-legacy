@@ -205,17 +205,21 @@ void DownloadResourceHandler::OnRequestRedirected(
   url::Origin new_origin(url::Origin::Create(redirect_info.new_url));
   if (!follow_cross_origin_redirects_ &&
       !first_origin_.IsSameOriginWith(new_origin)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &NavigateOnUIThread, redirect_info.new_url, request()->url_chain(),
-            Referrer(GURL(redirect_info.new_referrer),
-                     Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                         redirect_info.new_referrer_policy)),
-            GetRequestInfo()->HasUserGesture(),
-            true /* from_download_cross_origin_redirect */,
-            GetRequestInfo()->GetWebContentsGetterForRequest(),
-            GetRequestInfo()->frame_tree_node_id()));
+    if (redirect_info.new_url.SchemeIsHTTPOrHTTPS() ||
+        GetContentClient()->browser()->IsHandledURL(redirect_info.new_url)) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(
+              &NavigateOnUIThread, redirect_info.new_url,
+              request()->url_chain(),
+              Referrer(GURL(redirect_info.new_referrer),
+                       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                           redirect_info.new_referrer_policy)),
+              GetRequestInfo()->HasUserGesture(),
+              true /* from_download_cross_origin_redirect */,
+              GetRequestInfo()->GetWebContentsGetterForRequest(),
+              GetRequestInfo()->frame_tree_node_id()));
+    }
     controller->Cancel();
     return;
   }

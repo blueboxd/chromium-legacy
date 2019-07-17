@@ -67,7 +67,8 @@ class SystemWebAppManager {
   explicit SystemWebAppManager(Profile* profile);
   virtual ~SystemWebAppManager();
 
-  void SetSubsystems(PendingAppManager* pending_app_manager);
+  void SetSubsystems(PendingAppManager* pending_app_manager,
+                     AppRegistrar* registrar);
 
   void Start(WebAppUiDelegate* ui_delegate);
 
@@ -123,6 +124,8 @@ class SystemWebAppManager {
 
   // Used to install, uninstall, and update apps. Should outlive this class.
   PendingAppManager* pending_app_manager_ = nullptr;
+
+  AppRegistrar* registrar_ = nullptr;
 
   WebAppUiDelegate* ui_delegate_ = nullptr;
 

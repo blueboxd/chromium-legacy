@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/keyed_service/core/simple_factory_key.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -38,10 +37,6 @@ namespace download {
 class InProgressDownloadManager;
 }
 
-namespace net {
-class NetLog;
-}
-
 namespace policy {
 class BrowserPolicyConnectorBase;
 }
@@ -55,14 +50,6 @@ namespace android_webview {
 class AwFormDatabaseService;
 class AwQuotaManagerBridge;
 class AwURLRequestContextGetter;
-
-namespace prefs {
-
-// Used for Kerberos authentication.
-extern const char kAuthAndroidNegotiateAccountType[];
-extern const char kAuthServerWhitelist[];
-
-}  // namespace prefs
 
 class AwBrowserContext : public content::BrowserContext,
                          public visitedlink::VisitedLinkDelegate {
@@ -88,14 +75,13 @@ class AwBrowserContext : public content::BrowserContext,
   static std::vector<std::string> GetAuthSchemes();
 
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
-  void PreMainMessageLoopRun(net::NetLog* net_log);
+  void PreMainMessageLoopRun();
 
   // These methods map to Add methods in visitedlink::VisitedLinkMaster.
   void AddVisitedURLs(const std::vector<GURL>& urls);
 
   AwQuotaManagerBridge* GetQuotaManagerBridge();
   AwFormDatabaseService* GetFormDatabaseService();
-  AwURLRequestContextGetter* GetAwURLRequestContext();
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager();
 
   // content::BrowserContext implementation.
@@ -125,9 +111,6 @@ class AwBrowserContext : public content::BrowserContext,
   // visitedlink::VisitedLinkDelegate implementation.
   void RebuildTable(const scoped_refptr<URLEnumerator>& enumerator) override;
 
-  // Constructs HttpAuthDynamicParams based on |user_pref_service_|.
-  network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams();
-
   PrefService* GetPrefService() const { return user_pref_service_.get(); }
 
   void SetExtendedReportingAllowed(bool allowed);
@@ -137,7 +120,6 @@ class AwBrowserContext : public content::BrowserContext,
       const base::FilePath& relative_partition_path);
 
  private:
-  void OnAuthPrefsChanged();
   void CreateUserPrefService();
 
   // The file path where data for this context is persisted.
@@ -156,7 +138,6 @@ class AwBrowserContext : public content::BrowserContext,
   std::unique_ptr<policy::BrowserPolicyConnectorBase> browser_policy_connector_;
   std::unique_ptr<AwSSLHostStateDelegate> ssl_host_state_delegate_;
   std::unique_ptr<content::PermissionControllerDelegate> permission_manager_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   SimpleFactoryKey simple_factory_key_;
 

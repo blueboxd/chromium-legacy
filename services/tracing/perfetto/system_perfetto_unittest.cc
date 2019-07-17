@@ -232,7 +232,10 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-TEST_F(SystemPerfettoTest, SystemTraceEndToEndRealService) {
+// TODO(crbug/964324): We need to run this test in permissive mode, but
+// currently the bots don't do that. We should switch this to a telemetry
+// test to ensure our integration works on P+ Android devices.
+TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEndRealService) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
       base::android::SDK_VERSION_P) {
     LOG(INFO)

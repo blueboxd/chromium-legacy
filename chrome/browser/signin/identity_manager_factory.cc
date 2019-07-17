@@ -28,7 +28,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/signin/core/browser/cookie_settings_util.h"
-#include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -45,9 +44,6 @@
 void IdentityManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   identity::IdentityManager::RegisterProfilePrefs(registry);
-#if !defined(OS_ANDROID)
-  MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
-#endif
 }
 
 IdentityManagerFactory::IdentityManagerFactory()

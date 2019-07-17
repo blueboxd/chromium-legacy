@@ -423,6 +423,11 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
+
+  // Primary account is by definition also unconsented primary account.
+  EXPECT_EQ(primary_account_info,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo());
+  // There is no guarantee that this will be notified via callback on startup.
 }
 
 // Signin/signout tests aren't relevant and cannot build on ChromeOS, which
@@ -440,14 +445,25 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   EXPECT_EQ(kTestGaiaId, primary_account_from_set_callback.gaia);
   EXPECT_EQ(kTestEmail, primary_account_from_set_callback.email);
 
+  // Primary account is by definition also unconsented primary account.
+  EXPECT_EQ(
+      primary_account_from_set_callback,
+      identity_manager_observer()->UnconsentedPrimaryAccountFromCallback());
+
   CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
 
+  EXPECT_EQ(primary_account_info,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo());
+
   CoreAccountId primary_account_id = identity_manager()->GetPrimaryAccountId();
   EXPECT_EQ(primary_account_id, kTestGaiaId);
   EXPECT_EQ(primary_account_id, primary_account_info.account_id);
+
+  EXPECT_EQ(primary_account_id,
+            identity_manager()->GetUnconsentedPrimaryAccountId());
 }
 
 // Test that the user signing out results in firing of the IdentityManager
@@ -467,14 +483,23 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   EXPECT_EQ(kTestGaiaId, primary_account_from_cleared_callback.gaia);
   EXPECT_EQ(kTestEmail, primary_account_from_cleared_callback.email);
 
+  // After the sign-out, there is no unconsented primary account.
+  EXPECT_TRUE(identity_manager_observer()
+                  ->UnconsentedPrimaryAccountFromCallback()
+                  .IsEmpty());
+
   CoreAccountInfo primary_account_info =
       identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ("", primary_account_info.gaia);
   EXPECT_EQ("", primary_account_info.email);
+  EXPECT_EQ(primary_account_info,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo());
 
   CoreAccountId primary_account_id = identity_manager()->GetPrimaryAccountId();
   EXPECT_EQ("", primary_account_id);
   EXPECT_EQ(primary_account_id, primary_account_info.account_id);
+  EXPECT_EQ(primary_account_id,
+            identity_manager()->GetUnconsentedPrimaryAccountId());
 }
 
 // Test that the primary account's core info remains tracked by the
@@ -498,25 +523,32 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmail, primary_account_info.email);
   EXPECT_EQ(kTestGaiaId, primary_account_info.account_id);
+  EXPECT_EQ(primary_account_info,
+            identity_manager()->GetUnconsentedPrimaryAccountInfo());
 
   CoreAccountId primary_account_id = identity_manager()->GetPrimaryAccountId();
   EXPECT_EQ(primary_account_id, kTestGaiaId);
+  EXPECT_EQ(primary_account_id,
+            identity_manager()->GetUnconsentedPrimaryAccountId());
 }
 #endif  // !defined(OS_CHROMEOS)
 
 TEST_F(IdentityManagerTest, HasPrimaryAccount) {
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
   // Removing the account from the AccountTrackerService should not cause
   // IdentityManager to think that there is no longer a primary account.
   account_tracker()->RemoveAccount(identity_manager()->GetPrimaryAccountId());
   EXPECT_TRUE(identity_manager()->HasPrimaryAccount());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
 #if !defined(OS_CHROMEOS)
   // Signing out should cause IdentityManager to recognize that there is no
   // longer a primary account.
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(identity_manager()->HasUnconsentedPrimaryAccount());
 #endif
 }
 
@@ -730,6 +762,7 @@ TEST_F(IdentityManagerTest,
        GetAccountsInteractionBetweenPrimaryAndSecondaryAccounts) {
   // Should not have any refresh tokens at initialization.
   EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
+  EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
 
   // Add a refresh token for a secondary account and check that it shows up in
   // GetAccountsWithRefreshTokens().
@@ -747,6 +780,11 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(accounts_after_update[0].email, kTestEmail2);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+
+  // The user still has a primary account.
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountInfo().email, kTestEmail);
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo().email,
+            kTestEmail);
 
   // Add a refresh token for the primary account and check that it
   // also shows up in GetAccountsWithRefreshTokens().
@@ -767,6 +805,9 @@ TEST_F(IdentityManagerTest,
   }
 
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountInfo().email, kTestEmail);
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo().email,
+            kTestEmail);
 
   // Remove the token for the primary account and check that account2 is still
   // present.
@@ -781,12 +822,17 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(accounts_after_update[0].email, kTestEmail2);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  // The user still has a primary account.
+  EXPECT_EQ(identity_manager()->GetPrimaryAccountInfo().email, kTestEmail);
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo().email,
+            kTestEmail);
 }
 
 TEST_F(
     IdentityManagerTest,
     HasPrimaryAccountWithRefreshTokenInteractionBetweenPrimaryAndSecondaryAccounts) {
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
   // Add a refresh token for a secondary account and check that it doesn't
   // impact the above state.
@@ -796,24 +842,28 @@ TEST_F(
   SetRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
   // Add a refresh token for the primary account and check that it
   // *does* impact the stsate of HasPrimaryAccountWithRefreshToken().
   SetRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
   // Remove the token for the secondary account and check that this doesn't flip
   // the state.
   RemoveRefreshTokenForAccount(identity_manager(), account_id2);
 
   EXPECT_TRUE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 
   // Remove the token for the primary account and check that this flips the
   // state.
   RemoveRefreshTokenForPrimaryAccount(identity_manager());
 
   EXPECT_FALSE(identity_manager()->HasPrimaryAccountWithRefreshToken());
+  EXPECT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
 }
 
 TEST_F(
@@ -1330,6 +1380,8 @@ TEST_F(IdentityManagerTest, IdentityManagerReflectsUpdatedEmailAddress) {
   primary_account_info = identity_manager()->GetPrimaryAccountInfo();
   EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
   EXPECT_EQ(kTestEmailWithPeriod, primary_account_info.email);
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            primary_account_info);
 }
 #endif
 
@@ -1411,8 +1463,9 @@ TEST_F(
     CallbackSentOnSecondaryAccountRefreshTokenUpdateWithValidTokenWhenNoPrimaryAccount) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
-  AccountInfo expected_account_info =
-      MakeAccountAvailable(identity_manager(), kTestEmail2);
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo expected_account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   CoreAccountInfo account_info =
@@ -1427,8 +1480,9 @@ TEST_F(
     CallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidTokenWhenNoPrimaryAccount) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
-  AccountInfo expected_account_info =
-      MakeAccountAvailable(identity_manager(), kTestEmail2);
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo expected_account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   SetInvalidRefreshTokenForAccount(identity_manager(),
@@ -1445,8 +1499,9 @@ TEST_F(IdentityManagerTest,
        CallbackSentOnSecondaryAccountRefreshTokenRemovalWhenNoPrimaryAccount) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
-  AccountInfo expected_account_info =
-      MakeAccountAvailable(identity_manager(), kTestEmail2);
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo expected_account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
   EXPECT_EQ(kTestEmail2, expected_account_info.email);
 
   RemoveRefreshTokenForAccount(identity_manager(),
@@ -1455,6 +1510,69 @@ TEST_F(IdentityManagerTest,
   EXPECT_EQ(
       expected_account_info.account_id,
       identity_manager_observer()->AccountIdFromRefreshTokenRemovedCallback());
+}
+#endif
+
+#if !defined(OS_CHROMEOS) && !defined(OS_IOS) && !defined(OS_ANDROID)
+TEST_F(
+    IdentityManagerTest,
+    UnconsentedPrimaryAccountCallbackSentOnSecondaryAccountRefreshTokenUpdateWithValidTokenWhenNoPrimaryAccount) {
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
+
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo expected_account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
+
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            expected_account_info);
+  EXPECT_EQ(
+      identity_manager_observer()->UnconsentedPrimaryAccountFromCallback(),
+      expected_account_info);
+}
+
+TEST_F(
+    IdentityManagerTest,
+    UnconsentedPrimaryAccountCallbackSentOnSecondaryAccountRefreshTokenUpdateWithInvalidTokenWhenNoPrimaryAccount) {
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
+
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo expected_account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
+
+  SetInvalidRefreshTokenForAccount(identity_manager(),
+                                   expected_account_info.account_id);
+
+  // This is still an unconsented primary account, even with invalid refresh
+  // token.
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            expected_account_info);
+  EXPECT_EQ(
+      identity_manager_observer()->UnconsentedPrimaryAccountFromCallback(),
+      expected_account_info);
+}
+
+TEST_F(
+    IdentityManagerTest,
+    UnconsentedPrimaryAccountCallbackSentOnSecondaryAccountRefreshTokenRemovalWhenNoPrimaryAccount) {
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
+
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo expected_account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
+  EXPECT_EQ(kTestEmail2, expected_account_info.email);
+
+  RemoveRefreshTokenForAccount(identity_manager(),
+                               expected_account_info.account_id);
+
+  // With no refresh token, there is no unconsented primary account any more.
+  CoreAccountInfo empty_info;
+  EXPECT_FALSE(identity_manager()->HasUnconsentedPrimaryAccount());
+  EXPECT_EQ(
+      identity_manager_observer()->UnconsentedPrimaryAccountFromCallback(),
+      empty_info);
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(), empty_info);
 }
 #endif
 

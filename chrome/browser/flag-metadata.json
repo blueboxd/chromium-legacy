@@ -2953,11 +2953,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "sync-USS-autofill-wallet-metadata",
-    "owners": [ "jkrcal", "//components/sync/OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "sync-support-secondary-account",
     "owners": [ "treib", "//components/sync/OWNERS" ],
     "expiry_milestone": 76

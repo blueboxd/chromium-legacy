@@ -23,6 +23,7 @@ source_set("ntp_tile_views") {
     "resources:ntp_recent_icon",
     "//base",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",

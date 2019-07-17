@@ -25,7 +25,6 @@ using autofill::AccessorySheetData;
 using autofill::AccessoryTabType;
 using autofill::AddressAccessoryController;
 using autofill::CreditCardAccessoryController;
-using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 
 using FillingSource = ManualFillingController::FillingSource;
@@ -98,13 +97,6 @@ void ManualFillingControllerImpl::OnAutomaticGenerationStatusChanged(
   view_->OnAutomaticGenerationStatusChanged(available);
 }
 
-void ManualFillingControllerImpl::OnFilledIntoFocusedField(
-    FillingStatus status) {
-  if (status != FillingStatus::SUCCESS)
-    return;  // TODO(crbug.com/853766): Record success rate.
-  view_->SwapSheetWithKeyboard();
-}
-
 void ManualFillingControllerImpl::RefreshSuggestions(
     const AccessorySheetData& accessory_sheet_data) {
   view_->OnItemsAvailable(accessory_sheet_data);
@@ -159,6 +151,7 @@ void ManualFillingControllerImpl::OnFillingTriggered(
   if (!controller)
     return;  // Controller not available anymore.
   controller->OnFillingTriggered(selection);
+  view_->SwapSheetWithKeyboard();  // Soft-close the keyboard.
 }
 
 void ManualFillingControllerImpl::OnOptionSelected(

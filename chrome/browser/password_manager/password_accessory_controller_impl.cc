@@ -107,10 +107,8 @@ void PasswordAccessoryControllerImpl::OnFillingTriggered(
   if (!driver) {
     return;
   }  // |driver| can be NULL if the tab is being closed.
-  driver->FillIntoFocusedField(
-      selection.is_obfuscated(), selection.display_text(),
-      base::BindOnce(&PasswordAccessoryControllerImpl::OnFilledIntoFocusedField,
-                     base::AsWeakPtr<PasswordAccessoryControllerImpl>(this)));
+  driver->FillIntoFocusedField(selection.is_obfuscated(),
+                               selection.display_text());
 }
 
 // static
@@ -199,11 +197,6 @@ bool PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
   return false;
 }
 
-void PasswordAccessoryControllerImpl::OnFilledIntoFocusedField(
-    autofill::mojom::FillingStatus status) {
-  GetManualFillingController()->OnFilledIntoFocusedField(status);
-}
-
 void PasswordAccessoryControllerImpl::OnOptionSelected(
     autofill::AccessoryAction selected_action) {
   if (selected_action == autofill::AccessoryAction::MANAGE_PASSWORDS) {
@@ -248,7 +241,7 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
 
   if (autofill::IsFillable(focused_field_type)) {
     base::span<const CredentialPair> suggestions =
-        credential_cache_->GetCredentialStore(origin)->GetCredentials();
+        credential_cache_->GetCredentialStore(origin).GetCredentials();
     info_to_add.reserve(suggestions.size());
     for (const auto& pair : suggestions) {
       if (pair.is_public_suffix_match &&
@@ -379,15 +372,14 @@ bool PasswordAccessoryControllerImpl::AppearsInSuggestions(
     bool is_password,
     const url::Origin& origin) const {
   if (origin.opaque())
-    return false;  // Don't proceed for invalid origins.;
-  for (const CredentialPair& pair :
-       credential_cache_->GetCredentialStore(origin)->GetCredentials()) {
-    const base::string16& candidate =
-        is_password ? pair.password : pair.username;
-    if (candidate == suggestion)
-      return true;
-  }
-  return false;
+    return false;  // Don't proceed for invalid origins.
+
+  const auto& credentials =
+      credential_cache_->GetCredentialStore(origin).GetCredentials();
+  return std::any_of(
+      credentials.begin(), credentials.end(), [&](const auto& pair) {
+        return suggestion == (is_password ? pair.password : pair.username);
+      });
 }
 
 base::WeakPtr<ManualFillingController>

@@ -135,6 +135,7 @@ source_set("content_suggestions_ui") {
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/resources:tab_toolbar_shadow_color",
     "//ios/chrome/browser/ui/util:util",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
     "//ios/web/common",
@@ -150,6 +151,9 @@ source_set("content_suggestions_constant") {
   sources = [
     "ntp_home_constant.h",
     "ntp_home_constant.mm",
+  ]
+  deps = [
+    "//ios/chrome/common/colors",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

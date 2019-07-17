@@ -80,7 +80,7 @@ bool WebViewPasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
-GURL WebViewPasswordManagerDriver::GetLastCommittedURL() const {
+const GURL& WebViewPasswordManagerDriver::GetLastCommittedURL() const {
   return delegate_.lastCommittedURL;
 }
 }  // namespace ios_web_view

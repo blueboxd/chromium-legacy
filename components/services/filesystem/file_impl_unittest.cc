@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "components/services/filesystem/files_test_base.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace filesystem {

@@ -85,6 +85,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_request_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_event.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_change_event.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_message_event.h"
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
@@ -1062,6 +1063,20 @@ void ServiceWorkerGlobalScope::DidHandlePushEvent(
                    status);
 }
 
+void ServiceWorkerGlobalScope::DidHandlePushSubscriptionChangeEvent(
+    int event_id,
+    mojom::ServiceWorkerEventStatus status) {
+  DCHECK(IsContextThread());
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker",
+      "ServiceWorkerGlobalScope::DidHandlePushSubscriptionChangeEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
+                          TRACE_ID_LOCAL(event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN, "status", MojoEnumToString(status));
+  RunEventCallback(&push_subscription_change_event_callbacks_,
+                   timeout_timer_.get(), event_id, status);
+}
+
 void ServiceWorkerGlobalScope::DidHandleSyncEvent(
     int event_id,
     mojom::ServiceWorkerEventStatus status) {
@@ -1725,6 +1740,30 @@ void ServiceWorkerGlobalScope::DispatchPushEvent(
       WaitUntilObserver::Create(this, WaitUntilObserver::kPush, event_id);
   Event* event = PushEvent::Create(event_type_names::kPush,
                                    PushMessageData::Create(payload), observer);
+  DispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScope::DispatchPushSubscriptionChangeEvent(
+    mojom::blink::PushSubscriptionPtr old_subscription,
+    mojom::blink::PushSubscriptionPtr new_subscription,
+    DispatchPushSubscriptionChangeEventCallback callback) {
+  DCHECK(IsContextThread());
+  int event_id = timeout_timer_->StartEventWithCustomTimeout(
+      CreateAbortCallback(&push_subscription_change_event_callbacks_),
+      base::TimeDelta::FromSeconds(mojom::blink::kPushEventTimeoutSeconds));
+  push_subscription_change_event_callbacks_.Set(event_id, std::move(callback));
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker",
+      "ServiceWorkerGlobalScope::DispatchPushSubscriptionChangeEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
+                          TRACE_ID_LOCAL(event_id)),
+      TRACE_EVENT_FLAG_FLOW_OUT);
+
+  WaitUntilObserver* observer = WaitUntilObserver::Create(
+      this, WaitUntilObserver::kPushSubscriptionChange, event_id);
+  Event* event = PushSubscriptionChangeEvent::Create(
+      event_type_names::kPushsubscriptionchange, nullptr /* new_subscription */,
+      nullptr /* old_subscription */, observer);
   DispatchExtendableEvent(event, observer);
 }
 

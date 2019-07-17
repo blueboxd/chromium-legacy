@@ -155,7 +155,7 @@ mojom("mojom_platform") {
     ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//components/payments/mojom",
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//mojo/public/mojom/base",
     "//services/device/public/mojom",
     "//services/network/public/mojom",

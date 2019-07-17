@@ -91,9 +91,9 @@ ServiceWorkerRequestHandler::CreateForNavigationIO(
   const ResourceType resource_type = request_info.is_main_frame
                                          ? ResourceType::kMainFrame
                                          : ResourceType::kSubFrame;
-  return (*out_provider_host)
-      ->CreateLoaderInterceptor(resource_type,
-                                request_info.begin_params->skip_service_worker);
+  return std::make_unique<ServiceWorkerControlleeRequestHandler>(
+      context->AsWeakPtr(), *out_provider_host, resource_type,
+      request_info.begin_params->skip_service_worker);
 }
 
 // static
@@ -115,7 +115,8 @@ ServiceWorkerRequestHandler::CreateForWorker(
     return nullptr;
   }
 
-  return host->CreateLoaderInterceptor(
+  return std::make_unique<ServiceWorkerControlleeRequestHandler>(
+      host->context(), host->AsWeakPtr(),
       static_cast<ResourceType>(resource_request.resource_type),
       resource_request.skip_service_worker);
 }

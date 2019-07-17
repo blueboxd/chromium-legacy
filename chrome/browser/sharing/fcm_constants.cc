@@ -7,3 +7,6 @@
 const char kFCMScope[] = "GCM";
 
 const char kSharingFCMAppID[] = "com.google.chrome.sharing.fcm";
+
+const constexpr base::TimeDelta kRegistrationExpiration =
+    base::TimeDelta::FromDays(1);

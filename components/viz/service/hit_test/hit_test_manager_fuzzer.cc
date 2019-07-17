@@ -61,6 +61,7 @@ void AddHitTestRegion(FuzzedDataProvider* fuzz,
 
   viz::HitTestRegion hit_test_region;
   hit_test_region.flags = fuzz->ConsumeIntegral<uint32_t>();
+  hit_test_region.async_hit_test_reasons = fuzz->ConsumeIntegral<uint32_t>();
   if (fuzz->ConsumeBool())
     hit_test_region.flags |= viz::HitTestRegionFlags::kHitTestChildSurface;
   hit_test_region.frame_sink_id = viz::FrameSinkId(
@@ -111,6 +112,8 @@ void SubmitHitTestRegionList(
   if (fuzz->ConsumeBool()) {
     hit_test_region_list.emplace();
     hit_test_region_list->flags = fuzz->ConsumeIntegral<uint32_t>();
+    hit_test_region_list->async_hit_test_reasons =
+        fuzz->ConsumeIntegral<uint32_t>();
     if (fuzz->ConsumeBool())
       hit_test_region_list->flags |=
           viz::HitTestRegionFlags::kHitTestChildSurface;

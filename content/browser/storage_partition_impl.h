@@ -246,6 +246,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   friend class BackgroundSyncServiceImplTestHarness;
   friend class CookieStoreManagerTest;
   friend class PaymentAppContentUnitTestBase;
+  friend class ServiceWorkerRegistrationTest;
   friend class StoragePartitionImplMap;
   friend class URLLoaderFactoryForBrowserProcess;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);

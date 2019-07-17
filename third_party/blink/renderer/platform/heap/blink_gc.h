@@ -106,8 +106,7 @@ class PLATFORM_EXPORT BlinkGC final {
   };
 
   enum ArenaIndices {
-    kEagerSweepArenaIndex = 0,
-    kNormalPage1ArenaIndex,
+    kNormalPage1ArenaIndex = 0,
     kNormalPage2ArenaIndex,
     kNormalPage3ArenaIndex,
     kNormalPage4ArenaIndex,

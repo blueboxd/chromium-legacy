@@ -241,6 +241,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Set the accessible name of the text field. If the textfield has a visible
   // label, use SetAssociatedLabel() instead.
   void SetAccessibleName(const base::string16& name);
+  const base::string16& accessible_name() const { return accessible_name_; }
 
   // If the accessible name should be the same as the labelling view's text,
   // use this. It will set the accessible label relationship and copy the

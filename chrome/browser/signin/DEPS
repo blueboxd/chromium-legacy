@@ -1,8 +1,0 @@
-specific_include_rules = {
-  # The below files create IdentityManager instances from internal
-  # dependencies. TODO(https://crbug.com/974198): Internalize the call to
-  # RegisterProfilePrefs() within IdentityManager::RegisterProfilePrefs()).
-  "identity_manager_factory.cc": [
-    "+components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h",
-  ],
-}

@@ -119,9 +119,9 @@ int AwBrowserMainParts::PreCreateThreads() {
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {
+  AwBrowserProcess::GetInstance()->PreMainMessageLoopRun();
   AwBrowserContext* context = browser_client_->InitBrowserContext();
-  context->PreMainMessageLoopRun(browser_client_->GetNonNetworkServiceNetLog());
-  AwBrowserProcess::GetInstance()->InitSafeBrowsing();
+  context->PreMainMessageLoopRun();
   content::RenderFrameHost::AllowInjectingJavaScript();
 }
 

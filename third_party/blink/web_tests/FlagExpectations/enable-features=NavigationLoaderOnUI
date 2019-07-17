@@ -4,20 +4,15 @@
 # service worker
 Bug(none) external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
 Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
 Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
 Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
 Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
 Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
 Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
 Bug(none) http/tests/devtools/service-workers/service-workers-bypass-for-network-navigation.js [ Failure ]
 Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
 Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/embed-and-object-are-not-intercepted.https.html [ Failure ]
 
 # signed exchange
 Bug(none) external/wpt/signed-exchange [ Skip ]

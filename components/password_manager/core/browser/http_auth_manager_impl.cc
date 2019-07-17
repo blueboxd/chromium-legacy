@@ -88,7 +88,27 @@ void HttpAuthManagerImpl::OnPasswordFormSubmitted(
     ProvisionallySaveForm(password_form);
 }
 
+void HttpAuthManagerImpl::OnPasswordFormDismissed() {
+  form_dismissed_ = true;
+}
+
 void HttpAuthManagerImpl::OnDidFinishMainFrameNavigation() {
+  // Only pay attention to the navigation if the password form (a native browser
+  // UI for HTTP auth) has been dismissed. This is necessary because of
+  // committed interstitials (https://crbug.com/963307), when the server sends
+  // an empty response body with a 401/407 response. In this case, the renderer
+  // synthesizes contents for the response and renders it underneath the auth
+  // prompt, which looks like a second navigation commit from the browser
+  // process's perspective (https://crbug.com/943610). Clearing |form_manager_|
+  // on this second commit would be premature and break password saving, so
+  // defer it until the password form is actually dismissed. If error pages are
+  // changed to no longer double-commit, we can remove the |form_dismissed_|
+  // logic.
+  if (!form_dismissed_)
+    return;
+
+  form_dismissed_ = false;
+
   // The login was successful if and only if there were no HTTP errors.
   if (!client_->WasLastNavigationHTTPError()) {
     OnLoginSuccesfull();

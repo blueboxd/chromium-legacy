@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -105,8 +104,6 @@ class OAuth2TokenService : public OAuth2AccessTokenManager::Delegate {
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest,
                            SameScopesRequestedForDifferentClients);
   FRIEND_TEST_ALL_PREFIXES(OAuth2TokenServiceTest, UpdateClearsCache);
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenService);
 };

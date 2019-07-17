@@ -332,9 +332,6 @@ AccountReconcilorTest::AccountReconcilorTest()
                          &pref_service_,
                          account_consistency_,
                          &test_signin_client_) {
-  pref_service_.registry()->RegisterBooleanPref(
-      prefs::kTokenServiceDiceCompatible, false);
-
   signin::SetListAccountsResponseHttpNotFound(&test_url_loader_factory_);
 
   // The reconcilor should not be built before the test can set the account
@@ -901,12 +898,13 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
   // nothing on the second call.
   CheckReconcileIdempotent(kDiceParams, GetParam(), /*multilogin=*/false);
 
-  // Setup tokens.
-  SetupTokens();
-
   // Setup cookies.
   std::vector<Cookie> cookies = ParseCookieString(GetParam().cookies);
   ConfigureCookieManagerService(cookies);
+
+  // Setup tokens. This triggers listing cookies so we need to setup cookies
+  // before that.
+  SetupTokens();
 
   // Call list accounts now so that the next call completes synchronously.
   identity_test_env()->identity_manager()->GetAccountsInCookieJar();
@@ -1012,13 +1010,14 @@ TEST_P(AccountReconcilorTestDiceMultilogin, TableRowTest) {
 
   CheckReconcileIdempotent(kDiceParams, GetParam(), /*multilogin=*/true);
 
-  // Setup tokens.
-  SetupTokens();
-
   // Setup cookies.
   std::vector<Cookie> cookies = ParseCookieString(GetParam().cookies);
   ConfigureCookieManagerService(cookies);
   std::vector<Cookie> cookies_after_reconcile = cookies;
+
+  // Setup tokens. This triggers listing cookies so we need to setup cookies
+  // before that.
+  SetupTokens();
 
   // Call list accounts now so that the next call completes synchronously.
   identity_test_env()->identity_manager()->GetAccountsInCookieJar();
@@ -1123,10 +1122,12 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceTokenServiceRegistration) {
 
 // Tests that reconcile starts even when Sync is not enabled.
 TEST_P(AccountReconcilorDiceEndpointParamTest, DiceReconcileWithoutSignin) {
-  // Add a token in Chrome but do not sign in.
+  // Add a token in Chrome but do not sign in. Making account available (setting
+  // a refresh token) triggers listing cookies so we need to setup cookies
+  // before that.
+  signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
   const CoreAccountId account_id =
       identity_test_env()->MakeAccountAvailable("user@gmail.com").account_id;
-  signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
 
   if (!IsMultiloginEnabled()) {
     EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id));
@@ -1175,7 +1176,12 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceReconcileNoop) {
 // Tests that the first Gaia account is re-used when possible.
 TEST_P(AccountReconcilorDiceEndpointParamTest,
        DiceReconcileReuseGaiaFirstAccount) {
-  // Add accounts 1 and 2 to the token service.
+  // Add account "other" to the Gaia cookie.
+  signin::SetListAccountsResponseTwoAccounts(
+      "other@gmail.com", identity::GetTestGaiaIdForEmail("other@gmail.com"),
+      "foo@gmail.com", "9999", &test_url_loader_factory_);
+
+  // Add accounts "user" and "other" to the token service.
   const AccountInfo account_info_1 =
       identity_test_env()->MakeAccountAvailable("user@gmail.com");
   const CoreAccountId account_id_1 = account_info_1.account_id;
@@ -1189,11 +1195,6 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
   ASSERT_EQ(2u, accounts.size());
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_1));
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_2));
-
-  // Add account 2 to the Gaia cookie.
-  signin::SetListAccountsResponseTwoAccounts(
-      account_info_2.email, account_info_2.gaia, "foo@gmail.com", "9999",
-      &test_url_loader_factory_);
 
   if (!IsMultiloginEnabled()) {
     testing::InSequence mock_sequence;
@@ -1232,20 +1233,25 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
 // lost.
 TEST_P(AccountReconcilorDiceEndpointParamTest, DiceLastKnownFirstAccount) {
   // Add accounts to the token service and the Gaia cookie in a different order.
+  // Making account available (setting a refresh token) triggers listing cookies
+  // so we need to setup cookies before that.
+  signin::SetListAccountsResponseTwoAccounts(
+      "other@gmail.com", identity::GetTestGaiaIdForEmail("other@gmail.com"),
+      "user@gmail.com", identity::GetTestGaiaIdForEmail("user@gmail.com"),
+      &test_url_loader_factory_);
+
   AccountInfo account_info_1 =
       identity_test_env()->MakeAccountAvailable("user@gmail.com");
   const CoreAccountId account_id_1 = account_info_1.account_id;
   AccountInfo account_info_2 =
       identity_test_env()->MakeAccountAvailable("other@gmail.com");
   const CoreAccountId account_id_2 = account_info_2.account_id;
-  signin::SetListAccountsResponseTwoAccounts(
-      account_info_2.email, account_info_2.gaia, account_info_1.email,
-      account_info_1.gaia, &test_url_loader_factory_);
 
   auto* identity_manager = identity_test_env()->identity_manager();
   std::vector<CoreAccountInfo> accounts =
       identity_manager->GetAccountsWithRefreshTokens();
   ASSERT_EQ(2u, accounts.size());
+
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_1));
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_2));
 
@@ -1380,11 +1386,14 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, DiceMigrationAfterNoop) {
   SetAccountConsistency(signin::AccountConsistencyMethod::kDiceMigration);
   pref_service()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
 
-  // Chrome account is consistent with the cookie.
+  // Chrome account is consistent with the cookie. Making account available
+  // (setting a refresh token) triggers listing cookies so we need to setup
+  // cookies before that.
+  signin::SetListAccountsResponseOneAccount(
+      "user@gmail.com", identity::GetTestGaiaIdForEmail("user@gmail.com"),
+      &test_url_loader_factory_);
   AccountInfo account_info =
       identity_test_env()->MakeAccountAvailable("user@gmail.com");
-  signin::SetListAccountsResponseOneAccount(
-      account_info.email, account_info.gaia, &test_url_loader_factory_);
   AccountReconcilor* reconcilor = GetMockReconcilor();
   // Dice is not enabled by default.
   EXPECT_FALSE(reconcilor->delegate_->IsAccountConsistencyEnforced());
@@ -1410,11 +1419,14 @@ TEST_P(AccountReconcilorDiceEndpointParamTest,
   // Enable Dice migration.
   SetAccountConsistency(signin::AccountConsistencyMethod::kDiceMigration);
 
-  // Chrome account is consistent with the cookie.
+  // Chrome account is consistent with the cookie. Making account available
+  // (setting a refresh token) triggers listing cookies so we need to setup
+  // cookies before that.
+  signin::SetListAccountsResponseOneAccount(
+      "user@gmail.com", identity::GetTestGaiaIdForEmail("user@gmail.com"),
+      &test_url_loader_factory_);
   AccountInfo account_info =
       identity_test_env()->MakeAccountAvailable("user@gmail.com");
-  signin::SetListAccountsResponseOneAccount(
-      account_info.email, account_info.gaia, &test_url_loader_factory_);
   AccountReconcilor* reconcilor = GetMockReconcilor();
   // Dice is not enabled by default.
   EXPECT_FALSE(reconcilor->delegate_->IsAccountConsistencyEnforced());
@@ -1531,12 +1543,14 @@ TEST_P(AccountReconcilorDiceEndpointParamTest, MigrationClearAllTokens) {
   SetAccountConsistency(signin::AccountConsistencyMethod::kDiceMigration);
   pref_service()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
 
-  // Add a tokens in Chrome but no Gaia cookies.
+  // Add a tokens in Chrome but no Gaia cookies. Making account available
+  // (setting a refresh token) triggers listing cookies so we need to setup
+  // cookies before that.
+  signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
   const CoreAccountId account_id_1 =
       identity_test_env()->MakeAccountAvailable("user@gmail.com").account_id;
   const CoreAccountId account_id_2 =
       identity_test_env()->MakeAccountAvailable("other@gmail.com").account_id;
-  signin::SetListAccountsResponseNoAccounts(&test_url_loader_factory_);
 
   auto* identity_manager = identity_test_env()->identity_manager();
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id_1));
@@ -1810,12 +1824,13 @@ TEST_P(AccountReconcilorTestMiceMultilogin, TableRowTest) {
   scoped_feature_list_.InitWithFeatures(
       {kUseMultiloginEndpoint, signin::kMiceFeature}, {});
 
-  // Setup tokens.
-  SetupTokens();
-
   // Setup cookies.
   std::vector<Cookie> cookies = ParseCookieString(GetParam().cookies);
   ConfigureCookieManagerService(cookies);
+
+  // Setup tokens. This triggers listing cookies so we need to setup cookies
+  // before that.
+  SetupTokens();
 
   // Call list accounts now so that the next call completes synchronously.
   identity_test_env()->identity_manager()->GetAccountsInCookieJar();

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "components/services/filesystem/public/cpp/manifest.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 

@@ -30,7 +30,7 @@
 - (UIColor*)NTPBackgroundColor {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorNamed:kBackgroundColor];
+      return ntp_home::kNTPBackgroundColor();
     case INCOGNITO:
       return [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
                                alpha:1.0];

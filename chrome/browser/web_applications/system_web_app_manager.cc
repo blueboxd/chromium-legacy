@@ -97,17 +97,17 @@ SystemWebAppManager::SystemWebAppManager(Profile* profile)
 
 SystemWebAppManager::~SystemWebAppManager() = default;
 
-void SystemWebAppManager::SetSubsystems(
-    PendingAppManager* pending_app_manager) {
+void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
+                                        AppRegistrar* registrar) {
   pending_app_manager_ = pending_app_manager;
+  registrar_ = registrar;
 }
 
 void SystemWebAppManager::Start(WebAppUiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
 
   std::map<AppId, GURL> installed_apps =
-      pending_app_manager_->registrar()->GetExternallyInstalledApps(
-          InstallSource::kSystemInstalled);
+      registrar_->GetExternallyInstalledApps(InstallSource::kSystemInstalled);
 
   std::set<SystemAppType> installed_app_types;
   for (const auto& type_and_info : system_app_infos_) {
@@ -153,12 +153,11 @@ base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
   if (app_url_it == system_app_infos_.end())
     return base::Optional<AppId>();
 
-  return pending_app_manager_->registrar()->LookupExternalAppId(
-      app_url_it->second.install_url);
+  return registrar_->LookupExternalAppId(app_url_it->second.install_url);
 }
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
-  return pending_app_manager_->registrar()->HasExternalAppWithInstallSource(
+  return registrar_->HasExternalAppWithInstallSource(
       app_id, InstallSource::kSystemInstalled);
 }
 

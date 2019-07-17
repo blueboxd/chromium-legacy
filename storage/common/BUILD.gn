@@ -36,7 +36,7 @@ component("common") {
   defines = [ "IS_STORAGE_COMMON_IMPL" ]
 
   public_deps = [
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//services/network/public/mojom",
     "//third_party/blink/public:blink_headers",
   ]

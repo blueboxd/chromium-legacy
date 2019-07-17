@@ -26,7 +26,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/drive/file_errors.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/blob/scoped_file.h"
 
 namespace base {

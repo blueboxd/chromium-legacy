@@ -49,6 +49,18 @@ class SharingSyncPreference {
     int capabilities;
   };
 
+  // FCM registration status of current device. Not synced across devices.
+  struct FCMRegistration {
+    // Authorized entity registered with FCM.
+    std::string authorized_entity;
+
+    // FCM registration token of the device.
+    std::string fcm_token;
+
+    // Timestamp of latest registration.
+    base::Time timestamp;
+  };
+
   explicit SharingSyncPreference(PrefService* prefs);
   ~SharingSyncPreference();
 
@@ -94,6 +106,12 @@ class SharingSyncPreference {
   // Removes device corresponding to |guid| from sharing preferences.
   // |guid| is same as sync device guid.
   void RemoveDevice(const std::string& guid);
+
+  base::Optional<FCMRegistration> GetFCMRegistration() const;
+
+  void SetFCMRegistration(FCMRegistration registration);
+
+  void ClearFCMRegistration();
 
  private:
   friend class SharingSyncPreferenceTest;

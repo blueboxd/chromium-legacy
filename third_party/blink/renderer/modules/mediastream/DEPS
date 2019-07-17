@@ -12,6 +12,19 @@ include_rules = [
     "+base/threading/sequenced_task_runner_handle.h",
     "+base/threading/thread_task_runner_handle.h",
 
+    # webmediaplayer_ms{_compositor}.cc includes.
+    "+base/values.h",
+    "+cc/layers/surface_layer.h",
+    "+cc/layers/video_frame_provider_client_impl.h",
+    "+cc/layers/video_frame_provider.h",
+    "+cc/layers/video_layer.h",
+    "+cc/paint/skia_paint_canvas.h",
+    "+media/filters/video_renderer_algorithm.h",
+    "+media/renderers/paint_canvas_video_renderer.h",
+    "+media/video/gpu_memory_buffer_video_frame_pool.h",
+    "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",
+    "+skia/ext/platform_canvas.h",
+
     "+base/trace_event/trace_event.h",
     "+media/audio",
     "+media/base",
@@ -28,6 +41,10 @@ include_rules = [
 
 specific_include_rules = {
     ".*test\.cc" : [
+        "+base/containers/circular_deque.h",
         "+base/run_loop.h",
+        "+cc/layers/layer.h",
+        "+media/video/mock_gpu_memory_buffer_video_frame_pool.h",
+        "+media/video/mock_gpu_video_accelerator_factories.h",
     ],
 }

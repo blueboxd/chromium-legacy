@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "android_webview/browser/aw_browser_policy_connector.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_download_manager_delegate.h"
 #include "android_webview/browser/aw_feature_list.h"
@@ -49,7 +50,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/download_request_utils.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -63,35 +63,11 @@ using content::BrowserThread;
 
 namespace android_webview {
 
-namespace prefs {
-
-// String that specifies the Android account type to use for Negotiate
-// authentication.
-const char kAuthAndroidNegotiateAccountType[] =
-    "auth.android_negotiate_account_type";
-
-// Whitelist containing servers for which Integrated Authentication is enabled.
-const char kAuthServerWhitelist[] = "auth.server_whitelist";
-
-}  // namespace prefs
-
 namespace {
 
 const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
 
 AwBrowserContext* g_browser_context = NULL;
-
-std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
-  std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
-      std::make_unique<net::ProxyConfigServiceAndroid>(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-          base::ThreadTaskRunnerHandle::Get());
-
-  // TODO(csharrison) Architect the wrapper better so we don't need a cast for
-  // android ProxyConfigServices.
-  config_service_android->set_exclude_pac_url(true);
-  return config_service_android;
-}
 
 // Empty method to skip origin security check as DownloadManager will set its
 // own method.
@@ -186,10 +162,6 @@ void AwBrowserContext::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterBooleanPref(autofill::prefs::kAutofillCreditCardEnabled,
                                 false);
-
-  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
-                               std::string());
 }
 
 void AwBrowserContext::CreateUserPrefService() {
@@ -212,7 +184,6 @@ void AwBrowserContext::CreateUserPrefService() {
           policy::POLICY_LEVEL_MANDATORY));
 
   user_pref_service_ = pref_service_factory.Create(pref_registry);
-  pref_change_registrar_.Init(user_pref_service_.get());
 
   user_prefs::UserPrefs::Set(this, user_pref_service_.get());
 }
@@ -226,15 +197,13 @@ std::vector<std::string> AwBrowserContext::GetAuthSchemes() {
   return supported_schemes;
 }
 
-void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
-  FilePath cache_path = GetCacheDir();
-
+void AwBrowserContext::PreMainMessageLoopRun() {
   CreateUserPrefService();
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // TODO(amalova): Create a new instance for non-default profiles.
     url_request_context_getter_ =
-        new AwURLRequestContextGetter(cache_path, CreateProxyConfigService(),
-                                      user_pref_service_.get(), net_log);
+        AwBrowserProcess::GetInstance()->GetAwURLRequestContext();
   }
 
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
@@ -250,21 +219,8 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
 
   EnsureResourceContextInitialized(this);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto auth_pref_callback = base::BindRepeating(
-        &AwBrowserContext::OnAuthPrefsChanged, base::Unretained(this));
-    pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
-    pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
-                               auth_pref_callback);
-  }
-
   content::WebUIControllerFactory::RegisterFactory(
       AwWebUIControllerFactory::GetInstance());
-}
-
-void AwBrowserContext::OnAuthPrefsChanged() {
-  content::GetNetworkService()->ConfigureHttpAuthPrefs(
-      CreateHttpAuthDynamicParams());
 }
 
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
@@ -281,10 +237,6 @@ AwQuotaManagerBridge* AwBrowserContext::GetQuotaManagerBridge() {
 
 AwFormDatabaseService* AwBrowserContext::GetFormDatabaseService() {
   return form_database_service_.get();
-}
-
-AwURLRequestContextGetter* AwBrowserContext::GetAwURLRequestContext() {
-  return url_request_context_getter_.get();
 }
 
 autofill::AutocompleteHistoryManager*
@@ -383,7 +335,7 @@ net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
   // content::StoragePartitionImplMap::Create(). This is not fixable
   // until http://crbug.com/159193. Until then, assert that the context
   // has already been allocated and just handle setting the protocol_handlers.
-  DCHECK(url_request_context_getter_.get());
+  DCHECK(url_request_context_getter_);
   url_request_context_getter_->SetHandlersAndInterceptors(
       protocol_handlers, std::move(request_interceptors));
   return url_request_context_getter_.get();
@@ -391,7 +343,7 @@ net::URLRequestContextGetter* AwBrowserContext::CreateRequestContext(
 
 net::URLRequestContextGetter* AwBrowserContext::CreateMediaRequestContext() {
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return url_request_context_getter_.get();
+  return AwBrowserProcess::GetInstance()->GetAwURLRequestContext();
 }
 
 download::InProgressDownloadManager*
@@ -400,19 +352,6 @@ AwBrowserContext::RetriveInProgressDownloadManager() {
       nullptr, base::FilePath(),
       base::BindRepeating(&IgnoreOriginSecurityCheck),
       base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe), nullptr);
-}
-
-network::mojom::HttpAuthDynamicParamsPtr
-AwBrowserContext::CreateHttpAuthDynamicParams() {
-  network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
-      network::mojom::HttpAuthDynamicParams::New();
-
-  auth_dynamic_params->server_whitelist =
-      user_pref_service_->GetString(prefs::kAuthServerWhitelist);
-  auth_dynamic_params->android_negotiate_account_type =
-      user_pref_service_->GetString(prefs::kAuthAndroidNegotiateAccountType);
-
-  return auth_dynamic_params;
 }
 
 void AwBrowserContext::RebuildTable(

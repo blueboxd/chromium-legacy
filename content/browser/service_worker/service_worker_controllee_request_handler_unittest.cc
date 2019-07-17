@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/buildflags/buildflags.h"
@@ -51,10 +52,11 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               net::DEFAULT_PRIORITY,
               &test->url_request_delegate_,
               TRAFFIC_ANNOTATION_FOR_TESTS)),
-          handler_(new ServiceWorkerControlleeRequestHandler(
+          handler_(std::make_unique<ServiceWorkerControlleeRequestHandler>(
               test->context()->AsWeakPtr(),
               test->provider_host_,
-              type)) {}
+              type,
+              /*skip_service_worker=*/false)) {}
 
     void MaybeCreateLoader() {
       network::ResourceRequest resource_request;
@@ -66,6 +68,11 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     }
 
     ServiceWorkerNavigationLoader* loader() { return handler_->loader(); }
+
+    void SetHandler(
+        std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler) {
+      handler_ = std::move(handler);
+    }
 
     void ResetHandler() { handler_.reset(nullptr); }
 
@@ -369,6 +376,41 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   EXPECT_FALSE(provider_host_.get());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(test_resources.loader());
+}
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
+  // Store an activated worker.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  base::RunLoop loop;
+  context()->storage()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::BindLambdaForTesting(
+          [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
+  loop.Run();
+
+  // Create an interceptor that skips service workers.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  test_resources.SetHandler(
+      std::make_unique<ServiceWorkerControlleeRequestHandler>(
+          context()->AsWeakPtr(), provider_host_, ResourceType::kMainFrame,
+          /*skip_service_worker=*/true));
+
+  // Conduct a main resource load.
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify we did not use the worker.
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_FALSE(version_->HasControllee());
+
+  // The host should still have the correct URL.
+  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

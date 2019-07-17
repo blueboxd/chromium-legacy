@@ -1455,17 +1455,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
               .get());
   ASSERT_TRUE(password_store->IsEmpty());
 
-  // Navigate to a page requiring HTTP auth. Wait for the tab to get the correct
-  // WebContents, but don't wait for navigation, which only finishes after
-  // authentication.
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), http_test_server.GetURL("/basic_auth"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-
   content::NavigationController* nav_controller =
       &WebContents()->GetController();
-  NavigationObserver nav_observer(WebContents());
   WindowedAuthNeededObserver auth_needed_observer(nav_controller);
+
+  // Navigate to a page requiring HTTP auth.
+  ui_test_utils::NavigateToURL(browser(),
+                               http_test_server.GetURL("/basic_auth"));
   auth_needed_observer.Wait();
 
   WindowedAuthSuppliedObserver auth_supplied_observer(nav_controller);
@@ -1473,6 +1469,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoLastLoadGoodLastLoad) {
   ASSERT_EQ(1u, login_observer.handlers().size());
   LoginHandler* handler = *login_observer.handlers().begin();
   ASSERT_TRUE(handler);
+  NavigationObserver nav_observer(WebContents());
   // Any username/password will work.
   handler->SetAuth(base::UTF8ToUTF16("user"), base::UTF8ToUTF16("pwd"));
   auth_supplied_observer.Wait();
@@ -2953,9 +2950,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, BasicAuthSeparateRealms) {
   content::NavigationController* nav_controller =
       &WebContents()->GetController();
   WindowedAuthNeededObserver auth_needed_observer(nav_controller);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), http_test_server.GetURL("/basic_auth"),
-      WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURL(browser(),
+                               http_test_server.GetURL("/basic_auth"));
   auth_needed_observer.Wait();
 
   // The auth dialog caused a query to PasswordStore, make sure it was
@@ -2984,9 +2980,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ProxyAuthFilling) {
 
   content::NavigationController* controller = &WebContents()->GetController();
   WindowedAuthNeededObserver auth_needed_waiter(controller);
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), test_page, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+  ui_test_utils::NavigateToURL(browser(), test_page);
   auth_needed_waiter.Wait();
 
   BubbleObserver(WebContents()).WaitForManagementState();
@@ -3676,19 +3670,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, CorrectEntryForHttpAuth) {
     // should not work.
     ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
-    // Navigate to a page requiring HTTP auth. Wait for the tab to get the
-    // correct WebContents, but don't wait for navigation, which only finishes
-    // after authentication.
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), http_test_server.GetURL("/basic_auth"),
-        WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-
     content::NavigationController* nav_controller =
         &WebContents()->GetController();
-    NavigationObserver nav_observer(WebContents());
     WindowedAuthNeededObserver auth_needed_observer(nav_controller);
+    // Navigate to a page requiring HTTP auth
+    ui_test_utils::NavigateToURL(browser(),
+                                 http_test_server.GetURL("/basic_auth"));
+
     auth_needed_observer.Wait();
 
+    NavigationObserver nav_observer(WebContents());
     WindowedAuthSuppliedObserver auth_supplied_observer(nav_controller);
     // Offer valid credentials on the auth challenge.
     ASSERT_EQ(1u, login_observer.handlers().size());
@@ -3752,19 +3743,15 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
     std::string path("/basic_auth");
     if (is_realm_empty)
       path += "/empty_realm";
-    // Navigate to a page requiring HTTP auth. Wait for the tab to get the
-    // correct WebContents, but don't wait for navigation, which only finishes
-    // after authentication.
-    ui_test_utils::NavigateToURLWithDisposition(
-        browser(), http_test_server.GetURL(path),
-        WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
 
     content::NavigationController* nav_controller =
         &WebContents()->GetController();
-    NavigationObserver nav_observer(WebContents());
     WindowedAuthNeededObserver auth_needed_observer(nav_controller);
+    // Navigate to a page requiring HTTP auth.
+    ui_test_utils::NavigateToURL(browser(), http_test_server.GetURL(path));
     auth_needed_observer.Wait();
 
+    NavigationObserver nav_observer(WebContents());
     WindowedAuthSuppliedObserver auth_supplied_observer(nav_controller);
 
     ASSERT_EQ(1u, login_observer.handlers().size());

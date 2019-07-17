@@ -2221,6 +2221,8 @@ static_library("test_support") {
     "attestation/mock_enrollment_certificate_uploader.h",
     "attestation/mock_machine_certificate_uploader.cc",
     "attestation/mock_machine_certificate_uploader.h",
+    "certificate_provider/test_certificate_provider_extension.cc",
+    "certificate_provider/test_certificate_provider_extension.h",
     "crostini/crostini_test_helper.cc",
     "crostini/crostini_test_helper.h",
     "drive/drivefs_test_support.cc",

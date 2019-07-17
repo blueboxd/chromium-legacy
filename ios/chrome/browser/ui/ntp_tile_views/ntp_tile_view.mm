@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_view.h"
 
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -16,7 +17,6 @@ namespace {
 const NSInteger kLabelNumLines = 2;
 const CGFloat kSpaceIconTitle = 10;
 const CGFloat kIconSize = 56;
-const CGFloat kTitleAlpha = 0.54;
 const CGFloat kPreferredMaxWidth = 73;
 
 }  // namespace
@@ -27,7 +27,7 @@ const CGFloat kPreferredMaxWidth = 73;
   self = [super initWithFrame:frame];
   if (self) {
     _titleLabel = [[UILabel alloc] init];
-    _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:kTitleAlpha];
+    _titleLabel.textColor = UIColor.cr_secondaryLabelColor;
     _titleLabel.font = [self titleLabelFont];
     _titleLabel.textAlignment = NSTextAlignmentCenter;
     _titleLabel.preferredMaxLayoutWidth = kPreferredMaxWidth;

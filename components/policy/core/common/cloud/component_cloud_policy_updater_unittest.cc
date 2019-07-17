@@ -123,8 +123,8 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   store_ = std::make_unique<ComponentCloudPolicyStore>(
       &store_delegate_, cache_.get(), dm_protocol::kChromeExtensionPolicyType,
       POLICY_SOURCE_CLOUD);
-  store_->SetCredentials(PolicyBuilder::GetFakeAccountIdForTesting(),
-                         PolicyBuilder::kFakeToken,
+  store_->SetCredentials(PolicyBuilder::kFakeUsername,
+                         PolicyBuilder::kFakeGaiaId, PolicyBuilder::kFakeToken,
                          PolicyBuilder::kFakeDeviceId, public_key_,
                          PolicyBuilder::kFakePublicKeyVersion);
   auto url_loader_factory =

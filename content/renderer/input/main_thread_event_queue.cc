@@ -477,8 +477,9 @@ static bool IsAsyncTouchMove(
 }
 
 void MainThreadEventQueue::RafFallbackTimerFired() {
-  UMA_HISTOGRAM_BOOLEAN("Event.MainThreadEventQueue.FlushQueueNoBeginMainFrame",
-                        true);
+  // This fallback fires when the browser doesn't produce main frames for a
+  // variety of reasons. (eg. Tab gets hidden). We definitely don't want input
+  // to stay forever in the queue.
   DispatchRafAlignedInput(base::TimeTicks::Now());
 }
 

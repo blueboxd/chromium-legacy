@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "components/services/filesystem/public/interfaces/types.mojom-shared.h"
+#include "components/services/filesystem/public/mojom/types.mojom-shared.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/zlib/google/zip.h"
 

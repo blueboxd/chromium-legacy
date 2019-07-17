@@ -18,7 +18,7 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
-#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
+#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 
 using ThreadPoolExecutionMode =
     base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode;

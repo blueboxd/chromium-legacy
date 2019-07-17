@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/services/filesystem/public/interfaces/file_system.mojom.h"
+#include "components/services/filesystem/public/mojom/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"

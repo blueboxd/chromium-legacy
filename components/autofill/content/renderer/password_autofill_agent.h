@@ -129,8 +129,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(const PasswordFormFillData& form_data) override;
   void FillIntoFocusedField(bool is_password,
-                            const base::string16& credential,
-                            FillIntoFocusedFieldCallback callback) override;
+                            const base::string16& credential) override;
   void SetLoggingState(bool active) override;
   void AutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions) override;

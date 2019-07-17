@@ -319,8 +319,7 @@ using base::UserMetricsAction;
 - (void)addFakeTapView {
   UIButton* fakeTapButton = [[UIButton alloc] init];
   fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
-  fakeTapButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
+  fakeTapButton.isAccessibilityElement = NO;
   [self.headerView addToolbarView:fakeTapButton];
   [fakeTapButton addTarget:self
                     action:@selector(fakeboxTapped)

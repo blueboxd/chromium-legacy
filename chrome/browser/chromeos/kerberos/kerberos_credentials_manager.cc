@@ -826,11 +826,13 @@ void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
     const std::string& principal_name) {
   // TODO(https://crbug.com/952245): Right now, the reauth dialog is tied to the
   // settings. Consider creating a standalone reauth dialog.
-  kerberos_ticket_expiry_notification::Close(primary_profile_);
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       primary_profile_,
       chrome::kKerberosAccountsSubPage + std::string("?kerberos_reauth=") +
           net::EscapeQueryParamValue(principal_name, false /* use_plus */));
+
+  // Close last! |principal_name| is owned by the notification.
+  kerberos_ticket_expiry_notification::Close(primary_profile_);
 }
 
 }  // namespace chromeos

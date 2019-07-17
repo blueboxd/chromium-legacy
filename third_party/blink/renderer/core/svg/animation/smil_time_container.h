@@ -46,9 +46,8 @@ class SVGSVGElement;
 class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
  public:
   // Sorted list
-  using ScheduledVector = SMILAnimationSandwich::ScheduledVector;
   using AnimationId = std::pair<WeakMember<SVGElement>, QualifiedName>;
-  using AnimationsMap = HeapHashMap<AnimationId, Member<ScheduledVector>>;
+  using AnimationsMap = HeapHashMap<AnimationId, Member<SMILAnimationSandwich>>;
 
   explicit SMILTimeContainer(SVGSVGElement& owner);
   ~SMILTimeContainer();

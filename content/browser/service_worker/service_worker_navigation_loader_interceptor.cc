@@ -77,6 +77,7 @@ void MaybeCreateLoaderOnIO(
     bool are_ancestors_secure,
     int frame_tree_node_id,
     ResourceType resource_type,
+    bool skip_service_worker,
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -108,10 +109,9 @@ void MaybeCreateLoaderOnIO(
     DCHECK(!handle_core->interceptor());
     handle_core->set_interceptor(
         std::make_unique<ServiceWorkerControlleeRequestHandler>(
-            context_core->AsWeakPtr(), provider_host, resource_type));
+            context_core->AsWeakPtr(), provider_host, resource_type,
+            skip_service_worker));
   }
-
-  // TODO(crbug.com/926114): Respect |skip_service_worker_|.
 
   // Start the inner interceptor. We continue in LoaderCallbackWrapperOnIO().
   //
@@ -163,7 +163,8 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MaybeCreateLoaderOnIO, GetWeakPtr(), handle_->core(),
                      are_ancestors_secure_, frame_tree_node_id_, resource_type_,
-                     tentative_resource_request, browser_context));
+                     skip_service_worker_, tentative_resource_request,
+                     browser_context));
 }
 
 base::Optional<SubresourceLoaderParams>

@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/text_input_type.h"
@@ -104,7 +105,8 @@ class Arrow : public Button {
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kPopUpButton;
+    node_data->role = ax::mojom::Role::kComboBoxMenuButton;
+    node_data->SetName(GetAccessibleName());
     node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
     if (GetEnabled())
       node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
@@ -275,6 +277,7 @@ class EditableCombobox::EditableComboboxPreTargetHandler
         event->flags() == event->changed_button_flags())
       HandlePressEvent(event->root_location());
   }
+
   void OnTouchEvent(ui::TouchEvent* event) override {
     if (event->type() == ui::ET_TOUCH_PRESSED)
       HandlePressEvent(event->root_location());
@@ -354,7 +357,6 @@ void EditableCombobox::SetText(const base::string16& text) {
   // SetText does not actually notify the TextfieldController, so we call the
   // handling code directly.
   HandleNewContent(text);
-  ShowDropDownMenu();
 }
 
 const gfx::FontList& EditableCombobox::GetFontList() const {
@@ -367,6 +369,8 @@ void EditableCombobox::SelectRange(const gfx::Range& range) {
 
 void EditableCombobox::SetAccessibleName(const base::string16& name) {
   textfield_->SetAccessibleName(name);
+  if (arrow_)
+    arrow_->SetAccessibleName(name);
 }
 
 void EditableCombobox::SetAssociatedLabel(View* labelling_view) {
@@ -408,6 +412,13 @@ void EditableCombobox::OnThemeChanged() {
   textfield_->OnThemeChanged();
 }
 
+void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kComboBoxGrouping;
+
+  node_data->SetName(textfield_->accessible_name());
+  node_data->SetValue(GetText());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, TextfieldController overrides:
 
@@ -417,15 +428,23 @@ void EditableCombobox::ContentsChanged(Textfield* sender,
   ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
 }
 
+bool EditableCombobox::HandleKeyEvent(Textfield* sender,
+                                      const ui::KeyEvent& key_event) {
+  if (key_event.type() == ui::ET_KEY_PRESSED &&
+      (key_event.key_code() == ui::VKEY_UP ||
+       key_event.key_code() == ui::VKEY_DOWN)) {
+    ShowDropDownMenu(ui::MENU_SOURCE_KEYBOARD);
+    return true;
+  }
+  return false;
+}
+
 bool EditableCombobox::HandleMouseEvent(Textfield* sender,
                                         const ui::MouseEvent& mouse_event) {
   // We show the menu on mouse release instead of mouse press so that the menu
   // showing up doesn't interrupt a potential text selection operation by the
   // user.
-  if (mouse_event.type() == ui::ET_MOUSE_PRESSED) {
-    mouse_pressed_ = true;
-  } else if (mouse_event.type() == ui::ET_MOUSE_RELEASED) {
-    mouse_pressed_ = false;
+  if (mouse_event.type() == ui::ET_MOUSE_RELEASED) {
     ShowDropDownMenu(ui::MENU_SOURCE_MOUSE);
   }
   return false;
@@ -443,14 +462,6 @@ bool EditableCombobox::HandleGestureEvent(
 
 void EditableCombobox::OnViewBlurred(View* observed_view) {
   CloseMenu();
-}
-
-void EditableCombobox::OnViewFocused(View* observed_view) {
-  // We only show the menu if the mouse is not currently pressed to avoid
-  // interrupting a text selection operation. The menu will be shown on mouse
-  // release inside HandleMouseEvent.
-  if (!mouse_pressed_)
-    ShowDropDownMenu();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -516,7 +527,7 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
     CloseMenu();
     return;
   }
-  if (!textfield_->HasFocus() || (menu_runner_ && menu_runner_->IsRunning()))
+  if (menu_runner_ && menu_runner_->IsRunning())
     return;
 
   // Since we don't capture the mouse, we want to see the events that happen in

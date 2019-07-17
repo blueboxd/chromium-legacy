@@ -15,6 +15,10 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
+
+class HeapThreadTest : public TestSupportingGC {};
+class HeapThreadDeathTest : public TestSupportingGC {};
+
 namespace heap_thread_test {
 
 static Mutex& ActiveThreadMutex() {
@@ -136,7 +140,7 @@ class MemberSameThreadCheckTester : public AlternatingThreadTester {
 // TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
 #if !defined(OS_MACOSX)
-TEST(HeapDeathTest, MemberSameThreadCheck) {
+TEST_F(HeapThreadDeathTest, MemberSameThreadCheck) {
   EXPECT_DEATH(MemberSameThreadCheckTester().Test(), "");
 }
 #endif
@@ -159,7 +163,7 @@ class PersistentSameThreadCheckTester : public AlternatingThreadTester {
 // TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
 #if !defined(OS_MACOSX)
-TEST(HeapDeathTest, PersistentSameThreadCheck) {
+TEST_F(HeapThreadDeathTest, PersistentSameThreadCheck) {
   EXPECT_DEATH(PersistentSameThreadCheckTester().Test(), "");
 }
 #endif
@@ -183,7 +187,7 @@ class MarkingSameThreadCheckTester : public AlternatingThreadTester {
 
     // This will try to mark MainThreadObject when it tries to mark Object
     // it should crash.
-    PreciselyCollectGarbage();
+    TestSupportingGC::PreciselyCollectGarbage();
   }
 
   void WorkerThreadMain() override {
@@ -199,7 +203,7 @@ class MarkingSameThreadCheckTester : public AlternatingThreadTester {
 // TODO(keishi) This test is flaky on mac-rel bot.
 // crbug.com/709069
 #if !defined(OS_MACOSX)
-TEST(HeapDeathTest, MarkingSameThreadCheck) {
+TEST_F(HeapThreadDeathTest, MarkingSameThreadCheck) {
   // This will crash during marking, at the DCHECK in Visitor::markHeader() or
   // earlier.
   EXPECT_DEATH(MarkingSameThreadCheckTester().Test(), "");
@@ -261,7 +265,7 @@ class CrossThreadWeakPersistentTester : public AlternatingThreadTester {
   CrossThreadWeakPersistent<DestructorLockingObject> object_;
 };
 
-TEST(HeapThreadTest, CrossThreadWeakPersistent) {
+TEST_F(HeapThreadTest, CrossThreadWeakPersistent) {
   CrossThreadWeakPersistentTester().Test();
 }
 

@@ -96,7 +96,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
-#include "net/log/net_log.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/network_service.h"
@@ -331,9 +330,6 @@ AwContentBrowserClient::AwContentBrowserClient(
   frame_interfaces_.AddInterface(
       base::BindRepeating(&DummyBindPasswordManagerDriver));
   sniff_file_urls_ = AwSettings::GetAllowSniffingFileUrls();
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    non_network_service_net_log_.reset(new net::NetLog());
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
@@ -357,12 +353,10 @@ network::mojom::NetworkContextPtr AwContentBrowserClient::CreateNetworkContext(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return nullptr;
 
-  // There is only one BrowserContext in WebView, so initialize this now as it
-  // depends on the PrefService which is owned by the BrowserContext.
-  auto* aw_context = static_cast<AwBrowserContext*>(context);
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
-      aw_context->CreateHttpAuthDynamicParams());
+      AwBrowserProcess::GetInstance()->CreateHttpAuthDynamicParams());
 
+  auto* aw_context = static_cast<AwBrowserContext*>(context);
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
       aw_context->GetNetworkContextParams(in_memory, relative_partition_path);
@@ -624,10 +618,6 @@ bool AwContentBrowserClient::CanCreateWindow(
 
 void AwContentBrowserClient::ResourceDispatcherHostCreated() {
   AwResourceDispatcherHostDelegate::ResourceDispatcherHostCreated();
-}
-
-net::NetLog* AwContentBrowserClient::GetNonNetworkServiceNetLog() {
-  return non_network_service_net_log_.get();
 }
 
 base::FilePath AwContentBrowserClient::GetDefaultDownloadDirectory() {

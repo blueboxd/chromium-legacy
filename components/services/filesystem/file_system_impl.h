@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "components/services/filesystem/public/interfaces/file_system.mojom.h"
+#include "components/services/filesystem/public/mojom/file_system.mojom.h"
 #include "components/services/filesystem/shared_temp_dir.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 

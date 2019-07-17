@@ -71,7 +71,6 @@ using blink::WebView;
 
 namespace autofill {
 
-using mojom::FillingStatus;
 using mojom::FocusedFieldType;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
@@ -784,22 +783,15 @@ bool PasswordAutofillAgent::FillSuggestion(
 
 void PasswordAutofillAgent::FillIntoFocusedField(
     bool is_password,
-    const base::string16& credential,
-    FillIntoFocusedFieldCallback callback) {
-  if (focused_input_element_.IsNull()) {
-    std::move(callback).Run(FillingStatus::ERROR_NO_VALID_FIELD);
+    const base::string16& credential) {
+  if (focused_input_element_.IsNull())
     return;
-  }
-  if (is_password) {
-    if (!focused_input_element_.IsPasswordFieldForAutofill()) {
-      std::move(callback).Run(FillingStatus::ERROR_NOT_ALLOWED);
-      return;
-    }
-    FillPasswordFieldAndSave(&focused_input_element_, credential);
-  } else {
+  if (!is_password) {
     FillField(&focused_input_element_, credential);
   }
-  std::move(callback).Run(FillingStatus::SUCCESS);
+  if (!focused_input_element_.IsPasswordFieldForAutofill())
+    return;
+  FillPasswordFieldAndSave(&focused_input_element_, credential);
 }
 
 void PasswordAutofillAgent::FillField(WebInputElement* input,

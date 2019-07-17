@@ -64,10 +64,12 @@ bool ShouldFallbackToLoadOfflinePage(
 ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    ResourceType resource_type)
+    ResourceType resource_type,
+    bool skip_service_worker)
     : context_(std::move(context)),
       provider_host_(std::move(provider_host)),
       resource_type_(resource_type),
+      skip_service_worker_(skip_service_worker),
       force_update_started_(false) {
   DCHECK(ServiceWorkerUtils::IsMainResourceType(resource_type));
 }
@@ -106,8 +108,26 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     FallbackCallback fallback_callback) {
   ClearJob();
 
-  if (!context_ || !provider_host_) {
+  if (!provider_host_) {
     // We can't do anything other than to fall back to network.
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Update the provider host with this request, clearing old controller state
+  // if this is a redirect. It's important to update the host before falling
+  // back to network below, so service worker APIs still work even if the
+  // service worker is bypassed for request interception.
+  provider_host_->SetControllerRegistration(nullptr,
+                                            /*notify_controllerchange=*/false);
+  stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
+  provider_host_->UpdateUrls(stripped_url_,
+                             tentative_resource_request.site_for_cookies);
+
+  // Fall back to network if we were instructed to bypass the service worker for
+  // request interception, or if the context is gone so we have to bypass
+  // anyway.
+  if (skip_service_worker_ || !context_) {
     std::move(callback).Run({});
     return;
   }
@@ -127,23 +147,15 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
-  resource_context_ = resource_context;
-
   TRACE_EVENT_ASYNC_BEGIN1(
       "ServiceWorker",
       "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this, "URL",
       tentative_resource_request.url.spec());
-  // The provider host may already have set a controller in redirect case,
-  // unset it now.
-  provider_host_->SetControllerRegistration(
-      nullptr, false /* notify_controllerchange */);
 
   loader_callback_ = std::move(callback);
   fallback_callback_ = std::move(fallback_callback);
-  stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
-  provider_host_->UpdateUrls(stripped_url_,
-                             tentative_resource_request.site_for_cookies);
   registration_lookup_start_time_ = base::TimeTicks::Now();
+  resource_context_ = resource_context;
 
   // Look up a registration.
   context_->storage()->FindRegistrationForDocument(

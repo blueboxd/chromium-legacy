@@ -12,7 +12,7 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
   ]
 
   public_deps = [

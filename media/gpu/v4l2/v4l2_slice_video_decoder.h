@@ -143,7 +143,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Setup format for V4L2 output buffers.
   bool SetupOutputFormat(uint32_t output_format_fourcc);
   // Update the format of frames in |frame_pool_|.
-  void UpdateVideoFramePoolFormat();
+  void UpdateVideoFramePoolFormat(const gfx::Rect& visible_rect);
 
   // Destroy on decoder thread.
   void DestroyTask();
@@ -221,7 +221,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   // Parameters for generating output VideoFrame.
   base::Optional<VideoFrameLayout> frame_layout_;
-  gfx::Rect visible_rect_;
   // Ratio of natural_size to visible_rect of the output frame.
   double pixel_aspect_ratio_;
 

@@ -738,16 +738,7 @@ AtkHyperlink* GetLink(AtkHypertext* hypertext, int index) {
   if (!link)
     return nullptr;
 
-  AtkHyperlink* atk_hyperlink = link->GetAtkHyperlink();
-  for (const auto& key_value : ax_hypertext.hyperlink_offset_to_index) {
-    if (key_value.second == index) {
-      ax_platform_atk_hyperlink_set_indices(
-          AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink), key_value.first,
-          key_value.first + 1);
-    }
-  }
-
-  return atk_hyperlink;
+  return link->GetAtkHyperlink();
 }
 
 int GetNLinks(AtkHypertext* hypertext) {
@@ -1948,9 +1939,13 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (role == ATK_ROLE_IMAGE || role == ATK_ROLE_IMAGE_MAP)
     interface_mask |= 1 << ATK_IMAGE_INTERFACE;
 
-  // HyperlinkImpl interface
-  if (role == ATK_ROLE_LINK)
+  // The AtkHyperlinkImpl interface allows getting a AtkHyperlink from an
+  // AtkObject. It is indeed implemented by actual web hyperlinks, but also by
+  // objects that will become embedded objects in ATK hypertext, so the name is
+  // a bit of a misnomer from the ATK API.
+  if (role == ATK_ROLE_LINK || (!IsTextOnlyObject() && GetParent())) {
     interface_mask |= 1 << ATK_HYPERLINK_INTERFACE;
+  }
 
   if (role == ATK_ROLE_FRAME)
     interface_mask |= 1 << ATK_WINDOW_INTERFACE;
@@ -2258,6 +2253,9 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_IMAGE;
     case ax::mojom::Role::kImageMap:
       return ATK_ROLE_IMAGE_MAP;
+    case ax::mojom::Role::kInlineTextBox:
+      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
+      return ATK_ROLE_TEXT;
     case ax::mojom::Role::kInputTime:
       return ATK_ROLE_DATE_EDITOR;
     case ax::mojom::Role::kLabelText:
@@ -2276,6 +2274,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kLineBreak:
       // TODO(Accessibility) Having a separate accessible object for line breaks
       // is inconsistent with other implementations. http://crbug.com/873144#c1.
+      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
       return ATK_ROLE_TEXT;
     case ax::mojom::Role::kLink:
       return ATK_ROLE_LINK;
@@ -2390,6 +2389,7 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
         default:
           break;
       }
+      // TODO(jdiggs) This should be ATK_ROLE_STATIC. https://crbug.com/984590
       return ATK_ROLE_TEXT;
     }
     case ax::mojom::Role::kStatus:
@@ -2415,7 +2415,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_DESCRIPTION_TERM;
     case ax::mojom::Role::kTitleBar:
       return ATK_ROLE_TITLE_BAR;
-    case ax::mojom::Role::kInlineTextBox:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kSearchBox:
       if (GetData().HasState(ax::mojom::State::kProtected))
@@ -3204,6 +3203,26 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
   }
 }
 
+base::Optional<std::pair<int, int>>
+AXPlatformNodeAuraLinux::GetEmbeddedObjectIndicesForId(int id) {
+  auto iterator =
+      std::find(hypertext_.hyperlinks.begin(), hypertext_.hyperlinks.end(), id);
+  if (iterator == hypertext_.hyperlinks.end())
+    return base::nullopt;
+  int hyperlink_index = std::distance(hypertext_.hyperlinks.begin(), iterator);
+
+  auto offset = std::find_if(hypertext_.hyperlink_offset_to_index.begin(),
+                             hypertext_.hyperlink_offset_to_index.end(),
+                             [&](const std::pair<int32_t, int32_t>& pair) {
+                               return pair.second == hyperlink_index;
+                             });
+  if (offset == hypertext_.hyperlink_offset_to_index.end())
+    return base::nullopt;
+
+  return std::make_pair(UTF16ToUnicodeOffsetInText(offset->first),
+                        UTF16ToUnicodeOffsetInText(offset->first + 1));
+}
+
 void AXPlatformNodeAuraLinux::UpdateHypertext() {
   AXHypertext old_hypertext = hypertext_;
   base::OffsetAdjuster::Adjustments old_adjustments = GetHypertextAdjustments();
@@ -3533,12 +3552,26 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetDocumentAttributes() const {
 //
 
 AtkHyperlink* AXPlatformNodeAuraLinux::GetAtkHyperlink() {
-  if (!atk_hyperlink_) {
-    atk_hyperlink_ =
-        ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
-    ax_platform_atk_hyperlink_set_object(
-        AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), this);
-  }
+  if (atk_hyperlink_)
+    return atk_hyperlink_;
+
+  atk_hyperlink_ =
+      ATK_HYPERLINK(g_object_new(AX_PLATFORM_ATK_HYPERLINK_TYPE, 0));
+  ax_platform_atk_hyperlink_set_object(
+      AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), this);
+
+  auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent());
+  if (!parent)
+    return atk_hyperlink_;
+
+  base::Optional<std::pair<int, int>> indices =
+      parent->GetEmbeddedObjectIndicesForId(GetUniqueId());
+  if (!indices.has_value())
+    return atk_hyperlink_;
+
+  ax_platform_atk_hyperlink_set_indices(
+      AX_PLATFORM_ATK_HYPERLINK(atk_hyperlink_), indices->first,
+      indices->second);
 
   return atk_hyperlink_;
 }

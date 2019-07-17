@@ -371,6 +371,12 @@ const char kSendUmaOverAnyNetwork[] =
 const char kSendUmaOverAnyNetworkDescription[] =
     "When enabled, will send UMA data over either WiFi or cellular by default.";
 
+const char kSettingsAddPaymentMethodName[] =
+    "Enable the add payment method button";
+const char kSettingsAddPaymentMethodDescription[] =
+    "Allow a user to add a new credit card to payment methods from the "
+    "settings menu.";
+
 const char kSettingsRefreshName[] = "Enable the UI Refresh for Settings";
 const char kSettingsRefreshDescription[] =
     "Change the UI appearance of the settings to have something in phase with "

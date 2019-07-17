@@ -43,7 +43,7 @@ source_set("service_manager") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//components/services/filesystem:lib",
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//ui/base",
   ]
 

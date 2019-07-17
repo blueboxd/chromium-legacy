@@ -34,7 +34,7 @@ class StubPasswordManagerDriver : public PasswordManagerDriver {
   PasswordAutofillManager* GetPasswordAutofillManager() override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
-  GURL GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedURL() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerDriver);

@@ -222,7 +222,7 @@ const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
       !IsSVGPrefixed(property))
     return nullptr;
 
-  if (IsSVGSMILElement(svg_element))
+  if (IsA<SVGSMILElement>(svg_element))
     return nullptr;
 
   String unprefixed_property = RemoveSVGPrefix(property);

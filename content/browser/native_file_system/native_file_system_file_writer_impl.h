@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_FILE_WRITER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/common/content_export.h"

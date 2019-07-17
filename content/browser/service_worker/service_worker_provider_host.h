@@ -41,7 +41,6 @@ class ServiceWorkerObjectHostTest;
 
 namespace content {
 
-class NavigationLoaderInterceptor;
 class ServiceWorkerContextCore;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
@@ -271,12 +270,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ServiceWorkerRegistration> controller_registration,
       bool notify_controllerchange);
 
-  // Returns an interceptor for a main resource request. May return nullptr if
-  // the request doesn't require interception.
-  std::unique_ptr<NavigationLoaderInterceptor> CreateLoaderInterceptor(
-      ResourceType resource_type,
-      bool skip_service_worker);
-
   // Returns an object info representing |registration|. The object info holds a
   // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
   // |registration| to ensure the host stays alive while the object info is
@@ -297,6 +290,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // ServiceWorkerObjectHost will have an ownership of the |version|.
   base::WeakPtr<ServiceWorkerObjectHost> GetOrCreateServiceWorkerObjectHost(
       scoped_refptr<ServiceWorkerVersion> version);
+
+  // May return nullptr if the context has shut down.
+  base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
 
   // Returns true if the context referred to by this host (i.e. |context_|) is
   // still alive.

@@ -339,8 +339,7 @@ void SVGAnimateElement::CalculateAnimatedValue(float percentage,
   DCHECK_EQ(from_property_->GetType(), GetAnimatedPropertyType());
   DCHECK(to_property_);
 
-  SVGAnimateElement* result_animation_element =
-      ToSVGAnimateElement(result_element);
+  auto* result_animation_element = To<SVGAnimateElement>(result_element);
   DCHECK(result_animation_element->animated_value_);
   DCHECK_EQ(result_animation_element->GetAnimatedPropertyType(),
             GetAnimatedPropertyType());

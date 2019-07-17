@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.pressBack;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
@@ -24,7 +23,6 @@ import static org.junit.Assert.assertThat;
 
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
-import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
@@ -34,7 +32,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardType;
@@ -322,7 +319,7 @@ public class AutofillAssistantPaymentRequestUiTest {
         onView(allOf(withId(R.id.section_title_add_button),
                        isDescendantOfA(is(viewHolder.mContactSection))))
                 .perform(click());
-        onView(withId(R.id.payments_edit_cancel_button)).perform(pressBack());
+        onView(withId(R.id.editor_container)).check(matches(isDisplayed()));
     }
 
     /**
@@ -331,7 +328,6 @@ public class AutofillAssistantPaymentRequestUiTest {
      */
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M, message = "https://crbug.com/984591")
     public void testPaymentMethodsLiveUpdate() throws Exception {
         AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
         AssistantPaymentRequestCoordinator coordinator = createPaymentRequestCoordinator(model);
@@ -377,7 +373,7 @@ public class AutofillAssistantPaymentRequestUiTest {
         onView(allOf(withId(R.id.section_title_add_button),
                        isDescendantOfA(is(viewHolder.mPaymentSection))))
                 .perform(click());
-        onView(withId(R.id.payments_edit_cancel_button)).perform(pressBack());
+        onView(withId(R.id.editor_container)).check(matches(isDisplayed()));
     }
 
     /**

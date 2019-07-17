@@ -89,7 +89,7 @@ void PushMessagingClient::DidGetManifest(
     DidSubscribe(
         service_worker_registration, std::move(callbacks),
         mojom::blink::PushRegistrationStatus::MANIFEST_EMPTY_OR_MISSING,
-        base::nullopt, nullptr, base::nullopt, base::nullopt);
+        nullptr /* subscription */);
     return;
   }
 
@@ -115,7 +115,7 @@ void PushMessagingClient::DoSubscribe(
   if (options->application_server_key.IsEmpty()) {
     DidSubscribe(service_worker_registration, std::move(callbacks),
                  mojom::blink::PushRegistrationStatus::NO_SENDER_ID,
-                 base::nullopt, nullptr, base::nullopt, base::nullopt);
+                 nullptr /* subscription */);
     return;
   }
 
@@ -131,10 +131,7 @@ void PushMessagingClient::DidSubscribe(
     ServiceWorkerRegistration* service_worker_registration,
     std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     mojom::blink::PushRegistrationStatus status,
-    const base::Optional<KURL>& endpoint,
-    mojom::blink::PushSubscriptionOptionsPtr options,
-    const base::Optional<WTF::Vector<uint8_t>>& p256dh,
-    const base::Optional<WTF::Vector<uint8_t>>& auth) {
+    mojom::blink::PushSubscriptionPtr subscription) {
   DCHECK(callbacks);
 
   if (status ==
@@ -142,15 +139,10 @@ void PushMessagingClient::DidSubscribe(
       status == mojom::blink::PushRegistrationStatus::
                     SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE ||
       status == mojom::blink::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
-    DCHECK(endpoint);
-    DCHECK(options);
-    DCHECK(p256dh);
-    DCHECK(auth);
+    DCHECK(subscription);
 
-    callbacks->OnSuccess(PushSubscription::Create(
-        endpoint.value(), options->user_visible_only,
-        options->application_server_key, p256dh.value(), auth.value(),
-        service_worker_registration));
+    callbacks->OnSuccess(PushSubscription::Create(std::move(subscription),
+                                                  service_worker_registration));
   } else {
     callbacks->OnError(PushError::CreateException(
         PushRegistrationStatusToPushErrorType(status),

@@ -44,10 +44,10 @@
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
@@ -393,8 +393,6 @@ void BaseArena::CompleteSweep() {
 
 Address BaseArena::AllocateLargeObject(size_t allocation_size,
                                        size_t gc_info_index) {
-  // TODO(sof): should need arise, support eagerly finalized large objects.
-  CHECK(ArenaIndex() != BlinkGC::kEagerSweepArenaIndex);
   LargeObjectArena* large_object_arena = static_cast<LargeObjectArena*>(
       GetThreadState()->Heap().Arena(BlinkGC::kLargeObjectArenaIndex));
   Address large_object = large_object_arena->AllocateLargeObjectPage(

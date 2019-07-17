@@ -26,6 +26,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
+#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -229,6 +230,8 @@ void LocationBarView::Init() {
     // the left most icon.
     if (send_tab_to_self::IsSendingEnabled())
       params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
+    if (base::FeatureList::IsEnabled(kClickToCallUI))
+      params.types_enabled.push_back(PageActionIconType::kClickToCall);
     if (!base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);

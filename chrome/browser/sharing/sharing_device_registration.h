@@ -84,10 +84,13 @@ class SharingDeviceRegistration {
   void OnFCMTokenDeleted(RegistrationCallback callback,
                          instance_id::InstanceID::Result result);
 
+  // Retrieve encryption info from GCMDriver.
+  void RetrieveEncrpytionInfo(RegistrationCallback callback,
+                              const std::string& fcm_registration_token);
+
   // Callback function responsible for saving device registration information in
   // SharingSyncPreference.
   void OnEncryptionInfoReceived(RegistrationCallback callback,
-                                const std::string& authorization_entity,
                                 const std::string& fcm_registration_token,
                                 std::string p256dh,
                                 std::string auth_secret);
@@ -106,7 +109,6 @@ class SharingDeviceRegistration {
   VapidKeyManager* vapid_key_manager_;
   gcm::GCMDriver* gcm_driver_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
-  std::string registered_authorized_entity_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 

@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace file {

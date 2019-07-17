@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/browser/appcache/appcache_response.h"
+#include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
@@ -18,8 +19,11 @@
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
-// TODO(momohatt): Use ServiceWorkerMetrics for UMA.
+// TODO(momohatt): Add UMA to capture the result of the update checking.
+
+namespace content {
 
 namespace {
 
@@ -66,8 +70,6 @@ constexpr net::NetworkTrafficAnnotationTag kUpdateCheckTrafficAnnotation =
 
 }  // namespace
 
-namespace content {
-
 // This is for debugging https://crbug.com/959627.
 // The purpose is to see where the IOBuffer comes from by checking |__vfptr|.
 class ServiceWorkerSingleScriptUpdateChecker::WrappedIOBuffer
@@ -83,18 +85,20 @@ class ServiceWorkerSingleScriptUpdateChecker::WrappedIOBuffer
 };
 
 ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
-    const GURL& url,
+    const GURL& script_url,
     bool is_main_script,
+    const GURL& main_script_url,
     const GURL& scope,
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
+    const net::HttpRequestHeaders& default_headers,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
     std::unique_ptr<ServiceWorkerResponseReader> copy_reader,
     std::unique_ptr<ServiceWorkerResponseWriter> writer,
     ResultCallback callback)
-    : script_url_(url),
+    : script_url_(script_url),
       is_main_script_(is_main_script),
       scope_(scope),
       force_bypass_cache_(force_bypass_cache),
@@ -106,12 +110,68 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
                        base::SequencedTaskRunnerHandle::Get()),
       callback_(std::move(callback)) {
   network::ResourceRequest resource_request;
-  resource_request.url = url;
-  resource_request.resource_type = static_cast<int>(
-      is_main_script ? ResourceType::kServiceWorker : ResourceType::kScript);
+  resource_request.url = script_url;
+  resource_request.site_for_cookies = main_script_url;
   resource_request.do_not_prompt_for_login = true;
-  if (is_main_script_)
+  resource_request.headers = default_headers;
+
+  // ResourceRequest::request_initiator is the request's origin in the spec.
+  // https://fetch.spec.whatwg.org/#concept-request-origin
+  // It's needed to be set to the origin of the main script url.
+  // https://github.com/w3c/ServiceWorker/issues/1447
+  resource_request.request_initiator = url::Origin::Create(main_script_url);
+
+  if (is_main_script_) {
+    // Set the "Service-Worker" header for the main script request:
+    // https://w3c.github.io/ServiceWorker/#service-worker-script-request
     resource_request.headers.SetHeader("Service-Worker", "script");
+
+    // The "Fetch a classic worker script" uses "same-origin" as mode and
+    // credentials mode.
+    // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
+    resource_request.mode = network::mojom::RequestMode::kSameOrigin;
+    resource_request.credentials_mode =
+        network::mojom::CredentialsMode::kSameOrigin;
+
+    // |fetch_request_context_type| and |resource_type| roughly correspond to
+    // the request's |destination| in the Fetch spec.
+    // The destination is "serviceworker" for the main script.
+    // https://w3c.github.io/ServiceWorker/#update-algorithm
+    resource_request.fetch_request_context_type =
+        static_cast<int>(blink::mojom::RequestContextType::SERVICE_WORKER);
+    resource_request.resource_type =
+        static_cast<int>(ResourceType::kServiceWorker);
+  } else {
+    // The "fetch a classic worker-imported script" doesn't have any statement
+    // about mode and credentials mode. Use the default value, which is
+    // "no-cors".
+    // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-imported-script
+    DCHECK_EQ(network::mojom::RequestMode::kNoCors, resource_request.mode);
+
+    // Explicitly set it to kOmit because the default value of
+    // ResourceRequest::credentials_mode (kInclude) is different from the
+    // default value in the spec "omit".
+    // https://fetch.spec.whatwg.org/#concept-request-credentials-mode
+    //
+    // TODO(https://crbug.com/799935): Remove this once we use kOmit as the
+    // default value.
+    // TODO(https://crbug.com/972458): Need the test.
+    resource_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
+
+    // |fetch_request_context_type| and |resource_type| roughly correspond to
+    // the request's |destination| in the Fetch spec.
+    // The destination is "script" for the imported script.
+    // https://w3c.github.io/ServiceWorker/#update-algorithm
+    resource_request.fetch_request_context_type =
+        static_cast<int>(blink::mojom::RequestContextType::SCRIPT);
+    resource_request.resource_type = static_cast<int>(ResourceType::kScript);
+  }
+
+  // TODO(https://crbug.com/824647): Support ES modules. Use "cors" as a mode
+  // for service worker served as modules, and "omit" as a credentials mode:
+  // https://html.spec.whatwg.org/C/#fetch-a-single-module-script
+
+  SetFetchMetadataHeadersForBrowserInitiatedRequest(&resource_request);
 
   if (ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
           is_main_script_, force_bypass_cache_, update_via_cache_,

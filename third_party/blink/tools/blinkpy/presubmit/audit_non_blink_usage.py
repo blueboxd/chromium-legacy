@@ -657,6 +657,18 @@ _CONFIG = [
         'allowed': [
             'media::.+',
             'base::AutoLock',
+            'base::Hash',
+            'base::Lock',
+            'base::TaskRunner',
+            # TODO(crbug.com/704136): Switch to using frame-based task runners.
+            'base::ThreadTaskRunnerHandle',
+            'cc::SkiaPaintCanvas',
+            'cc::UpdateSubmissionStateCB',
+            'cc::VideoFrameProvider',
+            'cc::VideoLayer',
+            'gpu::gles2::GLES2Interface',
+            'libyuv::.+',
+            'viz::.+',
             'webrtc::AudioTrackInterface',
             'webrtc::VideoTrackInterface',
             'webrtc::MediaStreamTrackInterface',

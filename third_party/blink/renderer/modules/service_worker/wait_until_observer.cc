@@ -294,6 +294,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
     case kPush:
       service_worker_global_scope->DidHandlePushEvent(event_id_, status);
       break;
+    case kPushSubscriptionChange:
+      service_worker_global_scope->DidHandlePushSubscriptionChangeEvent(
+          event_id_, status);
+      break;
     case kSync:
       service_worker_global_scope->DidHandleSyncEvent(event_id_, status);
       break;

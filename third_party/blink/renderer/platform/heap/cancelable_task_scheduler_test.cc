@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -30,7 +31,7 @@ class ParallelTaskRunner : public base::TaskRunner {
 };
 
 template <class Runner>
-class CancelableTaskSchedulerTest : public ::testing::Test {
+class CancelableTaskSchedulerTest : public TestSupportingGC {
  public:
   using Task = CancelableTaskScheduler::Task;
 

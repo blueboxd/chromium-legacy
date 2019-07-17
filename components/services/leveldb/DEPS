@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/services/filesystem/public/interfaces",
+  "+components/services/filesystem/public/mojom",
   "+mojo/public",
   "+mojo/util",
   "+services/service_manager",

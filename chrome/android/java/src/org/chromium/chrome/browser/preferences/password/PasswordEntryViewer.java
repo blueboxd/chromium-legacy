@@ -35,6 +35,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.text.SpanApplier;
@@ -220,7 +221,10 @@ public class PasswordEntryViewer extends Fragment {
             removeItem();
             return true;
         }
-        // TODO(crbug.com/377410): Handle action_edit_saved_password clicks.
+        if (id == R.id.action_edit_saved_password) {
+            PreferencesLauncher.launchSettingsPageCompat(getActivity(), PasswordEntryEditor.class);
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 

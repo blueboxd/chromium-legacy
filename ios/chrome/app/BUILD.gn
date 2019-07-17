@@ -19,12 +19,18 @@ buildflag_header("firebase_buildflags") {
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "app_startup_parameters.h",
+    "app_startup_parameters.mm",
     "deferred_initialization_runner.h",
     "deferred_initialization_runner.mm",
   ]
 
   deps = [
     "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/payments:constants",
+    "//net",
+    "//url",
   ]
 
   libs = [ "Foundation.framework" ]
@@ -34,6 +40,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "app_startup_parameters_unittest.mm",
     "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
     "firebase_utils_unittest.mm",

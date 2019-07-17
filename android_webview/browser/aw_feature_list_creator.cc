@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
@@ -79,6 +80,7 @@ std::unique_ptr<PrefService> CreatePrefService() {
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(pref_registry.get());
 #endif
+  AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(pref_registry.get());
 
   PrefServiceFactory pref_service_factory;
 

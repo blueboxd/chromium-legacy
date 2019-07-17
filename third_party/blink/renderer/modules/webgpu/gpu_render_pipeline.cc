@@ -242,9 +242,13 @@ GPURenderPipeline* GPURenderPipeline::Create(
   dawn_desc.primitiveTopology =
       AsDawnEnum<DawnPrimitiveTopology>(webgpu_desc->primitiveTopology());
 
-  DawnRasterizationStateDescriptor rasterization_state =
-      AsDawnType(webgpu_desc->rasterizationState());
-  dawn_desc.rasterizationState = &rasterization_state;
+  DawnRasterizationStateDescriptor rasterization_state;
+  if (webgpu_desc->hasRasterizationState()) {
+    rasterization_state = AsDawnType(webgpu_desc->rasterizationState());
+    dawn_desc.rasterizationState = &rasterization_state;
+  } else {
+    dawn_desc.rasterizationState = nullptr;
+  }
 
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
 

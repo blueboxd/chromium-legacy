@@ -192,7 +192,8 @@ void WebAppProvider::ConnectSubsystems() {
   pending_app_manager_->SetSubsystems(registrar_.get(),
                                       install_finalizer_.get());
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
-  system_web_app_manager_->SetSubsystems(pending_app_manager_.get());
+  system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
+                                         registrar_.get());
 }
 
 void WebAppProvider::OnRegistryReady() {

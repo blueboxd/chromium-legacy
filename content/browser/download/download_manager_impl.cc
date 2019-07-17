@@ -536,9 +536,11 @@ bool DownloadManagerImpl::InterceptDownload(
   if (info.is_new_download &&
       info.result ==
           download::DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT) {
-    if (web_contents) {
-      std::vector<GURL> url_chain(info.url_chain);
-      GURL url = url_chain.back();
+    std::vector<GURL> url_chain(info.url_chain);
+    GURL url = url_chain.back();
+    if ((url.SchemeIsHTTPOrHTTPS() ||
+         GetContentClient()->browser()->IsHandledURL(url)) &&
+        web_contents) {
       url_chain.pop_back();
       NavigationController::LoadURLParams params(url);
       params.has_user_gesture = info.has_user_gesture;

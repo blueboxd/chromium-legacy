@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
+#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -86,6 +87,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
             params.page_action_icon_delegate);
         page_action_icons_.push_back(native_file_system_icon_);
         break;
+      case PageActionIconType::kClickToCall:
+        click_to_call_icon_view_ =
+            new ClickToCallIconView(params.page_action_icon_delegate);
+        page_action_icons_.push_back(click_to_call_icon_view_);
+        break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
         NOTREACHED();
@@ -132,6 +138,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return send_tab_to_self_icon_view_;
     case PageActionIconType::kNativeFileSystemAccess:
       return native_file_system_icon_;
+    case PageActionIconType::kClickToCall:
+      return click_to_call_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();

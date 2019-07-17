@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/send_tab_to_self/target_device_info.h"

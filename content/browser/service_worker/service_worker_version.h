@@ -527,8 +527,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerVersionBrowserTest;
-  friend class service_worker_registration_unittest::
-      ServiceWorkerActivationTest;
+  friend class ServiceWorkerActivationTest;
   friend class service_worker_version_unittest::ServiceWorkerVersionTest;
   friend class service_worker_navigation_loader_unittest::
       ServiceWorkerNavigationLoaderTest;

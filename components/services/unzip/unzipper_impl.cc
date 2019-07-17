@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "third_party/zlib/google/zip.h"
 #include "third_party/zlib/google/zip_reader.h"
 

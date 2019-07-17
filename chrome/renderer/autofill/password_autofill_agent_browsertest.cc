@@ -49,7 +49,6 @@
 
 using autofill::FormTracker;
 using autofill::PasswordForm;
-using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using autofill::mojom::PasswordFormFieldPredictionType;
 using autofill::mojom::SubmissionIndicatorEvent;
@@ -1749,10 +1748,8 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedReadonlyTextField) {
   // If the field is readonly, it should not be affected.
   SetElementReadOnly(username_element_, true);
   SimulateElementClick(kUsernameName);
-  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
-  EXPECT_CALL(mock_callback, Run(FillingStatus::ERROR_NO_VALID_FIELD));
   password_autofill_agent_->FillIntoFocusedField(
-      /*is_password=*/false, ASCIIToUTF16(kAliceUsername), mock_callback.Get());
+      /*is_password=*/false, ASCIIToUTF16(kAliceUsername));
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 }
 
@@ -1765,10 +1762,8 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedWritableTextField) {
   FocusElement(kUsernameName);
   SetElementReadOnly(username_element_, false);
 
-  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
-  EXPECT_CALL(mock_callback, Run(FillingStatus::SUCCESS));
   password_autofill_agent_->FillIntoFocusedField(
-      /*is_password=*/false, ASCIIToUTF16(kAliceUsername), mock_callback.Get());
+      /*is_password=*/false, ASCIIToUTF16(kAliceUsername));
   CheckTextFieldsDOMState(kAliceUsername, true, std::string(), false);
   CheckUsernameSelection(strlen(kAliceUsername), strlen(kAliceUsername));
 }
@@ -1781,18 +1776,15 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedFieldOnlyIntoPasswordFields) {
   // Filling a password into a username field doesn't work.
   SimulateElementClick(kUsernameName);
 
-  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
-  EXPECT_CALL(mock_callback, Run(FillingStatus::ERROR_NOT_ALLOWED));
   password_autofill_agent_->FillIntoFocusedField(
-      /*is_password=*/true, ASCIIToUTF16(kAlicePassword), mock_callback.Get());
+      /*is_password=*/true, ASCIIToUTF16(kAlicePassword));
   CheckTextFieldsDOMState(std::string(), false, std::string(), false);
 
   // When a password field is focus, the filling works.
   SimulateElementClick(kPasswordName);
 
-  EXPECT_CALL(mock_callback, Run(FillingStatus::SUCCESS));
   password_autofill_agent_->FillIntoFocusedField(
-      /*is_password=*/true, ASCIIToUTF16(kAlicePassword), mock_callback.Get());
+      /*is_password=*/true, ASCIIToUTF16(kAlicePassword));
   CheckTextFieldsDOMState(std::string(), false, kAlicePassword, true);
 }
 
@@ -1808,10 +1800,8 @@ TEST_F(PasswordAutofillAgentTest, FillIntoFocusedFieldForNonClickFocus) {
   // password so the error on failure shows where the filling happened.
   // (see FillIntoFocusedFieldOnlyIntoPasswordFields).
 
-  base::MockCallback<base::OnceCallback<void(FillingStatus)>> mock_callback;
-  EXPECT_CALL(mock_callback, Run(FillingStatus::SUCCESS)).Times(1);
   password_autofill_agent_->FillIntoFocusedField(
-      /*is_password=*/false, ASCIIToUTF16("TextToFill"), mock_callback.Get());
+      /*is_password=*/false, ASCIIToUTF16("TextToFill"));
   CheckTextFieldsDOMState(std::string(), false, "TextToFill", true);
 }
 

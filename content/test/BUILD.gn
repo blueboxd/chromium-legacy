@@ -1921,7 +1921,6 @@ test("content_unittests") {
     "../renderer/media/stream/media_stream_device_observer_unittest.cc",
     "../renderer/media/stream/processed_local_audio_source_unittest.cc",
     "../renderer/media/stream/user_media_client_impl_unittest.cc",
-    "../renderer/media/stream/webmediaplayer_ms_unittest.cc",
     "../renderer/media/video_capture/video_capture_impl_manager_unittest.cc",
     "../renderer/media/video_capture/video_capture_impl_unittest.cc",
     "../renderer/media/webrtc/fake_rtc_rtp_transceiver.cc",

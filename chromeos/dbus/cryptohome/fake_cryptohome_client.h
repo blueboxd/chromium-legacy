@@ -248,6 +248,13 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // Changes the behavior of TpmIsEnabled().
   void set_tpm_is_enabled(bool value) { tpm_is_enabled_ = value; }
 
+  // Sets whether the MountEx() call should fail when the |create| field is not
+  // provided (the error code will be CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND).
+  // This allows to simulate the behavior during the new user profile creation.
+  void set_mount_create_required(bool mount_create_required) {
+    mount_create_required_ = mount_create_required;
+  }
+
   // Sets the unmount result of Unmount() call.
   void set_unmount_result(bool result) { unmount_result_ = result; }
 
@@ -337,11 +344,18 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   void NotifyLowDiskSpace(uint64_t disk_free_bytes);
 
   // MountEx getters.
+  const cryptohome::MountRequest& get_last_mount_request() const {
+    return last_mount_request_;
+  }
   bool to_migrate_from_ecryptfs() const {
     return last_mount_request_.to_migrate_from_ecryptfs();
   }
   bool hidden_mount() const { return last_mount_request_.hidden_mount(); }
   bool public_mount() const { return last_mount_request_.public_mount(); }
+  const cryptohome::AuthorizationRequest& get_last_mount_authentication()
+      const {
+    return last_mount_auth_request_;
+  }
   const std::string& get_secret_for_last_mount_authentication() const {
     return last_mount_auth_request_.key().secret();
   }
@@ -411,6 +425,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   int remove_firmware_management_parameters_from_tpm_call_count_;
 
   int async_call_id_;
+  bool mount_create_required_ = false;
   bool unmount_result_;
   std::vector<uint8_t> system_salt_;
 

@@ -35,10 +35,13 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
     : public NavigationLoaderInterceptor {
  public:
+  // If |skip_service_worker| is true, service workers are bypassed for
+  // request interception.
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      ResourceType resource_type);
+      ResourceType resource_type,
+      bool skip_service_worker);
   ~ServiceWorkerControlleeRequestHandler() override;
 
   // NavigationLoaderInterceptor overrides:
@@ -96,6 +99,10 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   const base::WeakPtr<ServiceWorkerContextCore> context_;
   const base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   const ResourceType resource_type_;
+
+  // If true, service workers are bypassed for request interception.
+  const bool skip_service_worker_;
+
   std::unique_ptr<ServiceWorkerNavigationLoaderWrapper> loader_wrapper_;
   ResourceContext* resource_context_;
   GURL stripped_url_;

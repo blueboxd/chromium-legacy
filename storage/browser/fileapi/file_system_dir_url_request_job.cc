@@ -17,7 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "net/base/directory_listing.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"

@@ -94,6 +94,6 @@ bool IOSChromePasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
-GURL IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
+const GURL& IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
   return delegate_.lastCommittedURL;
 }

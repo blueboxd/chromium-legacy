@@ -75,11 +75,6 @@ class ManualFillingController {
   virtual void NotifyFocusedInputChanged(
       autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
-  // Completes a filling attempt by recording metrics, giving feedback to the
-  // user and dismissing the accessory sheet.
-  virtual void OnFilledIntoFocusedField(
-      autofill::mojom::FillingStatus status) = 0;
-
   // Reports for a source whether it provides suggestions or just default
   // options. The controller then updates the UI visibility accordingly.
   virtual void UpdateSourceAvailability(FillingSource source,

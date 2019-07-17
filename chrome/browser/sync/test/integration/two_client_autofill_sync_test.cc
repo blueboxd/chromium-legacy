@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
 
 // Flaky on all platform. See crbug.com/971666
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillProfileSyncTest,
-                       DISABLED_AddDuplicateProfiles_OneIsVerified) {
+                       AddDuplicateProfiles_OneIsVerified) {
   ASSERT_TRUE(SetupClients());
   base::HistogramTester histograms;
 

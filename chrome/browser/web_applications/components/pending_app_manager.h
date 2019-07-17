@@ -97,8 +97,7 @@ class PendingAppManager {
       InstallSource install_source,
       SynchronizeCallback callback);
 
-  // TODO(crbug.com/973324): Make these protected after removing dependencies on
-  // this method.
+ protected:
   AppRegistrar* registrar() { return registrar_; }
   InstallFinalizer* finalizer() { return finalizer_; }
 

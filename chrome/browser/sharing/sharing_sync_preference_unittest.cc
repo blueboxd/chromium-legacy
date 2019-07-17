@@ -26,6 +26,8 @@ const char kDeviceAuthToken[] = "test_auth_token";
 const char kDeviceP256dh[] = "test_p256dh";
 const int kCapabilities = 1;
 
+const char kAuthorizedEntity[] = "authorized_entity";
+
 }  // namespace
 
 class SharingSyncPreferenceTest : public testing::Test {
@@ -228,4 +230,21 @@ TEST_F(SharingSyncPreferenceTest, MergeDevices_ServerOnlyOrNewer) {
 
   auto merged = SharingSyncPreference::MaybeMergeSyncedDevices(local, server);
   EXPECT_EQ(nullptr, merged);
+}
+
+TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {
+  EXPECT_FALSE(sharing_sync_preference_.GetFCMRegistration());
+
+  base::Time time_now = base::Time::Now();
+  sharing_sync_preference_.SetFCMRegistration(
+      {kAuthorizedEntity, kDeviceFcmToken, time_now});
+
+  auto fcm_registration = sharing_sync_preference_.GetFCMRegistration();
+  EXPECT_TRUE(fcm_registration);
+  EXPECT_EQ(kAuthorizedEntity, fcm_registration->authorized_entity);
+  EXPECT_EQ(kDeviceFcmToken, fcm_registration->fcm_token);
+  EXPECT_EQ(time_now, fcm_registration->timestamp);
+
+  sharing_sync_preference_.ClearFCMRegistration();
+  EXPECT_FALSE(sharing_sync_preference_.GetFCMRegistration());
 }

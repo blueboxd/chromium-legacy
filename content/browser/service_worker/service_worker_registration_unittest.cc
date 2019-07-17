@@ -32,7 +32,9 @@
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/test_service_worker_observer.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/core/embedder/embedder.h"
@@ -43,7 +45,8 @@
 #include "url/gurl.h"
 
 namespace content {
-namespace service_worker_registration_unittest {
+
+namespace {
 
 // From service_worker_registration.cc.
 constexpr base::TimeDelta kMaxLameDuckTime = base::TimeDelta::FromMinutes(5);
@@ -72,12 +75,14 @@ int CreateInflightRequest(ServiceWorkerVersion* version) {
                                base::DoNothing());
 }
 
-static void SaveStatusCallback(bool* called,
-                               blink::ServiceWorkerStatusCode* out,
-                               blink::ServiceWorkerStatusCode status) {
+void SaveStatusCallback(bool* called,
+                        blink::ServiceWorkerStatusCode* out,
+                        blink::ServiceWorkerStatusCode status) {
   *called = true;
   *out = status;
 }
+
+}  // namespace
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
@@ -173,13 +178,17 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
-    context()->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
-  }
+    // Create a StoragePartition with the testing browser context so that the
+    // ServiceWorkerUpdateChecker can find the BrowserContext through it.
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        helper_->browser_context(), /* in_memory= */ true, base::FilePath(),
+        /* partition_domain= */ "");
+    helper_->context_wrapper()->set_storage_partition(
+        storage_partition_impl_.get());
 
-  void TearDown() override {
-    helper_.reset();
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop loop;
+    context()->storage()->LazyInitializeForTest(loop.QuitClosure());
+    loop.Run();
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
@@ -225,6 +234,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
  protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
 };
 
 TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
@@ -1386,5 +1396,4 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest, UpdateFound) {
   EXPECT_EQ(1, mock_registration_object->update_found_called_count());
 }
 
-}  // namespace service_worker_registration_unittest
 }  // namespace content

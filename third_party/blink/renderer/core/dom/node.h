@@ -165,13 +165,12 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Override operator new to allocate Node subtype objects onto
   // a dedicated heap.
-  static void* AllocateObject(size_t size, bool is_eager) {
+  static void* AllocateObject(size_t size) {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<Node>::kAffinity>::GetState();
     const char* type_name = "blink::Node";
     return state->Heap().AllocateOnArenaIndex(
-        state, size,
-        is_eager ? BlinkGC::kEagerSweepArenaIndex : BlinkGC::kNodeArenaIndex,
+        state, size, BlinkGC::kNodeArenaIndex,
         GCInfoTrait<EventTarget>::Index(), type_name);
   }
 

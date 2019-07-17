@@ -105,10 +105,10 @@ class CloudPolicyValidatorTest : public testing::Test {
         std::move(policy_response), base::ThreadTaskRunnerHandle::Get());
     validator->ValidateTimestamp(timestamp_, timestamp_option_);
     if (validate_by_gaia_id_) {
-      validator->ValidateUser(
-          AccountId::FromGaiaId(PolicyBuilder::kFakeGaiaId));
+      validator->ValidateUsernameAndGaiaId(/*username=*/std::string(),
+                                           PolicyBuilder::kFakeGaiaId);
     } else {
-      validator->ValidateUsername(PolicyBuilder::kFakeUsername, true);
+      validator->ValidateUsername(PolicyBuilder::kFakeUsername);
     }
     if (!owning_domain_.empty())
       validator->ValidateDomain(owning_domain_);

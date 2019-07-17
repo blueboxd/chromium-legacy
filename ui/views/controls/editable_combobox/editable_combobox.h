@@ -121,17 +121,19 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Overridden from View:
   void Layout() override;
   void OnThemeChanged() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from TextfieldController:
   void ContentsChanged(Textfield* sender,
                        const base::string16& new_contents) override;
+  bool HandleKeyEvent(Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
   bool HandleMouseEvent(Textfield* sender,
                         const ui::MouseEvent& mouse_event) override;
   bool HandleGestureEvent(Textfield* sender,
                           const ui::GestureEvent& gesture_event) override;
 
   // Overridden from ViewObserver:
-  void OnViewFocused(View* observed_view) override;
   void OnViewBlurred(View* observed_view) override;
 
   // Overridden from ButtonListener:
@@ -158,10 +160,6 @@ class VIEWS_EXPORT EditableCombobox : public View,
   const int text_style_;
 
   const Type type_;
-
-  // True between mouse press and release, used to avoid opening the menu and
-  // interrupting textfield selection interactions.
-  bool mouse_pressed_ = false;
 
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;

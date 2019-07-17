@@ -22,7 +22,6 @@
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/media/stream/media_stream_renderer_factory_impl.h"
-#include "content/renderer/media/stream/webmediaplayer_ms.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "url/origin.h"
 
@@ -541,7 +541,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
       CreateSubmitter(&video_frame_compositor_task_runner, settings);
 
   DCHECK(layer_tree_view);
-  return new WebMediaPlayerMS(
+  return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(),
       std::make_unique<RenderMediaLog>(
           url::Origin(security_origin).GetURL(),

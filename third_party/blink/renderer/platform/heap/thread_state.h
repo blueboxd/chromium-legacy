@@ -535,8 +535,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void UpdateIncrementalMarkingStepDuration();
 
-  void EagerSweep();
-
   void SynchronizeAndFinishConcurrentSweeping();
 
   void InvokePreFinalizers();

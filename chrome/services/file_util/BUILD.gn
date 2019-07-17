@@ -27,7 +27,7 @@ source_set("lib") {
       "zip_file_creator.h",
     ]
 
-    deps += [ "//components/services/filesystem/public/interfaces" ]
+    deps += [ "//components/services/filesystem/public/mojom" ]
   }
 
   if (safe_browsing_mode == 1) {

@@ -177,6 +177,9 @@ TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_NonExistingAccount) {
 TEST_F(AccountsCookieMutatorTest, AddAccountToCookie_ExistingAccount) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kAddAccountToCookie);
+  // Adding an account with refresh token will trigger a cookie jar update.
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
@@ -239,6 +242,9 @@ TEST_F(AccountsCookieMutatorTest,
        AddAccountToCookieWithAccessToken_ExistingAccount) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kAddAccountToCookie);
+  // Adding an account with refresh token will trigger a cookie jar update.
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
@@ -292,6 +298,9 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllNonExistingAccounts) {
 TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kSetAccountsInCookie);
+  // Adding an account with refresh token will trigger a cookie jar update.
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   base::RunLoop run_loop;
@@ -316,6 +325,9 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
 TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
   PrepareURLLoaderResponsesForAction(
       AccountsCookiesMutatorAction::kSetAccountsInCookie);
+  // Adding an account with refresh token will trigger a cookie jar update.
+  PrepareURLLoaderResponsesForAction(
+      AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts);
 
   std::string account_id = AddAcountWithRefreshToken(kTestAccountEmail);
   std::string other_account_id =

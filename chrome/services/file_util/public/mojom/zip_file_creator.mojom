@@ -7,7 +7,7 @@
 
 module chrome.mojom;
 
-import "components/services/filesystem/public/interfaces/directory.mojom";
+import "components/services/filesystem/public/mojom/directory.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 

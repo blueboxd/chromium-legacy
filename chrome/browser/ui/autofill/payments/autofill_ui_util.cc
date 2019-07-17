@@ -54,6 +54,7 @@ void UpdatePageActionIcon(PageActionIconType icon_type,
             ->GetOmniboxPageActionIconContainer()
             ->UpdatePageActionIcon(icon_type);
         break;
+      case PageActionIconType::kClickToCall:
       case PageActionIconType::kFind:
       case PageActionIconType::kIntentPicker:
       case PageActionIconType::kNativeFileSystemAccess:

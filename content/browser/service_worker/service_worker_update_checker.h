@@ -15,8 +15,18 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
+// Used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
+//
+// This is responsible for byte-for-byte update checking. Mostly corresponding
+// to step 1-9 in [[Update]] in the spec, but this stops to fetch scripts after
+// any changes found.
+// https://w3c.github.io/ServiceWorker/#update-algorithm
+//
+// This is owned and used by ServiceWorkerRegisterJob as a part of the update
+// logic.
 class CONTENT_EXPORT ServiceWorkerUpdateChecker {
  public:
   // Data of each compared script needed in remaining update process
@@ -65,10 +75,11 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
-      base::TimeDelta time_since_last_check);
+      base::TimeDelta time_since_last_check,
+      ServiceWorkerContextCore* context);
   ~ServiceWorkerUpdateChecker();
 
-  // |callback| is always triggered when Start() finishes.
+  // |callback| is always triggered when the update check finishes.
   void Start(UpdateStatusCallback callback);
 
   // This transfers the ownership of the check result to the caller. It only
@@ -88,6 +99,7 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
  private:
   void CheckOneScript(const GURL& url, const int64_t resource_id);
+  void OnGetDefaultHeaders(base::Optional<net::HttpRequestHeaders> header);
 
   std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
@@ -108,8 +120,15 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   const blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;
   const base::TimeDelta time_since_last_check_;
 
+  // Headers that need to be added to network requests for update checking.
+  net::HttpRequestHeaders default_headers_;
+
   // True if any at least one of the scripts is fetched by network.
   bool network_accessed_ = false;
+
+  // |context_| outlives |this| because it owns |this| through
+  // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.
+  ServiceWorkerContextCore* const context_;
 
   base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_{this};
 

@@ -599,9 +599,7 @@ void PushMessagingManager::SendSubscriptionError(
     RegisterData data,
     blink::mojom::PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(data.callback)
-      .Run(status, base::nullopt /* endpoint */, nullptr /* options */,
-           base::nullopt /* p256dh */, base::nullopt /* auth */);
+  std::move(data.callback).Run(status, nullptr /* subscription */);
   RecordRegistrationStatus(status);
 }
 
@@ -627,7 +625,8 @@ void PushMessagingManager::SendSubscriptionSuccess(
       push_subscription_id);
 
   std::move(data.callback)
-      .Run(status, endpoint, std::move(data.options), p256dh, auth);
+      .Run(status, blink::mojom::PushSubscription::New(
+                       endpoint, std::move(data.options), p256dh, auth));
 
   RecordRegistrationStatus(status);
 }
@@ -856,9 +855,7 @@ void PushMessagingManager::DidGetSubscription(
       break;
     }
   }
-  std::move(callback).Run(get_status, base::nullopt /* endpoint */,
-                          nullptr /* options */, base::nullopt /* p256dh */,
-                          base::nullopt /* auth */);
+  std::move(callback).Run(get_status, nullptr /* subscription */);
   RecordGetRegistrationStatus(get_status);
 }
 
@@ -888,8 +885,9 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(std::move(callback), status, endpoint,
-                       std::move(options), p256dh, auth));
+        base::BindOnce(std::move(callback), status,
+                       blink::mojom::PushSubscription::New(
+                           endpoint, std::move(options), p256dh, auth)));
 
     RecordGetRegistrationStatus(status);
   } else {
@@ -903,8 +901,7 @@ void PushMessagingManager::Core::GetSubscriptionDidGetInfoOnUI(
           base::BindOnce(
               std::move(callback),
               blink::mojom::PushGetRegistrationStatus::RENDERER_SHUTDOWN,
-              base::nullopt /* endpoint */, nullptr /* options */,
-              base::nullopt /* p256dh */, base::nullopt /* auth */));
+              nullptr /* subscription */));
       return;
     }
 
@@ -932,11 +929,9 @@ void PushMessagingManager::Core::GetSubscriptionDidUnsubscribe(
     blink::mojom::PushGetRegistrationStatus get_status,
     blink::mojom::PushUnregistrationStatus unsubscribe_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(std::move(callback), get_status,
-                     base::nullopt /* endpoint */, nullptr /* options */,
-                     base::nullopt /* p256dh */, base::nullopt /* auth */));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
+                           base::BindOnce(std::move(callback), get_status,
+                                          nullptr /* subscription */));
 }
 
 // Helper methods on both IO and UI threads, merged from

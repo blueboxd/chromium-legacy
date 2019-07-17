@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/app_startup_parameters.h"
+#import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/browser/first_run/first_run_metrics.h"
 
 // Values of the UMA Startup.MobileSessionCallerApp histogram.

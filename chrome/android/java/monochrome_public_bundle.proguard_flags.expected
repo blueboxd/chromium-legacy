@@ -117,6 +117,14 @@
   public static *** CREATOR;
 }
 
+# Keep all Fragment constructors since they are only usable via reflection.
+-keepclassmembers class * extends android.support.v4.app.Fragment {
+  public <init>();
+}
+-keepclassmembers class * extends androidx.fragment.app.Fragment {
+  public <init>();
+}
+
 # Don't obfuscate Parcelables as they might be marshalled outside Chrome.
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the

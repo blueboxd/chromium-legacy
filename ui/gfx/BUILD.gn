@@ -648,6 +648,13 @@ jumbo_static_library("test_support") {
 
     deps += [ "//third_party:freetype_harfbuzz" ]
   }
+
+  if (is_win) {
+    sources += [
+      "test/font_fallback_test_data.cc",
+      "test/font_fallback_test_data.h",
+    ]
+  }
 }
 
 test("gfx_unittests") {

@@ -4,7 +4,7 @@
 
 module leveldb.mojom;
 
-import "components/services/filesystem/public/interfaces/directory.mojom";
+import "components/services/filesystem/public/mojom/directory.mojom";
 import "mojo/public/mojom/base/memory_allocator_dump_cross_process_uid.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 

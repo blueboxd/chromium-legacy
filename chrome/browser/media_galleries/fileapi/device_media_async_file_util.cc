@@ -21,7 +21,7 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_file_stream_reader.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/readahead_file_stream_reader.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_stream_reader.h"

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "base/android/jni_android.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -70,7 +71,8 @@ class AwURLRequestContextGetterTest : public ::testing::Test {
     ASSERT_TRUE(env_);
 
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
-    AwBrowserContext::RegisterPrefs(pref_service_->registry());
+    AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(
+        pref_service_->registry());
 
     std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android;
     config_service_android.reset(static_cast<net::ProxyConfigServiceAndroid*>(

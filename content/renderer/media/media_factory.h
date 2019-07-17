@@ -137,7 +137,7 @@ class MediaFactory {
   media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();
 
   // Creates a blink::WebMediaStreamRendererFactory used for creating audio and
-  // video renderers for WebMediaPlayerMS.
+  // video renderers for blink::WebMediaPlayerMS.
   std::unique_ptr<blink::WebMediaStreamRendererFactory>
   CreateMediaStreamRendererFactory();
 

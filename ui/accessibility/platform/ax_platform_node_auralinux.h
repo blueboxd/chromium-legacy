@@ -207,6 +207,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
                         AtkRelationType,
                         AXPlatformNode* target);
   bool IsInLiveRegion();
+  base::Optional<std::pair<int, int>> GetEmbeddedObjectIndicesForId(int id);
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();

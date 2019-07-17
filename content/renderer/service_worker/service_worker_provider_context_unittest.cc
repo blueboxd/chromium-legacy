@@ -21,6 +21,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_type.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
+#include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
@@ -289,7 +290,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
   void FlushControllerConnector(
       ServiceWorkerProviderContext* provider_context) {
-    provider_context->state_for_client_->controller_connector.FlushForTesting();
+    provider_context->controller_connector_.FlushForTesting();
   }
 
  protected:

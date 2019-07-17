@@ -309,8 +309,15 @@ inline bool IsSVGSMILElement(const SVGElement& element) {
          element.HasTagName((svg_names::kDiscardTag));
 }
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
+template <>
+struct DowncastTraits<SVGSMILElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* svg_element = DynamicTo<SVGElement>(node);
+    return svg_element && IsSVGSMILElement(*svg_element);
+  }
+};
 
+DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_

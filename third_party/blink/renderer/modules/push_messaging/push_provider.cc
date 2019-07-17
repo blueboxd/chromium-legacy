@@ -69,10 +69,7 @@ void PushProvider::Subscribe(
 void PushProvider::DidSubscribe(
     std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     mojom::blink::PushRegistrationStatus status,
-    const base::Optional<KURL>& endpoint,
-    mojom::blink::PushSubscriptionOptionsPtr options,
-    const base::Optional<WTF::Vector<uint8_t>>& p256dh,
-    const base::Optional<WTF::Vector<uint8_t>>& auth) {
+    mojom::blink::PushSubscriptionPtr subscription) {
   DCHECK(callbacks);
 
   if (status ==
@@ -80,15 +77,10 @@ void PushProvider::DidSubscribe(
       status == mojom::blink::PushRegistrationStatus::
                     SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE ||
       status == mojom::blink::PushRegistrationStatus::SUCCESS_FROM_CACHE) {
-    DCHECK(endpoint);
-    DCHECK(options);
-    DCHECK(p256dh);
-    DCHECK(auth);
+    DCHECK(subscription);
 
-    callbacks->OnSuccess(PushSubscription::Create(
-        endpoint.value(), options->user_visible_only,
-        options->application_server_key, p256dh.value(), auth.value(),
-        GetSupplementable()));
+    callbacks->OnSuccess(
+        PushSubscription::Create(std::move(subscription), GetSupplementable()));
   } else {
     callbacks->OnError(PushError::CreateException(
         PushRegistrationStatusToPushErrorType(status),
@@ -134,22 +126,14 @@ void PushProvider::GetSubscription(
 void PushProvider::DidGetSubscription(
     std::unique_ptr<PushSubscriptionCallbacks> callbacks,
     mojom::blink::PushGetRegistrationStatus status,
-    const base::Optional<KURL>& endpoint,
-    mojom::blink::PushSubscriptionOptionsPtr options,
-    const base::Optional<WTF::Vector<uint8_t>>& p256dh,
-    const base::Optional<WTF::Vector<uint8_t>>& auth) {
+    mojom::blink::PushSubscriptionPtr subscription) {
   DCHECK(callbacks);
 
   if (status == mojom::blink::PushGetRegistrationStatus::SUCCESS) {
-    DCHECK(endpoint);
-    DCHECK(options);
-    DCHECK(p256dh);
-    DCHECK(auth);
+    DCHECK(subscription);
 
-    callbacks->OnSuccess(PushSubscription::Create(
-        endpoint.value(), options->user_visible_only,
-        options->application_server_key, p256dh.value(), auth.value(),
-        GetSupplementable()));
+    callbacks->OnSuccess(
+        PushSubscription::Create(std::move(subscription), GetSupplementable()));
   } else {
     // We are only expecting an error if we can't find a registration.
     callbacks->OnSuccess(nullptr);

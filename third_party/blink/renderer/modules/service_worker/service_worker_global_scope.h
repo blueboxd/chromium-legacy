@@ -250,6 +250,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   void DidHandleNotificationCloseEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus);
   void DidHandlePushEvent(int push_event_id, mojom::ServiceWorkerEventStatus);
+  void DidHandlePushSubscriptionChangeEvent(
+      int event_id,
+      mojom::ServiceWorkerEventStatus status);
   void DidHandleSyncEvent(int sync_event_id, mojom::ServiceWorkerEventStatus);
   void DidHandlePeriodicSyncEvent(int event_id,
                                   mojom::ServiceWorkerEventStatus status);
@@ -394,6 +397,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       DispatchNotificationCloseEventCallback callback) override;
   void DispatchPushEvent(const String& payload,
                          DispatchPushEventCallback callback) override;
+  void DispatchPushSubscriptionChangeEvent(
+      mojom::blink::PushSubscriptionPtr old_subscription,
+      mojom::blink::PushSubscriptionPtr new_subscription,
+      DispatchPushSubscriptionChangeEventCallback callback) override;
   void DispatchSyncEvent(const String& tag,
                          bool last_chance,
                          base::TimeDelta timeout,
@@ -481,6 +488,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   HashMap<int, DispatchNotificationCloseEventCallback>
       notification_close_event_callbacks_;
   HashMap<int, DispatchPushEventCallback> push_event_callbacks_;
+  HashMap<int, DispatchPushSubscriptionChangeEventCallback>
+      push_subscription_change_event_callbacks_;
   HashMap<int, DispatchFetchEventInternalCallback> fetch_event_callbacks_;
   HashMap<int, DispatchCookieChangeEventCallback>
       cookie_change_event_callbacks_;

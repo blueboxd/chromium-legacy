@@ -255,7 +255,7 @@ class PLATFORM_EXPORT ThreadHeap {
                                uint32_t gc_info_index,
                                const char* type_name);
   template <typename T>
-  static Address Allocate(size_t, bool eagerly_sweep = false);
+  static Address Allocate(size_t);
 
   void WeakProcessing(Visitor*);
 
@@ -377,7 +377,6 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 
 #if defined(ADDRESS_SANITIZER)
-  void PoisonEagerArena();
   void PoisonAllHeaps();
 #endif
 
@@ -396,7 +395,7 @@ class PLATFORM_EXPORT ThreadHeap {
   static int ArenaIndexForObjectSize(size_t);
 
   void CommitCallbackStacks();
-  void DecommitCallbackStacks();
+  void DecommitCallbackStacks(BlinkGC::StackState);
 
   void InvokeEphemeronCallbacks(Visitor*);
 
@@ -458,25 +457,6 @@ class PLATFORM_EXPORT ThreadHeap {
 };
 
 template <typename T>
-struct IsEagerlyFinalizedType {
-  STATIC_ONLY(IsEagerlyFinalizedType);
-
- private:
-  typedef char YesType;
-  struct NoType {
-    char padding[8];
-  };
-
-  template <typename U>
-  static YesType CheckMarker(typename U::IsEagerlyFinalizedMarker*);
-  template <typename U>
-  static NoType CheckMarker(...);
-
- public:
-  static const bool value = sizeof(CheckMarker<T>(nullptr)) == sizeof(YesType);
-};
-
-template <typename T>
 class GarbageCollected {
   IS_GARBAGE_COLLECTED_TYPE();
 
@@ -498,13 +478,13 @@ class GarbageCollected {
 
   void* operator new(size_t size) = delete;  // Must use MakeGarbageCollected.
 
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     if (IsGarbageCollectedMixin<T>::value) {
       // Ban large mixin so we can use PageFromObject() on them.
       CHECK_GE(kLargeObjectSizeThreshold, size)
           << "GarbageCollectedMixin may not be a large object";
     }
-    return ThreadHeap::Allocate<T>(size, eagerly_sweep);
+    return ThreadHeap::Allocate<T>(size);
   }
 
   void operator delete(void* p) { NOTREACHED(); }
@@ -521,7 +501,7 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  void* memory = T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+  void* memory = T::AllocateObject(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
@@ -541,8 +521,7 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value,
-                                   IsEagerlyFinalizedType<T>::value);
+  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
@@ -559,14 +538,6 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
 // but it's not practical to prepare dedicated arenas for all types.
 // Thus we group objects by their sizes, hoping that this will approximately
 // group objects by their types.
-//
-// An exception to the use of sized arenas is made for class types that
-// require prompt finalization after a garbage collection. That is, their
-// instances have to be finalized early and cannot be delayed until lazy
-// sweeping kicks in for their heap and page. The EAGERLY_FINALIZE()
-// macro is used to declare a class (and its derived classes) as being
-// in need of eager finalization. Must be defined with 'public' visibility
-// for a class.
 //
 
 inline int ThreadHeap::ArenaIndexForObjectSize(size_t size) {
@@ -585,30 +556,6 @@ inline bool ThreadHeap::IsNormalArenaIndex(int index) {
          index <= BlinkGC::kNormalPage4ArenaIndex;
 }
 
-#define IS_EAGERLY_FINALIZED()                    \
-  (PageFromObject(this)->Arena()->ArenaIndex() == \
-   BlinkGC::kEagerSweepArenaIndex)
-#if DCHECK_IS_ON()
-class VerifyEagerFinalization {
-  DISALLOW_NEW();
-
- public:
-  ~VerifyEagerFinalization() {
-    DCHECK(IS_EAGERLY_FINALIZED());
-  }
-};
-#define EAGERLY_FINALIZE()                            \
- private:                                             \
-  VerifyEagerFinalization verify_eager_finalization_; \
-                                                      \
- public:                                              \
-  typedef int IsEagerlyFinalizedMarker
-#else
-#define EAGERLY_FINALIZE() \
- public:                   \
-  typedef int IsEagerlyFinalizedMarker
-#endif
-
 inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
                                                 size_t size,
                                                 int arena_index,
@@ -624,13 +571,11 @@ inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
 }
 
 template <typename T>
-Address ThreadHeap::Allocate(size_t size, bool eagerly_sweep) {
+Address ThreadHeap::Allocate(size_t size) {
   ThreadState* state = ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
   const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(T);
   return state->Heap().AllocateOnArenaIndex(
-      state, size,
-      eagerly_sweep ? BlinkGC::kEagerSweepArenaIndex
-                    : ThreadHeap::ArenaIndexForObjectSize(size),
+      state, size, ThreadHeap::ArenaIndexForObjectSize(size),
       GCInfoTrait<T>::Index(), type_name);
 }
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
@@ -29,11 +30,7 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
 
  public:
   static PushSubscription* Create(
-      const KURL& endpoint,
-      bool user_visible_only,
-      const WTF::Vector<uint8_t>& application_server_key,
-      const WTF::Vector<unsigned char>& p256dh,
-      const WTF::Vector<unsigned char>& auth,
+      mojom::blink::PushSubscriptionPtr subscription,
       ServiceWorkerRegistration* service_worker_registration);
 
   PushSubscription(const KURL& endpoint,

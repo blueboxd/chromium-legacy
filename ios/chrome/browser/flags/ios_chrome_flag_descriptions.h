@@ -313,6 +313,10 @@ extern const char kSendTabToSelfShowSendingUIDescription[];
 extern const char kSendUmaOverAnyNetwork[];
 extern const char kSendUmaOverAnyNetworkDescription[];
 
+// Title and description for the flag to add a new credit card.
+extern const char kSettingsAddPaymentMethodName[];
+extern const char kSettingsAddPaymentMethodDescription[];
+
 // Title and description for the flag to toggle the flag for the settings UI
 // Refresh.
 extern const char kSettingsRefreshName[];

@@ -16,9 +16,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
-namespace service_worker_registration_unittest {
-class ServiceWorkerRegistrationObjectHostTest;
-}  // namespace service_worker_registration_unittest
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
@@ -48,8 +45,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   ServiceWorkerRegistration* registration() { return registration_.get(); }
 
  private:
-  friend class service_worker_registration_unittest::
-      ServiceWorkerRegistrationObjectHostTest;
+  friend class ServiceWorkerRegistrationObjectHostTest;
 
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;

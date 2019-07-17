@@ -62,36 +62,6 @@ int NextProviderId() {
   return g_next_provider_id++;
 }
 
-// A navigation interceptor that observes redirects so the resulting
-// provider host can have the correct URL.
-class NavigationUrlTracker final : public NavigationLoaderInterceptor {
- public:
-  explicit NavigationUrlTracker(
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host)
-      : provider_host_(std::move(provider_host)) {}
-  ~NavigationUrlTracker() override {}
-
-  void MaybeCreateLoader(
-      const network::ResourceRequest& tentative_resource_request,
-      BrowserContext*,
-      ResourceContext*,
-      LoaderCallback callback,
-      FallbackCallback) override {
-    if (!provider_host_)
-      return;
-    const GURL stripped_url =
-        net::SimplifyUrlForRequest(tentative_resource_request.url);
-    provider_host_->UpdateUrls(stripped_url,
-                               tentative_resource_request.site_for_cookies);
-    // Fall back to network.
-    std::move(callback).Run({});
-  }
-
- private:
-  const base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  DISALLOW_COPY_AND_ASSIGN(NavigationUrlTracker);
-};
-
 void GetInterfaceImpl(const std::string& interface_name,
                       mojo::ScopedMessagePipeHandle interface_pipe,
                       const url::Origin& origin,
@@ -623,20 +593,6 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
             blink::mojom::ServiceWorkerProviderType::kForWindow);
 
   versions_to_update_.emplace(std::move(version));
-}
-
-std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerProviderHost::CreateLoaderInterceptor(
-    ResourceType resource_type,
-    bool skip_service_worker) {
-  if (skip_service_worker) {
-    // Use an interceptor that just observes redirects so the resulting
-    // provider host can have the correct URL.
-    return std::make_unique<NavigationUrlTracker>(AsWeakPtr());
-  }
-
-  return std::make_unique<ServiceWorkerControlleeRequestHandler>(
-      context_, AsWeakPtr(), resource_type);
 }
 
 base::WeakPtr<ServiceWorkerObjectHost>

@@ -65,9 +65,7 @@ class PasswordManagerDriver
   // Always calls |completed_callback| with a status indicating success/error.
   virtual void FillIntoFocusedField(
       bool is_password,
-      const base::string16& user_provided_credential,
-      base::OnceCallback<void(autofill::mojom::FillingStatus)>
-          compeleted_callback) {}
+      const base::string16& user_provided_credential) {}
 
   // Tells the driver to preview filling form with the |username| and
   // |password|.
@@ -102,7 +100,7 @@ class PasswordManagerDriver
   virtual bool IsMainFrame() const = 0;
 
   // Returns the last committed URL of the frame.
-  virtual GURL GetLastCommittedURL() const = 0;
+  virtual const GURL& GetLastCommittedURL() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDriver);

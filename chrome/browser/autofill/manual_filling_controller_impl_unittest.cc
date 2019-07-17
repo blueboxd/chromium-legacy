@@ -28,7 +28,6 @@ namespace {
 using autofill::AccessoryAction;
 using autofill::AccessorySheetData;
 using autofill::AccessoryTabType;
-using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using testing::_;
 using testing::AnyNumber;
@@ -209,19 +208,6 @@ TEST_F(ManualFillingControllerTest, ShowsAccessoryWhenRefreshingSuggestions) {
   controller()->RefreshSuggestions(populate_sheet(AccessoryTabType::PASSWORDS));
 }
 
-// TODO(fhorschig): Check for recorded metrics here or similar to this.
-TEST_F(ManualFillingControllerTest, ClosesViewOnSuccessfullFillingOnly) {
-  // If the filling wasn't successful, no call is expected.
-  EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
-  EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
-  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
-  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
-
-  // If the filling completed successfully, let the view know.
-  EXPECT_CALL(*view(), SwapSheetWithKeyboard());
-  controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
-}
-
 TEST_F(ManualFillingControllerTest, ShowsAndHidesAccessoryForPasswords) {
   FocusFieldAndClearExpectations(FocusedFieldType::kFillableUsernameField);
 
@@ -271,13 +257,14 @@ TEST_F(ManualFillingControllerTest, OnAutomaticGenerationStatusChanged) {
   controller()->OnAutomaticGenerationStatusChanged(false);
 }
 
-TEST_F(ManualFillingControllerTest, OnFillingTriggered) {
+TEST_F(ManualFillingControllerTest, OnFillingTriggeredFillsAndClosesSheet) {
   const char kTextToFill[] = "TextToFill";
   const base::string16 text_to_fill(base::ASCIIToUTF16(kTextToFill));
   const autofill::UserInfo::Field field(text_to_fill, text_to_fill, false,
                                         true);
 
   EXPECT_CALL(mock_pwd_controller_, OnFillingTriggered(field));
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard());
   controller()->OnFillingTriggered(AccessoryTabType::PASSWORDS, field);
 }
 

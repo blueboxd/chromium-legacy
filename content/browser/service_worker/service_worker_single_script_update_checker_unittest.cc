@@ -92,7 +92,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
     return CreateSingleScriptUpdateChecker(
-        url, scope, true /* is_main_script */, false /* force_bypass_cache */,
+        url, url, scope, false /* force_bypass_cache */,
         blink::mojom::ServiceWorkerUpdateViaCache::kNone,
         base::TimeDelta() /* time_since_last_check */,
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
@@ -102,8 +102,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker>
   CreateSingleScriptUpdateChecker(
       const char* url,
+      const char* main_script_url,
       const GURL& scope,
-      bool is_main_script,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
@@ -114,8 +114,9 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       base::Optional<CheckResult>* out_check_result) {
     helper_->SetNetworkFactory(loader_factory);
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-        GURL(url), is_main_script, scope, force_bypass_cache, update_via_cache,
-        time_since_last_check,
+        GURL(url), url == main_script_url, GURL(main_script_url), scope,
+        force_bypass_cache, update_via_cache, time_since_last_check,
+        net::HttpRequestHeaders(),
         helper_->context()->GetLoaderFactoryBundleForUpdateCheck(),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
@@ -739,8 +740,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_All) {
   // Load the main script. Should not validate the cache.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kScriptURL, GURL(kScope), true /* is_main_script */,
-          false /* force_bypass_cache */,
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
           std::make_unique<MockServiceWorkerResponseReader>(),
           std::make_unique<MockServiceWorkerResponseReader>(),
@@ -753,7 +753,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_All) {
 
   // Load imported script. Should not validate the cache.
   checker = CreateSingleScriptUpdateChecker(
-      kImportedScriptURL, GURL(kScope), false /* is_main_script */,
+      kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
       std::make_unique<MockServiceWorkerResponseReader>(),
@@ -773,8 +773,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_None) {
   // Load the main script. Should validate the cache.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kScriptURL, GURL(kScope), true /* is_main_script */,
-          false /* force_bypass_cache */,
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
           std::make_unique<MockServiceWorkerResponseReader>(),
           std::make_unique<MockServiceWorkerResponseReader>(),
@@ -787,7 +786,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_None) {
 
   // Load imported script. Should validate the cache.
   checker = CreateSingleScriptUpdateChecker(
-      kImportedScriptURL, GURL(kScope), false /* is_main_script */,
+      kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
       std::make_unique<MockServiceWorkerResponseReader>(),
@@ -807,8 +806,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_Imports) {
   // Load main script. Should validate the cache.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kScriptURL, GURL(kScope), true /* is_main_script */,
-          false /* force_bypass_cache */,
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kImports,
           base::TimeDelta(),
           std::make_unique<MockServiceWorkerResponseReader>(),
@@ -822,7 +820,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, UpdateViaCache_Imports) {
 
   // Load imported script. Should not validate the cache.
   checker = CreateSingleScriptUpdateChecker(
-      kImportedScriptURL, GURL(kScope), false /* is_main_script */,
+      kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports, base::TimeDelta(),
       std::make_unique<MockServiceWorkerResponseReader>(),
@@ -843,8 +841,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, ForceBypassCache) {
   // Load main script. Should validate the cache.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kScriptURL, GURL(kScope), true /* is_main_script */,
-          true /* force_bypass_cache */,
+          kScriptURL, kScriptURL, GURL(kScope), true /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
           std::make_unique<MockServiceWorkerResponseReader>(),
           std::make_unique<MockServiceWorkerResponseReader>(),
@@ -857,7 +854,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, ForceBypassCache) {
 
   // Load imported script. Should validate the cache.
   checker = CreateSingleScriptUpdateChecker(
-      kImportedScriptURL, GURL(kScope), false /* is_main_script */,
+      kImportedScriptURL, kScriptURL, GURL(kScope),
       true /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll, base::TimeDelta(),
       std::make_unique<MockServiceWorkerResponseReader>(),
@@ -877,8 +874,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, MoreThan24Hours) {
   // Load main script. Should validate the cache.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kScriptURL, GURL(kScope), true /* is_main_script */,
-          false /* force_bypass_cache */,
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kAll,
           base::TimeDelta::FromDays(1) + base::TimeDelta::FromHours(1),
           std::make_unique<MockServiceWorkerResponseReader>(),
@@ -892,7 +888,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, MoreThan24Hours) {
 
   // Load imported script. Should validate the cache.
   checker = CreateSingleScriptUpdateChecker(
-      kImportedScriptURL, GURL(kScope), false /* is_main_script */,
+      kImportedScriptURL, kScriptURL, GURL(kScope),
       false /* force_bypass_cache */,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll,
       base::TimeDelta::FromDays(1) + base::TimeDelta::FromHours(1),
@@ -929,7 +925,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, MimeTypeError) {
     base::Optional<CheckResult> check_result;
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
         CreateSingleScriptUpdateChecker(
-            kScriptURL, GURL(kScope), true /* is_main_script */,
+            kScriptURL, kScriptURL, GURL(kScope),
             false /* force_bypass_cache */,
             blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
             std::move(compare_reader), std::move(copy_reader),
@@ -966,7 +962,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, PathRestrictionError) {
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kMainScriptURL, GURL(kOutScope), true /* is_main_script */,
+          kMainScriptURL, kMainScriptURL, GURL(kOutScope),
           false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
           std::move(compare_reader), std::move(copy_reader), std::move(writer),
@@ -1010,7 +1006,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, PathRestrictionPass) {
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kMainScriptURL, GURL(kOutScope), true /* is_main_script */,
+          kMainScriptURL, kMainScriptURL, GURL(kOutScope),
           false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
           std::move(compare_reader), std::move(copy_reader), std::move(writer),
@@ -1041,8 +1037,7 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkError) {
   base::Optional<CheckResult> check_result;
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
       CreateSingleScriptUpdateChecker(
-          kScriptURL, GURL(kScope), true /* is_main_script */,
-          false /* force_bypass_cache */,
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
           blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
           std::move(compare_reader), std::move(copy_reader), std::move(writer),
           loader_factory.get(), &check_result);

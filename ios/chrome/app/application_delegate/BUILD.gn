@@ -168,6 +168,7 @@ source_set("test_support") {
     ":application_delegate_internal",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/app",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app:mode",
     "//ios/chrome/browser",

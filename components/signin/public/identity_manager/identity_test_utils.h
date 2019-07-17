@@ -98,6 +98,18 @@ void ClearPrimaryAccount(
 AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                  const std::string& email);
 
+// Combination of MakeAccountAvailable() and SetCookieAccounts() for a single
+// account. It makes an account available for the given email address, and GAIA
+// ID, setting the cookies and the refresh token that correspond uniquely to
+// that email address. Blocks until the account is available. Returns the
+// AccountInfo of the newly-available account.
+// NOTE: See disclaimer at top of file re: direct usage.
+AccountInfo MakeAccountAvailableWithCookies(
+    IdentityManager* identity_manager,
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    const std::string& email,
+    const std::string& gaia_id);
+
 // Sets a refresh token for the given account (which must already be available).
 // Blocks until the refresh token is set. If |token_value| is empty a default
 // value will be used instead.

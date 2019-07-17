@@ -9,7 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/app_startup_parameters.h"
+#import "ios/chrome/app/app_startup_parameters.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "net/base/mac/url_conversions.h"

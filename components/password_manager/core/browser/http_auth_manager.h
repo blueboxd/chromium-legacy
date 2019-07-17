@@ -36,6 +36,9 @@ class HttpAuthManager {
   // Called by the LoginHandler instance.
   virtual void OnPasswordFormSubmitted(
       const autofill::PasswordForm& password_form) = 0;
+
+  // Called by the LoginHandler instance when the password form is dismissed.
+  virtual void OnPasswordFormDismissed() = 0;
 };
 
 }  // namespace password_manager

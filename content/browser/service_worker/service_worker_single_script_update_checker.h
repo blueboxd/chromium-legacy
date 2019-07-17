@@ -86,14 +86,18 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
 
   // Both |compare_reader| and |copy_reader| should be created from the same
   // resource ID, and this ID should locate where the script specified with
-  // |url| is stored. |writer| should be created with a new resource ID.
+  // |script_url| is stored. |writer| should be created with a new resource ID.
+  // |main_script_url| could be different from |script_url| when the script is
+  // imported.
   ServiceWorkerSingleScriptUpdateChecker(
-      const GURL& url,
+      const GURL& script_url,
       bool is_main_script,
+      const GURL& main_script_url,
       const GURL& scope,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
+      const net::HttpRequestHeaders& default_headers,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       std::unique_ptr<ServiceWorkerResponseReader> compare_reader,
       std::unique_ptr<ServiceWorkerResponseReader> copy_reader,

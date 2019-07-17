@@ -25,6 +25,10 @@ const char kDeviceAuthSecret[] = "device_auth_secret";
 const char kDeviceCapabilities[] = "device_capabilities";
 const char kDeviceLastUpdated[] = "device_last_updated";
 
+const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
+const char kRegistrationFcmToken[] = "registration_fcm_token";
+const char kRegistrationTimestamp[] = "registration_timestamp";
+
 base::Time GetTimestamp(const base::Value& value, base::StringPiece key) {
   if (!value.is_dict())
     return base::Time();
@@ -99,6 +103,7 @@ void SharingSyncPreference::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
       prefs::kSharingVapidKey, user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kSharingFCMRegistration);
 }
 
 // static
@@ -200,6 +205,40 @@ void SharingSyncPreference::RemoveDevice(const std::string& guid) {
   base::Value cleared(base::Value::Type::DICTIONARY);
   cleared.SetKey(kDeviceLastUpdated, base::CreateTimeValue(base::Time::Now()));
   update->SetKey(guid, std::move(cleared));
+}
+
+base::Optional<SharingSyncPreference::FCMRegistration>
+SharingSyncPreference::GetFCMRegistration() const {
+  const base::DictionaryValue* registration =
+      prefs_->GetDictionary(prefs::kSharingFCMRegistration);
+  const std::string* authorized_entity =
+      registration->FindStringPath(kRegistrationAuthorizedEntity);
+  const std::string* fcm_token =
+      registration->FindStringPath(kRegistrationFcmToken);
+  const base::Value* timestamp_value =
+      registration->FindPath(kRegistrationTimestamp);
+  if (!authorized_entity || !fcm_token || !timestamp_value)
+    return base::nullopt;
+
+  base::Time timestamp;
+  if (!base::GetValueAsTime(*timestamp_value, &timestamp))
+    return base::nullopt;
+
+  return FCMRegistration{*authorized_entity, *fcm_token, timestamp};
+}
+
+void SharingSyncPreference::SetFCMRegistration(FCMRegistration registration) {
+  DictionaryPrefUpdate update(prefs_, prefs::kSharingFCMRegistration);
+  update->SetStringKey(kRegistrationAuthorizedEntity,
+                       std::move(registration.authorized_entity));
+  update->SetStringKey(kRegistrationFcmToken,
+                       std::move(registration.fcm_token));
+  update->SetKey(kRegistrationTimestamp,
+                 base::CreateTimeValue(registration.timestamp));
+}
+
+void SharingSyncPreference::ClearFCMRegistration() {
+  prefs_->ClearPref(prefs::kSharingFCMRegistration);
 }
 
 // static

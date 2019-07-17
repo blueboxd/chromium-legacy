@@ -75,10 +75,26 @@ class IdentityManager : public KeyedService,
     virtual void OnPrimaryAccountSet(
         const CoreAccountInfo& primary_account_info) {}
 
-    // Called when when the user moves from having a primary account to no
-    // longer having a primary account.
+    // Called when the user moves from having a primary account to no longer
+    // having a primary account (note that the user may still have an
+    // *unconsented* primary account after this event; see./README.md).
     virtual void OnPrimaryAccountCleared(
         const CoreAccountInfo& previous_primary_account_info) {}
+
+    // When the unconsented primary account (see ./README.md) of the user
+    // changes, this callback gets called with the new account as
+    // |unconsented_primary_account_info|. If after the change, there is no
+    // unconsented primary account, |unconsented_primary_account_info| is empty.
+    // This does not get called when the unconsented account becomes consented
+    // (as the same account was unconsented before so there is no change). In
+    // all other changes (the unconsented primary account gets added, changed or
+    // removed), this notification is called only once. Note: we do not use the
+    // {Set, Cleared} notifications like for the primary account above because
+    // the identity manager does not have clear guarantees that that account
+    // cannot change in one atomic operation (without getting cleared in the
+    // mean-time).
+    virtual void OnUnconsentedPrimaryAccountChanged(
+        const CoreAccountInfo& unconsented_primary_account_info) {}
 
     // Called when a new refresh token is associated with |account_info|.
     // NOTE: On a signin event, the ordering of this callback wrt the
@@ -158,6 +174,19 @@ class IdentityManager : public KeyedService,
 
   // Returns whether the user's primary account is available.
   bool HasPrimaryAccount() const;
+
+  // Provides access to the core information of the user's unconsented primary
+  // account (see ./README.md). Returns an empty info, if there is no such
+  // account.
+  CoreAccountInfo GetUnconsentedPrimaryAccountInfo() const;
+
+  // Provides access to the account ID of the user's unconsented primary
+  // account (see ./README.md). Returns an empty id if there is no such account.
+  CoreAccountId GetUnconsentedPrimaryAccountId() const;
+
+  // Returns whether the user's unconsented primary account (see ./README.md) is
+  // available.
+  bool HasUnconsentedPrimaryAccount() const;
 
   // Creates an AccessTokenFetcher given the passed-in information.
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
@@ -462,6 +491,11 @@ class IdentityManager : public KeyedService,
                                   ClearPrimaryAccountPolicy policy);
   friend AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                           const std::string& email);
+  friend AccountInfo MakeAccountAvailableWithCookies(
+      IdentityManager* identity_manager,
+      network::TestURLLoaderFactory* test_url_loader_factory,
+      const std::string& email,
+      const std::string& gaia_id);
   friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                         const std::string& account_id,
                                         const std::string& token_value);
@@ -569,6 +603,18 @@ class IdentityManager : public KeyedService,
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
       const CoreAccountId& account_id) const;
 
+  // Sets primary account to |account_info| and updates the unconsented primary
+  // account.
+  void SetPrimaryAccountInternal(base::Optional<CoreAccountInfo> account_info);
+
+  // Updates the cached version of unconsented primary account and notifies the
+  // observers if there is any change.
+  void UpdateUnconsentedPrimaryAccount();
+
+  // Figures out and returns the current unconsented primary account based on
+  // current cookies.
+  base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
+
   // PrimaryAccountManager callbacks:
   void GoogleSigninSucceeded(const AccountInfo& account_info);
   void GoogleSignedOut(const AccountInfo& account_info);
@@ -644,7 +690,9 @@ class IdentityManager : public KeyedService,
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
 
+  // If |primary_account_| is set, it must equal |unconsented_primary_account_|.
   base::Optional<CoreAccountInfo> primary_account_;
+  base::Optional<CoreAccountInfo> unconsented_primary_account_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };

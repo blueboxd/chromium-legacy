@@ -11,7 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 
 namespace base {
 class FilePath;

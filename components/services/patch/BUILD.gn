@@ -12,7 +12,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//courgette:courgette_lib",
     "//mojo/public/cpp/bindings",
   ]

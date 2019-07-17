@@ -103,6 +103,11 @@ LoginHandler::LoginHandler(const net::AuthChallengeInfo& auth_info,
 }
 
 LoginHandler::~LoginHandler() {
+  password_manager::HttpAuthManager* http_auth_manager =
+      GetHttpAuthManagerForLogin();
+  if (http_auth_manager)
+    http_auth_manager->OnPasswordFormDismissed();
+
   if (!WasAuthHandled()) {
     auth_required_callback_.Reset();
 

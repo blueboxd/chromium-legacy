@@ -149,50 +149,6 @@ void WallpaperControllerClient::InitForTesting(
   InitController();
 }
 
-void WallpaperControllerClient::SetInitialWallpaper() {
-  // Apply device customization.
-  namespace customization_util = chromeos::customization_wallpaper_util;
-  if (customization_util::ShouldUseCustomizedDefaultWallpaper()) {
-    base::FilePath customized_default_small_path;
-    base::FilePath customized_default_large_path;
-    if (customization_util::GetCustomizedDefaultWallpaperPaths(
-            &customized_default_small_path, &customized_default_large_path)) {
-      wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
-          customized_default_small_path, customized_default_large_path);
-    }
-  }
-
-  // Guest wallpaper should be initialized when guest logs in.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kGuestSession)) {
-    return;
-  }
-
-  // Do not set wallpaper in tests.
-  if (chromeos::WizardController::IsZeroDelayEnabled())
-    return;
-
-  // Show the wallpaper of the active user during an user session.
-  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    ShowUserWallpaper(
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
-    return;
-  }
-
-  // Show a white wallpaper during OOBE.
-  if (session_manager::SessionManager::Get()->session_state() ==
-      session_manager::SessionState::OOBE) {
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(1, 1);
-    bitmap.eraseColor(SK_ColorWHITE);
-    wallpaper_controller_->ShowOneShotWallpaper(
-        gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-    return;
-  }
-
-  ShowWallpaperOnLoginScreen();
-}
-
 // static
 WallpaperControllerClient* WallpaperControllerClient::Get() {
   return g_wallpaper_controller_client_instance;
@@ -499,6 +455,50 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
                       extensions::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
                       extensions::AppLaunchSource::kSourceChromeInternal));
+}
+
+void WallpaperControllerClient::OnReadyToSetWallpaper() {
+  // Apply device customization.
+  namespace customization_util = chromeos::customization_wallpaper_util;
+  if (customization_util::ShouldUseCustomizedDefaultWallpaper()) {
+    base::FilePath customized_default_small_path;
+    base::FilePath customized_default_large_path;
+    if (customization_util::GetCustomizedDefaultWallpaperPaths(
+            &customized_default_small_path, &customized_default_large_path)) {
+      wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
+          customized_default_small_path, customized_default_large_path);
+    }
+  }
+
+  // Guest wallpaper should be initialized when guest logs in.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kGuestSession)) {
+    return;
+  }
+
+  // Do not set wallpaper in tests.
+  if (chromeos::WizardController::IsZeroDelayEnabled())
+    return;
+
+  // Show the wallpaper of the active user during an user session.
+  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    ShowUserWallpaper(
+        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+    return;
+  }
+
+  // Show a white wallpaper during OOBE.
+  if (session_manager::SessionManager::Get()->session_state() ==
+      session_manager::SessionState::OOBE) {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    bitmap.eraseColor(SK_ColorWHITE);
+    wallpaper_controller_->ShowOneShotWallpaper(
+        gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+    return;
+  }
+
+  ShowWallpaperOnLoginScreen();
 }
 
 void WallpaperControllerClient::OnFirstWallpaperAnimationFinished() {

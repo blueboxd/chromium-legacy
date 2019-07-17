@@ -170,8 +170,7 @@ class PLATFORM_EXPORT HeapAllocator {
   template <typename Return, typename Metadata>
   static Return Malloc(size_t size, const char* type_name) {
     return reinterpret_cast<Return>(
-        MarkAsConstructed(ThreadHeap::Allocate<Metadata>(
-            size, IsEagerlyFinalizedType<Metadata>::value)));
+        MarkAsConstructed(ThreadHeap::Allocate<Metadata>(size)));
   }
 
   // Compilers sometimes eagerly instantiates the unused 'operator delete', so
@@ -491,10 +490,10 @@ class HeapHashMap : public HashMap<KeyArg,
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
         HeapHashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg>>(
-        size, eagerly_sweep);
+        size);
   }
 
   HeapHashMap() { CheckType(); }
@@ -518,9 +517,9 @@ class HeapHashSet
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<HeapHashSet<ValueArg, HashArg, TraitsArg>>(
-        size, eagerly_sweep);
+        size);
   }
 
   HeapHashSet() { CheckType(); }
@@ -547,9 +546,9 @@ class HeapLinkedHashSet
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
-        HeapLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size, eagerly_sweep);
+        HeapLinkedHashSet<ValueArg, HashArg, TraitsArg>>(size);
   }
 
   HeapLinkedHashSet() { CheckType(); }
@@ -578,10 +577,9 @@ class HeapListHashSet
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
-        HeapListHashSet<ValueArg, inlineCapacity, HashArg>>(size,
-                                                            eagerly_sweep);
+        HeapListHashSet<ValueArg, inlineCapacity, HashArg>>(size);
   }
 
   HeapListHashSet() { CheckType(); }
@@ -605,9 +603,9 @@ class HeapHashCountedSet
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<
-        HeapHashCountedSet<Value, HashFunctions, Traits>>(size, eagerly_sweep);
+        HeapHashCountedSet<Value, HashFunctions, Traits>>(size);
   }
 
   HeapHashCountedSet() { CheckType(); }
@@ -628,14 +626,13 @@ class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> {
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     // On-heap HeapVectors generally should not have inline capacity, but it is
     // hard to avoid when using a type alias. Hence we only disallow the
     // VectorTraits<T>::kNeedsDestruction case for now.
     static_assert(inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
                   "on-heap HeapVector<> should not have an inline capacity");
-    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size,
-                                                               eagerly_sweep);
+    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size);
   }
 
   HeapVector() { CheckType(); }
@@ -677,14 +674,13 @@ class HeapDeque : public Deque<T, inlineCapacity, HeapAllocator> {
   }
 
  public:
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     // On-heap HeapDeques generally should not have inline capacity, but it is
     // hard to avoid when using a type alias. Hence we only disallow the
     // VectorTraits<T>::kNeedsDestruction case for now.
     static_assert(inlineCapacity == 0 || !VectorTraits<T>::kNeedsDestruction,
                   "on-heap HeapDeque<> should not have an inline capacity");
-    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size,
-                                                               eagerly_sweep);
+    return ThreadHeap::Allocate<HeapVector<T, inlineCapacity>>(size);
   }
 
   HeapDeque() { CheckType(); }

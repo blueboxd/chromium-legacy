@@ -19,6 +19,7 @@ enum class PageActionIconType {
   kTranslate,
   kZoom,
   kNativeFileSystemAccess,
+  kClickToCall,
 };
 
 class PageActionIconContainer {

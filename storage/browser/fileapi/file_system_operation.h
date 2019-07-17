@@ -15,7 +15,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/process/process.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 

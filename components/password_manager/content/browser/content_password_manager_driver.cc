@@ -131,11 +131,8 @@ void ContentPasswordManagerDriver::FillSuggestion(
 
 void ContentPasswordManagerDriver::FillIntoFocusedField(
     bool is_password,
-    const base::string16& credential,
-    base::OnceCallback<void(autofill::mojom::FillingStatus)>
-        compeleted_callback) {
-  GetPasswordAutofillAgent()->FillIntoFocusedField(
-      is_password, credential, std::move(compeleted_callback));
+    const base::string16& credential) {
+  GetPasswordAutofillAgent()->FillIntoFocusedField(is_password, credential);
 }
 
 void ContentPasswordManagerDriver::PreviewSuggestion(
@@ -182,7 +179,7 @@ bool ContentPasswordManagerDriver::IsMainFrame() const {
   return is_main_frame_;
 }
 
-GURL ContentPasswordManagerDriver::GetLastCommittedURL() const {
+const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {
   return render_frame_host_->GetLastCommittedURL();
 }
 

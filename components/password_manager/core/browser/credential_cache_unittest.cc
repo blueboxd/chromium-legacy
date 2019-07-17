@@ -34,11 +34,11 @@ class CredentialCacheTest : public testing::Test {
 };
 
 TEST_F(CredentialCacheTest, ReturnsSameStoreForSameOriginOnly) {
-  EXPECT_EQ(cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite))),
-            cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite))));
+  EXPECT_EQ(&cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite))),
+            &cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite))));
 
-  EXPECT_NE(cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite))),
-            cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite2))));
+  EXPECT_NE(&cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite))),
+            &cache()->GetCredentialStore(Origin::Create(GURL(kExampleSite2))));
 }
 
 TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
@@ -57,7 +57,7 @@ TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
       origin);
 
   EXPECT_THAT(
-      cache()->GetCredentialStore(origin)->GetCredentials(),
+      cache()->GetCredentialStore(origin).GetCredentials(),
       testing::ElementsAre(
 
           // Alphabetical entries of the exactly matching https://example.com:
@@ -96,11 +96,11 @@ TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
   cache()->SaveCredentialsForOrigin(
       {CreateEntry("Abe", "B4dPW", GURL(kExampleSite2), false).first}, origin2);
 
-  EXPECT_THAT(cache()->GetCredentialStore(origin)->GetCredentials(),
+  EXPECT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
               testing::ElementsAre(
                   CredentialPair(ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
                                  GURL(kExampleSite), /*is_psl_match*/ false)));
-  EXPECT_THAT(cache()->GetCredentialStore(origin2)->GetCredentials(),
+  EXPECT_THAT(cache()->GetCredentialStore(origin2).GetCredentials(),
               testing::ElementsAre(
                   CredentialPair(ASCIIToUTF16("Abe"), ASCIIToUTF16("B4dPW"),
                                  GURL(kExampleSite2), /*is_psl_match*/ false)));
@@ -111,13 +111,13 @@ TEST_F(CredentialCacheTest, ClearsCredentials) {
   cache()->SaveCredentialsForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false).first},
       Origin::Create(GURL(kExampleSite)));
-  ASSERT_THAT(cache()->GetCredentialStore(origin)->GetCredentials(),
+  ASSERT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
               testing::ElementsAre(
                   CredentialPair(ASCIIToUTF16("Ben"), ASCIIToUTF16("S3cur3"),
                                  GURL(kExampleSite), /*is_psl_match*/ false)));
 
   cache()->ClearCredentials();
-  EXPECT_EQ(cache()->GetCredentialStore(origin)->GetCredentials().size(), 0u);
+  EXPECT_EQ(cache()->GetCredentialStore(origin).GetCredentials().size(), 0u);
 }
 
 }  // namespace password_manager

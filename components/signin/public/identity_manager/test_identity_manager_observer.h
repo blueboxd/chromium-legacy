@@ -29,6 +29,10 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   void SetOnPrimaryAccountClearedCallback(base::OnceClosure callback);
   const CoreAccountInfo& PrimaryAccountFromClearedCallback();
 
+  void SetOnUnconsentedPrimaryAccountChangedCallback(
+      base::OnceClosure callback);
+  const CoreAccountInfo& UnconsentedPrimaryAccountFromCallback();
+
   void SetOnRefreshTokenUpdatedCallback(base::OnceClosure callback);
   const CoreAccountInfo& AccountFromRefreshTokenUpdatedCallback();
 
@@ -64,6 +68,8 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override;
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(
@@ -91,6 +97,9 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
 
   base::OnceClosure on_primary_account_cleared_callback_;
   CoreAccountInfo primary_account_from_cleared_callback_;
+
+  base::OnceClosure on_unconsented_primary_account_callback_;
+  CoreAccountInfo unconsented_primary_account_from_callback_;
 
   base::OnceClosure on_refresh_token_updated_callback_;
   CoreAccountInfo account_from_refresh_token_updated_callback_;

@@ -297,8 +297,15 @@ test.util.sync.inputText = (contentWindow, query, text) => {
   if (typeof query === 'string') {
     query = [query];
   }
-  const input =
-      test.util.sync.deepQuerySelectorAll_(contentWindow.document, query)[0];
+
+  const elems =
+      test.util.sync.deepQuerySelectorAll_(contentWindow.document, query);
+  if (elems.length === 0) {
+    console.error(`Input element not found: [${query.join(',')}]`);
+    return;
+  }
+
+  const input = elems[0];
   input.value = text;
   input.dispatchEvent(new Event('change'));
 };

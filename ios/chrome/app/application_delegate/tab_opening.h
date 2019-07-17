@@ -6,8 +6,8 @@
 #define IOS_CHROME_APP_APPLICATION_DELEGATE_TAB_OPENING_H_
 
 #include "base/ios/block_types.h"
+#import "ios/chrome/app/app_startup_parameters.h"
 #include "ios/chrome/app/application_mode.h"
-#import "ios/chrome/browser/app_startup_parameters.h"
 #include "ui/base/page_transition_types.h"
 
 @class AppState;

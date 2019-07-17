@@ -14,23 +14,27 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
-#include "content/renderer/service_worker/service_worker_provider_state_for_client.h"
-#include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider_client.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace network {
+class SharedURLLoaderFactory;
+class WeakWrapperSharedURLLoaderFactory;
+}  // namespace network
 
 namespace content {
 
@@ -46,6 +50,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerProviderContextTest,
                      ControllerWithoutFetchHandler);
 }  // namespace service_worker_provider_context_unittest
 
+class WebServiceWorkerProviderImpl;
 class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerProviderContextDeleter;
 
@@ -113,7 +118,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Returns the feature usage of the controller service worker.
   const std::set<blink::mojom::WebFeature>& used_features() const;
 
-  // The Client#id value of the client.
+  // The Client#id value of this context.
   const std::string& client_id() const;
 
   // For providers for frames. See |fetch_request_window_id| in
@@ -231,15 +236,71 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Note: Currently this is always bound on main thread.
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr container_host_;
 
-  // State for service worker clients.
-  // TODO(leonhsl): Integrate ServiceWorkerProviderStateForClient back as this
-  // class is only for service worker clients now.
-  std::unique_ptr<ServiceWorkerProviderStateForClient> state_for_client_;
+  // |controller_| will be set by SetController() and taken by TakeController().
+  blink::mojom::ServiceWorkerObjectInfoPtr controller_;
+  // Keeps version id of the current controller service worker object.
+  int64_t controller_version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
+
+  // Used to intercept requests from the controllee and dispatch them
+  // as events to the controller ServiceWorker.
+  network::mojom::URLLoaderFactoryPtr subresource_loader_factory_;
+
+  // Used when we create |subresource_loader_factory_|.
+  scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory_;
+
+  // Used to ensure handed out loader factories are properly detached when the
+  // contained subresource_loader_factory goes away.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      weak_wrapped_subresource_loader_factory_;
+
+  // The Client#id value for this context.
+  std::string client_id_;
+
+  // Corresponds to a request's "window" in the Fetch spec:
+  // https://fetch.spec.whatwg.org/#concept-request-window
+  base::UnguessableToken fetch_request_window_id_;
+
+  blink::mojom::ControllerServiceWorkerMode controller_mode_ =
+      blink::mojom::ControllerServiceWorkerMode::kNoController;
+
+  // Tracks feature usage for UseCounter.
+  std::set<blink::mojom::WebFeature> used_features_;
+
+  // Corresponds to this context's ServiceWorkerContainer. May be null when not
+  // yet created, when already destroyed, or when this client is not a Document
+  // and therefore doesn't support navigator.serviceWorker.
+  base::WeakPtr<WebServiceWorkerProviderImpl> web_service_worker_provider_;
+
+  // Keeps ServiceWorkerWorkerClient pointers of dedicated or shared workers
+  // which are associated with the ServiceWorkerProviderContext.
+  // - If this ServiceWorkerProviderContext is for a Document, then
+  //   |worker_clients| contains all its dedicated workers.
+  // - If this ServiceWorkerProviderContext is for a SharedWorker (technically
+  //   speaking, for its shadow page), then |worker_clients| has one element:
+  //   the shared worker.
+  std::vector<blink::mojom::ServiceWorkerWorkerClientPtr> worker_clients_;
+
+  // For adding new ServiceWorkerWorkerClients.
+  mojo::BindingSet<blink::mojom::ServiceWorkerWorkerClientRegistry>
+      worker_client_registry_bindings_;
+
+  // Used in |subresource_loader_factory_| to get the connection to the
+  // controller service worker.
+  //
+  // |controller_endpoint_| is a Mojo pipe to the controller service worker,
+  // and is to be passed to (i.e. taken by) a subresource loader factory when
+  // GetSubresourceLoaderFactory() is called for the first time when a valid
+  // controller exists.
+  //
+  // |controller_connector_| is a Mojo pipe to the
+  // ControllerServiceWorkerConnector that is attached to the newly created
+  // subresource loader factory and lives on a background thread. This is
+  // populated when GetSubresourceLoader() creates the subresource loader
+  // factory and takes |controller_endpoint_|.
+  blink::mojom::ControllerServiceWorkerPtrInfo controller_endpoint_;
+  blink::mojom::ControllerServiceWorkerConnectorPtr controller_connector_;
 
   bool sent_execution_ready_ = false;
-
-  // NOTE: Add new members to |state_for_client_| if they are relevant only for
-  // service worker clients. Not here!
 
   base::WeakPtrFactory<ServiceWorkerProviderContext> weak_factory_{this};
 

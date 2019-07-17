@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 
@@ -84,9 +85,10 @@ const CGFloat kButtonPadding = 16;
   self = [super initWithFrame:frame];
   if (self) {
     _activityIndicator = [[MDCActivityIndicator alloc] init];
-    _activityIndicator.cycleColors = @[ [[MDCPalette cr_bluePalette] tint500] ];
+    _activityIndicator.cycleColors = @[ [UIColor colorNamed:kTintColor] ];
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     _button = [UIButton buttonWithType:UIButtonTypeSystem];
+    _button.tintColor = [UIColor colorNamed:kTintColor];
     _button.translatesAutoresizingMaskIntoConstraints = NO;
     _button.titleLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];

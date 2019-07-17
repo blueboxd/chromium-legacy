@@ -20,7 +20,7 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/fileapi/dragged_file_util.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"

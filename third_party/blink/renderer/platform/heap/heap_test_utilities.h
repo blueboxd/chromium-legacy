@@ -8,6 +8,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_
 
 #include "base/callback.h"
+#include "base/test/scoped_task_environment.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -17,11 +19,26 @@
 
 namespace blink {
 
-void PreciselyCollectGarbage();
-void ConservativelyCollectGarbage(
-    BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
-void ClearOutOldGarbage();
-void CompleteSweepingIfNeeded();
+class TestSupportingGC : public testing::Test {
+ public:
+  // Performs a precise garbage collection with eager sweeping.
+  static void PreciselyCollectGarbage();
+
+  // Performs a conservative garbage collection.
+  static void ConservativelyCollectGarbage(
+      BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
+
+  // Performs multiple rounds of garbage collections until no more memory can be
+  // freed. This is useful to avoid other garbage collections having to deal
+  // with stale memory.
+  void ClearOutOldGarbage();
+
+  // Completes sweeping if it is currently running.
+  void CompleteSweepingIfNeeded();
+
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+};
 
 template <typename T>
 class ObjectWithCallbackBeforeInitializer

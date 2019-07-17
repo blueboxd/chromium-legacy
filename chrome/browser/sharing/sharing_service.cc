@@ -98,6 +98,11 @@ SharingService::SharingService(
   }
 #endif  // defined(OS_ANDROID)
 
+  // If device has already registered before, start listening to FCM right away
+  // to avoid missing messages.
+  if (sync_prefs_ && sync_prefs_->GetFCMRegistration())
+    fcm_handler_->StartListening();
+
   if (sync_service_ && !sync_service_->HasObserver(this))
     sync_service_->AddObserver(this);
 

@@ -4,7 +4,7 @@
 
 module file.mojom;
 
-import "components/services/filesystem/public/interfaces/directory.mojom";
+import "components/services/filesystem/public/mojom/directory.mojom";
 import "mojo/public/mojom/base/file_error.mojom";
 
 // Provide access to various directories within the requesting user's directory.

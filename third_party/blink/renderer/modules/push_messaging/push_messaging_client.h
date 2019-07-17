@@ -64,10 +64,7 @@ class PushMessagingClient final
   void DidSubscribe(ServiceWorkerRegistration* service_worker_registration,
                     std::unique_ptr<PushSubscriptionCallbacks> callbacks,
                     mojom::blink::PushRegistrationStatus status,
-                    const base::Optional<KURL>& endpoint,
-                    mojom::blink::PushSubscriptionOptionsPtr options,
-                    const base::Optional<WTF::Vector<uint8_t>>& p256dh,
-                    const base::Optional<WTF::Vector<uint8_t>>& auth);
+                    mojom::blink::PushSubscriptionPtr subscription);
 
   mojo::Remote<mojom::blink::PushMessaging> push_messaging_manager_;
 

@@ -7,7 +7,6 @@ import("//build/config/ios/asset_catalog.gni")
 imageset("grid_cell_close_button") {
   sources = [
     "grid_cell_close_button.imageset/Contents.json",
-    "grid_cell_close_button.imageset/grid_cell_close_button.png",
     "grid_cell_close_button.imageset/grid_cell_close_button@2x.png",
     "grid_cell_close_button.imageset/grid_cell_close_button@3x.png",
   ]

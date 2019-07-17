@@ -137,7 +137,13 @@ inline bool IsSVGAnimateElement(const SVGElement& element) {
          element.HasTagName(svg_names::kSetTag);
 }
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
+template <>
+struct DowncastTraits<SVGAnimateElement> {
+  static bool AllowFrom(const Node& node) {
+    auto* element = DynamicTo<SVGElement>(node);
+    return element && IsSVGAnimateElement(*element);
+  }
+};
 
 }  // namespace blink
 

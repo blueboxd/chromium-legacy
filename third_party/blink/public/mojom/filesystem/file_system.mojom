@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "components/services/filesystem/public/interfaces/types.mojom";
+import "components/services/filesystem/public/mojom/types.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 import "mojo/public/mojom/base/file_error.mojom";

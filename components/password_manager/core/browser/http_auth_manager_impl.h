@@ -39,6 +39,7 @@ class HttpAuthManagerImpl : public HttpAuthManager {
   void DetachObserver(HttpAuthObserver* observer) override;
   void OnPasswordFormSubmitted(
       const autofill::PasswordForm& password_form) override;
+  void OnPasswordFormDismissed() override;
 
   // Called by a PasswordManagerClient when it decides that a HTTP auth dialog
   // can be auto-filled. It notifies the observer about new credentials given
@@ -69,6 +70,10 @@ class HttpAuthManagerImpl : public HttpAuthManager {
 
   // Single password form manager to handle the http-auth request form.
   std::unique_ptr<NewPasswordFormManager> form_manager_;
+
+  // When set to true, the password form has been dismissed and |form_manager_|
+  // will be cleared on next navigation.
+  bool form_dismissed_ = false;
 };
 
 }  // namespace password_manager

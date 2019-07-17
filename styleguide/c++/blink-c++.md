@@ -191,16 +191,58 @@ class Node {
 };
 ```
 
-## Prefer enums to bools for function parameters
+## Prefer enums or StrongAliases to bare bools for function parameters
 Prefer enums to bools for function parameters if callers are likely to be
 passing constants, since named constants are easier to read at the call site.
-An exception to this rule is a setter function, where the name of the function
-already makes clear what the boolean is.
+Alternatively, you can use base::util::StrongAlias<Tag, bool>. An exception to
+this rule is a setter function, where the name of the function already makes
+clear what the boolean is.
 
 **Good:**
 ```c++
+class FrameLoader {
+public:
+  enum class CloseType {
+    kNotForReload,
+    kForReload,
+  };
+
+  bool ShouldClose(CloseType) {
+    if (type == CloseType::kForReload) {
+      ...
+    } else {
+      DCHECK_EQ(type, CloseType::kNotForReload);
+      ...
+    }
+  }
+};
+
 // An named enum value makes it clear what the parameter is for.
-if (frame_->Loader().ShouldClose(CloseType::kNotForReload)) {
+if (frame_->Loader().ShouldClose(FrameLoader::CloseType::kNotForReload)) {
+  // No need to use enums for boolean setters, since the meaning is clear.
+  frame_->SetIsClosing(true);
+
+  // ...
+```
+
+**Good:**
+```c++
+class FrameLoader {
+public:
+  using ForReload = base::util::StrongAlias<class ForReloadTag, bool>;
+
+  bool ShouldClose(ForReload) {
+    // A StrongAlias<_, bool> can be tested like a bool.
+    if (for_reload) {
+      ...
+    } else {
+      ...
+    }
+  }
+};
+
+// Using a StrongAlias makes it clear what the parameter is for.
+if (frame_->Loader().ShouldClose(FrameLoader::ForReload(false))) {
   // No need to use enums for boolean setters, since the meaning is clear.
   frame_->SetIsClosing(true);
 
@@ -209,6 +251,17 @@ if (frame_->Loader().ShouldClose(CloseType::kNotForReload)) {
 
 **Bad:**
 ```c++
+class FrameLoader {
+public:
+  bool ShouldClose(bool for_reload) {
+    if (for_reload) {
+      ...
+    } else {
+      ...
+    }
+  }
+};
+
 // Not obvious what false means here.
 if (frame_->Loader().ShouldClose(false)) {
   frame_->SetIsClosing(ClosingState::kTrue);

@@ -197,16 +197,6 @@ void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
 void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
                                           const AtomicString& content,
                                           Element* element) {
-  Deprecation::CountDeprecation(document, WebFeature::kMetaSetCookie);
-
-  if (!document.GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kScript, element, "" /* content */,
-          "" /* nonce */, NullURL(), OrdinalNumber(),
-          SecurityViolationReportingPolicy::kSuppressReporting)) {
-    UseCounter::Count(document,
-                      WebFeature::kMetaSetCookieWhenCSPBlocksInlineScript);
-  }
-
   document.AddConsoleMessage(ConsoleMessage::Create(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError,

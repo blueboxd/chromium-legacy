@@ -32,9 +32,7 @@ OAuth2TokenService::OAuth2TokenService(
       this /* OAuth2AccessTokenManager::Delegate* */);
 }
 
-OAuth2TokenService::~OAuth2TokenService() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+OAuth2TokenService::~OAuth2TokenService() = default;
 
 OAuth2TokenServiceDelegate* OAuth2TokenService::GetDelegate() {
   return delegate_.get();

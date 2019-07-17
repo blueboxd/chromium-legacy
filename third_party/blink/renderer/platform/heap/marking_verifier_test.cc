@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class MarkingVerifierDeathTest : public TestSupportingGC {};
+
 namespace {
 
 class ResurrectingPreFinalizer
@@ -91,7 +93,7 @@ class ResurrectingPreFinalizer
 
 }  // namespace
 
-TEST(MarkingVerifierDeathTest, DiesOnResurrectedMember) {
+TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedMember) {
   if (!ThreadState::Current()->VerifyMarkingEnabled())
     return;
 
@@ -104,7 +106,7 @@ TEST(MarkingVerifierDeathTest, DiesOnResurrectedMember) {
                             "MarkingVerifier: Encountered unmarked object.");
 }
 
-TEST(MarkingVerifierDeathTest, DiesOnResurrectedWeakMember) {
+TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedWeakMember) {
   if (!ThreadState::Current()->VerifyMarkingEnabled())
     return;
 
@@ -117,7 +119,7 @@ TEST(MarkingVerifierDeathTest, DiesOnResurrectedWeakMember) {
                             "MarkingVerifier: Encountered unmarked object.");
 }
 
-TEST(MarkingVerifierDeathTest, DiesOnResurrectedHeapVectorMember) {
+TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedHeapVectorMember) {
   if (!ThreadState::Current()->VerifyMarkingEnabled())
     return;
 
@@ -130,7 +132,7 @@ TEST(MarkingVerifierDeathTest, DiesOnResurrectedHeapVectorMember) {
                             "MarkingVerifier: Encountered unmarked object.");
 }
 
-TEST(MarkingVerifierDeathTest, DiesOnResurrectedHeapHashSetMember) {
+TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedHeapHashSetMember) {
   if (!ThreadState::Current()->VerifyMarkingEnabled())
     return;
 
@@ -143,7 +145,7 @@ TEST(MarkingVerifierDeathTest, DiesOnResurrectedHeapHashSetMember) {
                             "MarkingVerifier: Encountered unmarked object.");
 }
 
-TEST(MarkingVerifierDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
+TEST_F(MarkingVerifierDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
   if (!ThreadState::Current()->VerifyMarkingEnabled())
     return;
 

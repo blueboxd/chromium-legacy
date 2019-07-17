@@ -92,12 +92,15 @@ WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(IntMap)
 
 namespace blink {
 
-static void PerformHeapCompaction() {
-  ThreadState::Current()->EnableCompactionForNextGCForTesting();
-  PreciselyCollectGarbage();
-}
+class HeapCompactTest : public TestSupportingGC {
+ public:
+  void PerformHeapCompaction() {
+    ThreadState::Current()->EnableCompactionForNextGCForTesting();
+    PreciselyCollectGarbage();
+  }
+};
 
-TEST(HeapCompactTest, CompactVector) {
+TEST_F(HeapCompactTest, CompactVector) {
   ClearOutOldGarbage();
 
   IntWrapper* val = IntWrapper::Create(1, VectorsAreCompacted);
@@ -113,7 +116,7 @@ TEST(HeapCompactTest, CompactVector) {
     EXPECT_EQ(val, item);
 }
 
-TEST(HeapCompactTest, CompactHashMap) {
+TEST_F(HeapCompactTest, CompactHashMap) {
   ClearOutOldGarbage();
 
   Persistent<IntMap> int_map = MakeGarbageCollected<IntMap>();
@@ -133,7 +136,7 @@ TEST(HeapCompactTest, CompactHashMap) {
     EXPECT_EQ(k.key->Value(), 100 - k.value);
 }
 
-TEST(HeapCompactTest, CompactVectorPartHashMap) {
+TEST_F(HeapCompactTest, CompactVectorPartHashMap) {
   ClearOutOldGarbage();
 
   using IntMapVector = HeapVector<IntMap>;
@@ -169,7 +172,7 @@ TEST(HeapCompactTest, CompactVectorPartHashMap) {
   }
 }
 
-TEST(HeapCompactTest, CompactHashPartVector) {
+TEST_F(HeapCompactTest, CompactHashPartVector) {
   ClearOutOldGarbage();
 
   using IntVectorMap = HeapHashMap<int, IntVector>;
@@ -204,7 +207,7 @@ TEST(HeapCompactTest, CompactHashPartVector) {
   }
 }
 
-TEST(HeapCompactTest, CompactDeques) {
+TEST_F(HeapCompactTest, CompactDeques) {
   Persistent<IntDeque> deque = MakeGarbageCollected<IntDeque>();
   for (int i = 0; i < 8; ++i) {
     deque->push_front(IntWrapper::Create(i, VectorsAreCompacted));
@@ -221,7 +224,7 @@ TEST(HeapCompactTest, CompactDeques) {
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i)->Value());
 }
 
-TEST(HeapCompactTest, CompactDequeVectors) {
+TEST_F(HeapCompactTest, CompactDequeVectors) {
   Persistent<HeapDeque<IntVector>> deque =
       MakeGarbageCollected<HeapDeque<IntVector>>();
   for (int i = 0; i < 8; ++i) {
@@ -241,7 +244,7 @@ TEST(HeapCompactTest, CompactDequeVectors) {
     EXPECT_EQ(static_cast<int>(7 - i), deque->at(i).at(i)->Value());
 }
 
-TEST(HeapCompactTest, CompactLinkedHashSet) {
+TEST_F(HeapCompactTest, CompactLinkedHashSet) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntWrapper>>;
   Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
@@ -266,7 +269,7 @@ TEST(HeapCompactTest, CompactLinkedHashSet) {
   }
 }
 
-TEST(HeapCompactTest, CompactLinkedHashSetVector) {
+TEST_F(HeapCompactTest, CompactLinkedHashSetVector) {
   using OrderedHashSet = HeapLinkedHashSet<Member<IntVector>>;
   Persistent<OrderedHashSet> set = MakeGarbageCollected<OrderedHashSet>();
   for (int i = 0; i < 13; ++i) {
@@ -292,7 +295,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetVector) {
   }
 }
 
-TEST(HeapCompactTest, CompactLinkedHashSetMap) {
+TEST_F(HeapCompactTest, CompactLinkedHashSetMap) {
   using Inner = HeapHashSet<Member<IntWrapper>>;
   using OrderedHashSet = HeapLinkedHashSet<Member<Inner>>;
 
@@ -323,7 +326,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetMap) {
   }
 }
 
-TEST(HeapCompactTest, CompactLinkedHashSetNested) {
+TEST_F(HeapCompactTest, CompactLinkedHashSetNested) {
   using Inner = HeapLinkedHashSet<Member<IntWrapper>>;
   using OrderedHashSet = HeapLinkedHashSet<Member<Inner>>;
 
@@ -354,7 +357,7 @@ TEST(HeapCompactTest, CompactLinkedHashSetNested) {
   }
 }
 
-TEST(HeapCompactTest, CompactInlinedBackingStore) {
+TEST_F(HeapCompactTest, CompactInlinedBackingStore) {
   // Regression test: https://crbug.com/875044
   //
   // This test checks that compaction properly updates pointers to statically

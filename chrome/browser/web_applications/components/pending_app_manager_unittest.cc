@@ -54,8 +54,7 @@ class PendingAppManagerTest : public testing::Test {
               pending_app_manager_.deduped_uninstall_count());
 
     std::map<AppId, GURL> apps =
-        pending_app_manager_.registrar()->GetExternallyInstalledApps(
-            InstallSource::kInternal);
+        registrar_.GetExternallyInstalledApps(InstallSource::kInternal);
     std::vector<GURL> urls;
     for (auto it : apps)
       urls.push_back(it.second);

@@ -470,9 +470,8 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
   }
 
   CalcMode calc_mode = GetCalcMode();
-  if (IsSVGAnimateElement(*this)) {
-    SVGAnimateElement& animate_element = ToSVGAnimateElement(*this);
-    if (!animate_element.AnimatedPropertyTypeSupportsAddition())
+  if (auto* animate_element = DynamicTo<SVGAnimateElement>(this)) {
+    if (!animate_element->AnimatedPropertyTypeSupportsAddition())
       calc_mode = kCalcModeDiscrete;
   }
   if (!key_points_.IsEmpty() && calc_mode != kCalcModePaced)

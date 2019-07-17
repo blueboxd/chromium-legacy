@@ -40,6 +40,16 @@ TestIdentityManagerObserver::PrimaryAccountFromClearedCallback() {
   return primary_account_from_cleared_callback_;
 }
 
+void TestIdentityManagerObserver::SetOnUnconsentedPrimaryAccountChangedCallback(
+    base::OnceClosure callback) {
+  on_unconsented_primary_account_callback_ = std::move(callback);
+}
+
+const CoreAccountInfo&
+TestIdentityManagerObserver::UnconsentedPrimaryAccountFromCallback() {
+  return unconsented_primary_account_from_callback_;
+}
+
 void TestIdentityManagerObserver::SetOnRefreshTokenUpdatedCallback(
     base::OnceClosure callback) {
   on_refresh_token_updated_callback_ = std::move(callback);
@@ -135,6 +145,13 @@ void TestIdentityManagerObserver::OnPrimaryAccountCleared(
   primary_account_from_cleared_callback_ = previous_primary_account_info;
   if (on_primary_account_cleared_callback_)
     std::move(on_primary_account_cleared_callback_).Run();
+}
+
+void TestIdentityManagerObserver::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& unconsented_primary_account_info) {
+  unconsented_primary_account_from_callback_ = unconsented_primary_account_info;
+  if (on_unconsented_primary_account_callback_)
+    std::move(on_unconsented_primary_account_callback_).Run();
 }
 
 void TestIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(

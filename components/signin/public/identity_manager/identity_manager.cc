@@ -24,6 +24,8 @@
 
 #if defined(OS_ANDROID)
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
+#elif !defined(OS_IOS)
+#include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
 namespace identity {
@@ -117,7 +119,7 @@ IdentityManager::IdentityManager(
     CoreAccountInfo account =
         primary_account_manager_->GetAuthenticatedAccountInfo();
     DCHECK(!account.account_id.empty());
-    primary_account_ = std::move(account);
+    SetPrimaryAccountInternal(std::move(account));
   }
 }
 
@@ -166,6 +168,18 @@ bool IdentityManager::HasPrimaryAccount() const {
   DCHECK_EQ(primary_account_.has_value(),
             primary_account_manager_->IsAuthenticated());
   return primary_account_.has_value();
+}
+
+CoreAccountId IdentityManager::GetUnconsentedPrimaryAccountId() const {
+  return GetUnconsentedPrimaryAccountInfo().account_id;
+}
+
+CoreAccountInfo IdentityManager::GetUnconsentedPrimaryAccountInfo() const {
+  return unconsented_primary_account_.value_or(CoreAccountInfo());
+}
+
+bool IdentityManager::HasUnconsentedPrimaryAccount() const {
+  return unconsented_primary_account_.has_value();
 }
 
 std::unique_ptr<AccessTokenFetcher>
@@ -393,6 +407,9 @@ void IdentityManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   PrimaryAccountManager::RegisterProfilePrefs(registry);
   AccountFetcherService::RegisterPrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  MutableProfileOAuth2TokenServiceDelegate::RegisterProfilePrefs(registry);
+#endif
 }
 
 CoreAccountId IdentityManager::PickAccountIdForAccount(
@@ -506,6 +523,48 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
   return account_info;
 }
 
+void IdentityManager::SetPrimaryAccountInternal(
+    base::Optional<CoreAccountInfo> account_info) {
+  primary_account_ = std::move(account_info);
+  UpdateUnconsentedPrimaryAccount();
+}
+
+void IdentityManager::UpdateUnconsentedPrimaryAccount() {
+  base::Optional<CoreAccountInfo> new_unconsented_primary_account =
+      ComputeUnconsentedPrimaryAccountInfo();
+  if (unconsented_primary_account_ != new_unconsented_primary_account) {
+    unconsented_primary_account_ = std::move(new_unconsented_primary_account);
+    for (auto& observer : observer_list_) {
+      observer.OnUnconsentedPrimaryAccountChanged(
+          unconsented_primary_account_.value_or(CoreAccountInfo()));
+    }
+  }
+}
+
+base::Optional<CoreAccountInfo>
+IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
+  if (HasPrimaryAccount())
+    return GetPrimaryAccountInfo();
+
+#if defined(OS_CHROMEOS) || defined(OS_IOS) || defined(OS_ANDROID)
+  // On ChromeOS and on mobile platforms, we support only the primary account as
+  // the unconsented primary account. By this early return, we avoid an extra
+  // request to GAIA that lists cookie accounts.
+  return base::nullopt;
+#else
+  std::vector<gaia::ListedAccount> cookie_accounts =
+      GetAccountsInCookieJar().signed_in_accounts;
+  if (cookie_accounts.empty())
+    return base::nullopt;
+
+  const CoreAccountId first_account_id = cookie_accounts[0].id;
+  if (!HasAccountWithRefreshToken(first_account_id))
+    return base::nullopt;
+
+  return GetAccountInfoForAccountWithRefreshToken(first_account_id);
+#endif
+}
+
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
   for (auto& observer : observer_list_) {
     observer.OnPrimaryAccountSet(account_info);
@@ -520,14 +579,15 @@ void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
 }
 void IdentityManager::AuthenticatedAccountSet(const AccountInfo& account_info) {
   DCHECK(primary_account_manager_->IsAuthenticated());
-  primary_account_ = account_info;
+  SetPrimaryAccountInternal(account_info);
 }
 void IdentityManager::AuthenticatedAccountCleared() {
   DCHECK(!primary_account_manager_->IsAuthenticated());
-  primary_account_.reset();
+  SetPrimaryAccountInternal(base::nullopt);
 }
 
 void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
+  UpdateUnconsentedPrimaryAccount();
   CoreAccountInfo account_info =
       GetAccountInfoForAccountWithRefreshToken(account_id);
 
@@ -537,12 +597,14 @@ void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
 }
 
 void IdentityManager::OnRefreshTokenRevoked(const CoreAccountId& account_id) {
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnRefreshTokenRemovedForAccount(account_id);
   }
 }
 
 void IdentityManager::OnRefreshTokensLoaded() {
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_)
     observer.OnRefreshTokensLoaded();
 }
@@ -567,6 +629,7 @@ void IdentityManager::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& signed_in_accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
+  UpdateUnconsentedPrimaryAccount();
   AccountsInCookieJarInfo accounts_in_cookie_jar_info(
       error == GoogleServiceAuthError::AuthErrorNone(), signed_in_accounts,
       signed_out_accounts);
@@ -577,6 +640,7 @@ void IdentityManager::OnGaiaAccountsInCookieUpdated(
 }
 
 void IdentityManager::OnGaiaCookieDeletedByUserAction() {
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_) {
     observer.OnAccountsCookieDeletedByUserAction();
   }
@@ -625,7 +689,7 @@ void IdentityManager::OnRefreshTokenRevokedFromSource(
 
 void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
   if (primary_account_ && primary_account_->account_id == info.account_id) {
-    primary_account_ = info;
+    SetPrimaryAccountInternal(info);
   }
   for (auto& observer : observer_list_) {
     observer.OnExtendedAccountInfoUpdated(info);
@@ -635,6 +699,7 @@ void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
 void IdentityManager::OnAccountRemoved(const AccountInfo& info) {
   for (auto& observer : observer_list_)
     observer.OnExtendedAccountInfoRemoved(info);
+  UpdateUnconsentedPrimaryAccount();
 }
 
 }  // namespace identity

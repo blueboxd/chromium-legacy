@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "components/services/leveldb/leveldb_mojo_proxy.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"

@@ -1950,9 +1950,10 @@ void V4L2JpegEncodeAccelerator::EncodeTask(
       return;
     }
 
+    // The output buffer size is coded in the first plane's size.
     if (!encoded_device->CreateBuffers(
             coded_size, job_record->input_frame->layout(),
-            job_record->output_frame->coded_size().GetArea())) {
+            job_record->output_frame->layout().planes()[0].size)) {
       VLOGF(1) << "Create buffers failed.";
       NotifyError(job_record->task_id, PLATFORM_FAILURE);
       return;

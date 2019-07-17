@@ -110,6 +110,21 @@ TEST(PreflightControllerCreatePreflightRequestTest,
       header_names::kAccessControlRequestHeaders, &header));
 }
 
+TEST(PreflightControllerCreatePreflightRequestTest, IncludeSecFetchModeHeader) {
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.request_initiator = url::Origin();
+  request.headers.SetHeader("X-Custom-Header", "foobar");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      PreflightController::CreatePreflightRequestForTesting(request);
+
+  std::string header;
+  EXPECT_TRUE(preflight->headers.GetHeader("Sec-Fetch-Mode", &header));
+  EXPECT_EQ("cors", header);
+}
+
 TEST(PreflightControllerCreatePreflightRequestTest, IncludeNonSimpleHeader) {
   ResourceRequest request;
   request.mode = mojom::RequestMode::kCors;

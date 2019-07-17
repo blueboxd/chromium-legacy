@@ -128,18 +128,28 @@ void CloudPolicyValidatorBase::ValidateTimestamp(
 
 void CloudPolicyValidatorBase::ValidateUser(const AccountId& account_id) {
   validation_flags_ |= VALIDATE_USER;
-  account_id_ = account_id;
+  username_ = account_id.GetUserEmail();
+  gaia_id_ = account_id.GetGaiaId();
   // Always canonicalize when falls back to username check,
   // because it checks only for regular users.
   canonicalize_user_ = true;
 }
 
-void CloudPolicyValidatorBase::ValidateUsername(
+void CloudPolicyValidatorBase::ValidateUsernameAndGaiaId(
     const std::string& expected_user,
-    bool canonicalize) {
+    const std::string& gaia_id) {
   validation_flags_ |= VALIDATE_USER;
-  account_id_ = AccountId::FromUserEmail(expected_user);
-  canonicalize_user_ = canonicalize;
+  username_ = expected_user;
+  gaia_id_ = gaia_id;
+  canonicalize_user_ = false;
+}
+
+void CloudPolicyValidatorBase::ValidateUsername(
+    const std::string& expected_user) {
+  validation_flags_ |= VALIDATE_USER;
+  username_ = expected_user;
+  gaia_id_.clear();
+  canonicalize_user_ = false;
 }
 
 void CloudPolicyValidatorBase::ValidateDomain(
@@ -546,9 +556,8 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUser() {
   }
 
   if (policy_data_->has_gaia_id() && !policy_data_->gaia_id().empty() &&
-      account_id_.GetAccountType() == AccountType::GOOGLE &&
-      !account_id_.GetGaiaId().empty()) {
-    std::string expected = account_id_.GetGaiaId();
+      !gaia_id_.empty()) {
+    std::string expected = gaia_id_;
     std::string actual = policy_data_->gaia_id();
 
     if (expected != actual) {
@@ -560,7 +569,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUser() {
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicyUserVerification,
                               MetricPolicyUserVerification::kGaiaIdSucceeded);
   } else {
-    std::string expected = account_id_.GetUserEmail();
+    std::string expected = username_;
     std::string actual = policy_data_->username();
     if (canonicalize_user_) {
       expected = gaia::CanonicalizeEmail(gaia::SanitizeEmail(expected));
@@ -573,8 +582,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUser() {
                                 MetricPolicyUserVerification::kUsernameFailed);
       return VALIDATION_BAD_USER;
     }
-    if (account_id_.GetAccountType() != AccountType::GOOGLE ||
-        account_id_.GetGaiaId().empty()) {
+    if (gaia_id_.empty()) {
       UMA_HISTOGRAM_ENUMERATION(
           kMetricPolicyUserVerification,
           MetricPolicyUserVerification::kUsernameSucceeded);

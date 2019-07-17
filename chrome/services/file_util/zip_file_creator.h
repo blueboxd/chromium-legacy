@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace base {

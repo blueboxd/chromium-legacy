@@ -62,13 +62,6 @@ enum FocusedFieldType {
   kFillablePasswordField,
 };
 
-// Describes how a manual filling attempt ended.
-enum FillingStatus {
-  SUCCESS,               // The selected credential was filled into the field.
-  ERROR_NO_VALID_FIELD,  // The focused field was invalid or focus was lost.
-  ERROR_NOT_ALLOWED,  // Filling not permitted (e.g. password in email field).
-};
-
 // Describes how a form button is implemented in HTML source. Should be
 // synced with |ButtonTitleType| in
 // components/autofill/core/browser/proto/server.proto.

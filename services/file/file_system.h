@@ -6,7 +6,7 @@
 #define SERVICES_FILE_FILE_SYSTEM_H_
 
 #include "base/files/file_path.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 
 namespace filesystem {

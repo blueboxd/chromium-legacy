@@ -165,6 +165,7 @@ ThreadableLoader::CreateAccessControlPreflightRequest(
   preflight_request->SetHttpMethod(http_names::kOPTIONS);
   preflight_request->SetHttpHeaderField(http_names::kAccessControlRequestMethod,
                                         request.HttpMethod());
+  preflight_request->SetMode(network::mojom::RequestMode::kCors);
   preflight_request->SetPriority(request.Priority());
   preflight_request->SetRequestContext(request.GetRequestContext());
   preflight_request->SetCredentialsMode(network::mojom::CredentialsMode::kOmit);

@@ -19,7 +19,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -85,7 +84,8 @@ class ComponentCloudPolicyService::Backend
   void ClearCache();
 
   // The passed credentials will be used to validate the policies.
-  void SetCredentials(const AccountId& account_id,
+  void SetCredentials(const std::string& username,
+                      const std::string& gaia_id,
                       const std::string& dm_token,
                       const std::string& device_id,
                       const std::string& public_key,
@@ -164,17 +164,18 @@ void ComponentCloudPolicyService::Backend::ClearCache() {
 }
 
 void ComponentCloudPolicyService::Backend::SetCredentials(
-    const AccountId& account_id,
+    const std::string& username,
+    const std::string& gaia_id,
     const std::string& dm_token,
     const std::string& device_id,
     const std::string& public_key,
     int public_key_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(account_id.is_valid());
+  DCHECK(!username.empty());
   DCHECK(!dm_token.empty());
-  DVLOG(1) << "Updating credentials: account id = " << account_id
+  DVLOG(1) << "Updating credentials: username = " << username
            << ", public_key_version = " << public_key_version;
-  store_.SetCredentials(account_id, dm_token, device_id, public_key,
+  store_.SetCredentials(username, gaia_id, dm_token, device_id, public_key,
                         public_key_version);
   has_credentials_set_ = true;
   // Trigger an additional update against the last fetched policies. This helps
@@ -416,9 +417,6 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
     // session starts.
     std::string username = policy->username();
     std::string gaia_id = policy->gaia_id();
-    AccountId account_id =
-        gaia_id.empty() ? AccountId::FromUserEmail(username)
-                        : AccountId::FromUserEmailGaiaId(username, gaia_id);
     std::string request_token = policy->request_token();
     std::string device_id =
         policy->has_device_id() ? policy->device_id() : std::string();
@@ -427,8 +425,8 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
         policy->has_public_key_version() ? policy->public_key_version() : -1;
     backend_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&Backend::SetCredentials,
-                                  base::Unretained(backend_.get()), account_id,
-                                  request_token, device_id, public_key,
+                                  base::Unretained(backend_.get()), username,
+                                  gaia_id, request_token, device_id, public_key,
                                   public_key_version));
   }
 

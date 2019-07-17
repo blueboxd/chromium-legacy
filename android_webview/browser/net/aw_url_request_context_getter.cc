@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/net/aw_cookie_store_wrapper.h"

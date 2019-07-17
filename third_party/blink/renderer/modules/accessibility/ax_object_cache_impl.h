@@ -58,6 +58,8 @@ class MODULES_EXPORT AXObjectCacheImpl
     : public AXObjectCacheBase,
       public mojom::blink::PermissionObserver,
       public LocalFrameView::LifecycleNotificationObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(AXObjectCacheImpl);
+
  public:
   static AXObjectCache* Create(Document&);
 

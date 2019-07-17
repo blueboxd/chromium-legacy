@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "net/base/io_buffer.h"
 
 namespace chromeos {

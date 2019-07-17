@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -113,8 +114,7 @@ const CGFloat kAnimationDuration = 0.3;
     [[self class] configureTitleLabel:_titleLabel];
     _additionalInformationLabel.font = [[self class] additionalInformationFont];
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
-    _additionalInformationLabel.textColor =
-        [UIColor colorWithWhite:0 alpha:0.54];
+    _additionalInformationLabel.textColor = UIColor.cr_secondaryLabelColor;
 
     [self applyConstraints];
   }
@@ -374,7 +374,7 @@ const CGFloat kAnimationDuration = 0.3;
 
 // Configures the |titleLabel|.
 + (void)configureTitleLabel:(UILabel*)titleLabel {
-  titleLabel.textColor = [UIColor colorWithWhite:0 alpha:0.8];
+  titleLabel.textColor = UIColor.cr_labelColor;
   UIFontDescriptor* descriptor = [[UIFontDescriptor
       preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline]
       fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];

@@ -865,6 +865,8 @@ void WallpaperControllerImpl::Init(
   SetGlobalChromeOSWallpapersDir(chromeos_wallpapers_path);
   SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
   SetDevicePolicyWallpaperPath(device_policy_wallpaper_path);
+  if (wallpaper_controller_client_)
+    wallpaper_controller_client_->OnReadyToSetWallpaper();
 }
 
 void WallpaperControllerImpl::SetCustomWallpaper(

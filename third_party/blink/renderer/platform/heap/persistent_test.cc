@@ -12,6 +12,9 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
+
+class PersistentTest : public TestSupportingGC {};
+
 namespace {
 
 class Receiver : public GarbageCollected<Receiver> {
@@ -21,7 +24,7 @@ class Receiver : public GarbageCollected<Receiver> {
   void Trace(blink::Visitor* visitor) {}
 };
 
-TEST(PersistentTest, BindCancellation) {
+TEST_F(PersistentTest, BindCancellation) {
   Receiver* receiver = MakeGarbageCollected<Receiver>();
   int counter = 0;
   base::RepeatingClosure function =
@@ -37,7 +40,7 @@ TEST(PersistentTest, BindCancellation) {
   EXPECT_EQ(1, counter);
 }
 
-TEST(PersistentTest, CrossThreadBindCancellation) {
+TEST_F(PersistentTest, CrossThreadBindCancellation) {
   Receiver* receiver = MakeGarbageCollected<Receiver>();
   int counter = 0;
   CrossThreadOnceClosure function = CrossThreadBindOnce(

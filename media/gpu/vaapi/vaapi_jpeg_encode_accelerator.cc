@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -224,16 +225,20 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
     return;
   }
 
-  // Create gmb buffer from output VideoFrame.
+  // Create gmb buffer from output VideoFrame. Since the JPEG VideoFrame's coded
+  // size is the 2D image size, we should use (buffer_size, 1) as the R8 gmb's
+  // size, where buffer_size can be obtained from the first plane's size.
   auto output_gmb_handle = CreateGpuMemoryBufferHandle(output_frame.get());
   if (output_gmb_handle.is_null()) {
     VLOGF(1) << "Failed to create GpuMemoryBufferHandle";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
     return;
   }
+  const gfx::Size output_gmb_buffer_size(
+      base::checked_cast<int32_t>(output_frame->layout().planes()[0].size), 1);
   auto output_gmb_buffer =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-          std::move(output_gmb_handle), output_frame->coded_size(),
+          std::move(output_gmb_handle), output_gmb_buffer_size,
           gfx::BufferFormat::R_8, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
           base::DoNothing());
   if (output_gmb_buffer == nullptr) {

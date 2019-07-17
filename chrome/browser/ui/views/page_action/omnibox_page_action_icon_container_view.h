@@ -16,6 +16,7 @@
 #include "ui/views/view.h"
 
 class Browser;
+class ClickToCallIconView;
 class CommandUpdater;
 class FindBarIcon;
 class IntentPickerView;
@@ -92,6 +93,7 @@ class OmniboxPageActionIconContainerView
   TranslateIconView* translate_icon_ = nullptr;
   NativeFileSystemAccessIconView* native_file_system_icon_ = nullptr;
   ReaderModeIconView* reader_mode_icon_ = nullptr;
+  ClickToCallIconView* click_to_call_icon_view_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 
   ScopedObserver<zoom::ZoomEventManager, zoom::ZoomEventManagerObserver>

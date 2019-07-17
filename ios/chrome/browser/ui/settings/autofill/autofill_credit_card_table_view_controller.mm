@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
+#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -26,6 +27,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -72,9 +74,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // stop the observer callback from acting on user-initiated changes.
 @property(nonatomic, readwrite, assign) BOOL deletionInProgress;
 
+// Button to add a new credit card.
+@property(nonatomic, strong) UIBarButtonItem* addPaymentMethodButton;
+
 @end
 
 @implementation AutofillCreditCardTableViewController
+
+#pragma mark - ViewController Life Cycle.
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
@@ -101,12 +108,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UIViewController
 
+- (NSArray<UIBarButtonItem*>*)toolbarItems {
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                             target:nil
+                             action:nil];
+    return @[
+      self.deleteButton,
+      flexibleSpace,
+      self.addPaymentMethodButton,
+    ];
+  }
+  return [super toolbarItems];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
+  [self.deleteButton setEnabled:NO];
   [self updateUIForEditState];
   [self loadModel];
 }
@@ -116,8 +139,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (editing) {
     [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillCardSwitch];
   } else {
+    [self.deleteButton setEnabled:NO];
     [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillCardSwitch];
   }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    self.navigationController.toolbarHidden = NO;
+  }
+}
+
+- (BOOL)shouldHideToolbar {
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    return NO;
+  }
+  return [super shouldHideToolbar];
 }
 
 #pragma mark - ChromeTableViewController
@@ -289,6 +327,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // edit mode, selection is handled by the superclass. When not in edit mode
   // selection presents the editing controller for the selected entry.
   if (self.editing) {
+    [self.deleteButton setEnabled:YES];
     return;
   }
 
@@ -306,6 +345,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
           personalDataManager:_personalDataManager];
   controller.dispatcher = self.dispatcher;
   [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)tableView:(UITableView*)tableView
+    didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
+  [super tableView:tableView didDeselectRowAtIndexPath:indexPath];
+  if (!self.tableView.editing)
+    return;
+
+  if (self.tableView.indexPathsForSelectedRows.count == 0)
+    [self.deleteButton setEnabled:NO];
 }
 
 #pragma mark - UITableViewDataSource
@@ -407,6 +456,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setAutofillCreditCardEnabled:(BOOL)isEnabled {
   return autofill::prefs::SetCreditCardAutofillEnabled(
       _browserState->GetPrefs(), isEnabled);
+}
+
+- (UIBarButtonItem*)addPaymentMethodButton {
+  if (!_addPaymentMethodButton) {
+    _addPaymentMethodButton = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD)
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:nil];
+  }
+  return _addPaymentMethodButton;
 }
 
 @end

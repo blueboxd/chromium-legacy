@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class ThreadStateSchedulingTest : public testing::Test {
+class ThreadStateSchedulingTest : public TestSupportingGC {
  public:
   void SetUp() override {
     state_ = ThreadState::Current();

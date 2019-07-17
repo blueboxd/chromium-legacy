@@ -218,7 +218,7 @@ jumbo_component("browser") {
   ]
 
   public_deps = [
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//storage/common",
   ]
   deps = [
@@ -320,7 +320,7 @@ source_set("unittests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//mojo/core/embedder",
     "//net:test_support",
     "//services/network/public/cpp",

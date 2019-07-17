@@ -140,6 +140,13 @@ void FakeServiceWorker::DispatchPushEvent(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
+void FakeServiceWorker::DispatchPushSubscriptionChangeEvent(
+    blink::mojom::PushSubscriptionPtr old_subscription,
+    blink::mojom::PushSubscriptionPtr new_subscription,
+    DispatchPushSubscriptionChangeEventCallback callback) {
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+}
+
 void FakeServiceWorker::DispatchSyncEvent(const std::string& tag,
                                           bool last_chance,
                                           base::TimeDelta timeout,

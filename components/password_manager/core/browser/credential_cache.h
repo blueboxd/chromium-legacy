@@ -6,13 +6,8 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIAL_CACHE_H_
 
 #include <map>
-#include <memory>
-#include <utility>
-#include <vector>
 
-#include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/password_manager/core/browser/origin_credential_store.h"
 #include "url/origin.h"
 
 namespace autofill {
@@ -21,13 +16,15 @@ struct PasswordForm;
 
 namespace password_manager {
 
+class OriginCredentialStore;
+
 // This class caches and provides credential stores for different origins.
 class CredentialCache {
  public:
   CredentialCache();
-  ~CredentialCache();
   CredentialCache(const CredentialCache&) = delete;
   CredentialCache& operator=(const CredentialCache&) = delete;
+  ~CredentialCache();
 
   // Saves credentials for an origin so that they can be used in the sheet.
   void SaveCredentialsForOrigin(
@@ -36,17 +33,16 @@ class CredentialCache {
 
   // Returns the credential store for a given origin. If it does not exist, an
   // empty store will be created.
-  const OriginCredentialStore* GetCredentialStore(const url::Origin& origin);
+  const OriginCredentialStore& GetCredentialStore(const url::Origin& origin);
 
   // Removes all credentials for all origins.
   void ClearCredentials();
 
  private:
-  OriginCredentialStore* GetOrCreateCredentialStore(const url::Origin& origin);
+  OriginCredentialStore& GetOrCreateCredentialStore(const url::Origin& origin);
 
   // Contains the store for credential of each requested origin.
-  std::map<url::Origin, std::unique_ptr<OriginCredentialStore>>
-      origin_credentials_;
+  std::map<url::Origin, OriginCredentialStore> origin_credentials_;
 };
 
 }  // namespace password_manager

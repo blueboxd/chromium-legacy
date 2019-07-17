@@ -36,7 +36,6 @@ class ManualFillingControllerImpl
       const autofill::AccessorySheetData& accessory_sheet_data) override;
   void NotifyFocusedInputChanged(
       autofill::mojom::FocusedFieldType focused_field_type) override;
-  void OnFilledIntoFocusedField(autofill::mojom::FillingStatus status) override;
   void UpdateSourceAvailability(FillingSource source,
                                 bool has_suggestions) override;
   void Hide() override;

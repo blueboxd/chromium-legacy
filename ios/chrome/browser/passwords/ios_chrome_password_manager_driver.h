@@ -74,7 +74,7 @@ class IOSChromePasswordManagerDriver
       override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
-  GURL GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedURL() const override;
 
  private:
   id<PasswordManagerDriverDelegate> delegate_;  // (weak)

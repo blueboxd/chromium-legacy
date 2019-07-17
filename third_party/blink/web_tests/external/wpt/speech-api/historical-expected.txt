@@ -6,5 +6,7 @@ FAIL webkitSpeechRecognition interface should not exist assert_false: expected f
 FAIL webkitSpeechRecognitionError interface should not exist assert_false: expected false got true
 FAIL webkitSpeechRecognitionEvent interface should not exist assert_false: expected false got true
 PASS SpeechRecognition's serviceURI attribute should not exist
+PASS SpeechRecognitionEvent's interpretation attribute should not exist
+PASS SpeechRecognitionEvent's emma attribute should not exist
 Harness: the test ran to completion.
 

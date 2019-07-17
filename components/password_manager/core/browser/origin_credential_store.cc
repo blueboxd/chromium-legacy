@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
-#include "url/gurl.h"
 
 namespace password_manager {
 namespace {
@@ -34,10 +33,10 @@ CredentialPair::CredentialPair(const CredentialPair&) = default;
 CredentialPair& CredentialPair::operator=(CredentialPair&&) = default;
 CredentialPair& CredentialPair::operator=(const CredentialPair&) = default;
 
-bool CredentialPair::operator==(const CredentialPair& rhs) const {
-  return username == rhs.username && password == rhs.password &&
-         origin_url == rhs.origin_url &&
-         is_public_suffix_match == rhs.is_public_suffix_match;
+bool operator==(const CredentialPair& lhs, const CredentialPair& rhs) {
+  return lhs.username == rhs.username && lhs.password == rhs.password &&
+         lhs.origin_url == rhs.origin_url &&
+         lhs.is_public_suffix_match == rhs.is_public_suffix_match;
 }
 
 std::ostream& operator<<(std::ostream& os, const CredentialPair& pair) {
@@ -49,7 +48,7 @@ std::ostream& operator<<(std::ostream& os, const CredentialPair& pair) {
 }
 
 OriginCredentialStore::OriginCredentialStore(url::Origin origin)
-    : origin_(origin) {}
+    : origin_(std::move(origin)) {}
 OriginCredentialStore::~OriginCredentialStore() = default;
 
 void OriginCredentialStore::SaveCredentials(
@@ -58,7 +57,7 @@ void OriginCredentialStore::SaveCredentials(
 }
 
 base::span<const CredentialPair> OriginCredentialStore::GetCredentials() const {
-  return base::make_span<>(credentials_);
+  return credentials_;
 }
 
 void OriginCredentialStore::ClearCredentials() {

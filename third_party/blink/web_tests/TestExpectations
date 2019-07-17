@@ -2111,6 +2111,30 @@ crbug.com/875235 virtual/layout_ng_experimental/fast/forms/fieldset/legend-small
 
 # ====== LayoutNG-only failures until here ======
 
+# ====== Style team owned tests from here ======
+
+crbug.com/753671 external/wpt/css/css-content/quotes-001.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-002.html [ Failure ]
+crbug.com/753671 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Retina ] external/wpt/css/css-content/quotes-006.html [ Failure ]
+crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
+crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
+crbug.com/753671 [ Retina ] external/wpt/css/css-content/quotes-007.html [ Failure ]
+crbug.com/753671 [ Mac ] external/wpt/css/css-content/quotes-009.html [ Failure ]
+crbug.com/753671 [ Mac10.11 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 [ Retina ] external/wpt/css/css-content/quotes-012.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-013.html [ Failure ]
+crbug.com/753671 [ Mac ] external/wpt/css/css-content/quotes-014.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-021.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-022.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-025.html [ Failure ]
+crbug.com/753671 external/wpt/css/css-content/quotes-033.html [ Failure ]
+
+# ====== Style team owned tests to here ======
 
 # ====== OOPIF-mode failures from here ======
 
@@ -3235,35 +3259,6 @@ crbug.com/983157 virtual/scalefactor200/external/wpt/css/filter-effects/animatio
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
-crbug.com/626703 external/wpt/css/css-content/quotes-013.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-014.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-022.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-033.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-021.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-scroll-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-linethrough-001.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-overline-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-content/quotes-009.html [ Failure ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-006.html [ Failure ]
-crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 [ Retina ] external/wpt/css/css-content/quotes-012.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-025.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-underline-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-content/quotes-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Failure ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-stretched-001.tentative.html [ Failure ]
@@ -4674,8 +4669,17 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
-# Underline offset and thickness
-crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Failure ]
+# Underline offset and thickness are not implemented yet.
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-linethrough-001.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-overline-001.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-scroll-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-width-underline-001.html [ Skip ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-width-vertical-002.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Skip ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Skip ]
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
@@ -6230,8 +6234,8 @@ crbug.com/959129 http/tests/devtools/tracing/timeline-script-parse.js [ Pass Fai
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/null.tentative.html [ Failure ]
 crbug.com/974334 [ Mac ] external/wpt/html/cross-origin/usecredentials.tentative.html [ Failure ]
 
-# Flaky on Linux
-crbug.com/974660 [ Linux ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
+# Flaky on Linux, failing on macOS
+crbug.com/984926 [ Linux Mac ] http/tests/devtools/elements/highlight/highlight-node-vertical-rl.js [ Pass Failure ]
 
 # Sheriff 2019-06-19
 crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Pass Failure ]
@@ -6310,3 +6314,9 @@ crbug.com/970079 fast/events/message-port-multi.html [ Pass Failure ]
 crbug.com/970079 storage/indexeddb/structured-clone.html [ Pass Failure ]
 crbug.com/970079 virtual/mouseevent_fractional/fast/events/message-port-multi.html [ Pass Failure ]
 crbug.com/970079 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
+
+# Sheriff 2019-07-17
+crbug.com/982149 [ Win7 ] external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
+crbug.com/982149 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
+crbug.com/982149 [ Win7 ] virtual/not-omt-sw-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
+crbug.com/982149 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]

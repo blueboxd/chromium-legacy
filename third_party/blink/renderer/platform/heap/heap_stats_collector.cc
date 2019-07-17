@@ -211,8 +211,8 @@ base::TimeDelta ThreadHeapStatsCollector::Event::atomic_pause_time() const {
 
 base::TimeDelta ThreadHeapStatsCollector::Event::foreground_sweeping_time()
     const {
-  return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
-         scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
+  return scope_data[kCompleteSweep] + scope_data[kLazySweepInIdle] +
+         scope_data[kLazySweepOnAllocation];
 }
 
 base::TimeDelta ThreadHeapStatsCollector::Event::background_sweeping_time()

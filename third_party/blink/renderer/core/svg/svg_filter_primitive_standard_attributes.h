@@ -85,8 +85,13 @@ inline bool IsSVGFilterPrimitiveStandardAttributes(const SVGElement& element) {
   return element.IsFilterEffect();
 }
 
-DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(
-    SVGFilterPrimitiveStandardAttributes);
+template <>
+struct DowncastTraits<SVGFilterPrimitiveStandardAttributes> {
+  static bool AllowFrom(const Node& node) {
+    auto* element = DynamicTo<SVGElement>(node);
+    return element && IsSVGFilterPrimitiveStandardAttributes(*element);
+  }
+};
 
 }  // namespace blink
 

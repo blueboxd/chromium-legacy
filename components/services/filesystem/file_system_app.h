@@ -9,7 +9,7 @@
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/file_system_impl.h"
 #include "components/services/filesystem/lock_table.h"
-#include "components/services/filesystem/public/interfaces/file_system.mojom.h"
+#include "components/services/filesystem/public/mojom/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/service.h"

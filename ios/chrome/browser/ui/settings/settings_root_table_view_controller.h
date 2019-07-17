@@ -21,6 +21,9 @@ extern NSString* const kSettingsToolbarDeleteButtonId;
     : ChromeTableViewController <SettingsRootViewControlling,
                                  TableViewLinkHeaderFooterItemDelegate>
 
+// Delete button for the toolbar.
+@property(nonatomic, strong, readonly) UIBarButtonItem* deleteButton;
+
 // Whether this table view controller should hide the "Done" button (the right
 // navigation bar button). Default is NO.
 @property(nonatomic, assign) BOOL shouldHideDoneButton;
@@ -41,6 +44,9 @@ extern NSString* const kSettingsToolbarDeleteButtonId;
 // Subclasses of SettingsRootTableViewController should implement the
 // following methods to customize the behavior.
 @interface SettingsRootTableViewController (Subclassing)
+
+// Returns YES. Subclasses should overload this if a toolbar is required.
+- (BOOL)shouldHideToolbar;
 
 // Returns NO.  Subclasses should overload this if an edit button is required.
 - (BOOL)shouldShowEditButton;

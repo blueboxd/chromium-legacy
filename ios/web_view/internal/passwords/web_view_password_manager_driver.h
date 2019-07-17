@@ -63,7 +63,7 @@ class WebViewPasswordManagerDriver
       override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
-  GURL GetLastCommittedURL() const override;
+  const GURL& GetLastCommittedURL() const override;
 
  private:
   __weak id<CWVPasswordManagerDriverDelegate> delegate_;

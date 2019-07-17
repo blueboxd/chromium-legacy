@@ -5,7 +5,7 @@
 #include "components/services/filesystem/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
-#include "components/services/filesystem/public/interfaces/file_system.mojom.h"
+#include "components/services/filesystem/public/mojom/file_system.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace filesystem {

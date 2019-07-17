@@ -179,8 +179,7 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
     if (!element->IsFilterEffect())
       continue;
 
-    SVGFilterPrimitiveStandardAttributes& effect_element =
-        ToSVGFilterPrimitiveStandardAttributes(*element);
+    auto& effect_element = To<SVGFilterPrimitiveStandardAttributes>(*element);
     FilterEffect* effect = effect_element.Build(this, filter);
     if (!effect)
       continue;

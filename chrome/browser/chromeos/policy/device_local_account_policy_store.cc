@@ -211,7 +211,7 @@ void DeviceLocalAccountPolicyStore::Validate(
 
   auto validator = std::make_unique<UserCloudPolicyValidator>(
       std::move(policy_response), background_task_runner());
-  validator->ValidateUsername(account_id_, false);
+  validator->ValidateUsername(account_id_);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
   // The timestamp is verified when storing a new policy downloaded from the
   // server but not when loading a cached policy from disk.

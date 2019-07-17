@@ -168,8 +168,8 @@ bool WASAPIAudioInputStream::Open() {
 
   // Obtain an IAudioClient interface which enables us to create and initialize
   // an audio stream between an audio application and the audio engine.
-  hr = endpoint_device_->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER,
-                                  NULL, &audio_client_);
+  hr = endpoint_device_->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                                  &audio_client_);
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_ACTIVATION_FAILED;
     ReportOpenResult(hr);
@@ -222,7 +222,7 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
     // mute it again, and later we do not unmute system audio when stopping
     // capturing.
     if (!muted) {
-      system_audio_volume_->SetMute(true, NULL);
+      system_audio_volume_->SetMute(true, nullptr);
       mute_done_ = true;
     }
   }
@@ -274,7 +274,7 @@ void WASAPIAudioInputStream::Stop() {
       mute_done_) {
     DCHECK(system_audio_volume_);
     if (system_audio_volume_) {
-      system_audio_volume_->SetMute(false, NULL);
+      system_audio_volume_->SetMute(false, nullptr);
       mute_done_ = false;
     }
   }
@@ -301,7 +301,7 @@ void WASAPIAudioInputStream::Stop() {
   }
 
   started_ = false;
-  sink_ = NULL;
+  sink_ = nullptr;
 }
 
 void WASAPIAudioInputStream::Close() {
@@ -344,8 +344,8 @@ void WASAPIAudioInputStream::SetVolume(double volume) {
 
   // Set a new master volume level. Valid volume levels are in the range
   // 0.0 to 1.0. Ignore volume-change events.
-  HRESULT hr =
-      simple_audio_volume_->SetMasterVolume(static_cast<float>(volume), NULL);
+  HRESULT hr = simple_audio_volume_->SetMasterVolume(static_cast<float>(volume),
+                                                     nullptr);
   if (FAILED(hr))
     DLOG(WARNING) << "Failed to set new input master volume.";
 
@@ -607,9 +607,8 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   DCHECK(!endpoint_device_.Get());
 
   Microsoft::WRL::ComPtr<IMMDeviceEnumerator> enumerator;
-  HRESULT hr =
-      ::CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL,
-                         CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&enumerator));
+  HRESULT hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr,
+                                  CLSCTX_ALL, IID_PPV_ARGS(&enumerator));
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_CREATE_INSTANCE;
     return hr;
@@ -878,9 +877,8 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   //
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd316551(v=vs.85).aspx
   if (AudioDeviceDescription::IsLoopbackDevice(device_id_)) {
-    hr = endpoint_device_->Activate(
-        __uuidof(IAudioClient), CLSCTX_INPROC_SERVER, NULL,
-        &audio_render_client_for_loopback_);
+    hr = endpoint_device_->Activate(__uuidof(IAudioClient), CLSCTX_ALL, nullptr,
+                                    &audio_render_client_for_loopback_);
     if (FAILED(hr)) {
       open_result_ = OPEN_RESULT_LOOPBACK_ACTIVATE_FAILED;
       return hr;

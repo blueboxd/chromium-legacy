@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "base/bind.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"

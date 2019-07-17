@@ -954,6 +954,7 @@ extern const char kClientCertificateManagementAllowed[];
 
 extern const char kSharingVapidKey[];
 extern const char kSharingSyncedDevices[];
+extern const char kSharingFCMRegistration[];
 
 }  // namespace prefs
 

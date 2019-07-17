@@ -104,6 +104,7 @@ test("blink_heap_unittests") {
 jumbo_source_set("blink_heap_unittests_sources") {
   testonly = true
   sources = [
+    "../testing/run_all_tests.cc",
     "address_cache_test.cc",
     "blink_gc_memory_dump_provider_test.cc",
     "cancelable_task_scheduler_test.cc",
@@ -120,7 +121,6 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "name_trait_test.cc",
     "object_start_bitmap_test.cc",
     "persistent_test.cc",
-    "run_all_tests.cc",
     "thread_state_scheduling_test.cc",
     "worklist_test.cc",
   ]
@@ -134,10 +134,14 @@ jumbo_source_set("blink_heap_unittests_sources") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/platform:test_support",
     "//third_party/blink/renderer/platform/wtf",
   ]
+
+  if (is_fuchsia) {
+    # Needed for ../testing/run_all_tests.cc.
+    deps += [ "//skia:test_fonts" ]
+  }
 }

@@ -92,6 +92,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   preflight_request->headers.SetHeader(
       header_names::kAccessControlRequestMethod, request.method);
+  preflight_request->headers.SetHeader("Sec-Fetch-Mode", "cors");
 
   std::string request_headers = CreateAccessControlRequestHeadersHeader(
       request.headers, request.is_revalidating);

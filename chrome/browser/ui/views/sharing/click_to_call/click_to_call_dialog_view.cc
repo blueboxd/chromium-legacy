@@ -5,7 +5,12 @@
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -13,6 +18,9 @@
 #include "base/logging.h"
 
 namespace {
+// Global instance of the bubble view.
+ClickToCallDialogView* g_bubble_ = nullptr;
+
 // Icon sizes in DIP.
 // TODO: Confirm the number with the team designer.
 constexpr int kPrimaryIconSize = 20;
@@ -43,6 +51,35 @@ std::unique_ptr<views::ImageView> CreateDeviceIcon(
 }
 
 }  // namespace
+
+// static
+ClickToCallDialogView* ClickToCallDialogView::GetBubbleView() {
+  return g_bubble_;
+}
+
+// static
+void ClickToCallDialogView::Show(
+    content::WebContents* web_contents,
+    std::unique_ptr<ClickToCallSharingDialogController> controller) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (g_bubble_ || !browser)
+    return;
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  views::View* anchor_view =
+      browser_view->toolbar_button_provider()->GetAnchorView();
+  PageActionIconView* icon =
+      browser_view->toolbar_button_provider()
+          ->GetOmniboxPageActionIconContainerView()
+          ->GetPageActionIconView(PageActionIconType::kClickToCall);
+
+  g_bubble_ = new ClickToCallDialogView(anchor_view, icon, web_contents,
+                                        std::move(controller));
+  views::BubbleDialogDelegateView::CreateBubble(g_bubble_)->Show();
+
+  icon->Update();
+  DCHECK(icon->GetVisible());
+}
 
 ClickToCallDialogView::ClickToCallDialogView(
     views::View* anchor_view,
@@ -142,4 +179,10 @@ bool ClickToCallDialogView::ShouldShowCloseButton() const {
 
 base::string16 ClickToCallDialogView::GetWindowTitle() const {
   return base::UTF8ToUTF16(controller_->GetTitle());
+}
+
+void ClickToCallDialogView::WindowClosing() {
+  DCHECK_EQ(g_bubble_, this);
+  g_bubble_ = nullptr;
+  icon_view_->Update();
 }

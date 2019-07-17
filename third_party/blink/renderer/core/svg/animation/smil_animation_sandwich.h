@@ -27,22 +27,43 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_ANIMATION_SANDWICH_H_
 
 #include "third_party/blink/renderer/core/svg/animation/smil_time.h"
+#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class SVGSMILElement;
+struct PriorityCompare {
+  PriorityCompare(double elapsed) : elapsed_(elapsed) {}
+  bool operator()(const Member<SVGSMILElement>& a,
+                  const Member<SVGSMILElement>& b) {
+    // FIXME: This should also consider possible timing relations between the
+    // elements.
+    SMILTime a_begin = a->IntervalBegin();
+    SMILTime b_begin = b->IntervalBegin();
+    // Frozen elements need to be prioritized based on their previous interval.
+    a_begin = a->IsFrozen() && elapsed_ < a_begin ? a->PreviousIntervalBegin()
+                                                  : a_begin;
+    b_begin = b->IsFrozen() && elapsed_ < b_begin ? b->PreviousIntervalBegin()
+                                                  : b_begin;
+    if (a_begin == b_begin)
+      return a->DocumentOrderIndex() < b->DocumentOrderIndex();
+    return a_begin < b_begin;
+  }
+  double elapsed_;
+};
 
 class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
  public:
   using ScheduledVector = HeapVector<Member<SVGSMILElement>>;
-  // The list coming in is assumed to be sorted.
-  explicit SMILAnimationSandwich(const ScheduledVector& scheduled_elements,
-                                 double elapsed,
-                                 bool seek_to_time);
+  explicit SMILAnimationSandwich();
 
-  void UpdateAnimations();
+  void Schedule(SVGSMILElement* animation);
+  void Unschedule(SVGSMILElement* animation);
+  void Reset();
+
+  void UpdateTiming(double elapsed, bool seek_to_time);
+  void SendEvents(double elapsed, bool seek_to_time);
   SVGSMILElement* UpdateAnimationValues();
 
   SMILTime GetNextFireTime();
@@ -52,10 +73,10 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void Trace(blink::Visitor*);
 
  private:
+  // The list stored here is always sorted.
   ScheduledVector sandwich_;
+  ScheduledVector active_;
   SMILTime earliest_fire_time_;
-  double elapsed_;
-  bool seek_to_time_;
 };
 
 }  // namespace blink

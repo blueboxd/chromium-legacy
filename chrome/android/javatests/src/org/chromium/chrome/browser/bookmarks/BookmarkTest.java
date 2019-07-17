@@ -30,6 +30,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -289,6 +290,7 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/984582")
     public void testSearchBookmarks() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);

@@ -172,9 +172,15 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   void ValidateUser(const AccountId& account_id);
 
   // Instruct the validator to check that the username in the policy blob
-  // matches |expected_user|. If |canonicalize| is set to true, both values are
-  // canonicalized before comparison.
-  void ValidateUsername(const std::string& expected_user, bool canonicalize);
+  // matches |expected_user|.
+  // This is used for DeviceLocalAccounts that doesn't have AccountId.
+  void ValidateUsername(const std::string& expected_user);
+
+  // Instruct the validator to check that the username in the policy blob
+  // matches the user credentials. It checks GAIA ID if policy blob has it,
+  // otherwise falls back to username check.
+  void ValidateUsernameAndGaiaId(const std::string& expected_user,
+                                 const std::string& gaia_id);
 
   // Instruct the validator to check that the policy blob is addressed to
   // |expected_domain|. This uses the domain part of the username field in the
@@ -265,6 +271,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATE_CACHED_KEY = 1 << 9,
     VALIDATE_DEVICE_ID = 1 << 10,
     VALIDATE_VALUES = 1 << 11,
+    VALIDATE_USERNAME = 1 << 12,
   };
 
   // Create a new validator that checks |policy_response|.
@@ -355,7 +362,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
   ValidateDeviceIdOption device_id_option_;
-  AccountId account_id_;
+  std::string username_;
+  std::string gaia_id_;
   bool canonicalize_user_;
   std::string domain_;
   std::string dm_token_;

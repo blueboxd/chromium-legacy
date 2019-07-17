@@ -56,11 +56,6 @@ class PasswordAccessoryController
   // Methods called by the client:
   // -----------------------------
 
-  // Completes a filling attempt by recording metrics, giving feedback to the
-  // user and dismissing the accessory sheet.
-  virtual void OnFilledIntoFocusedField(
-      autofill::mojom::FillingStatus status) = 0;
-
   // Makes sure, that all shown suggestions are appropriate for the currently
   // focused field and for fields that lost the focus.
   virtual void RefreshSuggestionsForField(

@@ -171,7 +171,7 @@ void ThreadHeap::CommitCallbackStacks() {
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
-void ThreadHeap::DecommitCallbackStacks() {
+void ThreadHeap::DecommitCallbackStacks(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
@@ -180,14 +180,24 @@ void ThreadHeap::DecommitCallbackStacks() {
   // The fixed point iteration may have found not-fully-constructed objects.
   // Such objects should have already been found through the stack scan though
   // and should thus already be marked.
+  //
+  // Possible reasons for encountering unmarked objects here:
+  // - Object is not allocated through MakeGarbageCollected.
+  // - Type is missing a USING_GARBAGE_COLLECTED_MIXIN annotation which means
+  //   that the GC will always find pointers as in construction.
+  // - Broken stack (roots) scanning.
   if (!not_fully_constructed_worklist_->IsGlobalEmpty()) {
 #if DCHECK_IS_ON()
+    const bool conservative_gc =
+        BlinkGC::StackState::kHeapPointersOnStack == stack_state;
     NotFullyConstructedItem item;
     while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread,
                                                 &item)) {
       HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
           reinterpret_cast<Address>(const_cast<void*>(item)));
-      DCHECK(header->IsMarked());
+      DCHECK(conservative_gc && header->IsMarked())
+          << " conservative: " << (conservative_gc ? "yes" : "no")
+          << " type: " << header->Name();
     }
 #else
     not_fully_constructed_worklist_->Clear();
@@ -422,14 +432,12 @@ void ThreadHeap::RemoveAllPages() {
 }
 
 void ThreadHeap::CompleteSweep() {
-  static_assert(BlinkGC::kEagerSweepArenaIndex == 0,
-                "Eagerly swept arenas must be processed first.");
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->CompleteSweep();
 }
 
 void ThreadHeap::InvokeFinalizersOnSweptPages() {
-  for (size_t i = BlinkGC::kEagerSweepArenaIndex + 1;
+  for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
        i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->InvokeFinalizersOnSweptPages();
 }
@@ -497,19 +505,6 @@ void ThreadHeap::PoisonAllHeaps() {
   ProcessHeap::GetCrossThreadPersistentRegion()
       .UnpoisonCrossThreadPersistents();
 }
-
-void ThreadHeap::PoisonEagerArena() {
-  // This lock must be held because other threads may access cross-thread
-  // persistents and should not observe them in a poisoned state.
-  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
-
-  arenas_[BlinkGC::kEagerSweepArenaIndex]->PoisonArena();
-  // CrossThreadPersistents in unmarked objects may be accessed from other
-  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
-  // that would be fine.
-  ProcessHeap::GetCrossThreadPersistentRegion()
-      .UnpoisonCrossThreadPersistents();
-}
 #endif
 
 #if DCHECK_IS_ON()
@@ -555,7 +550,6 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
   SNAPSHOT_HEAP(NormalPage2);
   SNAPSHOT_HEAP(NormalPage3);
   SNAPSHOT_HEAP(NormalPage4);
-  SNAPSHOT_HEAP(EagerSweep);
   SNAPSHOT_HEAP(Vector1);
   SNAPSHOT_HEAP(Vector2);
   SNAPSHOT_HEAP(Vector3);
@@ -620,7 +614,7 @@ bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
 
 void ThreadHeap::ConcurrentSweep() {
   // Concurrent sweep simply sweeps pages not calling finalizers.
-  for (size_t i = BlinkGC::kEagerSweepArenaIndex + 1;
+  for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
        i < BlinkGC::kNumberOfArenas; i++) {
     arenas_[i]->SweepOnConcurrentThread();
   }

@@ -203,6 +203,35 @@ AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
   return account_info;
 }
 
+AccountInfo MakeAccountAvailableWithCookies(
+    IdentityManager* identity_manager,
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    const std::string& email,
+    const std::string& gaia_id) {
+  AccountTrackerService* account_tracker_service =
+      identity_manager->GetAccountTrackerService();
+
+  DCHECK(account_tracker_service);
+  DCHECK(account_tracker_service->FindAccountInfoByEmail(email).IsEmpty());
+
+  // Wait until tokens are loaded, otherwise the account will be removed as soon
+  // as tokens finish loading.
+  WaitForLoadCredentialsToComplete(identity_manager);
+
+  identity::SetCookieAccounts(identity_manager, test_url_loader_factory,
+                              {{email, gaia_id}});
+
+  account_tracker_service->SeedAccountInfo(gaia_id, email);
+
+  AccountInfo account_info =
+      account_tracker_service->FindAccountInfoByEmail(email);
+  DCHECK(!account_info.account_id.empty());
+
+  SetRefreshTokenForAccount(identity_manager, account_info.account_id);
+
+  return account_info;
+}
+
 void SetRefreshTokenForAccount(IdentityManager* identity_manager,
                                const std::string& account_id,
                                const std::string& token_value) {

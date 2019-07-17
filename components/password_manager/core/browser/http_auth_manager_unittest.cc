@@ -185,6 +185,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
     submitted_form.username_value = ASCIIToUTF16("user");
     submitted_form.password_value = ASCIIToUTF16("1234");
     httpauth_manager()->OnPasswordFormSubmitted(submitted_form);
+    httpauth_manager()->OnPasswordFormDismissed();
 
     // Expect save prompt on successful submission.
     std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;

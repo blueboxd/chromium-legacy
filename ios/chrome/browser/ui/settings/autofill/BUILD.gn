@@ -18,6 +18,7 @@ source_set("autofill") {
     "autofill_profile_table_view_controller.mm",
   ]
   deps = [
+    ":feature_flags",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
@@ -38,7 +39,19 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ui/base",
+  ]
+}
+
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 

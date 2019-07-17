@@ -15,6 +15,13 @@ struct PushSubscriptionOptions {
   array<uint8> application_server_key;
 };
 
+struct PushSubscription {
+  url.mojom.Url endpoint;
+  PushSubscriptionOptions options;
+  array<uint8> p256dh;
+  array<uint8> auth;
+};
+
 enum PushErrorType {
   ABORT = 0,
   NETWORK = 1,
@@ -29,11 +36,7 @@ interface PushMessaging {
   Subscribe(int64 service_worker_registration_id,
             PushSubscriptionOptions options,
             bool user_gesture)
-           => (PushRegistrationStatus status,
-               url.mojom.Url? endpoint,
-               PushSubscriptionOptions? options,
-               array<uint8>? p256dh,
-               array<uint8>? auth);
+           => (PushRegistrationStatus status, PushSubscription? subscription);
 
   // We use the value of |error_type| as a flag. If |error_type| == NONE, it
   // means no error and returns |did_unsubscribe|. Else, it means there is an
@@ -45,8 +48,5 @@ interface PushMessaging {
 
   GetSubscription(int64 service_worker_registration_id)
                  => (PushGetRegistrationStatus status,
-                     url.mojom.Url? endpoint,
-                     PushSubscriptionOptions? options,
-                     array<uint8>? p256dh,
-                     array<uint8>? auth);
+                     PushSubscription? subscription);
 };

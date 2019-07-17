@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"

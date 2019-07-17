@@ -49,15 +49,12 @@ String ToBase64URLWithoutPadding(DOMArrayBuffer* buffer) {
 
 // static
 PushSubscription* PushSubscription::Create(
-    const KURL& endpoint,
-    bool user_visible_only,
-    const WTF::Vector<uint8_t>& application_server_key,
-    const WTF::Vector<unsigned char>& p256dh,
-    const WTF::Vector<unsigned char>& auth,
+    mojom::blink::PushSubscriptionPtr subscription,
     ServiceWorkerRegistration* service_worker_registration) {
   return MakeGarbageCollected<PushSubscription>(
-      endpoint, user_visible_only, application_server_key, p256dh, auth,
-      service_worker_registration);
+      subscription->endpoint, subscription->options->user_visible_only,
+      subscription->options->application_server_key, subscription->p256dh,
+      subscription->auth, service_worker_registration);
 }
 
 PushSubscription::PushSubscription(

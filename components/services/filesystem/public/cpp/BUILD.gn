@@ -10,7 +10,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

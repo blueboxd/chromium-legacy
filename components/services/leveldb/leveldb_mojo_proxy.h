@@ -17,7 +17,7 @@
 #include "base/sequenced_task_runner.h"
 
 #include "base/synchronization/waitable_event.h"
-#include "components/services/filesystem/public/interfaces/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/directory.mojom.h"
 
 namespace leveldb {
 

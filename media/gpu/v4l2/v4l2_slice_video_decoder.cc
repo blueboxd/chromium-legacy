@@ -372,8 +372,7 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
     return;
   }
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
-  visible_rect_ = config.visible_rect();
-  UpdateVideoFramePoolFormat();
+  UpdateVideoFramePoolFormat(config.visible_rect());
 
   // Create Input/Output V4L2Queue
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
@@ -473,9 +472,10 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(uint32_t output_format_fourcc) {
   return true;
 }
 
-void V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat() {
-  gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
+void V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
+    const gfx::Rect& visible_rect) {
+  gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
+  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect, natural_size);
 }
 
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
@@ -737,8 +737,7 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
   frame_layout_ = VideoFrameLayout::Create(frame_layout_->format(), coded_size);
   DCHECK(frame_layout_);
 
-  visible_rect_ = avd_->GetVisibleRect();
-  UpdateVideoFramePoolFormat();
+  UpdateVideoFramePoolFormat(avd_->GetVisibleRect());
 
   // Allocate new output buffers.
   if (!output_queue_->DeallocateBuffers())
@@ -872,11 +871,6 @@ void V4L2SliceVideoDecoder::SurfaceReady(
     const VideoColorSpace& /* color_space */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-
-  if (visible_rect_ != visible_rect) {
-    visible_rect_ = visible_rect;
-    UpdateVideoFramePoolFormat();
-  }
 
   auto it = bitstream_id_to_timestamp_.find(bitstream_id);
   DCHECK(it != bitstream_id_to_timestamp_.end());

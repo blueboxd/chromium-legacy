@@ -73,7 +73,8 @@ NSString* const kSettingsToolbarDeleteButtonId =
     return;
   }
 
-  [self.navigationController setToolbarHidden:YES animated:YES];
+  [self.navigationController setToolbarHidden:self.shouldHideToolbar
+                                     animated:YES];
   if (self.shouldShowEditButton) {
     self.navigationItem.rightBarButtonItem = [self createEditButton];
   } else {
@@ -151,7 +152,8 @@ NSString* const kSettingsToolbarDeleteButtonId =
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
   [super setEditing:editing animated:animated];
   if (!editing)
-    [self.navigationController setToolbarHidden:YES animated:YES];
+    [self.navigationController setToolbarHidden:self.shouldHideToolbar
+                                       animated:YES];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -181,7 +183,8 @@ NSString* const kSettingsToolbarDeleteButtonId =
     return;
 
   if (self.tableView.indexPathsForSelectedRows.count == 0)
-    [self.navigationController setToolbarHidden:YES animated:YES];
+    [self.navigationController setToolbarHidden:self.shouldHideToolbar
+                                       animated:YES];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -246,6 +249,10 @@ NSString* const kSettingsToolbarDeleteButtonId =
 }
 
 #pragma mark - Subclassing
+
+- (BOOL)shouldHideToolbar {
+  return YES;
+}
 
 - (BOOL)shouldShowEditButton {
   return NO;

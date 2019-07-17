@@ -26,7 +26,6 @@ enum class PushGetRegistrationStatus;
 enum class PushRegistrationStatus;
 }  // namespace mojom
 
-class KURL;
 class PushSubscriptionOptions;
 
 class PushProvider final : public GarbageCollectedFinalized<PushProvider>,
@@ -54,10 +53,7 @@ class PushProvider final : public GarbageCollectedFinalized<PushProvider>,
 
   void DidSubscribe(std::unique_ptr<PushSubscriptionCallbacks> callbacks,
                     mojom::blink::PushRegistrationStatus status,
-                    const base::Optional<KURL>& endpoint,
-                    mojom::blink::PushSubscriptionOptionsPtr options,
-                    const base::Optional<WTF::Vector<uint8_t>>& p256dh,
-                    const base::Optional<WTF::Vector<uint8_t>>& auth);
+                    mojom::blink::PushSubscriptionPtr subscription);
 
   void DidUnsubscribe(std::unique_ptr<PushUnsubscribeCallbacks> callbacks,
                       mojom::blink::PushErrorType error_type,
@@ -66,10 +62,7 @@ class PushProvider final : public GarbageCollectedFinalized<PushProvider>,
 
   void DidGetSubscription(std::unique_ptr<PushSubscriptionCallbacks> callbacks,
                           mojom::blink::PushGetRegistrationStatus status,
-                          const base::Optional<KURL>& endpoint,
-                          mojom::blink::PushSubscriptionOptionsPtr options,
-                          const base::Optional<WTF::Vector<uint8_t>>& p256dh,
-                          const base::Optional<WTF::Vector<uint8_t>>& auth);
+                          mojom::blink::PushSubscriptionPtr subscription);
 
   mojo::Remote<mojom::blink::PushMessaging> push_messaging_manager_;
 

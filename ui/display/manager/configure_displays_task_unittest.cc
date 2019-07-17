@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/configure_displays_task.h"
@@ -48,7 +48,7 @@ class ConfigureDisplaysTaskTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ActionLogger log_;
   TestNativeDisplayDelegate delegate_;
 

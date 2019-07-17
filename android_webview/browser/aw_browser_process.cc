@@ -5,13 +5,28 @@
 #include "android_webview/browser/aw_browser_process.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "base/base_paths_posix.h"
+#include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/cpp/features.h"
 
 using content::BrowserThread;
 
 namespace android_webview {
+
+namespace prefs {
+
+// String that specifies the Android account type to use for Negotiate
+// authentication.
+const char kAuthAndroidNegotiateAccountType[] =
+    "auth.android_negotiate_account_type";
+
+// Whitelist containing servers for which Integrated Authentication is enabled.
+const char kAuthServerWhitelist[] = "auth.server_whitelist";
+
+}  // namespace prefs
 
 namespace {
 AwBrowserProcess* g_aw_browser_process = nullptr;
@@ -30,6 +45,22 @@ AwBrowserProcess::AwBrowserProcess(
 
 AwBrowserProcess::~AwBrowserProcess() {
   g_aw_browser_process = nullptr;
+}
+
+void AwBrowserProcess::PreMainMessageLoopRun() {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    pref_change_registrar_.Init(local_state());
+    auto auth_pref_callback = base::BindRepeating(
+        &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
+    pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+    pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
+                               auth_pref_callback);
+  }
+
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    CreateURLRequestContextGetter();
+  }
+  InitSafeBrowsing();
 }
 
 PrefService* AwBrowserProcess::local_state() {
@@ -51,8 +82,8 @@ void AwBrowserProcess::InitSafeBrowsing() {
 }
 
 void AwBrowserProcess::CreateSafeBrowsingUIManager() {
-  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager(
-      AwBrowserContext::GetDefault()->GetAwURLRequestContext());
+  safe_browsing_ui_manager_ =
+      new AwSafeBrowsingUIManager(AwBrowserProcess::GetAwURLRequestContext());
 }
 
 void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
@@ -108,6 +139,62 @@ AwBrowserProcess::GetSafeBrowsingWhitelistManager() const {
 
 AwSafeBrowsingUIManager* AwBrowserProcess::GetSafeBrowsingUIManager() const {
   return safe_browsing_ui_manager_.get();
+}
+
+// static
+void AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(
+    PrefRegistrySimple* pref_registry) {
+  pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
+                                    std::string());
+}
+
+network::mojom::HttpAuthDynamicParamsPtr
+AwBrowserProcess::CreateHttpAuthDynamicParams() {
+  network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
+      network::mojom::HttpAuthDynamicParams::New();
+
+  auth_dynamic_params->server_whitelist =
+      local_state()->GetString(prefs::kAuthServerWhitelist);
+  auth_dynamic_params->android_negotiate_account_type =
+      local_state()->GetString(prefs::kAuthAndroidNegotiateAccountType);
+
+  return auth_dynamic_params;
+}
+
+void AwBrowserProcess::OnAuthPrefsChanged() {
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(
+      CreateHttpAuthDynamicParams());
+}
+
+namespace {
+std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
+  std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
+      std::make_unique<net::ProxyConfigServiceAndroid>(
+          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
+          base::ThreadTaskRunnerHandle::Get());
+
+  config_service_android->set_exclude_pac_url(true);
+  return config_service_android;
+}
+}  // namespace
+
+// Default profile reuses global URLRequestGetter
+void AwBrowserProcess::CreateURLRequestContextGetter() {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+  base::FilePath cache_path;
+  if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
+    NOTREACHED() << "Failed to get app cache directory for Android WebView";
+  }
+  cache_path =
+      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
+
+  url_request_context_getter_ = new AwURLRequestContextGetter(
+      cache_path, CreateProxyConfigService(), local_state(), new net::NetLog());
+}
+
+AwURLRequestContextGetter* AwBrowserProcess::GetAwURLRequestContext() {
+  return url_request_context_getter_.get();
 }
 
 }  // namespace android_webview

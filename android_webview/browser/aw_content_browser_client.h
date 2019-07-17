@@ -21,10 +21,6 @@ namespace content {
 class RenderFrameHost;
 }
 
-namespace net {
-class NetLog;
-}
-
 namespace safe_browsing {
 class UrlCheckerDelegate;
 }
@@ -270,9 +266,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
  private:
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
   GetSafeBrowsingUrlCheckerDelegate();
-
-  // TODO(eroman): Remove once WebView has switched over to NetworkService.
-  std::unique_ptr<net::NetLog> non_network_service_net_log_;
 
   // Android WebView currently has a single global (non-off-the-record) browser
   // context.

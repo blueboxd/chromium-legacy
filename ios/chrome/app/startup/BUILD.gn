@@ -51,6 +51,7 @@ source_set("startup") {
     "//base",
     "//components/ntp_snippets",
     "//components/search_engines:search_engines",
+    "//ios/chrome/app",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/first_run",
@@ -76,6 +77,7 @@ source_set("unit_tests") {
   deps = [
     ":startup",
     "//base",
+    "//ios/chrome/app",
     "//ios/chrome/browser",
     "//ios/chrome/common/app_group",
     "//testing/gtest",

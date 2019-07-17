@@ -42,7 +42,6 @@ using autofill::AccessoryTabType;
 using autofill::FooterCommand;
 using autofill::PasswordForm;
 using autofill::UserInfo;
-using autofill::mojom::FillingStatus;
 using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using password_manager::CreateEntry;
@@ -290,20 +289,6 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
   controller()->RefreshSuggestionsForField(
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
-}
-
-TEST_F(PasswordAccessoryControllerTest, OnFilledIntoFocusedField) {
-  EXPECT_CALL(mock_manual_filling_controller_,
-              OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED));
-  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
-
-  EXPECT_CALL(mock_manual_filling_controller_,
-              OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD));
-  controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
-
-  EXPECT_CALL(mock_manual_filling_controller_,
-              OnFilledIntoFocusedField(FillingStatus::SUCCESS));
-  controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
 }
 
 TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {

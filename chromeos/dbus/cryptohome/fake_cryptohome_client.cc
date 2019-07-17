@@ -611,6 +611,8 @@ void FakeCryptohomeClient::MountEx(
       request.force_dircrypto_if_available()) {
     error = cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION;
   }
+  if (mount_create_required_ && !request.has_create())
+    error = cryptohome::CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND;
   reply.set_error(error);
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }

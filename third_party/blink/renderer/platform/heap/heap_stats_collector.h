@@ -49,7 +49,6 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   V(AtomicPauseMarkTransitiveClosure) \
   V(AtomicPauseSweepAndCompact)       \
   V(CompleteSweep)                    \
-  V(EagerSweep)                       \
   V(IncrementalMarkingFinalize)       \
   V(IncrementalMarkingStartMarking)   \
   V(IncrementalMarkingStep)           \

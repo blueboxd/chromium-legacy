@@ -119,11 +119,6 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
 class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
-    Initialize();
-    SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
-  }
-
-  void Initialize() {
     sync_prefs_ = new SharingSyncPreference(&prefs_);
     sharing_device_registration_ = new FakeSharingDeviceRegistration(
         sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
@@ -133,12 +128,7 @@ class SharingServiceTest : public testing::Test {
                                        &fake_local_device_info_provider_,
                                        sync_prefs_, vapid_key_manager_);
     fcm_handler_ = new NiceMock<MockSharingFCMHandler>();
-    sharing_service_ = std::make_unique<SharingService>(
-        base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
-        base::WrapUnique(sharing_device_registration_),
-        base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
-        &device_info_tracker_, &fake_local_device_info_provider_,
-        &test_sync_service_);
+    SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
 
   void OnMessageSent(base::Optional<std::string> message_id) {}
@@ -159,6 +149,19 @@ class SharingServiceTest : public testing::Test {
                                          kNoCapabilities);
   }
 
+  // Lazily initialized so we can test the constructor.
+  SharingService* GetSharingService() {
+    if (!sharing_service_) {
+      sharing_service_ = std::make_unique<SharingService>(
+          base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
+          base::WrapUnique(sharing_device_registration_),
+          base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
+          &device_info_tracker_, &fake_local_device_info_provider_,
+          &test_sync_service_);
+    }
+    return sharing_service_.get();
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   content::TestBrowserThreadBundle scoped_task_environment_{
       ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
@@ -176,6 +179,8 @@ class SharingServiceTest : public testing::Test {
   VapidKeyManager* vapid_key_manager_;
   FakeSharingDeviceRegistration* sharing_device_registration_;
   SharingFCMSender* fcm_sender_;
+
+ private:
   std::unique_ptr<SharingService> sharing_service_ = nullptr;
 };
 
@@ -183,7 +188,7 @@ class SharingServiceTest : public testing::Test {
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
   EXPECT_TRUE(candidates.empty());
 }
 
@@ -194,7 +199,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_NoSynced) {
   device_info_tracker_.Add(device_info.get());
 
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -203,7 +208,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_NoTracked) {
   sync_prefs_->SetSyncDevice(base::GenerateGUID(), CreateFakeSyncDevice());
 
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -216,7 +221,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_SyncedAndTracked) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
 
   ASSERT_EQ(1u, candidates.size());
 }
@@ -232,7 +237,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromDays(10));
 
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -246,7 +251,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
 
   // Require all capabilities.
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(-1);
+      GetSharingService()->GetDeviceCandidates(-1);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -277,7 +282,7 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
   sync_prefs_->SetSyncDevice(id3, CreateFakeSyncDevice());
 
   std::vector<SharingDeviceInfo> candidates =
-      sharing_service_->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
 
   ASSERT_EQ(1u, candidates.size());
   EXPECT_EQ(id2, candidates[0].guid());
@@ -294,7 +299,7 @@ TEST_F(SharingServiceTest, SendMessageToDevice) {
               SendWebPushMessage(_, _, Eq(kP256dh), Eq(kAuthSecret),
                                  Eq(kFcmToken), _, _, _))
       .Times(1);
-  sharing_service_->SendMessageToDevice(
+  GetSharingService()->SendMessageToDevice(
       id, base::TimeDelta::FromSeconds(kTtlSeconds),
       chrome_browser_sharing::SharingMessage(),
       base::BindOnce(&SharingServiceTest::OnMessageSent,
@@ -308,7 +313,7 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
 
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Expect registration to be successful on sync state changed.
   sharing_device_registration_->SetResult(
@@ -316,13 +321,13 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // As device is already registered, won't attempt registration anymore.
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Registration will be attempeted as VAPID key is cleared.
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
@@ -330,7 +335,7 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
                      base::Value::ToUniquePtrValue(
                          base::Value(base::Value::Type::DICTIONARY)));
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 }
 
 TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
@@ -340,14 +345,15 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
 
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Retry will be scheduled on transient error received.
   sharing_device_registration_->SetResult(
       SharingDeviceRegistration::Result::FCM_TRANSIENT_ERROR);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::REGISTERING, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::REGISTERING,
+            GetSharingService()->GetState());
 
   // Retry should be scheduled by now. Next retry after 5 minutes will be
   // successful.
@@ -356,7 +362,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5));
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 }
 
 TEST_F(SharingServiceTest, DeviceUnregistrationFeatureDisabled) {
@@ -366,16 +372,16 @@ TEST_F(SharingServiceTest, DeviceUnregistrationFeatureDisabled) {
   sharing_device_registration_->SetResult(
       SharingDeviceRegistration::Result::SUCCESS);
 
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Further state changes are ignored.
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 }
 
 TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
@@ -384,9 +390,9 @@ TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
       syncer::SyncService::TransportState::DISABLED);
 
   // Create new SharingService instance with sync disabled at constructor.
-  Initialize();
+  GetSharingService();
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 }
 
 TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
@@ -397,8 +403,8 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
 
   // Create new SharingService instance with feature enabled at constructor.
-  Initialize();
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  GetSharingService();
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Expect registration to be successful on sync state changed.
   sharing_device_registration_->SetResult(
@@ -406,13 +412,13 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Further state changes do nothing.
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Disable sync and un-registration should happen.
   test_sync_service_.SetTransportState(
@@ -420,13 +426,13 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Further state changes do nothing.
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(0);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Should be able to register once again when sync is back on.
   test_sync_service_.SetTransportState(
@@ -434,5 +440,19 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
-  EXPECT_EQ(SharingService::State::ACTIVE, sharing_service_->GetState());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+}
+
+TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
+  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_.SetActiveDataTypes(syncer::PREFERENCES);
+
+  // Create new SharingService instance with FCM already registered at
+  // constructor.
+  sync_prefs_->SetFCMRegistration(
+      {"authorized_entity", "fcm_registration_token", base::Time::Now()});
+  EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
+  GetSharingService();
 }

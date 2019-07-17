@@ -20,6 +20,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/dbus/cryptohome/key.pb.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/login/auth/cryptohome_key_constants.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
@@ -81,6 +85,9 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
+  // Make the MountEx cryptohome call fail iff the |create| field is missing,
+  // which simulates the real cryptohomed's behavior for the new user mount.
+  FakeCryptohomeClient::Get()->set_mount_create_required(true);
   LoginDisplayHost::default_host()
       ->GetOobeUI()
       ->GetView<GaiaScreenHandler>()
@@ -95,6 +102,23 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
           ->GetAccountId();
   EXPECT_FALSE(
       user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(account_id));
+
+  // Verify the parameters that were passed to the latest MountEx call.
+  const cryptohome::AuthorizationRequest& cryptohome_auth =
+      FakeCryptohomeClient::Get()->get_last_mount_authentication();
+  EXPECT_EQ(cryptohome::KeyData::KEY_TYPE_PASSWORD,
+            cryptohome_auth.key().data().type());
+  EXPECT_TRUE(cryptohome_auth.key().data().label().empty());
+  EXPECT_FALSE(cryptohome_auth.key().secret().empty());
+  const cryptohome::MountRequest& last_mount_request =
+      FakeCryptohomeClient::Get()->get_last_mount_request();
+  ASSERT_TRUE(last_mount_request.has_create());
+  ASSERT_EQ(1, last_mount_request.create().keys_size());
+  EXPECT_EQ(cryptohome::KeyData::KEY_TYPE_PASSWORD,
+            last_mount_request.create().keys(0).data().type());
+  EXPECT_EQ(kCryptohomeGaiaKeyLabel,
+            last_mount_request.create().keys(0).data().label());
+  EXPECT_FALSE(last_mount_request.create().keys(0).secret().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {

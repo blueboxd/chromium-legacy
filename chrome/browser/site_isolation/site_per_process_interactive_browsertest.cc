@@ -341,6 +341,94 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
 }
 
+// Similar to the test above, but check that sequential focus navigation works
+// with <object> tags that contain OOPIFs.
+//
+// The test sets up four inputs fields in a page with a <object> that contains
+// an OOPIF:
+//                <object>
+//             /------------\.
+//             | 2. <input> |
+//  1. <input> | 3. <input> |  4. <input>
+//             \------------/.
+//
+// The test then presses <tab> 4 times to cycle through focused elements 1-4.
+// The test then repeats this with <shift-tab> to cycle in reverse order.
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       SequentialFocusNavigationWithObject) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/page_with_object_fallback.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+
+  content::TestNavigationObserver observer(web_contents);
+  GURL object_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(content::ExecJs(
+      main_frame,
+      content::JsReplace("document.querySelector('object').data = $1;",
+                         object_url)));
+  observer.Wait();
+  content::RenderFrameHost* object = ChildFrameAt(main_frame, 0);
+  ASSERT_TRUE(object);
+  ASSERT_TRUE(object->IsCrossProcessSubframe());
+  EXPECT_EQ(object_url, object->GetLastCommittedURL());
+
+  // Assign a name to each frame.  This will be sent along in test messages
+  // from focus events.
+  EXPECT_TRUE(ExecuteScript(main_frame, "window.name = 'root';"));
+  EXPECT_TRUE(ExecuteScript(object, "window.name = 'object';"));
+
+  // This script will insert two <input> fields in the document, one at the
+  // beginning and one at the end.  For root frame, this means that we will
+  // have an <input>, then an <object> element, then another <input>.
+  std::string script =
+      "function onFocus(e) {"
+      "  domAutomationController.send(window.name + '-focused-' + e.target.id);"
+      "}"
+      "var input1 = document.createElement('input');"
+      "input1.id = 'input1';"
+      "var input2 = document.createElement('input');"
+      "input2.id = 'input2';"
+      "document.body.insertBefore(input1, document.body.firstChild);"
+      "document.body.appendChild(input2);"
+      "input1.addEventListener('focus', onFocus, false);"
+      "input2.addEventListener('focus', onFocus, false);";
+
+  // Add two input fields to each of the two frames.
+  EXPECT_TRUE(ExecuteScript(main_frame, script));
+  EXPECT_TRUE(ExecuteScript(object, script));
+
+  // Helper to simulate a tab press and wait for a focus message.
+  auto press_tab_and_wait_for_message = [web_contents](bool reverse) {
+    content::DOMMessageQueue msg_queue;
+    std::string reply;
+    SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                     ui::VKEY_TAB, false, reverse /* shift */, false, false);
+    EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
+    return reply;
+  };
+
+  // Press <tab> four times to focus each of the <input> elements in turn.
+  EXPECT_EQ("\"root-focused-input1\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+  EXPECT_EQ("\"object-focused-input1\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(object, web_contents->GetFocusedFrame());
+  EXPECT_EQ("\"object-focused-input2\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ("\"root-focused-input2\"", press_tab_and_wait_for_message(false));
+  EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+
+  // Now, press <shift-tab> to navigate focus in the reverse direction.
+  EXPECT_EQ("\"object-focused-input2\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ(object, web_contents->GetFocusedFrame());
+  EXPECT_EQ("\"object-focused-input1\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ("\"root-focused-input1\"", press_tab_and_wait_for_message(true));
+  EXPECT_EQ(main_frame, web_contents->GetFocusedFrame());
+}
+
 #if (defined(OS_LINUX) && !defined(USE_OZONE)) || defined(OS_WIN)
 // Ensures that renderers know to advance focus to sibling frames and parent
 // frames in the presence of mouse click initiated focus changes.

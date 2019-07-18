@@ -612,7 +612,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   std::set<int32_t> already_serialized_ids;
   for (size_t i = 0; i < dirty_objects.size(); i++) {
     auto obj = dirty_objects[i].obj;
-    if (obj.IsDetached())
+    // Dirty objects can be added using MarkWebAXObjectDirty(obj) from other
+    // parts of the code as well, so we need to ensure the object still exists.
+    if (!obj.UpdateLayoutAndCheckValidity())
       continue;
     if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
       continue;

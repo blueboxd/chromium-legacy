@@ -4169,7 +4169,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
       // so once and resumed commits already.
       if (!have_deferred_commits_) {
         chrome_client.StartDeferringCommits(
-            GetCommitDelayForAvoidFlashBetweenNavigation());
+            GetFrame(), GetCommitDelayForAvoidFlashBetweenNavigation());
         have_deferred_commits_ = true;
       }
       // We do not StopDeferringCommits in cases where we have already started.
@@ -4177,19 +4177,13 @@ void LocalFrameView::BeginLifecycleUpdates() {
       // not want to stop it prematurely.
     } else {
       chrome_client.StopDeferringCommits(
-          cc::PaintHoldingCommitTrigger::kDisallowed);
+          GetFrame(), cc::PaintHoldingCommitTrigger::kDisallowed);
     }
   } else {
     chrome_client.StopDeferringCommits(
-        cc::PaintHoldingCommitTrigger::kFeatureDisabled);
+        GetFrame(), cc::PaintHoldingCommitTrigger::kFeatureDisabled);
   }
-  chrome_client.BeginLifecycleUpdates();
-}
-
-void LocalFrameView::StopDeferringCommits(
-    cc::PaintHoldingCommitTrigger trigger) {
-  if (GetFrame().GetPage())
-    GetFrame().GetPage()->GetChromeClient().StopDeferringCommits(trigger);
+  chrome_client.BeginLifecycleUpdates(GetFrame());
 }
 
 void LocalFrameView::SetInitialViewportSize(const IntSize& viewport_size) {

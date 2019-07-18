@@ -48,13 +48,16 @@ class WebGraphicsContext3DProviderWrapper;
 class PLATFORM_EXPORT CanvasResourceProvider
     : public WebGraphicsContext3DProviderWrapper::DestructionObserver {
  public:
-  enum ResourceUsage {
-    kSoftwareResourceUsage,
-    kSoftwareCompositedResourceUsage,
-    kAcceleratedResourceUsage,
-    kAcceleratedCompositedResourceUsage,
-    kAcceleratedDirect2DResourceUsage,
-    kAcceleratedDirect3DResourceUsage,
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class ResourceUsage {
+    kSoftwareResourceUsage = 0,
+    kSoftwareCompositedResourceUsage = 1,
+    kAcceleratedResourceUsage = 2,
+    kAcceleratedCompositedResourceUsage = 3,
+    kAcceleratedDirect2DResourceUsage = 4,
+    kAcceleratedDirect3DResourceUsage = 5,
+    kMaxValue = kAcceleratedDirect3DResourceUsage,
   };
 
   enum PresentationMode {
@@ -72,10 +75,22 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kTextureGpuMemoryBuffer = 3,
     kBitmapGpuMemoryBuffer = 4,
     kSharedImage = 5,
-    kMaxValue = kSharedImage,
+    kDirectGpuMemoryBuffer = 6,
+    kPassThrough = 7,
+    kMaxValue = kDirectGpuMemoryBuffer,
   };
 
   void static RecordTypeToUMA(ResourceProviderType type);
+
+  static std::unique_ptr<CanvasResourceProvider> CreateForCanvas(
+      const IntSize&,
+      ResourceUsage,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      unsigned msaa_sample_count,
+      const CanvasColorParams&,
+      PresentationMode,
+      base::WeakPtr<CanvasResourceDispatcher>,
+      bool is_origin_top_left = true);
 
   static std::unique_ptr<CanvasResourceProvider> Create(
       const IntSize&,
@@ -180,7 +195,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   SkFilterQuality FilterQuality() const { return filter_quality_; }
   scoped_refptr<StaticBitmapImage> SnapshotInternal();
 
-  CanvasResourceProvider(const IntSize&,
+  CanvasResourceProvider(const ResourceProviderType&,
+                         const IntSize&,
                          const CanvasColorParams&,
                          base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
                          base::WeakPtr<CanvasResourceDispatcher>);
@@ -191,6 +207,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // decodes/uploads in the cache is invalidated only when the canvas contents
   // change.
   cc::PaintImage MakeImageSnapshot();
+
+  ResourceProviderType type_;
   mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
 
  private:

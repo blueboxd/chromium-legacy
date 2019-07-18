@@ -197,8 +197,10 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void SetIsEffectivelyFullscreen(blink::WebFullscreenVideoStatus);
 
   void SetImageForTest(ImageResourceContent* content) {
-    DCHECK(image_loader_);
+    if (!image_loader_)
+      image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->SetImageForTest(content);
+    SetDisplayMode(kPoster);
   }
 
   VideoWakeLock* wake_lock_for_tests() const { return wake_lock_; }

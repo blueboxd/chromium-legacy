@@ -97,7 +97,7 @@ class UtilitySandboxedProcessLauncherDelegate
 #endif  // DCHECK_IS_ON()
   }
 
-  ~UtilitySandboxedProcessLauncherDelegate() override {}
+  ~UtilitySandboxedProcessLauncherDelegate() override = default;
 
 #if defined(OS_WIN)
   bool GetAppContainerId(std::string* appcontainer_id) override {
@@ -207,6 +207,9 @@ void UtilityProcessHost::RegisterUtilityMainThreadFactory(
 }
 
 UtilityProcessHost::UtilityProcessHost()
+    : UtilityProcessHost(nullptr /* client */) {}
+
+UtilityProcessHost::UtilityProcessHost(std::unique_ptr<Client> client)
     : sandbox_type_(service_manager::SANDBOX_TYPE_UTILITY),
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
@@ -214,13 +217,16 @@ UtilityProcessHost::UtilityProcessHost()
       child_flags_(ChildProcessHost::CHILD_NORMAL),
 #endif
       started_(false),
-      name_(base::ASCIIToUTF16("utility process")) {
+      name_(base::ASCIIToUTF16("utility process")),
+      client_(std::move(client)) {
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this,
                                                  mojom::kUtilityServiceName));
 }
 
 UtilityProcessHost::~UtilityProcessHost() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (client_)
+    client_->OnProcessTerminatedNormally();
 }
 
 base::WeakPtr<UtilityProcessHost> UtilityProcessHost::AsWeakPtr() {
@@ -290,6 +296,11 @@ void UtilityProcessHost::SetName(const base::string16& name) {
 void UtilityProcessHost::SetServiceIdentity(
     const service_manager::Identity& identity) {
   service_identity_ = identity;
+}
+
+mojom::ChildProcess* UtilityProcessHost::GetChildProcess() {
+  return static_cast<ChildProcessHostImpl*>(process_->GetHost())
+      ->child_process();
 }
 
 bool UtilityProcessHost::StartProcess() {
@@ -457,6 +468,8 @@ void UtilityProcessHost::OnProcessLaunched() {
   for (auto& callback : pending_run_service_callbacks_)
     std::move(callback).Run(process_->GetProcess().Pid());
   pending_run_service_callbacks_.clear();
+  if (client_)
+    client_->OnProcessLaunched(process_->GetProcess());
 }
 
 void UtilityProcessHost::OnProcessLaunchFailed(int error_code) {
@@ -467,6 +480,22 @@ void UtilityProcessHost::OnProcessLaunchFailed(int error_code) {
 }
 
 void UtilityProcessHost::OnProcessCrashed(int exit_code) {
+  if (!client_)
+    return;
+
+  // Take ownership of |client_| so the destructor doesn't notify it of
+  // termination.
+  auto client = std::move(client_);
+#if defined(OS_ANDROID)
+  // OnProcessCrashed() is always called on Android even in the case of normal
+  // process termination. |clean_exit| gives us a reliable indication of whether
+  // this was really a crash or just normal termination.
+  if (process_->GetTerminationInfo(true /* known_dead */).clean_exit) {
+    client->OnProcessTerminatedNormally();
+    return;
+  }
+#endif
+  client->OnProcessCrashed();
 }
 
 }  // namespace content

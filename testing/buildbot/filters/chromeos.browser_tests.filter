@@ -20,6 +20,9 @@
 # TODO(crbug.com/977743): Enable this.
 -ManagementApiKioskTest.ManagementApi
 
+# TODO(crbug.com/985390): Enable this.
+-OSSettingsPeoplePageAccountManagerTest.AllJsTests
+
 # TODO(crbug.com/977744): Enable this.
 -ProcessMemoryMetricsEmitterTest.RendererBuildId
 

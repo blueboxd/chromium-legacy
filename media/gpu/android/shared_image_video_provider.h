@@ -80,16 +80,9 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
 
   // Call |cb| when we have a shared image that matches |spec|.  We may call
   // |cb| back before returning, or we might post it for later.
-  // |output_buffer|, |texture_owner|, and |promotion_hint_cb| probably should
-  // not be provided to the provider, but need to be refactored a bit first.
-  // They will be used to configure the SharedImageVideo to display the buffer
-  // on the given texture, and return promotion hints.
-  virtual void RequestImage(
-      ImageReadyCB cb,
-      const ImageSpec& spec,
-      std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<TextureOwner> texture_owner,
-      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb) = 0;
+  virtual void RequestImage(ImageReadyCB cb,
+                            const ImageSpec& spec,
+                            scoped_refptr<TextureOwner> texture_owner) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedImageVideoProvider);

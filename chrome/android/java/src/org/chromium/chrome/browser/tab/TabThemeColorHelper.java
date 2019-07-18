@@ -171,11 +171,6 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
         RenderWidgetHostView rwhv =
                 tabWebContents == null ? null : tabWebContents.getRenderWidgetHostView();
         final int backgroundColor = rwhv != null ? rwhv.getBackgroundColor() : Color.TRANSPARENT;
-        // TODO(donnd): remove this and support for WebContents#getBackgroundColor when
-        // addressing https://crbug.com/968150.
-        assert backgroundColor
-                == (mTab.getWebContents() != null ? mTab.getWebContents().getBackgroundColor()
-                                                  : Color.TRANSPARENT);
         return backgroundColor == Color.TRANSPARENT ? mDefaultBackgroundColor : backgroundColor;
     }
 

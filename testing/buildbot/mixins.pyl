@@ -142,13 +142,6 @@
       },
     },
   },
-  'arm_tester': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'armv7l-32',
-      },
-    },
-  },
   'bullhead': {
     'swarming': {
       'dimensions': {

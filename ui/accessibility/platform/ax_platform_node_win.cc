@@ -562,7 +562,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     }
   }
 
-  if (base::Optional<DWORD> native_event = MSAAEvent(event_type)) {
+  if (base::Optional<DWORD> native_event = MojoEventToMSAAEvent(event_type)) {
     HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
     if (!hwnd)
       return;
@@ -570,7 +570,19 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     ::NotifyWinEvent((*native_event), hwnd, OBJID_CLIENT, -GetUniqueId());
   }
 
-  if (base::Optional<EVENTID> uia_event = UIAEvent(event_type))
+  if (base::Optional<PROPERTYID> uia_property =
+          MojoEventToUIAProperty(event_type)) {
+    // For this event, we're not concerned with the old value.
+    base::win::ScopedVariant old_value;
+    ::VariantInit(old_value.Receive());
+    base::win::ScopedVariant new_value;
+    ::VariantInit(new_value.Receive());
+    GetPropertyValue((*uia_property), new_value.Receive());
+    ::UiaRaiseAutomationPropertyChangedEvent(this, (*uia_property), old_value,
+                                             new_value);
+  }
+
+  if (base::Optional<EVENTID> uia_event = MojoEventToUIAEvent(event_type))
     ::UiaRaiseAutomationEvent(this, (*uia_event));
 
   // Keep track of objects that are a target of an alert event.
@@ -6578,7 +6590,9 @@ int AXPlatformNodeWin::MSAAState() const {
   return msaa_state;
 }
 
-base::Optional<DWORD> AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
+// static
+base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
+    ax::mojom::Event event) {
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
     return base::nullopt;
 
@@ -6618,7 +6632,9 @@ base::Optional<DWORD> AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
   }
 }
 
-base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
+// static
+base::Optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
+    ax::mojom::Event event) {
   if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
     return base::nullopt;
 
@@ -6636,6 +6652,20 @@ base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
       return UIA_SelectionItem_ElementAddedToSelectionEventId;
     case ax::mojom::Event::kSelectionRemove:
       return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    default:
+      return base::nullopt;
+  }
+}
+
+// static
+base::Optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
+    ax::mojom::Event event) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return base::nullopt;
+
+  switch (event) {
+    case ax::mojom::Event::kControlsChanged:
+      return UIA_ControllerForPropertyId;
     default:
       return base::nullopt;
   }

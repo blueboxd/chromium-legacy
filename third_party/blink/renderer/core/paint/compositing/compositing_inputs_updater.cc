@@ -32,18 +32,38 @@ CompositingInputsUpdater::CompositingInputsUpdater(
 
 CompositingInputsUpdater::~CompositingInputsUpdater() = default;
 
+bool CompositingInputsUpdater::LayerOrDescendantShouldBeComposited(
+    PaintLayer* layer) {
+  PaintLayerCompositor* compositor =
+      layer->GetLayoutObject().View()->Compositor();
+  return layer->DescendantHasDirectOrScrollingCompositingReason() ||
+         layer->NeedsCompositedScrolling() ||
+         (compositor->CanBeComposited(layer) &&
+          layer->DirectCompositingReasons());
+}
+
 void CompositingInputsUpdater::Update() {
   TRACE_EVENT0("blink", "CompositingInputsUpdater::update");
 
   AncestorInfo info;
   UpdateType update_type = kDoNotForceUpdate;
-  ApplyAncestorInfoToSelfAndAncestorsRecursively(
-      compositing_inputs_root_ ? compositing_inputs_root_ : root_layer_,
-      update_type, info);
+  PaintLayer* layer =
+      compositing_inputs_root_ ? compositing_inputs_root_ : root_layer_;
+  CompositingReasons initial_compositing_reasons =
+      layer->DirectCompositingReasons();
+  ApplyAncestorInfoToSelfAndAncestorsRecursively(layer, update_type, info);
+  UpdateSelfAndDescendantsRecursively(layer, update_type, info);
 
-  UpdateSelfAndDescendantsRecursively(
-      compositing_inputs_root_ ? compositing_inputs_root_ : root_layer_,
-      update_type, info);
+  // The layer has changed from non-compositing to compositing
+  if (initial_compositing_reasons == CompositingReason::kNone &&
+      LayerOrDescendantShouldBeComposited(layer)) {
+    // Update all parent layers
+    PaintLayer* parent_layer = layer->Parent();
+    while (parent_layer) {
+      parent_layer->SetDescendantHasDirectOrScrollingCompositingReason(true);
+      parent_layer = parent_layer->Parent();
+    }
+  }
 }
 
 void CompositingInputsUpdater::ApplyAncestorInfoToSelfAndAncestorsRecursively(
@@ -146,10 +166,7 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
     if (should_recurse)
       UpdateSelfAndDescendantsRecursively(child, update_type, info);
     descendant_has_direct_compositing_reason |=
-        child->DescendantHasDirectOrScrollingCompositingReason() ||
-        child->NeedsCompositedScrolling() ||
-        (compositor->CanBeComposited(child) &&
-         child->DirectCompositingReasons());
+        LayerOrDescendantShouldBeComposited(child);
   }
   layer->SetDescendantHasDirectOrScrollingCompositingReason(
       descendant_has_direct_compositing_reason);

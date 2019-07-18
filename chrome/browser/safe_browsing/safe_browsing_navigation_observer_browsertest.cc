@@ -5,7 +5,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
@@ -24,7 +23,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -148,33 +146,37 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
 // WebContents before they are actually installed through AttachTabHelper.
 class TestNavigationObserverManager
     : public SafeBrowsingNavigationObserverManager,
-      public content::NotificationObserver {
+      public TabStripModelObserver {
  public:
-  TestNavigationObserverManager() : SafeBrowsingNavigationObserverManager() {
-    registrar_.Add(this, chrome::NOTIFICATION_TAB_ADDED,
-                   content::NotificationService::AllSources());
+  explicit TestNavigationObserverManager(Browser* browser) {
+    observer_.Add(browser->tab_strip_model());
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    if (type == chrome::NOTIFICATION_TAB_ADDED) {
-      content::WebContents* dest_content =
-          content::Details<content::WebContents>(details).ptr();
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kInserted)
+      return;
+
+    for (const TabStripModelChange::ContentsWithIndex& tab :
+         change.GetInsert()->contents) {
+      content::WebContents* dest_content = tab.contents;
       DCHECK(dest_content);
       observer_list_.push_back(
           new SafeBrowsingNavigationObserver(dest_content, this));
-      DCHECK(observer_list_.back());
     }
   }
 
  protected:
-  ~TestNavigationObserverManager() override { observer_list_.clear(); }
+  ~TestNavigationObserverManager() override = default;
 
  private:
+  ScopedObserver<TabStripModel, TabStripModelObserver> observer_{this};
   std::vector<SafeBrowsingNavigationObserver*> observer_list_;
 
-  content::NotificationRegistrar registrar_;
+  DISALLOW_COPY_AND_ASSIGN(TestNavigationObserverManager);
 };
 
 class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
@@ -189,7 +191,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
                                                  false);
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
-    observer_manager_ = new TestNavigationObserverManager();
+    observer_manager_ = new TestNavigationObserverManager(browser());
     observer_ = new SafeBrowsingNavigationObserver(
         browser()->tab_strip_model()->GetActiveWebContents(),
         observer_manager_);

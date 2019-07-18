@@ -177,10 +177,12 @@ void PaintTiming::SetFirstContentfulPaint(base::TimeTicks stamp) {
   RegisterNotifySwapTime(PaintEvent::kFirstContentfulPaint);
 
   // Restart commits that may have been deferred.
-  if (!GetFrame() || !GetFrame()->GetPage())
+  // TODO(danakj): Detached frames don't paint so checking Page should be
+  // redundant.
+  if (!GetFrame() || !GetFrame()->GetPage() || !GetFrame()->IsMainFrame())
     return;
   GetFrame()->GetPage()->GetChromeClient().StopDeferringCommits(
-      cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
+      *GetFrame(), cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
 }
 
 void PaintTiming::RegisterNotifySwapTime(PaintEvent event) {

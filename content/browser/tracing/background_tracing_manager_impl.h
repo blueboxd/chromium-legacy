@@ -29,7 +29,7 @@ class BackgroundTracingAgent;
 
 namespace content {
 namespace mojom {
-class ChildControl;
+class ChildProcess;
 }  // namespace mojom
 
 class BackgroundTracingRule;
@@ -90,7 +90,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   // Callable from any thread.
   static void ActivateForProcess(int child_process_id,
-                                 mojom::ChildControl* child_control);
+                                 mojom::ChildProcess* child_process);
 
   bool SetActiveScenario(std::unique_ptr<BackgroundTracingConfig>,
                          ReceiveCallback,

@@ -10,6 +10,7 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/ash_export.h"
 #include "ash/shelf/home_button_controller.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_control_button.h"
 #include "base/macros.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -26,16 +27,26 @@ class ShelfButtonDelegate;
 // If Assistant is enabled, the button is filled in; long-pressing it will
 // launch Assistant.
 class ASH_EXPORT HomeButton : public ShelfControlButton,
+                              public ShelfButtonDelegate,
                               public views::ViewTargeterDelegate {
  public:
   static const char kViewClassName[];
 
-  HomeButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate);
+  explicit HomeButton(Shelf* shelf);
   ~HomeButton() override;
 
   // views::Button:
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
+
+  // ShelfButtonDelegate:
+  void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
+                                                        bool reverse) override;
+  void ButtonPressed(views::Button* sender,
+                     const ui::Event& event,
+                     views::InkDrop* ink_drop) override;
+  bool ShouldEventActivateButton(views::View* view,
+                                 const ui::Event& event) override;
 
   // Called when the availability of a long-press gesture may have changed, e.g.
   // when Assistant becomes enabled.

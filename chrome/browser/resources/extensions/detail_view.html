@@ -70,7 +70,6 @@
 
       #name {
         flex-grow: 1;
-        @apply --cr-title-text;
       }
 
       .section {
@@ -179,7 +178,7 @@
                   data.type,
                   '$i18nPolymer{appIcon}',
                   '$i18nPolymer{extensionIcon}')]]">
-          <span id="name">[[data.name]]</span>
+          <span id="name" class="cr-title-text">[[data.name]]</span>
         </div>
         <div class="section continuation control-line" id="enable-section">
           <span class$="[[computeEnabledStyle_(data.state)]]">

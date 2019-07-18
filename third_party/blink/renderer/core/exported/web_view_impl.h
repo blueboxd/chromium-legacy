@@ -399,9 +399,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       const IntRect& caret_bounds_in_document,
       bool zoom_into_legible_scale);
 
-  void StopDeferringMainFrameUpdate() {
-    scoped_defer_main_frame_update_.reset();
-  }
+  // Allows main frame updates to occur if they were previously blocked. They
+  // are blocked during loading a navigation, to allow Blink to proceed without
+  // being interrupted by useless work until enough progress is made that it
+  // desires composited output to be generated.
+  void StopDeferringMainFrameUpdate();
 
   // This function checks the element ids of ScrollableAreas only and returns
   // the equivalent DOM Node if such exists.
@@ -409,9 +411,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       cc::ElementId element_id) const;
 
   void DeferMainFrameUpdateForTesting();
-
-  void StartDeferringCommits(base::TimeDelta timeout);
-  void StopDeferringCommits(PaintHoldingCommitTrigger);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);

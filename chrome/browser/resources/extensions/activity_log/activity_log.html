@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_tabs/cr_tabs.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -18,11 +19,7 @@
 
 <dom-module id="extensions-activity-log">
   <template>
-    <style include="cr-icons shared-style">
-      #activity-log-heading {
-        @apply --cr-title-text;
-      }
-
+    <style include="cr-icons cr-shared-style shared-style">
       #clear-activities-button {
         margin-inline-start: 8px;
       }
@@ -75,7 +72,7 @@
                     '$i18nPolymer{appIcon}',
                     '$i18nPolymer{extensionIcon}')]]">
           </template>
-          <div id="activity-log-heading">
+          <div class="cr-title-text">
             [[getActivityLogHeading_(extensionInfo)]]
           </div>
         </div>

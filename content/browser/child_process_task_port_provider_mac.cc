@@ -10,7 +10,7 @@
 #include "base/mac/mach_logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "content/common/child_control.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace content {
@@ -22,8 +22,8 @@ ChildProcessTaskPortProvider* ChildProcessTaskPortProvider::GetInstance() {
 
 void ChildProcessTaskPortProvider::OnChildProcessLaunched(
     base::ProcessHandle pid,
-    mojom::ChildControl* child_control) {
-  child_control->GetTaskPort(
+    mojom::ChildProcess* child_process) {
+  child_process->GetTaskPort(
       base::BindOnce(&ChildProcessTaskPortProvider::OnTaskPortReceived,
                      base::Unretained(this), pid));
 }

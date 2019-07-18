@@ -106,11 +106,9 @@ class AppApiTest : public extensions::ExtensionApiTest {
                                           ->GetID()));
     EXPECT_FALSE(browser()->tab_strip_model()->GetWebContentsAt(1)->GetWebUI());
 
-    content::WindowedNotificationObserver tab_added_observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter tab_add(browser());
     chrome::NewTab(browser());
-    tab_added_observer.Wait();
+    tab_add.Wait();
     LOG(INFO) << "New tab.";
     ui_test_utils::NavigateToURL(browser(),
                                  base_url.Resolve("path2/empty.html"));
@@ -199,11 +197,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_AppProcess) {
   EXPECT_FALSE(browser()->tab_strip_model()->GetWebContentsAt(2)->GetWebUI());
   LOG(INFO) << "Nav 2.";
 
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
   chrome::NewTab(browser());
-  tab_added_observer.Wait();
+  tab_add.Wait();
   LOG(INFO) << "New tab.";
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
   LOG(INFO) << "Nav 3.";
@@ -354,11 +350,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
                                          ->GetID()));
   EXPECT_FALSE(browser()->tab_strip_model()->GetWebContentsAt(1)->GetWebUI());
 
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
   chrome::NewTab(browser());
-  tab_added_observer.Wait();
+  tab_add.Wait();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   EXPECT_FALSE(process_map->Contains(browser()
                                          ->tab_strip_model()

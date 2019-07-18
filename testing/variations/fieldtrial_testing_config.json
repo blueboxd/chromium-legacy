@@ -5609,6 +5609,24 @@
             ]
         }
     ],
+    "UseAPDownloadProtection": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "UseAPDownloadProtection",
+                    "enable_features": [
+                        "UseAPDownloadProtection"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseFluentLanguageModel": [
         {
             "platforms": [

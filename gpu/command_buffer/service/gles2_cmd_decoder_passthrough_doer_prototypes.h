@@ -907,6 +907,7 @@ error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                        const GLfloat* contents_rect,
                                        GLuint background_color,
                                        GLuint edge_aa_mask,
+                                       GLenum filter,
                                        const GLfloat* bounds_rect);
 error::Error DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,

@@ -214,13 +214,6 @@ public interface WebContents extends Parcelable {
     void setAudioMuted(boolean mute);
 
     /**
-     * Get the Background color from underlying RenderWidgetHost for this WebContent.
-     * @deprecated TODO(donnd): remove this when addressing https://crbug.com/968150.
-     */
-    @Deprecated()
-    int getBackgroundColor();
-
-    /**
      * @return Whether the page is currently showing an interstitial, such as a bad HTTPS page.
      */
     boolean isShowingInterstitialPage();
@@ -320,7 +313,7 @@ public interface WebContents extends Parcelable {
      * @param message   The message
      * @param targetOrigin  The target origin. If the target origin is a "*" or a
      *                  empty string, it indicates a wildcard target origin.
-     * @param sentPorts The sent message ports, if any. Pass null if there is no
+     * @param ports The sent message ports, if any. Pass null if there is no
      *                  message ports to pass.
      */
     void postMessageToFrame(@Nullable String frameName, String message, String sourceOrigin,
@@ -329,7 +322,6 @@ public interface WebContents extends Parcelable {
     /**
      * Creates a message channel for sending postMessage requests and returns the ports for
      * each end of the channel.
-     * @param service The message port service to register the channel with.
      * @return The ports that forms the ends of the message channel created.
      */
     MessagePort[] createMessageChannel();

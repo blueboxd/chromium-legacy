@@ -189,6 +189,14 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
                            view_->GetClassName());
 
+  if (IsIgnored()) {
+    // Prevent screen readers from navigating to or speaking ignored nodes.
+    data->AddState(ax::mojom::State::kInvisible);
+    data->AddState(ax::mojom::State::kIgnored);
+    data->role = ax::mojom::Role::kIgnored;
+    return;
+  }
+
   if (view_->IsAccessibilityFocusable())
     data->AddState(ax::mojom::State::kFocusable);
 

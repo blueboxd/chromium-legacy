@@ -307,6 +307,18 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION:
+        // We treat a position after some white space that is not connected to
+        // any node after it via "next on line ID", to be equivalent to a
+        // position before the next line, and therefore as being at start of
+        // line.
+        //
+        // We assume that white space separates lines.
+        if (text_position->IsInWhiteSpace() &&
+            GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID &&
+            text_position->AtEndOfAnchor()) {
+          return true;
+        }
+
         return GetPreviousOnLineID(text_position->anchor_id_) ==
                    INVALID_ANCHOR_ID &&
                text_position->AtStartOfAnchor();
@@ -336,12 +348,22 @@ class AXPosition {
         // of a line or at the start of the next one, this should have been
         // reflected in the leaf text position we got. In other cases, we
         // assume that white space is being used to separate lines.
-        // Note that we don't treat a position that is at the start of a line
-        // break that is on a line by itself as being at the end of the line.
+        //
+        // We don't treat a position that is at the start of white space that is
+        // on a line by itself as being at the end of the line. However, we do
+        // treat positions at the start of white space that end a line of text
+        // as being at the end of that line. We also treat positions at the end
+        // of white space that is on a line by itself as being at the end of
+        // that line. Note that white space that ends a line of text should be
+        // connected to that text with a "previous on line ID".
         if (GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID) {
           if (text_position->IsInWhiteSpace()) {
-            return !text_position->AtStartOfLine() &&
-                   text_position->AtStartOfAnchor();
+            if (GetPreviousOnLineID(text_position->anchor_id_) ==
+                INVALID_ANCHOR_ID) {
+              return text_position->AtEndOfAnchor();
+            } else {
+              return text_position->AtStartOfAnchor();
+            }
           }
 
           return text_position->AtEndOfAnchor();

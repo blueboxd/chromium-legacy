@@ -18,6 +18,8 @@
 
 #include "gtest/gtest.h"
 
+namespace absl {
+namespace random_internal {
 namespace {
 
 template <typename IntType>
@@ -29,7 +31,7 @@ TYPED_TEST_SUITE(FastUniformBitsTypedTest, IntTypes);
 
 TYPED_TEST(FastUniformBitsTypedTest, BasicTest) {
   using Limits = std::numeric_limits<TypeParam>;
-  using FastBits = absl::random_internal::FastUniformBits<TypeParam>;
+  using FastBits = FastUniformBits<TypeParam>;
 
   EXPECT_EQ(0, FastBits::min());
   EXPECT_EQ(Limits::max(), FastBits::max());
@@ -45,246 +47,226 @@ TYPED_TEST(FastUniformBitsTypedTest, BasicTest) {
   }
 }
 
-TEST(FastUniformBitsTest, TypeBoundaries32) {
-  // Tests that FastUniformBits can adapt to 32-bit boundaries.
-  absl::random_internal::FastUniformBits<uint32_t, 1> a;
-  absl::random_internal::FastUniformBits<uint32_t, 31> b;
-  absl::random_internal::FastUniformBits<uint32_t, 32> c;
+template <typename UIntType, UIntType Lo, UIntType Hi, UIntType Val = Lo>
+struct FakeUrbg {
+  using result_type = UIntType;
 
-  {
-    std::mt19937 gen;  // 32-bit
-    a(gen);
-    b(gen);
-    c(gen);
-  }
+  static constexpr result_type(max)() { return Hi; }
+  static constexpr result_type(min)() { return Lo; }
+  result_type operator()() { return Val; }
+};
 
-  {
-    std::mt19937_64 gen;  // 64-bit
-    a(gen);
-    b(gen);
-    c(gen);
-  }
+using UrngOddbits = FakeUrbg<uint8_t, 1, 0xfe, 0x73>;
+using Urng4bits = FakeUrbg<uint8_t, 1, 0x10, 2>;
+using Urng31bits = FakeUrbg<uint32_t, 1, 0xfffffffe, 0x60070f03>;
+using Urng32bits = FakeUrbg<uint32_t, 0, 0xffffffff, 0x74010f01>;
+
+TEST(FastUniformBitsTest, IsPowerOfTwoOrZero) {
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint8_t{0}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint8_t{1}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint8_t{2}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint8_t{3}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint8_t{16}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint8_t{17}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero((std::numeric_limits<uint8_t>::max)()));
+
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint16_t{0}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint16_t{1}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint16_t{2}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint16_t{3}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint16_t{16}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint16_t{17}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero((std::numeric_limits<uint16_t>::max)()));
+
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint32_t{0}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint32_t{1}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint32_t{2}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint32_t{3}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint32_t{32}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint32_t{17}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero((std::numeric_limits<uint32_t>::max)()));
+
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint64_t{0}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint64_t{1}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint64_t{2}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint64_t{3}));
+  EXPECT_TRUE(IsPowerOfTwoOrZero(uint64_t{64}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero(uint64_t{17}));
+  EXPECT_FALSE(IsPowerOfTwoOrZero((std::numeric_limits<uint64_t>::max)()));
 }
 
-TEST(FastUniformBitsTest, TypeBoundaries64) {
-  // Tests that FastUniformBits can adapt to 64-bit boundaries.
-  absl::random_internal::FastUniformBits<uint64_t, 1> a;
-  absl::random_internal::FastUniformBits<uint64_t, 31> b;
-  absl::random_internal::FastUniformBits<uint64_t, 32> c;
-  absl::random_internal::FastUniformBits<uint64_t, 33> d;
-  absl::random_internal::FastUniformBits<uint64_t, 63> e;
-  absl::random_internal::FastUniformBits<uint64_t, 64> f;
-
-  {
-    std::mt19937 gen;  // 32-bit
-    a(gen);
-    b(gen);
-    c(gen);
-    d(gen);
-    e(gen);
-    f(gen);
-  }
-
-  {
-    std::mt19937_64 gen;  // 64-bit
-    a(gen);
-    b(gen);
-    c(gen);
-    d(gen);
-    e(gen);
-    f(gen);
-  }
+TEST(FastUniformBitsTest, IntegerLog2) {
+  EXPECT_EQ(IntegerLog2(uint16_t{0}), 0);
+  EXPECT_EQ(IntegerLog2(uint16_t{1}), 0);
+  EXPECT_EQ(IntegerLog2(uint16_t{2}), 1);
+  EXPECT_EQ(IntegerLog2(uint16_t{3}), 1);
+  EXPECT_EQ(IntegerLog2(uint16_t{4}), 2);
+  EXPECT_EQ(IntegerLog2(uint16_t{5}), 2);
+  EXPECT_EQ(IntegerLog2(std::numeric_limits<uint64_t>::max()), 63);
 }
 
-class UrngOddbits {
- public:
-  using result_type = uint8_t;
-  static constexpr result_type min() { return 1; }
-  static constexpr result_type max() { return 0xfe; }
-  result_type operator()() { return 2; }
-};
+TEST(FastUniformBitsTest, RangeSize) {
+  EXPECT_EQ((RangeSize<FakeUrbg<uint8_t, 0, 3>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint8_t, 2, 2>>()), 1);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint8_t, 2, 5>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint8_t, 2, 6>>()), 5);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint8_t, 2, 10>>()), 9);
+  EXPECT_EQ(
+      (RangeSize<FakeUrbg<uint8_t, 0, std::numeric_limits<uint8_t>::max()>>()),
+      0);
 
-class Urng4bits {
- public:
-  using result_type = uint8_t;
-  static constexpr result_type min() { return 1; }
-  static constexpr result_type max() { return 0xf + 1; }
-  result_type operator()() { return 2; }
-};
+  EXPECT_EQ((RangeSize<FakeUrbg<uint16_t, 0, 3>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint16_t, 2, 2>>()), 1);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint16_t, 2, 5>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint16_t, 2, 6>>()), 5);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint16_t, 1000, 1017>>()), 18);
+  EXPECT_EQ((RangeSize<
+                FakeUrbg<uint16_t, 0, std::numeric_limits<uint16_t>::max()>>()),
+            0);
 
-class Urng32bits {
- public:
-  using result_type = uint32_t;
-  static constexpr result_type min() { return 0; }
-  static constexpr result_type max() { return 0xffffffff; }
-  result_type operator()() { return 1; }
-};
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 0, 3>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 2, 2>>()), 1);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 2, 5>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 2, 6>>()), 5);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 1000, 1017>>()), 18);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 0, 0xffffffff>>()), 0);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 1, 0xffffffff>>()), 0xffffffff);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 1, 0xfffffffe>>()), 0xfffffffe);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint32_t, 2, 0xfffffffe>>()), 0xfffffffd);
+  EXPECT_EQ((RangeSize<
+                FakeUrbg<uint32_t, 0, std::numeric_limits<uint32_t>::max()>>()),
+            0);
 
-// Compile-time test to validate the helper classes used by FastUniformBits
-TEST(FastUniformBitsTest, FastUniformBitsDetails) {
-  using absl::random_internal::FastUniformBitsLoopingConstants;
-  using absl::random_internal::FastUniformBitsURBGConstants;
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 0, 3>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 2, 2>>()), 1);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 2, 5>>()), 4);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 2, 6>>()), 5);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 1000, 1017>>()), 18);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 0, 0xffffffff>>()), 0x100000000ull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 1, 0xffffffff>>()), 0xffffffffull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 1, 0xfffffffe>>()), 0xfffffffeull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 2, 0xfffffffe>>()), 0xfffffffdull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 0, 0xffffffffffffffffull>>()), 0ull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 1, 0xffffffffffffffffull>>()),
+            0xffffffffffffffffull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 1, 0xfffffffffffffffeull>>()),
+            0xfffffffffffffffeull);
+  EXPECT_EQ((RangeSize<FakeUrbg<uint64_t, 2, 0xfffffffffffffffeull>>()),
+            0xfffffffffffffffdull);
+  EXPECT_EQ((RangeSize<
+                FakeUrbg<uint64_t, 0, std::numeric_limits<uint64_t>::max()>>()),
+            0);
+}
 
-  // 4-bit URBG
-  {
-    using constants = FastUniformBitsURBGConstants<Urng4bits>;
-    static_assert(constants::kPowerOfTwo == true,
-                  "constants::kPowerOfTwo == false");
-    static_assert(constants::kRange == 16, "constants::kRange == false");
-    static_assert(constants::kRangeBits == 4, "constants::kRangeBits == false");
-    static_assert(constants::kRangeMask == 0x0f,
-                  "constants::kRangeMask == false");
-  }
-  {
-    using looping = FastUniformBitsLoopingConstants<uint32_t, 31, Urng4bits>;
-    // To get 31 bits from a 4-bit generator, issue 8 calls and extract 4 bits
-    // per call on all except the first.
-    static_assert(looping::kN0 == 1, "looping::kN0");
-    static_assert(looping::kW0 == 3, "looping::kW0");
-    static_assert(looping::kM0 == 0x7, "looping::kM0");
-    // (The second set of calls, kN1, will not do anything.)
-    static_assert(looping::kN1 == 8, "looping::kN1");
-    static_assert(looping::kW1 == 4, "looping::kW1");
-    static_assert(looping::kM1 == 0xf, "looping::kM1");
-  }
+TEST(FastUniformBitsTest, PowerOfTwoSubRangeSize) {
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint8_t, 0, 3>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint8_t, 2, 2>>()), 1);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint8_t, 2, 5>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint8_t, 2, 6>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint8_t, 2, 10>>()), 8);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<
+                FakeUrbg<uint8_t, 0, std::numeric_limits<uint8_t>::max()>>()),
+            0);
 
-  // ~7-bit URBG
-  {
-    using constants = FastUniformBitsURBGConstants<UrngOddbits>;
-    static_assert(constants::kPowerOfTwo == false,
-                  "constants::kPowerOfTwo == false");
-    static_assert(constants::kRange == 0xfe, "constants::kRange == 0xfe");
-    static_assert(constants::kRangeBits == 7, "constants::kRangeBits == 7");
-    static_assert(constants::kRangeMask == 0x7f,
-                  "constants::kRangeMask == 0x7f");
-  }
-  {
-    using looping = FastUniformBitsLoopingConstants<uint64_t, 60, UrngOddbits>;
-    // To get 60 bits from a 7-bit generator, issue 10 calls and extract 6 bits
-    // per call, discarding the excess entropy.
-    static_assert(looping::kN0 == 10, "looping::kN0");
-    static_assert(looping::kW0 == 6, "looping::kW0");
-    static_assert(looping::kM0 == 0x3f, "looping::kM0");
-    // (The second set of calls, kN1, will not do anything.)
-    static_assert(looping::kN1 == 10, "looping::kN1");
-    static_assert(looping::kW1 == 7, "looping::kW1");
-    static_assert(looping::kM1 == 0x7f, "looping::kM1");
-  }
-  {
-    using looping = FastUniformBitsLoopingConstants<uint64_t, 63, UrngOddbits>;
-    // To get 63 bits from a 7-bit generator, issue 10 calls--the same as we
-    // would issue for 60 bits--however this time we use two groups.  The first
-    // group (kN0) will issue 7 calls, extracting 6 bits per call.
-    static_assert(looping::kN0 == 7, "looping::kN0");
-    static_assert(looping::kW0 == 6, "looping::kW0");
-    static_assert(looping::kM0 == 0x3f, "looping::kM0");
-    // The second group (kN1) will issue 3 calls, extracting 7 bits per call.
-    static_assert(looping::kN1 == 10, "looping::kN1");
-    static_assert(looping::kW1 == 7, "looping::kW1");
-    static_assert(looping::kM1 == 0x7f, "looping::kM1");
-  }
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint16_t, 0, 3>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint16_t, 2, 2>>()), 1);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint16_t, 2, 5>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint16_t, 2, 6>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint16_t, 1000, 1017>>()), 16);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<
+                FakeUrbg<uint16_t, 0, std::numeric_limits<uint16_t>::max()>>()),
+            0);
+
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 0, 3>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 2, 2>>()), 1);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 2, 5>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 2, 6>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 1000, 1017>>()), 16);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 0, 0xffffffff>>()), 0);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 1, 0xffffffff>>()),
+            0x80000000);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint32_t, 1, 0xfffffffe>>()),
+            0x80000000);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<
+                FakeUrbg<uint32_t, 0, std::numeric_limits<uint32_t>::max()>>()),
+            0);
+
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 0, 3>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 2, 2>>()), 1);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 2, 5>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 2, 6>>()), 4);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 1000, 1017>>()), 16);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 0, 0xffffffff>>()),
+            0x100000000ull);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 1, 0xffffffff>>()),
+            0x80000000ull);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 1, 0xfffffffe>>()),
+            0x80000000ull);
+  EXPECT_EQ(
+      (PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 0, 0xffffffffffffffffull>>()),
+      0);
+  EXPECT_EQ(
+      (PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 1, 0xffffffffffffffffull>>()),
+      0x8000000000000000ull);
+  EXPECT_EQ(
+      (PowerOfTwoSubRangeSize<FakeUrbg<uint64_t, 1, 0xfffffffffffffffeull>>()),
+      0x8000000000000000ull);
+  EXPECT_EQ((PowerOfTwoSubRangeSize<
+                FakeUrbg<uint64_t, 0, std::numeric_limits<uint64_t>::max()>>()),
+            0);
 }
 
 TEST(FastUniformBitsTest, Urng4_VariousOutputs) {
   // Tests that how values are composed; the single-bit deltas should be spread
   // across each invocation.
   Urng4bits urng4;
+  Urng31bits urng31;
   Urng32bits urng32;
 
   // 8-bit types
   {
-    absl::random_internal::FastUniformBits<uint8_t, 1> fast1;
-    EXPECT_EQ(0x1, fast1(urng4));
-    EXPECT_EQ(0x1, fast1(urng32));
-  }
-  {
-    absl::random_internal::FastUniformBits<uint8_t, 2> fast2;
-    EXPECT_EQ(0x1, fast2(urng4));
-    EXPECT_EQ(0x1, fast2(urng32));
-  }
-
-  {
-    absl::random_internal::FastUniformBits<uint8_t, 4> fast4;
-    EXPECT_EQ(0x1, fast4(urng4));
-    EXPECT_EQ(0x1, fast4(urng32));
-  }
-  {
-    absl::random_internal::FastUniformBits<uint8_t, 6> fast6;
-    EXPECT_EQ(0x9, fast6(urng4));  // b001001 (2x3)
-    EXPECT_EQ(0x1, fast6(urng32));
-  }
-  {
-    absl::random_internal::FastUniformBits<uint8_t, 6> fast7;
-    EXPECT_EQ(0x9, fast7(urng4));  // b00001001 (1x4 + 1x3)
-    EXPECT_EQ(0x1, fast7(urng32));
-  }
-
-  {
-    absl::random_internal::FastUniformBits<uint8_t> fast8;
+    FastUniformBits<uint8_t> fast8;
     EXPECT_EQ(0x11, fast8(urng4));
+    EXPECT_EQ(0x2, fast8(urng31));
     EXPECT_EQ(0x1, fast8(urng32));
   }
 
   // 16-bit types
   {
-    absl::random_internal::FastUniformBits<uint16_t, 10> fast10;
-    EXPECT_EQ(0x91, fast10(urng4));  // b 0010010001 (2x3 + 1x4)
-    EXPECT_EQ(0x1, fast10(urng32));
-  }
-  {
-    absl::random_internal::FastUniformBits<uint16_t, 11> fast11;
-    EXPECT_EQ(0x111, fast11(urng4));
-    EXPECT_EQ(0x1, fast11(urng32));
-  }
-  {
-    absl::random_internal::FastUniformBits<uint16_t, 12> fast12;
-    EXPECT_EQ(0x111, fast12(urng4));
-    EXPECT_EQ(0x1, fast12(urng32));
-  }
-
-  {
-    absl::random_internal::FastUniformBits<uint16_t> fast16;
+    FastUniformBits<uint16_t> fast16;
     EXPECT_EQ(0x1111, fast16(urng4));
-    EXPECT_EQ(0x1, fast16(urng32));
+    EXPECT_EQ(0xf02, fast16(urng31));
+    EXPECT_EQ(0xf01, fast16(urng32));
   }
 
   // 32-bit types
   {
-    absl::random_internal::FastUniformBits<uint32_t, 21> fast21;
-    EXPECT_EQ(0x49111, fast21(urng4));  // b 001001001 000100010001 (3x3 + 3x4)
-    EXPECT_EQ(0x1, fast21(urng32));
-  }
-  {
-    absl::random_internal::FastUniformBits<uint32_t, 24> fast24;
-    EXPECT_EQ(0x111111, fast24(urng4));
-    EXPECT_EQ(0x1, fast24(urng32));
-  }
-
-  {
-    absl::random_internal::FastUniformBits<uint32_t> fast32;
+    FastUniformBits<uint32_t> fast32;
     EXPECT_EQ(0x11111111, fast32(urng4));
-    EXPECT_EQ(0x1, fast32(urng32));
+    EXPECT_EQ(0x0f020f02, fast32(urng31));
+    EXPECT_EQ(0x74010f01, fast32(urng32));
   }
 
   // 64-bit types
   {
-    absl::random_internal::FastUniformBits<uint64_t, 5> fast5;
-    EXPECT_EQ(0x9, fast5(urng4));
-    EXPECT_EQ(0x1, fast5(urng32));
-  }
-
-  {
-    absl::random_internal::FastUniformBits<uint64_t, 48> fast48;
-    EXPECT_EQ(0x111111111111, fast48(urng4));
-    // computes in 2 steps, should be 24 << 24
-    EXPECT_EQ(0x000001000001, fast48(urng32));
-  }
-
-  {
-    absl::random_internal::FastUniformBits<uint64_t> fast64;
+    FastUniformBits<uint64_t> fast64;
     EXPECT_EQ(0x1111111111111111, fast64(urng4));
-    EXPECT_EQ(0x0000000100000001, fast64(urng32));
+    EXPECT_EQ(0x387811c3c0870f02, fast64(urng31));
+    EXPECT_EQ(0x74010f0174010f01, fast64(urng32));
   }
 }
 
+TEST(FastUniformBitsTest, URBG32bitRegression) {
+  // Validate with deterministic 32-bit std::minstd_rand
+  // to ensure that operator() performs as expected.
+  std::minstd_rand gen(1);
+  FastUniformBits<uint64_t> fast64;
+
+  EXPECT_EQ(0x05e47095f847c122ull, fast64(gen));
+  EXPECT_EQ(0x8f82c1ba30b64d22ull, fast64(gen));
+  EXPECT_EQ(0x3b971a3558155039ull, fast64(gen));
+}
+
 }  // namespace
+}  // namespace random_internal
+}  // namespace absl

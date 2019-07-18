@@ -288,8 +288,6 @@ cc_component("cc") {
     "trees/draw_property_utils.h",
     "trees/effect_node.cc",
     "trees/effect_node.h",
-    "trees/element_id.cc",
-    "trees/element_id.h",
     "trees/frame_rate_counter.cc",
     "trees/frame_rate_counter.h",
     "trees/frame_sequence_tracker.cc",

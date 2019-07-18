@@ -79,6 +79,9 @@ class CompositingInputsUpdater {
   // current value of AncestorInfo.
   void UpdateAncestorInfo(PaintLayer*, UpdateType&, AncestorInfo&);
 
+  // Combine all reasons for compositing a layer into a single boolean value
+  bool LayerOrDescendantShouldBeComposited(PaintLayer*);
+
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
   PaintLayer* compositing_inputs_root_;

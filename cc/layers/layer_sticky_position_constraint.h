@@ -7,7 +7,7 @@
 
 #include "cc/cc_export.h"
 
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"

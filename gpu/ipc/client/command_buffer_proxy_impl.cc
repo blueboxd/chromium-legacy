@@ -97,8 +97,7 @@ ContextResult CommandBufferProxyImpl::Initialize(
 
   shared_state()->Initialize();
 
-  base::UnsafeSharedMemoryRegion region =
-      channel->ShareToGpuProcess(shared_state_shm_);
+  base::UnsafeSharedMemoryRegion region = shared_state_shm_.Duplicate();
   if (!region.IsValid()) {
     // TODO(piman): ShareToGpuProcess should alert if it is failing due to
     // being out of file descriptors, in which case this is a fatal error
@@ -374,8 +373,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   DCHECK_LE(shared_memory_mapping.size(), static_cast<size_t>(UINT32_MAX));
 
   if (last_state_.error == gpu::error::kNoError) {
-    base::UnsafeSharedMemoryRegion region =
-        channel_->ShareToGpuProcess(shared_memory_region);
+    base::UnsafeSharedMemoryRegion region = shared_memory_region.Duplicate();
     if (!region.IsValid()) {
       if (last_state_.error == gpu::error::kNoError)
         OnClientError(gpu::error::kLostContext);

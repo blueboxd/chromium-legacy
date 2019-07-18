@@ -6,7 +6,14 @@
 
 #include "base/json/json_writer.h"
 #include "base/optional.h"
+#include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/policy/policy_conversions.h"
+#include "components/policy/core/common/cloud/cloud_policy_client.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_types.h"
 
 namespace enterprise_reporting {
@@ -102,6 +109,21 @@ void AppendExtensionPolicyInfoIntoProfileReport(
                        policy_iter.second);
     }
   }
+}
+
+void AppendMachineLevelUserCloudPolicyFetchTimestamp(
+    em::ChromeUserProfileInfo* profile_info) {
+#if !defined(OS_CHROMEOS)
+  MachineLevelUserCloudPolicyManager* manager =
+      g_browser_process->browser_policy_connector()
+          ->machine_level_user_cloud_policy_manager();
+  if (!manager || !manager->IsClientRegistered())
+    return;
+  auto* timestamp = profile_info->add_policy_fetched_timestamps();
+  timestamp->set_type(dm_protocol::kChromeMachineLevelExtensionCloudPolicyType);
+  timestamp->set_timestamp(
+      manager->core()->client()->last_policy_timestamp().ToJavaTime());
+#endif
 }
 
 }  // namespace enterprise_reporting

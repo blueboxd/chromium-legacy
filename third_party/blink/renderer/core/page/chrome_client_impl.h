@@ -67,9 +67,11 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool CanTakeFocus(WebFocusType) override;
   void TakeFocus(WebFocusType) override;
   void FocusedElementChanged(Element* from_node, Element* to_node) override;
-  void BeginLifecycleUpdates() override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
+  void BeginLifecycleUpdates(LocalFrame& main_frame) override;
+  void StartDeferringCommits(LocalFrame& main_frame,
+                             base::TimeDelta timeout) override;
+  void StopDeferringCommits(LocalFrame& main_frame,
+                            cc::PaintHoldingCommitTrigger) override;
   bool HadFormInteraction() const override;
   void StartDragging(LocalFrame*,
                      const WebDragData&,

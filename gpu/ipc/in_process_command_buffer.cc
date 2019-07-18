@@ -116,6 +116,7 @@ class ScopedEvent {
   base::WaitableEvent* event_;
 };
 
+// Has to be called after Initialize.
 void AddGLSurfaceRefOnGpuThread(gl::GLSurface* surface) {
   surface->AddRef();
 }
@@ -347,6 +348,9 @@ gpu::SharedImageInterface* InProcessCommandBuffer::GetSharedImageInterface()
   return shared_image_interface_.get();
 }
 
+// This call happens after Initialize. Initialize blocks on finishing gpu thread
+// task to create GLSurface, so when this call happens, we have a valid
+// GLSurface.
 base::ScopedClosureRunner InProcessCommandBuffer::GetCacheBackBufferCb() {
   // It is safe to use base::Unretained for |surface_| here since the we use a
   // synchronous task to create and destroy it from the client thread.
@@ -433,12 +437,17 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
       base::BindOnce(&InProcessCommandBuffer::InitializeOnGpuThread,
                      base::Unretained(this), params);
 
+  task_sequence_ = task_executor_->CreateSequence();
+
+  // Here we block by using a WaitableEvent to make sure InitializeOnGpuThread
+  // is finished as part of Initialize function. This also makes sure we won't
+  // try to cache GLSurface before the creation is finished.
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu::ContextResult result = gpu::ContextResult::kSuccess;
-  task_executor_->ScheduleOutOfOrderTask(
-      WrapTaskWithResult(std::move(init_task), &result, &completion));
+  task_sequence_->ScheduleTask(
+      WrapTaskWithResult(std::move(init_task), &result, &completion), {});
   completion.Wait();
 
   if (result == gpu::ContextResult::kSuccess)
@@ -580,8 +589,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
         surface_->SetEnableSwapTimestamps();
     }
   }
-
-  task_sequence_ = task_executor_->CreateSequence();
 
   sync_point_client_state_ =
       task_executor_->sync_point_manager()->CreateSyncPointClientState(
@@ -775,15 +782,19 @@ void InProcessCommandBuffer::Destroy() {
 
   client_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   gpu_control_client_ = nullptr;
+  // Here we block by using a WaitableEvent to make sure DestroyOnGpuThread is
+  // finshed as part of Destroy.
   base::WaitableEvent completion(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool result = false;
   base::OnceCallback<bool(void)> destroy_task = base::BindOnce(
       &InProcessCommandBuffer::DestroyOnGpuThread, base::Unretained(this));
-  task_executor_->ScheduleOutOfOrderTask(
-      WrapTaskWithResult(std::move(destroy_task), &result, &completion));
+  task_sequence_->ScheduleTask(
+      WrapTaskWithResult(std::move(destroy_task), &result, &completion), {});
+
   completion.Wait();
+  task_sequence_ = nullptr;
 }
 
 bool InProcessCommandBuffer::DestroyOnGpuThread() {
@@ -827,7 +838,6 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   }
   gl_share_group_ = nullptr;
   context_group_ = nullptr;
-  task_sequence_ = nullptr;
   if (context_state_)
     context_state_->MakeCurrent(nullptr);
   context_state_ = nullptr;

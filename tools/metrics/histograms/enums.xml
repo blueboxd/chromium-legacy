@@ -4562,6 +4562,7 @@ Unknown properties are collapsed to zero. -->
   <int value="19" label="One shot Background Sync wake up task"/>
   <int value="20" label="Notification scheduler task"/>
   <int value="21" label="Notification trigger task"/>
+  <int value="22" label="Periodic Background Sync wake up task"/>
 </enum>
 
 <enum name="BackgroundTracingState">
@@ -7016,6 +7017,20 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Texture"/>
   <int value="1" label="Bitmap"/>
   <int value="2" label="Shared Bitmap"/>
+  <int value="3" label="Texture Gpu Memory Buffer"/>
+  <int value="4" label="Bitmap Gpu Memory Buffer"/>
+  <int value="5" label="Shared Image"/>
+  <int value="6" label="Direct Gpu Memory Buffer"/>
+  <int value="7" label="Passthrough"/>
+</enum>
+
+<enum name="CanvasResourceProviderUsage">
+  <int value="0" label="Software"/>
+  <int value="1" label="Software Composited"/>
+  <int value="2" label="Accelerated"/>
+  <int value="3" label="Accelerated Composited"/>
+  <int value="4" label="Accelerated Direct 2D"/>
+  <int value="5" label="Accelerated Direct 3D"/>
 </enum>
 
 <enum name="CAPSUpdaterStep">
@@ -23915,6 +23930,8 @@ Called by update_net_error_codes.py.-->
   <int value="2965" label="CSSValueAppearanceButtonForSelectRendered"/>
   <int value="2966" label="CSSValueAppearanceListboxForOthersRendered"/>
   <int value="2967" label="CSSValueAppearanceMeterForOthersRendered"/>
+  <int value="2968" label="SVGSMILDiscardElementParsed"/>
+  <int value="2969" label="SVGSMILDiscardElementTriggered"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

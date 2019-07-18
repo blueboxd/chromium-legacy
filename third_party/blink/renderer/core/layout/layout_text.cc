@@ -1624,9 +1624,8 @@ void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
 
 void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
                                    unsigned offset,
-                                   unsigned len,
-                                   bool force) {
-  if (!force && Equal(text_.Impl(), text.get()))
+                                   unsigned len) {
+  if (Equal(text_.Impl(), text.get()))
     return;
 
   // Check that we are replacing the whole text.
@@ -1647,7 +1646,9 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
       SetFirstTextBoxLogicalLeft(text_width);
-      SetText(std::move(text), force, true);
+      const bool force = false;
+      const bool avoid_layout_and_only_paint = true;
+      SetText(std::move(text), force, avoid_layout_and_only_paint);
       lines_dirty_ = false;
       valid_ng_items_ = false;
       return;
@@ -1727,7 +1728,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   }
 
   lines_dirty_ = dirtied_lines;
-  SetText(std::move(text), force || dirtied_lines);
+  SetText(std::move(text), dirtied_lines);
 
   // TODO(layout-dev): Invalidation is currently all or nothing in LayoutNG,
   // this is probably fine for NGInlineItem reuse as recreating the individual

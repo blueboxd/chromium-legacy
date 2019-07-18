@@ -31,10 +31,6 @@ void TestBackgroundSyncManager::ResumeBackendOperation() {
   std::move(continuation_).Run();
 }
 
-void TestBackgroundSyncManager::ClearDelayedTask() {
-  delayed_task_.Reset();
-}
-
 void TestBackgroundSyncManager::StoreDataInBackend(
     int64_t sw_registration_id,
     const url::Origin& origin,
@@ -98,10 +94,13 @@ void TestBackgroundSyncManager::DispatchPeriodicSyncEvent(
   dispatch_periodic_sync_callback_.Run(active_version, std::move(callback));
 }
 
-void TestBackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
-                                                    base::TimeDelta delay) {
-  delayed_task_ = std::move(callback);
-  delayed_task_delta_ = delay;
+void TestBackgroundSyncManager::ScheduleDelayedTask(
+    blink::mojom::BackgroundSyncType sync_type,
+    base::TimeDelta delay) {
+  if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
+    delayed_one_shot_sync_task_delta_ = delay;
+  else
+    delayed_periodic_sync_task_delta_ = delay;
 }
 
 void TestBackgroundSyncManager::HasMainFrameProviderHost(
@@ -127,11 +126,15 @@ void TestBackgroundSyncManager::GetDataFromBackendContinue(
 }
 
 base::TimeDelta TestBackgroundSyncManager::GetSoonestWakeupDelta(
-    blink::mojom::BackgroundSyncType sync_type) {
+    blink::mojom::BackgroundSyncType sync_type,
+    base::Time last_browser_wakeup_for_periodic_sync) {
   base::TimeDelta soonest_wakeup_delta =
-      BackgroundSyncManager::GetSoonestWakeupDelta(sync_type);
+      BackgroundSyncManager::GetSoonestWakeupDelta(
+          sync_type, last_browser_wakeup_for_periodic_sync);
   if (sync_type == blink::mojom::BackgroundSyncType::ONE_SHOT)
-    soonest_one_shot_wakeup_delta_ = soonest_wakeup_delta;
+    soonest_one_shot_sync_wakeup_delta_ = soonest_wakeup_delta;
+  else
+    soonest_periodic_sync_wakeup_delta_ = soonest_wakeup_delta;
   return soonest_wakeup_delta;
 }
 

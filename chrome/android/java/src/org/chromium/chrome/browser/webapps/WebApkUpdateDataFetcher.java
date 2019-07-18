@@ -100,11 +100,11 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
     @CalledByNative
     protected void onDataAvailable(String manifestStartUrl, String scopeUrl, String name,
             String shortName, String primaryIconUrl, String primaryIconMurmur2Hash,
-            Bitmap primaryIconBitmap, String badgeIconUrl, String badgeIconMurmur2Hash,
-            Bitmap badgeIconBitmap, String[] iconUrls, @WebDisplayMode int displayMode,
-            int orientation, long themeColor, long backgroundColor, String shareAction,
-            String shareParamsTitle, String shareParamsText, String shareParamsUrl,
-            boolean isShareMethodPost, boolean isShareEncTypeMultipart,
+            Bitmap primaryIconBitmap, boolean isPrimaryIconMaskable, String badgeIconUrl,
+            String badgeIconMurmur2Hash, Bitmap badgeIconBitmap, String[] iconUrls,
+            @WebDisplayMode int displayMode, int orientation, long themeColor, long backgroundColor,
+            String shareAction, String shareParamsTitle, String shareParamsText,
+            String shareParamsUrl, boolean isShareMethodPost, boolean isShareEncTypeMultipart,
             String[] shareParamsFileNames, String[][] shareParamsAccepts) {
         Context appContext = ContextUtils.getApplicationContext();
 
@@ -130,10 +130,11 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
         WebApkInfo info = WebApkInfo.create(mOldInfo.id(), mOldInfo.uri().toString(), scopeUrl,
                 new WebApkInfo.Icon(primaryIconBitmap), new WebApkInfo.Icon(badgeIconBitmap), null,
                 name, shortName, displayMode, orientation, mOldInfo.source(), themeColor,
-                backgroundColor, defaultBackgroundColor, mOldInfo.webApkPackageName(),
-                mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), manifestStartUrl,
-                WebApkInfo.WebApkDistributor.BROWSER, iconUrlToMurmur2HashMap, shareTarget, null,
-                mOldInfo.shouldForceNavigation(), mOldInfo.isSplashProvidedByWebApk(), null);
+                backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,
+                mOldInfo.webApkPackageName(), mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(),
+                manifestStartUrl, WebApkInfo.WebApkDistributor.BROWSER, iconUrlToMurmur2HashMap,
+                shareTarget, null, mOldInfo.shouldForceNavigation(),
+                mOldInfo.isSplashProvidedByWebApk(), null);
         mObserver.onGotManifestData(info, primaryIconUrl, badgeIconUrl);
     }
 

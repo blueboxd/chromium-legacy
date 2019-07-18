@@ -66,6 +66,8 @@ component("bindings_base") {
     "lib/message_internal.h",
     "lib/pending_receiver_state.cc",
     "lib/pending_receiver_state.h",
+    "lib/pending_remote_state.cc",
+    "lib/pending_remote_state.h",
     "lib/scoped_interface_endpoint_handle.cc",
     "lib/serialization.h",
     "lib/serialization_context.cc",

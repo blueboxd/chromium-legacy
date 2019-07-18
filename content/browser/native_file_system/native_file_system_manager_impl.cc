@@ -206,14 +206,20 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   auto url =
       CreateFileSystemURLFromPath(binding_context.origin, directory_path);
 
-  auto read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-      PermissionStatus::GRANTED);
-  scoped_refptr<NativeFileSystemPermissionGrant> write_grant;
+  scoped_refptr<NativeFileSystemPermissionGrant> read_grant, write_grant;
   if (permission_context_) {
+    read_grant = permission_context_->GetReadPermissionGrant(
+        binding_context.origin, directory_path, /*is_directory=*/true,
+        binding_context.process_id, binding_context.frame_id);
     write_grant = permission_context_->GetWritePermissionGrant(
         binding_context.origin, directory_path, /*is_directory=*/true,
+        binding_context.process_id, binding_context.frame_id,
         NativeFileSystemPermissionContext::UserAction::kOpen);
   } else {
+    // Grant read permission even without a permission_context_, as the picker
+    // itself is enough UI to assume user intent.
+    read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+        PermissionStatus::GRANTED);
     // Auto-deny all write grants if no permisson context is available, unless
     // Experimental Web Platform features are enabled.
     // TODO(mek): Remove experimental web platform check when permission UI is
@@ -535,13 +541,19 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto url = CreateFileSystemURLFromPath(binding_context.origin, file_path);
 
-  auto read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
-      PermissionStatus::GRANTED);
-  scoped_refptr<NativeFileSystemPermissionGrant> write_grant;
+  scoped_refptr<NativeFileSystemPermissionGrant> read_grant, write_grant;
   if (permission_context_) {
+    read_grant = permission_context_->GetReadPermissionGrant(
+        binding_context.origin, file_path, /*is_directory=*/false,
+        binding_context.process_id, binding_context.frame_id);
     write_grant = permission_context_->GetWritePermissionGrant(
-        binding_context.origin, file_path, /*is_directory=*/false, user_action);
+        binding_context.origin, file_path, /*is_directory=*/false,
+        binding_context.process_id, binding_context.frame_id, user_action);
   } else {
+    // Grant read permission even without a permission_context_, as the picker
+    // itself is enough UI to assume user intent.
+    read_grant = base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
+        PermissionStatus::GRANTED);
     // Auto-deny all write grants if no permisson context is available, unless
     // Experimental Web Platform features are enabled.
     // TODO(mek): Remove experimental web platform check when permission UI is

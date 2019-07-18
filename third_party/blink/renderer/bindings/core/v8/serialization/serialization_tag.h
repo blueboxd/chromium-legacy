@@ -105,6 +105,7 @@ enum SerializationTag {
             // corner_points:Point2D[length] -> DetectedText (ref)
   kDetectedTextTag = 't',  // bounding_box:DOMRectReadOnly,
                            // landmarks:Landmark[length] -> DetectedFace (ref)
+  kDOMExceptionTag = 'x',  // name:String,message:String,stack:String
   kVersionTag = 0xFF       // version:uint32_t -> Uses this as the file version.
 };
 

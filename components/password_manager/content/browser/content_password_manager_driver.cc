@@ -288,6 +288,13 @@ void ContentPasswordManagerDriver::UserModifiedPasswordField() {
     client_->GetMetricsRecorder()->RecordUserModifiedPasswordField();
 }
 
+void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
+    uint32_t renderer_id,
+    const base::string16& value) {
+  GetPasswordManager()->OnUserModifiedNonPasswordField(this, renderer_id,
+                                                       value);
+}
+
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {

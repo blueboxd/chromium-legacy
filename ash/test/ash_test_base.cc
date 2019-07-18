@@ -35,7 +35,8 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/thread_pool/thread_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
@@ -114,14 +115,8 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 /////////////////////////////////////////////////////////////////////////////
 
-AshTestBase::AshTestBase()
-    : scoped_task_environment_(
-          std::make_unique<base::test::ScopedTaskEnvironment>(
-              base::test::ScopedTaskEnvironment::MainThreadType::UI)) {
-  // Must initialize |ash_test_helper_| here because some tests rely on
-  // AshTestBase methods before they call AshTestBase::SetUp().
-  ash_test_helper_ = std::make_unique<AshTestHelper>();
-}
+AshTestBase::AshTestBase(AshTestBase::SubclassManagesTaskEnvironment /* tag */)
+    : scoped_task_environment_(base::nullopt) {}
 
 AshTestBase::~AshTestBase() {
   CHECK(setup_called_)
@@ -131,6 +126,12 @@ AshTestBase::~AshTestBase() {
 }
 
 void AshTestBase::SetUp() {
+  // At this point, the task APIs should already be provided either by
+  // |scoped_task_environment_| or by the subclass in the
+  // SubclassManagesTaskEnvironment mode.
+  CHECK(base::ThreadTaskRunnerHandle::IsSet());
+  CHECK(base::ThreadPoolInstance::Get());
+
   setup_called_ = true;
 
   // Clears the saved state so that test doesn't use on the wrong
@@ -141,7 +142,7 @@ void AshTestBase::SetUp() {
   params.start_session = start_session_;
   params.provide_local_state = provide_local_state_;
   params.config_type = AshTestHelper::kUnitTest;
-  ash_test_helper_->SetUp(params);
+  ash_test_helper_.SetUp(params);
 
   Shell::GetPrimaryRootWindow()->Show();
   Shell::GetPrimaryRootWindow()->GetHost()->Show();
@@ -169,7 +170,7 @@ void AshTestBase::TearDown() {
   // Flush the message loop to finish pending release tasks.
   base::RunLoop().RunUntilIdle();
 
-  ash_test_helper_->TearDown();
+  ash_test_helper_.TearDown();
 
   event_generator_.reset();
   // Some tests set an internal display id,
@@ -184,10 +185,6 @@ void AshTestBase::TearDown() {
 // static
 Shelf* AshTestBase::GetPrimaryShelf() {
   return Shell::GetPrimaryRootWindowController()->shelf();
-}
-
-void AshTestBase::DestroyScopedTaskEnvironment() {
-  scoped_task_environment_.reset();
 }
 
 // static
@@ -230,7 +227,7 @@ void AshTestBase::UpdateDisplay(const std::string& display_specs) {
 }
 
 aura::Window* AshTestBase::CurrentContext() {
-  return ash_test_helper_->CurrentContext();
+  return ash_test_helper_.CurrentContext();
 }
 
 // static
@@ -365,15 +362,15 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
 }
 
 TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
-  return ash_test_helper_->test_session_controller_client();
+  return ash_test_helper_.test_session_controller_client();
 }
 
 TestSystemTrayClient* AshTestBase::GetSystemTrayClient() {
-  return ash_test_helper_->system_tray_client();
+  return ash_test_helper_.system_tray_client();
 }
 
 AppListTestHelper* AshTestBase::GetAppListTestHelper() {
-  return ash_test_helper_->app_list_test_helper();
+  return ash_test_helper_.app_list_test_helper();
 }
 
 void AshTestBase::CreateUserSessions(int n) {
@@ -518,7 +515,7 @@ display::Display AshTestBase::GetPrimaryDisplay() {
 }
 
 display::Display AshTestBase::GetSecondaryDisplay() {
-  return ash_test_helper_->GetSecondaryDisplay();
+  return ash_test_helper_.GetSecondaryDisplay();
 }
 
 }  // namespace ash

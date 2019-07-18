@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.browserservices.Origin;
-import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreferenceCompat;
 import org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences;
@@ -135,9 +135,9 @@ public class TrustedWebActivityPreferencesUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
-            final ChromeImageViewPreference notificationPreference =
-                    (ChromeImageViewPreference) websitePreferences.findPreference(
+                    (SingleWebsitePreferences) preferenceActivity.getMainFragmentCompat();
+            final ChromeImageViewPreferenceCompat notificationPreference =
+                    (ChromeImageViewPreferenceCompat) websitePreferences.findPreference(
                             "push_notifications_list");
             CharSequence summary = notificationPreference.getSummary();
             Assert.assertTrue(summary.toString().startsWith("Managed by "));

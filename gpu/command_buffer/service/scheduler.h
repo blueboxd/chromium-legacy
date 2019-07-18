@@ -56,9 +56,11 @@ class GPU_EXPORT Scheduler {
   // Create a sequence with given priority. Returns an identifier for the
   // sequence that can be used with SyncPonintManager for creating sync point
   // release clients. Sequences start off as enabled (see |EnableSequence|).
+  // Sequence could be created outside of GPU thread.
   SequenceId CreateSequence(SchedulingPriority priority);
 
-  // Destroy the sequence and run any scheduled tasks immediately.
+  // Destroy the sequence and run any scheduled tasks immediately. Sequence
+  // could be destroyed outside of GPU thread.
   void DestroySequence(SequenceId sequence_id);
 
   // Enables the sequence so that its tasks may be scheduled.

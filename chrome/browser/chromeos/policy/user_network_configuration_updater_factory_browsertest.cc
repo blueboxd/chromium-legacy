@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_cert_loader.h"
@@ -74,7 +76,6 @@ constexpr char kClientCertOnc[] = "certificate-client.onc";
 constexpr char kRootAndIntermediateCaCertsOnc[] =
     "root-and-intermediate-ca-certs.onc";
 constexpr char kClientCertSubjectCommonName[] = "lmao";
-constexpr char kNetworkComponentDirectory[] = "network";
 // A PEM-encoded certificate which was signed by the Authority specified in
 // |kRootCaCertOnc|.
 constexpr char kServerCert[] = "ok_cert.pem";
@@ -149,36 +150,57 @@ class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
   DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
 };
 
+// Retrieves the path to the directory containing certificates designated for
+// testing of policy-provided certificates into *|out_test_certs_path|.
+base::FilePath GetTestCertsPath() {
+  base::FilePath test_data_dir;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+
+  base::FilePath test_certs_path =
+      test_data_dir.AppendASCII("policy").AppendASCII("test_certs");
+  base::ScopedAllowBlockingForTesting allow_io;
+  EXPECT_TRUE(base::DirectoryExists(test_certs_path));
+  return test_certs_path;
+}
+
+// Reads the contents of the file with name |file_name| in the directory
+// returned by GetTestCertsPath into *|out_file_contents|.
+std::string GetTestCertsFileContents(const std::string& file_name) {
+  base::FilePath test_certs_path = GetTestCertsPath();
+
+  base::ScopedAllowBlockingForTesting allow_io;
+  std::string file_contents;
+  EXPECT_TRUE(base::ReadFileToString(test_certs_path.AppendASCII(file_name),
+                                     &file_contents));
+  return file_contents;
+}
+
 // Allows setting user policy to assign trust to the CA certificate specified by
 // |kRootCaCert|.
 class UserPolicyCertsHelper {
  public:
-  UserPolicyCertsHelper() {
-    base::FilePath server_cert_path;
-    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
-                                          kServerCert, &server_cert_path);
-    server_cert_ = net::ImportCertFromFile(server_cert_path.DirName(),
-                                           server_cert_path.BaseName().value());
-
-    base::FilePath root_cert_path;
-    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
-                                          kRootCaCert, &root_cert_path);
-    root_cert_ = net::ImportCertFromFile(root_cert_path.DirName(),
-                                         root_cert_path.BaseName().value());
-
-    base::FilePath server_cert_by_intermediate_path;
-    chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory,
-                                          kServerCertByIntermediate,
-                                          &server_cert_by_intermediate_path);
-    server_cert_by_intermediate_ = net::ImportCertFromFile(
-        server_cert_path.DirName(),
-        server_cert_by_intermediate_path.BaseName().value());
-  }
+  UserPolicyCertsHelper() = default;
 
   // Installs the BrowserPolicyConnector to set user policy.
   void SetUpInProcessBrowserTestFixture() {
     is_set_up_ = true;
 
+    base::ScopedAllowBlockingForTesting allow_io;
+    base::FilePath test_certs_path = GetTestCertsPath();
+
+    base::FilePath server_cert_path = test_certs_path.AppendASCII(kServerCert);
+    server_cert_ = net::ImportCertFromFile(server_cert_path.DirName(),
+                                           server_cert_path.BaseName().value());
+
+    base::FilePath root_cert_path = test_certs_path.AppendASCII(kRootCaCert);
+    root_cert_ = net::ImportCertFromFile(root_cert_path.DirName(),
+                                         root_cert_path.BaseName().value());
+
+    base::FilePath server_cert_by_intermediate_path =
+        test_certs_path.AppendASCII(kServerCertByIntermediate);
+    server_cert_by_intermediate_ = net::ImportCertFromFile(
+        server_cert_path.DirName(),
+        server_cert_by_intermediate_path.BaseName().value());
     // Set up the mock policy provider.
     EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
         .WillRepeatedly(testing::Return(true));
@@ -189,8 +211,7 @@ class UserPolicyCertsHelper {
   // the notification that policy-provided trust roots have changed is sent from
   // |profile|'s UserNetworkConfigurationUpdater.
   void SetRootCertONCUserPolicy(Profile* profile) {
-    std::string onc_policy_data =
-        chromeos::onc::test_utils::ReadTestData(kRootCaCertOnc);
+    std::string onc_policy_data = GetTestCertsFileContents(kRootCaCertOnc);
     SetONCUserPolicy(profile, onc_policy_data);
   }
 
@@ -199,7 +220,7 @@ class UserPolicyCertsHelper {
   // |profile|'s UserNetworkConfigurationUpdater.
   void SetRootAndIntermediateCertsONCUserPolicy(Profile* profile) {
     std::string onc_policy_data =
-        chromeos::onc::test_utils::ReadTestData(kRootAndIntermediateCaCertsOnc);
+        GetTestCertsFileContents(kRootAndIntermediateCaCertsOnc);
     SetONCUserPolicy(profile, onc_policy_data);
   }
 
@@ -561,8 +582,7 @@ class PolicyProvidedTrustAnchorsOnUserSessionInitTest
   }
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
-    const std::string& user_policy_blob =
-        chromeos::onc::test_utils::ReadTestData(kRootCaCertOnc);
+    std::string user_policy_blob = GetTestCertsFileContents(kRootCaCertOnc);
     policy->SetKey(key::kOpenNetworkConfiguration,
                    base::Value(user_policy_blob));
   }
@@ -616,11 +636,11 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsOnUserSessionInitTest,
                        TrustAnchorsAvailableImmediatelyAfterSessionStart) {
   // Load the certificate which is only OK if the policy-provided authority is
   // actually trusted.
-  base::FilePath cert_path;
-  chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kServerCert,
-                                        &cert_path);
+  base::FilePath test_certs_path = GetTestCertsPath();
+
+  base::FilePath server_cert_path = test_certs_path.AppendASCII(kServerCert);
   scoped_refptr<net::X509Certificate> server_cert = net::ImportCertFromFile(
-      cert_path.DirName(), cert_path.BaseName().value());
+      server_cert_path.DirName(), server_cert_path.BaseName().value());
 
   SkipToLoginScreen();
   TriggerLogIn();

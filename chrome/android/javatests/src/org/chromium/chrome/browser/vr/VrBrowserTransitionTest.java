@@ -398,7 +398,8 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
+                PreferencesLauncher.launchSettingsPageCompat(
+                        context, SingleWebsitePreferences.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -523,7 +524,7 @@ public class VrBrowserTransitionTest {
     public void testVrUnsupportedWhenReprojectionFails() throws InterruptedException {
         AtomicBoolean failed = new AtomicBoolean(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 VrShell vrShell = new VrShell(
                         mTestRule.getActivity(), VrShellDelegateUtils.getDelegateInstance(), null) {
                     @Override

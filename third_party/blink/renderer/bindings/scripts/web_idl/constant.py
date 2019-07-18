@@ -9,7 +9,7 @@ from .common import WithExtendedAttributes
 from .common import WithExposure
 from .common import WithIdentifier
 from .idl_member import IdlMember
-from .idl_types import IdlType
+from .idl_type import IdlType
 from .values import ConstantValue
 
 

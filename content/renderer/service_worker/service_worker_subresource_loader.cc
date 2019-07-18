@@ -713,10 +713,6 @@ int ServiceWorkerSubresourceLoader::StartBlobReading(
   DCHECK(body_pipe);
   DCHECK(!blob_reading_complete_);
 
-  base::TimeDelta delay =
-      base::TimeTicks::Now() - response_head_.response_start;
-  UMA_HISTOGRAM_TIMES("ServiceWorker.SubresourceStartBlobReadingDelay", delay);
-
   return ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
       &body_as_blob_, body_as_blob_size_,
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnBlobReadingComplete,

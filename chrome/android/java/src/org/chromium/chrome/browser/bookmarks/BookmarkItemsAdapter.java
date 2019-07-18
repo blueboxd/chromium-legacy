@@ -26,6 +26,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO(crbug.com/160194): This class will be deleted after bookmark reordering launches.
 /**
  * BaseAdapter for {@link RecyclerView}. It manages bookmarks to list there.
  */
@@ -352,6 +353,26 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         List<BookmarkId> results =
                 mDelegate.getModel().searchBookmarks(mSearchText, MAXIMUM_NUMBER_OF_SEARCH_RESULTS);
         setBookmarks(null, results);
+    }
+
+    @Override
+    public void moveUpOne(BookmarkId bookmarkId) {
+        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
+    }
+
+    @Override
+    public void moveDownOne(BookmarkId bookmarkId) {
+        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
+    }
+
+    @Override
+    public void moveToTop(BookmarkId bookmarkId) {
+        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
+    }
+
+    @Override
+    public void moveToBottom(BookmarkId bookmarkId) {
+        throw new RuntimeException("Cannot reorder bookmarks when bookmark reordering flag is off");
     }
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {

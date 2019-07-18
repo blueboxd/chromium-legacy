@@ -373,4 +373,48 @@ id<GREYMatcher> TabGridCellAtIndex(unsigned int index) {
   return [ChromeMatchersAppInterface tabGridCellAtIndex:index];
 }
 
+id<GREYMatcher> TabGridDoneButton() {
+  return [ChromeMatchersAppInterface tabGridDoneButton];
+}
+
+id<GREYMatcher> TabGridCloseAllButton() {
+  return [ChromeMatchersAppInterface tabGridCloseAllButton];
+}
+
+id<GREYMatcher> TabGridUndoCloseAllButton() {
+  return [ChromeMatchersAppInterface tabGridUndoCloseAllButton];
+}
+
+id<GREYMatcher> TabGridSelectShowHistoryCell() {
+  return [ChromeMatchersAppInterface tabGridSelectShowHistoryCell];
+}
+
+id<GREYMatcher> TabGridRegularTabsEmptyStateView() {
+  return [ChromeMatchersAppInterface tabGridRegularTabsEmptyStateView];
+}
+
+id<GREYMatcher> TabGridNewTabButton() {
+  return [ChromeMatchersAppInterface tabGridNewTabButton];
+}
+
+id<GREYMatcher> TabGridNewIncognitoTabButton() {
+  return [ChromeMatchersAppInterface tabGridNewIncognitoTabButton];
+}
+
+id<GREYMatcher> TabGridOpenTabsPanelButton() {
+  return [ChromeMatchersAppInterface tabGridOpenTabsPanelButton];
+}
+
+id<GREYMatcher> TabGridIncognitoTabsPanelButton() {
+  return [ChromeMatchersAppInterface tabGridIncognitoTabsPanelButton];
+}
+
+id<GREYMatcher> TabGridOtherDevicesPanelButton() {
+  return [ChromeMatchersAppInterface tabGridOtherDevicesPanelButton];
+}
+
+id<GREYMatcher> TabGridCloseButtonForCellAtIndex(unsigned int index) {
+  return [ChromeMatchersAppInterface tabGridCloseButtonForCellAtIndex:index];
+}
+
 }  // namespace chrome_test_util

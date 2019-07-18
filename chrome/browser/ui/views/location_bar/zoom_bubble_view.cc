@@ -40,6 +40,8 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/ax_virtual_view.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -277,8 +279,8 @@ ZoomBubbleView* ZoomBubbleView::GetZoomBubble() {
 
 void ZoomBubbleView::Refresh() {
   UpdateZoomPercent();
-  GetWidget()->GetRootView()->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
-                                                       true);
+  zoom_level_alert_->GetCustomData().SetName(GetAccessibleWindowTitle());
+  zoom_level_alert_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert);
   StartTimerIfNecessary();
 }
 
@@ -290,13 +292,7 @@ ZoomBubbleView::ZoomBubbleView(
     ImmersiveModeController* immersive_mode_controller)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       auto_close_duration_(kBubbleCloseDelayDefault),
-      image_button_(nullptr),
-      label_(nullptr),
-      zoom_out_button_(nullptr),
-      zoom_in_button_(nullptr),
-      reset_button_(nullptr),
       auto_close_(reason == AUTOMATIC),
-      ignore_close_bubble_(false),
       immersive_mode_controller_(immersive_mode_controller),
       session_id_(
           chrome::FindBrowserWithWebContents(web_contents)->session_id()) {
@@ -454,6 +450,11 @@ void ZoomBubbleView::Init() {
   reset_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_ACCNAME_ZOOM_SET_DEFAULT));
   reset_button_ = AddChildView(std::move(reset_button));
+
+  auto zoom_level_alert = std::make_unique<views::AXVirtualView>();
+  zoom_level_alert->GetCustomData().role = ax::mojom::Role::kAlert;
+  zoom_level_alert_ = zoom_level_alert.get();
+  GetViewAccessibility().AddVirtualChildView(std::move(zoom_level_alert));
 
   StartTimerIfNecessary();
 }

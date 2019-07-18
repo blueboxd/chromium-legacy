@@ -290,6 +290,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
     return nullptr;
   }
 
+  // This validation step must happen before GetCookieDomainWithString, so it
+  // doesn't fail DCHECKs.
+  if (!cookie_util::DomainIsHostOnly(url.host()))
+    return nullptr;
+
   std::string cookie_domain;
   if (!cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain))
     return nullptr;

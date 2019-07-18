@@ -45,36 +45,29 @@ namespace test {
 
 namespace {
 
-base::Optional<MessageLoop::Type> GetMessageLoopTypeForMainThreadType(
+base::MessagePump::Type GetMessagePumpTypeForMainThreadType(
     ScopedTaskEnvironment::MainThreadType main_thread_type) {
   switch (main_thread_type) {
     case ScopedTaskEnvironment::MainThreadType::DEFAULT:
-    case ScopedTaskEnvironment::MainThreadType::MOCK_TIME:
-      return MessageLoop::TYPE_DEFAULT;
+      return MessagePump::Type::DEFAULT;
     case ScopedTaskEnvironment::MainThreadType::UI:
-    case ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME:
-      return MessageLoop::TYPE_UI;
+      return MessagePump::Type::UI;
     case ScopedTaskEnvironment::MainThreadType::IO:
-    case ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME:
-      return MessageLoop::TYPE_IO;
+      return MessagePump::Type::IO;
   }
   NOTREACHED();
-  return base::nullopt;
+  return MessagePump::Type::DEFAULT;
 }
 
 std::unique_ptr<sequence_manager::SequenceManager>
 CreateSequenceManagerForMainThreadType(
     ScopedTaskEnvironment::MainThreadType main_thread_type) {
-  auto type = GetMessageLoopTypeForMainThreadType(main_thread_type);
-  if (!type) {
-    return nullptr;
-  } else {
-    return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
-        MessagePump::Create(*type),
-        base::sequence_manager::SequenceManager::Settings::Builder()
-            .SetMessagePumpType(*type)
-            .Build());
-  }
+  auto type = GetMessagePumpTypeForMainThreadType(main_thread_type);
+  return sequence_manager::CreateSequenceManagerOnCurrentThreadWithPump(
+      MessagePump::Create(type),
+      base::sequence_manager::SequenceManager::Settings::Builder()
+          .SetMessagePumpType(type)
+          .Build());
 }
 
 class TickClockBasedClock : public Clock {
@@ -452,8 +445,7 @@ void ScopedTaskEnvironment::InitializeThreadPool() {
 
 void ScopedTaskEnvironment::CompleteInitialization() {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  if (main_thread_type() == MainThreadType::IO ||
-      main_thread_type() == MainThreadType::IO_MOCK_TIME) {
+  if (main_thread_type() == MainThreadType::IO) {
     file_descriptor_watcher_ =
         std::make_unique<FileDescriptorWatcher>(GetMainThreadTaskRunner());
   }

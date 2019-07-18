@@ -673,6 +673,12 @@
       <structure name="IDR_OS_SETTINGS_CUPS_SAVED_PRINTERS_JS"
                  file="printing_page/cups_saved_printers.js"
                  type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_NEARBY_PRINTERS_HTML"
+                 file="printing_page/cups_nearby_printers.html"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_CUPS_NEARBY_PRINTERS_JS"
+                 file="printing_page/cups_nearby_printers.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CLOUD_PRINTING_PAGE_HTML"
                  file="printing_page/cloud_printers.html"
                  type="chrome_html" />

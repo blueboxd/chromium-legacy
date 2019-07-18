@@ -270,12 +270,6 @@ customize.preselectedShortcutOptions = {
 customize.colorsMenuLoaded = false;
 
 /**
- * The original NTP background. Used to restore from image previews.
- * @type {string}
- */
-customize.originalBackground = '';
-
-/**
  * Sets the visibility of the settings menu and individual options depending on
  * their respective features.
  */
@@ -883,24 +877,39 @@ customize.richerPicker_removeSelectedState = function(option) {
  * @param {!Element} tile The tile that was selected.
  */
 customize.richerPicker_previewImage = function(tile) {
-  customize.originalBackground =
-      $(customize.IDS.CUSTOM_BG).style.backgroundImage;
-
-  // TODO(crbug/971853): add browertests for previews.
   // Set preview images at 720p by replacing the params in the url.
-  const re = /w\d+\-h\d+/;
-  $(customize.IDS.CUSTOM_BG_PREVIEW).style.backgroundImage =
-      tile.style.backgroundImage.replace(re, 'w1280-h720');
-  $(customize.IDS.CUSTOM_BG_PREVIEW).style.opacity = 1;
-  $(customize.IDS.CUSTOM_BG).style.opacity = 0;
+  const background = $(customize.IDS.CUSTOM_BG);
+  const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
+  if (tile.id !== customize.IDS.BACKGROUNDS_DEFAULT_ICON) {
+    preview.dataset.hasImage = true;
+
+    const re = /w\d+\-h\d+/;
+    preview.style.backgroundImage =
+        tile.style.backgroundImage.replace(re, 'w1280-h720');
+  } else {
+    preview.dataset.hasImage = false;
+    preview.style.backgroundImage = '';
+    preview.style.backgroundColor = 'white';
+  }
+  background.style.opacity = 0;
+  preview.style.opacity = 1;
+  preview.dataset.hasPreview = true;
+
+  ntpApiHandle.onthemechange();
 };
 
 /**
  * Remove a preview image of a custom backgrounds.
  */
 customize.richerPicker_unpreviewImage = function() {
-  $(customize.IDS.CUSTOM_BG_PREVIEW).style.opacity = 0;
+  const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
+  preview.style.opacity = 0;
+  preview.style.backgroundImage = '';
+  preview.style.backgroundColor = 'transparent';
+  preview.dataset.hasPreview = false;
   $(customize.IDS.CUSTOM_BG).style.opacity = 1;
+
+  ntpApiHandle.onthemechange();
 };
 
 /**
@@ -912,6 +921,18 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
   if (!tile) {
     return;
   }
+
+  // Deselect any currently selected tile. If it was the clicked tile don't
+  // reselect it.
+  if (customize.selectedOptions.background) {
+    const id = customize.selectedOptions.background.id;
+    customize.richerPicker_deselectBackgroundTile(
+        customize.selectedOptions.background);
+    if (id === tile.id) {
+      return;
+    }
+  }
+
   customize.selectedOptions.background = tile;
   customize.selectedOptions.backgroundId = tile.id;
   customize.richerPicker_applySelectedState(tile);
@@ -1036,20 +1057,11 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   }
 
   const tileInteraction = function(tile) {
-    if (customize.selectedOptions.background) {
-      if (configData.richerPicker) {
-        const id = customize.selectedOptions.background.id;
-        customize.richerPicker_deselectBackgroundTile(
-            customize.selectedOptions.background);
-        if (id === tile.id) {
-          return;
-        }
-      } else {
-        customize.removeSelectedState(customize.selectedOptions.background);
-        if (customize.selectedOptions.background.id === tile.id) {
-          customize.unselectTile();
-          return;
-        }
+    if (customize.selectedOptions.background && !configData.richerPicker) {
+      customize.removeSelectedState(customize.selectedOptions.background);
+      if (customize.selectedOptions.background.id === tile.id) {
+        customize.unselectTile();
+        return;
       }
     }
 

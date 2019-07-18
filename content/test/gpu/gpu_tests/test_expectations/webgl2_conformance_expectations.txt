@@ -53,6 +53,9 @@ crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 # TODO(kbr): restore suppression for Android / Qualcomm below after this is fixed.
 crbug.com/949249 conformance2/extensions/ovr_multiview2.html [ Failure ]
 
+# Marking a test as failing on all platforms.
+crbug.com/985032 conformance2/glsl3/sampler-array-indexing.html [ Failure ]
+
 # Failing new test
 crbug.com/874620 [ linux nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
 crbug.com/874620 [ opengl win nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]

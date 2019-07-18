@@ -1030,6 +1030,16 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper to recursively find live-regions and fire a change event on them
   void FireLiveRegionChangeRecursive();
 
+  // Convert a mojo event to an MSAA event. Exposed for testing.
+  static base::Optional<DWORD> MojoEventToMSAAEvent(ax::mojom::Event event);
+
+  // Convert a mojo event to a UIA event. Exposed for testing.
+  static base::Optional<EVENTID> MojoEventToUIAEvent(ax::mojom::Event event);
+
+  // Convert a mojo event to a UIA property id. Exposed for testing.
+  static base::Optional<PROPERTYID> MojoEventToUIAProperty(
+      ax::mojom::Event event);
+
  protected:
   // This is hard-coded; all products based on the Chromium engine will have the
   // same framework name, so that assistive technology can detect any
@@ -1092,8 +1102,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
                           PlatformAttributeList* attributes) override;
 
  private:
-  base::Optional<DWORD> MSAAEvent(ax::mojom::Event event);
-  base::Optional<EVENTID> UIAEvent(ax::mojom::Event event);
   bool IsWebAreaForPresentationalIframe();
   bool ShouldNodeHaveFocusableState(const AXNodeData& data) const;
 

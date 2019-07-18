@@ -32,7 +32,8 @@ namespace content {
 // thread. This is because code interacts directly with the file system backends
 // (via storage::FileSystemContext and store::FileSystemOperationRunner, which
 // both expect some of their methods to only be called on the IO thread).
-class CONTENT_EXPORT NativeFileSystemHandleBase {
+class CONTENT_EXPORT NativeFileSystemHandleBase
+    : public NativeFileSystemPermissionGrant::Observer {
  public:
   using BindingContext = NativeFileSystemManagerImpl::BindingContext;
   using SharedHandleState = NativeFileSystemManagerImpl::SharedHandleState;
@@ -43,7 +44,7 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
                              const storage::FileSystemURL& url,
                              const SharedHandleState& handle_state,
                              bool is_directory);
-  virtual ~NativeFileSystemHandleBase();
+  ~NativeFileSystemHandleBase() override;
 
   const storage::FileSystemURL& url() const { return url_; }
   const SharedHandleState& handle_state() const { return handle_state_; }
@@ -88,6 +89,9 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
 
   virtual base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() = 0;
 
+  // NativeFileSystemPermissionGrant::Observer:
+  void OnPermissionStatusChanged() override;
+
  private:
   // The NativeFileSystemManagerImpl that owns this instance.
   NativeFileSystemManagerImpl* const manager_;
@@ -98,8 +102,9 @@ class CONTENT_EXPORT NativeFileSystemHandleBase {
   class UsageIndicatorTracker;
   base::SequenceBound<UsageIndicatorTracker> usage_indicator_tracker_;
   bool was_writable_at_last_check_ = false;
+  bool was_readable_at_last_check_ = true;
 
-  void UpdateWritableUsage();
+  void UpdateUsage();
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemHandleBase);
 };

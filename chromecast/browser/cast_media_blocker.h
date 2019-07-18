@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
@@ -113,7 +113,7 @@ class CastMediaBlocker : public content::WebContentsObserver,
 
   content::MediaSession* media_session_;
 
-  mojo::Binding<media_session::mojom::MediaSessionObserver> observer_binding_{
+  mojo::Receiver<media_session::mojom::MediaSessionObserver> observer_receiver_{
       this};
 
   DISALLOW_COPY_AND_ASSIGN(CastMediaBlocker);

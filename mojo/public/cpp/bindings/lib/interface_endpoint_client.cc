@@ -67,6 +67,12 @@ class ResponderThunk : public MessageReceiverWithStatus {
     }
   }
 
+  // Allows this thunk to be attached to a ConnectionGroup as a means of keeping
+  // the group from idling while the response is pending.
+  void set_connection_group(ConnectionGroup::Ref connection_group) {
+    connection_group_ = std::move(connection_group);
+  }
+
   // MessageReceiver implementation:
   bool PrefersSerializedMessages() override {
     return endpoint_client_ && endpoint_client_->PrefersSerializedMessages();
@@ -105,6 +111,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
   base::WeakPtr<InterfaceEndpointClient> endpoint_client_;
   bool accept_was_invoked_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  ConnectionGroup::Ref connection_group_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponderThunk);
 };
@@ -146,11 +153,9 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     : expect_sync_requests_(expect_sync_requests),
       handle_(std::move(handle)),
       incoming_receiver_(receiver),
-      thunk_(this),
       filters_(&thunk_),
       task_runner_(std::move(runner)),
-      control_message_proxy_(this),
-      control_message_handler_(interface_version),
+      control_message_handler_(this, interface_version),
       interface_name_(interface_name) {
   DCHECK(handle_.is_valid());
 
@@ -222,7 +227,30 @@ bool InterfaceEndpointClient::PrefersSerializedMessages() {
   return controller && controller->PrefersSerializedMessages();
 }
 
+void InterfaceEndpointClient::SendControlMessage(Message* message) {
+  SendMessage(message, true /* is_control_message */);
+}
+
+void InterfaceEndpointClient::SendControlMessageWithResponder(
+    Message* message,
+    std::unique_ptr<MessageReceiver> responder) {
+  SendMessageWithResponder(message, true /* is_control_message */,
+                           std::move(responder));
+}
+
 bool InterfaceEndpointClient::Accept(Message* message) {
+  return SendMessage(message, false /* is_control_message */);
+}
+
+bool InterfaceEndpointClient::AcceptWithResponder(
+    Message* message,
+    std::unique_ptr<MessageReceiver> responder) {
+  return SendMessageWithResponder(message, false /* is_control_message */,
+                                  std::move(responder));
+}
+
+bool InterfaceEndpointClient::SendMessage(Message* message,
+                                          bool is_control_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!message->has_flag(Message::kFlagExpectsResponse));
   DCHECK(!handle_.pending_association());
@@ -246,11 +274,18 @@ bool InterfaceEndpointClient::Accept(Message* message) {
 #endif
 
   message->set_heap_profiler_tag(interface_name_);
-  return controller_->SendMessage(message);
+  if (!controller_->SendMessage(message))
+    return false;
+
+  if (!is_control_message && idle_handler_)
+    ++num_unacked_messages_;
+
+  return true;
 }
 
-bool InterfaceEndpointClient::AcceptWithResponder(
+bool InterfaceEndpointClient::SendMessageWithResponder(
     Message* message,
+    bool is_control_message,
     std::unique_ptr<MessageReceiver> responder) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(message->has_flag(Message::kFlagExpectsResponse));
@@ -281,6 +316,9 @@ bool InterfaceEndpointClient::AcceptWithResponder(
   bool is_sync = message->has_flag(Message::kFlagIsSync);
   if (!controller_->SendMessage(message))
     return false;
+
+  if (!is_control_message && idle_handler_)
+    ++num_unacked_messages_;
 
   if (!is_sync) {
     async_responders_[request_id] = std::move(responder);
@@ -364,6 +402,81 @@ void InterfaceEndpointClient::FlushAsyncForTesting(base::OnceClosure callback) {
   control_message_proxy_.FlushAsyncForTesting(std::move(callback));
 }
 
+void InterfaceEndpointClient::SetIdleHandler(base::TimeDelta timeout,
+                                             base::RepeatingClosure handler) {
+  // We allow for idle handler replacement and changing the timeout duration.
+  control_message_proxy_.EnableIdleTracking(timeout);
+  idle_handler_ = std::move(handler);
+}
+
+void InterfaceEndpointClient::SetIdleTrackingEnabledCallback(
+    IdleTrackingEnabledCallback callback) {
+  idle_tracking_enabled_callback_ = std::move(callback);
+}
+
+bool InterfaceEndpointClient::AcceptEnableIdleTracking(
+    base::TimeDelta timeout) {
+  // If this is the first time EnableIdleTracking was received, set up the
+  // ConnectionGroup and give a ref to our owner.
+  if (idle_tracking_enabled_callback_) {
+    idle_tracking_connection_group_ = ConnectionGroup::Create(
+        base::BindRepeating(&InterfaceEndpointClient::MaybeStartIdleTimer,
+                            weak_ptr_factory_.GetWeakPtr()),
+        task_runner_);
+    std::move(idle_tracking_enabled_callback_)
+        .Run(idle_tracking_connection_group_.WeakCopy());
+  }
+
+  idle_timeout_ = timeout;
+  return true;
+}
+
+bool InterfaceEndpointClient::AcceptMessageAck() {
+  if (!idle_handler_ || num_unacked_messages_ == 0)
+    return false;
+
+  --num_unacked_messages_;
+  return true;
+}
+
+bool InterfaceEndpointClient::AcceptNotifyIdle() {
+  if (!idle_handler_)
+    return false;
+
+  // We have outstanding unacked messages, so quietly ignore this NotifyIdle.
+  if (num_unacked_messages_ > 0)
+    return true;
+
+  // With no outstanding unacked messages, a NotifyIdle received implies that
+  // the peer really is idle. We can invoke our idle handler.
+  idle_handler_.Run();
+  return true;
+}
+
+void InterfaceEndpointClient::MaybeStartIdleTimer() {
+  // Something has happened to interrupt the current idle state, if any. We
+  // either restart the idle timer (if idle again) or clear it so it doesn't
+  // fire.
+  if (idle_tracking_connection_group_ &&
+      idle_tracking_connection_group_.HasZeroRefs()) {
+    DCHECK(idle_timeout_);
+    notify_idle_timer_.emplace();
+    notify_idle_timer_->Start(
+        FROM_HERE, *idle_timeout_,
+        base::BindOnce(&InterfaceEndpointClient::MaybeSendNotifyIdle,
+                       base::Unretained(this)));
+  } else {
+    notify_idle_timer_.reset();
+  }
+}
+
+void InterfaceEndpointClient::MaybeSendNotifyIdle() {
+  if (idle_tracking_connection_group_ &&
+      idle_tracking_connection_group_.HasZeroRefs()) {
+    control_message_proxy_.NotifyIdle();
+  }
+}
+
 void InterfaceEndpointClient::InitControllerIfNecessary() {
   if (controller_ || handle_.pending_association())
     return;
@@ -400,16 +513,21 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
     return false;
   }
 
+  auto weak_self = weak_ptr_factory_.GetWeakPtr();
+  bool accepted_interface_message = false;
+  bool has_response = false;
   if (message->has_flag(Message::kFlagExpectsResponse)) {
-    std::unique_ptr<MessageReceiverWithStatus> responder =
-        std::make_unique<ResponderThunk>(weak_ptr_factory_.GetWeakPtr(),
-                                         task_runner_);
+    has_response = true;
+    auto responder = std::make_unique<ResponderThunk>(
+        weak_ptr_factory_.GetWeakPtr(), task_runner_);
     if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
       return control_message_handler_.AcceptWithResponder(message,
                                                           std::move(responder));
     } else {
-      return incoming_receiver_->AcceptWithResponder(message,
-                                                     std::move(responder));
+      if (idle_tracking_connection_group_)
+        responder->set_connection_group(idle_tracking_connection_group_);
+      accepted_interface_message = incoming_receiver_->AcceptWithResponder(
+          message, std::move(responder));
     }
   } else if (message->has_flag(Message::kFlagIsResponse)) {
     uint64_t request_id = message->request_id();
@@ -433,8 +551,17 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
     if (mojo::internal::ControlMessageHandler::IsControlMessage(message))
       return control_message_handler_.Accept(message);
 
-    return incoming_receiver_->Accept(message);
+    accepted_interface_message = incoming_receiver_->Accept(message);
   }
+
+  if (weak_self && accepted_interface_message &&
+      idle_tracking_connection_group_) {
+    control_message_proxy_.SendMessageAck();
+    if (!has_response)
+      MaybeStartIdleTimer();
+  }
+
+  return accepted_interface_message;
 }
 
 }  // namespace mojo

@@ -25,7 +25,6 @@
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -57,9 +56,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -458,7 +454,6 @@ class DownloadAwaiter : public content::DownloadManager::Observer {
   }
 
  private:
-  content::NotificationRegistrar registrar_;
   base::RunLoop download_run_loop_;
   GURL last_url_;
 };
@@ -1252,13 +1247,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), kDefaultKeyModifier,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1280,13 +1272,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, Middle) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1310,13 +1299,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlShiftLeft) {
 
   const int modifiers = blink::WebInputEvent::kShiftKey | kDefaultKeyModifier;
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(GetWebContentsForInputRouting(), modifiers,
                                 blink::WebMouseEvent::Button::kLeft,
                                 GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1333,13 +1319,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftMiddle) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kMiddle, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1401,13 +1384,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
       web_contents->GetBrowserContext()->GetGuestManager();
   SetGuestContents(guest_manager->GetFullPageGuest(web_contents));
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), kDefaultKeyModifier,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   // We should have two tabs now. One with the PDF and the second for
   // example.com
@@ -1461,13 +1441,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), kDefaultKeyModifier,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1490,13 +1467,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);

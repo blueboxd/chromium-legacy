@@ -75,7 +75,6 @@ void FaviconLoader::FaviconForPageUrl(
 
   const CGFloat scale = UIScreen.mainScreen.scale;
   const CGFloat favicon_size_in_pixels = scale * size_in_points;
-  const CGFloat min_favicon_size_in_pixels = scale * min_size_in_points;
   GURL block_page_url(page_url);
   auto favicon_block = ^(const favicon_base::LargeIconResult& result) {
     // GetLargeIconOrFallbackStyle() either returns a valid favicon (which can
@@ -114,8 +113,7 @@ void FaviconLoader::FaviconForPageUrl(
       large_icon_service_
           ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
               favicon::FaviconServerFetcherParams::CreateForMobile(
-                  block_page_url, min_favicon_size_in_pixels,
-                  favicon_size_in_pixels),
+                  block_page_url, favicon_size_in_pixels),
               /*may_page_url_be_private=*/true,
               /*should_trim_page_url_path=*/false, kTrafficAnnotation,
               base::BindRepeating(favicon_loaded_from_server_block));
@@ -143,7 +141,7 @@ void FaviconLoader::FaviconForPageUrl(
   // Now fetch the image synchronously.
   DCHECK(large_icon_service_);
   large_icon_service_->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
-      page_url, min_favicon_size_in_pixels, favicon_size_in_pixels,
+      page_url, scale * min_size_in_points, favicon_size_in_pixels,
       base::BindRepeating(favicon_block), &cancelable_task_tracker_);
 }
 

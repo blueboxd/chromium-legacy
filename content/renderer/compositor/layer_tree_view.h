@@ -40,7 +40,6 @@ class LayerTreeSettings;
 class RenderFrameMetadataObserver;
 class TaskGraphRunner;
 class UkmRecorderFactory;
-class ScopedDeferMainFrameUpdate;
 }  // namespace cc
 
 namespace gfx {
@@ -128,10 +127,6 @@ class CONTENT_EXPORT LayerTreeView
   // blink::WebLayerTreeView implementation.
   viz::FrameSinkId GetFrameSinkId() override;
   void SetNonBlinkManagedRootLayer(scoped_refptr<cc::Layer> layer);
-  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
-      override;
-  void StartDeferringCommits(base::TimeDelta timeout) override;
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
   void ForceRecalculateRasterScales() override;
   void SetHaveScrollEventHandlers(bool) override;
   bool HaveScrollEventHandlers() const override;

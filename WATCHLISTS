@@ -782,7 +782,7 @@
                   'chrome/browser/resources/chromeos/',
     },
     'chromevox': {
-      'filepath': 'chromevox',
+      'filepath': 'chromevox|spoken_feedback',
     },
     'clang_update': {
       'filepath': 'tools/clang/scripts/update.py'

@@ -449,11 +449,11 @@ source_set("uniform_helper") {
     "uniform_helper.h",
   ]
   deps = [
+    ":distribution_impl",
+    ":fast_uniform_bits",
+    ":iostream_state_saver",
+    ":traits",
     "../../base:core_headers",
     "../../meta:type_traits",
-    "../../random/internal:distribution_impl",
-    "../../random/internal:fast_uniform_bits",
-    "../../random/internal:iostream_state_saver",
-    "../../random/internal:traits",
   ]
 }

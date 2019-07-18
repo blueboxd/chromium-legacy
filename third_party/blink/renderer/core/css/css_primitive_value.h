@@ -205,8 +205,6 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   double ComputeDotsPerPixel() const;
 
   // Computes a length in pixels, resolving relative lengths
-  // TODO(crbug.com/979895): This function is callable only when the length is a
-  // fixed value or is calculated without involving percentages. Enforce that.
   template <typename T>
   T ComputeLength(const CSSToLengthConversionData&) const;
 

@@ -44,7 +44,10 @@ function getDeepActiveElement() {
   return a;
 }
 
+// <if expr="chromeos">
 /**
+ * DEPRECATED (if using Polymer): Use Polymer.IronA11yAnnouncer instead.
+ * TODO(crbug.com/985410): Replace all existing usages and remove this function.
  * Add an accessible message to the page that will be announced to
  * users who have spoken feedback on, but will be invisible to all
  * other users. It's removed right away so it doesn't clutter the DOM.
@@ -62,6 +65,7 @@ function announceAccessibleMessage(msg) {
     document.body.removeChild(element);
   }, 50);
 }
+// </if>
 
 /**
  * Parses query parameters from Location.

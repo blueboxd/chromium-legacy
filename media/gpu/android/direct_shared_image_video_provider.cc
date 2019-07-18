@@ -73,14 +73,7 @@ void DirectSharedImageVideoProvider::Initialize(GpuInitCB gpu_init_cb) {
 void DirectSharedImageVideoProvider::RequestImage(
     ImageReadyCB cb,
     const ImageSpec& spec,
-    std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<TextureOwner> texture_owner,
-    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb) {
-  auto image_ready_cb = BindToCurrentLoop(
-      base::BindOnce(&DirectSharedImageVideoProvider::OnImageReady,
-                     std::move(cb), std::move(output_buffer), texture_owner,
-                     std::move(promotion_hint_cb), gpu_task_runner_));
-
+    scoped_refptr<TextureOwner> texture_owner) {
   // It's unclear that we should handle the image group, but since CodecImages
   // have to be registered on it, we do.  If the CodecImage is ever re-used,
   // then part of that re-use would be to call the (then mis-named)
@@ -91,25 +84,8 @@ void DirectSharedImageVideoProvider::RequestImage(
   // care about, and that doesn't have anything to do with GLImage.
 
   gpu_factory_.Post(FROM_HERE, &GpuSharedImageVideoFactory::CreateImage,
-                    std::move(image_ready_cb), spec, std::move(texture_owner));
-}
-
-// static
-void DirectSharedImageVideoProvider::OnImageReady(
-    ImageReadyCB cb,
-    std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<TextureOwner> texture_owner,
-    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-    ImageRecord record) {
-  // It's okay to access |codec_image| here, since it's not used anywhere.
-  // We could let |cb| do this, but, in the long term, we want our caller to
-  // provide the output buffer / etc. to us, so we can hide how we use it.
-  record.codec_image_holder->codec_image_raw()->Initialize(
-      std::move(output_buffer), std::move(texture_owner),
-      std::move(promotion_hint_cb));
-
-  std::move(cb).Run(std::move(record));
+                    BindToCurrentLoop(std::move(cb)), spec,
+                    std::move(texture_owner));
 }
 
 GpuSharedImageVideoFactory::GpuSharedImageVideoFactory(

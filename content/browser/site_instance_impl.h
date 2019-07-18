@@ -365,6 +365,19 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const IsolationContext& isolation_context,
       const GURL& site_url);
 
+  // Returns true if |url| and its |site_url| can be placed inside a default
+  // SiteInstance.
+  //
+  // Note: |url| and |site_url| must be consistent with each other. In contexts
+  // where the caller only has |url| it can use
+  // SiteInstanceImpl::GetSiteForURL() to generate |site_url|. This call is
+  // intentionally not set as a default value to encourage the caller to reuse
+  // a site URL computation if they already have one.
+  static bool CanBePlacedInDefaultSiteInstance(
+      const IsolationContext& isolation_context,
+      const GURL& url,
+      const GURL& site_url);
+
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;
 

@@ -13,7 +13,7 @@ from .common import WithExtendedAttributes
 from .constant import Constant
 from .identifier_ir_map import IdentifierIRMap
 from .idl_member import IdlMember
-from .idl_types import IdlType
+from .idl_type import IdlType
 from .operation import Operation
 from .reference import RefById
 from .user_defined_type import UserDefinedType

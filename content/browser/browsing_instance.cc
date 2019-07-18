@@ -110,22 +110,10 @@ scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     return i->second;
 
   // Check to see if we can use the default SiteInstance for sites that don't
-  // need to be isolated in their own process. The default instance allows us to
-  // have multiple unisolated sites share a process. We don't use the default
-  // instance when kProcessSharingWithStrictSiteInstances is enabled because in
-  // that case we want each site to have their own SiteInstance object and logic
-  // elsewhere ensures that those SiteInstances share a process.  We also don't
-  // use default SiteInstances when SiteInstance doesn't assign a site URL for
-  // |url|, since in that case the SiteInstance should remain unused, and a
-  // subsequent navigation should always be able to reuse it, whether or not
-  // it's to a site requiring a dedicated process or to a site that will use
-  // the default SiteInstance.
-  if (allow_default_instance && !url.SchemeIs(kGuestScheme) &&
-      SiteInstanceImpl::ShouldAssignSiteForURL(url) &&
-      !base::FeatureList::IsEnabled(
-          features::kProcessSharingWithStrictSiteInstances) &&
-      !SiteInstanceImpl::DoesSiteRequireDedicatedProcess(isolation_context_,
-                                                         url)) {
+  // need to be isolated in their own process.
+  if (allow_default_instance &&
+      SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(isolation_context_,
+                                                         url, site_url)) {
     DCHECK(!default_process_);
     scoped_refptr<SiteInstanceImpl> site_instance = default_site_instance_;
     if (!site_instance) {

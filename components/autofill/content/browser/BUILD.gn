@@ -19,7 +19,7 @@ jumbo_static_library("browser") {
 
   public_deps = [
     ":risk_proto",
-    "//components/autofill/content/common/mojom",
+    "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//skia",
@@ -72,7 +72,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     "//base",
-    "//components/autofill/content/common/mojom",
+    "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",

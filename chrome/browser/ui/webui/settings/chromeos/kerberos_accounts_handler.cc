@@ -63,12 +63,12 @@ void KerberosAccountsHandler::OnListAccounts(
     const kerberos::ListAccountsResponse& response) {
   base::ListValue accounts;
 
-  // Default icon is a briefcase.
-  gfx::ImageSkia skia_default_icon =
+  // Ticket icon is a key.
+  gfx::ImageSkia skia_ticket_icon =
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGIN_DEFAULT_USER_2);
-  std::string default_icon = webui::GetBitmapDataUrl(
-      skia_default_icon.GetRepresentation(1.0f).GetBitmap());
+          IDR_KERBEROS_ICON_KEY);
+  std::string ticket_icon = webui::GetBitmapDataUrl(
+      skia_ticket_icon.GetRepresentation(1.0f).GetBitmap());
 
   const std::string& active_principal =
       KerberosCredentialsManager::Get().GetActiveAccount();
@@ -94,7 +94,7 @@ void KerberosAccountsHandler::OnListAccounts(
     account_dict.SetBoolean("isManaged", account.is_managed());
     account_dict.SetBoolean("passwordWasRemembered",
                             account.password_was_remembered());
-    account_dict.SetString("pic", default_icon);
+    account_dict.SetString("pic", ticket_icon);
     accounts.GetList().push_back(std::move(account_dict));
   }
 

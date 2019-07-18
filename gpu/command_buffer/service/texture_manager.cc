@@ -1238,6 +1238,40 @@ void Texture::UpdateMaxLevel(GLint max_level) {
   UpdateNumMipLevels();
 }
 
+void Texture::UpdateFaceNumMipLevels(size_t face_index,
+                                     GLint width,
+                                     GLint height,
+                                     GLint depth) {
+  DCHECK_LT(face_index, face_infos_.size());
+  DCHECK_LE(0, base_level_);
+  Texture::FaceInfo& face_info = face_infos_[face_index];
+  if (static_cast<size_t>(base_level_) >= face_info.level_infos.size()) {
+    face_info.num_mip_levels = 0;
+  } else {
+    DCHECK_LE(1u, face_info.level_infos.size());
+    GLint safe_max_level = std::min(
+        max_level_, static_cast<GLint>(face_info.level_infos.size() - 1));
+    GLint max_num_mip_levels = std::max(0, safe_max_level - base_level_ + 1);
+    face_info.num_mip_levels = std::min(
+        max_num_mip_levels,
+        TextureManager::ComputeMipMapCount(target_, width, height, depth));
+  }
+}
+
+void Texture::UpdateFaceNumMipLevels(size_t face_index) {
+  DCHECK_LT(face_index, face_infos_.size());
+  DCHECK_LE(0, base_level_);
+  Texture::FaceInfo& face_info = face_infos_[face_index];
+  GLint width = 0, height = 0, depth = 0;
+  if (static_cast<size_t>(base_level_) < face_info.level_infos.size()) {
+    const Texture::LevelInfo& info = face_info.level_infos[base_level_];
+    width = info.width;
+    height = info.height;
+    depth = info.depth;
+  }
+  UpdateFaceNumMipLevels(face_index, width, height, depth);
+}
+
 void Texture::UpdateNumMipLevels() {
   if (face_infos_.empty())
     return;
@@ -1254,16 +1288,8 @@ void Texture::UpdateNumMipLevels() {
     base_level_ = unclamped_base_level_;
     max_level_ = unclamped_max_level_;
   }
-  GLint max_num_mip_levels = std::max(0, max_level_ - base_level_ + 1);
-  for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
-    Texture::FaceInfo& face_info = face_infos_[ii];
-    if (static_cast<size_t>(base_level_) >= face_info.level_infos.size())
-      continue;
-    const Texture::LevelInfo& info = face_info.level_infos[base_level_];
-    face_info.num_mip_levels = std::min(
-        max_num_mip_levels, TextureManager::ComputeMipMapCount(
-                                target_, info.width, info.height, info.depth));
-  }
+  for (size_t ii = 0; ii < face_infos_.size(); ++ii)
+    UpdateFaceNumMipLevels(ii);
 
   // mipmap-completeness needs to be re-evaluated.
   completeness_dirty_ = true;
@@ -1308,10 +1334,7 @@ void Texture::SetLevelInfo(GLenum target,
       info.width != width || info.height != height || info.depth != depth ||
       info.format != format || info.type != type || info.internal_workaround) {
     if (level == base_level_) {
-      // Calculate the mip level count.
-      face_infos_[face_index].num_mip_levels = std::min(
-          std::max(0, max_level_ - base_level_ + 1),
-          TextureManager::ComputeMipMapCount(target_, width, height, depth));
+      UpdateFaceNumMipLevels(face_index, width, height, depth);
 
       // Update NPOT face count for the first level.
       bool prev_npot = TextureIsNPOT(info.width, info.height, info.depth);

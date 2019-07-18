@@ -72,6 +72,21 @@ const SkColor kButtonBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
 const SkColor kButtonBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
 const SkColor kButtonBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
+const SkScalar kSliderTrackRadius = 40.f;
+const SkColor kSliderTrackColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
+const SkColor kSliderTrackHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
+const SkColor kSliderTrackActiveColor = SkColorSetRGB(0xB5, 0xB5, 0xB5);
+const SkColor kSliderTrackDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+const SkColor kSliderTrackValueColor = SkColorSetRGB(0x10, 0x10, 0x10);
+
+const int kSliderThumbWidth = 21;
+const int kSliderThumbHeight = 21;
+const SkColor kSliderThumbBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+const SkColor kSliderThumbBorderColor = SkColorSetRGB(0x10, 0x10, 0x10);
+const SkColor kSliderThumbBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
+const SkScalar kSliderThumbBorderWidth = 2.f;
+const SkScalar kSliderThumbBorderHoveredWidth = 4.f;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -547,6 +562,102 @@ void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
   }
 }
 
+SkRect AlignSliderTrack(const gfx::Rect& slider_rect,
+                        const NativeTheme::SliderExtraParams& slider,
+                        bool is_value) {
+  const int kAlignment = 2;
+  const int mid_x = slider_rect.x() + slider_rect.width() / 2;
+  const int mid_y = slider_rect.y() + slider_rect.height() / 2;
+  SkRect aligned_rect;
+
+  if (slider.vertical) {
+    const int top = is_value ? slider_rect.y() + slider.thumb_y + kAlignment
+                             : slider_rect.y();
+    aligned_rect.setLTRB(std::max(slider_rect.x(), mid_x - kAlignment), top,
+                         std::min(slider_rect.right(), mid_x + kAlignment),
+                         slider_rect.bottom());
+  } else {
+    const int right = is_value ? slider_rect.x() + slider.thumb_x + kAlignment
+                               : slider_rect.right();
+    aligned_rect.setLTRB(slider_rect.x(),
+                         std::max(slider_rect.y(), mid_y - kAlignment), right,
+                         std::min(slider_rect.bottom(), mid_y + kAlignment));
+  }
+
+  return aligned_rect;
+}
+
+void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintSliderTrack(canvas, state, rect, slider);
+  }
+
+  // Paint the entire slider track.
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  switch (state) {
+    case kHovered:
+      flags.setColor(kSliderTrackHoveredColor);
+      break;
+    case kDisabled:
+      flags.setColor(kSliderTrackDisabledColor);
+      break;
+    case kPressed:
+      flags.setColor(kSliderTrackActiveColor);
+      break;
+    default:
+      flags.setColor(kSliderTrackColor);
+      break;
+  }
+  SkRect track_rect = AlignSliderTrack(rect, slider, false);
+  canvas->drawRoundRect(track_rect, kSliderTrackRadius, kSliderTrackRadius,
+                        flags);
+
+  // Paint the value slider track.
+  if (state != kDisabled) {
+    flags.setColor(kSliderTrackValueColor);
+    SkRect value_rect = AlignSliderTrack(rect, slider, true);
+    canvas->drawRoundRect(value_rect, kSliderTrackRadius, kSliderTrackRadius,
+                          flags);
+  }
+}
+
+void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const SliderExtraParams& slider) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintSliderThumb(canvas, state, rect, slider);
+  }
+
+  const SkScalar radius = SkFloatToScalar(
+      static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
+  SkRect thumb_rect = gfx::RectToSkRect(rect);
+
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  SkScalar border_width = kSliderThumbBorderWidth;
+  if (state == kHovered || state == kPressed) {
+    border_width = kSliderThumbBorderHoveredWidth;
+  }
+
+  // Paint the background (is not visible behind the rounded corners).
+  thumb_rect.inset(border_width / 2, border_width / 2);
+  flags.setColor(kSliderThumbBackgroundColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+  canvas->drawRoundRect(thumb_rect, radius, radius, flags);
+
+  // Paint the border.
+  flags.setColor(state == kDisabled ? kSliderThumbBorderDisabledColor
+                                    : kSliderThumbBorderColor);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(border_width);
+  canvas->drawRoundRect(thumb_rect, radius, radius, flags);
+}
+
 gfx::Size NativeThemeAura::GetPartSize(Part part,
                                        State state,
                                        const ExtraParams& extra) const {
@@ -567,6 +678,10 @@ gfx::Size NativeThemeAura::GetPartSize(Part part,
         // crbug.com/657159.
         break;
     }
+  }
+
+  if (part == kSliderThumb && features::IsFormControlsRefreshEnabled()) {
+    return gfx::Size(kSliderThumbWidth, kSliderThumbHeight);
   }
 
   return NativeThemeBase::GetPartSize(part, state, extra);

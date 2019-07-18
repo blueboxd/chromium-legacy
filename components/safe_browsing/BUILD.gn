@@ -26,6 +26,12 @@ proto_library("realtimeapi_proto") {
   ]
 }
 
+proto_library("webprotect_proto") {
+  sources = [
+    "proto/webprotect.proto",
+  ]
+}
+
 source_set("safe_browsing") {
   sources = [
     "base_blocking_page.cc",

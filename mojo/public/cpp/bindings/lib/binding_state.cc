@@ -119,6 +119,8 @@ void BindingStateBase::BindInternal(
       router_->CreateLocalEndpointHandle(kMasterInterfaceId), stub,
       std::move(request_validator), has_sync_methods,
       std::move(sequenced_runner), interface_version, interface_name));
+  endpoint_client_->SetIdleTrackingEnabledCallback(
+      base::BindOnce(&MultiplexRouter::SetConnectionGroup, router_));
 
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
   MakeBindingRandomlyPaused(base::SequencedTaskRunnerHandle::Get(),

@@ -273,7 +273,6 @@
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot',
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
-      'Linux ARM': 'release_bot_arm',
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
@@ -1734,10 +1733,6 @@
 
     'release_bot': [
       'release_bot',
-    ],
-
-    'release_bot_arm': [
-      'release_bot', 'arm',
     ],
 
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [

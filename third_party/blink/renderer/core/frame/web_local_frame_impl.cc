@@ -2036,8 +2036,8 @@ void WebLocalFrameImpl::CommitNavigation(
   DCHECK(!navigation_params->url.ProtocolIs("javascript"));
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
-  GetFrame()->Loader().CommitNavigation(
-      std::move(navigation_params), std::move(extra_data));
+  GetFrame()->Loader().CommitNavigation(std::move(navigation_params),
+                                        std::move(extra_data));
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
@@ -2576,6 +2576,17 @@ void WebLocalFrameImpl::OnPortalActivated(
   if (debugger)
     debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
   event->DetachPortalIfNotAdopted();
+
+  // After dispatching the portalactivate event, we check to see if we need to
+  // cleanup the portal hosting the predecessor. If the portal was created,
+  // but wasn't inserted or activated, we destroy it.
+  HTMLPortalElement* portal_element =
+      DocumentPortals::From(*(GetFrame()->GetDocument()))
+          .GetPortal(portal_token);
+  if (portal_element && !portal_element->isConnected() &&
+      !portal_element->IsActivating()) {
+    portal_element->ConsumePortal();
+  }
 }
 
 void WebLocalFrameImpl::ForwardMessageFromHost(

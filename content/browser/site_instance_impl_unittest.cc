@@ -1402,4 +1402,43 @@ TEST_F(SiteInstanceTest, StartIsolatingSite) {
   policy->RemoveIsolatedOriginsForBrowserContext(*context());
 }
 
+TEST_F(SiteInstanceTest, CreateForURL) {
+  const GURL kNonIsolatedUrl("https://bar.com/");
+  const GURL kIsolatedUrl("https://isolated.com/");
+  const GURL kFileUrl("file:///C:/Downloads/");
+  const GURL kGuestUrl(std::string(kGuestScheme) + "://abc123/path");
+
+  ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
+      {url::Origin::Create(kIsolatedUrl)}, IsolatedOriginSource::TEST);
+
+  auto instance1 = SiteInstanceImpl::CreateForURL(context(), kNonIsolatedUrl);
+  auto instance2 = SiteInstanceImpl::CreateForURL(context(), kIsolatedUrl);
+  auto instance3 = SiteInstanceImpl::CreateForURL(context(), kFileUrl);
+  auto instance4 = SiteInstanceImpl::CreateForURL(context(), kGuestUrl);
+  auto instance5 =
+      SiteInstanceImpl::CreateForURL(context(), GURL(url::kAboutBlankURL));
+
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
+  } else {
+    EXPECT_FALSE(instance1->IsDefaultSiteInstance());
+    EXPECT_EQ(kNonIsolatedUrl, instance1->GetSiteURL());
+  }
+
+  EXPECT_FALSE(instance2->IsDefaultSiteInstance());
+  EXPECT_EQ(kIsolatedUrl, instance2->GetSiteURL());
+
+  EXPECT_FALSE(instance3->IsDefaultSiteInstance());
+  EXPECT_EQ(GURL("file:"), instance3->GetSiteURL());
+
+  EXPECT_FALSE(instance4->IsDefaultSiteInstance());
+  EXPECT_EQ(kGuestUrl, instance4->GetSiteURL());
+
+  // about:blank URLs generate a SiteInstance without the site URL set because
+  // ShouldAssignSiteForURL() returns false and the expectation is that the
+  // site URL will be set at a later time.
+  EXPECT_FALSE(instance5->IsDefaultSiteInstance());
+  EXPECT_FALSE(instance5->HasSite());
+}
+
 }  // namespace content

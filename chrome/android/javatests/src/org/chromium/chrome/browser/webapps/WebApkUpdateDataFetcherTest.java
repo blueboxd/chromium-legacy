@@ -103,7 +103,7 @@ public class WebApkUpdateDataFetcherTest {
         final WebApkUpdateDataFetcher fetcher = new WebApkUpdateDataFetcher();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             WebApkInfo oldInfo = WebApkInfo.create("", "", scopeUrl, null, null, null, null, null,
-                    -1, -1, -1, -1, -1, -1, "random.package", -1, manifestUrl, "",
+                    -1, -1, -1, -1, -1, -1, false, "random.package", -1, manifestUrl, "",
                     WebApkInfo.WebApkDistributor.BROWSER, new HashMap<String, String>(), null,
                     null /*shareTargetActivityName*/, false /* forceNavigation */,
                     false /* isSplashProvidedByWebApk */, null /* shareData */);

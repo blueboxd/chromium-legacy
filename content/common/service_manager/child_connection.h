@@ -59,9 +59,6 @@ class CONTENT_EXPORT ChildConnection {
   // functional until this is called.
   void SetProcess(base::Process process);
 
-  // Instructs the child process to crash immediately.
-  void ForceCrash();
-
  private:
   class IOThreadContext;
 

@@ -19,22 +19,23 @@
 
 namespace {
 
-class ScopedEnableMetricsConsent {
+class ScopedSetMetricsConsent {
  public:
-  ScopedEnableMetricsConsent() {
+  // Enables or disables metrics consent based off of |consent|.
+  explicit ScopedSetMetricsConsent(bool consent) : consent_(consent) {
     ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
-        &enable_metrics_consent_);
+        &consent_);
   }
 
-  ~ScopedEnableMetricsConsent() {
+  ~ScopedSetMetricsConsent() {
     ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
         nullptr);
   }
 
  private:
-  const bool enable_metrics_consent_ = true;
+  const bool consent_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedEnableMetricsConsent);
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetMetricsConsent);
 };
 
 class HatsServiceBrowserTestBase : public InProcessBrowserTest {
@@ -57,7 +58,9 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
     return HatsServiceFactory::GetForProfile(browser()->profile(), true);
   }
 
-  void EnableMetricsConsent() { enable_metrics_consent_.emplace(); }
+  void SetMetricsConsent(bool consent) {
+    scoped_metrics_consent_.emplace(consent);
+  }
 
   bool HatsDialogShowRequested() { return hats_dialog_show_requested_; }
 
@@ -71,7 +74,7 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
 
   bool hats_dialog_show_requested_ = false;
   base::ActionCallback on_hats_dialog_show_;
-  base::Optional<ScopedEnableMetricsConsent> enable_metrics_consent_;
+  base::Optional<ScopedSetMetricsConsent> scoped_metrics_consent_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsServiceBrowserTestBase);
 };
@@ -143,6 +146,7 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, NoShowConsentNotGiven) {
+  SetMetricsConsent(false);
   ASSERT_FALSE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
   GetHatsService()->LaunchSatisfactionSurvey();
@@ -150,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, NoShowConsentNotGiven) {
 }
 
 IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
-  EnableMetricsConsent();
+  SetMetricsConsent(true);
   ASSERT_TRUE(
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
   GetHatsService()->LaunchSatisfactionSurvey();

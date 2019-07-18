@@ -111,6 +111,7 @@ double CSSNumericLiteralValue::ComputeDotsPerPixel() const {
 
 double CSSNumericLiteralValue::ComputeLengthPx(
     const CSSToLengthConversionData& conversion_data) const {
+  DCHECK(IsLength());
   return conversion_data.ZoomedComputedPixels(num_, GetType());
 }
 

@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkManager.ItemsAdapter;
+import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -190,7 +191,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
             mPromoHeaderManager.setupPersonalizedSigninPromo(view);
         } else if (!(holder.getItemViewType() == ViewType.SYNC_PROMO)) {
             BookmarkRow row = ((BookmarkRow) holder.itemView);
-            row.setBookmarkId(getIdByPosition(position));
+            row.setBookmarkId(getIdByPosition(position), getLocationFromPosition(position));
             row.setDragHandleOnTouchListener((v, event) -> {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                     mItemTouchHelper.startDrag(holder);
@@ -315,6 +316,40 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         setBookmarks(result);
     }
 
+    @Override
+    public void moveUpOne(BookmarkId bookmarkId) {
+        int pos = getPositionForBookmark(bookmarkId);
+        mElements.remove(pos);
+        mElements.add(pos - 1, mDelegate.getModel().getBookmarkById(bookmarkId));
+        setOrder(mElements);
+    }
+
+    @Override
+    public void moveDownOne(BookmarkId bookmarkId) {
+        int pos = getPositionForBookmark(bookmarkId);
+        mElements.remove(pos);
+        mElements.add(pos + 1, mDelegate.getModel().getBookmarkById(bookmarkId));
+        setOrder(mElements);
+    }
+
+    @Override
+    public void moveToTop(BookmarkId bookmarkId) {
+        int pos = getPositionForBookmark(bookmarkId);
+        mElements.remove(pos);
+        mElements.add(
+                getBookmarkItemStartIndex(), mDelegate.getModel().getBookmarkById(bookmarkId));
+        setOrder(mElements);
+    }
+
+    @Override
+    public void moveToBottom(BookmarkId bookmarkId) {
+        int pos = getPositionForBookmark(bookmarkId);
+        mElements.remove(pos);
+        mElements.add(
+                getBookmarkItemEndIndex() + 1, mDelegate.getModel().getBookmarkById(bookmarkId));
+        setOrder(mElements);
+    }
+
     private void updateHeader() {
         if (mDelegate == null) return;
 
@@ -324,7 +359,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         // Reset the promo header and get rid of the Promo Header placeholder inside of mElements.
         if (hasPromoHeader()) {
             mElements.remove(0);
-            mPromoHeaderType = -1;
+            mPromoHeaderType = ViewType.INVALID_PROMO;
         }
 
         if (currentUIState == BookmarkUIState.STATE_SEARCHING) return;
@@ -382,19 +417,27 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         assert mDelegate.getCurrentState()
                 == BookmarkUIState.STATE_FOLDER : "Can only reorder items from folder mode!";
 
-        // Check for a promo header.
-        int startIndex = hasPromoHeader() ? 1 : 0;
-        // Check for partner bookmarks folder.
-        int endIndex = mElements.size() - 1;
-        if (!mElements.get(endIndex).isEditable()) {
-            endIndex--;
-        }
+        int startIndex = getBookmarkItemStartIndex();
+        int endIndex = getBookmarkItemEndIndex();
+
         // Get the new order for the IDs.
         long[] newOrder = new long[endIndex - startIndex + 1];
         for (int i = startIndex; i <= endIndex; i++) {
             newOrder[i - startIndex] = bookmarkItems.get(i).getId().getId();
         }
         mDelegate.getModel().reorderBookmarks(mCurrentFolder, newOrder);
+    }
+
+    private int getBookmarkItemStartIndex() {
+        return hasPromoHeader() ? 1 : 0;
+    }
+
+    private int getBookmarkItemEndIndex() {
+        int endIndex = mElements.size() - 1;
+        if (!mElements.get(endIndex).isEditable()) {
+            endIndex--;
+        }
+        return endIndex;
     }
 
     private boolean isOrderable(BookmarkItem bItem) {
@@ -422,5 +465,15 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
 
     private boolean hasPromoHeader() {
         return mPromoHeaderType != ViewType.INVALID_PROMO;
+    }
+
+    private @Location int getLocationFromPosition(int position) {
+        if (position == getBookmarkItemStartIndex()) {
+            return Location.TOP;
+        } else if (position == getBookmarkItemEndIndex()) {
+            return Location.BOTTOM;
+        } else {
+            return Location.MIDDLE;
+        }
     }
 }

@@ -86,6 +86,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
     @Feature({"BackgroundSync"})
     public void testLaunchBrowserIfStopped() {
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
+                BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
                 /* shouldLaunch= */ true,
                 /* minDelayMs= */ ONE_DAY_IN_MILLISECONDS);
         verify(mTaskScheduler, times(1))
@@ -120,6 +121,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
     @Feature({"BackgroundSync"})
     public void testCancelOneShotTask() {
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
+                BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
                 /* shouldLaunch= */ true,
                 /* minDelayMs= */ ONE_DAY_IN_MILLISECONDS);
         verify(mTaskScheduler, times(1))
@@ -162,6 +164,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
     @Feature({"BackgroundSync"})
     public void testLaunchBrowserCalledTwice() {
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
+                BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
                 /* shouldLaunch= */ true,
                 /* minDelayMs= */ ONE_DAY_IN_MILLISECONDS);
         verify(mTaskScheduler, times(1))
@@ -171,6 +174,7 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
         assertEquals(ONE_DAY_IN_MILLISECONDS, taskInfo.getOneOffInfo().getWindowStartTimeMs());
 
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
+                BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
                 /* shouldLaunch= */ true,
                 /* minDelayMs= */ ONE_WEEK_IN_MILLISECONDS);
         verify(mTaskScheduler, times(1))
@@ -206,9 +210,11 @@ public class BackgroundSyncBackgroundTaskSchedulerTest {
     @Feature({"BackgroundSync"})
     public void testLaunchBrowserThenCancel() {
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
+                BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
                 /* shouldLaunch= */ true,
                 /* minDelayMs= */ ONE_DAY_IN_MILLISECONDS);
         BackgroundSyncBackgroundTaskScheduler.getInstance().launchBrowserIfStopped(
+                BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP,
                 /* shouldLaunch= */ false,
                 /* minDelayMs= */ ONE_DAY_IN_MILLISECONDS);
 

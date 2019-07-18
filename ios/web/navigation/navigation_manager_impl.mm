@@ -511,9 +511,6 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   item->SetReferrer(referrer);
   item->SetTransitionType(transition);
   item->SetNavigationInitiationType(initiation_type);
-  if (!wk_navigation_util::URLNeedsUserAgentType(loaded_url)) {
-    item->SetUserAgentType(web::UserAgentType::NONE);
-  }
 
   return item;
 }
@@ -523,8 +520,10 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
   for (int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
        index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
-    if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL()))
+    if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL())) {
+      DCHECK_NE(item->GetUserAgentType(), UserAgentType::NONE);
       return item;
+    }
   }
   return nullptr;
 }

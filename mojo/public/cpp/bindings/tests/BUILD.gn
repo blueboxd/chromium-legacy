@@ -23,6 +23,7 @@ source_set("tests") {
     "equals_unittest.cc",
     "handle_passing_unittest.cc",
     "hash_unittest.cc",
+    "idle_tracking_unittest.cc",
     "lazy_serialization_unittest.cc",
     "map_unittest.cc",
     "message_queue.cc",
@@ -133,6 +134,7 @@ mojom("test_mojom") {
   testonly = true
   sources = [
     "connection_group_unittest.test-mojom",
+    "idle_tracking_unittest.test-mojom",
   ]
 
   support_lazy_serialization = true

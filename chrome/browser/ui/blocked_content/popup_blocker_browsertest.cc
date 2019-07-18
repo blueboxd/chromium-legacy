@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history_test_utils.h"
@@ -56,6 +55,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -155,15 +155,15 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 
   void NavigateAndCheckPopupShown(const GURL& url,
                                   WhatToExpect what_to_expect) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter tab_added(browser());
+    ui_test_utils::BrowserAddedObserver browser_added;
     ui_test_utils::NavigateToURL(browser(), url);
-    observer.Wait();
 
     if (what_to_expect == kExpectPopup) {
+      browser_added.WaitForSingleNewBrowser();
       ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
     } else {
+      tab_added.Wait();
       ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
       ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
@@ -214,9 +214,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     // And no new RVH created.
     EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
 
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter tab_add(browser);
     ui_test_utils::BrowserAddedObserver browser_observer;
 
     // Launch the blocked popup.
@@ -230,7 +228,6 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     std::map<int32_t, GURL>::const_iterator iter = blocked_requests.begin();
     popup_blocker_helper->ShowBlockedPopup(iter->first, disposition);
 
-    observer.Wait();
     Browser* new_browser;
     if (what_to_expect == kExpectPopup || what_to_expect == kExpectNewWindow) {
       new_browser = browser_observer.WaitForSingleNewBrowser();
@@ -238,6 +235,7 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
       if (what_to_expect == kExpectNewWindow)
         EXPECT_TRUE(new_browser->is_type_tabbed());
     } else {
+      tab_add.Wait();
       new_browser = browser;
       EXPECT_EQ(2, browser->tab_strip_model()->count());
       int expected_active_tab =
@@ -719,9 +717,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
       "/popup_blocker/popup-simulated-click-on-anchor.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  content::WindowedNotificationObserver wait_for_new_tab(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
 
   bool command = false;
 #if defined(OS_MACOSX)
@@ -731,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
   SimulateKeyPress(tab, ui::DomKey::ENTER, ui::DomCode::ENTER, ui::VKEY_RETURN,
                    !command, false, false, command);
 
-  wait_for_new_tab.Wait();
+  tab_add.Wait();
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
@@ -748,9 +744,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, TapGestureWithCtrlKey) {
       "/popup_blocker/popup-simulated-click-on-anchor2.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  content::WindowedNotificationObserver wait_for_new_tab(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
 
 #if defined(OS_MACOSX)
   unsigned modifiers = blink::WebInputEvent::kMetaKey;
@@ -759,7 +753,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, TapGestureWithCtrlKey) {
 #endif
   content::SimulateTapWithModifiersAt(tab, modifiers, gfx::Point(350, 250));
 
-  wait_for_new_tab.Wait();
+  tab_add.Wait();
 
   ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   ASSERT_EQ(2, browser()->tab_strip_model()->count());

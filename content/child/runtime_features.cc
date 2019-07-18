@@ -256,6 +256,10 @@ void SetIndividualRuntimeFeatures(
       "FontSrcLocalMatching",
       base::FeatureList::IsEnabled(features::kFontSrcLocalMatching));
 
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "LegacyWindowsDWriteFontFallback",
+      base::FeatureList::IsEnabled(features::kLegacyWindowsDWriteFontFallback));
+
   if (command_line.HasSwitch(switches::kDisableBackgroundTimerThrottling))
     WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(false);
 

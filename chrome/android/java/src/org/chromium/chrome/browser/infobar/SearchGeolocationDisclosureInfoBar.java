@@ -57,7 +57,7 @@ public class SearchGeolocationDisclosureInfoBar extends InfoBar {
     @CalledByNative
     private static void showSettingsPage(String searchUrl) {
         Context context = ContextUtils.getApplicationContext();
-        PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class,
+        PreferencesLauncher.launchSettingsPageCompat(context, SingleWebsitePreferences.class,
                 SingleWebsitePreferences.createFragmentArgsForSite(searchUrl));
     }
 }

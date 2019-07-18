@@ -133,11 +133,11 @@ void ChildProcessHostImpl::BindInterface(
 void ChildProcessHostImpl::RunService(
     const std::string& service_name,
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  child_control_->RunService(service_name, std::move(receiver));
+  child_process_->RunService(service_name, std::move(receiver));
 }
 
 void ChildProcessHostImpl::ForceShutdown() {
-  child_control_->ProcessShutdown();
+  child_process_->ProcessShutdown();
 }
 
 void ChildProcessHostImpl::CreateChannelMojo() {
@@ -166,12 +166,15 @@ bool ChildProcessHostImpl::InitChannel() {
   // may be unable to properly fulfill the BindInterface() call. Instead we bind
   // here since the |delegate_| has already been initialized and this is the
   // first potential use of the interface.
-  content::BindInterface(this, &child_control_);
+  mojo::Remote<mojom::ChildProcess> bootstrap;
+  content::BindInterface(
+      this,
+      mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
 
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   bool enabled = IPC::Logging::GetInstance()->Enabled();
-  child_control_->SetIPCLoggingEnabled(enabled);
+  child_process_->SetIPCLoggingEnabled(enabled);
 #endif
 
   opening_channel_ = true;

@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_read_only.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_point.h"
@@ -563,6 +564,17 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(static_cast<uint32_t>(index * 2 +
                                       transferables_->readable_streams.size() +
                                       transferables_->writable_streams.size()));
+    return true;
+  }
+  if (wrapper_type_info == V8DOMException::GetWrapperTypeInfo()) {
+    DOMException* exception = wrappable->ToImpl<DOMException>();
+    WriteTag(kDOMExceptionTag);
+    WriteUTF8String(exception->name());
+    WriteUTF8String(exception->message());
+    // We may serialize the stack property in the future, so we store a null
+    // string in order to avoid future scheme changes.
+    String stack_unused;
+    WriteUTF8String(stack_unused);
     return true;
   }
   return false;

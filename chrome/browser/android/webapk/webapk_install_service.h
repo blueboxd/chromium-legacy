@@ -70,6 +70,7 @@ class WebApkInstallService : public KeyedService {
   void InstallAsync(content::WebContents* web_contents,
                     const ShortcutInfo& shortcut_info,
                     const SkBitmap& primary_icon,
+                    bool is_primary_icon_maskable,
                     const SkBitmap& badge_icon,
                     WebappInstallSource install_source);
 

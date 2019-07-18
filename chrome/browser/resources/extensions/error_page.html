@@ -51,7 +51,6 @@
         height: 40px;
         margin-bottom: 30px;
         padding: 8px 12px 0;
-        @apply --cr-title-text;
       }
 
       #heading span {
@@ -95,7 +94,6 @@
       }
 
       .details-heading {
-        @apply --cr-title-text;
         align-items: center;
         display: flex;
         height: var(--cr-section-min-height);
@@ -138,7 +136,7 @@
     </style>
     <div class="page-container" id="container">
       <div class="page-content">
-        <div id="heading">
+        <div id="heading" class="cr-title-text">
           <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
               aria-label="$i18n{back}" on-click="onCloseButtonTap_">
           </cr-icon-button>
@@ -176,14 +174,14 @@
                   <div class="devtools-controls">
                     <template is="dom-if"
                         if="[[computeIsRuntimeError_(item)]]">
-                      <div class="details-heading">
+                      <div class="details-heading cr-title-text">
                         $i18n{errorContext}
                       </div>
                       <span class="context-url">
                         [[getContextUrl_(
                             item, '$i18nPolymer{errorContextUnknown}')]]
                       </span>
-                      <div class="details-heading">
+                      <div class="details-heading cr-title-text">
                         $i18n{stackTrace}
                       </div>
                       <ul class="stack-trace-container"

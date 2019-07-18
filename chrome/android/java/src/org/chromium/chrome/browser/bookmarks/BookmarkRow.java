@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
+import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
@@ -17,6 +18,10 @@ import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.bookmarks.BookmarkId;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,6 +35,16 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     protected BookmarkId mBookmarkId;
     private boolean mIsAttachedToWindow;
     private final boolean mReorderBookmarksEnabled;
+    @Location
+    private int mLocation;
+
+    @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Location {
+        int TOP = 0;
+        int MIDDLE = 1;
+        int BOTTOM = 2;
+    }
 
     /**
      * Constructor for inflating from XML.
@@ -43,6 +58,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
      * Updates this row for the given {@link BookmarkId}.
      * @return The {@link BookmarkItem} corresponding the given {@link BookmarkId}.
      */
+    // TODO(crbug.com/160194): Clean up these 2 functions after bookmark reordering launches.
     BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
         mBookmarkId = bookmarkId;
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
@@ -53,6 +69,19 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
         super.setItem(bookmarkId);
         return bookmarkItem;
+    }
+
+    /**
+     * Sets the bookmark ID for this BookmarkRow and provides information about its location
+     * within the list of bookmarks.
+     *
+     * @param bookmarkId The BookmarkId that this BookmarkRow now contains.
+     * @param location The location of this BookmarkRow.
+     * @return The BookmarkItem corresponding to BookmarkId.
+     */
+    BookmarkItem setBookmarkId(BookmarkId bookmarkId, @Location int location) {
+        mLocation = location;
+        return setBookmarkId(bookmarkId);
     }
 
     private void updateVisualState() {
@@ -108,10 +137,28 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
             BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
             if (bookmarkItem != null) canMove = bookmarkItem.isMovable();
         }
-        return new Item[] {new Item(getContext(), R.string.bookmark_item_select, true),
-                new Item(getContext(), R.string.bookmark_item_edit, true),
-                new Item(getContext(), R.string.bookmark_item_move, canMove),
-                new Item(getContext(), R.string.bookmark_item_delete, true)};
+
+        ArrayList<Item> menuItems = new ArrayList<>(
+                Arrays.asList(new Item(getContext(), R.string.bookmark_item_select, true),
+                        new Item(getContext(), R.string.bookmark_item_edit, true),
+                        new Item(getContext(), R.string.bookmark_item_move, canMove),
+                        new Item(getContext(), R.string.bookmark_item_delete, true)));
+        if (mReorderBookmarksEnabled
+                && mDelegate.getCurrentState() == BookmarkUIState.STATE_FOLDER) {
+            if (mLocation != Location.TOP) {
+                menuItems.add(new Item(getContext(), R.string.menu_item_move_up, true));
+            }
+            if (mLocation != Location.BOTTOM) {
+                menuItems.add(new Item(getContext(), R.string.menu_item_move_down, true));
+            }
+            if (mLocation != Location.TOP) {
+                menuItems.add(new Item(getContext(), R.string.menu_item_move_to_top, true));
+            }
+            if (mLocation != Location.BOTTOM) {
+                menuItems.add(new Item(getContext(), R.string.menu_item_move_to_bottom, true));
+            }
+        }
+        return menuItems.toArray(new Item[menuItems.size()]);
     }
 
     @Override
@@ -119,6 +166,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
         if (item.getTextId() == R.string.bookmark_item_select) {
             setChecked(mDelegate.getSelectionDelegate().toggleSelectionForItem(mBookmarkId));
             RecordUserAction.record("Android.BookmarkPage.SelectFromMenu");
+
         } else if (item.getTextId() == R.string.bookmark_item_edit) {
             BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
             if (bookmarkItem.isFolder()) {
@@ -127,13 +175,24 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
             } else {
                 BookmarkUtils.startEditActivity(getContext(), bookmarkItem.getId());
             }
+
         } else if (item.getTextId() == R.string.bookmark_item_move) {
             BookmarkFolderSelectActivity.startFolderSelectActivity(getContext(), mBookmarkId);
+
         } else if (item.getTextId() == R.string.bookmark_item_delete) {
             if (mDelegate != null && mDelegate.getModel() != null) {
                 mDelegate.getModel().deleteBookmarks(mBookmarkId);
                 RecordUserAction.record("Android.BookmarkPage.RemoveItem");
             }
+
+        } else if (item.getTextId() == R.string.menu_item_move_up) {
+            mDelegate.moveUpOne(mBookmarkId);
+        } else if (item.getTextId() == R.string.menu_item_move_down) {
+            mDelegate.moveDownOne(mBookmarkId);
+        } else if (item.getTextId() == R.string.menu_item_move_to_top) {
+            mDelegate.moveToTop(mBookmarkId);
+        } else if (item.getTextId() == R.string.menu_item_move_to_bottom) {
+            mDelegate.moveToBottom(mBookmarkId);
         }
     }
 

@@ -723,7 +723,7 @@ source_set("common") {
     "//components/about_ui",
     "//components/autofill/android:provider",
     "//components/autofill/content/browser",
-    "//components/autofill/content/common/mojom",
+    "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/content/renderer",
     "//components/cdm/browser",
     "//components/cdm/renderer",

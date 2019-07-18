@@ -91,7 +91,7 @@ class InterfacePtr {
             scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
     reset();
     if (info.is_valid())
-      internal_state_.Bind(std::move(info), std::move(runner));
+      internal_state_.Bind(info.internal_state(), std::move(runner));
   }
 
   // Returns whether or not this InterfacePtr is bound to a message pipe.

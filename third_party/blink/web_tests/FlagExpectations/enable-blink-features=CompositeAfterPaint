@@ -547,6 +547,10 @@ crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Timeout ]
 crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
+crbug.com/985388 fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
+crbug.com/985388 virtual/scroll_customization/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
+crbug.com/985388 virtual/threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
+
 # Added to land BGPT-fix
 crbug.com/979002 virtual/fractional_scrolling_threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 crbug.com/979002 virtual/threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]

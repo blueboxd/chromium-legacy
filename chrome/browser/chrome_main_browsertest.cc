@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -16,7 +15,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 
@@ -46,11 +44,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
-  content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
   Relaunch(new_command_line);
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   GURL url = net::FilePathToFileURL(test_file_path);
   content::WebContents* tab =
@@ -111,11 +106,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
       base::FilePath(), base::FilePath().AppendASCII("empty.html"));
   base::CommandLine new_command_line(GetCommandLineForRelaunch());
   new_command_line.AppendArgPath(test_file_path);
-  content::WindowedNotificationObserver tab_observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
   Relaunch(new_command_line);
-  tab_observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   // There should be one normal and one incognito window now.
   ASSERT_EQ(2u, chrome::GetTotalBrowserCount());

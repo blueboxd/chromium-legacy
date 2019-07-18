@@ -467,8 +467,7 @@ mojom("mojo_bindings") {
 
   sources = [
     "associated_interfaces.mojom",
-    "child.mojom",
-    "child_control.mojom",
+    "child_process.mojom",
     "document_scoped_interface_bundle.mojom",
     "download/mhtml_file_writer.mojom",
     "field_trial_recorder.mojom",
@@ -491,7 +490,6 @@ mojom("mojo_bindings") {
     "render_message_filter.mojom",
     "renderer.mojom",
     "renderer_host.mojom",
-    "service_control.mojom",
     "widget.mojom",
   ]
 

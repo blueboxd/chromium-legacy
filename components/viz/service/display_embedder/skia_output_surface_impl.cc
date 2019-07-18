@@ -61,7 +61,20 @@ base::RepeatingCallback<void(Args...)> CreateSafeCallback(
 
 }  // namespace
 
+// static
+std::unique_ptr<SkiaOutputSurface> SkiaOutputSurfaceImpl::Create(
+    std::unique_ptr<SkiaOutputSurfaceDependency> deps,
+    const RendererSettings& renderer_settings) {
+  auto output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
+      util::PassKey<SkiaOutputSurfaceImpl>(), std::move(deps),
+      renderer_settings);
+  if (!output_surface->Initialize())
+    output_surface = nullptr;
+  return output_surface;
+}
+
 SkiaOutputSurfaceImpl::SkiaOutputSurfaceImpl(
+    util::PassKey<SkiaOutputSurfaceImpl> /* pass_key */,
     std::unique_ptr<SkiaOutputSurfaceDependency> deps,
     const RendererSettings& renderer_settings)
     : dependency_(std::move(deps)),
@@ -113,14 +126,6 @@ void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
-
-  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::InitializeOnGpuThread,
-                                 base::Unretained(this), &event);
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
-  event.Wait();
 }
 
 void SkiaOutputSurfaceImpl::BindFramebuffer() {
@@ -513,7 +518,21 @@ void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
-void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
+bool SkiaOutputSurfaceImpl::Initialize() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  bool result = false;
+  auto callback = base::BindOnce(&SkiaOutputSurfaceImpl::InitializeOnGpuThread,
+                                 base::Unretained(this), &event, &result);
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+  event.Wait();
+  return result;
+}
+
+void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event,
+                                                  bool* result) {
   base::Optional<base::ScopedClosureRunner> scoped_runner;
   if (event) {
     scoped_runner.emplace(
@@ -532,10 +551,15 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event) {
       base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
   context_lost_callback =
       CreateSafeCallback(dependency_.get(), context_lost_callback);
-  impl_on_gpu_ = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
+  impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
       dependency_.get(), renderer_settings_, did_swap_buffer_complete_callback,
       buffer_presented_callback, context_lost_callback);
-  capabilities_ = impl_on_gpu_->capabilities();
+  if (!impl_on_gpu_) {
+    *result = false;
+  } else {
+    capabilities_ = impl_on_gpu_->capabilities();
+    *result = true;
+  }
 }
 
 SkSurfaceCharacterization

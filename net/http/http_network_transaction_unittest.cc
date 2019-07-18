@@ -20202,7 +20202,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_proxy1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_proxy1.cert_request_info = cert_request_info_proxy.get();
   ssl_proxy1.expected_send_client_cert = false;
-  ssl_proxy1.expected_false_start_enabled = true;
   StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
@@ -20212,8 +20211,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
   ssl_proxy2.expected_send_client_cert = true;
   ssl_proxy2.expected_client_cert = identity_proxy->certificate();
-  // Proxy connections with client certs disable False Start.
-  ssl_proxy2.expected_false_start_enabled = false;
   // The client attempts an HTTP CONNECT, but the proxy requests basic auth.
   std::vector<MockWrite> mock_writes2;
   std::vector<MockRead> mock_reads2;
@@ -20236,9 +20233,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   // The origin requests client certificates.
   SSLSocketDataProvider ssl_origin2(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_origin2.cert_request_info = cert_request_info_origin.get();
-  // The origin connection is eligible for False Start, despite the proxy
-  // connection disabling it.
-  ssl_origin2.expected_false_start_enabled = true;
   StaticSocketDataProvider data2(mock_reads2, mock_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
@@ -20249,8 +20243,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_proxy3(ASYNC, OK);
   ssl_proxy3.expected_send_client_cert = true;
   ssl_proxy3.expected_client_cert = identity_proxy->certificate();
-  // Proxy connections with client certs disable False Start.
-  ssl_proxy3.expected_false_start_enabled = false;
   std::vector<MockWrite> mock_writes3;
   std::vector<MockRead> mock_reads3;
   mock_writes3.emplace_back(
@@ -20263,9 +20255,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_origin3(ASYNC, OK);
   ssl_origin3.expected_send_client_cert = true;
   ssl_origin3.expected_client_cert = identity_origin->certificate();
-  // The origin connection is eligible for False Start, despite the proxy
-  // connection disabling it.
-  ssl_origin3.expected_false_start_enabled = true;
   // The client sends the origin HTTP request, which results in another HTTP
   // auth request.
   mock_writes3.emplace_back(

@@ -768,13 +768,49 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   }
 
   if (allow_default_site_url &&
-      !base::FeatureList::IsEnabled(
-          features::kProcessSharingWithStrictSiteInstances) &&
-      SiteInstanceImpl::ShouldAssignSiteForURL(url) &&
-      !DoesSiteURLRequireDedicatedProcess(isolation_context, site_url)) {
+      CanBePlacedInDefaultSiteInstance(isolation_context, url, site_url)) {
     return GetDefaultSiteURL();
   }
   return site_url;
+}
+
+// static
+bool SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
+    const IsolationContext& isolation_context,
+    const GURL& url,
+    const GURL& site_url) {
+  // Exclude "chrome-guest:" URLs from the default SiteInstance to ensure that
+  // guest specific process selection, process swapping, and storage partition
+  // behavior is preserved.
+  if (url.SchemeIs(kGuestScheme))
+    return false;
+
+  // Exclude "file://" URLs from the default SiteInstance to prevent the
+  // default SiteInstance process from accumulating file access grants that
+  // could be exploited by other non-isolated sites.
+  if (url.SchemeIs(url::kFileScheme))
+    return false;
+
+  // Don't use the default SiteInstance when
+  // kProcessSharingWithStrictSiteInstances is enabled because we want each
+  // site to have its own SiteInstance object and logic elsewhere ensures
+  // that those SiteInstances share a process.
+  if (base::FeatureList::IsEnabled(
+          features::kProcessSharingWithStrictSiteInstances)) {
+    return false;
+  }
+
+  // Don't use the default SiteInstance when SiteInstance doesn't assign a
+  // site URL for |url|, since in that case the SiteInstance should remain
+  // unused, and a subsequent navigation should always be able to reuse it,
+  // whether or not it's to a site requiring a dedicated process or to a site
+  // that will use the default SiteInstance.
+  if (!ShouldAssignSiteForURL(url))
+    return false;
+
+  // Allow the default SiteInstance to be used for sites that don't need to be
+  // isolated in their own process.
+  return !DoesSiteURLRequireDedicatedProcess(isolation_context, site_url);
 }
 
 // static

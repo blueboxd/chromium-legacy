@@ -618,7 +618,7 @@ class Node(object):
         return grit.format.gzip_string.GzipStringRsyncable(data)
       return grit.format.gzip_string.GzipString(data)
 
-    elif self.attrs.get('compress') == 'brotli':
+    elif self.attrs.get('compress') in ('true', 'brotli'):
       # The length of the uncompressed data as 8 bytes little-endian.
       size_bytes = struct.pack("<q", len(data))
       data = brotli_util.BrotliCompress(data)

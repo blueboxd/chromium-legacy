@@ -266,7 +266,6 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               page_url,
-              GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer(),
               GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer()),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           traffic_annotation,

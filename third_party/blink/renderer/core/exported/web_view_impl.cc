@@ -1227,6 +1227,10 @@ void WebViewImpl::Close() {
   // means the main frame's WebWidget remains valid while the main frame is
   // being detached (and in particular while its unload handlers run).
   {
+    // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
+    // for a local main frame is going away.
+    scoped_defer_main_frame_update_ = nullptr;
+
     AsWidget().client = nullptr;
 
     if (does_composite_)
@@ -2013,6 +2017,9 @@ void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
     AsWidget().client->SetPageScaleStateAndLimits(
         viewport.Scale(), viewport.IsPinchGestureActive(),
         MinimumPageScaleFactor(), MaximumPageScaleFactor());
+    // Prevent main frame updates while the main frame is loading until enough
+    // progress is made and BeginMainFrames are explicitly asked for.
+    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
   }
 }
 
@@ -2020,6 +2027,10 @@ void WebViewImpl::DidAttachRemoteMainFrame(WebWidgetClient* client) {
   DCHECK(does_composite_);
   DCHECK(!MainFrameImpl());
   AsWidget().client = client;
+
+  // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
+  // for a local main frame is gone.
+  scoped_defer_main_frame_update_ = nullptr;
 }
 
 WebLocalFrame* WebViewImpl::FocusedFrame() {
@@ -3268,7 +3279,9 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
-    scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
+    // TODO(danakj): Since we do this in DidAttachLocalMainFrame() we don't need
+    // it here? Navs always go through there?
+    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
     AsWidget().client->SetRootLayer(nullptr);
     AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
   }
@@ -3285,7 +3298,9 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
     // This means that we're transitioning to a new page. Suppress
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
-    scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
+    // TODO(danakj): Since we do this in DidAttachLocalMainFrame() we don't need
+    // it here? Navs always go through there?
+    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
     AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
   }
 }
@@ -3320,10 +3335,6 @@ void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
 
   AsView().page->LayerTreeViewInitialized(*layer_tree_view_, *animation_host_,
                                           nullptr);
-  // We don't yet have a page loaded at this point of the initialization of
-  // WebViewImpl, so don't allow cc to commit any frames Blink might
-  // try to create in the meantime.
-  scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
@@ -3514,17 +3525,12 @@ int32_t WebViewImpl::AutoplayFlagsForTest() {
 }
 
 void WebViewImpl::DeferMainFrameUpdateForTesting() {
-  scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
+  scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
 }
 
-void WebViewImpl::StartDeferringCommits(base::TimeDelta timeout) {
-  if (layer_tree_view_)
-    layer_tree_view_->StartDeferringCommits(timeout);
-}
-
-void WebViewImpl::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
-  if (layer_tree_view_)
-    layer_tree_view_->StopDeferringCommits(trigger);
+void WebViewImpl::StopDeferringMainFrameUpdate() {
+  DCHECK(MainFrameImpl());
+  scoped_defer_main_frame_update_ = nullptr;
 }
 
 }  // namespace blink

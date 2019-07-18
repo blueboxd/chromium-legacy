@@ -39,7 +39,7 @@ SkIRect MakeSrcRect(const PaintImage& image) {
 size_t PaintOpWriter::GetFlattenableSize(const SkFlattenable* flattenable) {
   // The first bit is always written to indicate the serialized size of the
   // flattenable, or zero if it doesn't exist.
-  size_t total_size = sizeof(uint64_t) + alignof(uint64_t);
+  size_t total_size = sizeof(uint64_t) + sizeof(uint64_t) /* alignment */;
   if (!flattenable)
     return total_size;
 
@@ -60,7 +60,7 @@ size_t PaintOpWriter::GetImageSize(const PaintImage& image) {
     image_size += sizeof(info.colorType());
     image_size += sizeof(info.width());
     image_size += sizeof(info.height());
-    image_size += sizeof(uint64_t) + alignof(uint64_t);
+    image_size += sizeof(uint64_t) + sizeof(uint64_t) /* alignment */;
     image_size += info.computeMinByteSize();
   }
   return image_size;

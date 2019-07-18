@@ -123,6 +123,8 @@ class WebThemeEngine {
   struct SliderExtraParams {
     bool vertical;
     bool in_drag;
+    int thumb_x;
+    int thumb_y;
   };
 
   // Extra parameters for PartInnerSpinButton

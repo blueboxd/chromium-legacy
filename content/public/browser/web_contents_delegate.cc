@@ -146,6 +146,10 @@ std::unique_ptr<BluetoothChooser> WebContentsDelegate::RunBluetoothChooser(
   return nullptr;
 }
 
+std::unique_ptr<SmsDialog> WebContentsDelegate::CreateSmsDialog() {
+  return nullptr;
+}
+
 std::unique_ptr<BluetoothScanningPrompt>
 WebContentsDelegate::ShowBluetoothScanningPrompt(
     RenderFrameHost* frame,

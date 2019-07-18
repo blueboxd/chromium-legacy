@@ -17,6 +17,7 @@
 
 namespace content {
 struct FileChooserParams;
+class SmsDialog;
 class WebContents;
 }
 
@@ -43,6 +44,7 @@ class TabWebContentsDelegateAndroid
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
       content::RenderFrameHost* frame,
       const content::BluetoothChooser::EventHandler& event_handler) override;
+  std::unique_ptr<content::SmsDialog> CreateSmsDialog() override;
   std::unique_ptr<content::BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
       content::RenderFrameHost* frame,
       const content::BluetoothScanningPrompt::EventHandler& event_handler)

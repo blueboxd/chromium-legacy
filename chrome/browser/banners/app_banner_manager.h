@@ -322,6 +322,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // The primary icon object.
   SkBitmap primary_icon_;
 
+  // Whether or not the primary icon is maskable.
+  bool has_maskable_primary_icon_;
+
   // The current banner pipeline state for this page load.
   State state_;
 

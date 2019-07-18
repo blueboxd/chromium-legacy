@@ -69,6 +69,15 @@ void HTMLPortalElement::Trace(Visitor* visitor) {
   visitor->Trace(portal_frame_);
 }
 
+void HTMLPortalElement::ConsumePortal() {
+  if (portal_token_) {
+    DocumentPortals::From(GetDocument()).OnPortalRemoved(this);
+    portal_token_ = base::UnguessableToken();
+  }
+  remote_portal_.reset();
+  portal_client_receiver_.reset();
+}
+
 void HTMLPortalElement::Navigate() {
   KURL url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
   if (!remote_portal_ || url.IsEmpty())
@@ -91,15 +100,6 @@ void HTMLPortalElement::Navigate() {
       KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
 
   remote_portal_->Navigate(url, std::move(mojo_referrer));
-}
-
-void HTMLPortalElement::ConsumePortal() {
-  if (portal_token_) {
-    DocumentPortals::From(GetDocument()).OnPortalRemoved(this);
-    portal_token_ = base::UnguessableToken();
-  }
-  remote_portal_.reset();
-  portal_client_receiver_.reset();
 }
 
 namespace {

@@ -147,7 +147,6 @@ source_set("str_format_internal") {
     ":strings",
     "../base:config",
     "../base:core_headers",
-    "../container:inlined_vector",
     "../meta:type_traits",
     "../numeric:int128",
     "../types:span",

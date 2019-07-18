@@ -167,6 +167,11 @@ static void GetNativeThemeExtraParams(
           extra_params->menu_list.background_color;
       break;
     case WebThemeEngine::kPartSliderTrack:
+      native_theme_extra_params->slider.thumb_x = extra_params->slider.thumb_x;
+      native_theme_extra_params->slider.thumb_y = extra_params->slider.thumb_y;
+      FALLTHROUGH;
+      // vertical and in_drag properties are used by both slider track and
+      // slider thumb.
     case WebThemeEngine::kPartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;

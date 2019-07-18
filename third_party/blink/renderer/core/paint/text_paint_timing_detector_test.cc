@@ -6,6 +6,8 @@
 
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/trace_event_analyzer.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -15,25 +17,38 @@
 namespace blink {
 
 class TextPaintTimingDetectorTest
-    : public RenderingTest,
+    : public testing::Test,
       private ScopedFirstContentfulPaintPlusPlusForTest {
  public:
   TextPaintTimingDetectorTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        ScopedFirstContentfulPaintPlusPlusForTest(true) {}
+      : ScopedFirstContentfulPaintPlusPlusForTest(true),
+        test_task_runner_(
+            base::MakeRefCounted<base::TestMockTimeTaskRunner>()) {}
+
   void SetUp() override {
-    RenderingTest::SetUp();
-    RenderingTest::EnableCompositing();
-    test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+    web_view_helper_.Initialize();
+    WebLocalFrameImpl& frame_impl = *web_view_helper_.LocalMainFrame();
+    frame_impl.ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
+
+    frame_test_helpers::LoadFrame(
+        web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
+    // Enable compositing on the page.
+    web_view_helper_.GetWebView()
+        ->GetPage()
+        ->GetSettings()
+        .SetAcceleratedCompositingEnabled(true);
+    GetDocument().View()->SetParentVisible(true);
+    GetDocument().View()->SetSelfVisible(true);
     // Advance clock so it isn't 0 as rendering code asserts in that case.
     AdvanceClock(base::TimeDelta::FromMicroseconds(1));
   }
 
  protected:
-  LocalFrameView& GetFrameView() { return *GetFrame().View(); }
+  LocalFrameView& GetFrameView() { return *GetFrame()->View(); }
   PaintTimingDetector& GetPaintTimingDetector() {
     return GetFrameView().GetPaintTimingDetector();
   }
+  Document& GetDocument() { return *GetFrame()->GetDocument(); }
 
   IntRect GetViewportRect(LocalFrameView& view) {
     ScrollableArea* scrollable_area = view.GetScrollableArea();
@@ -41,7 +56,12 @@ class TextPaintTimingDetectorTest
     return scrollable_area->VisibleContentRect();
   }
 
-  LocalFrameView& GetChildFrameView() { return *ChildFrame().View(); }
+  LocalFrameView& GetChildFrameView() {
+    return *To<LocalFrame>(GetFrame()->Tree().FirstChild())->View();
+  }
+  Document* GetChildDocument() {
+    return To<LocalFrame>(GetFrame()->Tree().FirstChild())->GetDocument();
+  }
 
   TextPaintTimingDetector* GetTextPaintTimingDetector() {
     return GetPaintTimingDetector().GetTextPaintTimingDetector();
@@ -95,9 +115,28 @@ class TextPaintTimingDetectorTest
     return GetPaintTimingDetector().largest_text_paint_time_;
   }
 
+  void SetBodyInnerHTML(const std::string& content) {
+    frame_test_helpers::LoadHTMLString(
+        web_view_helper_.GetWebView()->MainFrameImpl(), content,
+        KURL("http://test.com"));
+    UpdateAllLifecyclePhases();
+  }
+
+  void SetChildBodyInnerHTML(const String& content) {
+    GetChildDocument()->SetBaseURLOverride(KURL("http://test.com"));
+    GetChildDocument()->body()->SetInnerHTMLFromString(content,
+                                                       ASSERT_NO_EXCEPTION);
+    UpdateAllLifecyclePhases();
+  }
+
+  void UpdateAllLifecyclePhases() {
+    GetDocument().View()->UpdateAllLifecyclePhases(
+        DocumentLifecycle::LifecycleUpdateReason::kTest);
+  }
+
   // This only triggers ReportSwapTime in main frame.
   void UpdateAllLifecyclePhasesAndSimulateSwapTime() {
-    UpdateAllLifecyclePhasesForTest();
+    UpdateAllLifecyclePhases();
     TextPaintTimingDetector* detector =
         GetPaintTimingDetector().GetTextPaintTimingDetector();
     if (detector &&
@@ -177,7 +216,14 @@ class TextPaintTimingDetectorTest
     test_task_runner_->FastForwardBy(delta);
   }
 
+  void LoadAhem() { web_view_helper_.LoadAhem(); }
+
  private:
+  LocalFrame* GetFrame() {
+    return web_view_helper_.GetWebView()->MainFrameImpl()->GetFrame();
+  }
+
+  frame_test_helpers::WebViewHelper web_view_helper_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
 };
 
@@ -257,7 +303,7 @@ TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_TraceEvent_NoCandidate) {
     Element* element = AppendDivElementToBody("text");
     UpdateAllLifecyclePhasesAndSimulateSwapTime();
     RemoveElement(element);
-    UpdateAllLifecyclePhasesForTest();
+    UpdateAllLifecyclePhases();
   }
   auto analyzer = trace_analyzer::Stop();
   trace_analyzer::TraceEventVector events;
@@ -318,7 +364,7 @@ TEST_F(TextPaintTimingDetectorTest, NodeRemovedBeforeAssigningSwapTime) {
       <div id="remove">The only text</div>
     </div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
+  UpdateAllLifecyclePhases();
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("remove"));
   InvokeCallback();
@@ -655,8 +701,8 @@ TEST_F(TextPaintTimingDetectorTest, Iframe) {
   SetBodyInnerHTML(R"HTML(
     <iframe width=100px height=100px></iframe>
   )HTML");
-  SetChildFrameHTML("A");
-  UpdateAllLifecyclePhasesForTest();
+  SetChildBodyInnerHTML("A");
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 1u);
   ChildFrameSwapTimeCallBack();
   base::WeakPtr<TextRecord> text = ChildFrameTextRecordOfLargestTextPaint();
@@ -667,14 +713,14 @@ TEST_F(TextPaintTimingDetectorTest, Iframe_ClippedByViewport) {
   SetBodyInnerHTML(R"HTML(
     <iframe width=100px height=100px></iframe>
   )HTML");
-  SetChildFrameHTML(R"HTML(
+  SetChildBodyInnerHTML(R"HTML(
     <style>
       #d { margin-top: 200px }
     </style>
     <div id='d'>text</div>
   )HTML");
   DCHECK_EQ(GetViewportRect(GetChildFrameView()).Height(), 100);
-  UpdateAllLifecyclePhasesForTest();
+  UpdateAllLifecyclePhases();
   EXPECT_EQ(CountPendingSwapTime(GetChildFrameView()), 0u);
 }
 

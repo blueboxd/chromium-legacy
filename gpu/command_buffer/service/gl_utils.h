@@ -13,6 +13,7 @@
 
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
@@ -155,6 +156,9 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
 GLenum GetTextureBindingQuery(GLenum texture_type);
 
 gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform);
+
+bool GetGFXBufferFormat(GLenum internal_format, gfx::BufferFormat* out_format);
+bool GetGFXBufferUsage(GLenum buffer_usage, gfx::BufferUsage* out_usage);
 
 }  // namespace gles2
 }  // namespace gpu

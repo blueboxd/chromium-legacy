@@ -69,6 +69,13 @@ void SliderThumbElement::SetPositionFromValue() {
   if (GetLayoutObject()) {
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kSliderValueChanged);
+    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+      HTMLInputElement* input(HostInput());
+      if (input && input->GetLayoutObject()) {
+        // the slider track selected value needs to be updated.
+        input->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+      }
+    }
   }
 }
 
@@ -160,10 +167,7 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
   // FIXME: This is no longer being set from renderer. Consider updating the
   // method name.
   input->SetValueFromRenderer(value_string);
-  if (GetLayoutObject()) {
-    GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
-        layout_invalidation_reason::kSliderValueChanged);
-  }
+  SetPositionFromValue();
 }
 
 void SliderThumbElement::StartDragging() {

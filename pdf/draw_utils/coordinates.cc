@@ -17,6 +17,39 @@ void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
   doc_size->Enlarge(width_diff, rect_size.height());
 }
 
+pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
+                         const PageInsetSizes& inset_sizes,
+                         int vertical_separator) {
+  DCHECK_GE(page_rect.x(), inset_sizes.left);
+
+  return pp::Rect(0, page_rect.y() - inset_sizes.top,
+                  page_rect.x() - inset_sizes.left,
+                  page_rect.height() + inset_sizes.top + inset_sizes.bottom +
+                      vertical_separator);
+}
+
+pp::Rect GetRightFillRect(const pp::Rect& page_rect,
+                          const PageInsetSizes& inset_sizes,
+                          int doc_width,
+                          int vertical_separator) {
+  int right_gap_x = page_rect.right() + inset_sizes.right;
+  DCHECK_GE(doc_width, right_gap_x);
+
+  return pp::Rect(right_gap_x, page_rect.y() - inset_sizes.top,
+                  doc_width - right_gap_x,
+                  page_rect.height() + inset_sizes.top + inset_sizes.bottom +
+                      vertical_separator);
+}
+
+pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
+                           const PageInsetSizes& inset_sizes,
+                           int vertical_separator) {
+  return pp::Rect(page_rect.x() - inset_sizes.left,
+                  page_rect.bottom() + inset_sizes.bottom,
+                  page_rect.width() + inset_sizes.left + inset_sizes.right,
+                  vertical_separator);
+}
+
 pp::Rect GetScreenRect(const pp::Rect& rect,
                        const pp::Point& position,
                        double zoom) {

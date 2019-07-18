@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
+#include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -56,7 +57,7 @@ class PendingRemote {
   // Constructs a valid PendingRemote over a valid raw message pipe handle and
   // expected interface version number.
   PendingRemote(ScopedMessagePipeHandle pipe, uint32_t version)
-      : pipe_(std::move(pipe)), version_(version) {}
+      : state_(std::move(pipe), version) {}
 
   ~PendingRemote() = default;
 
@@ -65,7 +66,7 @@ class PendingRemote {
   // Indicates whether the PendingRemote is valid, meaning it can be used to
   // bind a Remote that wants to begin issuing method calls to be dispatched by
   // the entangled Receiver.
-  bool is_valid() const { return pipe_.is_valid(); }
+  bool is_valid() const { return state_.pipe.is_valid(); }
   explicit operator bool() const { return is_valid(); }
 
   // Temporary helper for transitioning away from old bindings types. This is
@@ -77,23 +78,20 @@ class PendingRemote {
   // Resets this PendingRemote to an invalid state. If it was entangled with a
   // Receiver or PendingReceiver, that object remains in a valid state and will
   // eventually detect that its remote caller is gone.
-  void reset() {
-    pipe_.reset();
-    version_ = 0;
-  }
+  void reset() { state_.reset(); }
 
   // Takes ownership of this PendingRemote's message pipe handle. After this
   // call, the PendingRemote is no longer in a valid state and can no longer be
   // used to bind a Remote.
   ScopedMessagePipeHandle PassPipe() WARN_UNUSED_RESULT {
-    version_ = 0;
-    return std::move(pipe_);
+    state_.version = 0;
+    return std::move(state_.pipe);
   }
 
   // The version of the interface this Remote is assuming when making method
   // calls. For the most common case of unversioned mojom interfaces, this is
   // always zero.
-  uint32_t version() const { return version_; }
+  uint32_t version() const { return state_.version; }
 
   // Creates a new message pipe, retaining one end in the PendingRemote (making
   // it valid) and returning the other end as its entangled PendingReceiver. May
@@ -102,13 +100,15 @@ class PendingRemote {
       WARN_UNUSED_RESULT {
     DCHECK(!is_valid()) << "PendingRemote already has a receiver";
     MessagePipe pipe;
-    pipe_ = std::move(pipe.handle0);
+    state_.pipe = std::move(pipe.handle0);
     return PendingReceiver<Interface>(std::move(pipe.handle1));
   }
 
+  // For internal Mojo use only.
+  internal::PendingRemoteState* internal_state() { return &state_; }
+
  private:
-  ScopedMessagePipeHandle pipe_;
-  uint32_t version_ = 0;
+  internal::PendingRemoteState state_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingRemote);
 };

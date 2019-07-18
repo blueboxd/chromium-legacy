@@ -24,10 +24,10 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
 
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
 
 namespace gl {
 namespace init {
@@ -90,7 +90,7 @@ bool InitializeStaticCGLInternal(GLImplementation implementation) {
   return true;
 }
 
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
 const char kGLESv2ANGLELibraryName[] = "libGLESv2.dylib";
 const char kEGLANGLELibraryName[] = "libEGL.dylib";
 
@@ -159,7 +159,7 @@ bool InitializeStaticEGLInternal(GLImplementation implementation) {
 
   return true;
 }
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
 
 }  // namespace
 
@@ -173,7 +173,7 @@ bool InitializeGLOneOffPlatform() {
         return false;
       }
       return true;
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
@@ -182,7 +182,7 @@ bool InitializeGLOneOffPlatform() {
         return false;
       }
       return true;
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
     default:
       return true;
   }
@@ -205,12 +205,12 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
       return InitializeStaticCGLInternal(implementation);
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
       return InitializeStaticEGLInternal(implementation);
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // #if defined(USE_EGL)
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       SetGLImplementation(implementation);
@@ -229,9 +229,9 @@ void InitializeDebugGLBindings() {
 
 void ShutdownGLPlatform() {
   ClearBindingsGL();
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
   ClearBindingsEGL();
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
 }
 
 }  // namespace init

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -151,6 +152,36 @@ class Remote {
         std::move(handler));
   }
 
+  // Sets a Closure to be invoked if the receiving endpoint reports itself as
+  // idle and there are no in-flight messages it has yet to acknowledge, and
+  // this state occurs continuously for a duration of at least |timeout|. The
+  // first time this is called, it must be called BEFORE sending any interface
+  // messages to the receiver. It may be called any number of times after that
+  // to reconfigure the idle timeout period or assign a new idle handler.
+  //
+  // Once called, the interface connection incurs some permanent additional
+  // per-message overhead to help track idle state across the interface
+  // boundary.
+  //
+  // Whenever this callback is invoked, the following conditions are guaranteed
+  // to hold:
+  //
+  //   - There are no messages sent on this Remote that have not already been
+  //     dispatched by the receiver.
+  //   - The receiver has explicitly notified us that it considers itself to be
+  //     "idle."
+  //   - The receiver has not dispatched any additional messages since sending
+  //     this idle notification
+  //   - The Remote does not have any outstanding reply callbacks that haven't
+  //     been called yet
+  //   - All of the above has been true continuously for a duration of at least
+  //     |timeout|.
+  //
+  void set_idle_handler(base::TimeDelta timeout,
+                        base::RepeatingClosure handler) {
+    internal_state_.set_idle_handler(timeout, std::move(handler));
+  }
+
   // Resets this Remote to an unbound state. To reset the Remote and recover an
   // PendingRemote that can be bound again later, use |Unbind()| instead.
   void reset() {
@@ -213,8 +244,7 @@ class Remote {
       return;
     }
 
-    internal_state_.Bind(InterfacePtrInfo<Interface>(pending_remote.PassPipe(),
-                                                     pending_remote.version()),
+    internal_state_.Bind(pending_remote.internal_state(),
                          std::move(task_runner));
 
     // Force the internal state to configure its proxy. Unlike InterfacePtr we
@@ -268,6 +298,12 @@ class Remote {
   // complete.
   void FlushAsyncForTesting(base::OnceClosure callback) {
     internal_state_.FlushAsyncForTesting(std::move(callback));
+  }
+
+  // Returns the number of unacknowledged messages sent by this Remote. Only
+  // non-zero when |set_idle_handler()| has been called.
+  unsigned int GetNumUnackedMessagesForTesting() const {
+    return internal_state_.GetNumUnackedMessagesForTesting();
   }
 
   // DO NOT USE. Exposed only for internal use and for testing.

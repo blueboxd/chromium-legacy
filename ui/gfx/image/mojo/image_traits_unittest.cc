@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -63,7 +63,7 @@ class ImageTraitsTest : public testing::Test,
     std::move(callback).Run(in);
   }
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<ImageTraitsTestService> bindings_;
   mojom::ImageTraitsTestServicePtr service_;
 

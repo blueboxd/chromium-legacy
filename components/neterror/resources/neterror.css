@@ -93,6 +93,10 @@ a {
   margin-top: 15px;
 }
 
+#suggestions-list a {
+  color: var(--google-blue-600);
+}
+
 #suggestions-list p {
   margin-block-end: 0;
 }
@@ -1011,6 +1015,10 @@ whereas Blink does not. */
 
   .offline.inverted body {
     background-color: #fff;
+  }
+
+  #suggestions-list a {
+    color: var(--link-color);
   }
 
   #error-information-button {

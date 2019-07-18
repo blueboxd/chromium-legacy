@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
@@ -129,8 +130,8 @@ bool ShellContentUtilityClient::HandleServiceRequest(
 void ShellContentUtilityClient::RunIOThreadService(
     mojo::GenericPendingReceiver* receiver) {
   if (auto echo_receiver = receiver->As<echo::mojom::EchoService>()) {
-    mojo::MakeSelfOwnedReceiver(std::make_unique<echo::EchoService>(),
-                                std::move(echo_receiver));
+    static base::NoDestructor<echo::EchoService> service(
+        std::move(echo_receiver));
     return;
   }
 }

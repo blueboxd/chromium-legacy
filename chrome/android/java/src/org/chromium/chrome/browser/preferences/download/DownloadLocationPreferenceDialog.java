@@ -21,7 +21,7 @@ public class DownloadLocationPreferenceDialog extends PreferenceDialogFragmentCo
             DownloadLocationPreference preference) {
         DownloadLocationPreferenceDialog fragment = new DownloadLocationPreferenceDialog();
         Bundle bundle = new Bundle(1);
-        bundle.putString("key", preference.getKey());
+        bundle.putString(PreferenceDialogFragmentCompat.ARG_KEY, preference.getKey());
         fragment.setArguments(bundle);
         return fragment;
     }

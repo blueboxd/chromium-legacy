@@ -184,8 +184,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   };
 
   AndroidSmsAppSetupControllerImplTest()
-      : thread_bundle_(
-            content::TestBrowserThreadBundle::MainThreadType::UI_MOCK_TIME),
+      : thread_bundle_(content::TestBrowserThreadBundle::TimeSource::MOCK_TIME),
         host_content_settings_map_(
             HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
 

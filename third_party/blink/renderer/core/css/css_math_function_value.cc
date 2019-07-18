@@ -68,6 +68,9 @@ double CSSMathFunctionValue::ComputeDegrees() const {
 
 double CSSMathFunctionValue::ComputeLengthPx(
     const CSSToLengthConversionData& conversion_data) const {
+  // |CSSToLengthConversionData| only resolves relative length units, but not
+  // percentages.
+  DCHECK_EQ(kCalcLength, expression_->Category());
   return ClampToPermittedRange(expression_->ComputeLengthPx(conversion_data));
 }
 

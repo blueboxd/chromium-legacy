@@ -276,9 +276,7 @@ void MediaController::SetMediaSession(AudioFocusRequest* session) {
   });
 
   // Add |this| as an observer for |session|.
-  mojo::PendingRemote<mojom::MediaSessionObserver> observer;
-  session_binding_.Bind(observer.InitWithNewPipeAndPassReceiver());
-  session->ipc()->AddObserver(std::move(observer));
+  session->ipc()->AddObserver(session_receiver_.BindNewPipeAndPassRemote());
 }
 
 void MediaController::ClearMediaSession() {
@@ -320,7 +318,7 @@ void MediaController::CleanupImageObservers() {
 
 void MediaController::Reset() {
   session_ = nullptr;
-  session_binding_.Close();
+  session_receiver_.reset();
   session_info_.reset();
   session_metadata_.reset();
   session_actions_.clear();

@@ -12,15 +12,21 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/wm/desks/desks_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/template_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "base/traits_bag.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/env.h"
 #include "ui/display/display.h"
+#include "ui/events/test/event_generator.h"
 
 namespace aura {
 class Window;
@@ -50,12 +56,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace ui {
-namespace test {
-class EventGenerator;
-}
-}  // namespace ui
-
 namespace views {
 class Widget;
 class WidgetDelegate;
@@ -64,7 +64,6 @@ class WidgetDelegate;
 namespace ash {
 
 class AppListTestHelper;
-class AshTestHelper;
 class Shelf;
 class TestScreenshotDelegate;
 class TestSystemTrayClient;
@@ -73,7 +72,22 @@ class WorkAreaInsets;
 
 class AshTestBase : public testing::Test {
  public:
-  AshTestBase();
+  // Constructs an AshTestBase with |traits| being forwarded to its
+  // ScopedTaskEnvironment. MainThreadType always defaults to UI and must not be
+  // specified.
+  template <typename... ScopedTaskEnvironmentTraits>
+  explicit AshTestBase(ScopedTaskEnvironmentTraits... traits)
+      : scoped_task_environment_(
+            base::in_place,
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            traits...) {}
+
+  // Alternatively a subclass may pass this tag to ask this AshTestBase not to
+  // instantiate a ScopedTaskEnvironment. The subclass is then responsible to
+  // instantiate one before AshTestBase::SetUp().
+  struct SubclassManagesTaskEnvironment {};
+  AshTestBase(SubclassManagesTaskEnvironment tag);
+
   ~AshTestBase() override;
 
   // testing::Test:
@@ -88,10 +102,6 @@ class AshTestBase : public testing::Test {
 
   // Returns WorkAreaInsets for the primary display.
   static WorkAreaInsets* GetPrimaryWorkAreaInsets();
-
-  // AshTestBase creates a ScopedTaskEnvironment. This may not be appropriate in
-  // some environments. Use this to destroy it.
-  void DestroyScopedTaskEnvironment();
 
   // Update the display configuration as given in |display_specs|.
   // See ash::DisplayManagerTestApi::UpdateDisplay for more details.
@@ -189,7 +199,7 @@ class AshTestBase : public testing::Test {
   void set_start_session(bool start_session) { start_session_ = start_session; }
   void disable_provide_local_state() { provide_local_state_ = false; }
 
-  AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+  AshTestHelper* ash_test_helper() { return &ash_test_helper_; }
 
   TestScreenshotDelegate* GetScreenshotDelegate();
 
@@ -261,10 +271,25 @@ class AshTestBase : public testing::Test {
   // |SetUp()| doesn't inject local-state PrefService into Shell if this is
   // set to false.
   bool provide_local_state_ = true;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
-  std::unique_ptr<AshTestHelper> ash_test_helper_;
+
+  // Must be initialized at construction because some tests rely on AshTestBase
+  // methods before AshTestBase::SetUp().
+  AshTestHelper ash_test_helper_;
+
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
+  // protected so it can be accesssed by test subclasses to drive the task
+  // environment.
+ protected:
+  // |scoped_task_environment_| is initialized-once at construction time but
+  // subclasses may elect to provide their own. Declare it last to ensure its
+  // initialization/destruction semantics are identical in the
+  // SubclassManagesTaskEnvironment mode.
+  base::Optional<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+
+  // Private again for DISALLOW_COPY_AND_ASSIGN; additional members should be
+  // added in the first private section to be before |scoped_task_environment_|.
+ private:
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };
 

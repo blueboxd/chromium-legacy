@@ -678,6 +678,20 @@ cc::EventListenerProperties TestWebWidgetClient::EventListenerProperties(
   return layer_tree_host()->event_listener_properties(event_class);
 }
 
+std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+TestWebWidgetClient::DeferMainFrameUpdate() {
+  return layer_tree_host()->DeferMainFrameUpdate();
+}
+
+void TestWebWidgetClient::StartDeferringCommits(base::TimeDelta timeout) {
+  layer_tree_host()->StartDeferringCommits(timeout);
+}
+
+void TestWebWidgetClient::StopDeferringCommits(
+    cc::PaintHoldingCommitTrigger trigger) {
+  layer_tree_host()->StopDeferringCommits(trigger);
+}
+
 void TestWebWidgetClient::RegisterViewportLayers(
     const cc::ViewportLayers& layers) {
   layer_tree_host()->RegisterViewportLayers(layers);

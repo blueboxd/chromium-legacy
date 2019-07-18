@@ -56,6 +56,10 @@ class BASE_EXPORT ThreadGroupNative : public ThreadGroup {
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+  // Updates the minimum priority allowed to run below which tasks should yield,
+  // based on task sources in |priority_queue_|.
+  void UpdateMinAllowedPriorityLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   // Returns the top TaskSource off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.
   RunIntentWithRegisteredTaskSource GetWork();

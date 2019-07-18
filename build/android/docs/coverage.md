@@ -1,13 +1,13 @@
 # Android code coverage instructions
 
 These are instructions for collecting code coverage data for android
-instrumentation and junit tests.
+instrumentation and JUnit tests.
 
 [TOC]
 
-## How Jacoco coverage works
+## How JaCoCo coverage works
 
-In order to use Jacoco code coverage, we need to create build time pre-instrumented
+In order to use JaCoCo code coverage, we need to create build time pre-instrumented
 class files and runtime **.exec** files. Then we need to process them using the
 **build/android/generate_jacoco_report.py** script.
 
@@ -23,15 +23,15 @@ class files and runtime **.exec** files. Then we need to process them using the
    Now when building, pre-instrumented files will be created in the build directory.
 
 2. Run tests, with option `--coverage-dir <directory>`, to specify where to save
-   the .exec file. For example, you can run chrome junit tests:
+   the .exec file. For example, you can run chrome JUnit tests:
    `out/Debug/bin/run_chrome_junit_tests --coverage-dir /tmp/coverage`.
 
-3. The coverage results of junit and instrumentation tests will be merged
+3. The coverage results of JUnit and instrumentation tests will be merged
    automatically if they are in the same directory.
 
 ## How to generate coverage report
 
-1. Now we have generated .exec files already. We can create a Jacoco html/xml/csv
+1. Now we have generated .exec files already. We can create a JaCoCo HTML/XML/CSV
    report using `generate_jacoco_report.py`, for example:
 
   ```shell
@@ -52,8 +52,8 @@ class files and runtime **.exec** files. Then we need to process them using the
   [INFO] Analyzing 58 classes.
   ```
 
-   For xml and csv reports, we need to specify `--output-file` instead of `--output-dir` since
-   only one file will be generated as xml or csv report.
+2. For XML and CSV reports, we need to specify `--output-file` instead of `--output-dir` since
+   only one file will be generated as XML or CSV report.
   ```shell
   build/android/generate_jacoco_report.py \
     --format xml \
@@ -71,17 +71,3 @@ class files and runtime **.exec** files. Then we need to process them using the
     --coverage-dir /tmp/coverage/ \
     --sources-json-dir out/Debug/ \
   ```
-
-2. We can also generate JSON format report for
-   [coverage tool](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/code_coverage.md)
-   created by Chrome Ops - CATS team.
-   In this case, we need to change `--format` to json, for example:
-
-  ```shell
-  build/android/generate_jacoco_report.py \
-    --format json \
-    --output-file tmp/coverage_report/coverage.json \
-    --coverage-dir /tmp/coverage/ \
-    --sources-json-dir out/Debug/ \
-  ```
-

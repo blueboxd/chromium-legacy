@@ -7,7 +7,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,6 +69,9 @@ class FakeContentPasswordManagerDriver : public mojom::PasswordManagerDriver {
   }
 
   void UserModifiedPasswordField() override {}
+
+  void UserModifiedNonPasswordField(uint32_t renderer_id,
+                                    const base::string16& value) override {}
 
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override {}

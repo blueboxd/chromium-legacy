@@ -231,6 +231,10 @@ class TestWebWidgetClient : public WebWidgetClient {
       cc::EventListenerProperties properties) override;
   cc::EventListenerProperties EventListenerProperties(
       cc::EventListenerClass event_class) const override;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
+      override;
+  void StartDeferringCommits(base::TimeDelta timeout) override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {

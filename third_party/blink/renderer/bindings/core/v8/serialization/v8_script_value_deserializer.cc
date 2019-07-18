@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -558,6 +559,15 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         return nullptr;
 
       return MakeGarbageCollected<TransformStream>(readable, writable);
+    }
+    case kDOMExceptionTag: {
+      // See the serialization side for |stack_unused|.
+      String name, message, stack_unused;
+      if (!ReadUTF8String(&name) || !ReadUTF8String(&message) ||
+          !ReadUTF8String(&stack_unused)) {
+        return nullptr;
+      }
+      return DOMException::Create(name, message);
     }
     default:
       break;

@@ -1027,16 +1027,20 @@ void CupsPrintersHandler::UpdateDiscoveredPrinters() {
     return;
   }
 
-  std::unique_ptr<base::ListValue> printers_list =
+  std::unique_ptr<base::ListValue> automatic_printers_list =
       std::make_unique<base::ListValue>();
   for (const Printer& printer : automatic_printers_) {
-    printers_list->Append(GetCupsPrinterInfo(printer));
-  }
-  for (const Printer& printer : discovered_printers_) {
-    printers_list->Append(GetCupsPrinterInfo(printer));
+    automatic_printers_list->Append(GetCupsPrinterInfo(printer));
   }
 
-  FireWebUIListener("on-printer-discovered", *printers_list);
+  std::unique_ptr<base::ListValue> discovered_printers_list =
+      std::make_unique<base::ListValue>();
+  for (const Printer& printer : discovered_printers_) {
+    discovered_printers_list->Append(GetCupsPrinterInfo(printer));
+  }
+
+  FireWebUIListener("on-nearby-printers-changed", *automatic_printers_list,
+                    *discovered_printers_list);
 }
 
 void CupsPrintersHandler::HandleAddDiscoveredPrinter(

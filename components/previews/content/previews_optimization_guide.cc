@@ -4,7 +4,6 @@
 
 #include "components/previews/content/previews_optimization_guide.h"
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -49,80 +48,6 @@ constexpr base::TimeDelta kFetchRetryDelay = base::TimeDelta::FromMinutes(15);
 constexpr base::TimeDelta kUpdateFetchedHintsDelay =
     base::TimeDelta::FromHours(24);
 
-// Hints are purged during startup if the explicit purge switch exists or if
-// a proto override is being used--in which case the hints need to come from the
-// override instead.
-bool ShouldPurgeHintCacheStoreOnStartup() {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  return cmd_line->HasSwitch(
-             optimization_guide::switches::kHintsProtoOverride) ||
-         cmd_line->HasSwitch(
-             optimization_guide::switches::kPurgeHintCacheStore);
-}
-
-// Available hint components are only processed if a proto override isn't being
-// used; otherwise, the hints from the proto override are used instead.
-bool IsHintComponentProcessingDisabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      optimization_guide::switches::kHintsProtoOverride);
-}
-
-// Attempts to parse a base64 encoded Optimization Guide Configuration proto
-// from the command line. If no proto is given or if it is encoded incorrectly,
-// nullptr is returned.
-std::unique_ptr<optimization_guide::proto::Configuration>
-ParseHintsProtoFromCommandLine() {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(optimization_guide::switches::kHintsProtoOverride))
-    return nullptr;
-
-  std::string b64_pb = cmd_line->GetSwitchValueASCII(
-      optimization_guide::switches::kHintsProtoOverride);
-
-  std::string binary_pb;
-  if (!base::Base64Decode(b64_pb, &binary_pb)) {
-    LOG(ERROR) << "Invalid base64 encoding of the Hints Proto Override";
-    return nullptr;
-  }
-
-  std::unique_ptr<optimization_guide::proto::Configuration>
-      proto_configuration =
-          std::make_unique<optimization_guide::proto::Configuration>();
-  if (!proto_configuration->ParseFromString(binary_pb)) {
-    LOG(ERROR) << "Invalid proto provided to the Hints Proto Override";
-    return nullptr;
-  }
-
-  return proto_configuration;
-}
-
-// Parses a list of hosts to have hints fetched for. This overrides scheduling
-// of the first hints fetch and forces it to occur immediately. If no hosts are
-// provided, nullopt is returned.
-base::Optional<std::vector<std::string>>
-ParseHintsFetchOverrideFromCommandLine() {
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(optimization_guide::switches::kFetchHintsOverride))
-    return base::nullopt;
-
-  std::string override_hosts_value = cmd_line->GetSwitchValueASCII(
-      optimization_guide::switches::kFetchHintsOverride);
-
-  std::vector<std::string> hosts =
-      base::SplitString(override_hosts_value, ",", base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_NONEMPTY);
-
-  if (hosts.size() == 0)
-    return base::nullopt;
-
-  return hosts;
-}
-
-bool ShouldOverrideFetchHintsTimer() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      optimization_guide::switches::kFetchHintsOverrideTimer);
-}
-
 // Provides a random time delta in seconds between |kFetchRandomMinDelay| and
 // |kFetchRandomMaxDelay|.
 base::TimeDelta RandomFetchDelay() {
@@ -158,7 +83,7 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
       url_loader_factory_(url_loader_factory) {
   DCHECK(optimization_guide_service_);
   hint_cache_->Initialize(
-      ShouldPurgeHintCacheStoreOnStartup(),
+      optimization_guide::switches::ShouldPurgeHintCacheStoreOnStartup(),
       base::BindOnce(&PreviewsOptimizationGuide::OnHintCacheInitialized,
                      ui_weak_ptr_factory_.GetWeakPtr()));
 }
@@ -278,7 +203,7 @@ void PreviewsOptimizationGuide::OnHintCacheInitialized() {
   // don't normally expect one, but if one is provided then use that and do not
   // register as an observer as the opt_guide service.
   std::unique_ptr<optimization_guide::proto::Configuration> manual_config =
-      ParseHintsProtoFromCommandLine();
+      optimization_guide::switches::ParseComponentConfigFromCommandLine();
   if (manual_config) {
     // Allow |UpdateHints| to block startup so that the first navigation gets
     // the hints when a command line hint proto is provided.
@@ -303,7 +228,7 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
   // Check for if hint component is disabled. This check is needed because the
   // optimization guide still registers with the service as an observer for
   // components as a signal during testing.
-  if (IsHintComponentProcessingDisabled()) {
+  if (optimization_guide::switches::IsHintComponentProcessingDisabled()) {
     return;
   }
 
@@ -326,7 +251,7 @@ void PreviewsOptimizationGuide::OnHintsComponentAvailable(
 
 void PreviewsOptimizationGuide::FetchHints() {
   base::Optional<std::vector<std::string>> top_hosts =
-      ParseHintsFetchOverrideFromCommandLine();
+      optimization_guide::switches::ParseHintsFetchOverrideFromCommandLine();
   if (!top_hosts) {
     top_hosts = top_host_provider_->GetTopHosts(
         optimization_guide::features::
@@ -420,8 +345,8 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
   if (!optimization_guide::features::IsHintsFetchingEnabled())
     return;
 
-  if (ParseHintsFetchOverrideFromCommandLine() ||
-      ShouldOverrideFetchHintsTimer()) {
+  if (optimization_guide::switches::ParseHintsFetchOverrideFromCommandLine() ||
+      optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
     // Skip the fetch scheduling logic and perform a hints fetch immediately
     // after initialization.
     SetLastHintsFetchAttemptTime(time_clock_->Now());

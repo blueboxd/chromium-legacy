@@ -5,7 +5,7 @@
 #ifndef CC_TEST_STUB_LAYER_TREE_HOST_CLIENT_H_
 #define CC_TEST_STUB_LAYER_TREE_HOST_CLIENT_H_
 
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 
 namespace cc {

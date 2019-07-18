@@ -163,10 +163,6 @@ enum class BackForwardNavigationType {
   // also contain a placeholder URL intended to be replaced.
   item->SetURL(URL);
   navigationContext->SetMimeType(MIMEType);
-  if (item->GetUserAgentType() == web::UserAgentType::NONE &&
-      URLNeedsUserAgentType(URL)) {
-    item->SetUserAgentType(web::UserAgentType::MOBILE);
-  }
 
   WKNavigation* navigation =
       [self.webView loadData:data

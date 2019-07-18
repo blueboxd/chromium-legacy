@@ -49,7 +49,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetParent() override;
 
   // Get the index in parent. Typically this is the AXNode's index_in_parent_.
-  int GetIndexInParent() const override;
+  int GetIndexInParent() override;
 
   // Get the number of children of this node.
   int GetChildCount() override;
@@ -265,6 +265,8 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // which they correspond.
   std::set<ui::AXPlatformNode*> GetNodesForNodeIds(
       const std::set<int32_t>& ids);
+
+  AXPlatformNodeDelegate* GetParentDelegate();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeDelegateBase);

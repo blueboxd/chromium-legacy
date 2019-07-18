@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -235,6 +237,18 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
   loader->DidChangePerformanceTiming();
 }
 
+void PaintTimingDetector::ConvertViewportToWindow(
+    WebFloatRect* float_rect) const {
+  WebLocalFrameImpl* web_frame =
+      WebLocalFrameImpl::FromFrame(&frame_view_->GetFrame());
+  // May be nullptr in some tests.
+  if (!web_frame)
+    return;
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  DCHECK(widget);
+  widget->Client()->ConvertViewportToWindow(float_rect);
+}
+
 FloatRect PaintTimingDetector::CalculateVisualRect(
     const IntRect& visual_rect,
     const PropertyTreeState& current_paint_chunk_properties) const {
@@ -247,9 +261,11 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
   GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,
                                             PropertyTreeState::Root(),
                                             float_clip_visual_rect);
-  FloatRect& float_visual_rect = float_clip_visual_rect.Rect();
-  if (frame_view_->GetFrame().LocalFrameRoot().IsMainFrame())
+  WebFloatRect float_visual_rect = float_clip_visual_rect.Rect();
+  if (frame_view_->GetFrame().LocalFrameRoot().IsMainFrame()) {
+    ConvertViewportToWindow(&float_visual_rect);
     return float_visual_rect;
+  }
   // OOPIF. The final rect lives in the iframe's root frame space. We need to
   // project it to the top frame space.
   auto layout_visual_rect = PhysicalRect::EnclosingRect(float_visual_rect);
@@ -257,7 +273,9 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
       .LocalFrameRoot()
       .View()
       ->MapToVisualRectInTopFrameSpace(layout_visual_rect);
-  return FloatRect(layout_visual_rect);
+  WebFloatRect float_rect = FloatRect(layout_visual_rect);
+  ConvertViewportToWindow(&float_rect);
+  return float_rect;
 }
 
 ScopedPaintTimingDetectorBlockPaintHook*

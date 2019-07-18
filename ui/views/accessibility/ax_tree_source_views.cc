@@ -104,7 +104,7 @@ bool AXTreeSourceViews::IsIgnored(AXAuraObjWrapper* node) const {
 }
 
 bool AXTreeSourceViews::IsValid(AXAuraObjWrapper* node) const {
-  return node && !node->IsIgnored();
+  return node;
 }
 
 bool AXTreeSourceViews::IsEqual(AXAuraObjWrapper* node1,

@@ -267,9 +267,13 @@ void ImagePaintTimingDetector::RecordImage(
           .CalculateVisualRect(visual_rect, current_paint_chunk_properties)
           .Size()
           .Area();
+  // Transform visual rect to window before calling downscale.
+  WebFloatRect float_visual_rect = FloatRect(visual_rect);
+  frame_view_->GetPaintTimingDetector().ConvertViewportToWindow(
+      &float_visual_rect);
   rect_size = DownScaleIfIntrinsicSizeIsSmaller(
-      rect_size, intrinsic_size.Area(), visual_rect.Size().Area());
-
+      rect_size, intrinsic_size.Area(),
+      float_visual_rect.width * float_visual_rect.height);
   if (rect_size == 0) {
     records_manager_.RecordInvisible(node_id);
   } else {

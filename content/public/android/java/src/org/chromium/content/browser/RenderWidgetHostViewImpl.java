@@ -61,6 +61,12 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
     }
 
     @Override
+    public void insetViewportBottom(int bottomAdjustPx) {
+        checkNotDestroyed();
+        nativeInsetViewportBottom(getNativePtr(), bottomAdjustPx);
+    }
+
+    @Override
     public void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback) {
         if (isDestroyed()) callback.onResult("RWHVA already destroyed!");
@@ -96,6 +102,8 @@ public class RenderWidgetHostViewImpl implements RenderWidgetHostView {
     private native void nativeDismissTextHandles(long nativeRenderWidgetHostViewAndroid);
     private native void nativeShowContextMenuAtTouchHandle(
             long nativeRenderWidgetHostViewAndroid, int x, int y);
+    private native void nativeInsetViewportBottom(
+            long nativeRenderWidgetHostViewAndroid, int bottomAdjustPx);
     private native void nativeWriteContentBitmapToDiskAsync(long nativeRenderWidgetHostViewAndroid,
             int width, int height, String path, Callback<String> callback);
 }

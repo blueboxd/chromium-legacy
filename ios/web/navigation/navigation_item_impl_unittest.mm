@@ -187,5 +187,27 @@ TEST_F(NavigationItemTest, GetTitleForDisplay) {
             base::UTF16ToUTF8(item_->GetTitleForDisplay()));
 }
 
+// Tests that SetURL correctly updates user agent type.
+TEST_F(NavigationItemTest, UpdateUserAgentType) {
+  ASSERT_EQ(UserAgentType::MOBILE, item_->GetUserAgentType());
+
+  // about:blank resets User Agent to NONE.
+  GURL no_user_agent_url(url::kAboutBlankURL);
+  ASSERT_FALSE(wk_navigation_util::URLNeedsUserAgentType(no_user_agent_url));
+  item_->SetURL(no_user_agent_url);
+  EXPECT_EQ(UserAgentType::NONE, item_->GetUserAgentType());
+
+  // Regular HTTP URL resets User Agent to MOBILE.
+  GURL user_agent_url(kItemURLString);
+  ASSERT_TRUE(wk_navigation_util::URLNeedsUserAgentType(user_agent_url));
+  item_->SetURL(user_agent_url);
+  EXPECT_EQ(UserAgentType::MOBILE, item_->GetUserAgentType());
+
+  // Regular HTTP URL does not reset DESKTOP User Agent to MOBILE.
+  item_->SetUserAgentType(UserAgentType::DESKTOP);
+  item_->SetURL(user_agent_url);
+  EXPECT_EQ(UserAgentType::DESKTOP, item_->GetUserAgentType());
+}
+
 }  // namespace
 }  // namespace web

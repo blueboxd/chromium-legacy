@@ -573,7 +573,12 @@ id<GREYMatcher> NavigationBarEditButton() {
   NSString* englishLanguageEntryLabel = [NSString
       stringWithFormat:kLanguageEntryThreeLabelsTemplate, kEnglishLabel,
                        kEnglishLabel, kNeverTranslateLabel];
-  id swipeAction = grey_swipeFastInDirection(kGREYDirectionLeft);
+
+  // swipeAction uses start point to stay small so that it works across
+  // devices on iOS13.
+  id swipeAction =
+      grey_swipeFastInDirectionWithStartPoint(kGREYDirectionLeft, 0.15, 0.15);
+
   [[EarlGrey selectElementWithMatcher:LanguageEntry(englishLanguageEntryLabel)]
       performAction:swipeAction];
 

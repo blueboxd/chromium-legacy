@@ -100,11 +100,13 @@ void APIBindingJSUtil::SendRequest(
   // TODO(devlin): We should ideally always be able to validate these, meaning
   // that we either need to make the APIs give us the expected signature, or
   // need to have a way of indicating an internal signature.
-  CHECK(signature->ConvertArgumentsIgnoringSchema(
-      context, request_args, &converted_arguments, &callback));
+  APISignature::JSONParseResult parse_result =
+      signature->ConvertArgumentsIgnoringSchema(context, request_args);
+  CHECK(parse_result.succeeded());
 
-  request_handler_->StartRequest(context, name, std::move(converted_arguments),
-                                 callback, custom_callback, thread);
+  request_handler_->StartRequest(
+      context, name, std::move(parse_result.arguments), parse_result.callback,
+      custom_callback, thread);
 }
 
 void APIBindingJSUtil::RegisterEventArgumentMassager(
@@ -321,11 +323,10 @@ void APIBindingJSUtil::ValidateCustomSignature(
     return;
   }
 
-  std::vector<v8::Local<v8::Value>> args_out;
-  std::string parse_error;
-  if (!signature->ParseArgumentsToV8(context, vector_arguments, *type_refs_,
-                                     &args_out, &parse_error)) {
-    arguments->ThrowTypeError(parse_error);
+  APISignature::V8ParseResult parse_result =
+      signature->ParseArgumentsToV8(context, vector_arguments, *type_refs_);
+  if (!parse_result.succeeded()) {
+    arguments->ThrowTypeError(std::move(*parse_result.error));
   }
 }
 

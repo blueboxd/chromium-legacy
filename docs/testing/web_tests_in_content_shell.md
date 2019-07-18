@@ -53,10 +53,12 @@ out/Default/content_shell --run-web-tests ~/test/temp-test.html
 ```
 
 By default, it dumps the text result only (as the dump of pixels and audio
-binary data is not human readable). This can meet the requirement of
-most debugging requirements.
+binary data is not human readable) and quits. This can meet the requirement of
+most debugging requirements. If you need to interactively debug the test page
+(e.g. using devtools), you'll need to run Content Shell [as a simple
+browser](#As-a-simple-browser).
 
-In rare cases, to run `content_shell` in the exact same way as
+In rare cases, to run Content Shell in the exact same way as
 `run_web_tests.py` runs it, you need to run it in the
 [protocol mode](../../content_shell/browser/web_test/test_info_extractor.h).
 
@@ -97,7 +99,13 @@ Then run the test:
 ```bash
 out/Default/content_shell --run-web-tests http://localhost:8001/<test>
 ```
-See [the blink-dev discussion](https://groups.google.com/a/chromium.org/forum/?utm_medium=email&utm_source=footer#!msg/blink-dev/iP_9ok1K1UM/F_qCmk5kDAAJ) for more details.
+
+If the test requires HTTPS (e.g. the file name contains ".https."), use the
+following command instead:
+
+```bash
+out/Default/content_shell --run-web-tests https://localhost:8444/<test>
+```
 
 ### As a simple browser
 
@@ -119,6 +127,21 @@ and open `http://localhost:9222` from another browser to inspect the page.
 This is useful when you don't want DevTools to run in the same Content Shell,
 e.g. when you are logging a lot and don't want the log from DevTools
 or when DevTools is unstable in the current revision due to some bugs.
+
+#### Debug WPT
+
+If you want to debug WPT with devtools in Content Shell, you will first need to
+start the server:
+
+```bash
+python third_party/blink/tools/run_blink_wptserve.py
+```
+
+Then start Content Shell with some additional flags:
+
+```bash
+out/Default/content_shell --enable-experimental-web-platform-features --ignore-certificate-errors --host-resolver-rules="MAP nonexistent.*.test ~NOTFOUND, MAP *.test. 127.0.0.1, MAP *.test 127.0.0.1"
+```
 
 ## Debugging
 

@@ -19,14 +19,12 @@ class FaviconServerFetcherParams {
       const GURL& page_url);
   static std::unique_ptr<FaviconServerFetcherParams> CreateForMobile(
       const GURL& page_url,
-      int min_source_size_in_pixel,
       int desired_size_in_pixel);
 
   ~FaviconServerFetcherParams();
 
   const GURL& page_url() const { return page_url_; }
   favicon_base::IconType icon_type() const { return icon_type_; }
-  int min_source_size_in_pixel() const { return min_source_size_in_pixel_; }
   int desired_size_in_pixel() const { return desired_size_in_pixel_; }
   const std::string& google_server_client_param() const {
     return google_server_client_param_;
@@ -35,13 +33,11 @@ class FaviconServerFetcherParams {
  private:
   FaviconServerFetcherParams(const GURL& page_url,
                              favicon_base::IconType icon_type,
-                             int min_source_size_in_pixel,
                              int desired_size_in_pixel,
                              const std::string& google_server_client_param);
 
   const GURL& page_url_;
   favicon_base::IconType icon_type_;
-  int min_source_size_in_pixel_;
   int desired_size_in_pixel_;
   std::string google_server_client_param_;
 

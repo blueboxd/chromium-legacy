@@ -439,9 +439,20 @@ std::unique_ptr<net::CanonicalCookie> MakeCookieFromProtocolValues(
       normalized_domain = source_url.host();
   }
 
-  GURL url = GURL((secure ? "https://" : "http://") + normalized_domain);
-  if (!normalized_domain.empty() && normalized_domain[0] != '.')
-    normalized_domain = "";
+  std::string url_host = normalized_domain;
+  if (!normalized_domain.empty()) {
+    // The value of |url_host| may have trickled down from a cookie domain,
+    // where leading periods are legal. However, since we want to use it as a
+    // URL host, we must the leading period if it exists.
+    if (normalized_domain[0] == '.')
+      url_host.erase(0, 1);
+    // If there is no leading period, clear out |normalized_domain|, but keep
+    // the value of |url_host|. CreateSanitizedCookie will determine the proper
+    // domain from the URL we construct with |url_host|.
+    else
+      normalized_domain = "";
+  }
+  GURL url = GURL((secure ? "https://" : "http://") + url_host);
 
   base::Time expiration_date;
   if (expires >= 0) {
@@ -2463,7 +2474,7 @@ void NetworkHandler::OnResponseReceivedExtraInfo(
       devtools_request_id, BuildProtocolBlockedSetCookies(response_cookie_list),
       GetHeaders(response_headers),
       response_headers_text.has_value() ? response_headers_text.value()
-                                        : nullptr);
+                                        : Maybe<String>());
 }
 
 }  // namespace protocol

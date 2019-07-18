@@ -13,15 +13,7 @@ from .dictionary import Dictionary
 from .dictionary import DictionaryMember
 from .enumeration import Enumeration
 from .extended_attribute import ExtendedAttributes
-from .idl_types import FrozenArrayType
-from .idl_types import NullableType
-from .idl_types import PromiseType
-from .idl_types import RecordType
-from .idl_types import ReferenceType
-from .idl_types import SequenceType
-from .idl_types import SimpleType
-from .idl_types import UnionType
-from .idl_types import VariadicType
+from .idl_type import IdlTypeFactory
 from .includes import Includes
 from .interface import Interface
 from .interface import Iterable
@@ -34,8 +26,9 @@ from .values import ConstantValue
 from .values import DefaultValue
 
 
-def load_and_register_idl_definitions(
-        filepaths, register_ir, create_ref_to_idl_type, create_ref_to_idl_def):
+def load_and_register_idl_definitions(filepaths, register_ir,
+                                      create_ref_to_idl_type,
+                                      create_ref_to_idl_def, idl_type_factory):
     """
     Reads ASTs from |filepaths| and builds IRs from ASTs.
 
@@ -47,6 +40,8 @@ def load_and_register_idl_definitions(
             to an IdlType from the given identifier.
         create_ref_to_idl_def: A callback function that creates a reference
             to an IDL definition from the given identifier.
+        idl_type_factory: All IdlType instances will be created through this
+            factory.
     """
     assert callable(register_ir)
 
@@ -54,7 +49,7 @@ def load_and_register_idl_definitions(
         asts_per_component = Collection.load_from_file(filepath)
         component = asts_per_component.component
         builder = _IRBuilder(component, create_ref_to_idl_type,
-                             create_ref_to_idl_def)
+                             create_ref_to_idl_def, idl_type_factory)
 
         for file_node in asts_per_component.asts:
             assert file_node.GetClass() == 'File'
@@ -64,7 +59,7 @@ def load_and_register_idl_definitions(
 
 class _IRBuilder(object):
     def __init__(self, component, create_ref_to_idl_type,
-                 create_ref_to_idl_def):
+                 create_ref_to_idl_def, idl_type_factory):
         """
         Args:
             component: A Component to which the built IRs are associated.
@@ -72,13 +67,17 @@ class _IRBuilder(object):
                 to an IdlType from the given identifier.
             create_ref_to_idl_def: A callback function that creates a reference
                 to an IDL definition from the given identifier.
+            idl_type_factory: All IdlType instances will be created through this
+                factory.
         """
         assert callable(create_ref_to_idl_type)
         assert callable(create_ref_to_idl_def)
+        assert isinstance(idl_type_factory, IdlTypeFactory)
 
         self._component = component
         self._create_ref_to_idl_type = create_ref_to_idl_type
         self._create_ref_to_idl_def = create_ref_to_idl_def
+        self._idl_type_factory = idl_type_factory
 
     def build_top_level_def(self, node):
         build_functions = {
@@ -382,7 +381,7 @@ class _IRBuilder(object):
     def _build_type(self, node, is_optional=False, is_variadic=False):
         def build_maybe_nullable_type(node):
             if node.GetProperty('NULLABLE'):
-                return NullableType(
+                return self._idl_type_factory.nullable_type(
                     self._build_type_internal(node.GetChildren()),
                     is_optional=is_optional)
             return self._build_type_internal(
@@ -391,7 +390,7 @@ class _IRBuilder(object):
         assert node.GetClass() == 'Type'
         assert not (is_optional and is_variadic)
         if is_variadic:
-            return VariadicType(
+            return self._idl_type_factory.variadic_type(
                 element_type=build_maybe_nullable_type(node),
                 debug_info=self._build_debug_info(node))
         return build_maybe_nullable_type(node)
@@ -404,7 +403,7 @@ class _IRBuilder(object):
 
         def build_frozen_array_type(node, extended_attributes):
             assert len(node.GetChildren()) == 1
-            return FrozenArrayType(
+            return self._idl_type_factory.frozen_array_type(
                 element_type=self._build_type(node.GetChildren()[0]),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
@@ -412,14 +411,14 @@ class _IRBuilder(object):
 
         def build_promise_type(node, extended_attributes):
             assert len(node.GetChildren()) == 1
-            return PromiseType(
+            return self._idl_type_factory.promise_type(
                 result_type=self._build_type(node.GetChildren()[0]),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
         def build_union_type(node, extended_attributes):
-            return UnionType(
+            return self._idl_type_factory.union_type(
                 member_types=map(self._build_type, node.GetChildren()),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
@@ -427,7 +426,7 @@ class _IRBuilder(object):
 
         def build_record_type(node, extended_attributes):
             key_node, value_node = node.GetChildren()
-            return RecordType(
+            return self._idl_type_factory.record_type(
                 # idl_parser doesn't produce a 'Type' node for the key type,
                 # hence we need to skip one level.
                 key_type=self._build_type_internal([key_node]),
@@ -438,14 +437,14 @@ class _IRBuilder(object):
 
         def build_reference_type(node, extended_attributes):
             identifier = node.GetName()
-            return ReferenceType(
+            return self._idl_type_factory.reference_type(
                 ref_to_idl_type=self._create_ref_to_idl_type(identifier),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))
 
         def build_sequence_type(node, extended_attributes):
-            return SequenceType(
+            return self._idl_type_factory.sequence_type(
                 element_type=self._build_type(node.GetChildren()[0]),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
@@ -458,7 +457,7 @@ class _IRBuilder(object):
                 name = node.GetClass().lower()
             if node.GetProperty('UNRESTRICTED'):
                 name = 'unrestricted {}'.format(name)
-            return SimpleType(
+            return self._idl_type_factory.simple_type(
                 name=name,
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,

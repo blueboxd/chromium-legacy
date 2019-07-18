@@ -50,6 +50,13 @@ enum class RequestThread {
   IO,
 };
 
+// The type of async response handler an API caller can have.
+enum class AsyncResponseType {
+  kNone,
+  kCallback,
+  // TODO(devlin): Add a `kPromise` type here.
+};
+
 // Adds an error message to the context's console.
 using AddConsoleError = base::RepeatingCallback<void(v8::Local<v8::Context>,
                                                      const std::string& error)>;

@@ -11,6 +11,9 @@
   </if>
 
   <!-- Shared across multiple pages -->
+  <message name="IDS_SETTINGS_CONTINUE" desc="Label for 'Continue' buttons.">
+    Continue
+  </message>
   <message name="IDS_SETTINGS_MORE_ACTIONS" desc="Tooltip text (shows on hover or for screenreaders) for a button that shows a menu with more actions when clicked or tapped">
     More actions
   </message>
@@ -134,9 +137,6 @@
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE" desc="The title of the warning about update over mobile data.">
       Download update using mobile data
-    </message>
-    <message name="IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_CONTINUE_BUTTON" desc="A button that accepts downloading the update over mobile data.">
-      Continue
     </message>
   </if>
   <if expr="not chromeos">
@@ -1452,14 +1452,26 @@
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER" desc="In CUPS printing settings subpage, text for the link adding a new CUPS printer.">
       Add Printer
     </message>
+     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_DETECTED_OR_NEW_PRINTER" desc="In CUPS printing settings subpage, explanatory text for the nearby printers list.">
+      Saved detected printers to your profile, or add a new printer.
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_AVAILABLE_PRINTERS" desc="In CUPS printing settings subpage, title for the nearby printers list.">
+      Available printers to save
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT" desc="Text for the drop down menu which allows the user to edit the printer details.">
       Edit
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE" desc="Text for the drop down menu which allows the user to remove the selected printer.">
       Remove
     </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURE_BUTTON" desc="Text for the button which allows the user to manually configure a CUPS printer.">
+      Configure
+    </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL" desc="The placeholder text in the printer search field.">
       Search printers
+    </message>
+    <message name="IDS_SETTINGS_PRINTING_CUPS_SAVED_PRINTERS_TITLE" desc="Text for the title of the user's saved printers list.">
+      Your saved printers
     </message>
     <message name="IDS_SETTINGS_PRINTING_CUPS_ADD_PRINTERS_NEARBY_TITLE" desc="Text for the title of the dialog that is used to add nearby printers.">
       Add a nearby printer
@@ -3731,9 +3743,6 @@
     <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_MISMATCHED" desc="Message shown below the title that tells the user they have entered two different PIN values.">
       PINs do not match
     </message>
-    <message name="IDS_SETTINGS_PEOPLE_CONFIGURE_PIN_CONTINUE_BUTTON" desc="A button that accepts the users initial PIN. The user will have to enter the PIN again after hitting this button to confirm that they entered it correctly.">
-      Continue
-    </message>
     <message name="IDS_SETTINGS_PEOPLE_ENABLE_SCREENLOCK" desc="The text on the checkbox to enable screenlocker for current user.">
       Show lock screen when waking from sleep
     </message>
@@ -5149,7 +5158,7 @@
     Manage sign-in data
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DESC" desc="The description for a menu item that when clicked let's the user view and erase credentials on their security key (an authentication hardware device).">
-    View and erase the sign-in data stored on your security key
+    View and delete the sign-in data stored on your security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DIALOG_TITLE" desc="The title of a dialog that lets users view and erase credentials on their security key (an authentication hardware device).">
     Security key sign-in data
@@ -5161,30 +5170,30 @@
     Username
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_TOUCH" desc="A label instructing the user to physically touch the activation button on their security key (an authentication hardware device).">
-    Insert and touch your security key to view its sign-in data.
+    To view sign-in data, insert and touch your security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_PIN_PROMPT" desc="A label instructing the user to enter the PIN (short, often numeric codes that are often used with, for example, ATM cards) for their security key (an authentication hardware device).">
-    Enter the PIN for your security key to view its sign-in data. If you don’t know the PIN, you’ll need to reset the security key.
+    To view sign-in data, enter the PIN for your security key. If you don’t know the PIN, you’ll need to reset the security key.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_CREDENTIALS" desc="An error message shown when a user attempts to view the credentials on their security key (an authentication hardware device) but no such credentials exist.">
-    This security key does not have any sign-in data stored.
+    This security key does not have any sign-in data
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_CREDENTIAL_MANAGEMENT" desc="An error message shown when a user attempts to view the credentials on their security key (an authentication hardware device) but the security key is not capable of storing credentials.">
-    This security key can't store any sign-in data.
+    This security key can't store any sign-in data
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED" desc="An error message shown when a user attempts to view the credentials on their security key (an authentication hardware device), but the user removed the security key (by unplugging it from their USB port, for example).">
     Your security key was removed.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_PIN" desc="An error message shown when a user attempts to view the credentials on their security key (an authentication hardware device), but the user has not set up a PIN (short, often numeric codes that are often used with, for example, ATM cards) for that security key.">
-    Your security key is not protected with a PIN. Create a PIN first to manage sign-in data.
+    Your security key is not protected with a PIN. To manage sign-in data, first create a PIN.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_ERROR" desc="An error message shown when a user attempts to view the credentials on their security key (an authentication hardware device), but an error with the device was encountered.">
-    Gathering sign-in data from your security key failed.
+    Your security key couldn't be read
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_SUCCESS" desc="Label of a button that lets a user delete individual credentials on their security key (an authentication hardware device).">
-    Your sign-in data was deleted successfully.
+    Your sign-in data was deleted
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_FAILED" desc="Label of a button that lets a user delete individual credentials on their security key (an authentication hardware device).">
-    Deleting your sign-in data failed.
+    Your sign-in data couldn't be deleted
   </message>
 </grit-part>

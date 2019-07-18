@@ -181,7 +181,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kAcceleratedResourceUsage,
+      kSize, CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
@@ -207,7 +207,8 @@ TEST_F(CanvasResourceProviderTest,
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kSoftwareCompositedResourceUsage,
+      kSize,
+      CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
@@ -343,7 +344,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderBitmap) {
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kSoftwareResourceUsage,
+      kSize, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
@@ -372,7 +373,8 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
       1 /* placeholder_canvas_id */, kSize);
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kSoftwareCompositedResourceUsage,
+      kSize,
+      CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kDefaultPresentationMode,
       resource_dispatcher.GetWeakPtr(), true /* is_origin_top_left */);
@@ -400,7 +402,8 @@ TEST_F(CanvasResourceProviderTest,
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kAcceleratedDirect2DResourceUsage,
+      kSize,
+      CanvasResourceProvider::ResourceUsage::kAcceleratedDirect2DResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
@@ -428,7 +431,8 @@ TEST_F(CanvasResourceProviderTest,
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
   auto provider = CanvasResourceProvider::Create(
-      kSize, CanvasResourceProvider::kAcceleratedDirect3DResourceUsage,
+      kSize,
+      CanvasResourceProvider::ResourceUsage::kAcceleratedDirect3DResourceUsage,
       context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);

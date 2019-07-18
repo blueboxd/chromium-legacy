@@ -18,9 +18,11 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "content/common/child_control.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace IPC {
 class MessageFilter;
@@ -75,7 +77,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
 
   base::Process& peer_process() { return peer_process_; }
-  mojom::ChildControl* child_control() { return child_control_.get(); }
+  mojom::ChildProcess* child_process() { return child_process_.get(); }
 
  private:
   friend class ChildProcessHost;
@@ -96,7 +98,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   base::Process peer_process_;
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   std::unique_ptr<IPC::Channel> channel_;
-  mojom::ChildControlPtr child_control_;
+  mojo::Remote<mojom::ChildProcess> child_process_;
 
   // Holds all the IPC message filters.  Since this object lives on the IO
   // thread, we don't have a IPC::ChannelProxy and so we manage filters

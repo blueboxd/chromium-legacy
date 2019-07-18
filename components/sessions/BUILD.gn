@@ -189,5 +189,7 @@ source_set("unit_tests") {
 
   if (!is_ios) {
     deps += [ "//content/public/common" ]
+  } else {
+    deps += [ "//ios/web/public/test" ]
   }
 }

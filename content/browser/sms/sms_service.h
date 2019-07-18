@@ -23,6 +23,7 @@
 namespace content {
 
 class RenderFrameHost;
+class SmsDialog;
 
 // SmsService handles mojo connections from the renderer, observing the incoming
 // SMS messages from an SmsProvider.
@@ -64,11 +65,23 @@ class CONTENT_EXPORT SmsService
 
  private:
   bool Pop(blink::mojom::SmsStatus, base::Optional<std::string>);
+
+  // Shows/Dismisses the dialog.
+  void Prompt();
+  void Dismiss();
+
   void OnTimeout(Request* request);
+  // Callback when the user manually dismisses the dialog.
+  void OnCancel();
+
   // |sms_provider_| is safe because all instances of SmsProvider are owned
   // by a SmsKeyedService, which is owned by a Profile, which transitively
   // owns SmsServices.
   SmsProvider* sms_provider_;
+
+  // The currently opened sms dialog.
+  std::unique_ptr<SmsDialog> prompt_;
+
   const url::Origin origin_;
 
   using SmsRequestList = std::list<std::unique_ptr<Request>>;

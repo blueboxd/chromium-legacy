@@ -28,9 +28,7 @@ CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session)
       controllable_(false),
       background_video_playback_enabled_(false),
       media_session_(media_session) {
-  mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer;
-  observer_binding_.Bind(observer.InitWithNewPipeAndPassReceiver());
-  media_session_->AddObserver(std::move(observer));
+  media_session_->AddObserver(observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 CastMediaBlocker::~CastMediaBlocker() {}

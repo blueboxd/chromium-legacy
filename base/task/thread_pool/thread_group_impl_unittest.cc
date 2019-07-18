@@ -289,6 +289,80 @@ TEST_P(ThreadGroupImplImplTestParam, Saturate) {
   thread_group_->WaitForAllWorkersIdleForTesting();
 }
 
+// Verifies that ShouldYield() returns true for priorities lower than the
+// highest priority pending while the thread group is flooded with USER_VISIBLE
+// tasks.
+TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
+  WaitableEvent threads_running;
+  WaitableEvent threads_continue;
+
+  // Saturate workers with USER_VISIBLE tasks to ensure ShouldYield() returns
+  // true when a tasks of higher priority
+  // is posted.
+  RepeatingClosure threads_running_barrier = BarrierClosure(
+      kMaxTasks,
+      BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
+
+  auto task_source = base::MakeRefCounted<test::MockJobTaskSource>(
+      FROM_HERE,
+      BindLambdaForTesting([&threads_running_barrier, &threads_continue]() {
+        threads_running_barrier.Run();
+        test::WaitWithoutBlockingObserver(&threads_continue);
+      }),
+      TaskPriority::USER_VISIBLE, /* num_tasks_to_run */ kMaxTasks,
+      /* max_concurrency */ kMaxTasks);
+  auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
+  ASSERT_TRUE(registered_task_source);
+  static_cast<ThreadGroup*>(thread_group_.get())
+      ->PushTaskSourceAndWakeUpWorkers(
+          TransactionWithRegisteredTaskSource::FromTaskSource(
+              std::move(registered_task_source)));
+
+  threads_running.Wait();
+
+  // Posting a BEST_EFFORT task should not cause any other tasks to yield.
+  // Once this task gets to run, no other task needs to yield.
+  // Note: This is only true because this test is using a single ThreadGroup.
+  //       Under the ThreadPool this wouldn't be racy because BEST_EFFORT tasks
+  //       run in an independent ThreadGroup.
+  test::CreateTaskRunner(TaskPriority::BEST_EFFORT,
+                         &mock_pooled_task_runner_delegate_)
+      ->PostTask(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+          }));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
+
+  // Posting a USER_VISIBLE task should cause BEST_EFFORT tasks to yield.
+  test::CreateTaskRunner(TaskPriority::USER_VISIBLE,
+                         &mock_pooled_task_runner_delegate_)
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   EXPECT_FALSE(
+                       thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+                 }));
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
+
+  // Posting a USER_BLOCKING task should cause BEST_EFFORT and USER_VISIBLE
+  // tasks to yield.
+  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+                         &mock_pooled_task_runner_delegate_)
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   // Once this task got to start, no other task needs to yield.
+                   EXPECT_FALSE(
+                       thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
+                 }));
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
+
+  threads_continue.Signal();
+  task_tracker_.FlushForTesting();
+}
+
 INSTANTIATE_TEST_SUITE_P(Parallel,
                          ThreadGroupImplImplTestParam,
                          ::testing::Values(TaskSourceExecutionMode::kParallel));
@@ -296,6 +370,10 @@ INSTANTIATE_TEST_SUITE_P(
     Sequenced,
     ThreadGroupImplImplTestParam,
     ::testing::Values(TaskSourceExecutionMode::kSequenced));
+
+INSTANTIATE_TEST_SUITE_P(Job,
+                         ThreadGroupImplImplTestParam,
+                         ::testing::Values(TaskSourceExecutionMode::kJob));
 
 namespace {
 
@@ -1238,6 +1316,50 @@ TEST_P(ThreadGroupImplBlockingTest, WorkersIdleWhenOverCapacity) {
   // Unblocks the new workers.
   UnblockBusyTasks();
   task_tracker_.FlushForTesting();
+}
+
+// Verify that an increase of max tasks with SaturateWithBlockingTasks()
+// increases the number of tasks that can run before ShouldYield returns true.
+TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
+  CreateAndStartThreadGroup();
+
+  ASSERT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
+
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+  SaturateWithBlockingTasks(GetParam());
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+
+  // Forces |kMaxTasks| extra workers to be instantiated by posting tasks. This
+  // should not block forever.
+  SaturateWithBusyTasks();
+
+  // All tasks can run, hence ShouldYield returns false.
+  EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+
+  // Post a USER_VISIBLE task that can't run since workers are saturated. This
+  // should cause BEST_EFFORT tasks to yield.
+  test::CreateTaskRunner(TaskPriority::USER_VISIBLE,
+                         &mock_pooled_task_runner_delegate_)
+      ->PostTask(
+          FROM_HERE, BindLambdaForTesting([&]() {
+            EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+          }));
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::BEST_EFFORT));
+
+  // Post a USER_BLOCKING task that can't run since workers are saturated. This
+  // should cause USER_VISIBLE tasks to yield.
+  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+                         &mock_pooled_task_runner_delegate_)
+      ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                   EXPECT_FALSE(
+                       thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+                 }));
+  EXPECT_TRUE(thread_group_->ShouldYield(TaskPriority::USER_VISIBLE));
+
+  UnblockBusyTasks();
+  UnblockBlockingTasks();
+  task_tracker_.FlushForTesting();
+  EXPECT_EQ(thread_group_->GetMaxTasksForTesting(), kMaxTasks);
 }
 
 INSTANTIATE_TEST_SUITE_P(

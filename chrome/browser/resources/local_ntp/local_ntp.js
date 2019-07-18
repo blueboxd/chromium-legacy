@@ -327,7 +327,18 @@ function getThemeBackgroundInfo() {
       usingDefaultTheme: true,
     };
   }
-  return ntpApiHandle.themeBackgroundInfo;
+
+  const info = window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
+  const preview = $(customize.IDS.CUSTOM_BG_PREVIEW);
+  if (preview.dataset.hasPreview === 'true') {
+    info.isNtpBackgroundDark = preview.dataset.hasImage === 'true';
+    info.customBackgroundConfigured = preview.dataset.hasImage === 'true';
+    info.alternateLogo = preview.dataset.hasImage === 'true';
+    // backgroundImage is in the form: url("actual url"). Remove everything
+    // except the actual url.
+    info.imageUrl = preview.style.backgroundImage.slice(5, -2);
+  }
+  return info;
 }
 
 /**
@@ -424,9 +435,6 @@ function renderTheme() {
     }
   } else {
     $(IDS.CUSTOM_BG).style.opacity = '0';
-    window.setTimeout(function() {
-      $(IDS.CUSTOM_BG).style.backgroundImage = '';
-    }, 1000);
     customize.clearAttribution();
   }
 
@@ -470,7 +478,10 @@ function sendThemeInfoToMostVisitedIframe() {
   }
   message.tileTitleColor = convertToRGBAColor(titleColor);
 
-  $(IDS.TILES_IFRAME).contentWindow.postMessage(message, '*');
+  const iframe = $(IDS.TILES_IFRAME);
+  if (iframe) {
+    iframe.contentWindow.postMessage(message, '*');
+  }
 }
 
 /**
@@ -610,7 +621,10 @@ function reloadTiles() {
   }
   cmds.push({cmd: 'show'});
 
-  $(IDS.TILES_IFRAME).contentWindow.postMessage(cmds, '*');
+  const iframe = $(IDS.TILES_IFRAME);
+  if (iframe) {
+    iframe.contentWindow.postMessage(cmds, '*');
+  }
 }
 
 /**
@@ -974,8 +988,10 @@ function handlePostMessage(event) {
   } else if (cmd === 'focusMenu') {
     // Focus the edited tile's menu or the add shortcut tile after closing the
     // custom link edit dialog without saving.
-    $(IDS.TILES_IFRAME)
-        .contentWindow.postMessage({cmd: 'focusMenu', rid: args.rid}, '*');
+    const iframe = $(IDS.TILES_IFRAME);
+    if (iframe) {
+      iframe.contentWindow.postMessage({cmd: 'focusMenu', rid: args.rid}, '*');
+    }
   }
 }
 

@@ -62,11 +62,19 @@ template("create_native_executable_dist") {
 
   _libraries_list = "${target_gen_dir}/${target_name}_library_dependencies.list"
 
-  generated_file("${target_name}__library_list") {
-    forward_variables_from(invoker, [ "deps" ])
+  _sanitizer_runtimes_target_name = "${target_name}__sanitizer_runtimes"
+  group(_sanitizer_runtimes_target_name) {
     metadata = {
       shared_libraries = _sanitizer_runtimes
     }
+  }
+
+  generated_file("${target_name}__library_list") {
+    forward_variables_from(invoker, [ "deps" ])
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ ":${_sanitizer_runtimes_target_name}" ]
     output_conversion = "json"
     outputs = [
       _libraries_list,
@@ -4701,8 +4709,9 @@ if (enable_java_templates) {
         ]
       }
 
-      foreach(build_config, _all_module_build_configs) {
-        _rebased_build_config = rebase_path(build_config, root_build_dir)
+      foreach(_module, _all_modules) {
+        _rebased_build_config =
+            rebase_path(_module.build_config, root_build_dir)
         args += [
           "--uncompressed-assets=@FileArg(" +
               "$_rebased_build_config:uncompressed_assets)",
@@ -4710,6 +4719,7 @@ if (enable_java_templates) {
               "$_rebased_build_config:deps_info:r_text_path)",
           "--pathmap-in-paths=@FileArg(" +
               "$_rebased_build_config:deps_info:module_pathmap_path)",
+          "--module-name=" + _module.name,
         ]
       }
     }

@@ -265,7 +265,7 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
-int TestAXNodeWrapper::GetIndexInParent() const {
+int TestAXNodeWrapper::GetIndexInParent() {
   return node_ ? int{node_->index_in_parent()} : -1;
 }
 

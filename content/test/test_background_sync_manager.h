@@ -83,22 +83,45 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
     has_main_frame_provider_host_ = value;
   }
 
-  bool IsDelayedTaskScheduled() const { return !delayed_task_.is_null(); }
-  void RunDelayedTask() { std::move(delayed_task_).Run(); }
+  bool IsDelayedTaskScheduledOneShotSync() const {
+    return !delayed_one_shot_sync_task_.callback().is_null();
+  }
+  bool IsDelayedTaskScheduledPeriodicSync() const {
+    return !delayed_periodic_sync_task_.callback().is_null();
+  }
+  void RunOneShotSyncDelayedTask() {
+    std::move(delayed_one_shot_sync_task_.callback()).Run();
+  }
+  void RunPeriodicSyncDelayedTask() {
+    std::move(delayed_periodic_sync_task_.callback()).Run();
+  }
 
   // Accessors to internal state
-  base::TimeDelta delayed_task_delta() const { return delayed_task_delta_; }
+  base::TimeDelta delayed_one_shot_sync_task_delta() const {
+    return delayed_one_shot_sync_task_delta_;
+  }
+  base::TimeDelta delayed_periodic_sync_task_delta() const {
+    return delayed_periodic_sync_task_delta_;
+  }
   bool last_chance() const { return last_chance_; }
   const BackgroundSyncParameters* background_sync_parameters() const {
     return parameters_.get();
   }
 
-  bool IsBrowserWakeupScheduled() const {
-    return !soonest_one_shot_wakeup_delta_.is_max();
+  bool IsBrowserWakeupForOneShotSyncScheduled() const {
+    return !soonest_one_shot_sync_wakeup_delta_.is_max();
+  }
+
+  bool IsBrowserWakeupForPeriodicSyncScheduled() const {
+    return !soonest_periodic_sync_wakeup_delta_.is_max();
   }
 
   bool EqualsSoonestOneShotWakeupDelta(base::TimeDelta compare_to) const {
-    return soonest_one_shot_wakeup_delta_ == compare_to;
+    return soonest_one_shot_sync_wakeup_delta_ == compare_to;
+  }
+
+  bool EqualsSoonestPeriodicSyncWakeupDelta(base::TimeDelta compare_to) const {
+    return soonest_periodic_sync_wakeup_delta_ == compare_to;
   }
 
   void DispatchPeriodicSyncEvent(
@@ -108,7 +131,8 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   // Override to allow the test to cache the result.
   base::TimeDelta GetSoonestWakeupDelta(
-      blink::mojom::BackgroundSyncType sync_type) override;
+      blink::mojom::BackgroundSyncType sync_type,
+      base::Time last_browser_wakeup_for_periodic_sync) override;
 
  protected:
   // Override to allow delays to be injected by tests.
@@ -135,7 +159,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
 
   // Override to just store delayed task, and allow tests to control the clock
   // and when delayed tasks are executed.
-  void ScheduleDelayedTask(base::OnceClosure callback,
+  void ScheduleDelayedTask(blink::mojom::BackgroundSyncType sync_type,
                            base::TimeDelta delay) override;
 
   // Override to avoid actual check for main frame, instead return the value set
@@ -166,9 +190,10 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   base::OnceClosure continuation_;
   DispatchSyncCallback dispatch_sync_callback_;
   DispatchSyncCallback dispatch_periodic_sync_callback_;
-  base::OnceClosure delayed_task_;
-  base::TimeDelta delayed_task_delta_;
-  base::TimeDelta soonest_one_shot_wakeup_delta_;
+  base::TimeDelta delayed_one_shot_sync_task_delta_;
+  base::TimeDelta delayed_periodic_sync_task_delta_;
+  base::TimeDelta soonest_one_shot_sync_wakeup_delta_;
+  base::TimeDelta soonest_periodic_sync_wakeup_delta_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncManager);
 };

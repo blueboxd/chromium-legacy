@@ -15,10 +15,33 @@
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_list.html">
 <link rel="import" href="cups_saved_printers.html">
+<link rel="import" href="cups_nearby_printers.html">
 
 <dom-module id="settings-cups-printers">
   <template>
     <style include="cups-printer-shared action-link">
+      .custom-list-item {
+        align-items: center;
+        border-bottom: var(--cr-separator-line);
+        display: flex;
+        min-height: var(--settings-row-min-height);
+      }
+
+      .padded {
+        padding: 20px;
+      }
+
+      #addPrinterSection {
+        padding-inline-start:
+            var(--settings-list-frame-padding_-_padding-inline-start);
+        padding-inline-end:
+            var(--settings-list-frame-padding_-_padding-inline-end);
+      }
+
+      #addPrinterText {
+        flex: 1;
+      }
+
       #noSearchResultsMessage {
         color: var(--md-loading-message-color);
         font-size: 16px;
@@ -28,30 +51,85 @@
       }
     </style>
 
-    <div class="settings-box first">
-      <div class="start">
-        <span>$i18n{cupsPrintersLearnMoreLabel}</span>
+    <template is="dom-if" if="[[!enableUpdatedUI_]]">
+      <div class="settings-box first">
+        <div class="start">
+          <span>$i18n{cupsPrintersLearnMoreLabel}</span>
+          <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
+            $i18n{learnMore}
+          </a>
+          <div class="secondary" hidden="[[canAddPrinter_]]">
+            $i18n{requireNetworkMessage}
+          </div>
+        </div>
+        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+            prefs.native_printing.user_native_printers_allowed.value)]]">
+          <cr-policy-pref-indicator
+              pref="[[prefs.native_printing.user_native_printers_allowed]]"
+              icon-aria-label="$i18n{printingPageTitle}">
+          </cr-policy-pref-indicator>
+        </template>
+        <cr-button class="action-button" id="addPrinter"
+            on-click="onAddPrinterTap_"
+            disabled="[[!addPrinterButtonActive_(canAddPrinter_,
+                prefs.native_printing.user_native_printers_allowed.value)]]">
+          $i18n{addCupsPrinter}
+        </cr-button>
+      </div>
+      <settings-cups-printers-list printers="{{printers}}"
+          active-printer="{{activePrinter}}"
+          search-term="[[searchTerm]]">
+      </settings-cups-printers-list>
+    </template>
+
+    <template is="dom-if" if="[[enableUpdatedUI_]]">
+      <div class="settings-box first">
+        <div class="start">
+          <span>$i18n{savedPrintersTitle}</span>
+        </div>
+      </div>
+
+      <settings-cups-saved-printers id="savedPrinters"
+          active-printer="{{activePrinter}}"
+          search-term="[[searchTerm]]">
+      </settings-cups-saved-printers>
+
+      <div class="padded first" id="nearbyPrinters">
+        <div>$i18n{nearbyPrintersListTitle}</div>
+        <span class="secondary">
+          $i18n{nearbyPrintersListDescription}
+        </span>
         <a href="$i18n{printingCUPSPrintLearnMoreUrl}" target="_blank">
           $i18n{learnMore}
         </a>
         <div class="secondary" hidden="[[canAddPrinter_]]">
           $i18n{requireNetworkMessage}
         </div>
+        <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
+            prefs.native_printing.user_native_printers_allowed.value)]]">
+          <cr-policy-pref-indicator
+              pref="[[prefs.native_printing.user_native_printers_allowed]]"
+              icon-aria-label="$i18n{printingPageTitle}">
+          </cr-policy-pref-indicator>
+        </template>
       </div>
-      <template is="dom-if" if="[[!addPrinterButtonActive_(canAddPrinter_,
-          prefs.native_printing.user_native_printers_allowed.value)]]">
-        <cr-policy-pref-indicator
-            pref="[[prefs.native_printing.user_native_printers_allowed]]"
-            icon-aria-label="$i18n{printingPageTitle}">
-        </cr-policy-pref-indicator>
-      </template>
-      <cr-button class="action-button" id="addPrinter"
-          on-click="onAddPrinterTap_"
-          disabled="[[!addPrinterButtonActive_(canAddPrinter_,
-              prefs.native_printing.user_native_printers_allowed.value)]]">
-        $i18n{addCupsPrinter}
-      </cr-button>
-    </div>
+
+      <div id="addPrinterSection">
+        <div class="custom-list-item">
+          <div id="addPrinterText">$i18n{addCupsPrinter}</div>
+          <cr-button class="action-button" id="addPrinter"
+              on-click="onAddPrinterTap_"
+              disabled="[[!addPrinterButtonActive_(canAddPrinter_,
+                  prefs.native_printing.user_native_printers_allowed.value)]]">
+            $i18n{addCupsPrinter}
+          </cr-button>
+        </div>
+      </div>
+
+      <settings-cups-nearby-printers search-term="[[searchTerm]]"
+          active-printer="{{activePrinter}}">
+      </settings-cups-nearby-printers>
+    </template>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog"
         on-close="onAddPrinterDialogClose_">
@@ -62,20 +140,6 @@
           active-printer="{{activePrinter}}"
           on-close="onEditPrinterDialogClose_">
       </settings-cups-edit-printer-dialog>
-    </template>
-
-    <template is="dom-if" if="[[!enableUpdatedUI_]]">
-      <settings-cups-printers-list printers="{{printers}}"
-          active-printer="{{activePrinter}}"
-          search-term="[[searchTerm]]">
-      </settings-cups-printers-list>
-    </template>
-
-    <template is="dom-if" if="[[enableUpdatedUI_]]">
-      <settings-cups-saved-printers id="savedPrinters"
-          active-printer="{{activePrinter}}"
-          search-term="[[searchTerm]]">
-      </settings-cups-saved-printers>
     </template>
 
     <div id="noSearchResultsMessage"

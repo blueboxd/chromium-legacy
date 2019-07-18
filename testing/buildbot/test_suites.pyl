@@ -360,21 +360,6 @@
       'cros_browser_sanity_test': {},
     },
 
-    'chromeos_experimental_remote_device_isolated_tests': {
-      'telemetry_unittests': {
-        'args': [
-          '--browser=cros-chrome',
-          # The magic hostname that resolves to a CrOS device in the test lab.
-          '--remote=variable_chromeos_device_hostname',
-          '--jobs=1',
-        ],
-        'swarming': {
-          'idempotent': False,  # https://crbug.com/549140
-          'shards': 12,
-        },
-      },
-    },
-
     'chromeos_isolated_scripts': {
       'telemetry_perf_unittests': {
         'args': [
@@ -415,6 +400,18 @@
         'swarming': {
           'idempotent': False,  # https://crbug.com/549140
           'shards': 2,
+        },
+      },
+      'telemetry_unittests': {
+        'args': [
+          '--browser=cros-chrome',
+          # The magic hostname that resolves to a CrOS device in the test lab.
+          '--remote=variable_chromeos_device_hostname',
+          '--jobs=1',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 12,
         },
       },
     },
@@ -4039,16 +4036,6 @@
       },
     },
 
-    'linux_arm_gtests': {
-      'nacl_helper_nonsfi_unittests': {},
-      'nacl_loader_unittests': {},
-      'sandbox_linux_unittests': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
-     },
-
     #1
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
@@ -4108,11 +4095,6 @@
         },
         'results_handler': 'layout tests',
         'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04'
-            },
-          ],
           'shards': 10,
         },
       },

@@ -341,7 +341,7 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       BackgroundTracingManagerImpl::ActivateForProcess(
           data_.id,
           static_cast<ChildProcessHostImpl*>(child_process_host_.get())
-              ->child_control());
+              ->child_process());
     }
   }
 
@@ -408,7 +408,7 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 #if defined(OS_MACOSX)
   ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
       peer_pid, static_cast<ChildProcessHostImpl*>(child_process_host_.get())
-                    ->child_control());
+                    ->child_process());
 #endif
 
 #if defined(OS_WIN)

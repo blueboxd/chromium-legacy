@@ -25,6 +25,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 
 ABSL_FLAG(bool, help, false,
@@ -184,7 +185,7 @@ void FlagHelpHumanReadable(const flags_internal::CommandLineFlag& flag,
   }
   printer.Write(absl::StrCat("default: ", dflt_val, ";"));
 
-  if (flag.modified) {
+  if (flag.IsModified()) {
     std::string curr_val = flag.CurrentValue();
     if (flag.IsOfType<std::string>()) {
       curr_val = absl::StrCat("\"", curr_val, "\"");
@@ -201,10 +202,10 @@ void FlagHelpHumanReadable(const flags_internal::CommandLineFlag& flag,
 // STRIP_FLAG_HELP 1' then this flag will not be displayed by '--help'
 // and its variants.
 void FlagsHelpImpl(std::ostream& out, flags_internal::FlagKindFilter filter_cb,
-                   HelpFormat format = HelpFormat::kHumanReadable) {
+                   HelpFormat format, absl::string_view program_usage_message) {
   if (format == HelpFormat::kHumanReadable) {
     out << flags_internal::ShortProgramInvocationName() << ": "
-        << flags_internal::ProgramUsageMessage() << "\n\n";
+        << program_usage_message << "\n\n";
   } else {
     // XML schema is not a part of our public API for now.
     out << "<?xml version=\"1.0\"?>\n"
@@ -213,7 +214,7 @@ void FlagsHelpImpl(std::ostream& out, flags_internal::FlagKindFilter filter_cb,
         // The program name and usage.
         << XMLElement("program", flags_internal::ShortProgramInvocationName())
         << '\n'
-        << XMLElement("usage", flags_internal::ProgramUsageMessage()) << '\n';
+        << XMLElement("usage", program_usage_message) << '\n';
   }
 
   // Map of package name to
@@ -227,8 +228,6 @@ void FlagsHelpImpl(std::ostream& out, flags_internal::FlagKindFilter filter_cb,
       matching_flags;
 
   flags_internal::ForEachFlag([&](flags_internal::CommandLineFlag* flag) {
-    absl::MutexLock l(InitFlagIfNecessary(flag));
-
     std::string flag_filename = flag->Filename();
 
     // Ignore retired flags.
@@ -278,37 +277,7 @@ void FlagsHelpImpl(std::ostream& out, flags_internal::FlagKindFilter filter_cb,
   }
 }
 
-ABSL_CONST_INIT absl::Mutex usage_message_guard(absl::kConstInit);
-ABSL_CONST_INIT std::string* program_usage_message
-    ABSL_GUARDED_BY(usage_message_guard) = nullptr;
-
 }  // namespace
-
-// --------------------------------------------------------------------
-// Sets the "usage" message to be used by help reporting routines.
-
-void SetProgramUsageMessage(absl::string_view new_usage_message) {
-  absl::MutexLock l(&usage_message_guard);
-
-  if (flags_internal::program_usage_message != nullptr) {
-    ABSL_INTERNAL_LOG(FATAL, "SetProgramUsageMessage() called twice.");
-    std::exit(1);
-  }
-
-  program_usage_message = new std::string(new_usage_message);
-}
-
-// --------------------------------------------------------------------
-// Returns the usage message set by SetProgramUsageMessage().
-// Note: We able to return string_view here only because calling
-// SetProgramUsageMessage twice is prohibited.
-absl::string_view ProgramUsageMessage() {
-  absl::MutexLock l(&usage_message_guard);
-
-  return program_usage_message != nullptr
-             ? absl::string_view(*program_usage_message)
-             : "Warning: SetProgramUsageMessage() never called";
-}
 
 // --------------------------------------------------------------------
 // Produces the help message describing specific flag.
@@ -321,44 +290,51 @@ void FlagHelp(std::ostream& out, const flags_internal::CommandLineFlag& flag,
 // --------------------------------------------------------------------
 // Produces the help messages for all flags matching the filter.
 // If filter is empty produces help messages for all flags.
-void FlagsHelp(std::ostream& out, absl::string_view filter, HelpFormat format) {
+void FlagsHelp(std::ostream& out, absl::string_view filter, HelpFormat format,
+               absl::string_view program_usage_message) {
   flags_internal::FlagKindFilter filter_cb = [&](absl::string_view filename) {
     return filter.empty() || filename.find(filter) != absl::string_view::npos;
   };
-  flags_internal::FlagsHelpImpl(out, filter_cb, format);
+  flags_internal::FlagsHelpImpl(out, filter_cb, format, program_usage_message);
 }
 
 // --------------------------------------------------------------------
 // Checks all the 'usage' command line flags to see if any have been set.
 // If so, handles them appropriately.
-int HandleUsageFlags(std::ostream& out) {
+int HandleUsageFlags(std::ostream& out,
+                     absl::string_view program_usage_message) {
   if (absl::GetFlag(FLAGS_helpshort)) {
     flags_internal::FlagsHelpImpl(
         out, flags_internal::GetUsageConfig().contains_helpshort_flags,
-        HelpFormat::kHumanReadable);
+        HelpFormat::kHumanReadable, program_usage_message);
     return 1;
   }
 
   if (absl::GetFlag(FLAGS_helpfull)) {
     // show all options
-    flags_internal::FlagsHelp(out);
+    flags_internal::FlagsHelp(out, "", HelpFormat::kHumanReadable,
+                              program_usage_message);
     return 1;
   }
 
   if (!absl::GetFlag(FLAGS_helpon).empty()) {
     flags_internal::FlagsHelp(
-        out, absl::StrCat("/", absl::GetFlag(FLAGS_helpon), "."));
+        out, absl::StrCat("/", absl::GetFlag(FLAGS_helpon), "."),
+        HelpFormat::kHumanReadable, program_usage_message);
     return 1;
   }
 
   if (!absl::GetFlag(FLAGS_helpmatch).empty()) {
-    flags_internal::FlagsHelp(out, absl::GetFlag(FLAGS_helpmatch));
+    flags_internal::FlagsHelp(out, absl::GetFlag(FLAGS_helpmatch),
+                              HelpFormat::kHumanReadable,
+                              program_usage_message);
     return 1;
   }
 
   if (absl::GetFlag(FLAGS_help)) {
     flags_internal::FlagsHelpImpl(
-        out, flags_internal::GetUsageConfig().contains_help_flags);
+        out, flags_internal::GetUsageConfig().contains_help_flags,
+        HelpFormat::kHumanReadable, program_usage_message);
 
     out << "\nTry --helpfull to get a list of all flags.\n";
 
@@ -367,7 +343,8 @@ int HandleUsageFlags(std::ostream& out) {
 
   if (absl::GetFlag(FLAGS_helppackage)) {
     flags_internal::FlagsHelpImpl(
-        out, flags_internal::GetUsageConfig().contains_helppackage_flags);
+        out, flags_internal::GetUsageConfig().contains_helppackage_flags,
+        HelpFormat::kHumanReadable, program_usage_message);
 
     out << "\nTry --helpfull to get a list of all flags.\n";
 

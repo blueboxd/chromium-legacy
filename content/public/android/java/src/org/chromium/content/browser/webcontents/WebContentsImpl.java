@@ -509,12 +509,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public int getBackgroundColor() {
-        checkNotDestroyed();
-        return nativeGetBackgroundColor(mNativeWebContentsAndroid);
-    }
-
-    @Override
     public boolean isShowingInterstitialPage() {
         checkNotDestroyed();
         return nativeIsShowingInterstitialPage(mNativeWebContentsAndroid);
@@ -989,7 +983,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     private native void nativeSetImportance(long nativeWebContentsAndroid, int importance);
     private native void nativeSuspendAllMediaPlayers(long nativeWebContentsAndroid);
     private native void nativeSetAudioMuted(long nativeWebContentsAndroid, boolean mute);
-    private native int nativeGetBackgroundColor(long nativeWebContentsAndroid);
     private native boolean nativeIsShowingInterstitialPage(long nativeWebContentsAndroid);
     private native boolean nativeFocusLocationBarByDefault(long nativeWebContentsAndroid);
     private native void nativeExitFullscreen(long nativeWebContentsAndroid);

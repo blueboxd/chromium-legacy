@@ -280,7 +280,7 @@ TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEndRealService) {
 }
 
 // TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
+TEST_F(SystemPerfettoTest, DISABLED_OneSystemSourceWithMultipleLocalSources) {
   auto system_service = CreateMockSystemService();
 
   // Start a trace using the system Perfetto service.

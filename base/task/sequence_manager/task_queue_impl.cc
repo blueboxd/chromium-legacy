@@ -263,15 +263,12 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // TODO(alexclarke): Maybe add a main thread only immediate_incoming_queue
     // See https://crbug.com/901800
     base::internal::CheckedAutoLock lock(any_thread_lock_);
-    TimeTicks now;
+    LazyNow lazy_now = any_thread_.time_domain->CreateLazyNow();
     if (any_thread_.task_queue_observer)
       any_thread_.task_queue_observer->OnPostTask(task.location, TimeDelta());
     bool add_queue_time_to_tasks = sequence_manager_->GetAddQueueTimeToTasks();
-    if (delayed_fence_allowed_ || add_queue_time_to_tasks) {
-      now = any_thread_.time_domain->Now();
-      if (add_queue_time_to_tasks)
-        task.queue_time = now;
-    }
+    if (add_queue_time_to_tasks)
+      task.queue_time = lazy_now.Now();
 
     // The sequence number must be incremented atomically with pushing onto the
     // incoming queue. Otherwise if there are several threads posting task we
@@ -280,8 +277,18 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     EnqueueOrder sequence_number = sequence_manager_->GetNextSequenceNumber();
     bool was_immediate_incoming_queue_empty =
         any_thread_.immediate_incoming_queue.empty();
-    any_thread_.immediate_incoming_queue.push_back(
-        Task(std::move(task), now, sequence_number, sequence_number));
+    base::TimeTicks desired_run_time;
+    // The desired run time is only required when delayed fence is allowed.
+    // Avoid evaluating it when not required.
+    if (delayed_fence_allowed_)
+      desired_run_time = lazy_now.Now();
+    any_thread_.immediate_incoming_queue.push_back(Task(
+        std::move(task), desired_run_time, sequence_number, sequence_number));
+
+    if (any_thread_.on_task_ready_handler) {
+      any_thread_.on_task_ready_handler.Run(
+          any_thread_.immediate_incoming_queue.back(), &lazy_now);
+    }
 
 #if DCHECK_IS_ON()
     any_thread_.immediate_incoming_queue.back().cross_thread_ =
@@ -564,6 +571,10 @@ void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
     ActivateDelayedFenceIfNeeded(task->delayed_run_time);
     DCHECK(!task->enqueue_order_set());
     task->set_enqueue_order(sequence_manager_->GetNextSequenceNumber());
+
+    if (main_thread_only().on_task_ready_handler)
+      main_thread_only().on_task_ready_handler.Run(*task, lazy_now);
+
     delayed_work_queue_task_pusher.Push(task);
     main_thread_only().delayed_incoming_queue.pop();
   }
@@ -1113,6 +1124,16 @@ bool TaskQueueImpl::HasPendingImmediateWorkLocked() {
   return !main_thread_only().delayed_work_queue->Empty() ||
          !main_thread_only().immediate_work_queue->Empty() ||
          !any_thread_.immediate_incoming_queue.empty();
+}
+
+void TaskQueueImpl::SetOnTaskReadyHandler(
+    TaskQueueImpl::OnTaskReadyHandler handler) {
+  DCHECK(should_notify_observers_ || handler.is_null());
+  main_thread_only().on_task_ready_handler = handler;
+
+  base::internal::CheckedAutoLock lock(any_thread_lock_);
+  DCHECK_NE(!!any_thread_.on_task_ready_handler, !!handler);
+  any_thread_.on_task_ready_handler = std::move(handler);
 }
 
 void TaskQueueImpl::SetOnTaskStartedHandler(

@@ -24,12 +24,12 @@ class CryptAuthDeviceSyncResult {
   // TODO(nohle): Add numeric values.
   enum class ResultCode {
     kSuccess,
+    kFinishedWithNonFatalErrors,
     kErrorMissingUserKeyPair,
     kErrorEncryptingDeviceMetadata,
     kErrorEstablishingGroupPublicKey,
     kErrorNoMetadataInResponse,
-    kErrorInvalidMetadataInResponse,
-    kErrorDuplicateDeviceIdsInResponse,
+    kErrorAllResponseMetadataInvalid,
     kErrorNoLocalDeviceMetadataInResponse,
     kErrorMissingFeatureStatuses,
     kErrorMissingLocalDeviceSyncBetterTogetherKey,

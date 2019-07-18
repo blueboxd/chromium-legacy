@@ -237,7 +237,6 @@ source_set("app_framework_shared_headers") {
     "src/AppFramework/Matcher/GREYAnyOf.h",
     "src/AppFramework/Matcher/GREYMatchers.h",
     "src/AppFramework/Matcher/GREYMatchersShorthand.h",
-    "src/AppFramework/Matcher/GREYNot.h",
     "src/AppFramework/Synchronization/GREYUIThreadExecutor.h",
   ]
 }
@@ -363,7 +362,6 @@ ios_framework_bundle("app_framework") {
     "src/AppFramework/Matcher/GREYAnyOf.m",
     "src/AppFramework/Matcher/GREYMatchers.m",
     "src/AppFramework/Matcher/GREYMatchersShorthand.m",
-    "src/AppFramework/Matcher/GREYNot.m",
     "src/AppFramework/Synchronization/GREYAppStateTracker.h",
     "src/AppFramework/Synchronization/GREYAppStateTracker.m",
     "src/AppFramework/Synchronization/GREYAppStateTrackerObject.h",
@@ -452,6 +450,8 @@ source_set("test_lib") {
     "src/TestLib/EarlGreyImpl/GREYElementInteractionErrorHandler.m",
     "src/TestLib/EarlGreyImpl/GREYElementInteractionProxy.h",
     "src/TestLib/EarlGreyImpl/GREYElementInteractionProxy.m",
+    "src/TestLib/EarlGreyImpl/GREYRemoteExecutor.h",
+    "src/TestLib/EarlGreyImpl/GREYRemoteExecutor.m",
     "src/TestLib/EarlGreyImpl/XCUIApplication+GREYTest.h",
     "src/TestLib/EarlGreyImpl/XCUIApplication+GREYTest.m",
     "src/TestLib/Exception/GREYDefaultFailureHandler.h",

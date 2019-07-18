@@ -977,6 +977,12 @@
         <structure name="IDR_SETTINGS_CUPS_SAVED_PRINTERS_JS"
                    file="printing_page/cups_saved_printers.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_CUPS_NEARBY_PRINTERS_HTML"
+                   file="printing_page/cups_nearby_printers.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CUPS_NEARBY_PRINTERS_JS"
+                   file="printing_page/cups_nearby_printers.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CUPS_EDIT_PRINTER_DIALOG_HTML"
                    file="printing_page/cups_edit_printer_dialog.html"
                    type="chrome_html" />

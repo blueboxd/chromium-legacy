@@ -96,6 +96,11 @@ void NavigationItemImpl::SetURL(const GURL& url) {
   url_ = url;
   cached_display_title_.clear();
   error_retry_state_machine_.SetURL(url);
+  if (!wk_navigation_util::URLNeedsUserAgentType(url)) {
+    SetUserAgentType(web::UserAgentType::NONE);
+  } else if (GetUserAgentType() == web::UserAgentType::NONE) {
+    SetUserAgentType(web::UserAgentType::MOBILE);
+  }
 }
 
 const GURL& NavigationItemImpl::GetURL() const {
@@ -190,7 +195,7 @@ base::Time NavigationItemImpl::GetTimestamp() const {
 
 void NavigationItemImpl::SetUserAgentType(UserAgentType type) {
   user_agent_type_ = type;
-  DCHECK_EQ(!wk_navigation_util::URLNeedsUserAgentType(GetVirtualURL()),
+  DCHECK_EQ(!wk_navigation_util::URLNeedsUserAgentType(GetURL()),
             user_agent_type_ == UserAgentType::NONE);
 }
 

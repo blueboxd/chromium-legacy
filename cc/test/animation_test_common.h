@@ -10,9 +10,9 @@
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
 #include "cc/animation/transform_operations.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/trees/element_id.h"
 
 namespace gfx {
 class ScrollOffset;

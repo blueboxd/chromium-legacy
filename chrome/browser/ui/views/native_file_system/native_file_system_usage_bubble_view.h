@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "ui/base/models/table_model.h"
 #include "url/origin.h"
 
 class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
@@ -34,6 +35,24 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
   static NativeFileSystemUsageBubbleView* GetBubble();
 
  private:
+  class FilePathListModel : public ui::TableModel {
+   public:
+    FilePathListModel(std::vector<base::FilePath> files,
+                      std::vector<base::FilePath> directories);
+    ~FilePathListModel() override;
+    // ui::TableModel:
+    int RowCount() override;
+    base::string16 GetText(int row, int column_id) override;
+    gfx::ImageSkia GetIcon(int row) override;
+    base::string16 GetTooltip(int row) override;
+    void SetObserver(ui::TableModelObserver*) override;
+
+   private:
+    const std::vector<base::FilePath> files_;
+    const std::vector<base::FilePath> directories_;
+    DISALLOW_COPY_AND_ASSIGN(FilePathListModel);
+  };
+
   NativeFileSystemUsageBubbleView(views::View* anchor_view,
                                   const gfx::Point& anchor_point,
                                   content::WebContents* web_contents,
@@ -50,9 +69,7 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
   void WindowClosing() override;
   void CloseBubble() override;
   gfx::Size CalculatePreferredSize() const override;
-
-  void AddPathList(int details_message_id,
-                   const std::vector<base::FilePath>& paths);
+  void ChildPreferredSizeChanged(views::View* child) override;
 
   // Singleton instance of the bubble. The bubble can only be shown on the
   // active browser window, so there is no case in which it will be shown
@@ -61,6 +78,8 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
 
   const url::Origin origin_;
   const Usage usage_;
+  FilePathListModel writable_paths_model_;
+  FilePathListModel readable_paths_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemUsageBubbleView);
 };

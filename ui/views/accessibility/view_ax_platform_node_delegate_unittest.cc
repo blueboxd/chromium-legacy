@@ -337,6 +337,37 @@ TEST_F(ViewAXPlatformNodeDelegateTest, SetSizeAndPosition) {
   EXPECT_EQ(view_accessibility(group_ids[4])->GetPosInSet(), 1);
 }
 
+TEST_F(ViewAXPlatformNodeDelegateTest, Navigation) {
+  std::vector<View*> view_ids = SetUpExtraViews();
+
+  EXPECT_EQ(view_accessibility(view_ids[0])->GetNextSibling(), nullptr);
+  EXPECT_EQ(view_accessibility(view_ids[0])->GetPreviousSibling(),
+            view_accessibility(button_)->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[0])->GetIndexInParent(), 3);
+
+  EXPECT_EQ(view_accessibility(view_ids[1])->GetNextSibling(),
+            view_accessibility(view_ids[2])->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[1])->GetPreviousSibling(), nullptr);
+  EXPECT_EQ(view_accessibility(view_ids[1])->GetIndexInParent(), 0);
+
+  EXPECT_EQ(view_accessibility(view_ids[2])->GetNextSibling(),
+            view_accessibility(view_ids[3])->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[2])->GetPreviousSibling(),
+            view_accessibility(view_ids[1])->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[2])->GetIndexInParent(), 1);
+
+  EXPECT_EQ(view_accessibility(view_ids[3])->GetNextSibling(),
+            view_accessibility(view_ids[4])->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[3])->GetPreviousSibling(),
+            view_accessibility(view_ids[2])->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[3])->GetIndexInParent(), 2);
+
+  EXPECT_EQ(view_accessibility(view_ids[4])->GetNextSibling(), nullptr);
+  EXPECT_EQ(view_accessibility(view_ids[4])->GetPreviousSibling(),
+            view_accessibility(view_ids[3])->GetNativeObject());
+  EXPECT_EQ(view_accessibility(view_ids[4])->GetIndexInParent(), 3);
+}
+
 #if defined(USE_AURA)
 class DerivedTestView : public View {
  public:

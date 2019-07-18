@@ -67,7 +67,7 @@ CryptAuthDeviceRegistryImpl::CryptAuthDeviceRegistryImpl(
         CryptAuthDevice::FromDictionary(id_device_pair.second);
     if (!instance_id || !device || *instance_id != device->instance_id()) {
       PA_LOG(ERROR) << "Error retrieving device with Instance ID "
-                    << *instance_id << " from preferences.";
+                    << id_device_pair.first << " from preferences.";
       continue;
     }
 

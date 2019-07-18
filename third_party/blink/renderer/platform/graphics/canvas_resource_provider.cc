@@ -22,10 +22,6 @@
 
 namespace blink {
 
-void CanvasResourceProvider::RecordTypeToUMA(ResourceProviderType type) {
-  base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType", type);
-}
-
 // * Renders to a texture managed by Skia. Mailboxes are backed by vanilla GL
 //   textures.
 // * Layers are not overlay candidates.
@@ -39,14 +35,13 @@ class CanvasResourceProviderTexture : public CanvasResourceProvider {
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left)
-      : CanvasResourceProvider(size,
+      : CanvasResourceProvider(kTexture,
+                               size,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
         msaa_sample_count_(msaa_sample_count),
-        is_origin_top_left_(is_origin_top_left) {
-    RecordTypeToUMA(kTexture);
-  }
+        is_origin_top_left_(is_origin_top_left) {}
 
   ~CanvasResourceProviderTexture() override = default;
 
@@ -158,7 +153,7 @@ class CanvasResourceProviderTextureGpuMemoryBuffer final
                                       std::move(context_provider_wrapper),
                                       std::move(resource_dispatcher),
                                       is_origin_top_left) {
-    RecordTypeToUMA(kTextureGpuMemoryBuffer);
+    type_ = kTextureGpuMemoryBuffer;
   }
 
   ~CanvasResourceProviderTextureGpuMemoryBuffer() override = default;
@@ -222,12 +217,11 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
-      : CanvasResourceProvider(size,
+      : CanvasResourceProvider(kBitmap,
+                               size,
                                color_params,
                                std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)) {
-    RecordTypeToUMA(kBitmap);
-  }
+                               std::move(resource_dispatcher)) {}
 
   ~CanvasResourceProviderBitmap() override = default;
 
@@ -271,7 +265,7 @@ class CanvasResourceProviderBitmapGpuMemoryBuffer final
                                      color_params,
                                      std::move(context_provider_wrapper),
                                      std::move(resource_dispatcher)) {
-    RecordTypeToUMA(kBitmapGpuMemoryBuffer);
+    type_ = kBitmapGpuMemoryBuffer;
   }
 
   ~CanvasResourceProviderBitmapGpuMemoryBuffer() override = default;
@@ -326,7 +320,7 @@ class CanvasResourceProviderSharedBitmap : public CanvasResourceProviderBitmap {
                                      nullptr,  // context_provider_wrapper
                                      std::move(resource_dispatcher)) {
     DCHECK(ResourceDispatcher());
-    RecordTypeToUMA(kSharedBitmap);
+    type_ = kSharedBitmap;
   }
   ~CanvasResourceProviderSharedBitmap() override = default;
   bool SupportsDirectCompositing() const override { return true; }
@@ -375,7 +369,8 @@ class CanvasResourceProviderDirectGpuMemoryBuffer final
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left)
-      : CanvasResourceProvider(size,
+      : CanvasResourceProvider(kDirectGpuMemoryBuffer,
+                               size,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
@@ -471,14 +466,14 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left,
       bool is_overlay_candidate)
-      : CanvasResourceProvider(size,
+      : CanvasResourceProvider(kSharedImage,
+                               size,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)),
         msaa_sample_count_(msaa_sample_count),
         is_origin_top_left_(is_origin_top_left),
         is_overlay_candidate_(is_overlay_candidate) {
-    RecordTypeToUMA(kSharedImage);
     resource_ = NewOrRecycledResource();
     if (resource_)
       EnsureWriteAccess();
@@ -718,7 +713,8 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
-      : CanvasResourceProvider(size,
+      : CanvasResourceProvider(kPassThrough,
+                               size,
                                color_params,
                                std::move(context_provider_wrapper),
                                std::move(resource_dispatcher)) {}
@@ -845,22 +841,51 @@ const Vector<CanvasResourceType>& GetResourceTypeFallbackList(
                     kAcceleratedDirect2DFallbackList.end()));
 
   switch (usage) {
-    case CanvasResourceProvider::kSoftwareResourceUsage:
+    case CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage:
       return kSoftwareFallbackList;
-    case CanvasResourceProvider::kSoftwareCompositedResourceUsage:
+    case CanvasResourceProvider::ResourceUsage::
+        kSoftwareCompositedResourceUsage:
       return kSoftwareCompositedFallbackList;
-    case CanvasResourceProvider::kAcceleratedResourceUsage:
+    case CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage:
       return kAcceleratedFallbackList;
-    case CanvasResourceProvider::kAcceleratedCompositedResourceUsage:
+    case CanvasResourceProvider::ResourceUsage::
+        kAcceleratedCompositedResourceUsage:
       return kAcceleratedCompositedFallbackList;
-    case CanvasResourceProvider::kAcceleratedDirect2DResourceUsage:
+    case CanvasResourceProvider::ResourceUsage::
+        kAcceleratedDirect2DResourceUsage:
       return kAcceleratedDirect2DFallbackList;
-    case CanvasResourceProvider::kAcceleratedDirect3DResourceUsage:
+    case CanvasResourceProvider::ResourceUsage::
+        kAcceleratedDirect3DResourceUsage:
       return kAcceleratedDirect3DFallbackList;
   }
   NOTREACHED();
 }
 }  // unnamed namespace
+
+std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::CreateForCanvas(
+    const IntSize& size,
+    ResourceUsage usage,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    unsigned msaa_sample_count,
+    const CanvasColorParams& color_params,
+    PresentationMode presentation_mode,
+    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
+    bool is_origin_top_left) {
+  base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderUsage", usage);
+
+  std::unique_ptr<CanvasResourceProvider> provider = Create(
+      size, usage, context_provider_wrapper, msaa_sample_count, color_params,
+      presentation_mode, resource_dispatcher, is_origin_top_left);
+
+  if (provider && provider->IsValid()) {
+    base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
+                              provider->IsAccelerated());
+    base::UmaHistogramEnumeration("Blink.Canvas.ResourceProviderType",
+                                  provider->type_);
+  }
+
+  return provider;
+}
 
 std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const IntSize& size,
@@ -958,8 +983,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
             size, color_params, context_provider_wrapper, resource_dispatcher);
         break;
       case CanvasResourceType::kSharedImage: {
-        if (usage == kAcceleratedDirect2DResourceUsage ||
-            usage == kAcceleratedDirect3DResourceUsage) {
+        if (usage == ResourceUsage::kAcceleratedDirect2DResourceUsage ||
+            usage == ResourceUsage::kAcceleratedDirect3DResourceUsage) {
           // Shared images don't work for single buffered canvas yet.
           continue;
         }
@@ -967,7 +992,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
         // TODO(khushalsagar): Also kAcceleratedDirect2DResourceUsage when we
         // switch it to use shared images.
         const bool is_overlay_candidate =
-            usage == kAcceleratedCompositedResourceUsage &&
+            usage == ResourceUsage::kAcceleratedCompositedResourceUsage &&
             is_gpu_memory_buffer_image_allowed &&
             context_provider_wrapper->ContextProvider()
                 ->GetCapabilities()
@@ -979,8 +1004,6 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     }
     if (!provider->IsValid())
       continue;
-    base::UmaHistogramBoolean("Blink.Canvas.ResourceProviderIsAccelerated",
-                              provider->IsAccelerated());
     return provider;
   }
 
@@ -1021,10 +1044,10 @@ CanvasResourceProvider::CreateForTesting(
     case CanvasResourceProvider::kBitmapGpuMemoryBuffer:
       return std::make_unique<CanvasResourceProviderBitmapGpuMemoryBuffer>(
           size, color_params, context_provider_wrapper, resource_dispatcher);
+    default:
+      NOTREACHED();
+      return nullptr;
   }
-
-  NOTREACHED();
-  return nullptr;
 }
 
 class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
@@ -1145,11 +1168,13 @@ void CanvasResourceProvider::CanvasImageProvider::CleanupLockedImages() {
 }
 
 CanvasResourceProvider::CanvasResourceProvider(
+    const ResourceProviderType& type,
     const IntSize& size,
     const CanvasColorParams& color_params,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
-    : context_provider_wrapper_(std::move(context_provider_wrapper)),
+    : type_(type),
+      context_provider_wrapper_(std::move(context_provider_wrapper)),
       resource_dispatcher_(resource_dispatcher),
       size_(size),
       color_params_(color_params),

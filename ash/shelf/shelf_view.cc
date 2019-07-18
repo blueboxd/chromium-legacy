@@ -397,7 +397,7 @@ void ShelfView::Init() {
   back_button_ = AddChildView(std::move(back_button_ptr));
 
   std::unique_ptr<HomeButton> home_button_ptr =
-      std::make_unique<HomeButton>(shelf_, this);
+      std::make_unique<HomeButton>(shelf_);
   ConfigureChildView(home_button_ptr.get());
   home_button_ = AddChildView(std::move(home_button_ptr));
   home_button_->set_context_menu_controller(this);
@@ -671,16 +671,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender == GetHomeButton()) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
-    const app_list::AppListShowSource show_source =
-        event.IsShiftDown() ? app_list::kShelfButtonFullscreen
-                            : app_list::kShelfButton;
-    GetHomeButton()->OnPressed(show_source, event.time_stamp());
-    return;
-  }
-
   // None of the checks in ShouldEventActivateButton() affects overflow button.
   // So, it is safe to be checked after handling overflow button.
   if (!ShouldEventActivateButton(sender, event)) {
@@ -785,9 +775,8 @@ bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
 
   const bool repost = IsRepostEvent(event);
 
-  // The back and app buttons are not part of the view model, treat them
-  // separately.
-  if (view == GetHomeButton() || view == GetBackButton())
+  // The back button is not part of the view model, treat it separately.
+  if (view == GetBackButton())
     return !repost;
 
   // Ignore if this is a repost event on the last pressed shelf item.

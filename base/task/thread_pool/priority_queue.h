@@ -36,6 +36,11 @@ class BASE_EXPORT PriorityQueue {
   // Cannot be called on an empty PriorityQueue.
   const SequenceSortKey& PeekSortKey() const;
 
+  // Returns a reference to the highest priority TaskSource in this
+  // PriorityQueue. Cannot be called on an empty PriorityQueue. The returned
+  // task source may be modified as long as its sort key isn't affected.
+  TaskSource* PeekTaskSource() const;
+
   // Removes and returns the highest priority TaskSource in this PriorityQueue.
   // Cannot be called on an empty PriorityQueue.
   RegisteredTaskSource PopTaskSource();

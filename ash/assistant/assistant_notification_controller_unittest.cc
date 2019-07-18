@@ -54,13 +54,9 @@ MATCHER_P(IdIs, expected_id, "") {
 
 class AssistantNotificationControllerTest : public AshTestBase {
  protected:
-  AssistantNotificationControllerTest() {
-    DestroyScopedTaskEnvironment();
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW,
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
-  }
+  AssistantNotificationControllerTest()
+      : AshTestBase(
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
   ~AssistantNotificationControllerTest() override = default;
 
   void SetUp() override {
@@ -125,7 +121,6 @@ class AssistantNotificationControllerTest : public AshTestBase {
  private:
   AssistantNotificationController* controller_;
   std::unique_ptr<AssistantNotificationModelObserverMock> observer_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationControllerTest);
 };

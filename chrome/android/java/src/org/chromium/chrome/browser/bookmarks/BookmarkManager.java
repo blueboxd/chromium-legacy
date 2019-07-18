@@ -85,6 +85,11 @@ public class BookmarkManager
         void notifyDataSetChanged();
         void onBookmarkDelegateInitialized(BookmarkDelegate bookmarkDelegate);
         void search(String query);
+
+        void moveUpOne(BookmarkId bookmarkId);
+        void moveDownOne(BookmarkId bookmarkId);
+        void moveToTop(BookmarkId bookmarkId);
+        void moveToBottom(BookmarkId bookmarkId);
     }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
@@ -149,6 +154,7 @@ public class BookmarkManager
             AccessibilityManager a11yManager =
                     (AccessibilityManager) getSelectableListLayout().getContext().getSystemService(
                             Context.ACCESSIBILITY_SERVICE);
+            mA11yEnabled = a11yManager.isEnabled();
             a11yManager.addAccessibilityStateChangeListener(enabled -> mA11yEnabled = enabled);
         }
 
@@ -427,6 +433,26 @@ public class BookmarkManager
         for (BookmarkUIObserver observer : mUIObservers) {
             notifyStateChange(observer);
         }
+    }
+
+    @Override
+    public void moveToBottom(BookmarkId bookmarkId) {
+        mAdapter.moveToBottom(bookmarkId);
+    }
+
+    @Override
+    public void moveToTop(BookmarkId bookmarkId) {
+        mAdapter.moveToTop(bookmarkId);
+    }
+
+    @Override
+    public void moveDownOne(BookmarkId bookmarkId) {
+        mAdapter.moveDownOne(bookmarkId);
+    }
+
+    @Override
+    public void moveUpOne(BookmarkId bookmarkId) {
+        mAdapter.moveUpOne(bookmarkId);
     }
 
     // BookmarkDelegate implementations.

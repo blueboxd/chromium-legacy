@@ -377,6 +377,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void SetOptionalExtensionsRequestedForTesting(bool request_extensions);
 
+  void InitializeFeatureInfo(ContextType context_type,
+                             const DisallowedFeatures& disallowed_features,
+                             bool force_reinitialize);
+
   void* GetScratchMemory(size_t size);
 
   template <typename T>
@@ -862,6 +866,9 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   std::vector<std::unique_ptr<gl::GLFence>> deschedule_until_finished_fences_;
 
   GLuint linking_program_service_id_ = 0u;
+
+  // CA Layer state
+  std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
 
   base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_{this};
 

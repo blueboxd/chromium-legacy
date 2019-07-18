@@ -2351,6 +2351,8 @@ enum WebFeature {
   kCSSValueAppearanceButtonForSelectRendered = 2965,
   kCSSValueAppearanceListboxForOthersRendered = 2966,
   kCSSValueAppearanceMeterForOthersRendered = 2967,
+  kSVGSMILDiscardElementParsed = 2968,
+  kSVGSMILDiscardElementTriggered = 2969,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

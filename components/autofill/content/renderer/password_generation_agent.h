@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
-#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"

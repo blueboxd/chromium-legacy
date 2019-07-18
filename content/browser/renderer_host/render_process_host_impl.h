@@ -36,7 +36,7 @@
 #include "content/browser/renderer_host/media/aec_dump_manager_impl.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
-#include "content/common/child_control.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -51,6 +51,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "net/base/network_isolation_key.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
@@ -861,7 +862,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<PluginRegistryImpl, BrowserThread::DeleteOnIOThread>
       plugin_registry_;
 
-  mojom::ChildControlPtr child_control_interface_;
+  mojo::Remote<mojom::ChildProcess> child_process_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;
   mojo::AssociatedBinding<mojom::RendererHost> renderer_host_binding_;

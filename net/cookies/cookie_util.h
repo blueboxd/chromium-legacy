@@ -37,6 +37,8 @@ NET_EXPORT std::string GetEffectiveDomain(const std::string& scheme,
 // On success returns true, and sets cookie_domain to either a
 //   -host cookie domain (ex: "google.com")
 //   -domain cookie domain (ex: ".google.com")
+// On success, DomainIsHostOnly(url.host()) is DCHECKed. The URL's host must not
+// begin with a '.' character.
 NET_EXPORT bool GetCookieDomainWithString(const GURL& url,
                                           const std::string& domain_string,
                                           std::string* result);

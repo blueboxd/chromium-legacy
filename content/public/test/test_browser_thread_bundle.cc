@@ -103,8 +103,7 @@ void TestBrowserThreadBundle::Init() {
 
   if (HasIOMainLoop()) {
     CHECK(base::MessageLoopCurrentForIO::IsSet());
-  } else if (main_thread_type() == MainThreadType::UI ||
-             main_thread_type() == MainThreadType::UI_MOCK_TIME) {
+  } else if (main_thread_type() == MainThreadType::UI) {
     CHECK(base::MessageLoopCurrentForUI::IsSet());
   }
 

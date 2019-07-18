@@ -1184,10 +1184,12 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // between the omnibox and the list of suggestions, and determine which
   // suggestion is currently selected, even though focus remains here on
   // the omnibox.
-  int32_t popup_view_id =
-      popup_view_->GetViewAccessibility().GetUniqueId().Get();
-  node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
-                                 {popup_view_id});
+  if (model()->popup_model()->IsOpen()) {
+    int32_t popup_view_id =
+        popup_view_->GetViewAccessibility().GetUniqueId().Get();
+    node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                                   {popup_view_id});
+  }
 
   base::string16::size_type entry_start;
   base::string16::size_type entry_end;

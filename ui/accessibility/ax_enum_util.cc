@@ -26,6 +26,8 @@ const char* ToString(ax::mojom::Event event) {
       return "childrenChanged";
     case ax::mojom::Event::kClicked:
       return "clicked";
+    case ax::mojom::Event::kControlsChanged:
+      return "controlsChanged";
     case ax::mojom::Event::kDocumentSelectionChanged:
       return "documentSelectionChanged";
     case ax::mojom::Event::kDocumentTitleChanged:
@@ -148,6 +150,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kChildrenChanged;
   if (0 == strcmp(event, "clicked"))
     return ax::mojom::Event::kClicked;
+  if (0 == strcmp(event, "controlsChanged"))
+    return ax::mojom::Event::kControlsChanged;
   if (0 == strcmp(event, "documentSelectionChanged"))
     return ax::mojom::Event::kDocumentSelectionChanged;
   if (0 == strcmp(event, "documentTitleChanged"))

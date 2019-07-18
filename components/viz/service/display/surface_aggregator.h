@@ -104,6 +104,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     bool is_fast_rounded_corner;
   };
 
+  struct ChildSurfaceInfo;
+  struct RenderPassMapEntry;
+
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
@@ -187,6 +190,14 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
 
+  void FindChildSurfaces(
+      SurfaceId surface_id,
+      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
+      const base::flat_set<RenderPassId>& pixel_moving_background_filter_passes,
+      const gfx::Transform& parent_transform,
+      RenderPassId render_pass_id,
+      base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
+      gfx::Rect* pixel_moving_backdrop_filters_rect);
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
                         int parent_pass,

@@ -13,8 +13,6 @@ import fnmatch
 import json
 import os
 import sys
-import tempfile
-import xml.etree.ElementTree as ET
 
 import devil_chromium
 from devil.utils import cmd_helper
@@ -28,8 +26,8 @@ _PARTIAL_PACKAGE_NAMES = ['com/google', 'org/chromium']
 # and input path to non-instrumented jars.
 # e.g.
 # 'source_dirs': [
-# "chrome/android/java/src/org/chromium/chrome/browser/toolbar/bottom",
-# "chrome/android/java/src/org/chromium/chrome/browser/ui/system",
+#   "chrome/android/java/src/org/chromium/chrome/browser/toolbar/bottom",
+#   "chrome/android/java/src/org/chromium/chrome/browser/ui/system",
 # ...]
 # 'input_path':
 #   '$CHROMIUM_OUTPUT_DIR/\
@@ -67,13 +65,10 @@ def _ParseArguments(parser):
   parser.add_argument(
       '--format',
       required=True,
-      choices=['html', 'xml', 'csv', 'json'],
-      help='Output report format. Choose one from html, xml, csv and json.'
-      'json format conforms to '
-      '//infra/appengine/findit/model/proto/code_coverage.proto')
+      choices=['html', 'xml', 'csv'],
+      help='Output report format. Choose one from html, xml and csv.')
   parser.add_argument('--output-dir', help='html report output directory.')
-  parser.add_argument(
-      '--output-file', help='xml, csv or json report output file.')
+  parser.add_argument('--output-file', help='xml or csv report output file.')
   parser.add_argument(
       '--coverage-dir',
       required=True,
@@ -108,133 +103,12 @@ def _ParseArguments(parser):
     if not args.output_dir:
       parser.error('--output-dir needed for html report.')
   elif not args.output_file:
-    parser.error('--output-file needed for xml, csv or json report.')
+    parser.error('--output-file needed for xml or csv report.')
 
   if not (args.sources_json_dir or args.class_files):
     parser.error('At least either --sources-json-dir or --class-files needed.')
 
-  if args.format == 'json' and not args.sources_json_dir:
-    parser.error('--sources-json-dir needed for json report')
-
   return args
-
-
-def _AddCoverageMetricSummaries(original_dict, tree_root):
-  """Adds coverage summaries data to given dictionary.
-
-  JaCoCo coverage counter type definition:
-  https://www.jacoco.org/jacoco/trunk/doc/counters.html
-  Code coverage Metric message definition:
-  https://chromium.googlesource.com/infra/infra/+/HEAD/appengine/findit/model/proto/code_coverage.proto#77
-
-  Args:
-    original_dict: The given dictionary to add coverage metrics.
-    tree_root: The root element to search for "counter" tag.
-  """
-  original_dict['summaries'] = []
-  for counter in tree_root.findall('counter'):
-    summary = {}
-    summary['name'] = counter.attrib['type'].lower()
-    summary['covered'] = int(counter.attrib['covered'])
-    summary['total'] = int(counter.attrib['missed']) + int(
-        counter.attrib['covered'])
-    original_dict['summaries'].append(summary)
-
-
-def _GenerateJsonCoverageMetadata(out_file_path, jacoco_xml_path, source_dirs):
-  """Generates a JSON representation based on Jacoco xml report.
-
-  JSON format conforms to the proto:
-  //infra/appengine/findit/model/proto/code_coverage.proto
-  Writes the results of the coverage analysis to the file specified by
-  |out_file_path|.
-
-  Args:
-    out_file_path: A string representing the location to write JSON metadata.
-    jacoco_xml_path: A string representing the file path to Jacoco xml report.
-    source_dirs: A list of source directories of Java source files.
-
-  Raises:
-    Exception: No Jacoco xml report found.
-  """
-  if not os.path.exists(jacoco_xml_path):
-    raise Exception('No Jacoco xml report found on %s' % jacoco_xml_path)
-
-  data = {}
-  data['files'] = []
-
-  tree = ET.parse(jacoco_xml_path)
-  root = tree.getroot()
-
-  for package in root.findall('package'):
-    package_path = package.attrib['name']
-    print('Processing package %s' % package_path)
-
-    # Find package directory according to src root.
-    package_source_dir = ''
-    for source_dir in source_dirs:
-      # Filter out 'out/...' source directories.
-      if source_dir.startswith('out/'):
-        continue
-      if package_path in source_dir:
-        package_source_dir = source_dir
-        break
-    # TODO(crbug/966918): Skip auto-generated Java files/packages for now.
-    if not package_source_dir:
-      print('Cannot find package %s directory according to src root' %
-            package_path)
-      continue
-
-    for sourcefile in package.findall('sourcefile'):
-      sourcefile_name = sourcefile.attrib['name']
-      path = os.path.join(package_source_dir, sourcefile_name)
-      print('Processing file %s' % path)
-
-      file_coverage = {}
-      # Source path needs to start with '//', https://bit.ly/2XC80ZL
-      file_coverage['path'] = '//' + path
-      file_coverage['lines'] = []
-      file_coverage['branches'] = []
-
-      # Calculate file's total lines.
-      abs_path = os.path.join(host_paths.DIR_SOURCE_ROOT, path)
-      if os.path.exists(abs_path):
-        with open(abs_path, 'r') as f:
-          file_coverage['total_lines'] = sum(1 for _ in f)
-
-      for line in sourcefile.findall('line'):
-        line_number = int(line.attrib['nr'])
-        covered_instructions = int(line.attrib['ci'])
-        missed_branches = int(line.attrib['mb'])
-        covered_branches = int(line.attrib['cb'])
-
-        is_branch = False
-        if missed_branches > 0 or covered_branches > 0:
-          is_branch = True
-
-        line_coverage = {}
-        line_coverage['first'] = line_number
-        line_coverage['last'] = line_number
-        line_coverage['count'] = covered_instructions
-        file_coverage['lines'].append(line_coverage)
-
-        if is_branch:
-          branch_coverage = {}
-          branch_coverage['line'] = line_number
-          branch_coverage['total'] = covered_branches + missed_branches
-          branch_coverage['covered'] = covered_branches
-          file_coverage['branches'].append(branch_coverage)
-
-      # Add coverage metrics for one sourcefile.
-      _AddCoverageMetricSummaries(file_coverage, sourcefile)
-
-      data['files'].append(file_coverage)
-
-  # Add coverage metrics for the src report.
-  _AddCoverageMetricSummaries(data, root)
-
-  with open(out_file_path, 'w') as f:
-    json.dump(data, f)
 
 
 def main():
@@ -285,39 +159,30 @@ def main():
   for source in fixed_source_dirs:
     cmd += ['--sourcefiles', source]
 
-  # For json format, xml report will be generated first temporarily
-  # then parsed to json metadata to --output-file.
-  with tempfile.NamedTemporaryFile() as temp:
+  if args.format == 'html':
+    out_cmd = ['--html', args.output_dir]
+  elif args.format == 'xml':
+    out_cmd = ['--xml', args.output_file]
+  else:
+    out_cmd = ['--csv', args.output_file]
+
+  cmd += out_cmd
+
+  exit_code = cmd_helper.RunCmd(cmd)
+
+  if args.cleanup:
+    for f in coverage_files:
+      os.remove(f)
+
+  # Command tends to exit with status 0 when it actually failed.
+  if not exit_code:
     if args.format == 'html':
-      out_cmd = ['--html', args.output_dir]
-    elif args.format == 'xml':
-      out_cmd = ['--xml', args.output_file]
-    elif args.format == 'csv':
-      out_cmd = ['--csv', args.output_file]
-    else:
-      out_cmd = ['--xml', temp.name]
-
-    cmd += out_cmd
-
-    exit_code = cmd_helper.RunCmd(cmd)
-
-    if args.cleanup:
-      for f in coverage_files:
-        os.remove(f)
-
-    # Command tends to exit with status 0 when it actually failed.
-    if not exit_code:
-      if args.format == 'html':
-        if not os.path.exists(args.output_dir) or not os.listdir(
-            args.output_dir):
-          print('No report generated at %s' % args.output_dir)
-          exit_code = 1
-      elif not os.path.exists(out_cmd[1]):
-        print('No report generated at %s' % args.output_file)
+      if not os.path.isdir(args.output_dir) or not os.listdir(args.output_dir):
+        print('No report generated at %s' % args.output_dir)
         exit_code = 1
-
-    if args.format == 'json':
-      _GenerateJsonCoverageMetadata(args.output_file, temp.name, source_dirs)
+    elif not os.path.isfile(args.output_file):
+      print('No report generated at %s' % args.output_file)
+      exit_code = 1
 
   return exit_code
 

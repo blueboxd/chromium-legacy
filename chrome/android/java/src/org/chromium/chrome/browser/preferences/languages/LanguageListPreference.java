@@ -69,16 +69,13 @@ public class LanguageListPreference extends Preference {
                     if (!isDragEnabled()) {
                         // Add "Move to top" and "Move up" menu when it's not the first one.
                         if (position > 0) {
-                            menuItems.add(new Item(
-                                    mContext, R.string.languages_item_option_move_to_top, true));
-                            menuItems.add(new Item(
-                                    mContext, R.string.languages_item_option_move_up, true));
+                            menuItems.add(new Item(mContext, R.string.menu_item_move_to_top, true));
+                            menuItems.add(new Item(mContext, R.string.menu_item_move_up, true));
                         }
 
                         // Add "Move down" menu when it's not the last one.
                         if (position < (languageCount - 1)) {
-                            menuItems.add(new Item(
-                                    mContext, R.string.languages_item_option_move_down, true));
+                            menuItems.add(new Item(mContext, R.string.menu_item_move_down, true));
                         }
                     }
 
@@ -101,13 +98,13 @@ public class LanguageListPreference extends Preference {
                         LanguagesManager.getInstance().removeFromAcceptLanguages(info.getCode());
                         LanguagesManager.recordAction(
                                 LanguagesManager.LanguageSettingsActionType.LANGUAGE_REMOVED);
-                    } else if (item.getTextId() == R.string.languages_item_option_move_up) {
+                    } else if (item.getTextId() == R.string.menu_item_move_up) {
                         LanguagesManager.getInstance().moveLanguagePosition(
                                 info.getCode(), -1, true);
-                    } else if (item.getTextId() == R.string.languages_item_option_move_down) {
+                    } else if (item.getTextId() == R.string.menu_item_move_down) {
                         LanguagesManager.getInstance().moveLanguagePosition(
                                 info.getCode(), 1, true);
-                    } else if (item.getTextId() == R.string.languages_item_option_move_to_top) {
+                    } else if (item.getTextId() == R.string.menu_item_move_to_top) {
                         LanguagesManager.getInstance().moveLanguagePosition(
                                 info.getCode(), -position, true);
                     }

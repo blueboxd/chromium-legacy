@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
@@ -40,7 +39,6 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/find_result_waiter.h"
@@ -644,6 +642,24 @@ void WaitForBrowserToOpen() {
 void WaitForBrowserToClose(const Browser* browser) {
   BrowserChangeObserver(browser, BrowserChangeObserver::ChangeType::kRemoved)
       .Wait();
+}
+
+TabAddedWaiter::TabAddedWaiter(Browser* browser) {
+  scoped_observer_.Add(browser->tab_strip_model());
+}
+
+TabAddedWaiter::~TabAddedWaiter() = default;
+
+void TabAddedWaiter::Wait() {
+  run_loop_.Run();
+}
+
+void TabAddedWaiter::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted)
+    run_loop_.Quit();
 }
 
 }  // namespace ui_test_utils

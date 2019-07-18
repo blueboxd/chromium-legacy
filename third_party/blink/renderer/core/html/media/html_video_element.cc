@@ -639,11 +639,13 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   }
 
   IntSize intrinsic_size(videoWidth(), videoHeight());
-  // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint
+  // TODO(fserb): this should not be default software.
+  // FIXME: Not sure if we should we be doing anything with the AccelerationHint
   // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          intrinsic_size, CanvasResourceProvider::kSoftwareResourceUsage,
+          intrinsic_size,
+          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
           nullptr,  // context_provider_wrapper
           0,        // msaa_sample_count
           CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,

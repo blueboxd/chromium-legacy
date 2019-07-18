@@ -44,7 +44,8 @@ class AppBannerUiDelegateAndroid {
       const SkBitmap& primary_icon,
       const SkBitmap& badge_icon,
       WebappInstallSource install_source,
-      bool is_webapk);
+      bool is_webapk,
+      bool has_primary_maskable_icon);
 
   // Creates a delegate for promoting the installation of an Android app.
   static std::unique_ptr<AppBannerUiDelegateAndroid> Create(
@@ -112,7 +113,8 @@ class AppBannerUiDelegateAndroid {
                              const SkBitmap& primary_icon,
                              const SkBitmap& badge_icon,
                              WebappInstallSource install_source,
-                             bool is_webapk);
+                             bool is_webapk,
+                             bool has_primary_maskable_icon);
 
   // Delegate for promoting an Android app.
   AppBannerUiDelegateAndroid(
@@ -144,6 +146,8 @@ class AppBannerUiDelegateAndroid {
 
   const SkBitmap primary_icon_;
   const SkBitmap badge_icon_;
+
+  bool has_primary_maskable_icon_;
 
   std::string package_name_;
 

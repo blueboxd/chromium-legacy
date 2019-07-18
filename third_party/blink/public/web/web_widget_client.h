@@ -54,6 +54,7 @@ class SkBitmap;
 
 namespace cc {
 struct ElementId;
+class ScopedDeferMainFrameUpdate;
 class PaintImage;
 struct ViewportLayers;
 }
@@ -322,6 +323,21 @@ class WebWidgetClient {
       cc::EventListenerClass) const {
     return cc::EventListenerProperties::kNone;
   }
+
+  // Prevents any updates to the input for the layer tree, and the layer tree
+  // itself, and the layer tree from becoming visible.
+  virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+  DeferMainFrameUpdate() {
+    return nullptr;
+  }
+
+  // Start deferring commits to the compositor, allowing document lifecycle
+  // updates without committing the layer tree. Commits are deferred
+  // until at most the given |timeout| has passed. If multiple calls are made
+  // when deferal is active then the initial timeout applies.
+  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
+  // Immediately stop deferring commits.
+  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
 };
 
 }  // namespace blink

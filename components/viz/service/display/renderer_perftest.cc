@@ -398,7 +398,7 @@ template <>
 std::unique_ptr<OutputSurface>
 RendererPerfTest<SkiaRenderer>::CreateOutputSurface(
     GpuServiceImpl* gpu_service) {
-  return std::make_unique<SkiaOutputSurfaceImpl>(
+  return SkiaOutputSurfaceImpl::Create(
       std::make_unique<SkiaOutputSurfaceDependencyImpl>(
           gpu_service, gpu::kNullSurfaceHandle),
       renderer_settings_);

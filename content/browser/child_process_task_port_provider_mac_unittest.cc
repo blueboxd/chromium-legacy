@@ -12,7 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
-#include "content/common/child_control.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ namespace content {
 using testing::_;
 using testing::WithArgs;
 
-class MockChildControl : public mojom::ChildControl {
+class MockChildProcess : public mojom::ChildProcess {
  public:
   MOCK_METHOD0(ProcessShutdown, void());
   MOCK_METHOD1(GetTaskPort, void(GetTaskPortCallback));
@@ -32,9 +32,12 @@ class MockChildControl : public mojom::ChildControl {
   MOCK_METHOD1(GetBackgroundTracingAgentProvider,
                void(mojo::PendingReceiver<
                     tracing::mojom::BackgroundTracingAgentProvider>));
+  MOCK_METHOD0(CrashHungProcess, void());
   MOCK_METHOD2(RunService,
                void(const std::string&,
                     mojo::PendingReceiver<service_manager::mojom::Service>));
+  MOCK_METHOD1(BindServiceInterface,
+               void(mojo::GenericPendingReceiver receiver));
 };
 
 class ChildProcessTaskPortProviderTest : public testing::Test,
@@ -139,15 +142,15 @@ TEST_F(ChildProcessTaskPortProviderTest, ChildLifecycle) {
   EXPECT_EQ(1u, GetSendRightRefCount(send_right.get()));
   EXPECT_EQ(0u, GetDeadNameRefCount(send_right.get()));
 
-  // Return it when the ChildControl interface is called.
-  MockChildControl child_control;
-  EXPECT_CALL(child_control, GetTaskPort(_))
+  // Return it when the ChildProcess interface is called.
+  MockChildProcess child_process;
+  EXPECT_CALL(child_process, GetTaskPort(_))
       .WillOnce(WithArgs<0>(
-          [&send_right](mojom::ChildControl::GetTaskPortCallback callback) {
+          [&send_right](mojom::ChildProcess::GetTaskPortCallback callback) {
             std::move(callback).Run(mojo::WrapMachPort(send_right.get()));
           }));
 
-  provider()->OnChildProcessLaunched(99, &child_control);
+  provider()->OnChildProcessLaunched(99, &child_process);
 
   // Verify that the task-for-pid association is established.
   WaitForTaskPort();
@@ -181,11 +184,11 @@ TEST_F(ChildProcessTaskPortProviderTest, DeadTaskPort) {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::CreateSequencedTaskRunner({});
 
-  MockChildControl child_control;
-  EXPECT_CALL(child_control, GetTaskPort(_))
+  MockChildProcess child_process;
+  EXPECT_CALL(child_process, GetTaskPort(_))
       .WillOnce(
           WithArgs<0>([&task_runner, &receive_right, &send_right](
-                          mojom::ChildControl::GetTaskPortCallback callback) {
+                          mojom::ChildProcess::GetTaskPortCallback callback) {
             mojo::ScopedHandle mach_handle =
                 mojo::WrapMachPort(send_right.get());
 
@@ -201,18 +204,18 @@ TEST_F(ChildProcessTaskPortProviderTest, DeadTaskPort) {
                 base::BindOnce(std::move(callback), std::move(mach_handle)));
           }));
 
-  provider()->OnChildProcessLaunched(6, &child_control);
+  provider()->OnChildProcessLaunched(6, &child_process);
 
   // Create a second fake process.
   base::mac::ScopedMachReceiveRight receive_right2;
   base::mac::ScopedMachSendRight send_right2;
   ASSERT_TRUE(base::mac::CreateMachPort(&receive_right2, &send_right2));
 
-  MockChildControl child_contol2;
+  MockChildProcess child_contol2;
   EXPECT_CALL(child_contol2, GetTaskPort(_))
       .WillOnce(
           WithArgs<0>([&task_runner, &send_right2](
-                          mojom::ChildControl::GetTaskPortCallback callback) {
+                          mojom::ChildProcess::GetTaskPortCallback callback) {
             task_runner->PostTask(
                 FROM_HERE,
                 base::BindOnce(std::move(callback),
@@ -245,22 +248,22 @@ TEST_F(ChildProcessTaskPortProviderTest, ReplacePort) {
   EXPECT_EQ(1u, GetSendRightRefCount(send_right.get()));
   EXPECT_EQ(0u, GetDeadNameRefCount(send_right.get()));
 
-  // Return it when the ChildControl interface is called.
-  MockChildControl child_control;
-  EXPECT_CALL(child_control, GetTaskPort(_))
+  // Return it when the ChildProcess interface is called.
+  MockChildProcess child_process;
+  EXPECT_CALL(child_process, GetTaskPort(_))
       .Times(2)
       .WillRepeatedly(WithArgs<0>(
-          [&receive_right](mojom::ChildControl::GetTaskPortCallback callback) {
+          [&receive_right](mojom::ChildProcess::GetTaskPortCallback callback) {
             std::move(callback).Run(mojo::WrapMachPort(receive_right.get()));
           }));
 
-  provider()->OnChildProcessLaunched(42, &child_control);
+  provider()->OnChildProcessLaunched(42, &child_process);
   WaitForTaskPort();
 
   EXPECT_EQ(2u, GetSendRightRefCount(send_right.get()));
   EXPECT_EQ(0u, GetDeadNameRefCount(send_right.get()));
 
-  provider()->OnChildProcessLaunched(42, &child_control);
+  provider()->OnChildProcessLaunched(42, &child_process);
   WaitForTaskPort();
 
   EXPECT_EQ(2u, GetSendRightRefCount(send_right.get()));
@@ -277,14 +280,14 @@ TEST_F(ChildProcessTaskPortProviderTest, ReplacePort) {
   ASSERT_TRUE(base::mac::CreateMachPort(&receive_right2, &send_right2));
   EXPECT_EQ(1u, GetSendRightRefCount(send_right2.get()));
 
-  MockChildControl child_control2;
-  EXPECT_CALL(child_control2, GetTaskPort(_))
+  MockChildProcess child_process2;
+  EXPECT_CALL(child_process2, GetTaskPort(_))
       .WillOnce(
-          [&send_right2](mojom::ChildControl::GetTaskPortCallback callback) {
+          [&send_right2](mojom::ChildProcess::GetTaskPortCallback callback) {
             std::move(callback).Run(mojo::WrapMachPort(send_right2.get()));
           });
 
-  provider()->OnChildProcessLaunched(42, &child_control2);
+  provider()->OnChildProcessLaunched(42, &child_process2);
   WaitForTaskPort();
 
   // Reference to |send_right| is dropped from the map and is solely owned

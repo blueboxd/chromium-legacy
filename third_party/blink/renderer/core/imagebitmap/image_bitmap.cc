@@ -586,16 +586,17 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
+  // TODO(fserb): this shouldn't be software?
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           IntSize(video->videoWidth(), video->videoHeight()),
-          CanvasResourceProvider::kSoftwareResourceUsage,
+          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
           nullptr,              // context_provider_wrapper
           0,                    // msaa_sample_count
           CanvasColorParams(),  // TODO: set color space here to avoid clamping
           CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr,              // canvas_resource_dispatcher
-          IsAccelerated());     // is_origin_top_left
+          nullptr,           // canvas_resource_dispatcher
+          IsAccelerated());  // is_origin_top_left
   if (!resource_provider)
     return;
 

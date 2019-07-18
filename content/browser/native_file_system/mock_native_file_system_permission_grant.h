@@ -23,6 +23,8 @@ class MockNativeFileSystemPermissionGrant
   MOCK_METHOD3(RequestPermission_,
                void(int process_id, int frame_id, base::OnceClosure& callback));
 
+  using NativeFileSystemPermissionGrant::NotifyPermissionStatusChanged;
+
  protected:
   ~MockNativeFileSystemPermissionGrant();
 };

@@ -1195,6 +1195,8 @@ void LocationBarView::OnPopupVisibilityChanged() {
   // We indent the textfield when the popup is open to align to suggestions.
   Layout();
   SchedulePaint();
+  omnibox_view_->NotifyAccessibilityEvent(ax::mojom::Event::kControlsChanged,
+                                          true);
 }
 
 const LocationBarModel* LocationBarView::GetLocationBarModel() const {

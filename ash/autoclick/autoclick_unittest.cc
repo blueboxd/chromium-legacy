@@ -103,13 +103,8 @@ class MouseEventCapturer : public ui::EventHandler {
 
 class AutoclickTest : public AshTestBase {
  public:
-  AutoclickTest() {
-    DestroyScopedTaskEnvironment();
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME);
-  }
+  AutoclickTest()
+      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AutoclickTest() override = default;
 
   void SetUp() override {
@@ -220,7 +215,6 @@ class AutoclickTest : public AshTestBase {
 
  private:
   MouseEventCapturer mouse_event_capturer_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickTest);
 };

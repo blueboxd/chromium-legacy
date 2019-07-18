@@ -67,9 +67,11 @@ namespace {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MACOSX) || \
     defined(OS_WIN) || defined(OS_LINUX)
 gpu::CommandBufferStub* GetCommandBufferStub(
+    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     base::UnguessableToken channel_token,
     int32_t route_id) {
+  DCHECK(gpu_task_runner->BelongsToCurrentThread());
   if (!media_gpu_channel_manager)
     return nullptr;
 
@@ -204,7 +206,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
     case VideoDecoderImplementation::kDefault: {
 #if defined(OS_ANDROID)
       auto get_stub_cb = base::Bind(
-          &GetCommandBufferStub, media_gpu_channel_manager_,
+          &GetCommandBufferStub, gpu_task_runner_, media_gpu_channel_manager_,
           command_buffer_id->channel_token, command_buffer_id->route_id);
       auto image_provider = std::make_unique<DirectSharedImageVideoProvider>(
           gpu_task_runner_, std::move(get_stub_cb));
@@ -227,7 +229,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
             base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
                                 base::Unretained(frame_pool.get())),
             std::move(gpu_task_runner_),
-            base::BindOnce(&GetCommandBufferStub, media_gpu_channel_manager_,
+            base::BindOnce(&GetCommandBufferStub, gpu_task_runner_,
+                           media_gpu_channel_manager_,
                            command_buffer_id->channel_token,
                            command_buffer_id->route_id));
         cros_video_decoder = ChromeosVideoDecoderFactory::Create(
@@ -241,16 +244,18 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
         video_decoder = VdaVideoDecoder::Create(
             task_runner, gpu_task_runner_, media_log->Clone(),
             target_color_space, gpu_preferences_, gpu_workarounds_,
-            base::BindRepeating(
-                &GetCommandBufferStub, media_gpu_channel_manager_,
-                command_buffer_id->channel_token, command_buffer_id->route_id));
+            base::BindRepeating(&GetCommandBufferStub, gpu_task_runner_,
+                                media_gpu_channel_manager_,
+                                command_buffer_id->channel_token,
+                                command_buffer_id->route_id));
       }
 
 #elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
       video_decoder = VdaVideoDecoder::Create(
           task_runner, gpu_task_runner_, media_log->Clone(), target_color_space,
           gpu_preferences_, gpu_workarounds_,
-          base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
+          base::BindRepeating(&GetCommandBufferStub, gpu_task_runner_,
+                              media_gpu_channel_manager_,
                               command_buffer_id->channel_token,
                               command_buffer_id->route_id));
 #endif  // defined(OS_ANDROID)
@@ -266,9 +271,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
         video_decoder = D3D11VideoDecoder::Create(
             gpu_task_runner_, media_log->Clone(), gpu_preferences_,
             gpu_workarounds_,
-            base::BindRepeating(
-                &GetCommandBufferStub, media_gpu_channel_manager_,
-                command_buffer_id->channel_token, command_buffer_id->route_id),
+            base::BindRepeating(&GetCommandBufferStub, gpu_task_runner_,
+                                media_gpu_channel_manager_,
+                                command_buffer_id->channel_token,
+                                command_buffer_id->route_id),
             GetD3D11DeviceCallback(), *d3d11_supported_configs_);
       }
 #endif  // defined(OS_WIN)

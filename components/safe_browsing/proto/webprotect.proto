@@ -1,0 +1,64 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package safe_browsing;
+
+// Malware-specific scanning information.
+message MalwareDeepScanningClientRequest {
+  enum Population {
+    POPULATION_UNKNOWN = 0;
+    POPULATION_ENTERPRISE = 1;
+    POPULATION_TITANIUM = 2;
+  }
+  // Identifies the type of client.
+  optional Population population = 1;
+
+  // The download token from the original ClientDownloadResponse.
+  optional string download_token = 2;
+}
+
+// DLP-specific scanning information.
+message DlpDeepScanningClientRequest {}
+
+// Scanning configuration sent from Chrome.
+message DeepScanningClientRequest {
+  // The DM Token for Enterprise-enrolled devices
+  optional string dm_token = 1;
+
+  // Firebase Cloud Messaging token used to notify client of verdict.
+  optional string fcm_notification_token = 2;
+
+  // Malware scan specific request info.
+  optional MalwareDeepScanningClientRequest malware_scan_request = 3;
+
+  // DLP scan specific request info.
+  optional DlpDeepScanningClientRequest dlp_scan_request = 4;
+}
+
+// Malware-specific response given back for scanned content.
+message MalwareDeepScanningClientResponse {
+  enum Verdict {
+    VERDICT_UNSPECIFIED = 0;
+    CLEAN = 1;
+    UWS = 2;
+    MALWARE = 3;
+  }
+  // Verdict given to scanned content.
+  optional Verdict verdict = 1;
+}
+
+// DLP-specific response given back for scanned content.
+message DlpDeepScanningClientResponse {}
+
+message DeepScanningClientResponse {
+  // Malware scan specific response info.
+  optional MalwareDeepScanningClientResponse malware_scan_response = 1;
+
+  // DLP scan specific response info.
+  optional DlpDeepScanningClientResponse dlp_scan_response = 2;
+}

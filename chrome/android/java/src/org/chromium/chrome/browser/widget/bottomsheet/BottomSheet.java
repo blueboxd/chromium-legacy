@@ -37,8 +37,6 @@ import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
-import org.chromium.chrome.browser.toolbar.top.ActionModeController.ActionBarDelegate;
-import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -235,9 +233,6 @@ public class BottomSheet
 
     /** The activity displaying the bottom sheet. */
     protected ChromeActivity mActivity;
-
-    /** A delegate for when the action bar starts showing. */
-    private ViewShiftingActionBarDelegate mActionBarDelegate;
 
     /** Whether {@link #destroy()} has been called. **/
     private boolean mIsDestroyed;
@@ -483,14 +478,6 @@ public class BottomSheet
     }
 
     /**
-     * @return An action bar delegate that appropriately moves the sheet when the action bar is
-     *         shown.
-     */
-    public ActionBarDelegate getActionBarDelegate() {
-        return mActionBarDelegate;
-    }
-
-    /**
      * @return Whether the sheet is in the process of closing.
      */
     public boolean isClosing() {
@@ -559,7 +546,6 @@ public class BottomSheet
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
 
         mActivity = activity;
-        mActionBarDelegate = new ViewShiftingActionBarDelegate(mActivity, this);
 
         getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -1397,13 +1383,6 @@ public class BottomSheet
     @VisibleForTesting
     public @Nullable BottomSheetContent getCurrentSheetContent() {
         return mSheetContent;
-    }
-
-    /**
-     * @return The {@link BottomSheetMetrics} used to record user actions and histograms.
-     */
-    public BottomSheetMetrics getBottomSheetMetrics() {
-        return mMetrics;
     }
 
     /**

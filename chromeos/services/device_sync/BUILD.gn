@@ -65,6 +65,10 @@ static_library("device_sync") {
     "cryptauth_key_registry.h",
     "cryptauth_key_registry_impl.cc",
     "cryptauth_key_registry_impl.h",
+    "cryptauth_metadata_syncer.cc",
+    "cryptauth_metadata_syncer.h",
+    "cryptauth_metadata_syncer_impl.cc",
+    "cryptauth_metadata_syncer_impl.h",
     "cryptauth_scheduler.cc",
     "cryptauth_scheduler.h",
     "cryptauth_scheduler_impl.cc",
@@ -147,6 +151,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "cryptauth_v2_device_sync_test_devices.cc",
+    "cryptauth_v2_device_sync_test_devices.h",
     "fake_cryptauth_device_manager.cc",
     "fake_cryptauth_device_manager.h",
     "fake_cryptauth_ecies_encryptor.cc",
@@ -167,6 +173,8 @@ static_library("test_support") {
     "fake_device_sync.h",
     "fake_device_sync_observer.cc",
     "fake_device_sync_observer.h",
+    "fake_ecies_encryption.cc",
+    "fake_ecies_encryption.h",
     "fake_remote_device_provider.cc",
     "fake_remote_device_provider.h",
     "fake_software_feature_manager.cc",
@@ -184,6 +192,7 @@ static_library("test_support") {
   deps = [
     ":device_sync",
     "//base",
+    "//chromeos/services/device_sync/proto:test_support",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
     "//testing/gmock",
@@ -209,6 +218,7 @@ source_set("unit_tests") {
     "cryptauth_key_proof_computer_impl_unittest.cc",
     "cryptauth_key_registry_impl_unittest.cc",
     "cryptauth_key_unittest.cc",
+    "cryptauth_metadata_syncer_impl_unittest.cc",
     "cryptauth_scheduler_impl_unittest.cc",
     "cryptauth_v2_enroller_impl_unittest.cc",
     "cryptauth_v2_enrollment_manager_impl_unittest.cc",

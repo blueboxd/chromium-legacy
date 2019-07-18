@@ -463,6 +463,10 @@ class CONTENT_EXPORT RenderWidget
       cc::EventListenerProperties properties) override;
   cc::EventListenerProperties EventListenerProperties(
       cc::EventListenerClass event_class) const override;
+  std::unique_ptr<cc::ScopedDeferMainFrameUpdate> DeferMainFrameUpdate()
+      override;
+  void StartDeferringCommits(base::TimeDelta timeout) override;
+  void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
 
   // Registers a SwapPromise to report presentation time and possibly swap time.
   // If |swap_time_callback| is not a null callback, it would be called once

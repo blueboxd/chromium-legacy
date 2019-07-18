@@ -1286,15 +1286,6 @@
           'all',
         ],
       },
-      'Linux ARM': {
-        'mixins': [
-          'linux-trusty',
-          'arm_tester',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_arm_gtests',
-        },
-      },
       'Linux Builder Goma Canary': {
         'mixins': [
           'linux-trusty',
@@ -1633,7 +1624,6 @@
         },
         'test_suites': {
           'gpu_telemetry_tests': 'gpu_chromeos_telemetry_tests',
-          'isolated_scripts': 'chromeos_experimental_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
       },

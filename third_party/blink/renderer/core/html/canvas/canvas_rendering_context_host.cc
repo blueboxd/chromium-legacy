@@ -96,12 +96,16 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
       if (Is3d()) {
         CanvasResourceProvider::ResourceUsage usage;
         if (SharedGpuContext::IsGpuCompositingEnabled()) {
-          if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirect3DResourceUsage;
-          else
-            usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+          if (LowLatencyEnabled()) {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedDirect3DResourceUsage;
+          } else {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedCompositedResourceUsage;
+          }
         } else {
-          usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+          usage = CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage;
         }
 
         CanvasResourceProvider::PresentationMode presentation_mode;
@@ -118,7 +122,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         const bool is_origin_top_left =
             !SharedGpuContext::IsGpuCompositingEnabled();
 
-        ReplaceResourceProvider(CanvasResourceProvider::Create(
+        ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             0 /* msaa_sample_count */, ColorParams(), presentation_mode,
             std::move(dispatcher), is_origin_top_left));
@@ -129,12 +133,16 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
 
         CanvasResourceProvider::ResourceUsage usage;
         if (want_acceleration) {
-          if (LowLatencyEnabled())
-            usage = CanvasResourceProvider::kAcceleratedDirect2DResourceUsage;
-          else
-            usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+          if (LowLatencyEnabled()) {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedDirect2DResourceUsage;
+          } else {
+            usage = CanvasResourceProvider::ResourceUsage::
+                kAcceleratedCompositedResourceUsage;
+          }
         } else {
-          usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+          usage = CanvasResourceProvider::ResourceUsage::
+              kSoftwareCompositedResourceUsage;
         }
 
         const CanvasResourceProvider::PresentationMode presentation_mode =
@@ -146,7 +154,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         const bool is_origin_top_left =
             !want_acceleration || LowLatencyEnabled();
 
-        ReplaceResourceProvider(CanvasResourceProvider::Create(
+        ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
             Size(), usage, SharedGpuContext::ContextProviderWrapper(),
             GetMSAASampleCountFor2dContext(), ColorParams(), presentation_mode,
             std::move(dispatcher), is_origin_top_left));

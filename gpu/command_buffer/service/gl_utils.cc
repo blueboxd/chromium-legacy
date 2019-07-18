@@ -1085,5 +1085,34 @@ gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
   }
 }
 
+bool GetGFXBufferFormat(GLenum internal_format, gfx::BufferFormat* out_format) {
+  switch (internal_format) {
+    case GL_RGBA8_OES:
+      *out_format = gfx::BufferFormat::RGBA_8888;
+      return true;
+    case GL_BGRA8_EXT:
+      *out_format = gfx::BufferFormat::BGRA_8888;
+      return true;
+    case GL_RGBA16F_EXT:
+      *out_format = gfx::BufferFormat::RGBA_F16;
+      return true;
+    case GL_R8_EXT:
+      *out_format = gfx::BufferFormat::R_8;
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool GetGFXBufferUsage(GLenum buffer_usage, gfx::BufferUsage* out_usage) {
+  switch (buffer_usage) {
+    case GL_SCANOUT_CHROMIUM:
+      *out_usage = gfx::BufferUsage::SCANOUT;
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu

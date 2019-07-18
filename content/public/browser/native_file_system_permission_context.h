@@ -16,9 +16,6 @@ namespace content {
 // All these methods should always be called on the same sequence.
 class NativeFileSystemPermissionContext {
  public:
-  // TODO(mek): Add methods related to read permissions as well, when revoking
-  // and re-prompting for those gets implemented.
-
   // The type of action a user took that resulted in needing a permission grant
   // for a particular path. This is used to signal to the permission context if
   // the path was the result of a "save" operation, which an implementation can
@@ -34,15 +31,35 @@ class NativeFileSystemPermissionContext {
     kSave,
   };
 
+  // Returns the read permission grant to use for a particular path.
+  // |process_id| and |frame_id| are the frame in which the handle is used. Once
+  // postMessage is implemented this isn't meaningful anymore and should be
+  // removed, but until then they can be used for more accurate usage tracking.
+  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from
+  // this method when grants stop being scoped to a frame.
+  virtual scoped_refptr<NativeFileSystemPermissionGrant> GetReadPermissionGrant(
+      const url::Origin& origin,
+      const base::FilePath& path,
+      bool is_directory,
+      int process_id,
+      int frame_id) = 0;
+
   // Returns the permission grant to use for a particular path. This could be a
   // grant that applies to more than just the path passed in, for example if a
   // user has already granted write access to a directory, this method could
   // return that existing grant when figuring the grant to use for a file in
   // that directory.
+  // |process_id| and |frame_id| are the frame in which the handle is used. Once
+  // postMessage is implemented this isn't meaningful anymore and should be
+  // removed, but until then they can be used for more accurate usage tracking.
+  // TODO(https://crbug.com/984769): Eliminate process_id and frame_id from
+  // this method when grants stop being scoped to a frame.
   virtual scoped_refptr<NativeFileSystemPermissionGrant>
   GetWritePermissionGrant(const url::Origin& origin,
                           const base::FilePath& path,
                           bool is_directory,
+                          int process_id,
+                          int frame_id,
                           UserAction user_action) = 0;
 
   // Displays a dialog to confirm that the user intended to give read access to

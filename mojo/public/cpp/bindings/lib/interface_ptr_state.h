@@ -21,6 +21,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
@@ -28,6 +29,7 @@
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
+#include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -75,8 +77,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   void QueryVersion(base::OnceCallback<void(uint32_t)> callback);
   void RequireVersion(uint32_t version);
   void Swap(InterfacePtrStateBase* other);
-  void Bind(ScopedMessagePipeHandle handle,
-            uint32_t version,
+  void Bind(PendingRemoteState* remote_state,
             scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ScopedMessagePipeHandle PassMessagePipe() {
@@ -166,11 +167,10 @@ class InterfacePtrState : public InterfacePtrStateBase {
     InterfacePtrStateBase::Swap(other);
   }
 
-  void Bind(InterfacePtrInfo<Interface> info,
+  void Bind(PendingRemoteState* remote_state,
             scoped_refptr<base::SequencedTaskRunner> runner) {
     DCHECK(!proxy_);
-    InterfacePtrStateBase::Bind(info.PassHandle(), info.version(),
-                                std::move(runner));
+    InterfacePtrStateBase::Bind(remote_state, std::move(runner));
   }
 
   // After this method is called, the object is in an invalid state and
@@ -194,6 +194,17 @@ class InterfacePtrState : public InterfacePtrStateBase {
     DCHECK(endpoint_client());
     endpoint_client()->set_connection_error_with_reason_handler(
         std::move(error_handler));
+  }
+
+  void set_idle_handler(base::TimeDelta timeout,
+                        base::RepeatingClosure handler) {
+    ConfigureProxyIfNecessary();
+    DCHECK(endpoint_client());
+    endpoint_client()->SetIdleHandler(timeout, std::move(handler));
+  }
+
+  unsigned int GetNumUnackedMessagesForTesting() const {
+    return endpoint_client()->GetNumUnackedMessagesForTesting();
   }
 
   AssociatedGroup* associated_group() {

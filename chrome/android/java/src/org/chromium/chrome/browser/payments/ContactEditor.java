@@ -28,15 +28,19 @@ import java.util.UUID;
  * Contact information editor.
  */
 public class ContactEditor extends EditorBase<AutofillContact> {
+    // Bit field values are identical to ProfileFields in payments_profile_comparator.h.
+    // Please also modify payments_profile_comparator.h after changing these bits since
+    // missing fields on both Android and Desktop are recorded in the same UMA metric:
+    // PaymentRequest.MissingContactFields.
     public @interface CompletionStatus {}
     /** Can be sent to the merchant as-is without editing first. */
     public static final int COMPLETE = 0;
     /** The contact name is missing. */
     public static final int INVALID_NAME = 1 << 0;
-    /** The contact email is invalid or missing. */
-    public static final int INVALID_EMAIL = 1 << 1;
     /** The contact phone number is invalid or missing. */
-    public static final int INVALID_PHONE_NUMBER = 1 << 2;
+    public static final int INVALID_PHONE_NUMBER = 1 << 1;
+    /** The contact email is invalid or missing. */
+    public static final int INVALID_EMAIL = 1 << 2;
 
     private final boolean mRequestPayerName;
     private final boolean mRequestPayerPhone;

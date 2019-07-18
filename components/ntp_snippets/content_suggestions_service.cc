@@ -293,7 +293,7 @@ void ContentSuggestionsService::OnGetFaviconFromCacheFinished(
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
-              publisher_url, minimum_size_in_pixel, desired_size_in_pixel),
+              publisher_url, desired_size_in_pixel),
           /*may_page_url_be_private=*/false,
           /*should_trim_page_url_path=*/false, traffic_annotation,
           base::Bind(

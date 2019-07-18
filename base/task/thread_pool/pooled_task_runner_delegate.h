@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool/job_task_source.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
 #include "base/task/thread_pool/task_source.h"
@@ -32,6 +33,12 @@ class BASE_EXPORT PooledTaskRunnerDelegate {
   // traits. Returns true if task was successfully posted.
   virtual bool PostTaskWithSequence(Task task,
                                     scoped_refptr<Sequence> sequence) = 0;
+
+  // Invoked when a task is posted as a Job. The implementation must add
+  // |task_source| to the appropriate priority queue, depending on |task_source|
+  // traits. Returns true if task source was successfully enqueued.
+  virtual bool EnqueueJobTaskSource(
+      scoped_refptr<JobTaskSource> task_source) = 0;
 
   // Invoked when RunsTasksInCurrentSequence() is called on a
   // PooledParallelTaskRunner. Returns true if the current thread is part of the

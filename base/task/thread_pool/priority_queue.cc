@@ -65,6 +65,7 @@ class PriorityQueue::TaskSourceAndSortKey {
   }
 
   const TaskSource* task_source() const { return task_source_.get(); }
+  TaskSource* task_source() { return task_source_.get(); }
 
   const SequenceSortKey& sort_key() const { return sort_key_; }
 
@@ -100,6 +101,16 @@ const SequenceSortKey& PriorityQueue::PeekSortKey() const {
   return container_.Min().sort_key();
 }
 
+TaskSource* PriorityQueue::PeekTaskSource() const {
+  DCHECK(!IsEmpty());
+
+  // The const_cast on Min() is okay since modifying the TaskSource cannot alter
+  // the sort order of TaskSourceAndSortKey.
+  auto& task_source_and_sort_key =
+      const_cast<PriorityQueue::TaskSourceAndSortKey&>(container_.Min());
+  return task_source_and_sort_key.task_source();
+}
+
 RegisteredTaskSource PriorityQueue::PopTaskSource() {
   DCHECK(!IsEmpty());
 
@@ -107,7 +118,7 @@ RegisteredTaskSource PriorityQueue::PopTaskSource() {
   // transactionally being popped from |container_| right after and taking its
   // TaskSource does not alter its sort order.
   auto& task_source_and_sort_key =
-      const_cast<PriorityQueue::TaskSourceAndSortKey&>(container_.Min());
+      const_cast<TaskSourceAndSortKey&>(container_.Min());
   DecrementNumTaskSourcesForPriority(
       task_source_and_sort_key.sort_key().priority());
   RegisteredTaskSource task_source =

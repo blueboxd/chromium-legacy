@@ -9522,17 +9522,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
       This site can also read all the files in the following folders.
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT" desc="Text to display a list of files in the native file system usage bubble">
-      {0, plural,
-        =1 {File: <ph name="FILES">{1}<ex>README.md</ex></ph>}
-        other {Files: <ph name="FILES">{1}<ex>Chrome.png, README.md</ex></ph>}
+      {0, plural, offset:2
+        =1 {<ph name="FILE1">{1}<ex>README.md</ex></ph>}
+        =2 {<ph name="FILE1">{1}<ex>README.md</ex></ph> and <ph name="FILE2">{2}<ex>Chrome.png</ex></ph>}
+        other {<ph name="FILE1">{1}<ex>README.md</ex></ph>, <ph name="FILE2">{2}<ex>Chrome.png</ex></ph>, and # more}
       }
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT" desc="Text to display a list of directories in the native file system usage bubble">
-      {0, plural,
-        =1 {Folder: <ph name="DIRECTORIES">{1}<ex>My Documents</ex></ph>}
-        other {Folders: <ph name="DIRECTORIES">{1}<ex>My Documents, Downloads</ex></ph>}
-      }
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_EXPAND" desc="Tooltip for and name of a button that shows (expands) a detailed list of files and directories">
+      Expand...
     </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE" desc="Tooltip for and name of a button that hides (collapses) a detailed list of files and directories">
+      Collapse...
+    </message>
+
 
     <!-- Native File System restricted directory dialog. -->
     <message name="IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE" desc="Title of dialog explaining that the user selected a directory that chrome doesn't want to expose to the web">

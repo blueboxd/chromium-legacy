@@ -11,7 +11,8 @@ import "mojo/public/mojom/base/time.mojom";
 // Proposal: https://github.com/samuelgoto/sms-receiver
 enum SmsStatus {
   kSuccess,
-  kTimeout
+  kTimeout,
+  kCancelled
 };
 
 // This interface is created per storage partition but its execution is context

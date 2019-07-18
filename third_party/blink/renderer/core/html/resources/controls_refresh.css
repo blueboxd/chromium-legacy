@@ -43,3 +43,11 @@ input[type="file" i]:disabled::-webkit-file-upload-button,
 button:disabled {
   border-color: #c5c5c5;
 }
+
+input[type="range" i] {
+  color: #101010;
+}
+
+input[type="range" i]:disabled {
+  color: #c5c5c5;
+}

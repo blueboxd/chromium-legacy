@@ -167,4 +167,28 @@ TEST_F(X11ScreenOzoneTest, GetDisplayNearestPointTwoDisplays) {
   EXPECT_EQ(*display_2,
             screen()->GetDisplayNearestPoint(gfx::Point(10000, 10000)));
 }
+
+// This test case exercises GetDisplayMatching function with both single and
+// side-by-side display setup
+TEST_F(X11ScreenOzoneTest, GetDisplayMatchingMultiple) {
+  auto primary = primary_display();
+  EXPECT_EQ(primary, screen()->GetDisplayMatching(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_EQ(primary,
+            screen()->GetDisplayMatching(gfx::Rect(1000, 600, 100, 100)));
+
+  auto second =
+      CreateDisplay(gfx::Rect(kPrimaryDisplayBounds.width(), 0, 1280, 720));
+  AddDisplayForTest(*second);
+  EXPECT_EQ(primary, screen()->GetDisplayMatching(gfx::Rect(50, 50, 100, 100)));
+  EXPECT_EQ(*second,
+            screen()->GetDisplayMatching(gfx::Rect(1000, 100, 100, 100)));
+  EXPECT_EQ(*second,
+            screen()->GetDisplayMatching(gfx::Rect(1000, 600, 100, 100)));
+
+  // Check rectangle overlapping 2 displays
+  EXPECT_EQ(primary, screen()->GetDisplayMatching(gfx::Rect(740, 0, 100, 100)));
+  EXPECT_EQ(*second,
+            screen()->GetDisplayMatching(gfx::Rect(760, 100, 100, 100)));
+}
+
 }  // namespace ui

@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/keyframe_model.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 
 namespace cc {
 

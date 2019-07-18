@@ -34,6 +34,17 @@ const ThreadGroup* GetCurrentThreadGroup() {
 
 }  // namespace
 
+void ThreadGroup::BaseScopedWorkersExecutor::ScheduleReleaseTaskSource(
+    RegisteredTaskSource task_source) {
+  task_sources_to_release_.push_back(std::move(task_source));
+}
+
+ThreadGroup::BaseScopedWorkersExecutor::BaseScopedWorkersExecutor() = default;
+
+ThreadGroup::BaseScopedWorkersExecutor::~BaseScopedWorkersExecutor() {
+  CheckedLock::AssertNoLockHeldOnCurrentThread();
+}
+
 ThreadGroup::ScopedReenqueueExecutor::ScopedReenqueueExecutor() = default;
 
 ThreadGroup::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
@@ -81,17 +92,31 @@ bool ThreadGroup::IsBoundToCurrentThread() const {
   return GetCurrentThreadGroup() == this;
 }
 
-size_t ThreadGroup::GetNumQueuedCanRunBestEffortTaskSources() const {
+size_t
+ThreadGroup::GetNumAdditionalWorkersForBestEffortTaskSourcesLockRequired()
+    const {
+  // For simplicity, only 1 worker is assigned to each task source regardless of
+  // its max concurrency, with the exception of the top task source.
   const size_t num_queued =
       priority_queue_.GetNumTaskSourcesWithPriority(TaskPriority::BEST_EFFORT);
   if (num_queued == 0 ||
       !task_tracker_->CanRunPriority(TaskPriority::BEST_EFFORT)) {
     return 0U;
   }
+  if (priority_queue_.PeekSortKey().priority() == TaskPriority::BEST_EFFORT) {
+    // Assign the correct number of workers for the top TaskSource (-1 for the
+    // worker that is already accounted for in |num_queued|).
+    return num_queued +
+           priority_queue_.PeekTaskSource()->GetRemainingConcurrency() - 1;
+  }
   return num_queued;
 }
 
-size_t ThreadGroup::GetNumQueuedCanRunForegroundTaskSources() const {
+size_t
+ThreadGroup::GetNumAdditionalWorkersForForegroundTaskSourcesLockRequired()
+    const {
+  // For simplicity, only 1 worker is assigned to each task source regardless of
+  // its max concurrency, with the exception of the top task source.
   const size_t num_queued = priority_queue_.GetNumTaskSourcesWithPriority(
                                 TaskPriority::USER_VISIBLE) +
                             priority_queue_.GetNumTaskSourcesWithPriority(
@@ -99,6 +124,14 @@ size_t ThreadGroup::GetNumQueuedCanRunForegroundTaskSources() const {
   if (num_queued == 0 ||
       !task_tracker_->CanRunPriority(TaskPriority::HIGHEST)) {
     return 0U;
+  }
+  auto priority = priority_queue_.PeekSortKey().priority();
+  if (priority == TaskPriority::USER_VISIBLE ||
+      priority == TaskPriority::USER_BLOCKING) {
+    // Assign the correct number of workers for the top TaskSource (-1 for the
+    // worker that is already accounted for in |num_queued|).
+    return num_queued +
+           priority_queue_.PeekTaskSource()->GetRemainingConcurrency() - 1;
   }
   return num_queued;
 }
@@ -118,6 +151,14 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
       delegate_->GetThreadGroupForTraits(transaction_with_task_source.traits());
 
   if (destination_thread_group == this) {
+    // Another worker that was running a task from this task source may have
+    // reenqueued it already, in which case its heap_handle will be valid. It
+    // shouldn't be queued twice so the task source registration is released.
+    if (transaction_with_task_source.task_source()->heap_handle().IsValid()) {
+      workers_executor->ScheduleReleaseTaskSource(
+          transaction_with_task_source.take_task_source());
+      return;
+    }
     // If the TaskSource should be reenqueued in the current thread group,
     // reenqueue it inside the scope of the lock.
     priority_queue_.Push(std::move(transaction_with_task_source));
@@ -127,6 +168,37 @@ void ThreadGroup::ReEnqueueTaskSourceLockRequired(
     reenqueue_executor->SchedulePushTaskSourceAndWakeUpWorkers(
         std::move(transaction_with_task_source), destination_thread_group);
   }
+}
+
+RunIntentWithRegisteredTaskSource
+ThreadGroup::TakeRunIntentWithRegisteredTaskSource(
+    BaseScopedWorkersExecutor* executor) {
+  DCHECK(!priority_queue_.IsEmpty());
+
+  auto run_intent = priority_queue_.PeekTaskSource()->WillRunTask();
+
+  if (!run_intent) {
+    executor->ScheduleReleaseTaskSource(priority_queue_.PopTaskSource());
+    return nullptr;
+  }
+
+  if (run_intent.IsSaturated())
+    return {priority_queue_.PopTaskSource(), std::move(run_intent)};
+
+  // If the TaskSource isn't saturated, check whether TaskTracker allows it to
+  // remain in the PriorityQueue.
+  // The canonical way of doing this is to pop the task source to return, call
+  // WillQueueTaskSource() to get an additional RegisteredTaskSource, and
+  // reenqueue that task source if valid. Instead, it is cheaper and equivalent
+  // to peek the task source, call WillQueueTaskSource() to get an additional
+  // RegisteredTaskSource to return if valid, and only pop |priority_queue_|
+  // otherwise.
+  RegisteredTaskSource task_source =
+      task_tracker_->WillQueueTaskSource(priority_queue_.PeekTaskSource());
+  if (!task_source)
+    return {priority_queue_.PopTaskSource(), std::move(run_intent)};
+
+  return {std::move(task_source), std::move(run_intent)};
 }
 
 void ThreadGroup::UpdateSortKeyImpl(
@@ -142,6 +214,16 @@ void ThreadGroup::PushTaskSourceAndWakeUpWorkersImpl(
     TransactionWithRegisteredTaskSource transaction_with_task_source) {
   CheckedAutoLock auto_lock(lock_);
   DCHECK(!replacement_thread_group_);
+  DCHECK_EQ(
+      delegate_->GetThreadGroupForTraits(transaction_with_task_source.traits()),
+      this);
+  if (transaction_with_task_source.task_source()->heap_handle().IsValid()) {
+    // If the task source changed group, it is possible that multiple concurrent
+    // workers try to enqueue it. Only the first enqueue should succeed.
+    executor->ScheduleReleaseTaskSource(
+        transaction_with_task_source.take_task_source());
+    return;
+  }
   priority_queue_.Push(std::move(transaction_with_task_source));
   EnsureEnoughWorkersLockRequired(executor);
 }
@@ -153,6 +235,15 @@ void ThreadGroup::InvalidateAndHandoffAllTaskSourcesToOtherThreadGroup(
       destination_thread_group->lock_);
   destination_thread_group->priority_queue_ = std::move(priority_queue_);
   replacement_thread_group_ = destination_thread_group;
+}
+
+bool ThreadGroup::ShouldYield(TaskPriority priority) const {
+  // It is safe to read |min_allowed_priority_| without a lock since this
+  // variable is atomic, keeping in mind that threads may not immediately see
+  // the new value when it is updated.
+  return !task_tracker_->CanRunPriority(priority) ||
+         priority < TS_UNCHECKED_READ(min_allowed_priority_)
+                        .load(std::memory_order_relaxed);
 }
 
 #if defined(OS_WIN)

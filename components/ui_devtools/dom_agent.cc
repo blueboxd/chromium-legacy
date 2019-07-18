@@ -29,6 +29,73 @@ using ui_devtools::protocol::Array;
 using ui_devtools::protocol::DOM::Node;
 using ui_devtools::protocol::Response;
 
+namespace {
+
+bool FoundMatchInStylesProperty(const std::string& query,
+                                ui_devtools::UIElement* node) {
+  for (UIElement::ClassProperties& class_properties :
+       node->GetCustomPropertiesForMatchedStyle()) {
+    for (UIElement::UIProperty& ui_property : class_properties.properties_) {
+      protocol::String dataName = ui_property.name_;
+      protocol::String dataValue = ui_property.value_;
+      std::transform(dataName.begin(), dataName.end(), dataName.begin(),
+                     ::tolower);
+      std::transform(dataValue.begin(), dataValue.end(), dataValue.begin(),
+                     ::tolower);
+      protocol::String style_property_match = dataName + ": " + dataValue + ";";
+      if (style_property_match.find(query) != protocol::String::npos) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool FoundMatchInDomProperties(const std::string& query,
+                               const std::string& tag_name_query,
+                               const std::string& attribute_query,
+                               bool exact_attribute_match,
+                               ui_devtools::UIElement* node) {
+  protocol::String node_name = node->GetTypeName();
+  std::transform(node_name.begin(), node_name.end(), node_name.begin(),
+                 ::tolower);
+  if (node_name.find(query) != protocol::String::npos ||
+      node_name == tag_name_query) {
+    return true;
+  }
+  for (std::string& data : node->GetAttributes()) {
+    std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+    if (data.find(query) != protocol::String::npos) {
+      return true;
+    }
+    if (data.find(attribute_query) != protocol::String::npos &&
+        (!exact_attribute_match || data.length() == attribute_query.length())) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
+struct DOMAgent::Query {
+  Query(protocol::String query,
+        protocol::String tag_name_query,
+        protocol::String attribute_query,
+        bool exact_attribute_match,
+        bool is_style_search)
+      : query_(query),
+        tag_name_query_(tag_name_query),
+        attribute_query_(attribute_query),
+        exact_attribute_match_(exact_attribute_match),
+        is_style_search_(is_style_search) {}
+  protocol::String query_;
+  protocol::String tag_name_query_;
+  protocol::String attribute_query_;
+  bool exact_attribute_match_;
+  bool is_style_search_;
+};
+
 DOMAgent::DOMAgent() {}
 
 DOMAgent::~DOMAgent() {
@@ -198,25 +265,36 @@ void DOMAgent::Reset() {
   search_results_.clear();
 }
 
-// code is based on InspectorDOMAgent::performSearch() from
-// src/third_party/blink/renderer/core/inspector/inspector_dom_agent.cc
-Response DOMAgent::performSearch(
-    const protocol::String& whitespace_trimmed_query,
-    protocol::Maybe<bool> optional_include_user_agent_shadow_dom,
-    protocol::String* search_id,
-    int* result_count) {
-  protocol::String query = whitespace_trimmed_query;
+DOMAgent::Query DOMAgent::PreprocessQuery(protocol::String query) {
   std::transform(query.begin(), query.end(), query.begin(), ::tolower);
+  constexpr char kSearchStylesPanelKeyword[] = "style:";
+  protocol::String tag_name_query = query;
+  protocol::String attribute_query = query;
+  bool exact_attribute_match = false;
 
+  // Temporary Solution: search on styles panel if the keyword 'style:'
+  // exists in the beginning of the query.
+  size_t style_keyword_pos = query.find(kSearchStylesPanelKeyword);
+  if (style_keyword_pos == 0) {
+    // remove whitespaces (if they exist) after the 'style:' keyword
+    size_t pos =
+        query.find_first_not_of(' ', strlen(kSearchStylesPanelKeyword));
+    if (pos != protocol::String::npos)
+      query = query.substr(pos);
+    else
+      query = query.substr(strlen(kSearchStylesPanelKeyword));
+    return Query(query, tag_name_query, attribute_query, exact_attribute_match,
+                 true);
+  }
+
+  // Preprocessing for normal dom search.
   unsigned query_length = query.length();
   bool start_tag_found = !query.find('<');
   bool end_tag_found = query.rfind('>') + 1 == query_length;
   bool start_quote_found = !query.find('"');
   bool end_quote_found = query.rfind('"') + 1 == query_length;
-  bool exact_attribute_match = start_quote_found && end_quote_found;
+  exact_attribute_match = start_quote_found && end_quote_found;
 
-  protocol::String tag_name_query = query;
-  protocol::String attribute_query = query;
   if (start_tag_found)
     tag_name_query = tag_name_query.substr(1, tag_name_query.length() - 1);
   if (end_tag_found)
@@ -225,12 +303,15 @@ Response DOMAgent::performSearch(
     attribute_query = attribute_query.substr(1, attribute_query.length() - 1);
   if (end_quote_found)
     attribute_query = attribute_query.substr(0, attribute_query.length() - 1);
+  return Query(query, tag_name_query, attribute_query, exact_attribute_match,
+               false);
+}
 
-  std::vector<int> result_collector;
+void DOMAgent::SearchDomTree(const DOMAgent::Query& query_data,
+                             std::vector<int>* result_collector) {
   std::vector<UIElement*> stack;
-
-  // root node from element_root() is not a real node from DOM tree
-  // the children of the root node are the 'actual' roots of the DOM tree
+  // Root node from element_root() is not a real node from the DOM tree.
+  // The children of the root node are the 'actual' roots of the DOM tree.
   UIElement* root = element_root();
   std::vector<UIElement*> root_list = root->children();
   DCHECK(root_list.size());
@@ -242,36 +323,35 @@ Response DOMAgent::performSearch(
   while (!stack.empty()) {
     UIElement* node = stack.back();
     stack.pop_back();
-    protocol::String node_name = node->GetTypeName();
-    std::transform(node_name.begin(), node_name.end(), node_name.begin(),
-                   ::tolower);
-
     std::vector<UIElement*> children_array = node->children();
     // Children are accessed from bottom to top. So iterate backwards.
     for (auto* child : base::Reversed(children_array))
       stack.push_back(child);
-
-    if (node_name.find(query) != protocol::String::npos ||
-        node_name == tag_name_query) {
-      result_collector.push_back(node->node_id());
-      continue;
-    }
-
-    for (std::string& data : node->GetAttributes()) {
-      std::transform(data.begin(), data.end(), data.begin(), ::tolower);
-      if (data.find(query) != protocol::String::npos) {
-        result_collector.push_back(node->node_id());
-        break;
-      }
-      if (data.find(attribute_query) != protocol::String::npos) {
-        if (!exact_attribute_match ||
-            data.length() == attribute_query.length()) {
-          result_collector.push_back(node->node_id());
-        }
-        break;
-      }
-    }
+    bool found_match = false;
+    if (query_data.is_style_search_)
+      found_match = FoundMatchInStylesProperty(query_data.query_, node);
+    else
+      found_match = FoundMatchInDomProperties(
+          query_data.query_, query_data.tag_name_query_,
+          query_data.attribute_query_, query_data.exact_attribute_match_, node);
+    if (found_match)
+      result_collector->push_back(node->node_id());
   }
+}
+
+// Code is based on InspectorDOMAgent::performSearch() from
+// src/third_party/blink/renderer/core/inspector/inspector_dom_agent.cc
+Response DOMAgent::performSearch(
+    const protocol::String& whitespace_trimmed_query,
+    protocol::Maybe<bool> optional_include_user_agent_shadow_dom,
+    protocol::String* search_id,
+    int* result_count) {
+  Query query_data = PreprocessQuery(whitespace_trimmed_query);
+  if (!query_data.query_.length())
+    return Response::OK();
+
+  std::vector<int> result_collector;
+  SearchDomTree(query_data, &result_collector);
 
   *search_id = CreateIdentifier();
   *result_count = result_collector.size();

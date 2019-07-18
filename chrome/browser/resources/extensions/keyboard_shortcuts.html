@@ -64,7 +64,6 @@
         display: flex;
         margin-bottom: 9px;
         padding: 16px var(--cr-section-padding);
-        @apply --cr-title-text;
       }
 
       .icon {
@@ -83,7 +82,7 @@
     <div id="container">
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
         <div class="shortcut-card">
-          <div class="card-title">
+          <div class="card-title cr-title-text">
             <img class="icon" src="[[item.iconUrl]]"
                 alt$="[[appOrExtension(
                     item.type,

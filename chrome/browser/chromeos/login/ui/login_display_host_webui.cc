@@ -403,10 +403,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
 
   ui::DeviceDataManager::GetInstance()->AddObserver(this);
 
-  // Login screen is moved to lock screen container when user logs in.
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                 content::NotificationService::AllSources());
-
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   waiting_for_wallpaper_load_ = !zero_delay_enabled;
 
@@ -736,10 +732,6 @@ void LoginDisplayHostWebUI::Observe(
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                       content::NotificationService::AllSources());
     registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
-                      content::NotificationService::AllSources());
-  } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED &&
-             user_manager::UserManager::Get()->IsCurrentUserNew()) {
-    registrar_.Remove(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
                       content::NotificationService::AllSources());
   } else if (chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED == type) {
     VLOG(1) << "Login WebUI >> wp animation done";

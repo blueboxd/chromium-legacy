@@ -36,4 +36,13 @@ public interface RenderWidgetHostView {
      */
     void writeContentBitmapToDiskAsync(
             int width, int height, String path, Callback<String> callback);
+
+    /**
+     * Insets the bottom of the Visual Viewport by the specified amount.
+     * When called multiple times the new value replaces the old value, so pass {@code 0} to reset
+     * all insetting.
+     * @param bottomAdjustPx The amount to move up the bottom of the Visual Viewport with respect to
+     *        the Layout Viewport, in pixels.
+     */
+    void insetViewportBottom(int bottomAdjustPx);
 }

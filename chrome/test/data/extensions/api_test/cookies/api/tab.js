@@ -11,9 +11,10 @@ var TEST_URL3 = 'https://' + TEST_HOST + '/content.html';
 var TEST_URL4 = 'https://' + TEST_HOST + TEST_PATH + '/content.html';
 var TEST_URL5 = 'http://' + TEST_HOST + TEST_PATH + '/content.html';
 var TEST_EXPIRATION_DATE = 12345678900;
-var TEST_ODD_DOMAIN = '.strange stuff!!.com';
+var TEST_ODD_DOMAIN_HOST_ONLY = 'strange stuff!!.com';
+var TEST_ODD_DOMAIN = '.' + TEST_ODD_DOMAIN_HOST_ONLY;
 var TEST_ODD_PATH = '/hello = world';
-var TEST_ODD_URL = 'http://' + TEST_ODD_DOMAIN + TEST_ODD_PATH + '/index.html';
+var TEST_ODD_URL = 'http://' + TEST_ODD_DOMAIN_HOST_ONLY + TEST_ODD_PATH + '/index.html';
 var TEST_UNPERMITTED_URL = 'http://illegal.' + TEST_DOMAIN + '/';
 
 var TEST_BASIC_COOKIE = {

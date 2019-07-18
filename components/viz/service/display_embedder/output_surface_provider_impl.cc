@@ -117,10 +117,21 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
+    output_surface = SkiaOutputSurfaceImpl::Create(
         std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
                                                           surface_handle),
         renderer_settings);
+    if (!output_surface) {
+#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+      // GPU compositing is expected to always work on Chrome OS so we should
+      // never encounter fatal context error. This could be an unrecoverable
+      // hardware error or a bug.
+      LOG(FATAL) << "Unexpected fatal context error";
+#elif !defined(OS_ANDROID)
+      gpu_service_impl_->DisableGpuCompositing();
+#endif
+      return nullptr;
+    }
 #endif
   } else {
     DCHECK(task_executor_);

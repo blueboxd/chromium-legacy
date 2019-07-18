@@ -127,11 +127,8 @@ MediaNotificationControllerImpl::MediaNotificationControllerImpl(
   connector->BindInterface(media_session::mojom::kServiceName,
                            mojo::MakeRequest(&controller_manager_ptr_));
 
-  mojo::PendingRemote<media_session::mojom::AudioFocusObserver>
-      audio_focus_observer;
-  audio_focus_observer_receiver_.Bind(
-      audio_focus_observer.InitWithNewPipeAndPassReceiver());
-  audio_focus_ptr->AddObserver(std::move(audio_focus_observer));
+  audio_focus_ptr->AddObserver(
+      audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 MediaNotificationControllerImpl::~MediaNotificationControllerImpl() = default;

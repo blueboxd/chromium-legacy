@@ -725,6 +725,8 @@ jumbo_split_static_library("ui") {
       "android/passwords/password_generation_editing_popup_view_android.cc",
       "android/passwords/password_generation_editing_popup_view_android.h",
       "android/simple_message_box_android.cc",
+      "android/sms_dialog_android.cc",
+      "android/sms_dialog_android.h",
       "android/snackbars/auto_signin_prompt_controller.cc",
       "android/snackbars/auto_signin_prompt_controller.h",
       "android/ssl_client_certificate_request.cc",

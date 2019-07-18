@@ -36,7 +36,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -64,6 +63,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -94,7 +95,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -445,39 +445,52 @@ class NavigationOrSwapObserver : public WebContentsObserver,
 };
 
 // Waits for a new tab to open and a navigation or swap in it.
-class NewTabNavigationOrSwapObserver {
+class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
+                                       public BrowserListObserver {
  public:
-  NewTabNavigationOrSwapObserver()
-      : new_tab_observer_(
-            chrome::NOTIFICATION_TAB_ADDED,
-            base::Bind(&NewTabNavigationOrSwapObserver::OnTabAdded,
-                       base::Unretained(this))) {
-    // Watch for NOTIFICATION_TAB_ADDED. Add a callback so that the
-    // NavigationOrSwapObserver can be attached synchronously and no events are
-    // missed.
+  NewTabNavigationOrSwapObserver() {
+    BrowserList::AddObserver(this);
+    for (const Browser* browser : *BrowserList::GetInstance())
+      tab_strip_observer_.Add(browser->tab_strip_model());
+  }
+
+  ~NewTabNavigationOrSwapObserver() override {
+    BrowserList::RemoveObserver(this);
   }
 
   void Wait() {
-    new_tab_observer_.Wait();
+    new_tab_run_loop_.Run();
     swap_observer_->Wait();
   }
 
-  bool OnTabAdded(const content::NotificationSource& source,
-                  const content::NotificationDetails& details) {
-    if (swap_observer_)
-      return true;
-    WebContents* new_tab = content::Details<WebContents>(details).ptr();
-    TabStripModel* tab_strip_model =
-        chrome::FindBrowserWithWebContents(new_tab)->tab_strip_model();
-    swap_observer_.reset(new NavigationOrSwapObserver(tab_strip_model,
-                                                      new_tab));
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kInserted || swap_observer_)
+      return;
+
+    WebContents* new_tab = change.GetInsert()->contents[0].contents;
+    swap_observer_ =
+        std::make_unique<NavigationOrSwapObserver>(tab_strip_model, new_tab);
     swap_observer_->set_did_start_loading();
-    return true;
+
+    new_tab_run_loop_.Quit();
+  }
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override {
+    tab_strip_observer_.Add(browser->tab_strip_model());
   }
 
  private:
-  content::WindowedNotificationObserver new_tab_observer_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
+      this};
+  base::RunLoop new_tab_run_loop_;
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabNavigationOrSwapObserver);
 };
 
 class FakeDevToolsClient : public content::DevToolsAgentHostClient {

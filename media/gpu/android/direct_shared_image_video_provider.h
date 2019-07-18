@@ -43,20 +43,9 @@ class MEDIA_GPU_EXPORT DirectSharedImageVideoProvider
   void Initialize(GpuInitCB get_stub_cb) override;
   void RequestImage(ImageReadyCB cb,
                     const ImageSpec& spec,
-                    std::unique_ptr<CodecOutputBuffer> output_buffer,
-                    scoped_refptr<TextureOwner> texture_owner,
-                    PromotionHintAggregator::NotifyPromotionHintCB
-                        promotion_hint_cb) override;
+                    scoped_refptr<TextureOwner> texture_owner) override;
 
  private:
-  static void OnImageReady(
-      ImageReadyCB cb,
-      std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<TextureOwner> texture_owner,
-      PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      ImageRecord record);
-
   base::SequenceBound<GpuSharedImageVideoFactory> gpu_factory_;
 
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;

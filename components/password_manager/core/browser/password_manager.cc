@@ -666,6 +666,14 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
     OnLoginSuccessful();
 }
 
+void PasswordManager::OnUserModifiedNonPasswordField(
+    password_manager::PasswordManagerDriver* driver,
+    int32_t renderer_id,
+    const base::string16& value) {
+  // TODO(https://crbug.com/959776): Implemented processing |value| as possible
+  // username for username first flow.
+}
+
 void PasswordManager::ShowManualFallbackForSaving(
     password_manager::PasswordManagerDriver* driver,
     const PasswordForm& password_form) {

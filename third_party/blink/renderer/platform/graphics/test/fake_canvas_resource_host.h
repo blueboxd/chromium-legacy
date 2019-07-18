@@ -33,9 +33,10 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
       return ResourceProvider();
 
     CanvasResourceProvider::ResourceUsage usage =
-        hint == kPreferAcceleration
-            ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
-            : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+        hint == kPreferAcceleration ? CanvasResourceProvider::ResourceUsage::
+                                          kAcceleratedCompositedResourceUsage
+                                    : CanvasResourceProvider::ResourceUsage::
+                                          kSoftwareCompositedResourceUsage;
 
     CanvasResourceProvider::PresentationMode presentation_mode =
         RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()

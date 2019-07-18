@@ -54,31 +54,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
-namespace {
-
-// A wrapper around SkiaOutputSurfaceImpl that can be used to change settings
-// for tests.
-class PixelTestSkiaOutputSurfaceImpl : public viz::SkiaOutputSurfaceImpl {
- public:
-  PixelTestSkiaOutputSurfaceImpl(
-      std::unique_ptr<viz::SkiaOutputSurfaceDependency> deps,
-      const viz::RendererSettings& renderer_settings,
-      bool flipped_output_surface)
-      : SkiaOutputSurfaceImpl(std::move(deps), renderer_settings),
-        flipped_output_surface_(flipped_output_surface) {}
-
-  // |capabilities_| is set in InitializeForGL(), so wrap BindToClient() and set
-  // |flipped_output_surface| once that is complete.
-  void BindToClient(viz::OutputSurfaceClient* client) override {
-    SkiaOutputSurfaceImpl::BindToClient(client);
-    SetCapabilitiesForTesting(flipped_output_surface_);
-  }
-
- private:
-  const bool flipped_output_surface_;
-};
-
-}  // namespace
 
 PixelTest::PixelTest()
     : device_viewport_size_(gfx::Size(200, 200)),
@@ -290,11 +265,13 @@ void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 
   // Set up the skia renderer.
-  output_surface_ = std::make_unique<PixelTestSkiaOutputSurfaceImpl>(
+  output_surface_ = viz::SkiaOutputSurfaceImpl::Create(
       std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
           gpu_service(), gpu::kNullSurfaceHandle),
-      renderer_settings_, flipped_output_surface);
+      renderer_settings_);
   output_surface_->BindToClient(output_surface_client_.get());
+  static_cast<viz::SkiaOutputSurfaceImpl*>(output_surface_.get())
+      ->SetCapabilitiesForTesting(flipped_output_surface);
   resource_provider_ = std::make_unique<viz::DisplayResourceProvider>(
       viz::DisplayResourceProvider::kGpu,
       /*compositor_context_provider=*/nullptr,

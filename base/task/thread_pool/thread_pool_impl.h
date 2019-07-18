@@ -138,6 +138,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
   // PooledTaskRunnerDelegate:
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
+  bool EnqueueJobTaskSource(scoped_refptr<JobTaskSource> task_source) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
   void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;

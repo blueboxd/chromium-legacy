@@ -206,22 +206,6 @@ void GpuChannelHost::RemoveRoute(int route_id) {
                                 base::Unretained(listener_.get()), route_id));
 }
 
-base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
-    const base::SharedMemoryHandle& source_handle) {
-  if (IsLost())
-    return base::SharedMemoryHandle();
-
-  return base::SharedMemory::DuplicateHandle(source_handle);
-}
-
-base::UnsafeSharedMemoryRegion GpuChannelHost::ShareToGpuProcess(
-    const base::UnsafeSharedMemoryRegion& source_region) {
-  if (IsLost())
-    return base::UnsafeSharedMemoryRegion();
-
-  return source_region.Duplicate();
-}
-
 int32_t GpuChannelHost::ReserveImageId() {
   return next_image_id_.GetNext();
 }

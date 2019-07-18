@@ -52,6 +52,8 @@ class ChromeNativeFileSystemPermissionContextTest : public testing::Test {
       url::Origin::Create(GURL("https://example.com"));
   const base::FilePath kTestPath =
       base::FilePath(FILE_PATH_LITERAL("/foo/bar"));
+  const int kProcessId = 1;
+  const int kFrameId = 2;
 };
 
 TEST_F(ChromeNativeFileSystemPermissionContextTest,
@@ -60,7 +62,8 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       base::MakeRefCounted<ChromeNativeFileSystemPermissionContext>(nullptr);
 
   auto grant = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath,
+      /*is_directory=*/false, kProcessId, kFrameId, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 
@@ -70,7 +73,8 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       base::MakeRefCounted<ChromeNativeFileSystemPermissionContext>(nullptr);
 
   auto grant = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+      UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
 }
 
@@ -80,11 +84,14 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       base::MakeRefCounted<ChromeNativeFileSystemPermissionContext>(nullptr);
 
   auto grant1 = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+      UserAction::kOpen);
   auto grant2 = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+      UserAction::kSave);
   auto grant3 = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+      kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+      UserAction::kOpen);
   // All grants should be the same grant, and be granted.
   EXPECT_EQ(grant1, grant2);
   EXPECT_EQ(grant1, grant3);
@@ -97,14 +104,16 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       base::MakeRefCounted<ChromeNativeFileSystemPermissionContext>(nullptr);
 
   auto grant = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kSave);
+      kTestOrigin, kTestPath, /*is_directory=*/false, kProcessId, kFrameId,
+      UserAction::kSave);
   EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
   grant.reset();
 
   // After reset grant should go away, so new grant request should be in ASK
   // state.
-  grant = context->GetWritePermissionGrant(
-      kTestOrigin, kTestPath, /*is_directory=*/false, UserAction::kOpen);
+  grant = context->GetWritePermissionGrant(kTestOrigin, kTestPath,
+                                           /*is_directory=*/false, kProcessId,
+                                           kFrameId, UserAction::kOpen);
   EXPECT_EQ(PermissionStatus::ASK, grant->GetStatus());
 }
 

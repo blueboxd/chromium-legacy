@@ -754,8 +754,6 @@ class CORE_EXPORT LocalFrameView final
   void SetupPrintContext();
   void ClearPrintContext();
 
-  void StopDeferringCommits(cc::PaintHoldingCommitTrigger);
-
   // Returns whether the lifecycle was succesfully updated to the
   // target state.
   bool UpdateLifecyclePhases(DocumentLifecycle::LifecycleState target_state,
@@ -776,7 +774,6 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   void RunPaintLifecyclePhase();
 
-  void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
 

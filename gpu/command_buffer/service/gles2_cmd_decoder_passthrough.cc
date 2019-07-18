@@ -11,12 +11,14 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
+#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/program_cache.h"
@@ -735,17 +737,20 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
         gl::GetRequestableGLExtensionsFromCurrentContext());
 
     static constexpr const char* kRequiredFunctionalityExtensions[] = {
-        "GL_ANGLE_memory_size",
-        "GL_ANGLE_native_id",
-        "GL_ANGLE_texture_storage_external",
-        "GL_CHROMIUM_bind_uniform_location",
-        "GL_CHROMIUM_sync_query",
-        "GL_EXT_debug_marker",
-        "GL_KHR_debug",
-        "GL_NV_fence",
-        "GL_OES_EGL_image",
-        "GL_OES_EGL_image_external",
-        "GL_OES_EGL_image_external_essl3",
+      "GL_ANGLE_memory_size",
+      "GL_ANGLE_native_id",
+      "GL_ANGLE_texture_storage_external",
+      "GL_CHROMIUM_bind_uniform_location",
+      "GL_CHROMIUM_sync_query",
+      "GL_EXT_debug_marker",
+      "GL_KHR_debug",
+      "GL_NV_fence",
+      "GL_OES_EGL_image",
+      "GL_OES_EGL_image_external",
+      "GL_OES_EGL_image_external_essl3",
+#if defined(OS_MACOSX)
+      "GL_ANGLE_texture_rectangle",
+#endif
     };
     RequestExtensions(api(), requestable_extensions,
                       kRequiredFunctionalityExtensions,
@@ -802,9 +807,15 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
   // Each context initializes its own feature info because some extensions may
   // be enabled dynamically.  Don't disallow any features, leave it up to ANGLE
   // to dynamically enable extensions.
-  feature_info_->Initialize(attrib_helper.context_type,
-                            true /* is_passthrough_cmd_decoder */,
-                            DisallowedFeatures());
+  InitializeFeatureInfo(attrib_helper.context_type, DisallowedFeatures(),
+                        false);
+
+  // Support for CHROMIUM_texture_storage_image depends on the underlying
+  // ImageFactory's ability to create anonymous images.
+  gpu::ImageFactory* image_factory = group_->image_factory();
+  if (image_factory && image_factory->SupportsCreateAnonymousImage()) {
+    feature_info_->EnableCHROMIUMTextureStorageImage();
+  }
 
   // Check for required extensions
   // TODO(geofflang): verify
@@ -1375,6 +1386,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
+  caps.texture_storage_image =
+      feature_info_->feature_flags().chromium_texture_storage_image;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.chromium_nonblocking_readback = true;
   caps.num_surface_buffers = surface_->GetBufferCount();
@@ -1766,6 +1779,19 @@ const char* GLES2DecoderPassthroughImpl::GetCommandName(
 void GLES2DecoderPassthroughImpl::SetOptionalExtensionsRequestedForTesting(
     bool request_extensions) {
   request_optional_extensions_ = request_extensions;
+}
+
+void GLES2DecoderPassthroughImpl::InitializeFeatureInfo(
+    ContextType context_type,
+    const DisallowedFeatures& disallowed_features,
+    bool force_reinitialize) {
+  feature_info_->Initialize(context_type, true /* is_passthrough_cmd_decoder */,
+                            disallowed_features, force_reinitialize);
+
+  gpu::ImageFactory* image_factory = group_->image_factory();
+  if (image_factory && image_factory->SupportsCreateAnonymousImage()) {
+    feature_info_->EnableCHROMIUMTextureStorageImage();
+  }
 }
 
 void* GLES2DecoderPassthroughImpl::GetScratchMemory(size_t size) {
@@ -2520,7 +2546,9 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
     GLenum target,
     GLenum internalformat,
     GLint imageId) {
-  if (target != GL_TEXTURE_2D) {
+  TextureTarget target_enum = GLenumToTextureTarget(target);
+  if (target_enum == TextureTarget::kCubeMap ||
+      target_enum == TextureTarget::kUnkown) {
     InsertError(GL_INVALID_ENUM, "Invalid target");
     return error::kNoError;
   }
@@ -2532,8 +2560,7 @@ error::Error GLES2DecoderPassthroughImpl::BindTexImage2DCHROMIUMImpl(
   }
 
   const BoundTexture& bound_texture =
-      bound_textures_[static_cast<size_t>(TextureTarget::k2D)]
-                     [active_texture_unit_];
+      bound_textures_[static_cast<size_t>(target_enum)][active_texture_unit_];
   if (bound_texture.texture == nullptr) {
     InsertError(GL_INVALID_OPERATION, "No texture bound");
     return error::kNoError;

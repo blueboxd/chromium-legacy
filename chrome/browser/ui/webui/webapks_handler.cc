@@ -57,6 +57,7 @@ void WebApksHandler::OnWebApkInfoRetrieved(
     result->SetString("name", webapk_info.name);
     result->SetString("shortName", webapk_info.short_name);
     result->SetString("packageName", webapk_info.package_name);
+    result->SetString("id", webapk_info.id);
     result->SetInteger("shellApkVersion", webapk_info.shell_apk_version);
     result->SetInteger("versionCode", webapk_info.version_code);
     result->SetString("uri", webapk_info.uri);

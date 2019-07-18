@@ -197,10 +197,6 @@ class CORE_EXPORT NGInlineItem {
 
   // RunSegmenter properties.
   unsigned SegmentData() const { return segment_data_; }
-  void SetSegmentData(unsigned segment_data) {
-    DCHECK_EQ(Type(), NGInlineItem::kText);
-    segment_data_ = segment_data;
-  }
   static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
                              Vector<NGInlineItem>* items);
 
@@ -242,6 +238,7 @@ class CORE_EXPORT NGInlineItem {
   LayoutObject* layout_object_;
 
   NGInlineItemType type_;
+  // |segment_data_| is valid only for |type_ == NGInlineItem::kText|.
   unsigned segment_data_ : NGInlineItemSegment::kSegmentDataBits;
   unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;

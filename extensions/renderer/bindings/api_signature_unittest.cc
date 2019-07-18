@@ -194,16 +194,16 @@ class APISignatureTest : public APIBindingTest {
   void ExpectPass(const APISignature& signature,
                   base::StringPiece arg_values,
                   base::StringPiece expected_parsed_args,
-                  bool expect_callback) {
-    RunTest(signature, arg_values, expected_parsed_args, expect_callback, true,
-            std::string());
+                  binding::AsyncResponseType expected_response_type) {
+    RunTest(signature, arg_values, expected_parsed_args, expected_response_type,
+            true, std::string());
   }
 
   void ExpectFailure(const APISignature& signature,
                      base::StringPiece arg_values,
                      const std::string& expected_error) {
-    RunTest(signature, arg_values, base::StringPiece(), false, false,
-            expected_error);
+    RunTest(signature, arg_values, base::StringPiece(),
+            binding::AsyncResponseType::kNone, false, expected_error);
   }
 
   void ExpectResponsePass(const APISignature& signature,
@@ -223,7 +223,7 @@ class APISignatureTest : public APIBindingTest {
   void RunTest(const APISignature& signature,
                base::StringPiece arg_values,
                base::StringPiece expected_parsed_args,
-               bool expect_callback,
+               binding::AsyncResponseType expected_response_type,
                bool should_succeed,
                const std::string& expected_error) {
     SCOPED_TRACE(arg_values);
@@ -234,19 +234,18 @@ class APISignatureTest : public APIBindingTest {
     std::vector<v8::Local<v8::Value>> vector_args;
     ASSERT_TRUE(gin::ConvertFromV8(isolate(), v8_args, &vector_args));
 
-    std::unique_ptr<base::ListValue> result;
-    v8::Local<v8::Function> callback;
-    std::string error;
-    bool success = signature.ParseArgumentsToJSON(
-        context, vector_args, type_refs_, &result, &callback, &error);
-    EXPECT_EQ(should_succeed, success);
-    ASSERT_EQ(should_succeed, !!result);
-    EXPECT_EQ(expect_callback, !callback.IsEmpty());
+    APISignature::JSONParseResult parse_result =
+        signature.ParseArgumentsToJSON(context, vector_args, type_refs_);
+    ASSERT_EQ(should_succeed, !!parse_result.arguments);
+    ASSERT_NE(should_succeed, parse_result.error.has_value());
+    EXPECT_EQ(expected_response_type, parse_result.async_type);
+    EXPECT_EQ(expected_response_type == binding::AsyncResponseType::kCallback,
+              !parse_result.callback.IsEmpty());
     if (should_succeed) {
       EXPECT_EQ(ReplaceSingleQuotes(expected_parsed_args),
-                ValueToString(*result));
+                ValueToString(*parse_result.arguments));
     } else {
-      EXPECT_EQ(expected_error, error);
+      EXPECT_EQ(expected_error, *parse_result.error);
     }
   }
 
@@ -284,8 +283,9 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("OneString");
     auto signature = OneString();
-    ExpectPass(*signature, "['foo']", "['foo']", false);
-    ExpectPass(*signature, "['']", "['']", false);
+    ExpectPass(*signature, "['foo']", "['foo']",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "['']", "['']", binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[1]", NoMatchingSignature());
     ExpectFailure(*signature, "[]", NoMatchingSignature());
     ExpectFailure(*signature, "[{}]", NoMatchingSignature());
@@ -295,8 +295,10 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("StringAndInt");
     auto signature = StringAndInt();
-    ExpectPass(*signature, "['foo', 42]", "['foo',42]", false);
-    ExpectPass(*signature, "['foo', -1]", "['foo',-1]", false);
+    ExpectPass(*signature, "['foo', 42]", "['foo',42]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "['foo', -1]", "['foo',-1]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[1]", NoMatchingSignature());
     ExpectFailure(*signature, "['foo'];", NoMatchingSignature());
     ExpectFailure(*signature, "[1, 'foo']", NoMatchingSignature());
@@ -308,15 +310,18 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("StringOptionalIntAndBool");
     auto signature = StringOptionalIntAndBool();
-    ExpectPass(*signature, "['foo', 42, true]", "['foo',42,true]", false);
-    ExpectPass(*signature, "['foo', true]", "['foo',null,true]", false);
+    ExpectPass(*signature, "['foo', 42, true]", "['foo',42,true]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "['foo', true]", "['foo',null,true]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "['foo', 'bar', true]", NoMatchingSignature());
   }
 
   {
     SCOPED_TRACE("OneObject");
     auto signature = OneObject();
-    ExpectPass(*signature, "[{prop1: 'foo'}]", "[{'prop1':'foo'}]", false);
+    ExpectPass(*signature, "[{prop1: 'foo'}]", "[{'prop1':'foo'}]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature,
                   "[{ get prop1() { throw new Error('Badness'); } }]",
                   ArgumentError("obj", ScriptThrewError()));
@@ -325,7 +330,7 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("NoArgs");
     auto signature = NoArgs();
-    ExpectPass(*signature, "[]", "[]", false);
+    ExpectPass(*signature, "[]", "[]", binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[0]", NoMatchingSignature());
     ExpectFailure(*signature, "['']", NoMatchingSignature());
     ExpectFailure(*signature, "[null]", NoMatchingSignature());
@@ -335,7 +340,8 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("IntAndCallback");
     auto signature = IntAndCallback();
-    ExpectPass(*signature, "[1, function() {}]", "[1]", true);
+    ExpectPass(*signature, "[1, function() {}]", "[1]",
+               binding::AsyncResponseType::kCallback);
     ExpectFailure(*signature, "[function() {}]", NoMatchingSignature());
     ExpectFailure(*signature, "[1]", NoMatchingSignature());
   }
@@ -343,17 +349,21 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("OptionalIntAndCallback");
     auto signature = OptionalIntAndCallback();
-    ExpectPass(*signature, "[1, function() {}]", "[1]", true);
-    ExpectPass(*signature, "[function() {}]", "[null]", true);
+    ExpectPass(*signature, "[1, function() {}]", "[1]",
+               binding::AsyncResponseType::kCallback);
+    ExpectPass(*signature, "[function() {}]", "[null]",
+               binding::AsyncResponseType::kCallback);
     ExpectFailure(*signature, "[1]", NoMatchingSignature());
   }
 
   {
     SCOPED_TRACE("OptionalCallback");
     auto signature = OptionalCallback();
-    ExpectPass(*signature, "[function() {}]", "[]", true);
-    ExpectPass(*signature, "[]", "[]", false);
-    ExpectPass(*signature, "[undefined]", "[]", false);
+    ExpectPass(*signature, "[function() {}]", "[]",
+               binding::AsyncResponseType::kCallback);
+    ExpectPass(*signature, "[]", "[]", binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[undefined]", "[]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[0]", NoMatchingSignature());
   }
 
@@ -361,11 +371,11 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
     SCOPED_TRACE("IntAnyOptionalObjectOptionalCallback");
     auto signature = IntAnyOptionalObjectOptionalCallback();
     ExpectPass(*signature, "[4, {foo: 'bar'}, function() {}]",
-               "[4,{'foo':'bar'},null]", true);
+               "[4,{'foo':'bar'},null]", binding::AsyncResponseType::kCallback);
     ExpectPass(*signature, "[4, {foo: 'bar'}]", "[4,{'foo':'bar'},null]",
-               false);
+               binding::AsyncResponseType::kNone);
     ExpectPass(*signature, "[4, {foo: 'bar'}, {}]", "[4,{'foo':'bar'},{}]",
-               false);
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[4, function() {}]",
                   ArgumentError("any", UnserializableValue()));
     ExpectFailure(*signature, "[4]", NoMatchingSignature());
@@ -374,9 +384,11 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("OptionalObjectAndCallback");
     auto signature = OptionalObjectAndCallback();
-    ExpectPass(*signature, "[{prop1: 1}]", "[{'prop1':1}]", false);
-    ExpectPass(*signature, "[]", "[null]", false);
-    ExpectPass(*signature, "[null]", "[null]", false);
+    ExpectPass(*signature, "[{prop1: 1}]", "[{'prop1':1}]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[]", "[null]", binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[null]", "[null]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(
         *signature, "[{prop1: 'str'}]",
         ArgumentError("obj", PropertyError("prop1", InvalidType(kTypeInteger,
@@ -390,10 +402,14 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("OptionalIntAndNumber");
     auto signature = OptionalIntAndNumber();
-    ExpectPass(*signature, "[1.0, 1.0]", "[1,1.0]", false);
-    ExpectPass(*signature, "[1, 1]", "[1,1.0]", false);
-    ExpectPass(*signature, "[1.0]", "[null,1.0]", false);
-    ExpectPass(*signature, "[1]", "[null,1.0]", false);
+    ExpectPass(*signature, "[1.0, 1.0]", "[1,1.0]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[1, 1]", "[1,1.0]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[1.0]", "[null,1.0]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[1]", "[null,1.0]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[1.0, null]", NoMatchingSignature());
     ExpectFailure(*signature, "[1, null]", NoMatchingSignature());
   }
@@ -401,10 +417,14 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
   {
     SCOPED_TRACE("OptionalIntAndInt");
     auto signature = OptionalIntAndInt();
-    ExpectPass(*signature, "[1.0, 1.0]", "[1,1]", false);
-    ExpectPass(*signature, "[1, 1]", "[1,1]", false);
-    ExpectPass(*signature, "[1.0]", "[null,1]", false);
-    ExpectPass(*signature, "[1]", "[null,1]", false);
+    ExpectPass(*signature, "[1.0, 1.0]", "[1,1]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[1, 1]", "[1,1]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[1.0]", "[null,1]",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "[1]", "[null,1]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[1.0, null]", NoMatchingSignature());
     ExpectFailure(*signature, "[1, null]", NoMatchingSignature());
   }
@@ -417,9 +437,11 @@ TEST_F(APISignatureTest, TypeRefsTest) {
 
   {
     auto signature = RefObj();
-    ExpectPass(*signature, "[{prop1: 'foo'}]", "[{'prop1':'foo'}]", false);
+    ExpectPass(*signature, "[{prop1: 'foo'}]", "[{'prop1':'foo'}]",
+               binding::AsyncResponseType::kNone);
     ExpectPass(*signature, "[{prop1: 'foo', prop2: 2}]",
-               "[{'prop1':'foo','prop2':2}]", false);
+               "[{'prop1':'foo','prop2':2}]",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(
         *signature, "[{prop1: 'foo', prop2: 'a'}]",
         ArgumentError("obj", PropertyError("prop2", InvalidType(kTypeInteger,
@@ -428,8 +450,10 @@ TEST_F(APISignatureTest, TypeRefsTest) {
 
   {
     auto signature = RefEnum();
-    ExpectPass(*signature, "['alpha']", "['alpha']", false);
-    ExpectPass(*signature, "['beta']", "['beta']", false);
+    ExpectPass(*signature, "['alpha']", "['alpha']",
+               binding::AsyncResponseType::kNone);
+    ExpectPass(*signature, "['beta']", "['beta']",
+               binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "['gamma']",
                   ArgumentError("enum", InvalidEnumValue({"alpha", "beta"})));
   }
@@ -465,13 +489,12 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     auto signature = IntAndOptionalCallback();
     std::vector<v8::Local<v8::Value>> v8_args =
         StringToV8Vector(context, "[1, function() {}]");
-    v8::Local<v8::Function> callback;
-    std::unique_ptr<base::ListValue> parsed;
-    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
-                                                          &parsed, &callback));
-    ASSERT_TRUE(parsed);
-    EXPECT_EQ("[1]", ValueToString(*parsed));
-    EXPECT_FALSE(callback.IsEmpty());
+    APISignature::JSONParseResult parse_result =
+        signature->ConvertArgumentsIgnoringSchema(context, v8_args);
+    EXPECT_FALSE(parse_result.error);
+    ASSERT_TRUE(parse_result.arguments);
+    EXPECT_EQ("[1]", ValueToString(*parse_result.arguments));
+    EXPECT_FALSE(parse_result.callback.IsEmpty());
   }
 
   {
@@ -481,11 +504,12 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
         StringToV8Vector(context, "[1, null]");
     v8::Local<v8::Function> callback;
     std::unique_ptr<base::ListValue> parsed;
-    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
-                                                          &parsed, &callback));
-    ASSERT_TRUE(parsed);
-    EXPECT_EQ("[1]", ValueToString(*parsed));
-    EXPECT_TRUE(callback.IsEmpty());
+    APISignature::JSONParseResult parse_result =
+        signature->ConvertArgumentsIgnoringSchema(context, v8_args);
+    EXPECT_FALSE(parse_result.error);
+    ASSERT_TRUE(parse_result.arguments);
+    EXPECT_EQ("[1]", ValueToString(*parse_result.arguments));
+    EXPECT_TRUE(parse_result.callback.IsEmpty());
   }
 
   {
@@ -494,26 +518,26 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     auto signature = OneString();
     std::vector<v8::Local<v8::Value>> v8_args =
         StringToV8Vector(context, "[{not: 'a string'}]");
-    v8::Local<v8::Function> callback;
-    std::unique_ptr<base::ListValue> parsed;
-    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
-                                                          &parsed, &callback));
-    ASSERT_TRUE(parsed);
-    EXPECT_EQ(R"([{"not":"a string"}])", ValueToString(*parsed));
-    EXPECT_TRUE(callback.IsEmpty());
+    APISignature::JSONParseResult parse_result =
+        signature->ConvertArgumentsIgnoringSchema(context, v8_args);
+    EXPECT_FALSE(parse_result.error);
+    ASSERT_TRUE(parse_result.arguments);
+    EXPECT_EQ(R"([{"not":"a string"}])",
+              ValueToString(*parse_result.arguments));
+    EXPECT_TRUE(parse_result.callback.IsEmpty());
   }
 
   {
     auto signature = OneObject();
     std::vector<v8::Local<v8::Value>> v8_args = StringToV8Vector(
         context, "[{prop1: 'foo', other: 'bar', nullProp: null}]");
-    v8::Local<v8::Function> callback;
-    std::unique_ptr<base::ListValue> parsed;
-    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
-                                                          &parsed, &callback));
-    ASSERT_TRUE(parsed);
-    EXPECT_EQ(R"([{"other":"bar","prop1":"foo"}])", ValueToString(*parsed));
-    EXPECT_TRUE(callback.IsEmpty());
+    APISignature::JSONParseResult parse_result =
+        signature->ConvertArgumentsIgnoringSchema(context, v8_args);
+    EXPECT_FALSE(parse_result.error);
+    ASSERT_TRUE(parse_result.arguments);
+    EXPECT_EQ(R"([{"other":"bar","prop1":"foo"}])",
+              ValueToString(*parse_result.arguments));
+    EXPECT_TRUE(parse_result.callback.IsEmpty());
   }
 
   {
@@ -523,12 +547,12 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     auto signature = OneString();
     std::vector<v8::Local<v8::Value>> v8_args =
         StringToV8Vector(context, "[1, undefined, 1/0]");
-    v8::Local<v8::Function> callback;
-    std::unique_ptr<base::ListValue> parsed;
-    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
-                                                          &parsed, &callback));
-    ASSERT_TRUE(parsed);
-    EXPECT_EQ("[1,null,null]", ValueToString(*parsed));
+    APISignature::JSONParseResult parse_result =
+        signature->ConvertArgumentsIgnoringSchema(context, v8_args);
+    EXPECT_FALSE(parse_result.error);
+    ASSERT_TRUE(parse_result.arguments);
+    EXPECT_EQ("[1,null,null]", ValueToString(*parse_result.arguments));
+    EXPECT_TRUE(parse_result.callback.IsEmpty());
   }
 }
 
@@ -553,13 +577,14 @@ TEST_F(APISignatureTest, ParseArgumentsToV8) {
   std::vector<v8::Local<v8::Value>> args =
       StringToV8Vector(context, kTrickyArgs);
 
-  std::vector<v8::Local<v8::Value>> args_out;
-  std::string error;
-  ASSERT_TRUE(signature->ParseArgumentsToV8(context, args, type_refs(),
-                                            &args_out, &error));
-  ASSERT_EQ(1u, args_out.size());
-  ASSERT_TRUE(args_out[0]->IsObject());
-  gin::Dictionary dict(isolate(), args_out[0].As<v8::Object>());
+  APISignature::V8ParseResult parse_result =
+      signature->ParseArgumentsToV8(context, args, type_refs());
+  ASSERT_TRUE(parse_result.arguments);
+
+  ASSERT_EQ(1u, parse_result.arguments->size());
+  ASSERT_TRUE((*parse_result.arguments)[0]->IsObject());
+  gin::Dictionary dict(isolate(),
+                       (*parse_result.arguments)[0].As<v8::Object>());
 
   std::string prop1;
   ASSERT_TRUE(dict.Get("prop1", &prop1));

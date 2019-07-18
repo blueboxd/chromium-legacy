@@ -17,10 +17,10 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_switches.h"
 
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_surface_egl.h"
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
 
 namespace gl {
 namespace init {
@@ -65,11 +65,11 @@ std::vector<GLImplementation> GetAllowedGLImplementations() {
   impls.push_back(kGLImplementationDesktopGLCoreProfile);
   impls.push_back(kGLImplementationDesktopGL);
   impls.push_back(kGLImplementationAppleGL);
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
   impls.push_back(kGLImplementationEGLGLES2);
   impls.push_back(kGLImplementationEGLANGLE);
   impls.push_back(kGLImplementationSwiftShaderGL);
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
   return impls;
 }
 
@@ -88,13 +88,13 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
     case kGLImplementationAppleGL:
       return InitializeGLContext(new GLContextCGL(share_group),
                                  compatible_surface, attribs);
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
       return InitializeGLContext(new GLContextEGL(share_group),
                                  compatible_surface, attribs);
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
     case kGLImplementationMockGL:
       return new GLContextStub(share_group);
     case kGLImplementationStubGL: {
@@ -139,7 +139,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
     case kGLImplementationAppleGL:
       return InitializeGLSurfaceWithFormat(
           new NoOpGLSurface(size), format);
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
     case kGLImplementationEGLGLES2:
     case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
@@ -150,7 +150,7 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
         return InitializeGLSurfaceWithFormat(new PbufferGLSurfaceEGL(size),
                                              format);
       }
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       return new GLSurfaceStub;

@@ -271,10 +271,8 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
 
   {
     // ... otherwise, we have to validate the arguments.
-    std::vector<v8::Local<v8::Value>> parsed_v8_args;
-    std::string error;
-    bool success = signature->ParseArgumentsToV8(context, *arguments, type_refs,
-                                                 &parsed_v8_args, &error);
+    APISignature::V8ParseResult parse_result =
+        signature->ParseArgumentsToV8(context, *arguments, type_refs);
 
     if (!binding::IsContextValid(context))
       return RequestResult(RequestResult::CONTEXT_INVALIDATED);
@@ -283,9 +281,9 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
       try_catch.ReThrow();
       return RequestResult(RequestResult::THROWN);
     }
-    if (!success)
-      return RequestResult(std::move(error));
-    arguments->swap(parsed_v8_args);
+    if (!parse_result.succeeded())
+      return RequestResult(std::move(*parse_result.error));
+    arguments->swap(*parse_result.arguments);
   }
 
   bool updated_args = false;

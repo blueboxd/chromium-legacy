@@ -15,8 +15,8 @@ namespace ash {
 // which may change depending on the context, it is usually a fullscreen layer.
 // e.g, PowerButtoneMenuScreenView for power button menu. Base layer is the
 // bottom layer of any UI displayed on top of all other UIs. e.g, the ShelfView
-// that contains all the shelf items. +1 layer is where components such as icons
-// and inkdrops lay on, it may also indicate the state of an interactive
+// that contains all the shelf items. Controls layer is where components such as
+// icons and inkdrops lay on, it may also indicate the state of an interactive
 // element (active/inactive states). The color of an element in system UI will
 // be the combination of the colors of the three layers.
 class AshColorProvider {
@@ -34,31 +34,13 @@ class AshColorProvider {
     kDark
   };
 
-  // TODO(minch): To consider whether we should split this into two enums like
-  // ShieldOpacity and ShieldBlur.
   // Types of Shield layer.
   enum class ShieldLayerType {
-    // The layer has blur and opacity is 20%.
-    kAlpha20WithBlur,
-
-    // The layer has blur and opacity is 40%.
-    kAlpha40WithBlur,
-
-    // The layer has blur and opacity is 60%.
-    kAlpha60WithBlur,
-
-    // The layer doesn't have blur and opacity is 20%.
-    kAlpha20WithoutBlur,
-
-    // The layer doesn't have blur and opacity is 40%.
-    kAlpha40WithoutBlur,
-
-    // The layer doesn't have blur and opacity is 60%.
-    kAlpha60WithoutBlur,
+    kAlpha20,  // opacity of the layer is 20%
+    kAlpha40,  // opacity of the layer is 40%
+    kAlpha60,  // opacity of the layer is 60%
   };
 
-  // TODO(minch): Revise the names of these layers after their usage becomes
-  // clearer or discuss with PM/UX to suggest better names.
   // Types of Base layer.
   enum class BaseLayerType {
     // Base layer is transparent with blur.
@@ -71,21 +53,13 @@ class AshColorProvider {
     kOpaque,
   };
 
-  // TODO(minch): Discuss with UX to check whether the grouping here is
-  // reasonable. e.g, `kSeparator` looks very odd here.
-  // Types of +1 layer.
-  enum class PlusOneLayerType {
-    // The +1 layer has a border with kHairLinePx thickness.
-    kHairLine = 0,
-
-    // The +1 layer is a separator, could be vertical or horizontal.
+  // Types of Controls layer.
+  enum class ControlsLayerType {
+    kHairlineBorder,
     kSeparator,
-
-    // The state of the +1 layer is inactive or active. They will be served as a
-    // base for interactive layers, where ripple will be used as tap/touch
-    // feedback.
-    kInActive,
-    kActive,
+    kActiveControlBackground,
+    kInactiveControlBackground,
+    kFocusRing,
   };
 
   AshColorProvider();
@@ -94,7 +68,7 @@ class AshColorProvider {
   // Gets the color of corresponding layer for specific type.
   SkColor GetShieldLayerColor(ShieldLayerType type) const;
   SkColor GetBaseLayerColor(BaseLayerType type) const;
-  SkColor GetPlusOneLayerColor(PlusOneLayerType type) const;
+  SkColor GetControlsLayerColor(ControlsLayerType type) const;
 
   AshColorMode color_mode() const { return color_mode_; }
 

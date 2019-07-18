@@ -391,11 +391,11 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
         WebApkUpdateManagerJni.get().storeWebApkUpdateRequestToFile(updateRequestPath,
                 info.manifestStartUrl(), info.scopeUri().toString(), info.name(), info.shortName(),
-                primaryIconUrl, info.icon(), badgeIconUrl, info.badgeIcon(), iconUrls, iconHashes,
-                info.displayMode(), info.orientation(), info.themeColor(), info.backgroundColor(),
-                info.shareTarget().getAction(), info.shareTarget().getParamTitle(),
-                info.shareTarget().getParamText(), info.shareTarget().getParamUrl(),
-                info.shareTarget().isShareMethodPost(),
+                primaryIconUrl, info.icon(), info.isIconAdaptive(), badgeIconUrl, info.badgeIcon(),
+                iconUrls, iconHashes, info.displayMode(), info.orientation(), info.themeColor(),
+                info.backgroundColor(), info.shareTarget().getAction(),
+                info.shareTarget().getParamTitle(), info.shareTarget().getParamText(),
+                info.shareTarget().getParamUrl(), info.shareTarget().isShareMethodPost(),
                 info.shareTarget().isShareEncTypeMultipart(), info.shareTarget().getFileNames(),
                 info.shareTarget().getFileAccepts(), info.manifestUrl(), info.webApkPackageName(),
                 versionCode, isManifestStale, updateReason, callback);
@@ -405,14 +405,15 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     interface Natives {
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
                 String scope, String name, String shortName, String primaryIconUrl,
-                Bitmap primaryIcon, String badgeIconUrl, Bitmap badgeIcon, String[] iconUrls,
-                String[] iconHashes, @WebDisplayMode int displayMode, int orientation,
-                long themeColor, long backgroundColor, String shareTargetAction,
-                String shareTargetParamTitle, String shareTargetParamText,
-                String shareTargetParamUrl, boolean shareTargetParamIsMethodPost,
-                boolean shareTargetParamIsEncTypeMultipart, String[] shareTargetParamFileNames,
-                Object[] shareTargetParamAccepts, String manifestUrl, String webApkPackage,
-                int webApkVersion, boolean isManifestStale, @WebApkUpdateReason int updateReason,
+                Bitmap primaryIcon, boolean isPrimaryIconMaskable, String badgeIconUrl,
+                Bitmap badgeIcon, String[] iconUrls, String[] iconHashes,
+                @WebDisplayMode int displayMode, int orientation, long themeColor,
+                long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
+                String shareTargetParamText, String shareTargetParamUrl,
+                boolean shareTargetParamIsMethodPost, boolean shareTargetParamIsEncTypeMultipart,
+                String[] shareTargetParamFileNames, Object[] shareTargetParamAccepts,
+                String manifestUrl, String webApkPackage, int webApkVersion,
+                boolean isManifestStale, @WebApkUpdateReason int updateReason,
                 Callback<Boolean> callback);
         public void updateWebApkFromFile(String updateRequestPath, WebApkUpdateCallback callback);
     }

@@ -219,7 +219,6 @@ double CSSMathExpressionNumericLiteral::ComputeLengthPx(
       return value_->ComputeLength<double>(conversion_data);
     case kCalcNumber:
     case kCalcPercent:
-      return value_->GetDoubleValue();
     case kCalcAngle:
     case kCalcFrequency:
     case kCalcPercentLength:
@@ -528,8 +527,21 @@ CSSMathExpressionBinaryOperation::ComputeValueInCanonicalUnit() const {
 
 double CSSMathExpressionBinaryOperation::ComputeLengthPx(
     const CSSToLengthConversionData& conversion_data) const {
-  const double left_value = left_side_->ComputeLengthPx(conversion_data);
-  const double right_value = right_side_->ComputeLengthPx(conversion_data);
+  DCHECK_EQ(kCalcLength, Category());
+  double left_value;
+  if (left_side_->Category() == kCalcLength) {
+    left_value = left_side_->ComputeLengthPx(conversion_data);
+  } else {
+    DCHECK_EQ(kCalcNumber, left_side_->Category());
+    left_value = left_side_->DoubleValue();
+  }
+  double right_value;
+  if (right_side_->Category() == kCalcLength) {
+    right_value = right_side_->ComputeLengthPx(conversion_data);
+  } else {
+    DCHECK_EQ(kCalcNumber, right_side_->Category());
+    right_value = right_side_->DoubleValue();
+  }
   return Evaluate(left_value, right_value);
 }
 

@@ -6,24 +6,42 @@
 #define CONTENT_PUBLIC_BROWSER_SERVICE_PROCESS_HOST_H_
 
 #include <memory>
-#include <tuple>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/sandbox_type.h"
+#include "content/public/browser/service_process_info.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
 
-// A ServiceProcessHost instance corresponds to a single service process in the
-// system. ServiceProcessHost instances are not thread-safe, but they may be
-// created on any thread.
+// ServiceProcessHost is used to launch new service processes given basic
+// parameters like sandbox type, as well as a primordial Mojo interface to drive
+// the service's behavior. See |Launch()| methods below for more details.
+//
+// Typical usage might look something like:
+//
+//   constexpr auto kFooServiceIdleTimeout = base::TimeDelta::FromSeconds(5);
+//   auto foo_service = ServiceProcessHost::Launch<foo::mojom::FooService>(
+//       ServiceProcessHost::Options()
+//           .WithSandboxType(SANDBOX_TYPE_UTILITY)
+//           .WithDisplayName(IDS_FOO_SERVICE_DISPLAY_NAME)
+//           .Pass());
+//   foo_service.set_idle_handler(
+//       kFooServiceIdleTimeout,
+//       base::BindRepeating(
+//           /* Something to reset |foo_service|,  killing the process. */));
+//   foo_service->DoSomeWork();
+//
 class CONTENT_EXPORT ServiceProcessHost {
  public:
   struct CONTENT_EXPORT Options {
@@ -32,7 +50,13 @@ class CONTENT_EXPORT ServiceProcessHost {
 
     Options(Options&&);
 
+    // Specifies the sandbox type with which to launch the service process.
+    // Defaults to a generic, restrictive utility process sandbox.
     Options& WithSandboxType(SandboxType type);
+
+    // Specifies the display name of the service process. This should generally
+    // be a human readable and meaningful application or service name and will
+    // appear in places like the system task viewer.
     Options& WithDisplayName(const base::string16& name);
     Options& WithDisplayName(int resource_id);
 
@@ -40,41 +64,70 @@ class CONTENT_EXPORT ServiceProcessHost {
     base::string16 display_name;
   };
 
-  virtual ~ServiceProcessHost() {}
+  // An interface which can be implemented and registered/unregistered with
+  // |Add/RemoveObserver()| below to watch for all service process creation and
+  // and termination events globally. Methods are always called from the UI
+  // UI thread.
+  class CONTENT_EXPORT Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override {}
+
+    virtual void OnServiceProcessLaunched(const ServiceProcessInfo& info) {}
+    virtual void OnServiceProcessTerminatedNormally(
+        const ServiceProcessInfo& info) {}
+    virtual void OnServiceProcessCrashed(const ServiceProcessInfo& info) {}
+  };
 
   // Launches a new service process for asks it to bind the given interface
   // receiver. |Interface| must be a service interface known to utility process
   // code. See content/utility/services.cc and/or
   // ContentUtilityClient::Run{Main,IO}ThreadService() methods.
   //
-  // NOTE: The Interface type can be inferred from from the |receiver| argument.
+  // The launched process will (disregarding crashes) stay alive until either
+  // end of the |Interface| pipe is closed. Typically services are designed to
+  // never close their end of this pipe, and it's up to the browser to
+  // explicitly reset its corresponding Remote in order to induce service
+  // process termination.
+  //
+  // NOTE: The |Interface| type can be inferred from from the |receiver|
+  // argument's type.
+  //
+  // May be called from any thread.
   template <typename Interface>
-  static std::unique_ptr<ServiceProcessHost> Launch(
-      mojo::PendingReceiver<Interface> receiver,
-      Options options = {}) {
-    return Launch(Interface::Name_, receiver.PassPipe(), std::move(options));
+  static void Launch(mojo::PendingReceiver<Interface> receiver,
+                     Options options = {}) {
+    Launch(mojo::GenericPendingReceiver(std::move(receiver)),
+           std::move(options));
   }
 
-  // Same as above but expects |remote| to point to an unbound Remote. The
-  // interface type is inferred from |remote| and upon return |*remote| is
-  // bound. The process will launch with a receiver for that interface type.
+  // Same as above but creates a new |Interface| pipe on the caller's behalf and
+  // returns its Remote endpoint.
+  //
+  // May be called from any thread.
   template <typename Interface>
-  static std::unique_ptr<ServiceProcessHost> Launch(
-      mojo::Remote<Interface>* unbound_remote,
-      Options options = {}) {
-    return Launch(unbound_remote->BindNewPipeAndPassReceiver(),
-                  std::move(options));
+  static mojo::Remote<Interface> Launch(Options options = {}) {
+    mojo::Remote<Interface> remote;
+    Launch(remote.BindNewPipeAndPassReceiver(), std::move(options));
+    return remote;
   }
 
- protected:
-  // Launches a new service process for asks it to bind a receiver for the
-  // service interface named by |interface_name|. The receiving pipe must be
-  // given in |pipe| and should be connected to a Remote of the same interface
-  // type.
-  static std::unique_ptr<ServiceProcessHost> Launch(
-      base::StringPiece service_interface_name,
-      mojo::ScopedMessagePipeHandle receiving_pipe,
-      Options options = {});
+  // Yields information about currently active service processes. Must be called
+  // from the UI Thread only.
+  static std::vector<ServiceProcessInfo> GetRunningProcessInfo();
+
+  // Registers a global observer of all service process lifetimes. Must be
+  // removed before destruction. Must be called from the UI thread only.
+  static void AddObserver(Observer* observer);
+
+  // Removes a registered observer. This must be called some time before
+  // |*observer| is destroyed and must be called from the UI thread only.
+  static void RemoveObserver(Observer* observer);
+
+ private:
+  // Launches a new service process and asks it to bind a receiver for the
+  // service interface endpoint carried by |receiver|, which should be connected
+  // to a Remote of the same interface type.
+  static void Launch(mojo::GenericPendingReceiver receiver, Options options);
 };
 
 }  // namespace content

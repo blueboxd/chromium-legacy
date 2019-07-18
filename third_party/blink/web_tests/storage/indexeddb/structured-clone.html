@@ -49,7 +49,8 @@ function startTests()
         testFileList,
         testArray,
         testObject,
-        testTypedArray
+        testTypedArray,
+        testError,
     ];
 
     function nextTest() {
@@ -507,6 +508,19 @@ function testTypedArray(callback) {
     ], callback);
 }
 
+function testError(callback) {
+    debug("Testing Error");
+
+    self.error = new Error("hello");
+    testValue(error, (result) => {
+        self.result = result;
+        shouldBeTrue("error !== result");
+        shouldBe("Object.getPrototypeOf(result)", "Error.prototype");
+        shouldBeEqualToString("result.message", "hello");
+        callback();
+    });
+}
+
 function testBadTypes()
 {
     debug("");
@@ -521,7 +535,6 @@ function testBadTypes()
 
     debug("");
     debug("Other JavaScript object types:");
-    evalAndExpectException("store.put(new Error, 'key')", "DOMException.DATA_CLONE_ERR");
     evalAndExpectException("store.put(new Function, 'key')", "DOMException.DATA_CLONE_ERR");
 
     debug("");

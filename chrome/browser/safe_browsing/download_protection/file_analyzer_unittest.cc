@@ -726,7 +726,7 @@ TEST_F(FileAnalyzerTest, SmallRarHasContentInspection) {
 }
 
 // TODO(crbug.com/949399): The test is flaky (fail, timeout) on all platforms.
-TEST_F(FileAnalyzerTest, DISABLED_LargeRarSkipsContentInspection) {
+TEST_F(FileAnalyzerTest, LargeRarSkipsContentInspection) {
   scoped_refptr<MockBinaryFeatureExtractor> extractor =
       new testing::StrictMock<MockBinaryFeatureExtractor>();
   FileAnalyzer analyzer(extractor);

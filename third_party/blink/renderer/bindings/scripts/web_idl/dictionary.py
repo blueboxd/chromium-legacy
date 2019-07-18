@@ -9,7 +9,7 @@ from .common import WithExtendedAttributes
 from .common import WithIdentifier
 from .common import WithOwner
 from .identifier_ir_map import IdentifierIRMap
-from .idl_types import IdlType
+from .idl_type import IdlType
 from .reference import RefById
 from .user_defined_type import UserDefinedType
 from .values import DefaultValue

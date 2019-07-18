@@ -57,8 +57,10 @@ class CONTENT_EXPORT BackgroundSyncController {
       int max_attempts) {}
 
   // Calculates the soonest wakeup delta across all storage partitions and
-  // schedules a background task to wake up the browser.
-  virtual void RunInBackground() {}
+  // schedules a background task to wake up the browser to process
+  // Background Sync registrations.
+  virtual void ScheduleBrowserWakeUp(
+      blink::mojom::BackgroundSyncType sync_type) {}
 
   // Calculates the delay after which the next sync event should be fired
   // for a BackgroundSync registration. The delay is based on the |sync_type|.

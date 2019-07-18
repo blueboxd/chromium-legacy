@@ -385,9 +385,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   params.page_url = initial_url;
   params.link_url = new_tab_url;
 
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
 
   TestRenderViewContextMenu menu(web_contents->GetMainFrame(), params);
   menu.Init();
@@ -396,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationPortMappedBrowserTest,
   // Wait for the new tab to be created and for loading to stop. The
   // navigation should not be allowed, therefore there should not be a last
   // committed URL in the new tab.
-  tab_added_observer.Wait();
+  tab_add.Wait();
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(
           browser()->tab_strip_model()->count() - 1);

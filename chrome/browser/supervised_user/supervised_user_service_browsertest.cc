@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, ProfileName) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   Profile* profile = GetPrimaryUserProfile();
   PrefService* prefs = profile->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kForceGoogleSafeSearch));
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, LocalPolicies) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   Profile* profile = GetPrimaryUserProfile();
   PrefService* prefs = profile->GetPrefs();

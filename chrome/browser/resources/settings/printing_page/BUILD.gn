@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
       ":cups_add_printer_dialog",
       ":cups_add_printer_dialog_elements",
       ":cups_edit_printer_dialog",
+      ":cups_nearby_printers",
       ":cups_printer_dialog_util",
       ":cups_printer_types",
       ":cups_printers",
@@ -77,6 +78,14 @@ if (is_chromeos) {
     ]
   }
 
+  js_library("cups_nearby_printers") {
+    deps = [
+      ":cups_printer_types",
+      ":cups_printers_browser_proxy",
+      "//ui/webui/resources/js:web_ui_listener_behavior",
+    ]
+  }
+
   js_library("cups_printer_types") {
     deps = [
       ":cups_printers_browser_proxy",
@@ -91,6 +100,7 @@ if (is_chromeos) {
 
   js_library("cups_printers") {
     deps = [
+      ":cups_nearby_printers",
       ":cups_printers_browser_proxy",
       ":cups_saved_printers",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",

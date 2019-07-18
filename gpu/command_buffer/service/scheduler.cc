@@ -302,7 +302,6 @@ Scheduler::~Scheduler() {
 }
 
 SequenceId Scheduler::CreateSequence(SchedulingPriority priority) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   scoped_refptr<SyncPointOrderData> order_data =
       sync_point_manager_->CreateSyncPointOrderData();
@@ -314,7 +313,6 @@ SequenceId Scheduler::CreateSequence(SchedulingPriority priority) {
 }
 
 void Scheduler::DestroySequence(SequenceId sequence_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
 
   Sequence* sequence = GetSequence(sequence_id);

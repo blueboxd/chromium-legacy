@@ -121,13 +121,6 @@ class ScopedTaskEnvironment {
     // The main thread pumps asynchronous IO messages and supports the
     // FileDescriptorWatcher API on POSIX.
     IO,
-
-    // TODO(gab): Migrate users of these APIs.
-    // Deprecated: Use TimeSource::MOCK_TIME instead.
-    MOCK_TIME,
-    // Deprecated:: Use MainThreadType::UI/IO + TimeSource::MOCK_TIME instead.
-    UI_MOCK_TIME,
-    IO_MOCK_TIME,
   };
 
   // Note that this is irrelevant (and ignored) under
@@ -170,7 +163,7 @@ class ScopedTaskEnvironment {
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   NOINLINE ScopedTaskEnvironment(ArgTypes... args)
       : ScopedTaskEnvironment(
-            TimeSourceForTraits(args...),
+            trait_helpers::GetEnum<TimeSource, TimeSource::DEFAULT>(args...),
             trait_helpers::GetEnum<MainThreadType, MainThreadType::DEFAULT>(
                 args...),
             trait_helpers::GetEnum<ThreadPoolExecutionMode,
@@ -209,7 +202,7 @@ class ScopedTaskEnvironment {
   // possible.
   void RunUntilIdle();
 
-  // Only valid for instances with a MOCK_TIME MainThreadType. Fast-forwards
+  // Only valid for instances using TimeSource::MOCK_TIME. Fast-forwards
   // virtual time by |delta|, causing all tasks on the main thread and thread
   // pool with a remaining delay less than or equal to |delta| to be executed in
   // their natural order before this returns. |delta| must be non-negative. Upon
@@ -218,19 +211,19 @@ class ScopedTaskEnvironment {
   // FastForwardBy() didn't result in nested calls to time-advancing-methods.
   void FastForwardBy(TimeDelta delta);
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
+  // Only valid for instances using TimeSource::MOCK_TIME.
   // Short for FastForwardBy(TimeDelta::Max()).
   //
   // WARNING: This has the same caveat as RunUntilIdle() and is even more likely
   // to spin forever (any RepeatingTimer will cause this).
   void FastForwardUntilNoTasksRemain();
 
-  // Only valid for instances with a MOCK_TIME MainThreadType. Returns a
+  // Only valid for instances using TimeSource::MOCK_TIME. Returns a
   // TickClock whose time is updated by FastForward(By|UntilNoTasksRemain).
   const TickClock* GetMockTickClock() const;
   std::unique_ptr<TickClock> DeprecatedGetMockTickClock();
 
-  // Only valid for instances with a MOCK_TIME MainThreadType. Returns a
+  // Only valid for instances using TimeSource::MOCK_TIME. Returns a
   // Clock whose time is updated by FastForward(By|UntilNoTasksRemain). The
   // initial value is implementation defined and should be queried by tests that
   // depend on it.
@@ -238,24 +231,24 @@ class ScopedTaskEnvironment {
   // process. See time.h.
   const Clock* GetMockClock() const;
 
-  // Only valid for instances with a MOCK_TIME MainThreadType. Returns the
+  // Only valid for instances using TimeSource::MOCK_TIME. Returns the
   // current virtual tick time (based on a realistic Now(), sampled when this
   // ScopedTaskEnvironment was created, and manually advanced from that point
   // on).
   base::TimeTicks NowTicks() const;
 
-  // Only valid for instances with a MOCK_TIME MainThreadType. Returns the
+  // Only valid for instances using TimeSource::MOCK_TIME. Returns the
   // number of pending tasks (delayed and non-delayed) of the main thread's
   // TaskRunner. When debugging, you can use DescribePendingMainThreadTasks() to
   // see what those are.
   size_t GetPendingMainThreadTaskCount() const;
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
+  // Only valid for instances using TimeSource::MOCK_TIME.
   // Returns the delay until the next pending task of the main thread's
   // TaskRunner if there is one, otherwise it returns TimeDelta::Max().
   TimeDelta NextMainThreadPendingTaskDelay() const;
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.
+  // Only valid for instances using TimeSource::MOCK_TIME.
   // Returns true iff the next task is delayed. Returns false if the next task
   // is immediate or if there is no next task.
   bool NextTaskIsDelayed() const;
@@ -304,33 +297,6 @@ class ScopedTaskEnvironment {
                         bool subclass_creates_default_taskrunner,
                         trait_helpers::NotATraitTag tag);
 
-  // Helper to extract TimeSource from a set of traits provided to
-  // ScopedTaskEnvironment's constructor. Helper for the migration (while
-  // TimeSource is optionally defined by MainThreadType).
-  template <class... ArgTypes>
-  static constexpr TimeSource TimeSourceForTraits(ArgTypes... args) {
-    const auto explicit_time_source =
-        trait_helpers::GetOptionalEnum<TimeSource>(args...);
-    const auto explicit_main_thread_type =
-        trait_helpers::GetOptionalEnum<MainThreadType>(args...);
-    const bool requested_mock_time_via_main_thread_type =
-        explicit_main_thread_type &&
-        (*explicit_main_thread_type == MainThreadType::MOCK_TIME ||
-         *explicit_main_thread_type == MainThreadType::UI_MOCK_TIME ||
-         *explicit_main_thread_type == MainThreadType::IO_MOCK_TIME);
-
-    if (explicit_time_source) {
-      DCHECK(!requested_mock_time_via_main_thread_type)
-          << "Don't specify MOCK_TIME via MainThreadType, TimeSource is "
-             "sufficient";
-      return *explicit_time_source;
-    } else if (requested_mock_time_via_main_thread_type) {
-      return TimeSource::MOCK_TIME;
-    }
-
-    return TimeSource::DEFAULT;
-  }
-
   const MainThreadType main_thread_type_;
   const ThreadPoolExecutionMode thread_pool_execution_mode_;
   const ThreadingMode threading_mode_;
@@ -349,7 +315,7 @@ class ScopedTaskEnvironment {
   scoped_refptr<sequence_manager::TaskQueue> task_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Only set for instances with a MOCK_TIME MainThreadType.
+  // Only set for instances using TimeSource::MOCK_TIME.
   std::unique_ptr<Clock> mock_clock_;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)

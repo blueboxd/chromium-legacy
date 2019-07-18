@@ -82,7 +82,7 @@ void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
 // SupervisedUserNavigationObserver.
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        NoNavigationObserverBlock) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   Profile* profile = GetPrimaryUserProfile();
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        BlockMainFrameWithInterstitial) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   BlockHost(kExampleHost2);
 
@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        DontBlockSubFrame) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   BlockHost(kExampleHost2);
   BlockHost(kIframeHost2);
@@ -155,7 +155,7 @@ class SupervisedUserNavigationThrottleNotSupervisedTest
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleNotSupervisedTest,
                        DontBlock) {
-  LogInUser(false /*child*/);
+  LogInUser(LogInType::kRegular);
   BlockHost(kExampleHost);
 
   GURL blocked_url = embedded_test_server()->GetURL(

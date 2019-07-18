@@ -134,6 +134,17 @@ scoped_refptr<gfx::NativePixmap> ScenicSurfaceFactory::CreateNativePixmap(
   return collection->CreateNativePixmap(0);
 }
 
+void ScenicSurfaceFactory::CreateNativePixmapAsync(
+    gfx::AcceleratedWidget widget,
+    VkDevice vk_device,
+    gfx::Size size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    NativePixmapCallback callback) {
+  std::move(callback).Run(
+      CreateNativePixmap(widget, vk_device, size, format, usage));
+}
+
 #if BUILDFLAG(ENABLE_VULKAN)
 std::unique_ptr<gpu::VulkanImplementation>
 ScenicSurfaceFactory::CreateVulkanImplementation() {

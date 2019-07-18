@@ -651,4 +651,32 @@ TEST_F(DOMAgentTest, TagDomSearch) {
   EXPECT_EQ(node_ids->size(), 3u);
 }
 
+TEST_F(DOMAgentTest, DomSearchForStylesPanel) {
+  std::unique_ptr<views::Widget> widget_a(
+      CreateTestWidget(gfx::Rect(1, 1, 80, 80)));
+  widget_a->GetRootView()->AddChildView(new TestView("child_a1"));
+
+  std::unique_ptr<DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  std::string search_id;
+  int result_count = 0;
+  std::unique_ptr<protocol::Array<int>> node_ids = nullptr;
+
+  // Search for something that is in style properties but not in dom name or
+  // attributes.
+  dom_agent()->performSearch("style: classname: child_a1", false, &search_id,
+                             &result_count);
+  EXPECT_EQ(result_count, 1);
+  dom_agent()->getSearchResults(search_id, 0, result_count, &node_ids);
+  EXPECT_EQ(node_ids->size(), 1u);
+  node_ids.reset();
+
+  dom_agent()->performSearch("classname: child_a1", false, &search_id,
+                             &result_count);
+  EXPECT_EQ(result_count, 0);
+  dom_agent()->getSearchResults(search_id, 0, 1, &node_ids);
+  EXPECT_TRUE(!node_ids);
+}
+
 }  // namespace ui_devtools

@@ -512,6 +512,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
   mask->SetTransformTreeIndex(2);
   root_layer->AddChild(mask);
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   RunPixelResourceTestWithLayerList(
       root_layer,
       base::FilePath(FILE_PATH_LITERAL("scaled_mask_with_effect_.png"))

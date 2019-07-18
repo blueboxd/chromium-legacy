@@ -8,8 +8,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantModuleEntryProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -39,15 +39,10 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
 
     private void updateChannelsIfNecessary() {
         if (!ChannelsUpdater.getInstance().shouldUpdateChannels()) return;
-
         final PendingResult result = goAsync();
-        new BackgroundOnlyAsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                ChannelsUpdater.getInstance().updateChannels();
-                result.finish();
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            ChannelsUpdater.getInstance().updateChannels();
+            result.finish();
+        });
     }
 }

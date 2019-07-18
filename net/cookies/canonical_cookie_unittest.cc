@@ -1368,6 +1368,21 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       false /*httponly*/, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT));
 
+  // Test the file:// protocol.
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("file:///"), "A", "B", std::string(), "/foo", one_hour_ago,
+      one_hour_from_now, base::Time(), false /*secure*/, false /*httponly*/,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+  EXPECT_TRUE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("file:///home/user/foo.txt"), "A", "B", std::string(), "/foo",
+      one_hour_ago, one_hour_from_now, base::Time(), false /*secure*/,
+      false /*httponly*/, CookieSameSite::NO_RESTRICTION,
+      COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("file:///home/user/foo.txt"), "A", "B", "home", "/foo", one_hour_ago,
+      one_hour_from_now, base::Time(), false /*secure*/, false /*httponly*/,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+
   // Test that malformed attributes fail to set the cookie.
   EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
       GURL("http://www.foo.com/foo"), " A", "B", std::string(), "/foo",
@@ -1567,6 +1582,25 @@ TEST(CanonicalCookieTest, CreateSanitizedCookie_Logic) {
       GURL("https://127.0.0.1"), "__Host-A", "B", "127.0.0.1", "/",
       two_hours_ago, one_hour_from_now, one_hour_ago, true, false,
       CookieSameSite::NO_RESTRICTION, CookiePriority::COOKIE_PRIORITY_DEFAULT));
+
+  // Check that CreateSanitizedCookie can gracefully fail on inputs that would
+  // crash cookie_util::GetCookieDomainWithString due to failing
+  // DCHECKs. Specifically, GetCookieDomainWithString requires that if the
+  // domain is empty or the URL's host matches the domain, then the URL's host
+  // must pass DomainIsHostOnly; it must not begin with a period.
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("http://..."), "A", "B", "...", "/", base::Time(), base::Time(),
+      base::Time(), false /*secure*/, false /*httponly*/,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("http://."), "A", "B", std::string(), "/", base::Time(),
+      base::Time(), base::Time(), false /*secure*/, false /*httponly*/,
+      CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT));
+  EXPECT_FALSE(CanonicalCookie::CreateSanitizedCookie(
+      GURL("http://.chromium.org"), "A", "B", ".chromium.org", "/",
+      base::Time(), base::Time(), base::Time(), false /*secure*/,
+      false /*httponly*/, CookieSameSite::NO_RESTRICTION,
+      COOKIE_PRIORITY_DEFAULT));
 }
 
 TEST(CanonicalCookieTest, IsSetPermittedInContext) {

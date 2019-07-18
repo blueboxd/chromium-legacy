@@ -61,6 +61,8 @@ Polymer({
   listeners: {
     'edit-cups-printer-details': 'onShowCupsEditPrinterDialog_',
     'show-cups-printer-toast': 'openResultToast_',
+    'open-manufacturer-model-dialog-for-specified-printer':
+        'openManufacturerModelDialogForSpecifiedPrinter_',
   },
 
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
@@ -75,9 +77,6 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener(
-        'on-printers-changed', this.printersChanged_.bind(this));
-
     this.networkConfigProxy_
         .getNetworkStateList({
           filter: chromeos.networkConfig.mojom.FilterType.kActive,
@@ -87,6 +86,13 @@ Polymer({
         .then((responseParams) => {
           this.onActiveNetworksChanged(responseParams.result);
         });
+
+    if (this.enableUpdatedUI_) {
+      return;
+    }
+
+    this.addWebUIListener(
+        'on-printers-changed', this.printersChanged_.bind(this));
   },
 
   /** @override */
@@ -141,6 +147,16 @@ Polymer({
       }
 
     this.$.errorToast.show();
+  },
+
+  /**
+   * @param {!CustomEvent<{item: !CupsPrinterInfo}>} e
+   * @private
+   */
+  openManufacturerModelDialogForSpecifiedPrinter_: function(e) {
+    const item = e.detail.item;
+    this.$.addPrinterDialog
+        .openManufacturerModelDialogForSpecifiedPrinter(item);
   },
 
   /** @private */

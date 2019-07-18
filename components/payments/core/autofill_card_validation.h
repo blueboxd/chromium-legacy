@@ -19,7 +19,11 @@ class AutofillProfile;
 
 namespace payments {
 
-// Used to express the completion status of a credit card.
+// Used to express the completion status of a credit card. Bit field values are
+// identical to CompletionStatus fields in AutofillPaymentInstrument.java.
+// Please modify AutofillPaymentInstrument.java after changing these bits since
+// missing fields on both Android and Desktop are recorded in the same UMA
+// metric: PaymentRequest.MissingPaymentFields.
 typedef uint32_t CreditCardCompletionStatus;
 static const CreditCardCompletionStatus CREDIT_CARD_COMPLETE = 0;
 static const CreditCardCompletionStatus CREDIT_CARD_EXPIRED = 1 << 0;

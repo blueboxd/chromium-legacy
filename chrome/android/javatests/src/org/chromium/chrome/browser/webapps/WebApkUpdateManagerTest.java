@@ -154,7 +154,7 @@ public class WebApkUpdateManagerTest {
             WebApkInfo info = WebApkInfo.create(
                     WEBAPK_ID, "", creationData.scope, null, null, null, creationData.name,
                     creationData.shortName, creationData.displayMode, creationData.orientation, 0,
-                    creationData.themeColor, creationData.backgroundColor, 0, "",
+                    creationData.themeColor, creationData.backgroundColor, 0, false, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
                     creationData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,

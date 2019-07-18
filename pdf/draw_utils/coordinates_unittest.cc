@@ -12,8 +12,10 @@ namespace draw_utils {
 
 namespace {
 
-constexpr PageInsetSizes kLeftInsets{5, 1, 3, 7};
-constexpr PageInsetSizes kRightInsets{1, 5, 3, 7};
+constexpr int kVerticalSeparator = 4;
+constexpr PageInsetSizes kLeftInsets{5, 3, 1, 7};
+constexpr PageInsetSizes kRightInsets{1, 3, 5, 7};
+constexpr PageInsetSizes kSingleViewInsets{5, 3, 5, 7};
 
 }  // namespace
 
@@ -40,6 +42,112 @@ TEST(CoordinateTest, ExpandDocumentSize) {
   ExpandDocumentSize(rect_size, &doc_size);
   EXPECT_EQ(250, doc_size.width());
   EXPECT_EQ(1450, doc_size.height());
+}
+
+TEST(CoordinateTest, GetLeftFillRect) {
+  // Testing various rectangles with different positions and sizes.
+  pp::Rect page_rect(10, 20, 400, 500);
+  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(0, page_rect.x());
+  EXPECT_EQ(17, page_rect.y());
+  EXPECT_EQ(5, page_rect.width());
+  EXPECT_EQ(514, page_rect.height());
+
+  page_rect.SetRect(200, 300, 400, 350);
+  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(0, page_rect.x());
+  EXPECT_EQ(297, page_rect.y());
+  EXPECT_EQ(195, page_rect.width());
+  EXPECT_EQ(364, page_rect.height());
+
+  page_rect.SetRect(800, 650, 20, 15);
+  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(0, page_rect.x());
+  EXPECT_EQ(647, page_rect.y());
+  EXPECT_EQ(795, page_rect.width());
+  EXPECT_EQ(29, page_rect.height());
+
+  // Testing rectangle with a negative y-component.
+  page_rect.SetRect(50, -200, 100, 300);
+  page_rect = GetLeftFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(0, page_rect.x());
+  EXPECT_EQ(-203, page_rect.y());
+  EXPECT_EQ(45, page_rect.width());
+  EXPECT_EQ(314, page_rect.height());
+}
+
+TEST(CoordinateTest, GetRightFillRect) {
+  constexpr int kDocWidth = 1000;
+
+  // Testing various rectangles with different positions, sizes, and document
+  // widths.
+  pp::Rect page_rect(10, 20, 400, 500);
+  page_rect = GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
+                               kVerticalSeparator);
+  EXPECT_EQ(415, page_rect.x());
+  EXPECT_EQ(17, page_rect.y());
+  EXPECT_EQ(585, page_rect.width());
+  EXPECT_EQ(514, page_rect.height());
+
+  page_rect.SetRect(200, 300, 400, 350);
+  page_rect = GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
+                               kVerticalSeparator);
+  EXPECT_EQ(605, page_rect.x());
+  EXPECT_EQ(297, page_rect.y());
+  EXPECT_EQ(395, page_rect.width());
+  EXPECT_EQ(364, page_rect.height());
+
+  page_rect.SetRect(200, 300, 400, 350);
+  page_rect =
+      GetRightFillRect(page_rect, kSingleViewInsets, 800, kVerticalSeparator);
+  EXPECT_EQ(605, page_rect.x());
+  EXPECT_EQ(297, page_rect.y());
+  EXPECT_EQ(195, page_rect.width());
+  EXPECT_EQ(364, page_rect.height());
+
+  // Testing rectangle with a negative y-component.
+  page_rect.SetRect(50, -200, 100, 300);
+  page_rect = GetRightFillRect(page_rect, kSingleViewInsets, kDocWidth,
+                               kVerticalSeparator);
+  EXPECT_EQ(155, page_rect.x());
+  EXPECT_EQ(-203, page_rect.y());
+  EXPECT_EQ(845, page_rect.width());
+  EXPECT_EQ(314, page_rect.height());
+}
+
+TEST(CoordinateTest, GetBottomFillRect) {
+  // Testing various rectangles with different positions and sizes.
+  pp::Rect page_rect(10, 20, 400, 500);
+  page_rect =
+      GetBottomFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(5, page_rect.x());
+  EXPECT_EQ(527, page_rect.y());
+  EXPECT_EQ(410, page_rect.width());
+  EXPECT_EQ(4, page_rect.height());
+  page_rect.SetRect(200, 300, 400, 350);
+  page_rect =
+      GetBottomFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(195, page_rect.x());
+  EXPECT_EQ(657, page_rect.y());
+  EXPECT_EQ(410, page_rect.width());
+  EXPECT_EQ(4, page_rect.height());
+
+  page_rect.SetRect(800, 650, 20, 15);
+  page_rect =
+      GetBottomFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(795, page_rect.x());
+  EXPECT_EQ(672, page_rect.y());
+  EXPECT_EQ(30, page_rect.width());
+  EXPECT_EQ(4, page_rect.height());
+
+  // Testing rectangle with a negative y-component.
+  page_rect.SetRect(50, -200, 100, 300);
+  page_rect =
+      GetBottomFillRect(page_rect, kSingleViewInsets, kVerticalSeparator);
+  EXPECT_EQ(45, page_rect.x());
+  EXPECT_EQ(107, page_rect.y());
+  EXPECT_EQ(110, page_rect.width());
+  EXPECT_EQ(4, page_rect.height());
 }
 
 TEST(CoordinateTest, GetScreenRect) {

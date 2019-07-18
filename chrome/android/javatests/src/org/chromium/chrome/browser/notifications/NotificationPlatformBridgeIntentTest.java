@@ -119,8 +119,8 @@ public class NotificationPlatformBridgeIntentTest {
                 });
         Assert.assertNotNull("Could not find the Preferences activity", activity);
 
-        SingleWebsitePreferences fragment =
-                ActivityUtils.waitForFragmentToAttach(activity, SingleWebsitePreferences.class);
+        SingleWebsitePreferences fragment = ActivityUtils.waitForFragmentToAttachCompat(
+                activity, SingleWebsitePreferences.class);
         Assert.assertNotNull("Could not find the SingleWebsitePreferences fragment", fragment);
     }
 

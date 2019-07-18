@@ -4,7 +4,6 @@
 
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/sms/sms_provider.h"
-#include "content/browser/sms/sms_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"

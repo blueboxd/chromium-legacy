@@ -74,7 +74,6 @@ class LargeIconService : public KeyedService {
   // favicon database contains an icon for |page_url|, so clients are
   // encouraged to use GetLargeIconOrFallbackStyle() first.
   //
-  // A minimum size |min_source_size_in_pixel| can be specified as a constraint.
   // |desired_size_in_pixel| serves only as a hint to the service, no guarantees
   // on the fetched size are provided.
   //

@@ -19,8 +19,8 @@ namespace draw_utils {
 // page was inset on the left side.
 struct PageInsetSizes {
   int left;
-  int right;
   int top;
+  int right;
   int bottom;
 };
 
@@ -29,11 +29,35 @@ struct PageInsetSizes {
 // |doc_size|'s height.
 void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
 
-// Given |rect| in document coordinates, a |position| in screen coordinates, and
-// a |zoom| factor, returns the rectangle in screen coordinates (i.e. 0,0 is top
-// left corner of plugin area).
-// An empty |rect| will always result in an empty output rect.
-// For |zoom|, a value of 1 means 100%. |zoom| is never less than or equal to 0.
+// Given |page_rect| in document coordinates, |inset_sizes|, and
+// |vertical_separator|, return a pp::Rect object representing the gap on the
+// left side of the page created by insetting the page. I.e. the difference,
+// on the left side, between the initial |page_rect| and the |page_rect| inset
+// with |inset_sizes| (current value of |page_rect|).
+// The x coordinate of |page_rect| must be greater than or equal to
+// |inset_sizes.left|.
+pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
+                         const PageInsetSizes& inset_sizes,
+                         int vertical_separator);
+
+// Same as GetLeftFillRect(), but for the right side of |page_rect| and also
+// depends on the |doc_width|. Additionally, |doc_width| must be greater than or
+// equal to the sum of |page_rect.right| and |inset_sizes.right|.
+pp::Rect GetRightFillRect(const pp::Rect& page_rect,
+                          const PageInsetSizes& inset_sizes,
+                          int doc_width,
+                          int vertical_separator);
+
+// Same as GetLeftFillRect(), but for the bottom side of |page_rect|.
+pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
+                           const PageInsetSizes& inset_sizes,
+                           int vertical_separator);
+
+// Given |rect| in document coordinates, a |position| in screen coordinates,
+// and a |zoom| factor, returns the rectangle in screen coordinates (i.e.
+// 0,0 is top left corner of plugin area). An empty |rect| will always
+// result in an empty output rect. For |zoom|, a value of 1 means 100%.
+// |zoom| is never less than or equal to 0.
 pp::Rect GetScreenRect(const pp::Rect& rect,
                        const pp::Point& position,
                        double zoom);

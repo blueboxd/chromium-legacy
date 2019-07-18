@@ -208,7 +208,7 @@ class TabClosingObserver : public TabStripModelObserver {
 // Navigates to a blocked URL.
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
                        SendAccessRequestOnBlockedURL) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   BlockAllSites();
 
   GURL test_url("http://www.example.com/simple.html");
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
 // Navigates to a blocked URL in a new tab. We expect the tab to be closed
 // automatically on pressing the "back" button on the interstitial.
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, OpenBlockedURLInNewTab) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   BlockAllSites();
 
   TabStripModel* tab_strip = browser()->tab_strip_model();
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, OpenBlockedURLInNewTab) {
 // navigation is blocked before it commits). The expected behavior is the same
 // though: the tab should be closed when going back.
 IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockNewTabAfterLoading) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   TabStripModel* tab_strip = browser()->tab_strip_model();
   WebContents* prev_tab = tab_strip->GetActiveWebContents();
@@ -312,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockNewTabAfterLoading) {
 // Tests that we don't end up canceling an interstitial (thereby closing the
 // whole tab) by attempting to show a second one above it.
 IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, DontShowInterstitialTwice) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   TabStripModel* tab_strip = browser()->tab_strip_model();
 
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, DontShowInterstitialTwice) {
 // page.
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
                        NavigateFromBlockedPageToBlockedPage) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   BlockAllSites();
 
   GURL test_url("http://www.example.com/simple.html");
@@ -375,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
 
 // Tests whether a visit attempt adds a special history entry.
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   BlockAllSites();
 
   GURL allowed_url("http://www.example.com/simple.html");
@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, GoBackOnDontProceed) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, GoBackOnDontProceed) {
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest,
                        ClosingBlockedTabDoesNotCrash) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -510,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockThenUnblock) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
 
   GURL test_url("http://www.example.com/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -555,7 +555,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockThenUnblock) {
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, Unblock) {
-  LogInUser(true /*child*/);
+  LogInUser(LogInType::kChild);
   BlockAllSites();
 
   GURL test_url("http://www.example.com/simple.html");

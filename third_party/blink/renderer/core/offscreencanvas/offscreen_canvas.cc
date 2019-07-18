@@ -327,22 +327,27 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     IntSize surface_size(width(), height());
     CanvasResourceProvider::ResourceUsage usage;
     if (can_use_gpu) {
-      if (HasPlaceholderCanvas())
-        usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
-      else
-        usage = CanvasResourceProvider::kAcceleratedResourceUsage;
+      if (HasPlaceholderCanvas()) {
+        usage = CanvasResourceProvider::ResourceUsage::
+            kAcceleratedCompositedResourceUsage;
+      } else {
+        usage =
+            CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage;
+      }
     } else {
-      if (HasPlaceholderCanvas())
-        usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
-      else
-        usage = CanvasResourceProvider::kSoftwareResourceUsage;
+      if (HasPlaceholderCanvas()) {
+        usage = CanvasResourceProvider::ResourceUsage::
+            kSoftwareCompositedResourceUsage;
+      } else {
+        usage = CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage;
+      }
     }
 
     base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
         HasPlaceholderCanvas() ? GetOrCreateResourceDispatcher()->GetWeakPtr()
                                : nullptr;
 
-    ReplaceResourceProvider(CanvasResourceProvider::Create(
+    ReplaceResourceProvider(CanvasResourceProvider::CreateForCanvas(
         surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
         context_->ColorParams(), presentation_mode,
         std::move(dispatcher_weakptr), false /* is_origin_top_left */));

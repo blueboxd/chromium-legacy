@@ -343,5 +343,47 @@ TEST_F(AXVirtualViewTest, OverrideFocus) {
             button_accessibility.GetFocusedDescendant());
 }
 
+TEST_F(AXVirtualViewTest, Navigation) {
+  ASSERT_EQ(0, virtual_label_->GetChildCount());
+
+  AXVirtualView* virtual_child_1 = new AXVirtualView;
+  virtual_label_->AddChildView(base::WrapUnique(virtual_child_1));
+  EXPECT_EQ(1, virtual_label_->GetChildCount());
+
+  AXVirtualView* virtual_child_2 = new AXVirtualView;
+  virtual_label_->AddChildView(base::WrapUnique(virtual_child_2));
+  EXPECT_EQ(2, virtual_label_->GetChildCount());
+
+  AXVirtualView* virtual_child_3 = new AXVirtualView;
+  virtual_label_->AddChildView(base::WrapUnique(virtual_child_3));
+
+  AXVirtualView* virtual_child_4 = new AXVirtualView;
+  virtual_child_2->AddChildView(base::WrapUnique(virtual_child_4));
+
+  EXPECT_EQ(nullptr, virtual_label_->GetNextSibling());
+  EXPECT_EQ(nullptr, virtual_label_->GetPreviousSibling());
+  EXPECT_EQ(0, virtual_label_->GetIndexInParent());
+
+  EXPECT_EQ(virtual_child_2->GetNativeObject(),
+            virtual_child_1->GetNextSibling());
+  EXPECT_EQ(nullptr, virtual_child_1->GetPreviousSibling());
+  EXPECT_EQ(0, virtual_child_1->GetIndexInParent());
+
+  EXPECT_EQ(virtual_child_3->GetNativeObject(),
+            virtual_child_2->GetNextSibling());
+  EXPECT_EQ(virtual_child_1->GetNativeObject(),
+            virtual_child_2->GetPreviousSibling());
+  EXPECT_EQ(1, virtual_child_2->GetIndexInParent());
+
+  EXPECT_EQ(nullptr, virtual_child_3->GetNextSibling());
+  EXPECT_EQ(virtual_child_2->GetNativeObject(),
+            virtual_child_3->GetPreviousSibling());
+  EXPECT_EQ(2, virtual_child_3->GetIndexInParent());
+
+  EXPECT_EQ(nullptr, virtual_child_4->GetNextSibling());
+  EXPECT_EQ(nullptr, virtual_child_4->GetPreviousSibling());
+  EXPECT_EQ(0, virtual_child_4->GetIndexInParent());
+}
+
 }  // namespace test
 }  // namespace views

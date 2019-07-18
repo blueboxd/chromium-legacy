@@ -21,7 +21,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -54,7 +53,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -3496,9 +3494,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, AboutBlankPopupsAreIgnored) {
   NavigateToFile("/password/other.html");
 
   // Open an about:blank popup and inject the password form into it.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_add(browser());
   GURL submit_url(embedded_test_server()->GetURL("/password/done.html"));
   std::string form_html = GeneratePasswordFormForAction(submit_url);
   std::string open_blank_popup_with_password_form =
@@ -3506,7 +3502,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, AboutBlankPopupsAreIgnored) {
       "w.document.body.innerHTML = \"" + form_html + "\";";
   ASSERT_TRUE(content::ExecuteScript(WebContents(),
                                      open_blank_popup_with_password_form));
-  popup_observer.Wait();
+  tab_add.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* newtab =
       browser()->tab_strip_model()->GetActiveWebContents();

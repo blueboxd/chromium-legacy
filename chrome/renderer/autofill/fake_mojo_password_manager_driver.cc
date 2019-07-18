@@ -67,6 +67,10 @@ void FakeMojoPasswordManagerDriver::UserModifiedPasswordField() {
   called_user_modified_password_field_ = true;
 }
 
+void FakeMojoPasswordManagerDriver::UserModifiedNonPasswordField(
+    uint32_t renderer_id,
+    const base::string16& value) {}
+
 void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {

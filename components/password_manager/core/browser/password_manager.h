@@ -119,6 +119,14 @@ class PasswordManager : public FormSubmissionObserver {
       PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
 
+  // Called when a user changed a value in a non-password field. The field is in
+  // a frame corresponding to |driver| and has a renderer id |renderer_id|.
+  // |value| is the current value of the field.
+  void OnUserModifiedNonPasswordField(
+      password_manager::PasswordManagerDriver* driver,
+      int32_t renderer_id,
+      const base::string16& value);
+
   // Handles a request to show manual fallback for password saving, i.e. the
   // omnibox icon with the anchored hidden prompt.
   void ShowManualFallbackForSaving(PasswordManagerDriver* driver,

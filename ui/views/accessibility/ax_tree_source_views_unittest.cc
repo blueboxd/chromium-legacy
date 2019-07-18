@@ -151,7 +151,7 @@ TEST_F(AXTreeSourceViewsTest, IgnoredView) {
 
   AXAuraObjCache cache;
   TestAXTreeSourceViews tree(cache.GetOrCreate(widget_.get()), &cache);
-  EXPECT_FALSE(tree.IsValid(cache.GetOrCreate(ignored_view)));
+  EXPECT_TRUE(tree.IsValid(cache.GetOrCreate(ignored_view)));
 }
 
 }  // namespace

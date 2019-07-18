@@ -26,7 +26,6 @@ namespace ash {
 
 class AssistantOverlay;
 class HomeButton;
-class ShelfButtonDelegate;
 
 // Controls behavior of the HomeButton, including a possible long-press
 // action (for Assistant).
@@ -36,8 +35,7 @@ class HomeButtonController : public AppListControllerObserver,
                              public TabletModeObserver,
                              public DefaultVoiceInteractionObserver {
  public:
-  HomeButtonController(HomeButton* button,
-                       ShelfButtonDelegate* shelf_button_delegate);
+  explicit HomeButtonController(HomeButton* button);
   ~HomeButtonController() override;
 
   // Maybe handles a gesture event based on the event and whether voice
@@ -82,9 +80,6 @@ class HomeButtonController : public AppListControllerObserver,
 
   // The button that owns this controller.
   HomeButton* const button_;
-
-  // Delegate to communicate with the host view.
-  ShelfButtonDelegate* const shelf_button_delegate_;
 
   // Owned by the button's view hierarchy. Null if voice interaction is not
   // enabled.

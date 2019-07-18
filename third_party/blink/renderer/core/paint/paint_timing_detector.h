@@ -21,6 +21,7 @@ class LayoutObject;
 class LocalFrameView;
 class PropertyTreeState;
 class TextPaintTimingDetector;
+struct WebFloatRect;
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
@@ -67,6 +68,7 @@ class CORE_EXPORT PaintTimingDetector
     return tracing_enabled;
   }
 
+  void ConvertViewportToWindow(WebFloatRect* float_rect) const;
   FloatRect CalculateVisualRect(const IntRect& visual_rect,
                                 const PropertyTreeState&) const;
 

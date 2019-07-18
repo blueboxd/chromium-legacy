@@ -3541,6 +3541,19 @@ cc::EventListenerProperties RenderWidget::EventListenerProperties(
       event_class);
 }
 
+std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+RenderWidget::DeferMainFrameUpdate() {
+  return layer_tree_view_->layer_tree_host()->DeferMainFrameUpdate();
+}
+
+void RenderWidget::StartDeferringCommits(base::TimeDelta timeout) {
+  layer_tree_view_->layer_tree_host()->StartDeferringCommits(timeout);
+}
+
+void RenderWidget::StopDeferringCommits(cc::PaintHoldingCommitTrigger trigger) {
+  layer_tree_view_->layer_tree_host()->StopDeferringCommits(trigger);
+}
+
 void RenderWidget::NotifySwapAndPresentationTime(
     ReportTimeCallback swap_time_callback,
     ReportTimeCallback presentation_time_callback) {

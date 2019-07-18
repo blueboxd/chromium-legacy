@@ -18344,26 +18344,18 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
   }
 
   gfx::BufferFormat buffer_format;
-  switch (internal_format) {
-    case GL_RGBA8_OES:
-      buffer_format = gfx::BufferFormat::RGBA_8888;
-      break;
-    case GL_BGRA8_EXT:
-      buffer_format = gfx::BufferFormat::BGRA_8888;
-      break;
-    case GL_RGBA16F_EXT:
-      buffer_format = gfx::BufferFormat::RGBA_F16;
-      break;
-    case GL_R8_EXT:
-      buffer_format = gfx::BufferFormat::R_8;
-      break;
-    default:
-      LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
-                         "Invalid buffer format");
-      return;
+  if (!GetGFXBufferFormat(internal_format, &buffer_format)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
+                       "Invalid buffer format");
+    return;
   }
 
-  DCHECK_EQ(buffer_usage, static_cast<GLenum>(GL_SCANOUT_CHROMIUM));
+  gfx::BufferUsage gfx_buffer_usage;
+  if (!GetGFXBufferUsage(buffer_usage, &gfx_buffer_usage)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
+                       "Invalid buffer usage");
+    return;
+  }
 
   if (!GetContextGroup()->image_factory()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
@@ -18374,7 +18366,7 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
   bool is_cleared = false;
   scoped_refptr<gl::GLImage> image =
       GetContextGroup()->image_factory()->CreateAnonymousImage(
-          gfx::Size(width, height), buffer_format, gfx::BufferUsage::SCANOUT,
+          gfx::Size(width, height), buffer_format, gfx_buffer_usage,
           &is_cleared);
   if (!image || !image->BindTexImage(target)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",

@@ -16,9 +16,11 @@
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -58,7 +60,19 @@ class CONTENT_EXPORT UtilityProcessHost
   static void RegisterUtilityMainThreadFactory(
       UtilityMainThreadFactoryFunction create);
 
+  // Interface which may be passed to a UtilityProcessHost on construction. All
+  // methods are called from the IO thread.
+  class Client {
+   public:
+    virtual ~Client() {}
+
+    virtual void OnProcessLaunched(const base::Process& process) {}
+    virtual void OnProcessTerminatedNormally() {}
+    virtual void OnProcessCrashed() {}
+  };
+
   UtilityProcessHost();
+  explicit UtilityProcessHost(std::unique_ptr<Client> client);
   ~UtilityProcessHost() override;
 
   base::WeakPtr<UtilityProcessHost> AsWeakPtr();
@@ -102,6 +116,9 @@ class CONTENT_EXPORT UtilityProcessHost
   // Used when the utility process is going to host a service. |identity| is
   // the identity of the service being launched.
   void SetServiceIdentity(const service_manager::Identity& identity);
+
+  // Returns a control interface for the running child process.
+  mojom::ChildProcess* GetChildProcess();
 
  private:
   // Starts the child process if needed, returns true on success.
@@ -158,6 +175,8 @@ class CONTENT_EXPORT UtilityProcessHost
   // process the corresponding services have been started within.
   std::vector<service_manager::Service::CreatePackagedServiceInstanceCallback>
       pending_run_service_callbacks_;
+
+  std::unique_ptr<Client> client_;
 
   // Used to vend weak pointers, and should always be declared last.
   base::WeakPtrFactory<UtilityProcessHost> weak_ptr_factory_{this};

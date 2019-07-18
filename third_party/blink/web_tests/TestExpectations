@@ -6302,15 +6302,6 @@ crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass F
 # Sheriff 2019-07-11
 crbug.com/982290 [ Win ] http/tests/devtools/elements/styles-4/styles-do-not-detach-sourcemap-on-edits.js [ Pass Timeout ]
 
-crbug.com/970079 external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
-crbug.com/970079 external/wpt/html/browsers/history/the-history-interface/001.html [ Pass Failure ]
-crbug.com/970079 external/wpt/html/browsers/history/the-history-interface/002.html [ Pass Failure ]
-crbug.com/970079 fast/dom/Window/window-postmessage-clone.html [ Pass Failure ]
-crbug.com/970079 fast/events/message-port-multi.html [ Pass Failure ]
-crbug.com/970079 storage/indexeddb/structured-clone.html [ Pass Failure ]
-crbug.com/970079 virtual/mouseevent_fractional/fast/events/message-port-multi.html [ Pass Failure ]
-crbug.com/970079 virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout ]
-
 # Sheriff 2019-07-17
 crbug.com/982149 [ Win7 ] external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]
 crbug.com/982149 [ Win7 ] virtual/blink-cors/external/wpt/referrer-policy/unsafe-url/http-rp/cross-origin/http-http/img-tag/no-redirect/generic.http.html [ Pass Timeout ]

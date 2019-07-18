@@ -1026,21 +1026,34 @@ cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(
   return client->EventListenerProperties(event_class);
 }
 
-void ChromeClientImpl::BeginLifecycleUpdates() {
+void ChromeClientImpl::BeginLifecycleUpdates(LocalFrame& main_frame) {
+  DCHECK(main_frame.IsMainFrame());
   web_view_->StopDeferringMainFrameUpdate();
-  // The WidgetClient is null for some WebViews, in which case they can not
-  // composite.
-  if (web_view_->WidgetClient())
-    web_view_->WidgetClient()->ScheduleAnimation();
 }
 
-void ChromeClientImpl::StartDeferringCommits(base::TimeDelta timeout) {
-  web_view_->StartDeferringCommits(timeout);
+void ChromeClientImpl::StartDeferringCommits(LocalFrame& main_frame,
+                                             base::TimeDelta timeout) {
+  DCHECK(main_frame.IsMainFrame());
+  // WebWidgetClient can be null when not compositing, and deferring commits
+  // only applies with a compositor.
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
+  client->StartDeferringCommits(timeout);
 }
 
 void ChromeClientImpl::StopDeferringCommits(
+    LocalFrame& main_frame,
     cc::PaintHoldingCommitTrigger trigger) {
-  web_view_->StopDeferringCommits(trigger);
+  DCHECK(main_frame.IsMainFrame());
+  // WebWidgetClient can be null when not compositing, and deferring commits
+  // only applies with a compositor.
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(main_frame)->FrameWidgetImpl()->Client();
+  client->StopDeferringCommits(trigger);
 }
 
 void ChromeClientImpl::SetHasScrollEventHandlers(LocalFrame* frame,

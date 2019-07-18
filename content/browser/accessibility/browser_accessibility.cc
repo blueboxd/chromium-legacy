@@ -1608,7 +1608,7 @@ ui::AXPlatformNode* BrowserAccessibility::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
-int BrowserAccessibility::GetIndexInParent() const {
+int BrowserAccessibility::GetIndexInParent() {
   return node_ ? node_->GetUnignoredIndexInParent() : -1;
 }
 

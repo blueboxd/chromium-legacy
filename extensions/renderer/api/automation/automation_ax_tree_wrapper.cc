@@ -33,6 +33,8 @@ api::automation::EventType ToAutomationEvent(ax::mojom::Event event_type) {
       return api::automation::EVENT_TYPE_CHILDRENCHANGED;
     case ax::mojom::Event::kClicked:
       return api::automation::EVENT_TYPE_CLICKED;
+    case ax::mojom::Event::kControlsChanged:
+      return api::automation::EVENT_TYPE_CONTROLSCHANGED;
     case ax::mojom::Event::kDocumentSelectionChanged:
       return api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED;
     case ax::mojom::Event::kDocumentTitleChanged:
@@ -533,6 +535,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     // These events might need to be migrated to AXEventGenerator.
     case api::automation::EVENT_TYPE_ALERT:
     case api::automation::EVENT_TYPE_BLUR:
+    case api::automation::EVENT_TYPE_CONTROLSCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:

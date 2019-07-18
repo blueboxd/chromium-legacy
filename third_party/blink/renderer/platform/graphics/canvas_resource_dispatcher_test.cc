@@ -88,7 +88,7 @@ class CanvasResourceDispatcherTest
     dispatcher_ = std::make_unique<MockCanvasResourceDispatcher>();
     resource_provider_ = CanvasResourceProvider::Create(
         IntSize(kWidth, kHeight),
-        CanvasResourceProvider::kSoftwareCompositedResourceUsage,
+        CanvasResourceProvider::ResourceUsage::kSoftwareCompositedResourceUsage,
         nullptr,  // context_provider_wrapper
         0,        // msaa_sample_count
         CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,

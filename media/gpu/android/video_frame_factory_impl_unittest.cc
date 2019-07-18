@@ -14,6 +14,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/limits.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
+#include "media/gpu/android/mock_codec_image.h"
 #include "media/gpu/android/shared_image_video_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,15 +46,10 @@ class MockSharedImageVideoProvider : public SharedImageVideoProvider {
 
   void RequestImage(ImageReadyCB cb,
                     const ImageSpec& spec,
-                    std::unique_ptr<CodecOutputBuffer> output_buffer,
-                    scoped_refptr<TextureOwner> texture_owner,
-                    PromotionHintAggregator::NotifyPromotionHintCB
-                        promotion_hint_cb) override {
+                    scoped_refptr<TextureOwner> texture_owner) override {
     cb_ = std::move(cb);
     spec_ = spec;
-    output_buffer_ = std::move(output_buffer);
     texture_owner_ = std::move(texture_owner);
-    promotion_hint_cb_ = std::move(promotion_hint_cb);
 
     MockRequestImage();
   }
@@ -63,9 +59,7 @@ class MockSharedImageVideoProvider : public SharedImageVideoProvider {
   // Most recent arguments to RequestImage.
   ImageReadyCB cb_;
   ImageSpec spec_;
-  std::unique_ptr<CodecOutputBuffer> output_buffer_;
   scoped_refptr<TextureOwner> texture_owner_;
-  PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 };
 
 class VideoFrameFactoryImplTest : public testing::Test {
@@ -100,14 +94,13 @@ class VideoFrameFactoryImplTest : public testing::Test {
     // provider.
     // TODO(liberato): Verify that it's sending the proper TextureOwner.
     // However, we haven't actually given it a TextureOwner yet.
-    CodecOutputBuffer* output_buffer_raw = output_buffer.get();
+    output_buffer_raw_ = output_buffer.get();
     EXPECT_CALL(*image_provider_raw_, MockRequestImage());
 
     impl_->CreateVideoFrame(
         std::move(output_buffer), base::TimeDelta(), natural_size,
         PromotionHintAggregator::NotifyPromotionHintCB(), output_cb_.Get());
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(image_provider_raw_->output_buffer_.get(), output_buffer_raw);
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -117,6 +110,9 @@ class VideoFrameFactoryImplTest : public testing::Test {
 
   MockMaybeRenderEarlyManager* mre_manager_raw_ = nullptr;
   MockSharedImageVideoProvider* image_provider_raw_ = nullptr;
+
+  // Most recently created CodecOutputBuffer.
+  CodecOutputBuffer* output_buffer_raw_ = nullptr;
 
   // Sent to |impl_| by RequestVideoFrame..
   base::MockCallback<VideoFrameFactory::OnceOutputCb> output_cb_;
@@ -189,10 +185,16 @@ TEST_F(VideoFrameFactoryImplTest, CreateVideoFrameSucceeds) {
   record.release_cb =
       base::BindOnce([](bool* flag, const gpu::SyncToken&) { *flag = true; },
                      base::Unretained(&release_cb_called_flag));
-  record.codec_image_holder = nullptr;
+  auto codec_image = base::MakeRefCounted<MockCodecImage>();
+  record.codec_image_holder =
+      base::MakeRefCounted<CodecImageHolder>(task_runner_, codec_image);
   std::move(image_provider_raw_->cb_).Run(std::move(record));
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(frame, nullptr);
+
+  // Make sure that it set the output buffer properly.
+  EXPECT_EQ(codec_image->get_codec_output_buffer_for_testing(),
+            output_buffer_raw_);
 
   // Destroy the VideoFrame, and verify that our release cb is called.
   EXPECT_FALSE(release_cb_called_flag);

@@ -19,11 +19,10 @@ const service_manager::Manifest& GetContentUtilityManifest() {
           .ExposeCapability("browser",
                             std::set<const char*>{
                                 "content.mojom.Child",
-                                "content.mojom.ChildControl",
                                 "content.mojom.ChildHistogramFetcher",
                                 "content.mojom.ChildHistogramFetcherFactory",
+                                "content.mojom.ChildProcess",
                                 "content.mojom.ResourceUsageReporter",
-                                "content.mojom.ServiceControl",
                                 "IPC.mojom.ChannelBootstrap",
                                 "printing.mojom.PdfToEmfConverterFactory",
                                 "printing.mojom.PdfToPwgRasterConverter",

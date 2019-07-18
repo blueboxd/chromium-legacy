@@ -9,6 +9,10 @@
 Polymer({
   is: 'settings-cups-saved-printers',
 
+  behaviors: [
+      WebUIListenerBehavior,
+  ],
+
   properties: {
     /**
      * @type {!Array<!PrinterListEntry>}
@@ -58,6 +62,8 @@ Polymer({
 
   /** @override */
   ready: function() {
+    this.addWebUIListener(
+        'on-printers-changed', this.printersChanged_.bind(this));
     this.updateSavedPrintersList();
   },
 

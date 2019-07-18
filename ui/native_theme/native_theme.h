@@ -206,6 +206,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
   struct SliderExtraParams {
     bool vertical;
     bool in_drag;
+    int thumb_x;
+    int thumb_y;
   };
 
   struct TextFieldExtraParams {

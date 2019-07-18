@@ -78,6 +78,8 @@ class UI_DEVTOOLS_EXPORT DOMAgent
       UIElement* root);
 
  private:
+  struct Query;
+
   // These are called on creating a DOM document.
   std::unique_ptr<protocol::DOM::Node> BuildInitialTree();
 
@@ -89,6 +91,8 @@ class UI_DEVTOOLS_EXPORT DOMAgent
   void OnElementBoundsChanged(UIElement* ui_element);
   void RemoveDomNode(UIElement* ui_element);
   void Reset();
+  Query PreprocessQuery(protocol::String query);
+  void SearchDomTree(const Query& query, std::vector<int>* result_collector);
 
   std::unique_ptr<UIElement> element_root_;
   std::unordered_map<int, UIElement*> node_id_to_ui_element_;
@@ -96,7 +100,6 @@ class UI_DEVTOOLS_EXPORT DOMAgent
   base::ObserverList<DOMAgentObserver>::Unchecked observers_;
 
   using SearchResults = std::unordered_map<std::string, std::vector<int>>;
-
   SearchResults search_results_;
 
   bool is_document_created_ = false;

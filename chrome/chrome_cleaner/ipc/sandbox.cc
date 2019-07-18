@@ -123,7 +123,7 @@ scoped_refptr<sandbox::TargetPolicy> GetSandboxPolicy(
     LOG_IF(ERROR, sandbox_result != sandbox::SBOX_ALL_OK)
         << "Failed to give the target process access to the product directory";
   }
-#endif  // CHROME_CLEANER_OFFICIAL_BUILD
+#endif
 
   policy->SetLockdownDefaultDacl();
 

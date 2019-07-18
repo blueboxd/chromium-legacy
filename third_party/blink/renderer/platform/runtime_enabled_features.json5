@@ -802,7 +802,7 @@
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
       status: "stable",
     },
     {
@@ -825,6 +825,9 @@
       name: "LayoutNGLineCache",
     },
     {
+      name: "LayoutNGTable",
+    },
+    {
       name: "LazyFrameLoading",
       status: "experimental",
     },
@@ -845,6 +848,10 @@
     {
       name: "LazyInitializeMediaControls",
       // This is enabled by features::kLazyInitializeMediaControls.
+    },
+    {
+      name: "LegacyWindowsDWriteFontFallback",
+      // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
       name: "LongTaskV2",

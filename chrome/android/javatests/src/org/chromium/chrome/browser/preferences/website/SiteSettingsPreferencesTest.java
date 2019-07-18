@@ -390,7 +390,7 @@ public class SiteSettingsPreferencesTest {
                 SiteSettingsTestUtils.startSingleWebsitePreferences(website);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
-                    (SingleWebsitePreferences) preferenceActivity.getMainFragment();
+                    (SingleWebsitePreferences) preferenceActivity.getMainFragmentCompat();
             websitePreferences.resetSite();
         });
         preferenceActivity.finish();

@@ -817,14 +817,16 @@ public class ShortcutHelper {
                             WebappRegistry.getInstance().getWebappDataStorage(webApkInfo.id());
                     long lastUpdateCheckTimeMsForStorage = 0;
                     boolean relaxUpdatesForStorage = false;
+                    String updateStatus = WebappDataStorage.NOT_UPDATABLE;
                     if (storage != null) {
                         lastUpdateCheckTimeMsForStorage =
                                 storage.getLastCheckForWebManifestUpdateTimeMs();
                         relaxUpdatesForStorage = storage.shouldRelaxUpdates();
+                        updateStatus = storage.getUpdateStatus();
                     }
                     lastUpdateCheckTimesMs.add(lastUpdateCheckTimeMsForStorage);
                     relaxUpdates.add(relaxUpdatesForStorage);
-                    updateStatuses.add(storage.getUpdateStatus());
+                    updateStatuses.add(updateStatus);
                 }
             }
         }

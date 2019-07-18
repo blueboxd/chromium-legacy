@@ -78,6 +78,49 @@ std::string SurfaceAggregator::ClipData::ToString() const {
   return is_clipped ? "clip " + rect.ToString() : "no clip";
 }
 
+struct SurfaceAggregator::ChildSurfaceInfo {
+  ChildSurfaceInfo(RenderPassId parent_pass_id,
+                   const gfx::Transform& quad_to_target_transform,
+                   const gfx::Rect& quad_rect,
+                   bool stretch_content_to_fill_bounds,
+                   bool is_clipped,
+                   const gfx::Rect& clip_rect);
+
+  RenderPassId parent_pass_id;
+  gfx::Transform quad_to_target_transform;
+  gfx::Rect quad_rect;
+  bool stretch_content_to_fill_bounds;
+  bool is_clipped;
+  gfx::Rect clip_rect;
+  bool has_moved_pixels = false;
+  std::vector<gfx::Transform> transforms_to_root_target;
+};
+
+SurfaceAggregator::ChildSurfaceInfo::ChildSurfaceInfo(
+    RenderPassId parent_pass_id,
+    const gfx::Transform& quad_to_target_transform,
+    const gfx::Rect& quad_rect,
+    bool stretch_content_to_fill_bounds,
+    bool is_clipped,
+    const gfx::Rect& clip_rect)
+    : parent_pass_id(parent_pass_id),
+      quad_to_target_transform(quad_to_target_transform),
+      quad_rect(quad_rect),
+      stretch_content_to_fill_bounds(stretch_content_to_fill_bounds),
+      is_clipped(is_clipped),
+      clip_rect(clip_rect) {}
+
+struct SurfaceAggregator::RenderPassMapEntry {
+  explicit RenderPassMapEntry(RenderPass* render_pass);
+
+  RenderPass* render_pass;
+  bool is_visited = false;
+};
+
+SurfaceAggregator::RenderPassMapEntry::RenderPassMapEntry(
+    RenderPass* render_pass)
+    : render_pass(render_pass) {}
+
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
                                      DisplayResourceProvider* provider,
                                      bool aggregate_only_damaged,
@@ -1067,6 +1110,96 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
   }
 }
 
+// Helper function that uses backtracking on the render pass tree of a surface
+// to find all surfaces embedded in it. If a surface is embedded multiple times
+// (due to use of a MirrorLayer), it will be reachable via multiple paths from
+// root render pass. For each such a path the appropriate transform is
+// calculated.
+void SurfaceAggregator::FindChildSurfaces(
+    SurfaceId surface_id,
+    base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
+    const base::flat_set<RenderPassId>& pixel_moving_background_filter_passes,
+    const gfx::Transform& parent_transform,
+    RenderPassId render_pass_id,
+    base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
+    gfx::Rect* pixel_moving_backdrop_filters_rect) {
+  auto render_pass_it = render_pass_map->find(render_pass_id);
+  DCHECK(render_pass_it != render_pass_map->end());
+  if (render_pass_it->second.is_visited) {
+    // This means that this render pass is an ancestor of itself. This is not
+    // allowed. Stop processing the render pass again.
+    return;
+  }
+  base::AutoReset<bool> reset_is_visited(&render_pass_it->second.is_visited,
+                                         true);
+  RenderPass* render_pass = render_pass_it->second.render_pass;
+
+  gfx::Transform transform_to_root_target(
+      parent_transform, render_pass->transform_to_root_target);
+  RenderPassId remapped_pass_id = RemapPassId(render_pass->id, surface_id);
+  if (pixel_moving_background_filter_passes.contains(remapped_pass_id)) {
+    pixel_moving_backdrop_filters_rect->Union(
+        cc::MathUtil::MapEnclosingClippedRect(transform_to_root_target,
+                                              render_pass->output_rect));
+  }
+  bool has_pixel_moving_filter =
+      render_pass->filters.HasFilterThatMovesPixels();
+  if (has_pixel_moving_filter)
+    moved_pixel_passes_.insert(remapped_pass_id);
+  bool in_moved_pixel_pass =
+      has_pixel_moving_filter ||
+      base::Contains(moved_pixel_passes_, remapped_pass_id);
+  for (auto* quad : render_pass->quad_list) {
+    if (quad->material == DrawQuad::Material::kSurfaceContent) {
+      // A child surface has been found. Add necessary info from this surface to
+      // the set of child surfaces that can be used to update damage rect for
+      // the parent surface. If this child surface has been visited previously,
+      // we only need to update |has_moved_pixels| and add the transform
+      // corresponding to this visit; rest of the info would remain the same.
+      const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
+      auto it = child_surfaces->find(surface_quad->surface_range);
+      if (it == child_surfaces->end()) {
+        auto insert_pair = child_surfaces->emplace(
+            std::piecewise_construct,
+            std::forward_as_tuple(surface_quad->surface_range),
+            std::forward_as_tuple(
+                remapped_pass_id,
+                surface_quad->shared_quad_state->quad_to_target_transform,
+                surface_quad->rect,
+                surface_quad->stretch_content_to_fill_bounds,
+                surface_quad->shared_quad_state->is_clipped,
+                surface_quad->shared_quad_state->clip_rect));
+        DCHECK(insert_pair.second);
+        it = insert_pair.first;
+      }
+      auto& surface_info = it->second;
+      if (in_moved_pixel_pass)
+        surface_info.has_moved_pixels = true;
+      surface_info.transforms_to_root_target.push_back(
+          transform_to_root_target);
+    } else if (quad->material == DrawQuad::Material::kRenderPass) {
+      // A child render pass has been found. Find its child surfaces
+      // recursively.
+      const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
+      RenderPassId child_pass_id = render_pass_quad->render_pass_id;
+      RenderPassId remapped_child_pass_id =
+          RemapPassId(child_pass_id, surface_id);
+      if (in_moved_pixel_pass)
+        moved_pixel_passes_.insert(remapped_child_pass_id);
+      if (pixel_moving_background_filter_passes.contains(child_pass_id))
+        in_moved_pixel_pass = true;
+      render_pass_dependencies_[remapped_pass_id].insert(
+          remapped_child_pass_id);
+      FindChildSurfaces(
+          surface_id, render_pass_map, pixel_moving_background_filter_passes,
+          gfx::Transform(
+              transform_to_root_target,
+              render_pass_quad->shared_quad_state->quad_to_target_transform),
+          child_pass_id, child_surfaces, pixel_moving_backdrop_filters_rect);
+    }
+  }
+}
+
 // Walk the Surface tree from surface_id. Validate the resources of the current
 // surface and its descendants, check if there are any copy requests, and
 // return the combined damage rect.
@@ -1096,15 +1229,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     provider_->ReceiveFromChild(child_id, frame.resource_list);
   }
 
-  std::vector<ResourceId> referenced_resources;
-  size_t reserve_size = frame.resource_list.size();
-  referenced_resources.reserve(reserve_size);
-
-  bool invalid_frame = false;
-  std::unordered_map<ResourceId, ResourceId> empty_map;
-  const auto& child_to_parent_map =
-      provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
-
   RenderPassId remapped_pass_id =
       RemapPassId(frame.render_pass_list.back()->id, surface->surface_id());
   if (in_moved_pixel_surface)
@@ -1114,40 +1238,13 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
   const gfx::Transform& root_pass_transform =
       IsRootSurface(surface) ? root_surface_transform_ : gfx::Transform();
-  struct SurfaceInfo {
-    SurfaceInfo(const SurfaceRange& surface_range,
-                bool has_moved_pixels,
-                RenderPassId parent_pass_id,
-                const gfx::Transform& target_to_surface_transform,
-                const gfx::Rect& quad_rect,
-                bool stretch_content_to_fill_bounds,
-                bool is_clipped,
-                const gfx::Rect& clip_rect_in_root_target_space)
-        : surface_range(surface_range),
-          has_moved_pixels(has_moved_pixels),
-          parent_pass_id(parent_pass_id),
-          target_to_surface_transform(target_to_surface_transform),
-          quad_rect(quad_rect),
-          stretch_content_to_fill_bounds(stretch_content_to_fill_bounds),
-          is_clipped(is_clipped),
-          clip_rect_in_root_target_space(clip_rect_in_root_target_space) {}
-    SurfaceRange surface_range;
-    bool has_moved_pixels;
-    RenderPassId parent_pass_id;
-    gfx::Transform target_to_surface_transform;
-    gfx::Rect quad_rect;
-    bool stretch_content_to_fill_bounds;
-    bool is_clipped;
-    gfx::Rect clip_rect_in_root_target_space;
-  };
-  std::vector<SurfaceInfo> child_surfaces;
 
-  gfx::Rect pixel_moving_backdrop_filters_rect;
-  // This data is created once and typically small or empty. Collect all items
-  // and pass to a flat_vector to sort once.
-  std::vector<RenderPassId> pixel_moving_background_filter_passes_data;
   const auto* root_pass_in_root_surface =
       IsRootSurface(surface) ? frame.render_pass_list.back().get() : nullptr;
+  // This data is created once and typically small or empty. Collect all items
+  // and pass to a flat_set/flat_map to sort once.
+  std::vector<RenderPassId> pixel_moving_background_filter_passes_data;
+  std::vector<std::pair<RenderPassId, RenderPassMapEntry>> render_pass_list;
   for (const auto& render_pass : frame.render_pass_list) {
     if (render_pass->backdrop_filters.HasFilterThatMovesPixels()) {
       DCHECK_NE(render_pass.get(), root_pass_in_root_surface)
@@ -1156,75 +1253,36 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
       pixel_moving_background_filter_passes_data.push_back(
           RemapPassId(render_pass->id, surface->surface_id()));
-
-      gfx::Transform transform_to_root_target(
-          root_pass_transform, render_pass->transform_to_root_target);
-      pixel_moving_backdrop_filters_rect.Union(
-          cc::MathUtil::MapEnclosingClippedRect(transform_to_root_target,
-                                                render_pass->output_rect));
     }
+    render_pass_list.emplace_back(render_pass->id, render_pass.get());
   }
   base::flat_set<RenderPassId> pixel_moving_background_filter_passes(
-      std::move(pixel_moving_background_filter_passes_data),
-      base::KEEP_FIRST_OF_DUPES);
+      std::move(pixel_moving_background_filter_passes_data));
+  base::flat_map<RenderPassId, RenderPassMapEntry> render_pass_map(
+      std::move(render_pass_list));
 
-  for (const auto& render_pass : base::Reversed(frame.render_pass_list)) {
-    RenderPassId remapped_pass_id =
-        RemapPassId(render_pass->id, surface->surface_id());
-    bool has_pixel_moving_filter =
-        render_pass->filters.HasFilterThatMovesPixels();
-    if (has_pixel_moving_filter)
-      moved_pixel_passes_.insert(remapped_pass_id);
-    bool in_moved_pixel_pass =
-        has_pixel_moving_filter ||
-        base::Contains(moved_pixel_passes_, remapped_pass_id);
+  base::flat_map<SurfaceRange, ChildSurfaceInfo> child_surfaces;
+  gfx::Rect pixel_moving_backdrop_filters_rect;
+  FindChildSurfaces(surface->surface_id(), &render_pass_map,
+                    pixel_moving_background_filter_passes, root_pass_transform,
+                    frame.render_pass_list.back()->id, &child_surfaces,
+                    &pixel_moving_backdrop_filters_rect);
 
-    for (auto* quad : render_pass->quad_list) {
-      if (quad->material == DrawQuad::Material::kSurfaceContent) {
-        const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
-        gfx::Transform transform_to_root_target(
-            root_pass_transform, render_pass->transform_to_root_target);
-        gfx::Transform target_to_surface_transform(
-            transform_to_root_target,
-            surface_quad->shared_quad_state->quad_to_target_transform);
+  std::vector<ResourceId> referenced_resources;
+  referenced_resources.reserve(frame.resource_list.size());
 
-        gfx::Rect clip_rect_in_root_target_space;
-        if (surface_quad->shared_quad_state->is_clipped) {
-          // clip_rect is already in quad target space so only
-          // transform_to_root_target needs to be applied
-          clip_rect_in_root_target_space =
-              cc::MathUtil::MapEnclosingClippedRect(
-                  transform_to_root_target,
-                  surface_quad->shared_quad_state->clip_rect);
+  bool invalid_frame = false;
+  if (provider_) {
+    const auto& child_to_parent_map = provider_->GetChildToParentMap(child_id);
+    for (const auto& render_pass : base::Reversed(frame.render_pass_list)) {
+      for (auto* quad : render_pass->quad_list) {
+        for (ResourceId resource_id : quad->resources) {
+          if (!child_to_parent_map.count(resource_id)) {
+            invalid_frame = true;
+            break;
+          }
+          referenced_resources.push_back(resource_id);
         }
-        child_surfaces.emplace_back(
-            surface_quad->surface_range, in_moved_pixel_pass, remapped_pass_id,
-            target_to_surface_transform, surface_quad->rect,
-            surface_quad->stretch_content_to_fill_bounds,
-            surface_quad->shared_quad_state->is_clipped,
-            clip_rect_in_root_target_space);
-      } else if (quad->material == DrawQuad::Material::kRenderPass) {
-        const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
-        if (in_moved_pixel_pass) {
-          moved_pixel_passes_.insert(RemapPassId(
-              render_pass_quad->render_pass_id, surface->surface_id()));
-        }
-        if (pixel_moving_background_filter_passes.count(
-                render_pass_quad->render_pass_id)) {
-          in_moved_pixel_pass = true;
-        }
-        render_pass_dependencies_[remapped_pass_id].insert(RemapPassId(
-            render_pass_quad->render_pass_id, surface->surface_id()));
-      }
-
-      if (!provider_)
-        continue;
-      for (ResourceId resource_id : quad->resources) {
-        if (!child_to_parent_map.count(resource_id)) {
-          invalid_frame = true;
-          break;
-        }
-        referenced_resources.push_back(resource_id);
       }
     }
   }
@@ -1250,20 +1308,19 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   // Avoid infinite recursion by adding current surface to
   // referenced_surfaces_.
   referenced_surfaces_.insert(surface->surface_id());
-  for (const auto& surface_info : child_surfaces) {
+  for (const auto& surface_info_pair : child_surfaces) {
+    const auto& surface_range = surface_info_pair.first;
+    const auto& surface_info = surface_info_pair.second;
     // TODO(fsamuel): Consider caching this value somewhere so that
     // HandleSurfaceQuad doesn't need to call it again.
-    Surface* child_surface =
-        manager_->GetLatestInFlightSurface(surface_info.surface_range);
+    Surface* child_surface = manager_->GetLatestInFlightSurface(surface_range);
 
     // If the primary surface is not available then we assume the damage is
     // the full size of the SurfaceDrawQuad because we might need to introduce
     // gutter.
     gfx::Rect surface_damage;
-    if (!child_surface ||
-        child_surface->surface_id() != surface_info.surface_range.end()) {
+    if (!child_surface || child_surface->surface_id() != surface_range.end())
       surface_damage = surface_info.quad_rect;
-    }
 
     if (child_surface) {
       if (surface_info.stretch_content_to_fill_bounds) {
@@ -1298,14 +1355,22 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
       continue;
     }
 
-    gfx::Rect surface_damage_in_root_target_space =
-        cc::MathUtil::MapEnclosingClippedRect(
-            surface_info.target_to_surface_transform, surface_damage);
-    if (surface_info.is_clipped) {
-      surface_damage_in_root_target_space.Intersect(
-          surface_info.clip_rect_in_root_target_space);
+    for (const auto& transform_to_root_target :
+         surface_info.transforms_to_root_target) {
+      gfx::Transform target_to_surface_transform(
+          transform_to_root_target, surface_info.quad_to_target_transform);
+      gfx::Rect surface_damage_in_root_target_space =
+          cc::MathUtil::MapEnclosingClippedRect(target_to_surface_transform,
+                                                surface_damage);
+      if (surface_info.is_clipped) {
+        gfx::Rect clip_rect_in_root_target_space =
+            cc::MathUtil::MapEnclosingClippedRect(transform_to_root_target,
+                                                  surface_info.clip_rect);
+        surface_damage_in_root_target_space.Intersect(
+            clip_rect_in_root_target_space);
+      }
+      damage_rect.Union(surface_damage_in_root_target_space);
     }
-    damage_rect.Union(surface_damage_in_root_target_space);
   }
 
   if (!damage_rect.IsEmpty()) {

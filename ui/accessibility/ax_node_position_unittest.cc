@@ -544,14 +544,14 @@ TEST_F(AXPositionTest, AtStartOfLineWithTextPosition) {
   ASSERT_TRUE(text_position->IsTextPosition());
   EXPECT_FALSE(text_position->AtStartOfLine());
 
-  // An "after text" position anchored at the line break should not be the same
-  // as a text position at the start of the next line.
+  // An "after text" position anchored at the line break should be equivalent to
+  // a "before text" position at the start of the next line.
   text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
-  EXPECT_FALSE(text_position->AtStartOfLine());
+  EXPECT_TRUE(text_position->AtStartOfLine());
 
   // An upstream affinity should not affect the outcome since there is no soft
   // line break.
@@ -612,6 +612,68 @@ TEST_F(AXPositionTest, AtEndOfLineWithTextPosition) {
 
   text_position = AXNodePosition::CreateTextPosition(
       tree_.data().tree_id, inline_box2_.id, 6 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->AtEndOfLine());
+}
+
+TEST_F(AXPositionTest, AtStartOfBlankLine) {
+  // Modify the test tree so that the line break will appear on a line of its
+  // own, i.e. as creating a blank line.
+  inline_box1_.RemoveIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
+  line_break_.RemoveIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
+  AXTreeUpdate update;
+  update.nodes = {inline_box1_, line_break_};
+  ASSERT_TRUE(tree_.Unserialize(update));
+
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, text_field_.id, 1 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  ASSERT_TRUE(tree_position->IsTreePosition());
+  EXPECT_TRUE(tree_position->AtStartOfLine());
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->AtStartOfLine());
+
+  // A text position after a blank line should be equivalent to a "before text"
+  // position at the line that comes after it.
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->AtStartOfLine());
+}
+
+TEST_F(AXPositionTest, AtEndOfBlankLine) {
+  // Modify the test tree so that the line break will appear on a line of its
+  // own, i.e. as creating a blank line.
+  inline_box1_.RemoveIntAttribute(ax::mojom::IntAttribute::kNextOnLineId);
+  line_break_.RemoveIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId);
+  AXTreeUpdate update;
+  update.nodes = {inline_box1_, line_break_};
+  ASSERT_TRUE(tree_.Unserialize(update));
+
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      tree_.data().tree_id, text_field_.id, 1 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  ASSERT_TRUE(tree_position->IsTreePosition());
+  EXPECT_FALSE(tree_position->AtEndOfLine());
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_FALSE(text_position->AtEndOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, line_break_.id, 1 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_position);
   ASSERT_TRUE(text_position->IsTextPosition());
@@ -1424,25 +1486,25 @@ TEST_F(AXPositionTest, CreatePositionAtFormatBoundaryWithTextPosition) {
   // of the AX tree.
   AXNodePosition::SetTreeForTesting(nullptr);
 
-  ui::AXNodeData root_data;
+  AXNodeData root_data;
   root_data.id = 0;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
-  ui::AXNodeData text_data;
+  AXNodeData text_data;
   text_data.id = 1;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.SetName("some text");
 
-  ui::AXNodeData more_text_data;
+  AXNodeData more_text_data;
   more_text_data.id = 2;
   more_text_data.role = ax::mojom::Role::kStaticText;
   more_text_data.SetName("more text");
 
   root_data.child_ids = {1, 2};
 
-  ui::AXTreeUpdate update;
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  AXTreeUpdate update;
+  AXTreeData tree_data;
+  tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
   update.tree_data = tree_data;
   update.has_tree_data = true;
   update.root_id = root_data.id;
@@ -2730,25 +2792,25 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   // CreateNextAnchorPosition on an empty text field.
   AXNodePosition::SetTreeForTesting(nullptr);
 
-  ui::AXNodeData root_data;
+  AXNodeData root_data;
   root_data.id = 0;
   root_data.role = ax::mojom::Role::kRootWebArea;
 
-  ui::AXNodeData text_data;
+  AXNodeData text_data;
   text_data.id = 1;
   text_data.role = ax::mojom::Role::kStaticText;
   text_data.SetName("some text");
 
-  ui::AXNodeData text_field_data;
+  AXNodeData text_field_data;
   text_field_data.id = 2;
   text_field_data.role = ax::mojom::Role::kTextField;
 
-  ui::AXNodeData empty_text_data;
+  AXNodeData empty_text_data;
   empty_text_data.id = 3;
   empty_text_data.role = ax::mojom::Role::kStaticText;
   empty_text_data.SetName("");
 
-  ui::AXNodeData more_text_data;
+  AXNodeData more_text_data;
   more_text_data.id = 4;
   more_text_data.role = ax::mojom::Role::kStaticText;
   more_text_data.SetName("more text");
@@ -2756,9 +2818,9 @@ TEST_F(AXPositionTest, CreateNextAnchorPosition) {
   root_data.child_ids = {1, 2, 4};
   text_field_data.child_ids = {3};
 
-  ui::AXTreeUpdate update;
-  ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  AXTreeUpdate update;
+  AXTreeData tree_data;
+  tree_data.tree_id = AXTreeID::CreateNewAXTreeID();
   update.tree_data = tree_data;
   update.has_tree_data = true;
   update.root_id = root_data.id;

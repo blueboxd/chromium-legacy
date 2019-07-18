@@ -27,28 +27,25 @@ std::unique_ptr<FaviconServerFetcherParams>
 FaviconServerFetcherParams::CreateForDesktop(const GURL& page_url) {
   return base::WrapUnique(new FaviconServerFetcherParams(
       page_url, favicon_base::IconType::kFavicon,
-      std::ceil(gfx::kFaviconSize * GetMaxDeviceScaleFactor()), 0,
+      std::ceil(gfx::kFaviconSize * GetMaxDeviceScaleFactor()),
       kClientParamDesktop));
 }
 
 std::unique_ptr<FaviconServerFetcherParams>
 FaviconServerFetcherParams::CreateForMobile(const GURL& page_url,
-                                            int min_source_size_in_pixel,
                                             int desired_size_in_pixel) {
   return base::WrapUnique(new FaviconServerFetcherParams(
-      page_url, favicon_base::IconType::kTouchIcon, min_source_size_in_pixel,
-      desired_size_in_pixel, kClientParamMobile));
+      page_url, favicon_base::IconType::kTouchIcon, desired_size_in_pixel,
+      kClientParamMobile));
 }
 
 FaviconServerFetcherParams::FaviconServerFetcherParams(
     const GURL& page_url,
     favicon_base::IconType icon_type,
-    int min_source_size_in_pixel,
     int desired_size_in_pixel,
     const std::string& google_server_client_param)
     : page_url_(page_url),
       icon_type_(icon_type),
-      min_source_size_in_pixel_(min_source_size_in_pixel),
       desired_size_in_pixel_(desired_size_in_pixel),
       google_server_client_param_(google_server_client_param) {}
 

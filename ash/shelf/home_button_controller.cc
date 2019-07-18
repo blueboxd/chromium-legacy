@@ -43,10 +43,8 @@ bool CanActivate() {
 
 }  // namespace
 
-HomeButtonController::HomeButtonController(
-    HomeButton* button,
-    ShelfButtonDelegate* shelf_button_delegate)
-    : button_(button), shelf_button_delegate_(shelf_button_delegate) {
+HomeButtonController::HomeButtonController(HomeButton* button)
+    : button_(button) {
   DCHECK(button_);
   Shell* shell = Shell::Get();
   // AppListController is only available in non-KioskNext sessions.
@@ -93,13 +91,6 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
       // After animating the ripple, let the button handle the event.
       return false;
     case ui::ET_GESTURE_TAP_DOWN:
-      // If |!ShouldEnterPushedState|, Button::OnGestureEvent will not set the
-      // |ET_GESTURE_TAP_DOWN| event to be handled. This will cause the
-      // |ET_GESTURE_TAP| or |ET_GESTURE_TAP_CANCEL| not to be sent to
-      // |button_|, therefore leaving the assistant overlay ripple visible.
-      if (!shelf_button_delegate_->ShouldEventActivateButton(button_, *event))
-        return true;
-
       if (IsVoiceInteractionAvailable()) {
         assistant_animation_delay_timer_->Start(
             FROM_HERE,

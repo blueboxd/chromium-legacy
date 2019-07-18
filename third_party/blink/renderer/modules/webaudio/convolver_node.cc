@@ -54,6 +54,13 @@ ConvolverHandler::ConvolverHandler(AudioNode& node, float sample_rate)
   SetInternalChannelInterpretation(AudioBus::kSpeakers);
 
   Initialize();
+
+  // Until something is connected, we're not actively processing, so disable
+  // outputs so that we produce a single channel of silence.  The graph lock is
+  // needed to be able to disable outputs.
+  BaseAudioContext::GraphAutoLocker context_locker(Context());
+
+  DisableOutputs();
 }
 
 scoped_refptr<ConvolverHandler> ConvolverHandler::Create(AudioNode& node,

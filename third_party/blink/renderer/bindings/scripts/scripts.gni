@@ -75,7 +75,7 @@ web_idl_scripts = get_path_info([
                                   "web_idl/identifier_ir_map.py",
                                   "web_idl/idl_compiler.py",
                                   "web_idl/idl_member.py",
-                                  "web_idl/idl_types.py",
+                                  "web_idl/idl_type.py",
                                   "web_idl/includes.py",
                                   "web_idl/interface.py",
                                   "web_idl/ir_builder.py",

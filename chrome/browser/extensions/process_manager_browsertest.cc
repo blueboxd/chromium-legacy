@@ -272,12 +272,10 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   content::WebContents* OpenPopup(content::RenderFrameHost* opener,
                                   const GURL& url,
                                   bool expect_success = true) {
-    content::WindowedNotificationObserver popup_observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter waiter(browser());
     EXPECT_TRUE(ExecuteScript(
         opener, "window.popup = window.open('" + url.spec() + "')"));
-    popup_observer.Wait();
+    waiter.Wait();
     content::WebContents* popup =
         browser()->tab_strip_model()->GetActiveWebContents();
     WaitForLoadStop(popup);

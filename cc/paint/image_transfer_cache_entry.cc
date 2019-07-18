@@ -132,6 +132,10 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
       pixmap_->colorSpace() ? pixmap_->colorSpace()->writeToMemory(nullptr)
                             : 0u;
 
+  // x64 has 8-byte alignment for uint64_t even though x86 has 4-byte
+  // alignment.  Always use 8 byte alignment.
+  const size_t align = sizeof(uint64_t);
+
   // Compute and cache the size of the data.
   base::CheckedNumeric<uint32_t> safe_size;
   safe_size += PaintOpWriter::HeaderBytes();
@@ -139,9 +143,9 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
   safe_size += sizeof(uint32_t);  // width
   safe_size += sizeof(uint32_t);  // height
   safe_size += sizeof(uint32_t);  // has mips
-  safe_size += sizeof(uint64_t) + alignof(uint64_t);  // pixels size
-  safe_size += target_color_space_size + sizeof(uint64_t) + alignof(uint64_t);
-  safe_size += pixmap_color_space_size + sizeof(uint64_t) + alignof(uint64_t);
+  safe_size += sizeof(uint64_t) + align;  // pixels size + alignment
+  safe_size += target_color_space_size + sizeof(uint64_t) + align;
+  safe_size += pixmap_color_space_size + sizeof(uint64_t) + align;
   // Include 4 bytes of padding so we can always align our data pointer to a
   // 4-byte boundary.
   safe_size += 4;

@@ -2087,6 +2087,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleCALayerCHROMIUM(
   GLuint contents_texture_id = static_cast<GLint>(c.contents_texture_id);
   GLuint background_color = static_cast<GLuint>(c.background_color);
   GLuint edge_aa_mask = static_cast<GLuint>(c.edge_aa_mask);
+  GLenum filter = static_cast<GLenum>(c.filter);
   uint32_t shm_id = c.shm_id;
   uint32_t shm_offset = c.shm_offset;
 
@@ -2098,7 +2099,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleScheduleCALayerCHROMIUM(
   const GLfloat* contents_rect = mem;
   const GLfloat* bounds_rect = mem + 4;
   return DoScheduleCALayerCHROMIUM(contents_texture_id, contents_rect,
-                                   background_color, edge_aa_mask, bounds_rect);
+                                   background_color, edge_aa_mask, filter,
+                                   bounds_rect);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleSetColorSpaceMetadataCHROMIUM(

@@ -147,9 +147,32 @@ class CORE_EXPORT ChromeClient
 
   virtual bool HadFormInteraction() const = 0;
 
-  virtual void BeginLifecycleUpdates() = 0;
-  virtual void StartDeferringCommits(base::TimeDelta timeout) = 0;
-  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) = 0;
+  // Allow document lifecycle updates to be run in order to produce composited
+  // outputs. Updates are blocked from occurring during loading navigation in
+  // order to prevent contention and allow Blink to proceed more quickly. This
+  // signals that enough progress has been made and document lifecycle updates
+  // are desirable. This will allow visual updates to occur unless the caller
+  // also uses StartDeferringCommits().
+  //
+  // This may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the values does not persist between instances of
+  // local main frames.
+  virtual void BeginLifecycleUpdates(LocalFrame& main_frame) = 0;
+
+  // Start or stop compositor commits from occurring, with a timeout before they
+  // are allowed again. Document lifecycle updates are still allowed during this
+  // time, which will update compositor state, but this prevents the state from
+  // being committed to the compositor thread and generating visual updates.
+  //
+  // These may only be called for the main frame, and takes it as
+  // reference to make it clear that callers may only call this while a local
+  // main frame is present and the state does not persist between instances of
+  // local main frames.
+  virtual void StartDeferringCommits(LocalFrame& main_frame,
+                                     base::TimeDelta timeout) = 0;
+  virtual void StopDeferringCommits(LocalFrame& main_frame,
+                                    cc::PaintHoldingCommitTrigger) = 0;
 
   // Start a system drag and drop operation.
   virtual void StartDragging(LocalFrame*,

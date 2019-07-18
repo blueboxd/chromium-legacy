@@ -104,11 +104,10 @@ APIBindingHooks::RequestResult AppHooksDelegate::HandleRequest(
   using RequestResult = APIBindingHooks::RequestResult;
 
   v8::Isolate* isolate = context->GetIsolate();
-  std::vector<v8::Local<v8::Value>> arguments_out;
-  std::string error;
   v8::TryCatch try_catch(isolate);
-  if (!signature->ParseArgumentsToV8(context, *arguments, refs, &arguments_out,
-                                     &error)) {
+  APISignature::V8ParseResult parse_result =
+      signature->ParseArgumentsToV8(context, *arguments, refs);
+  if (!parse_result.succeeded()) {
     if (try_catch.HasCaught()) {
       try_catch.ReThrow();
       return RequestResult(RequestResult::THROWN);
@@ -131,10 +130,10 @@ APIBindingHooks::RequestResult AppHooksDelegate::HandleRequest(
     result.return_value =
         gin::StringToSymbol(isolate, GetRunningState(script_context));
   } else if (method_name == "app.installState") {
-    DCHECK_EQ(1u, arguments_out.size());
-    DCHECK(arguments_out[0]->IsFunction());
+    DCHECK_EQ(1u, parse_result.arguments->size());
+    DCHECK((*parse_result.arguments)[0]->IsFunction());
     int request_id = request_handler_->AddPendingRequest(
-        context, arguments_out[0].As<v8::Function>());
+        context, (*parse_result.arguments)[0].As<v8::Function>());
     GetInstallState(script_context, request_id);
   } else {
     NOTREACHED();

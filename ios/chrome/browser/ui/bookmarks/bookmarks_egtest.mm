@@ -380,6 +380,14 @@ id<GREYMatcher> SearchIconButton() {
   EARL_GREY_TEST_DISABLED(@"Test disabled on devices.");
 #endif
 
+  if (@available(iOS 13, *)) {
+    // Navigate back side swipe gesture does not work on iOS13 simulator. This
+    // is not specific to Bookmarks. The issue is that the gesture needs to
+    // start offscreen, and EG cannot replicate that.
+    // TODO(crbug.com/978877): Fix the bug in EG and enable the test.
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 13.");
+  }
+
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openBookmarks];
   [BookmarksTestCase openMobileBookmarks];

@@ -209,20 +209,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
 
-std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-LayerTreeView::DeferMainFrameUpdate() {
-  return layer_tree_host_->DeferMainFrameUpdate();
-}
-
-void LayerTreeView::StartDeferringCommits(base::TimeDelta timeout) {
-  layer_tree_host_->StartDeferringCommits(timeout);
-}
-
-void LayerTreeView::StopDeferringCommits(
-    cc::PaintHoldingCommitTrigger trigger) {
-  layer_tree_host_->StopDeferringCommits(trigger);
-}
-
 int LayerTreeView::LayerTreeId() const {
   return layer_tree_host_->GetId();
 }

@@ -62,8 +62,17 @@ message Report {
     optional int32 unmatched_sources = 3;
     // Number of sources deferred from a previous interval.
     optional int32 carryover_sources = 4;
-    // Number of sources deferred to the next interval due to lack of events.
+    // Number of sources deferred to the next interval. Sources corresponding to
+    // opened tabs that could emit more events in the future are kept in memory
+    // and deferred to the next interval for inclusion in next reports, up to a
+    // max limit on number of sources.
     optional int32 deferred_sources = 5;
+    // Number of sources deferred to the next interval due to lack of events.
+    optional int32 entryless_sources = 6;
+    // Time elapsed in seconds from the moment the newest truncated source was
+    // created to the moment it was discarded from memory, if pruning happened
+    // due to number of sources exceeding the max threshold.
+    optional int32 pruned_sources_age_seconds = 7;
   }
   optional SourceCounts source_counts = 10;
 

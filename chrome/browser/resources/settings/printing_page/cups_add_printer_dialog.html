@@ -128,7 +128,8 @@
       </div>
       <div slot="dialog-buttons">
         <div>  <!-- Left group -->
-          <cr-button on-click="switchToDiscoveryDialog_">
+          <cr-button on-click="switchToDiscoveryDialog_"
+              hidden="[[enableUpdatedUi]]">
             $i18n{discoverPrintersButtonText}
           </cr-button>
         </div>
@@ -259,7 +260,8 @@
 
     <!-- Manually Add Printer Dialog -->
     <template is="dom-if" if="[[showManuallyAddDialog_]]" restamp>
-      <add-printer-manually-dialog new-printer="{{newPrinter}}">
+      <add-printer-manually-dialog new-printer="{{newPrinter}}"
+          enable-updated-ui="[[enableUpdatedUi]]">
       </add-printer-manually-dialog>
     </template>
 

@@ -511,6 +511,8 @@ jumbo_source_set("browser") {
     "background_sync/background_sync_metrics.h",
     "background_sync/background_sync_network_observer.cc",
     "background_sync/background_sync_network_observer.h",
+    "background_sync/background_sync_proxy.cc",
+    "background_sync/background_sync_proxy.h",
     "background_sync/background_sync_registration.cc",
     "background_sync/background_sync_registration.h",
     "background_sync/background_sync_registration_helper.cc",
@@ -553,7 +555,6 @@ jumbo_source_set("browser") {
     "browser_child_process_host_impl.cc",
     "browser_child_process_host_impl.h",
     "browser_context.cc",
-    "browser_ipc_logging.cc",
     "browser_main.cc",
     "browser_main.h",
     "browser_main_loop.cc",
@@ -1726,7 +1727,6 @@ jumbo_source_set("browser") {
     "service_manager/service_manager_context.cc",
     "service_manager/service_manager_context.h",
     "service_process_host_impl.cc",
-    "service_process_host_impl.h",
     "service_worker/embedded_worker_instance.cc",
     "service_worker/embedded_worker_instance.h",
     "service_worker/embedded_worker_status.h",
@@ -2466,7 +2466,6 @@ jumbo_source_set("browser") {
     set_sources_assignment_filter(sources_assignment_filter)
 
     sources -= [
-      "browser_ipc_logging.cc",
       "media/session/audio_focus_delegate_default.cc",
       "tracing/tracing_ui.cc",
       "tracing/tracing_ui.h",

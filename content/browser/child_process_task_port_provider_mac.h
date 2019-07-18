@@ -14,7 +14,7 @@
 #include "base/process/port_provider_mac.h"
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
-#include "content/common/child_control.mojom-forward.h"
+#include "content/common/child_process.mojom-forward.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -36,7 +36,7 @@ class CONTENT_EXPORT ChildProcessTaskPortProvider : public base::PortProvider {
   // indicating that the child process has died, the association will be
   // removed.
   void OnChildProcessLaunched(base::ProcessHandle pid,
-                              mojom::ChildControl* child_control);
+                              mojom::ChildProcess* child_process);
 
   // base::PortProvider:
   mach_port_t TaskForPid(base::ProcessHandle process) const override;
@@ -48,7 +48,7 @@ class CONTENT_EXPORT ChildProcessTaskPortProvider : public base::PortProvider {
   ChildProcessTaskPortProvider();
   ~ChildProcessTaskPortProvider() override;
 
-  // Callback for mojom::ChildControl:GetTaskPort reply.
+  // Callback for mojom::ChildProcess::GetTaskPort reply.
   void OnTaskPortReceived(base::ProcessHandle pid,
                           mojo::ScopedHandle task_port);
 

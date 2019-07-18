@@ -26,7 +26,7 @@ bool EnableSecureDllLoading() {
       base::CommandLine::FromString(::GetCommandLineW());
   if (command_line.HasSwitch(chrome_cleaner::kAllowUnsecureDLLsSwitch))
     return false;
-#endif  // CHROME_CLEANER_OFFICIAL_BUILD
+#endif
 
   typedef BOOL(WINAPI * SetDefaultDllDirectoriesFunction)(DWORD flags);
   SetDefaultDllDirectoriesFunction set_default_dll_directories =

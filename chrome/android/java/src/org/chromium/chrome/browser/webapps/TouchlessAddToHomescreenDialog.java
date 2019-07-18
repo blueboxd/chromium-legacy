@@ -130,7 +130,9 @@ public class TouchlessAddToHomescreenDialog extends AddToHomescreenDialog {
 
         if (icon != null) ((ImageView) group.findViewById(R.id.icon)).setImageBitmap(icon);
         if (title != null) {
-            ((AlertDialogEditText) group.findViewById(R.id.app_title)).setText(title);
+            AlertDialogEditText appTitleText = group.findViewById(R.id.app_title);
+            appTitleText.setText(title);
+            appTitleText.setSelection(title.length());
         }
     }
 

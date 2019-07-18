@@ -470,6 +470,8 @@ void SMILTimeContainer::ApplyAnimations(double elapsed) {
     if (timed_element->isConnected() && timed_element->IsSVGDiscardElement()) {
       SVGElement* target_element = timed_element->targetElement();
       if (target_element && target_element->isConnected()) {
+        UseCounter::Count(&GetDocument(),
+                          WebFeature::kSVGSMILDiscardElementTriggered);
         target_element->remove(IGNORE_EXCEPTION_FOR_TESTING);
         DCHECK(!target_element->isConnected());
       }

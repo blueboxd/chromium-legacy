@@ -192,8 +192,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                        bool avoid_layout_and_only_paint = false);
   void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
-                         unsigned len,
-                         bool force = false);
+                         unsigned len);
 
   virtual void TransformText();
 

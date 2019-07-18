@@ -121,12 +121,15 @@ class RefByIdFactory(object):
 
     def __init__(self, target_attrs=None, target_attrs_with_priority=None):
         self._references = set()
-        self._did_resolve = False
+        # |_is_frozen| is initially False and you can create new references.
+        # The first invocation of |for_each| freezes the factory and you can no
+        # longer create a new reference
+        self._is_frozen = False
         self._target_attrs = target_attrs
         self._target_attrs_with_priority = target_attrs_with_priority
 
     def create(self, identifier):
-        assert not self._did_resolve
+        assert not self._is_frozen
         ref = RefById(
             identifier,
             target_attrs=self._target_attrs,
@@ -135,12 +138,17 @@ class RefByIdFactory(object):
         self._references.add(ref)
         return ref
 
-    def resolve(self, resolver):
+    def for_each(self, callback):
         """
-        Applies a callback function |resolver| to all the references created by
-        this factory.
+        Applies |callback| to all the references created by this factory.
+
+        You can no longer create a new reference.
+
+        Args:
+            callback: A callable that takes a reference as only the argument.
+                Return value is not used.
         """
-        assert not self._did_resolve
-        self._did_resolve = True
+        assert callable(callback)
+        self._is_frozen = True
         for ref in self._references:
             resolver(ref)

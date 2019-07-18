@@ -12,9 +12,8 @@
 #include "base/containers/flat_map.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -101,7 +100,7 @@ class MediaController : public mojom::MediaController,
   mojo::InterfacePtrSet<mojom::MediaControllerObserver> observers_;
 
   // Binding for |this| to act as an observer to |session_|.
-  mojo::Binding<mojom::MediaSessionObserver> session_binding_{this};
+  mojo::Receiver<mojom::MediaSessionObserver> session_receiver_{this};
 
   // Manages individual image observers.
   std::vector<std::unique_ptr<ImageObserverHolder>> image_observers_;

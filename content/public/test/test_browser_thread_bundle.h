@@ -176,8 +176,7 @@ class TestBrowserThreadBundle : public base::test::ScopedTaskEnvironment {
   }
 
   constexpr bool HasIOMainLoop() const {
-    return main_thread_type() == MainThreadType::IO ||
-           main_thread_type() == MainThreadType::IO_MOCK_TIME;
+    return main_thread_type() == MainThreadType::IO;
   }
 
   const bool real_io_thread_;

@@ -89,6 +89,7 @@ class BASE_EXPORT TaskQueueImpl {
   };
 
   using OnNextWakeUpChangedCallback = RepeatingCallback<void(TimeTicks)>;
+  using OnTaskReadyHandler = RepeatingCallback<void(const Task&, LazyNow*)>;
   using OnTaskStartedHandler =
       RepeatingCallback<void(const Task&, const TaskQueue::TaskTiming&)>;
   using OnTaskCompletedHandler =
@@ -194,6 +195,11 @@ class BASE_EXPORT TaskQueueImpl {
   // Iterates over |delayed_incoming_queue| removing canceled tasks. In
   // addition MaybeShrinkQueue is called on all internal queues.
   void ReclaimMemory(TimeTicks now);
+
+  // Registers a handler to invoke when a task posted to this TaskQueueImpl is
+  // ready. For a non-delayed task, this is when the task is posted. For a
+  // delayed task, this is when the delay expires.
+  void SetOnTaskReadyHandler(OnTaskReadyHandler handler);
 
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about started and completed tasks.
@@ -347,6 +353,7 @@ class BASE_EXPORT TaskQueueImpl {
     EnqueueOrder current_fence;
     Optional<TimeTicks> delayed_fence;
     EnqueueOrder last_unblocked_enqueue_order;
+    OnTaskReadyHandler on_task_ready_handler;
     OnTaskStartedHandler on_task_started_handler;
     OnTaskCompletedHandler on_task_completed_handler;
     // Last reported wake up, used only in UpdateWakeUp to avoid
@@ -473,6 +480,8 @@ class BASE_EXPORT TaskQueueImpl {
     bool post_immediate_task_should_schedule_work = true;
 
     bool unregistered = false;
+
+    OnTaskReadyHandler on_task_ready_handler;
 
 #if DCHECK_IS_ON()
     // A cache of |immediate_work_queue->work_queue_set_index()| which is used

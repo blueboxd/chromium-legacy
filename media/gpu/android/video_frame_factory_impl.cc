@@ -154,13 +154,13 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 
   auto image_ready_cb = base::BindOnce(
       &VideoFrameFactoryImpl::OnImageReady, weak_factory_.GetWeakPtr(),
-      std::move(output_cb), timestamp, coded_size, natural_size, texture_owner_,
+      std::move(output_cb), timestamp, coded_size, natural_size,
+      std::move(output_buffer), texture_owner_, std::move(promotion_hint_cb),
       pixel_format, overlay_mode_, enable_threaded_texture_mailboxes_,
       gpu_task_runner_);
 
   image_provider_->RequestImage(std::move(image_ready_cb), spec,
-                                std::move(output_buffer), texture_owner_,
-                                std::move(promotion_hint_cb));
+                                texture_owner_);
 }
 
 // static
@@ -170,7 +170,9 @@ void VideoFrameFactoryImpl::OnImageReady(
     base::TimeDelta timestamp,
     gfx::Size coded_size,
     gfx::Size natural_size,
+    std::unique_ptr<CodecOutputBuffer> output_buffer,
     scoped_refptr<TextureOwner> texture_owner,
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
     bool enable_threaded_texture_mailboxes,
@@ -180,6 +182,13 @@ void VideoFrameFactoryImpl::OnImageReady(
 
   if (!thiz)
     return;
+
+  // Initialize the CodecImage to use this output buffer.  Note that we're not
+  // on the gpu main thread here, but it's okay since CodecImage is not being
+  // used at this point.  Alternatively, we could post it, or hand it off to the
+  // MaybeRenderEarlyManager to save a post.
+  record.codec_image_holder->codec_image_raw()->Initialize(
+      std::move(output_buffer), texture_owner, std::move(promotion_hint_cb));
 
   // Send the CodecImage (via holder, since we can't touch the refcount here) to
   // the MaybeRenderEarlyManager.

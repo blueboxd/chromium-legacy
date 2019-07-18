@@ -115,6 +115,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool IsShowing() override;
   gfx::Rect GetViewBounds() override;
   gfx::Size GetVisibleViewportSize() override;
+  void SetInsets(const gfx::Insets& insets) override;
   gfx::Size GetCompositorViewportPixelSize() override;
   bool IsSurfaceAvailableForCopy() override;
   void CopyFromSurface(
@@ -370,6 +371,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       jint x,
       jint y);
 
+  // Insets the Visual Viewport's bottom by the amount given.  The adjustment
+  // is specified in pixels and should not be negative.  An adjustment of 0
+  // returns the Visual Viewport to a non-inset viewport that matches the
+  // Layout Viewport.
+  void InsetViewportBottom(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jint bottom_adjust_px);
+
   void WriteContentBitmapToDiskAsync(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -560,6 +569,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   base::TimeTicks prev_mousedown_timestamp_;
   gfx::Point prev_mousedown_point_;
   int left_click_count_ = 0;
+
+  gfx::Insets insets_;
 
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;

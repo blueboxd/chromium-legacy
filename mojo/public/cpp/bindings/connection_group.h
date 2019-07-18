@@ -46,6 +46,15 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ConnectionGroup
     // be used in testing.
     scoped_refptr<ConnectionGroup> GetGroupForTesting() { return group_; }
 
+    // Returns a weak copy of this Ref. Does not increase ref-count.
+    Ref WeakCopy() const;
+
+    // Indicates whether the underlying ConnectionGroup has zero strong
+    // references. Must ONLY be called from the sequence which owns the
+    // primordial weak Ref, since that sequence may increase the ref count at
+    // any time and otherwise this accessor would be unreliable.
+    bool HasZeroRefs() const;
+
    private:
     friend class ConnectionGroup;
 
@@ -76,6 +85,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ConnectionGroup
 
  private:
   friend class base::RefCountedThreadSafe<ConnectionGroup>;
+  friend class Ref;
 
   ConnectionGroup(base::RepeatingClosure callback,
                   scoped_refptr<base::TaskRunner> task_runner);

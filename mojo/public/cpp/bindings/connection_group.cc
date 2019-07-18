@@ -44,6 +44,16 @@ void ConnectionGroup::Ref::reset() {
   group_.reset();
 }
 
+ConnectionGroup::Ref ConnectionGroup::Ref::WeakCopy() const {
+  DCHECK(group_->notification_task_runner_->RunsTasksInCurrentSequence());
+  return Ref(group_);
+}
+
+bool ConnectionGroup::Ref::HasZeroRefs() const {
+  DCHECK(group_->notification_task_runner_->RunsTasksInCurrentSequence());
+  return group_->num_refs_ == 0;
+}
+
 ConnectionGroup::Ref::Ref(scoped_refptr<ConnectionGroup> group)
     : group_(std::move(group)) {}
 

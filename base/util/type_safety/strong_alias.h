@@ -59,9 +59,9 @@ namespace util {
 // A getter is provided in case you need to access the UnderlyingType.
 //
 // See also
-// - //styleguide/c++.md which provides recommendation and examples of
+// - //styleguide/c++/blink-c++.md which provides recommendation and examples of
 //   using StrongAlias<Tag, bool> instead of a bare bool.
-// - base::util::IdType<...> which provides helpers for specializing
+// - util::IdType<...> which provides helpers for specializing
 //   StrongAlias to be used as an id.
 template <typename TagType, typename UnderlyingType>
 class StrongAlias {

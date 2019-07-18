@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/views/native_file_system/native_file_system_usage_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -54,6 +56,8 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
 
   ChromeNativeFileSystemPermissionContext::GetPermissionGrantsFromUIThread(
       GetWebContents()->GetBrowserContext(), origin,
+      GetWebContents()->GetMainFrame()->GetProcess()->GetID(),
+      GetWebContents()->GetMainFrame()->GetRoutingID(),
       base::BindOnce(
           [](int frame_tree_node_id, const url::Origin& origin,
              ChromeNativeFileSystemPermissionContext::Grants grants) {

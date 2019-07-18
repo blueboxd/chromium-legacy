@@ -25,6 +25,8 @@ class ASH_EXPORT ShelfButton : public views::Button {
   void NotifyClick(const ui::Event& event) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
+  Shelf* shelf() { return shelf_; }
+
  protected:
   ShelfButtonDelegate* shelf_button_delegate() {
     return shelf_button_delegate_;

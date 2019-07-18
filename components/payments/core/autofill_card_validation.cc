@@ -61,7 +61,10 @@ uint32_t GetCompletenessScore(
   // unique set of missing fields 2- Cards with more number of missing fields
   // score less. 3- Relative weight of each field corresponds to the relative
   // effort needed to complete the field (e.g. filling address info is harder
-  // than card holder's name).
+  // than card holder's name). Completeness weights for all fields are
+  // identiacal to their equivalent in checkAndUpdateCardCompleteness from
+  // AutofillPaymentInstrument.java, Please modify the weights in both files if
+  // needed.
   return 6 * !(CREDIT_CARD_EXPIRED & status) +
          8 * !(CREDIT_CARD_NO_CARDHOLDER & status) +
          10 * !(CREDIT_CARD_NO_BILLING_ADDRESS & status) +

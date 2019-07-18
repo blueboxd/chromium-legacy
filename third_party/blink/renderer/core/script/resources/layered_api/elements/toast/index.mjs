@@ -178,7 +178,7 @@ delete StdToastElement.prototype.connectedCallback;
 export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
 
-  const {action, ...showOptions} = options;
+  const {action, closeButton, ...showOptions} = options;
   if (isElement(action)) {
     toast.action = action;
   } else if (action !== undefined) {
@@ -190,6 +190,10 @@ export function showToast(message, options = {}) {
 
     actionButton.setAttribute('slot', 'action');
     toast.appendChild(actionButton);
+  }
+
+  if (closeButton !== undefined) {
+    toast.closeButton = closeButton;
   }
 
   document.body.append(toast);

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -535,6 +536,19 @@ public class PersonalDataManager {
 
         public void setBillingAddressId(String id) {
             mBillingAddressId = id;
+        }
+
+        public boolean hasValidCreditCardExpirationDate() {
+            if (mMonth.isEmpty() || mYear.isEmpty()) return false;
+
+            Calendar expiryDate = Calendar.getInstance();
+            // The mMonth value is 1 based but the month in calendar is 0 based.
+            expiryDate.set(Calendar.MONTH, Integer.parseInt(mMonth) - 1);
+            expiryDate.set(Calendar.YEAR, Integer.parseInt(mYear));
+            // Add 1 minute to the expiry instance to ensure that the card is still valid on its
+            // exact expiration date.
+            expiryDate.add(Calendar.MINUTE, 1);
+            return Calendar.getInstance().before(expiryDate);
         }
     }
 

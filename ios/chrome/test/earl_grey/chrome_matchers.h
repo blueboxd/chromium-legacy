@@ -292,6 +292,47 @@ id<GREYMatcher> TabGridOpenButton();
 
 // Returns the GREYMatcher for the cell at |index| in the tab grid.
 id<GREYMatcher> TabGridCellAtIndex(unsigned int index);
+
+// Returns the GREYMatcher for the button that closes the tab grid.
+id<GREYMatcher> TabGridDoneButton();
+
+// Returns the GREYMatcher for the button that closes all the tabs in the tab
+// grid.
+id<GREYMatcher> TabGridCloseAllButton();
+
+// Returns the GREYMatcher for the button that reverts the close all tabs action
+// in the tab grid.
+id<GREYMatcher> TabGridUndoCloseAllButton();
+
+// Returns the GREYMatcher for the cell that opens History in Recent Tabs.
+id<GREYMatcher> TabGridSelectShowHistoryCell();
+
+// Returns the GREYMatcher for the regular tabs empty state view.
+id<GREYMatcher> TabGridRegularTabsEmptyStateView();
+
+// Returns the GREYMatcher for the button that creates new non incognito tabs
+// from within the tab grid.
+id<GREYMatcher> TabGridNewTabButton();
+
+// Returns the GREYMatcher for the button that creates new incognito tabs from
+// within the tab grid.
+id<GREYMatcher> TabGridNewIncognitoTabButton();
+
+// Returns the GREYMatcher for the button to go to the non incognito panel in
+// the tab grid.
+id<GREYMatcher> TabGridOpenTabsPanelButton();
+
+// Returns the GREYMatcher for the button to go to the incognito panel in
+// the tab grid.
+id<GREYMatcher> TabGridIncognitoTabsPanelButton();
+
+// Returns the GREYMatcher for the button to go to the other devices panel in
+// the tab grid.
+id<GREYMatcher> TabGridOtherDevicesPanelButton();
+
+// Returns the GREYMatcher for the button to close the cell at |index| in the
+// tab grid.
+id<GREYMatcher> TabGridCloseButtonForCellAtIndex(unsigned int index);
 }
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_MATCHERS_H_

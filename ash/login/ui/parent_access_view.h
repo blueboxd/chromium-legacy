@@ -12,6 +12,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "components/account_id/account_id.h"
@@ -120,6 +121,9 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // Updates view's preferred size.
   void UpdatePreferredSize();
 
+  // Moves focus to |submit_button_|.
+  void FocusSubmitButton();
+
   // Called when access code input changes. |complete| brings information
   // whether current input code is complete. |last_field_active| contains
   // information whether last input field is currently active.
@@ -145,6 +149,8 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
 
   ScopedObserver<TabletModeController, TabletModeObserver>
       tablet_mode_observer_{this};
+
+  base::WeakPtrFactory<ParentAccessView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ParentAccessView);
 };

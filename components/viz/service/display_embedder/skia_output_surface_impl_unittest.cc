@@ -66,7 +66,7 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
   GpuServiceImpl* gpu_service() { return gpu_service_holder_->gpu_service(); }
 
   TestGpuServiceHolder* gpu_service_holder_;
-  std::unique_ptr<SkiaOutputSurfaceImpl> output_surface_;
+  std::unique_ptr<SkiaOutputSurface> output_surface_;
 
  private:
   void SetUpSkiaOutputSurfaceImpl();
@@ -109,7 +109,7 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
     NOTREACHED();
 #endif
   }
-  output_surface_ = std::make_unique<SkiaOutputSurfaceImpl>(
+  output_surface_ = SkiaOutputSurfaceImpl::Create(
       std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service(),
                                                         surface_handle_),
       RendererSettings());

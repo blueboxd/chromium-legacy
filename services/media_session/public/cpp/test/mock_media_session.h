@@ -96,7 +96,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<mojom::MediaPlaybackState> wanted_playback_state_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  mojo::Binding<mojom::MediaSessionObserver> binding_;
+  mojo::Receiver<mojom::MediaSessionObserver> receiver_{this};
 };
 
 // A mock MediaSession that can be used for interacting with the Media Session

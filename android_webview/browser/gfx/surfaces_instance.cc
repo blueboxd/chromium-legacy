@@ -253,10 +253,11 @@ SurfacesInstance::SurfacesInstance()
       shared_context_state_->InitializeGrContext(workarounds,
                                                  nullptr /* gr_shader_cache */);
     }
-    output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
+    output_surface = viz::SkiaOutputSurfaceImpl::Create(
         std::make_unique<SkiaOutputSurfaceDependencyWebView>(
             task_executor, workarounds, shared_context_state_, gl_surface_),
         settings);
+    DCHECK(output_surface);
   } else {
     auto context_provider = AwRenderThreadContextProvider::Create(
         gl_surface_, DeferredGpuCommandService::GetInstance());

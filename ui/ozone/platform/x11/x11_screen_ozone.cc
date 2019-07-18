@@ -75,15 +75,7 @@ display::Display X11ScreenOzone::GetDisplayForAcceleratedWidget(
     return GetPrimaryDisplay();
 
   X11WindowOzone* window = window_manager_->GetWindow(widget);
-  if (window) {
-    const gfx::Rect pixel_rect = window->GetBounds();
-    const display::Display* matching_display =
-        display::FindDisplayWithBiggestIntersection(
-            display_list_.displays(),
-            gfx::ConvertRectToDIP(GetDeviceScaleFactor(), pixel_rect));
-    return matching_display ? *matching_display : GetPrimaryDisplay();
-  }
-  return GetPrimaryDisplay();
+  return window ? GetDisplayMatching(window->GetBounds()) : GetPrimaryDisplay();
 }
 
 gfx::Point X11ScreenOzone::GetCursorScreenPoint() const {
@@ -114,9 +106,11 @@ display::Display X11ScreenOzone::GetDisplayNearestPoint(
 
 display::Display X11ScreenOzone::GetDisplayMatching(
     const gfx::Rect& match_rect) const {
-  // TODO(crbug.com/891175): Implement PlatformScreen for X11
-  NOTIMPLEMENTED_LOG_ONCE();
-  return GetPrimaryDisplay();
+  const display::Display* matching_display =
+      display::FindDisplayWithBiggestIntersection(
+          display_list_.displays(),
+          gfx::ConvertRectToDIP(GetDeviceScaleFactor(), match_rect));
+  return matching_display ? *matching_display : GetPrimaryDisplay();
 }
 
 void X11ScreenOzone::AddObserver(display::DisplayObserver* observer) {

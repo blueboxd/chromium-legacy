@@ -21,6 +21,7 @@
     checkedStateChanged,
     childrenChanged,
     clicked,
+    controlsChanged,
     documentSelectionChanged,
     documentTitleChanged,
     endOfTest,

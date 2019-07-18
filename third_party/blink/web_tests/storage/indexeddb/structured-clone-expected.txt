@@ -922,6 +922,16 @@ PASS is(test_data[7], result[7]) is true
 
 
 
+Testing Error
+transaction = db.transaction('storeName', 'readwrite')
+store = transaction.objectStore('storeName')
+store.put(value, 'key')
+store.get('key')
+PASS error !== result is true
+PASS Object.getPrototypeOf(result) is Error.prototype
+PASS result.message is "hello"
+
+
 
 
 Test types that can't be cloned:
@@ -932,10 +942,6 @@ store = transaction.objectStore('storeName')
 
 
 Other JavaScript object types:
-Expecting exception from store.put(new Error, 'key')
-PASS Exception was thrown.
-PASS code is DOMException.DATA_CLONE_ERR
-Exception message: Failed to execute 'put' on 'IDBObjectStore': Error could not be cloned.
 Expecting exception from store.put(new Function, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR

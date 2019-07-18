@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
     //   chrome/test/data/extensions/api_test/certificate_provider/l1_leaf.der
     ASSERT_EQ(
         "got client cert with fingerprint: "
-        "2ab3f55e06eb8b36a741fe285a769da45edb2695",
+        "edeb84ab3b5a36dd09a3203c74794b25efa8f126",
         https_reply);
   }
 

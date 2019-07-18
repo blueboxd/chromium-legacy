@@ -14,6 +14,8 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "content/browser/sms/sms_provider.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
@@ -27,12 +29,29 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 
+using base::BindLambdaForTesting;
+using base::Optional;
+using base::TimeDelta;
+using blink::mojom::SmsReceiver;
+using blink::mojom::SmsReceiverPtr;
+using blink::mojom::SmsStatus;
+using std::string;
+using ::testing::_;
+using ::testing::ByMove;
+using ::testing::Invoke;
+using ::testing::NiceMock;
+using ::testing::Return;
+using ::testing::StrictMock;
+using url::Origin;
+
+namespace content {
+
+class RenderFrameHost;
+
 using blink::mojom::SmsReceiverPtr;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
-
-namespace content {
 
 namespace {
 
@@ -49,10 +68,76 @@ class MockSmsProvider : public SmsProvider {
   DISALLOW_COPY_AND_ASSIGN(MockSmsProvider);
 };
 
+class MockSmsDialog : public SmsDialog {
+ public:
+  MockSmsDialog() : SmsDialog() {}
+  ~MockSmsDialog() override = default;
+
+  MOCK_METHOD2(Open, void(RenderFrameHost*, base::OnceCallback<void()>));
+  MOCK_METHOD0(Close, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSmsDialog);
+};
+
+class MockWebContentsDelegate : public WebContentsDelegate {
+ public:
+  MockWebContentsDelegate() = default;
+  ~MockWebContentsDelegate() override = default;
+
+  MOCK_METHOD0(CreateSmsDialog, std::unique_ptr<SmsDialog>());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWebContentsDelegate);
+};
+
+// Service encapsulates a SmsService endpoint, with all of its dependencies
+// mocked out (and the common plumbing needed to inject them), and a
+// SmsReceiverPtr endpoint that tests can use to make requests.
+// It exposes some common methods, like MakeRequest and NotifyReceive, but it
+// also exposes the low level mocks that enables tests to set expectations and
+// control the testing environment.
+class Service {
+ public:
+  Service(WebContents* web_contents, const Origin& origin) {
+    WebContentsImpl* web_contents_impl =
+        reinterpret_cast<WebContentsImpl*>(web_contents);
+    web_contents_impl->SetDelegate(&delegate_);
+    service_ = std::make_unique<SmsService>(&provider_, origin,
+                                            web_contents->GetMainFrame(),
+                                            mojo::MakeRequest(&service_ptr_));
+  }
+
+  Service(WebContents* web_contents)
+      : Service(web_contents,
+                web_contents->GetMainFrame()->GetLastCommittedOrigin()) {}
+
+  NiceMock<MockWebContentsDelegate>* delegate() { return &delegate_; }
+  NiceMock<MockSmsProvider>* provider() { return &provider_; }
+  blink::mojom::SmsReceiverPtr* client() { return &service_ptr_; }
+
+  void SetSmsService(std::unique_ptr<SmsService> service) {
+    service_ = std::move(service);
+  }
+
+  void MakeRequest(TimeDelta timeout, SmsReceiver::ReceiveCallback callback) {
+    service_ptr_->Receive(timeout, std::move(callback));
+  }
+
+  void NotifyReceive(const GURL& url, const string& message) {
+    provider_.NotifyReceive(Origin::Create(url), message);
+  }
+
+ private:
+  NiceMock<MockWebContentsDelegate> delegate_;
+  NiceMock<MockSmsProvider> provider_;
+  blink::mojom::SmsReceiverPtr service_ptr_;
+  std::unique_ptr<SmsService> service_;
+};
+
 class SmsServiceTest : public RenderViewHostTestHarness {
  protected:
   SmsServiceTest() {}
-
   ~SmsServiceTest() override {}
 
  private:
@@ -64,58 +149,46 @@ class SmsServiceTest : public RenderViewHostTestHarness {
 TEST_F(SmsServiceTest, Basic) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
-                                              mojo::MakeRequest(&service_ptr));
+  Service service(web_contents());
 
   base::RunLoop loop;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&provider]() {
-    provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "hi");
-  }));
-
-  service_ptr->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
         EXPECT_EQ("hi", sms.value());
-        EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, status);
+        EXPECT_EQ(SmsStatus::kSuccess, status);
         loop.Quit();
       }));
 
+  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "hi");
+  }));
+
   loop.Run();
 
-  ASSERT_FALSE(provider.HasObservers());
+  ASSERT_FALSE(service.provider()->HasObservers());
 }
 
-TEST_F(SmsServiceTest, ExpectTwoReceiveTwoSerially) {
+TEST_F(SmsServiceTest, HandlesMultipleCalls) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
-                                              mojo::MakeRequest(&service_ptr));
-
-  EXPECT_CALL(provider, Retrieve())
-      .WillOnce(Invoke([&provider]() {
-        provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "first");
-      }))
-      .WillOnce(Invoke([&provider]() {
-        provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "second");
-      }));
+  Service service(web_contents());
 
   {
     base::RunLoop loop;
 
-    service_ptr->Receive(
-        base::TimeDelta::FromSeconds(10),
-        base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                       const base::Optional<std::string>& sms) {
-          EXPECT_EQ("first", sms.value());
-          EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, status);
-          loop.Quit();
-        }));
+    service.MakeRequest(TimeDelta::FromSeconds(10),
+                        BindLambdaForTesting(
+                            [&](SmsStatus status, const Optional<string>& sms) {
+                              EXPECT_EQ("first", sms.value());
+                              EXPECT_EQ(SmsStatus::kSuccess, status);
+                              loop.Quit();
+                            }));
+
+    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "first");
+    }));
 
     loop.Run();
   }
@@ -123,14 +196,17 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoSerially) {
   {
     base::RunLoop loop;
 
-    service_ptr->Receive(
-        base::TimeDelta::FromSeconds(10),
-        base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                       const base::Optional<std::string>& sms) {
-          EXPECT_EQ("second", sms.value());
-          EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, status);
-          loop.Quit();
-        }));
+    service.MakeRequest(TimeDelta::FromSeconds(10),
+                        BindLambdaForTesting(
+                            [&](SmsStatus status, const Optional<string>& sms) {
+                              EXPECT_EQ("second", sms.value());
+                              EXPECT_EQ(SmsStatus::kSuccess, status);
+                              loop.Quit();
+                            }));
+
+    EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+      service.NotifyReceive(GURL(kTestUrl), "second");
+    }));
 
     loop.Run();
   }
@@ -139,24 +215,19 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoSerially) {
 TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
-                                              mojo::MakeRequest(&service_ptr));
+  Service service(web_contents());
 
-  blink::mojom::SmsStatus sms_status;
-  base::Optional<std::string> response;
+  SmsStatus sms_status;
+  Optional<string> response;
 
   base::RunLoop listen_loop, sms_loop;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&listen_loop]() {
-    listen_loop.Quit();
-  }));
+  EXPECT_CALL(*service.provider(), Retrieve())
+      .WillOnce(Invoke([&listen_loop]() { listen_loop.Quit(); }));
 
-  service_ptr->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
         sms_status = status;
         response = sms;
         sms_loop.Quit();
@@ -166,38 +237,31 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 
   // Delivers an SMS from an unrelated origin first and expect the receiver to
   // ignore it.
-  GURL another_url("http://b.com");
-  provider.NotifyReceive(url::Origin::Create(another_url), "wrong");
-
-  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "right");
+  service.NotifyReceive(GURL("http://b.com"), "wrong");
+  service.NotifyReceive(GURL(kTestUrl), "right");
 
   sms_loop.Run();
 
   EXPECT_EQ("right", response.value());
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status);
+  EXPECT_EQ(SmsStatus::kSuccess, sms_status);
 }
 
 TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
-                                              mojo::MakeRequest(&service_ptr));
+  Service service(web_contents());
 
-  blink::mojom::SmsStatus sms_status;
-  base::Optional<std::string> response;
+  SmsStatus sms_status;
+  Optional<string> response;
 
   base::RunLoop listen_loop, sms_loop;
 
-  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&listen_loop]() {
-    listen_loop.Quit();
-  }));
+  EXPECT_CALL(*service.provider(), Retrieve())
+      .WillOnce(Invoke([&listen_loop]() { listen_loop.Quit(); }));
 
-  service_ptr->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
         sms_status = status;
         response = sms;
         sms_loop.Quit();
@@ -207,49 +271,44 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   // Delivers two SMSes for the same origin, even if only one was being
   // expected.
-  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "first");
-  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "second");
+  service.NotifyReceive(GURL(kTestUrl), "first");
+  service.NotifyReceive(GURL(kTestUrl), "second");
 
   sms_loop.Run();
 
   EXPECT_EQ("first", response.value());
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status);
+  EXPECT_EQ(SmsStatus::kSuccess, sms_status);
 }
 
 TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
-                                              mojo::MakeRequest(&service_ptr));
+  Service service(web_contents());
 
-  blink::mojom::SmsStatus sms_status1;
-  base::Optional<std::string> response1;
-  blink::mojom::SmsStatus sms_status2;
-  base::Optional<std::string> response2;
+  SmsStatus sms_status1;
+  Optional<string> response1;
+  SmsStatus sms_status2;
+  Optional<string> response2;
 
   base::RunLoop listen_loop, sms1_loop, sms2_loop;
 
   // Expects two Receive() calls to be made before any of them gets
   // an SMS to resolve them.
-  EXPECT_CALL(provider, Retrieve())
+  EXPECT_CALL(*service.provider(), Retrieve())
       .WillOnce(testing::Return())
       .WillOnce(Invoke([&listen_loop]() { listen_loop.Quit(); }));
 
-  service_ptr->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
         sms_status1 = status;
         response1 = sms;
         sms1_loop.Quit();
       }));
 
-  service_ptr->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
         sms_status2 = status;
         response2 = sms;
         sms2_loop.Quit();
@@ -259,38 +318,34 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
 
   // Delivers the first SMS.
 
-  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "first");
+  service.NotifyReceive(GURL(kTestUrl), "first");
 
   sms1_loop.Run();
 
   EXPECT_EQ("first", response1.value());
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status1);
+  EXPECT_EQ(SmsStatus::kSuccess, sms_status1);
 
   // Delivers the second SMS.
 
-  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "second");
+  service.NotifyReceive(GURL(kTestUrl), "second");
 
   sms2_loop.Run();
 
   EXPECT_EQ("second", response2.value());
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
+  EXPECT_EQ(SmsStatus::kSuccess, sms_status2);
 }
 
 TEST_F(SmsServiceTest, Timeout) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  NiceMock<MockSmsProvider> provider;
-  blink::mojom::SmsReceiverPtr service_ptr;
-  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
-                                              mojo::MakeRequest(&service_ptr));
+  Service service(web_contents());
 
   base::RunLoop loop;
 
-  service_ptr->Receive(
-      base::TimeDelta::FromSeconds(0),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
-        EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, status);
+  service.MakeRequest(
+      TimeDelta::FromSeconds(0),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
         loop.Quit();
       }));
 
@@ -299,6 +354,11 @@ TEST_F(SmsServiceTest, Timeout) {
 
 TEST_F(SmsServiceTest, CleansUp) {
   NavigateAndCommit(GURL(kTestUrl));
+
+  NiceMock<MockWebContentsDelegate> delegate;
+  WebContentsImpl* web_contents_impl =
+      reinterpret_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SetDelegate(&delegate);
 
   NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
@@ -332,129 +392,131 @@ TEST_F(SmsServiceTest, CleansUp) {
   ASSERT_FALSE(provider.HasObservers());
 }
 
-TEST_F(SmsServiceTest, TimeoutTwoTabs) {
-  NiceMock<MockSmsProvider> provider;
+TEST_F(SmsServiceTest, PromptsDialog) {
+  NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::SmsReceiverPtr service_ptr1;
-  GURL url1("http://a.com");
-  auto tab1 = std::make_unique<SmsService>(&provider, url::Origin::Create(url1),
-                                           main_rfh(),
-                                           mojo::MakeRequest(&service_ptr1));
+  Service service(web_contents());
 
-  blink::mojom::SmsReceiverPtr service_ptr2;
-  GURL url2("http://b.com");
-  auto tab2 = std::make_unique<SmsService>(&provider, url::Origin::Create(url2),
-                                           main_rfh(),
-                                           mojo::MakeRequest(&service_ptr2));
+  auto* dialog = new NiceMock<MockSmsDialog>();
 
-  blink::mojom::SmsStatus sms_status1;
-  base::Optional<std::string> response1;
-  blink::mojom::SmsStatus sms_status2;
-  base::Optional<std::string> response2;
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
-  base::RunLoop listen, sms_loop1, sms_loop2;
+  base::RunLoop loop;
 
-  EXPECT_CALL(provider, Retrieve())
-      .WillOnce(testing::Return())
-      .WillOnce(Invoke([&listen]() { listen.Quit(); }));
+  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Invoke([&service]() {
+    service.NotifyReceive(GURL(kTestUrl), "hi");
+  }));
 
-  service_ptr1->Receive(
-      base::TimeDelta::FromSeconds(0),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
-        sms_status1 = status;
-        response1 = sms;
-        sms_loop1.Quit();
+  EXPECT_CALL(*dialog, Open(main_rfh(), _)).WillOnce(Return());
+
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
+        EXPECT_EQ("hi", sms.value());
+        EXPECT_EQ(SmsStatus::kSuccess, status);
+        loop.Quit();
       }));
 
-  service_ptr2->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
-        sms_status2 = status;
-        response2 = sms;
-        sms_loop2.Quit();
+  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+
+  loop.Run();
+
+  ASSERT_FALSE(service.provider()->HasObservers());
+}
+
+TEST_F(SmsServiceTest, Cancel) {
+  NavigateAndCommit(GURL(kTestUrl));
+
+  Service service(web_contents());
+
+  base::RunLoop loop;
+
+  service.MakeRequest(
+      TimeDelta::FromSeconds(10),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
+        EXPECT_EQ(SmsStatus::kCancelled, status);
+        loop.Quit();
       }));
 
-  listen.Run();
+  auto* dialog = new NiceMock<MockSmsDialog>();
 
-  // The first request immediately times out because it uses TimeDelta of 0
-  // seconds.
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
-  sms_loop1.Run();
+  EXPECT_CALL(*dialog, Open(main_rfh(), _))
+      .WillOnce(
+          Invoke([](RenderFrameHost*, base::OnceCallback<void()> on_cancel) {
+            // Simulates the user pressing "cancel".
+            std::move(on_cancel).Run();
+          }));
 
-  EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, sms_status1);
+  loop.Run();
 
-  // Delivers the second SMS.
-  provider.NotifyReceive(url::Origin::Create(url2), "second");
+  ASSERT_FALSE(service.provider()->HasObservers());
+}
 
-  sms_loop2.Run();
+TEST_F(SmsServiceTest, TimeoutClosesDialog) {
+  NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_EQ("second", response2.value());
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status2);
+  Service service(web_contents());
+
+  base::RunLoop loop;
+
+  service.MakeRequest(
+      TimeDelta::FromSeconds(0),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
+        loop.Quit();
+      }));
+
+  auto* dialog = new NiceMock<MockSmsDialog>();
+
+  EXPECT_CALL(*service.delegate(), CreateSmsDialog())
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
+
+  EXPECT_CALL(*service.provider(), Retrieve()).WillOnce(Return());
+
+  // Deliberately avoid calling the on_cancel callback, to simulate the
+  // sms being timed out before the user cancels it.
+  EXPECT_CALL(*dialog, Open(main_rfh(), _)).WillOnce(Return());
+
+  EXPECT_CALL(*dialog, Close()).WillOnce(Return());
+
+  loop.Run();
 }
 
 TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
-  NiceMock<MockSmsProvider> provider;
+  NavigateAndCommit(GURL(kTestUrl));
 
-  GURL url1("http://a.com");
-  blink::mojom::SmsReceiverPtr service_ptr1;
-  std::unique_ptr<SmsService> service1 = std::make_unique<SmsService>(
-      &provider, url::Origin::Create(url1), main_rfh(),
-      mojo::MakeRequest(&service_ptr1));
+  Service service(web_contents());
 
-  GURL url2("http://b.com");
-  blink::mojom::SmsReceiverPtr service_ptr2;
-  std::unique_ptr<SmsService> service2 = std::make_unique<SmsService>(
-      &provider, url::Origin::Create(url2), main_rfh(),
-      mojo::MakeRequest(&service_ptr2));
+  base::RunLoop sms_loop1, sms_loop2;
 
-  blink::mojom::SmsStatus sms_status1;
-  base::Optional<std::string> response1;
-  blink::mojom::SmsStatus sms_status2;
-  base::Optional<std::string> response2;
+  service.MakeRequest(TimeDelta::FromSeconds(10),
+                      BindLambdaForTesting([&](blink::mojom::SmsStatus status,
+                                               const Optional<string>& sms) {
+                        EXPECT_EQ(SmsStatus::kSuccess, status);
+                        EXPECT_EQ("first", sms.value());
+                        sms_loop1.Quit();
+                      }));
 
-  base::RunLoop listen, sms_loop1, sms_loop2;
-
-  EXPECT_CALL(provider, Retrieve())
-      .WillOnce(testing::Return())
-      .WillOnce(Invoke([&listen]() { listen.Quit(); }));
-
-  service_ptr1->Receive(
-      base::TimeDelta::FromSeconds(10),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
-        sms_status1 = status;
-        response1 = sms;
-        sms_loop1.Quit();
-      }));
-
-  service_ptr2->Receive(
-      base::TimeDelta::FromSeconds(0),
-      base::BindLambdaForTesting([&](blink::mojom::SmsStatus status,
-                                     const base::Optional<std::string>& sms) {
-        sms_status2 = status;
-        response2 = sms;
+  service.MakeRequest(
+      TimeDelta::FromSeconds(0),
+      BindLambdaForTesting([&](SmsStatus status, const Optional<string>& sms) {
+        EXPECT_EQ(SmsStatus::kTimeout, status);
         sms_loop2.Quit();
       }));
 
-  listen.Run();
-
   // The second request immediately times out because it uses TimeDelta of 0
   // seconds.
-
   sms_loop2.Run();
-
-  EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, sms_status2);
 
   // Delivers the first SMS.
 
-  provider.NotifyReceive(url::Origin::Create(url1), "first");
+  service.NotifyReceive(GURL(kTestUrl), "first");
 
   sms_loop1.Run();
-
-  EXPECT_EQ("first", response1.value());
-  EXPECT_EQ(blink::mojom::SmsStatus::kSuccess, sms_status1);
 }
 
 }  // namespace content

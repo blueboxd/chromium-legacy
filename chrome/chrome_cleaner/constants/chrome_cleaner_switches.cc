@@ -174,7 +174,6 @@ const char kAllowUnsecureDLLsSwitch[] = "allow-unsecure-dlls";
 // testing.
 const char kRunWithoutSandboxForTestingSwitch[] =
     "run-without-sandbox-for-testing";
-
-#endif  // CHROME_CLEANER_OFFICIAL_BUILD
+#endif
 
 }  // namespace chrome_cleaner

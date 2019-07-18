@@ -23,6 +23,7 @@ class WebContents;
 }
 
 namespace views {
+class AXVirtualView;
 class ImageButton;
 }  // namespace views
 
@@ -149,15 +150,18 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Image button in the zoom bubble that will show the |extension_icon_| image
   // if an extension initiated the zoom change, and links to that extension at
   // "chrome://extensions".
-  views::ImageButton* image_button_;
+  views::ImageButton* image_button_{nullptr};
 
   // Label displaying the zoom percentage.
-  views::Label* label_;
+  views::Label* label_{nullptr};
 
   // Action buttons that can change zoom.
-  views::Button* zoom_out_button_;
-  views::Button* zoom_in_button_;
-  views::Button* reset_button_;
+  views::Button* zoom_out_button_{nullptr};
+  views::Button* zoom_in_button_{nullptr};
+  views::Button* reset_button_{nullptr};
+
+  // Virtual view used to announce zoom level changes.
+  views::AXVirtualView* zoom_level_alert_{nullptr};
 
   // Whether the currently displayed bubble will automatically close.
   bool auto_close_;
@@ -165,7 +169,7 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // Used to ignore close requests generated automatically in response to
   // button presses, since pressing a button in the bubble should not trigger
   // closing.
-  bool ignore_close_bubble_;
+  bool ignore_close_bubble_{false};
 
   // The immersive mode controller for the BrowserView containing
   // |web_contents_|.

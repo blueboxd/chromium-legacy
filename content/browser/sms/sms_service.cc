@@ -11,6 +11,9 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/optional.h"
+#include "content/public/browser/sms_dialog.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 using blink::mojom::SmsStatus;
 
@@ -57,6 +60,10 @@ void SmsService::Create(SmsProvider* provider,
 
 void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (prompt_) {
+    std::move(callback).Run(blink::mojom::SmsStatus::kCancelled, base::nullopt);
+    return;
+  }
 
   if (requests_.empty())
     sms_provider_->AddObserver(this);
@@ -68,6 +75,9 @@ void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
                        base::BindOnce(&SmsService::OnTimeout,
                                       base::Unretained(this), request.get()));
   requests_.push_back(std::move(request));
+
+  Prompt();
+
   sms_provider_->Retrieve();
 }
 
@@ -82,6 +92,8 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
 bool SmsService::Pop(blink::mojom::SmsStatus status,
                      base::Optional<std::string> sms) {
   DCHECK(!requests_.empty());
+
+  Dismiss();
 
   DCHECK(requests_.front()->timer.IsRunning());
 
@@ -107,10 +119,34 @@ void SmsService::OnTimeout(Request* request) {
   for (auto iter = requests_.begin(); iter != requests_.end(); ++iter) {
     if ((*iter).get() == request) {
       requests_.erase(iter);
+      Dismiss();
       if (requests_.empty())
         sms_provider_->RemoveObserver(this);
       return;
     }
+  }
+}
+
+void SmsService::OnCancel() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  Pop(SmsStatus::kCancelled, base::nullopt);
+}
+
+void SmsService::Prompt() {
+  WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host());
+  prompt_ = web_contents->GetDelegate()->CreateSmsDialog();
+  if (prompt_) {
+    prompt_->Open(render_frame_host(), base::BindOnce(&SmsService::OnCancel,
+                                                      base::Unretained(this)));
+  }
+}
+
+void SmsService::Dismiss() {
+  if (prompt_) {
+    prompt_->Close();
+    prompt_.reset();
   }
 }
 

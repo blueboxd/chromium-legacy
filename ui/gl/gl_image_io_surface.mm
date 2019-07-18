@@ -17,7 +17,6 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/display_icc_profiles.h"
 #include "ui/gfx/mac/io_surface.h"
-#include "ui/gl/buildflags.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
@@ -25,10 +24,10 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
 
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
 #include "ui/gl/gl_image_io_surface_egl.h"
 #include "ui/gl/gl_implementation.h"
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
@@ -171,15 +170,16 @@ GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
 // static
 GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size,
                                            unsigned internalformat) {
-#if BUILDFLAG(USE_EGL_ON_MAC)
+#if defined(USE_EGL)
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
+    case kGLImplementationEGLANGLE:
     case kGLImplementationSwiftShaderGL:
       return new GLImageIOSurfaceEGL(size, internalformat);
     default:
       break;
   }
-#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+#endif  // defined(USE_EGL)
 
   return new GLImageIOSurface(size, internalformat);
 }

@@ -196,6 +196,7 @@ class PreviewsProber
       network::NetworkConnectionTracker* network_connection_tracker);
   void RecordProbeResult(bool success);
   std::string GetCacheKeyForCurrentNetwork() const;
+  std::string AppendNameToHistogram(const std::string& histogram) const;
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif

@@ -16,9 +16,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
-import android.preference.Preference;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v7.preference.Preference;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 
@@ -321,66 +321,6 @@ public class SiteSettingsCategory {
      */
     public void configurePermissionIsOffPreferences(Preference osWarning, Preference osWarningExtra,
             Activity activity, boolean specificCategory) {
-        Intent perAppIntent = getIntentToEnableOsPerAppPermission(activity);
-        Intent globalIntent = getIntentToEnableOsGlobalPermission(activity);
-        String perAppMessage = getMessageForEnablingOsPerAppPermission(activity, !specificCategory);
-        String globalMessage = getMessageForEnablingOsGlobalPermission(activity);
-
-        Resources resources = activity.getResources();
-        int color = ApiCompatibilityUtils.getColor(resources, R.color.pref_accent_color);
-        ForegroundColorSpan linkSpan = new ForegroundColorSpan(color);
-
-        if (perAppIntent != null) {
-            SpannableString messageWithLink = SpanApplier.applySpans(
-                    perAppMessage, new SpanInfo("<link>", "</link>", linkSpan));
-            osWarning.setTitle(messageWithLink);
-            osWarning.setIntent(perAppIntent);
-
-            if (!specificCategory) {
-                osWarning.setIcon(getDisabledInAndroidIcon(activity));
-            }
-        }
-
-        if (globalIntent != null) {
-            SpannableString messageWithLink = SpanApplier.applySpans(
-                    globalMessage, new SpanInfo("<link>", "</link>", linkSpan));
-            osWarningExtra.setTitle(messageWithLink);
-            osWarningExtra.setIntent(globalIntent);
-
-            if (!specificCategory) {
-                if (perAppIntent == null) {
-                    osWarningExtra.setIcon(getDisabledInAndroidIcon(activity));
-                } else {
-                    Drawable transparent = new ColorDrawable(Color.TRANSPARENT);
-                    osWarningExtra.setIcon(transparent);
-                }
-            }
-        }
-    }
-
-    /**
-     * TODO(crbug.com/967022): This method is a duplicate of {@link
-     * #configurePermissionIsOffPreferences(Preference, Preference, Activity, boolean)}, but with
-     * Support Library classes replacing deprecated Framework classes. When Preference Support
-     * Library migration is complete remove {@link #configurePermissionIsOffPreferences(Preference,
-     * Preference, Activity, boolean)} in favor of this method.
-     *
-     * Configure a preference to show when when the Android permission for this category is
-     * disabled.
-     * @param osWarning A preference to hold the first permission warning. After calling this
-     *                  method, if osWarning has no title, the preference should not be added to the
-     *                  preference screen.
-     * @param osWarningExtra A preference to hold any additional permission warning (if any). After
-     *                       calling this method, if osWarningExtra has no title, the preference
-     *                       should not be added to the preference screen.
-     * @param activity The current activity.
-     * @param specificCategory Whether the warnings refer to a single category or is an aggregate
-     *                         for many permissions.
-     */
-    public void configurePermissionIsOffPreferences(
-            android.support.v7.preference.Preference osWarning,
-            android.support.v7.preference.Preference osWarningExtra, Activity activity,
-            boolean specificCategory) {
         Intent perAppIntent = getIntentToEnableOsPerAppPermission(activity);
         Intent globalIntent = getIntentToEnableOsGlobalPermission(activity);
         String perAppMessage = getMessageForEnablingOsPerAppPermission(activity, !specificCategory);

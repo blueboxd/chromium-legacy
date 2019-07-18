@@ -83,6 +83,9 @@ public class WebappDataStorage {
     // Whether an update has been scheduled.
     static final String KEY_UPDATE_SCHEDULED = "update_scheduled";
 
+    // Status indicating a WebAPK is not updatable through chrome://webapks.
+    public static final String NOT_UPDATABLE = "Not updatable";
+
     // Number of milliseconds between checks for whether the WebAPK's Web Manifest has changed.
     public static final long UPDATE_INTERVAL = DateUtils.DAY_IN_MILLIS;
 
@@ -560,7 +563,7 @@ public class WebappDataStorage {
 
     /** Returns the update status. */
     public String getUpdateStatus() {
-        if (isUnboundWebApk()) return "Not updatable";
+        if (isUnboundWebApk()) return NOT_UPDATABLE;
         if (isUpdateScheduled()) return "Scheduled";
         if (shouldForceUpdate()) return "Pending";
         return didPreviousUpdateSucceed() ? "Succeeded" : "Failed";

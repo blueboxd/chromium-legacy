@@ -10,6 +10,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -26,11 +27,7 @@
 
 <dom-module id="settings-sync-page">
   <template>
-    <style include="settings-shared iron-flex">
-      h2 {
-        @apply --cr-title-text;
-      }
-
+    <style include="cr-shared-style settings-shared iron-flex">
       #sync-separator {
         border-bottom: var(--cr-separator-line);
       }
@@ -154,7 +151,7 @@
 
     <div id="sync-section" hidden="[[syncSectionDisabled_]]">
       <div class="settings-box first" hidden="[[!unifiedConsentEnabled]]">
-        <h2 class="start">$i18n{sync}</h2>
+        <h2 class="cr-title-text start">$i18n{sync}</h2>
       </div>
 
       <div id="[[pages_.SPINNER]]" class="settings-box first settings-box-text"
@@ -322,7 +319,9 @@
 
     <template is="dom-if" if="[[unifiedConsentEnabled]]">
       <div class="settings-box first">
-        <h2>$i18n{nonPersonalizedServicesSectionLabel}</h2>
+        <h2 class="cr-title-text">
+          $i18n{nonPersonalizedServicesSectionLabel}
+        </h2>
       </div>
       <settings-personalization-options class="list-frame" prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]" sync-status="[[syncStatus]]"

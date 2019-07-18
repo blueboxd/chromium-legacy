@@ -15,10 +15,12 @@
 // account requires fetching user policies.
 class SupervisedUserTestBase : public policy::LoginPolicyTestBase {
  public:
+  enum class LogInType { kRegular, kChild };
+
   static Profile* GetPrimaryUserProfile();
 
  protected:
-  void LogInUser(bool child);
+  void LogInUser(LogInType type);
 
   // Returns the first browser in the active browser list.
   // Hides InProcessBrowserTest::browser() because the browser is only created

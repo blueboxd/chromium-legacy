@@ -27,7 +27,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.build.BuildHooksAndroid;
@@ -448,13 +447,8 @@ public class ProcessInitializationHandler {
     }
 
     private void initChannelsAsync() {
-        new BackgroundOnlyAsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                ChannelsUpdater.getInstance().updateChannels();
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                () -> ChannelsUpdater.getInstance().updateChannels());
     }
 
     private void initAsyncDiskTask() {

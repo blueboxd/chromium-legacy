@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/profiler.h"
@@ -22,6 +23,7 @@
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -42,6 +44,7 @@
 #include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/field_trial_recorder.mojom.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/public/common/connection_filter.h"
@@ -57,6 +60,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -264,6 +268,101 @@ class ContentClientConnectionFilter : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(ContentClientConnectionFilter);
 };
 
+// Implements the mojom ChildProcess interface. Lives on the IO thread.
+class ChildProcessImpl : public mojom::ChildProcess {
+ public:
+  ChildProcessImpl(
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
+      base::WeakPtr<ChildThreadImpl> weak_main_thread,
+      base::RepeatingClosure quit_closure,
+      ChildThreadImpl::Options::ServiceBinder service_binder)
+      : main_thread_task_runner_(std::move(main_thread_task_runner)),
+        weak_main_thread_(std::move(weak_main_thread)),
+        quit_closure_(std::move(quit_closure)),
+        service_binder_(std::move(service_binder)) {}
+  ~ChildProcessImpl() override = default;
+
+ private:
+  // mojom::ChildProcess:
+  void ProcessShutdown() override {
+    main_thread_task_runner_->PostTask(FROM_HERE,
+                                       base::BindOnce(quit_closure_));
+  }
+
+#if defined(OS_MACOSX)
+  void GetTaskPort(GetTaskPortCallback callback) override {
+    mojo::ScopedHandle task_port = mojo::WrapMachPort(mach_task_self());
+    std::move(callback).Run(std::move(task_port));
+  }
+#endif
+
+#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+  void SetIPCLoggingEnabled(bool enable) override {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](bool enable) {
+                         if (enable)
+                           IPC::Logging::GetInstance()->Enable();
+                         else
+                           IPC::Logging::GetInstance()->Disable();
+                       },
+                       enable));
+  }
+#endif
+
+  void GetBackgroundTracingAgentProvider(
+      mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
+          receiver) override {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChildThreadImpl::GetBackgroundTracingAgentProvider,
+                       weak_main_thread_, std::move(receiver)));
+  }
+
+  // Make sure this isn't inlined so it shows up in stack traces, and also make
+  // the function body unique by adding a log line, so it doesn't get merged
+  // with other functions by link time optimizations (ICF).
+  NOINLINE void CrashHungProcess() override {
+    LOG(ERROR) << "Crashing because hung";
+    IMMEDIATE_CRASH();
+  }
+
+  void RunService(const std::string& service_name,
+                  mojo::PendingReceiver<service_manager::mojom::Service>
+                      receiver) override {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChildThreadImpl::RunService, weak_main_thread_,
+                       service_name, std::move(receiver)));
+  }
+
+  void BindServiceInterface(mojo::GenericPendingReceiver receiver) override {
+    if (service_binder_)
+      service_binder_.Run(std::move(receiver));
+  }
+
+  const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  const base::WeakPtr<ChildThreadImpl> weak_main_thread_;
+  const base::RepeatingClosure quit_closure_;
+
+  ChildThreadImpl::Options::ServiceBinder service_binder_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildProcessImpl);
+};
+
+void BindChildProcessImpl(
+    scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
+    base::WeakPtr<ChildThreadImpl> weak_main_thread,
+    base::RepeatingClosure quit_closure,
+    ChildThreadImpl::Options::ServiceBinder service_binder,
+    mojom::ChildProcessRequest request) {
+  mojo::MakeSelfOwnedReceiver<mojom::ChildProcess>(
+      std::make_unique<ChildProcessImpl>(
+          std::move(main_thread_task_runner), std::move(weak_main_thread),
+          std::move(quit_closure), std::move(service_binder)),
+      std::move(request));
+}
+
 }  // namespace
 
 ChildThread* ChildThread::Get() {
@@ -315,6 +414,13 @@ ChildThreadImpl::Options::Builder&
 ChildThreadImpl::Options::Builder::IPCTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_parms) {
   options_.ipc_task_runner = ipc_task_runner_parms;
+  return *this;
+}
+
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::ServiceBinder(
+    ChildThreadImpl::Options::ServiceBinder binder) {
+  options_.service_binder = std::move(binder);
   return *this;
 }
 
@@ -450,9 +556,12 @@ void ChildThreadImpl::Init(const Options& options) {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
                          GetIOTaskRunner());
-  registry->AddInterface(base::Bind(&ChildThreadImpl::OnChildControlRequest,
-                                    base::Unretained(this)),
-                         base::ThreadTaskRunnerHandle::Get());
+
+  registry->AddInterface(
+      base::BindRepeating(
+          &BindChildProcessImpl, base::ThreadTaskRunnerHandle::Get(),
+          weak_factory_.GetWeakPtr(), quit_closure_, options.service_binder),
+      GetIOTaskRunner());
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
@@ -692,26 +801,6 @@ bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-void ChildThreadImpl::ProcessShutdown() {
-  quit_closure_.Run();
-}
-
-#if defined(OS_MACOSX)
-void ChildThreadImpl::GetTaskPort(GetTaskPortCallback callback) {
-  mojo::ScopedHandle task_port = mojo::WrapMachPort(mach_task_self());
-  std::move(callback).Run(std::move(task_port));
-}
-#endif
-
-#if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-void ChildThreadImpl::SetIPCLoggingEnabled(bool enable) {
-  if (enable)
-    IPC::Logging::GetInstance()->Enable();
-  else
-    IPC::Logging::GetInstance()->Disable();
-}
-#endif  //  IPC_MESSAGE_LOG_ENABLED
-
 void ChildThreadImpl::GetBackgroundTracingAgentProvider(
     mojo::PendingReceiver<tracing::mojom::BackgroundTracingAgentProvider>
         receiver) {
@@ -728,11 +817,6 @@ void ChildThreadImpl::RunService(
   DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
 }
 
-void ChildThreadImpl::OnChildControlRequest(
-    mojom::ChildControlRequest request) {
-  child_control_bindings_.AddBinding(this, std::move(request));
-}
-
 ChildThreadImpl* ChildThreadImpl::current() {
   return g_lazy_child_thread_impl_tls.Pointer()->Get();
 }
@@ -741,7 +825,7 @@ void ChildThreadImpl::OnProcessFinalRelease() {
   if (on_channel_error_called_)
     return;
 
-  ProcessShutdown();
+  quit_closure_.Run();
 }
 
 void ChildThreadImpl::EnsureConnected() {

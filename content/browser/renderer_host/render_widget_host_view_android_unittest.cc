@@ -123,4 +123,35 @@ TEST_F(RenderWidgetHostViewAndroidTest, NoSurfaceSynchronizationWhileEvicted) {
       cc::DeadlinePolicy::UseDefaultDeadline(), initial_allocation));
 }
 
+// Tests insetting the Visual Viewport.
+TEST_F(RenderWidgetHostViewAndroidTest, InsetVisualViewport) {
+  // Android default viewport.
+  RenderWidgetHostViewAndroid* rwhva = render_widget_host_view_android();
+  int width = rwhva->GetViewBounds().width();
+  int height = rwhva->GetViewBounds().height();
+  gfx::Size full_open_size(width, height);
+  EXPECT_EQ(full_open_size, rwhva->GetVisibleViewportSize());
+
+  // Set up SurfaceId checking.
+  const viz::LocalSurfaceIdAllocation& surface_id_allocation =
+      rwhva->GetLocalSurfaceIdAllocation();
+  viz::LocalSurfaceId original_surface =
+      surface_id_allocation.local_surface_id();
+
+  // Inset all around.
+  gfx::Insets insets(2, 3, 4, 5);
+  rwhva->SetInsets(insets);
+  gfx::Size inset_size(width - insets.left() - insets.right(),
+                       height - insets.top() - insets.bottom());
+  EXPECT_EQ(inset_size, rwhva->GetVisibleViewportSize());
+  viz::LocalSurfaceId inset_surface = surface_id_allocation.local_surface_id();
+  EXPECT_TRUE(inset_surface.IsNewerThan(original_surface));
+
+  // Reset insets; should go back to the original size as a new surface.
+  rwhva->SetInsets(gfx::Insets());
+  EXPECT_EQ(full_open_size, rwhva->GetVisibleViewportSize());
+  EXPECT_TRUE(
+      surface_id_allocation.local_surface_id().IsNewerThan(inset_surface));
+}
+
 }  // namespace content

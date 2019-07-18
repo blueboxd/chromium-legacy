@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -216,8 +217,9 @@ public class PaymentRequestImpl
     private static final String TAG = "cr_PaymentRequest";
     private static final String ANDROID_PAY_METHOD_NAME = "https://android.com/pay";
     private static final String PAY_WITH_GOOGLE_METHOD_NAME = "https://google.com/pay";
+    // Reverse order of the comparator to sort in descending order of completeness scores.
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
-            (a, b) -> (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
+            (a, b) -> (compareCompletablesByCompleteness(b, a));
 
     /**
      * Sorts the payment instruments by several rules:
@@ -234,7 +236,7 @@ public class PaymentRequestImpl
         if (autofill != 0) return autofill;
 
         // Complete cards before cards with missing information.
-        int completeness = (b.isComplete() ? 1 : 0) - (a.isComplete() ? 1 : 0);
+        int completeness = compareCompletablesByCompleteness(b, a);
         if (completeness != 0) return completeness;
 
         // Cards with matching type before unknown type cards.
@@ -714,6 +716,20 @@ public class PaymentRequestImpl
         // complete.
         mJourneyLogger.setNumberOfSuggestionsShown(
                 Section.SHIPPING_ADDRESS, addresses.size(), hasCompleteShippingAddress);
+
+        int missingFields = 0;
+        if (addresses.isEmpty()) {
+            // All fields are missing.
+            missingFields = AutofillAddress.CompletionStatus.INVALID_RECIPIENT
+                    | AutofillAddress.CompletionStatus.INVALID_PHONE_NUMBER
+                    | AutofillAddress.CompletionStatus.INVALID_ADDRESS;
+        } else {
+            missingFields = addresses.get(0).getMissingFieldsOfShippingProfile();
+        }
+        if (missingFields != 0) {
+            RecordHistogram.recordSparseHistogram(
+                    "PaymentRequest.MissingShippingFields", missingFields);
+        }
 
         mShippingAddressesSection = new SectionInformation(
                 PaymentRequestUI.DataType.SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
@@ -2130,6 +2146,24 @@ public class PaymentRequestImpl
                 mPendingInstruments.size(),
                 !mPendingInstruments.isEmpty() && mPendingInstruments.get(0).isComplete());
 
+        int missingFields = 0;
+        if (mPendingInstruments.isEmpty()) {
+            if (mMerchantSupportsAutofillPaymentInstruments) {
+                // Record all fields if basic-card is supported but no card exists.
+                missingFields = AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_EXPIRED
+                        | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_CARDHOLDER
+                        | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_NUMBER
+                        | AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_NO_BILLING_ADDRESS;
+            }
+        } else if (mPendingInstruments.get(0).isAutofillInstrument()) {
+            missingFields =
+                    ((AutofillPaymentInstrument) (mPendingInstruments.get(0))).getMissingFields();
+        }
+        if (missingFields != 0) {
+            RecordHistogram.recordSparseHistogram(
+                    "PaymentRequest.MissingPaymentFields", missingFields);
+        }
+
         mPendingInstruments.clear();
 
         updateInstrumentModifiedTotals();
@@ -2420,6 +2454,16 @@ public class PaymentRequestImpl
         long bDate = PaymentPreferencesUtil.getPaymentInstrumentLastUseDate(a.getIdentifier());
 
         return Double.compare(getFrecencyScore(aCount, aDate), getFrecencyScore(bCount, bDate));
+    }
+
+    /**
+     * Compares two Completable by completeness score.
+     * Return negative value if a has strictly lower completeness score than b.
+     * Return zero if a and b have the same completeness score.
+     * Return positive value if a has strictly higher completeness score than b.
+     */
+    private static int compareCompletablesByCompleteness(Completable a, Completable b) {
+        return Integer.compare(a.getCompletenessScore(), b.getCompletenessScore());
     }
 
     /**

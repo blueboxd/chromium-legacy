@@ -3,31 +3,31 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<PreferenceScreen
+<android.support.v7.preference.PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+    <org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat
         android:key="os_permissions_warning" />
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+    <org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat
         android:key="os_permissions_warning_extra" />
-    <Preference
+    <android.support.v7.preference.Preference
         android:key="os_permissions_warning_divider"
         android:layout="@layout/divider_preference" />
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
         android:key="intrusive_ads_info"
         android:title="@string/intrusive_ads_information"
         android:icon="@drawable/btn_info"
         app:iconTint="@color/default_icon_color" />
-    <Preference
+    <android.support.v7.preference.Preference
         android:key="intrusive_ads_info_divider"
         android:layout="@layout/divider_preference" />
-    <PreferenceCategory
+    <android.support.v7.preference.PreferenceCategory
         android:key="site_heading"
         android:title="@string/website_settings_site_category" />
-    <org.chromium.chrome.browser.preferences.TextMessagePreference
+    <org.chromium.chrome.browser.preferences.TextMessagePreferenceCompat
         android:key="site_title" />
-    <PreferenceCategory
+    <android.support.v7.preference.PreferenceCategory
         android:key="site_usage"
         android:title="@string/website_settings_usage_category" />
     <org.chromium.chrome.browser.preferences.website.ClearWebsiteStorage
@@ -37,45 +37,45 @@
         android:positiveButtonText="@string/webstorage_clear_data_dialog_ok_button"
         android:negativeButtonText="@string/cancel"
         android:widgetLayout="@layout/clear_storage" />
-    <PreferenceCategory
+    <android.support.v7.preference.PreferenceCategory
         android:key="site_permissions"
         android:title="@string/website_settings_permissions_category" />
 
     <!-- The order of the following items is from: http://crbug.com/610358. -->
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="cookies_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="location_access_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="camera_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="microphone_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="push_notifications_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="javascript_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="popup_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="ads_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="background_sync_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="automatic_downloads_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="protected_media_identifier_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="autoplay_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="sound_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="midi_sysex_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="clipboard_permission_list" />
-    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreferenceCompat
         android:key="bluetooth_scanning_permission_list" />
 
-    <org.chromium.chrome.browser.preferences.ButtonPreference
+    <org.chromium.chrome.browser.preferences.ButtonPreferenceCompat
         android:key="reset_site_button"
         android:title="@string/website_reset" />
-</PreferenceScreen>
+</android.support.v7.preference.PreferenceScreen>

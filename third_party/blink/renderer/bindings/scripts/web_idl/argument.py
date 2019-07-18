@@ -6,7 +6,7 @@ from .common import WithIdentifier
 from .common import WithExtendedAttributes
 from .common import WithCodeGeneratorInfo
 from .common import WithOwner
-from .idl_types import IdlType
+from .idl_type import IdlType
 from .values import DefaultValue
 
 

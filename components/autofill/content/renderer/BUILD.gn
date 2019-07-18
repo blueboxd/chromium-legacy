@@ -41,7 +41,7 @@ jumbo_static_library("renderer") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/autofill/content/common/mojom",
+    "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/core/common",
     "//components/strings",
     "//content/public/common",
@@ -91,7 +91,7 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
-    "//components/autofill/content/common/mojom",
+    "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/core/common",
     "//testing/gtest",
   ]

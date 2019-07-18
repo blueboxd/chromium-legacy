@@ -29,7 +29,15 @@ class BackgroundSyncLauncherAndroid {
   // is running when the device next goes online after that time has passed.
   // If this time is set to base::TimeDelta::Max() across all storage
   // partitions, the wake-up task is cancelled.
-  static void LaunchBrowserIfStopped();
+  static void ScheduleBrowserWakeUp(blink::mojom::BackgroundSyncType sync_type);
+
+  // Schedule a background task to bring up Chrome when the device next goes
+  // online after |soonest_wakeup_delta| has passed.
+  // If |soonest_wakeup_delta| is set to base::TimeDelta::Max(), the wake-up
+  // task is cancelled.
+  static void LaunchBrowserWithWakeUpDelta(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta soonest_wakeup_delta);
 
   static bool ShouldDisableBackgroundSync();
 
@@ -51,8 +59,10 @@ class BackgroundSyncLauncherAndroid {
   BackgroundSyncLauncherAndroid();
   ~BackgroundSyncLauncherAndroid();
 
-  void LaunchBrowserIfStoppedImpl();
-  void LaunchBrowserWithWakeupDelta(base::TimeDelta soonest_wakeup_delta);
+  void ScheduleBrowserWakeUpImpl(blink::mojom::BackgroundSyncType sync_type);
+  void ScheduleBrowserWakeUpWithWakeUpDeltaImpl(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta soonest_wakeup_delta);
 
   base::android::ScopedJavaGlobalRef<jobject>
       java_gcm_network_manager_launcher_;

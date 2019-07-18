@@ -665,6 +665,11 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
 
   void UpdateBaseLevel(GLint base_level, const FeatureInfo* feature_info);
   void UpdateMaxLevel(GLint max_level);
+  void UpdateFaceNumMipLevels(size_t face_index,
+                              GLint width,
+                              GLint height,
+                              GLint depth);
+  void UpdateFaceNumMipLevels(size_t face_index);
   void UpdateNumMipLevels();
 
   // Increment the generation counter for all managers that have a reference to

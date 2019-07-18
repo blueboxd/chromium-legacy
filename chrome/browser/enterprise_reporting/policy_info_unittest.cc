@@ -148,4 +148,10 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
   EXPECT_NE(std::string(), policy1.error());
 }
 
+TEST_F(PolicyInfoTest, MachineLevelUserCloudPolicyFetchTimestamp) {
+  em::ChromeUserProfileInfo profile_info;
+  AppendMachineLevelUserCloudPolicyFetchTimestamp(&profile_info);
+  EXPECT_EQ(0, profile_info.policy_fetched_timestamps_size());
+}
+
 }  // namespace enterprise_reporting

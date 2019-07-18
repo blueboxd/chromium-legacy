@@ -5,7 +5,7 @@
 #ifndef CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 #define CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "content/renderer/compositor/layer_tree_view_delegate.h"
 
 namespace cc {

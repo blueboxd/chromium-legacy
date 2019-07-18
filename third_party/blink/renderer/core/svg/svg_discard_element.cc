@@ -35,6 +35,8 @@
 namespace blink {
 
 SVGDiscardElement::SVGDiscardElement(Document& document)
-    : SVGSMILElement(svg_names::kDiscardTag, document) {}
+    : SVGSMILElement(svg_names::kDiscardTag, document) {
+  UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILDiscardElementParsed);
+}
 
 }  // namespace blink

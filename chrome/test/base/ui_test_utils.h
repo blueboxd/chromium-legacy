@@ -12,7 +12,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/notification_details.h"
@@ -313,6 +316,26 @@ class BrowserAddedObserver {
   std::set<Browser*> original_browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
+};
+
+class TabAddedWaiter : public TabStripModelObserver {
+ public:
+  explicit TabAddedWaiter(Browser* browser);
+  ~TabAddedWaiter() override;
+
+  void Wait();
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
+ private:
+  base::RunLoop run_loop_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> scoped_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(TabAddedWaiter);
 };
 
 // Enumerates all history contents on the backend thread. Returns them in

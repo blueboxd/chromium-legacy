@@ -6,6 +6,7 @@
 #define UI_ACCESSIBILITY_AX_EVENT_GENERATOR_H_
 
 #include <map>
+#include <ostream>
 #include <set>
 #include <vector>
 
@@ -96,6 +97,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   };
 
   struct TargetedEvent {
+    // |node| must not be null
     TargetedEvent(ui::AXNode* node, const EventParams& event_params);
     ui::AXNode* node;
     const EventParams& event_params;
@@ -119,6 +121,10 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
     std::map<AXNode*, std::set<EventParams>>::const_iterator map_iter_;
     std::set<EventParams>::const_iterator set_iter_;
   };
+
+  using const_iterator = Iterator;
+  using iterator = Iterator;
+  using value_type = TargetedEvent;
 
   // If you use this constructor, you must call SetTree
   // before using this class.
@@ -227,6 +233,10 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
   std::vector<AXNode*> active_descendant_changed_;
 };
+
+AX_EXPORT std::ostream& operator<<(std::ostream& os,
+                                   AXEventGenerator::Event event);
+AX_EXPORT const char* ToString(AXEventGenerator::Event event);
 
 }  // namespace ui
 

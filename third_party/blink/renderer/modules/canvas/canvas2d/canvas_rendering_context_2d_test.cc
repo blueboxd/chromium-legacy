@@ -284,7 +284,11 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
   FakeCanvasResourceProvider(const IntSize& size,
                              CanvasColorParams color_params,
                              AccelerationHint hint)
-      : CanvasResourceProvider(size, color_params, nullptr, nullptr),
+      : CanvasResourceProvider(CanvasResourceProvider::kBitmap,
+                               size,
+                               color_params,
+                               nullptr,
+                               nullptr),
         is_accelerated_(hint != kPreferNoAcceleration) {}
   ~FakeCanvasResourceProvider() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }

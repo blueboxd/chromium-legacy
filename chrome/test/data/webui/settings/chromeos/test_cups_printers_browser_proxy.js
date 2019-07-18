@@ -23,7 +23,7 @@ cr.define('printerBrowserProxy', function() {
         'getEulaUrl',
       ]);
 
-      this.printerList = [];
+      this.printerList = /** @type{} CupsPrintersList*/ ({printerList: []});
       this.manufacturers = [];
       this.models = [];
       this.printerInfo = {};

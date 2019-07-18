@@ -148,7 +148,7 @@ Polymer({
         break;
       case 'pinPrompt':
         this.cancelButtonVisible_ = true;
-        this.confirmButtonLabel_ = this.i18n('ok');
+        this.confirmButtonLabel_ = this.i18n('continue');
         this.confirmButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.closeButtonVisible_ = false;

@@ -46,7 +46,10 @@ SyncPointOrderData::OrderFence::~OrderFence() = default;
 
 SyncPointOrderData::SyncPointOrderData(SyncPointManager* sync_point_manager,
                                        SequenceId sequence_id)
-    : sync_point_manager_(sync_point_manager), sequence_id_(sequence_id) {}
+    : sync_point_manager_(sync_point_manager), sequence_id_(sequence_id) {
+  // Creation could happen outside of GPU thread.
+  DETACH_FROM_THREAD(processing_thread_checker_);
+}
 
 SyncPointOrderData::~SyncPointOrderData() {
   DCHECK(destroyed_);

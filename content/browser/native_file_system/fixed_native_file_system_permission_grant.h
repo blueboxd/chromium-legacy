@@ -21,7 +21,7 @@ class CONTENT_EXPORT FixedNativeFileSystemPermissionGrant
  public:
   explicit FixedNativeFileSystemPermissionGrant(PermissionStatus status);
 
-  // NativeFileSystemPermissionContext::PermissionGrant:
+  // NativeFileSystemPermissionGrant:
   PermissionStatus GetStatus() override;
   void RequestPermission(int process_id,
                          int frame_id,

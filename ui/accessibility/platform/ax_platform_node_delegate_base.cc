@@ -66,29 +66,21 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetLastChild() {
 }
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetNextSibling() {
-  AXPlatformNode* parent_node =
-      ui::AXPlatformNode::FromNativeViewAccessible(GetParent());
-  if (parent_node) {
-    AXPlatformNodeDelegate* parent = parent_node->GetDelegate();
-    if (parent && GetIndexInParent() >= 0) {
-      int next_index = GetIndexInParent() + 1;
-      if (next_index >= 0 && next_index < parent->GetChildCount())
-        return parent->ChildAtIndex(next_index);
-    }
+  AXPlatformNodeDelegate* parent = GetParentDelegate();
+  if (parent && GetIndexInParent() >= 0) {
+    int next_index = GetIndexInParent() + 1;
+    if (next_index >= 0 && next_index < parent->GetChildCount())
+      return parent->ChildAtIndex(next_index);
   }
   return nullptr;
 }
 
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetPreviousSibling() {
-  AXPlatformNode* parent_node =
-      ui::AXPlatformNode::FromNativeViewAccessible(GetParent());
-  if (parent_node) {
-    AXPlatformNodeDelegate* parent = parent_node->GetDelegate();
-    if (parent && GetIndexInParent() >= 0) {
-      int next_index = GetIndexInParent() - 1;
-      if (next_index >= 0 && next_index < parent->GetChildCount())
-        return parent->ChildAtIndex(next_index);
-    }
+  AXPlatformNodeDelegate* parent = GetParentDelegate();
+  if (parent && GetIndexInParent() >= 0) {
+    int next_index = GetIndexInParent() - 1;
+    if (next_index >= 0 && next_index < parent->GetChildCount())
+      return parent->ChildAtIndex(next_index);
   }
   return nullptr;
 }
@@ -225,7 +217,17 @@ AXPlatformNode* AXPlatformNodeDelegateBase::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
-int AXPlatformNodeDelegateBase::GetIndexInParent() const {
+int AXPlatformNodeDelegateBase::GetIndexInParent() {
+  AXPlatformNodeDelegate* parent = GetParentDelegate();
+  if (!parent)
+    return -1;
+
+  for (int i = 0; i < parent->GetChildCount(); i++) {
+    AXPlatformNode* child_node =
+        AXPlatformNode::FromNativeViewAccessible(parent->ChildAtIndex(i));
+    if (child_node && child_node->GetDelegate() == this)
+      return i;
+  }
   return -1;
 }
 
@@ -478,6 +480,15 @@ AXPlatformNodeDelegateBase::GetDescendants() const {
 
 std::string AXPlatformNodeDelegateBase::GetLanguage() const {
   return std::string();
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeDelegateBase::GetParentDelegate() {
+  AXPlatformNode* parent_node =
+      ui::AXPlatformNode::FromNativeViewAccessible(GetParent());
+  if (parent_node)
+    return parent_node->GetDelegate();
+
+  return nullptr;
 }
 
 }  // namespace ui

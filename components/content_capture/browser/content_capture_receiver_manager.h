@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_CONTENT_CAPTURE_BROWSER_CONTENT_CAPTURE_RECEIVER_MANAGER_H_
 #define COMPONENTS_CONTENT_CAPTURE_BROWSER_CONTENT_CAPTURE_RECEIVER_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "base/supports_user_data.h"
@@ -97,8 +97,7 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   ContentCaptureReceiver* ContentCaptureReceiverForFrame(
       content::RenderFrameHost* render_frame_host);
 
-  std::unordered_map<content::RenderFrameHost*,
-                     std::unique_ptr<ContentCaptureReceiver>>
+  std::map<content::RenderFrameHost*, std::unique_ptr<ContentCaptureReceiver>>
       frame_map_;
 };
 

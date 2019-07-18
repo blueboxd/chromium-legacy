@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -282,13 +283,11 @@ public class NotificationPlatformBridge {
                             R.string.push_notifications_permission_title));
         }
 
-        if (launchSingleWebsitePreferences) {
-            PreferencesLauncher.launchSettingsPage(
-                    applicationContext, SingleWebsitePreferences.class, fragmentArguments);
-        } else {
-            PreferencesLauncher.launchSettingsPageCompat(
-                    applicationContext, SingleCategoryPreferences.class, fragmentArguments);
-        }
+        Class<? extends PreferenceFragmentCompat> fragment = launchSingleWebsitePreferences
+                ? SingleWebsitePreferences.class
+                : SingleCategoryPreferences.class;
+        PreferencesLauncher.launchSettingsPageCompat(
+                applicationContext, fragment, fragmentArguments);
     }
 
     /**

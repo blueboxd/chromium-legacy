@@ -118,6 +118,10 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // Release any codec buffer without rendering, if we have one.
   virtual void ReleaseCodecBuffer();
 
+  CodecOutputBuffer* get_codec_output_buffer_for_testing() const {
+    return output_buffer_.get();
+  }
+
  protected:
   ~CodecImage() override;
 

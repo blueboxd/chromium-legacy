@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/skia_output_surface.h"
@@ -46,7 +47,12 @@ struct ImageContext;
 // through SkiaOutputSurfaceImpleOnGpu.
 class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
  public:
-  SkiaOutputSurfaceImpl(std::unique_ptr<SkiaOutputSurfaceDependency> deps,
+  static std::unique_ptr<SkiaOutputSurface> Create(
+      std::unique_ptr<SkiaOutputSurfaceDependency> deps,
+      const RendererSettings& renderer_settings);
+
+  SkiaOutputSurfaceImpl(util::PassKey<SkiaOutputSurfaceImpl> pass_key,
+                        std::unique_ptr<SkiaOutputSurfaceDependency> deps,
                         const RendererSettings& renderer_settings);
   ~SkiaOutputSurfaceImpl() override;
 
@@ -109,13 +115,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // ExternalUseClient implementation:
   void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
 
- protected:
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
   void SetCapabilitiesForTesting(bool flipped_output_surface);
 
  private:
-  void InitializeOnGpuThread(base::WaitableEvent* event);
+  bool Initialize();
+  void InitializeOnGpuThread(base::WaitableEvent* event, bool* result);
   SkSurfaceCharacterization CreateSkSurfaceCharacterization(
       const gfx::Size& surface_size,
       ResourceFormat format,
@@ -130,7 +136,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       ResourceFormat resource_format,
       uint32_t gl_texture_target,
       base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info = base::nullopt);
-
   void PrepareYUVATextureIndices(const std::vector<ResourceMetadata>& metadatas,
                                  bool has_alpha,
                                  SkYUVAIndex indices[4]);

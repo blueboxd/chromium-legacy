@@ -44,17 +44,16 @@ void InterfacePtrStateBase::Swap(InterfacePtrStateBase* other) {
 }
 
 void InterfacePtrStateBase::Bind(
-    ScopedMessagePipeHandle handle,
-    uint32_t version,
+    PendingRemoteState* remote_state,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK(!router_);
   DCHECK(!endpoint_client_);
   DCHECK(!handle_.is_valid());
   DCHECK_EQ(0u, version_);
-  DCHECK(handle.is_valid());
+  DCHECK(remote_state->pipe.is_valid());
 
-  handle_ = std::move(handle);
-  version_ = version;
+  handle_ = std::move(remote_state->pipe);
+  version_ = remote_state->version;
   runner_ =
       GetTaskRunnerToUseFromUserProvidedTaskRunner(std::move(task_runner));
 }

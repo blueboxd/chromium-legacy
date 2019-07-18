@@ -39,16 +39,15 @@ RequestResult AccessibilityPrivateHooksDelegate::HandleRequest(
   if (method_name != kGetDisplayLanguage)
     return RequestResult(RequestResult::NOT_HANDLED);
   // Ensure arguments are successfully parsed and converted.
-  std::string error;
-  std::vector<v8::Local<v8::Value>> parsed_arguments;
-  if (!signature->ParseArgumentsToV8(context, *arguments, refs,
-                                     &parsed_arguments, &error)) {
+  APISignature::V8ParseResult parse_result =
+      signature->ParseArgumentsToV8(context, *arguments, refs);
+  if (!parse_result.succeeded()) {
     RequestResult result(RequestResult::INVALID_INVOCATION);
-    result.error = std::move(error);
+    result.error = std::move(*parse_result.error);
     return result;
   }
   return HandleGetDisplayLanguage(GetScriptContextFromV8ContextChecked(context),
-                                  parsed_arguments);
+                                  *parse_result.arguments);
 }
 
 // Called to translate a language code into human-readable string in the

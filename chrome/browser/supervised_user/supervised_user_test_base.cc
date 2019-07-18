@@ -10,11 +10,17 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "components/user_manager/user_manager.h"
 
-void SupervisedUserTestBase::LogInUser(bool child) {
+void SupervisedUserTestBase::LogInUser(LogInType type) {
   SkipToLoginScreen();
-  const char* services_to_use =
-      child ? chromeos::test::kChildAccountServiceFlags : kEmptyServices;
-  LogIn(kAccountId, kAccountPassword, services_to_use);
+  switch (type) {
+    case LogInType::kChild:
+      LogIn(kAccountId, kAccountPassword,
+            chromeos::test::kChildAccountServiceFlags);
+      break;
+    case LogInType::kRegular:
+      LogIn(kAccountId, kAccountPassword, kEmptyServices);
+      break;
+  }
 }
 
 Browser* SupervisedUserTestBase::browser() {

@@ -6,6 +6,7 @@
 
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -17,35 +18,21 @@
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/listformatter.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace {
-
-// Wrapper around icu::ListFormatter to format a list of strings.
-base::string16 FormatList(base::span<base::string16> items) {
-  std::vector<icu::UnicodeString> strings;
-  strings.reserve(items.size());
-  for (const auto& item : items)
-    strings.emplace_back(item.data(), item.size());
-  UErrorCode error = U_ZERO_ERROR;
-  auto formatter = base::WrapUnique(icu::ListFormatter::createInstance(error));
-  if (U_FAILURE(error) || !formatter) {
-    LOG(ERROR) << "ListFormatter failed with " << u_errorName(error);
-    return base::string16();
-  }
-  icu::UnicodeString formatted;
-  formatter->format(strings.data(), strings.size(), formatted, error);
-  if (U_FAILURE(error)) {
-    LOG(ERROR) << "ListFormatter failed with " << u_errorName(error);
-    return base::string16();
-  }
-  return base::i18n::UnicodeStringToString16(formatted);
-}
 
 // Returns the message Id to use as heading text, depending on what types of
 // usage are present (i.e. just writable files, or also readable directories,
@@ -83,6 +70,100 @@ int ComputeHeadingMessageFromUsage(
   return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
 }
 
+// Displays a (one-column) table model as a one-line summary showing the
+// first few items, with a toggle button to expand a table below to contain the
+// full list of items.
+class CollapsibleListView : public views::View, public views::ButtonListener {
+ public:
+  // How many rows to show in the expanded table without having to scroll.
+  static constexpr int kExpandedTableRowCount = 3;
+
+  explicit CollapsibleListView(ui::TableModel* model) {
+    const SkColor icon_color =
+        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+            ui::NativeTheme::kColorId_DefaultIconColor);
+    const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
+
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(0, 0),
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+    auto label_container = std::make_unique<views::View>();
+    int indent =
+        provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
+    auto* label_layout =
+        label_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal,
+            gfx::Insets(/*vertical=*/0, indent),
+            provider->GetDistanceMetric(
+                views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
+    base::string16 label_text;
+    if (model->RowCount() > 0) {
+      auto icon = std::make_unique<views::ImageView>();
+      icon->SetImage(model->GetIcon(0));
+      label_container->AddChildView(std::move(icon));
+
+      base::string16 first_item = model->GetText(0, 0);
+      base::string16 second_item =
+          model->RowCount() > 1 ? model->GetText(1, 0) : base::string16();
+
+      label_text = base::i18n::MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(
+              IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT),
+          model->RowCount(), first_item, second_item);
+    }
+    auto* label = label_container->AddChildView(std::make_unique<views::Label>(
+        label_text, CONTEXT_BODY_TEXT_SMALL, STYLE_EMPHASIZED_SECONDARY));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_layout->SetFlexForView(label, 1);
+    auto button = views::CreateVectorToggleImageButton(this);
+    views::SetImageFromVectorIcon(button.get(), kCaretDownIcon,
+                                  ui::TableModel::kIconSize, icon_color);
+    button->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_EXPAND));
+    views::SetToggledImageFromVectorIcon(button.get(), kCaretUpIcon,
+                                         ui::TableModel::kIconSize, icon_color);
+    button->SetToggledTooltipText(
+        l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE));
+    expand_collapse_button_ = label_container->AddChildView(std::move(button));
+    int preferred_width = label_container->GetPreferredSize().width();
+    AddChildView(std::move(label_container));
+
+    std::vector<ui::TableColumn> table_columns{ui::TableColumn()};
+    auto table_view = std::make_unique<views::TableView>(
+        model, std::move(table_columns), views::ICON_AND_TEXT,
+        /*single_selection=*/true);
+    table_view->SetEnabled(false);
+    int row_height = table_view->row_height();
+    int table_height = table_view->GetPreferredSize().height();
+    table_view_parent_ = AddChildView(
+        views::TableView::CreateScrollViewWithTable(std::move(table_view)));
+    // Ideally we'd use table_view_parent_->GetInsets().height(), but that only
+    // returns the correct value after the view has been added to a root widget.
+    // So just hardcode the inset height to 2 pixels as that is what the scroll
+    // view uses.
+    int inset_height = 2;
+    table_view_parent_->SetPreferredSize(
+        gfx::Size(preferred_width,
+                  std::min(table_height, kExpandedTableRowCount * row_height) +
+                      inset_height));
+    table_view_parent_->SetVisible(false);
+  }
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    table_is_expanded_ = !table_is_expanded_;
+    expand_collapse_button_->SetToggled(table_is_expanded_);
+    table_view_parent_->SetVisible(table_is_expanded_);
+    PreferredSizeChanged();
+  }
+
+ private:
+  bool table_is_expanded_ = false;
+  views::ScrollView* table_view_parent_;
+  views::ToggleImageButton* expand_collapse_button_;
+};
+
 }  // namespace
 
 NativeFileSystemUsageBubbleView::Usage::Usage() = default;
@@ -90,6 +171,44 @@ NativeFileSystemUsageBubbleView::Usage::~Usage() = default;
 NativeFileSystemUsageBubbleView::Usage::Usage(Usage&&) = default;
 NativeFileSystemUsageBubbleView::Usage& NativeFileSystemUsageBubbleView::Usage::
 operator=(Usage&&) = default;
+
+NativeFileSystemUsageBubbleView::FilePathListModel::FilePathListModel(
+    std::vector<base::FilePath> files,
+    std::vector<base::FilePath> directories)
+    : files_(std::move(files)), directories_(std::move(directories)) {}
+
+NativeFileSystemUsageBubbleView::FilePathListModel::~FilePathListModel() =
+    default;
+
+int NativeFileSystemUsageBubbleView::FilePathListModel::RowCount() {
+  return files_.size() + directories_.size();
+}
+
+base::string16 NativeFileSystemUsageBubbleView::FilePathListModel::GetText(
+    int row,
+    int column_id) {
+  if (size_t{row} < files_.size())
+    return files_[row].BaseName().LossyDisplayName();
+  return directories_[row - files_.size()].BaseName().LossyDisplayName();
+}
+
+gfx::ImageSkia NativeFileSystemUsageBubbleView::FilePathListModel::GetIcon(
+    int row) {
+  return gfx::CreateVectorIcon(size_t{row} < files_.size()
+                                   ? vector_icons::kInsertDriveFileOutlineIcon
+                                   : vector_icons::kFolderOpenIcon,
+                               kIconSize, gfx::kChromeIconGrey);
+}
+
+base::string16 NativeFileSystemUsageBubbleView::FilePathListModel::GetTooltip(
+    int row) {
+  if (size_t{row} < files_.size())
+    return files_[row].LossyDisplayName();
+  return directories_[row - files_.size()].LossyDisplayName();
+}
+
+void NativeFileSystemUsageBubbleView::FilePathListModel::SetObserver(
+    ui::TableModelObserver*) {}
 
 // static
 NativeFileSystemUsageBubbleView* NativeFileSystemUsageBubbleView::bubble_ =
@@ -139,7 +258,9 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
     Usage usage)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       origin_(origin),
-      usage_(std::move(usage)) {}
+      usage_(std::move(usage)),
+      writable_paths_model_(usage_.writable_files, usage_.writable_directories),
+      readable_paths_model_({}, usage_.readable_directories) {}
 
 NativeFileSystemUsageBubbleView::~NativeFileSystemUsageBubbleView() = default;
 
@@ -198,10 +319,8 @@ void NativeFileSystemUsageBubbleView::Init() {
   AddChildView(native_file_system_ui_helper::CreateOriginLabel(
       heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE));
 
-  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT,
-              usage_.writable_files);
-  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT,
-              usage_.writable_directories);
+  if (writable_paths_model_.RowCount() > 0)
+    AddChildView(std::make_unique<CollapsibleListView>(&writable_paths_model_));
 
   // If the header wasn't already the "readable directories" header (i.e. we
   // had at least one writable file or directory as well) add a secondary header
@@ -217,8 +336,8 @@ void NativeFileSystemUsageBubbleView::Init() {
     AddChildView(std::move(directory_label));
   }
 
-  AddPathList(IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_DIRECTORIES_TEXT,
-              usage_.readable_directories);
+  if (readable_paths_model_.RowCount() > 0)
+    AddChildView(std::make_unique<CollapsibleListView>(&readable_paths_model_));
 
   if (need_lifetime_text_at_end) {
     auto lifetime_label = std::make_unique<views::Label>(
@@ -252,21 +371,8 @@ gfx::Size NativeFileSystemUsageBubbleView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
-void NativeFileSystemUsageBubbleView::AddPathList(
-    int details_message_id,
-    const std::vector<base::FilePath>& paths) {
-  if (paths.empty())
-    return;
-
-  std::vector<base::string16> base_names;
-  for (const auto& path : paths)
-    base_names.push_back(path.BaseName().LossyDisplayName());
-  base::string16 path_list = FormatList(base_names);
-  auto paths_label = std::make_unique<views::Label>(
-      base::i18n::MessageFormatter::FormatWithNumberedArgs(
-          l10n_util::GetStringUTF16(details_message_id), int64_t{paths.size()},
-          path_list),
-      CONTEXT_BODY_TEXT_SMALL, STYLE_EMPHASIZED_SECONDARY);
-  paths_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(std::move(paths_label));
+void NativeFileSystemUsageBubbleView::ChildPreferredSizeChanged(
+    views::View* child) {
+  LocationBarBubbleDelegateView::ChildPreferredSizeChanged(child);
+  SizeToContents();
 }

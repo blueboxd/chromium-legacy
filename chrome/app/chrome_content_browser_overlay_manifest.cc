@@ -25,7 +25,7 @@
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
-#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"

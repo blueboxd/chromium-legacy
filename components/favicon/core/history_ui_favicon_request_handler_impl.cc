@@ -167,12 +167,10 @@ void HistoryUiFaviconRequestHandlerImpl::OnBitmapLocalDataAvailable(
     base::RepeatingCallback<void(const favicon_base::FaviconRawBitmapResult&)>
         repeating_response_callback =
             base::AdaptCallbackForRepeating(std::move(response_callback));
-    // TODO(victorvianna): Set |min_source_size_in_pixel| correctly.
     std::unique_ptr<FaviconServerFetcherParams> server_parameters =
         platform == FaviconRequestPlatform::kMobile
-            ? FaviconServerFetcherParams::CreateForMobile(
-                  page_url, /*min_source_size_in_pixel=*/1,
-                  desired_size_in_pixel)
+            ? FaviconServerFetcherParams::CreateForMobile(page_url,
+                                                          desired_size_in_pixel)
             : FaviconServerFetcherParams::CreateForDesktop(page_url);
     RequestFromGoogleServer(
         page_url, std::move(server_parameters),

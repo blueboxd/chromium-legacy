@@ -5,7 +5,8 @@
 #ifndef MEDIA_GPU_V4L2_V4L2_H264_ACCELERATOR_H_
 #define MEDIA_GPU_V4L2_V4L2_H264_ACCELERATOR_H_
 
-#include <memory>
+#include <linux/videodev2.h>
+
 #include <vector>
 
 #include "base/macros.h"
@@ -18,7 +19,6 @@ namespace media {
 class V4L2Device;
 class V4L2DecodeSurface;
 class V4L2DecodeSurfaceHandler;
-struct V4L2H264AcceleratorPrivate;
 
 class V4L2H264Accelerator : public H264Decoder::H264Accelerator {
  public:
@@ -52,6 +52,8 @@ class V4L2H264Accelerator : public H264Decoder::H264Accelerator {
  private:
   // Max size of reference list.
   static constexpr size_t kDPBIndicesListSize = 32;
+  // TODO(posciak): This should be queried from hardware once supported.
+  static constexpr size_t kMaxSlices = 16;
 
   void H264PictureListToDPBIndicesList(const H264Picture::Vector& src_pic_list,
                                        uint8_t dst_list[kDPBIndicesListSize]);
@@ -65,9 +67,8 @@ class V4L2H264Accelerator : public H264Decoder::H264Accelerator {
   V4L2DecodeSurfaceHandler* const surface_handler_;
   V4L2Device* const device_;
 
-  // Contains the kernel-specific structures that we don't want to expose
-  // outside of the compilation unit.
-  const std::unique_ptr<V4L2H264AcceleratorPrivate> priv_;
+  struct v4l2_ctrl_h264_slice_param v4l2_slice_params_[kMaxSlices];
+  struct v4l2_ctrl_h264_decode_param v4l2_decode_param_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2H264Accelerator);
 };

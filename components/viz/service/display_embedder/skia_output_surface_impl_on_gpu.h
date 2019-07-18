@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/util/type_safety/pass_key.h"
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/quads/render_pass.h"
@@ -77,13 +78,20 @@ class SkiaOutputSurfaceImplOnGpu {
       base::RepeatingCallback<void(const gfx::PresentationFeedback& feedback)>;
   using ContextLostCallback = base::RepeatingCallback<void()>;
 
-  SkiaOutputSurfaceImplOnGpu(
+  static std::unique_ptr<SkiaOutputSurfaceImplOnGpu> Create(
       SkiaOutputSurfaceDependency* deps,
-      const RendererSettings& renderer_settings_,
+      const RendererSettings& renderer_settings,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
 
+  SkiaOutputSurfaceImplOnGpu(
+      util::PassKey<SkiaOutputSurfaceImplOnGpu> pass_key,
+      SkiaOutputSurfaceDependency* deps,
+      const RendererSettings& renderer_settings,
+      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+      const BufferPresentedCallback& buffer_presented_callback,
+      const ContextLostCallback& context_lost_callback);
   ~SkiaOutputSurfaceImplOnGpu();
 
   gpu::CommandBufferId command_buffer_id() const {
@@ -149,8 +157,9 @@ class SkiaOutputSurfaceImplOnGpu {
  private:
   class ScopedPromiseImageAccess;
 
-  void InitializeForGL();
-  void InitializeForVulkan();
+  bool Initialize();
+  bool InitializeForGL();
+  bool InitializeForVulkan();
 
   // Returns true if |texture_base| is a gles2::Texture and all necessary
   // operations completed successfully. In this case, |*size| is the size of

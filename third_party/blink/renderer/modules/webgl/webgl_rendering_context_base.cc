@@ -786,7 +786,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   // resources (e.g. GpuMemoryBuffer)
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size,
+          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
           CanvasResourceProvider::kDefaultPresentationMode,
           nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
@@ -7944,8 +7945,9 @@ CanvasResourceProvider* WebGLRenderingContextBase::
     return resource_provider;
   }
 
+  // TODO(fserb): why is this software?
   std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
-      size, CanvasResourceProvider::kSoftwareResourceUsage,
+      size, CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
       nullptr,              // context_provider_wrapper
       0,                    // msaa_sample_count,
       CanvasColorParams(),  // TODO: should this use the canvas's colorspace?

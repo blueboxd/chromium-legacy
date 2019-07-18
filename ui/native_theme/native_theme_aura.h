@@ -68,6 +68,14 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                    State state,
                    const gfx::Rect& rect,
                    const ButtonExtraParams& button) const override;
+  void PaintSliderTrack(cc::PaintCanvas* canvas,
+                        State state,
+                        const gfx::Rect& rect,
+                        const SliderExtraParams& slider) const override;
+  void PaintSliderThumb(cc::PaintCanvas* canvas,
+                        State state,
+                        const gfx::Rect& rect,
+                        const SliderExtraParams& slider) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;

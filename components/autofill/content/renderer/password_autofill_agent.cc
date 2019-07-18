@@ -711,14 +711,14 @@ void PasswordAutofillAgent::DidEndTextFieldEditing() {
 
 void PasswordAutofillAgent::UpdateStateForTextChange(
     const WebInputElement& element) {
+  if (!element.IsTextField())
+    return;
   // TODO(crbug.com/415449): Do this through const WebInputElement.
   WebInputElement mutable_element = element;  // We need a non-const.
 
-  if (element.IsTextField()) {
-    const base::string16 element_value = element.Value().Utf16();
-    field_data_manager_.UpdateFieldDataMap(element, element_value,
-                                           FieldPropertiesFlags::USER_TYPED);
-  }
+  const base::string16 element_value = element.Value().Utf16();
+  field_data_manager_.UpdateFieldDataMap(element, element_value,
+                                         FieldPropertiesFlags::USER_TYPED);
 
   ProvisionallySavePassword(element.Form(), element, RESTRICTION_NONE);
 
@@ -730,10 +730,11 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
       // value changed.
       mutable_element.SetAutofillState(WebAutofillState::kNotFilled);
     }
-  }
-
-  if (element.IsPasswordFieldForAutofill())
     GetPasswordManagerDriver()->UserModifiedPasswordField();
+  } else {
+    GetPasswordManagerDriver()->UserModifiedNonPasswordField(
+        element.UniqueRendererFormControlId(), element_value);
+  }
 }
 
 bool PasswordAutofillAgent::FillSuggestion(

@@ -903,14 +903,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
   expect_scroll_update_end_ = false;
 #endif
 
-  cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-  input_handler_->ScrollEnd(&scroll_state, true);
-
   if (scroll_sequence_ignored_)
     return DROP_EVENT;
 
   if (!gesture_scroll_on_impl_thread_)
     return DID_NOT_HANDLE;
+
+  cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
+  input_handler_->ScrollEnd(&scroll_state, true);
 
   if (scroll_elasticity_controller_)
     HandleScrollElasticityOverscroll(gesture_event,

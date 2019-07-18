@@ -2586,6 +2586,40 @@ def _CheckJavaStyle(input_api, output_api):
       black_list=_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
 
 
+def _CheckPythonDevilInit(input_api, output_api):
+  """Checks to make sure devil is initialized correctly in python scripts."""
+  script_common_initialize_pattern = input_api.re.compile(
+      r'script_common\.InitializeEnvironment\(')
+  devil_env_config_initialize = input_api.re.compile(
+      r'devil_env\.config\.Initialize\(')
+
+  errors = []
+
+  sources = lambda affected_file: input_api.FilterSourceFile(
+      affected_file,
+      black_list=(_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST +
+                  (r'^build[\\/]android[\\/]devil_chromium\.py',
+                   r'^third_party[\\/].*',)),
+      white_list=[r'.*\.py$'])
+
+  for f in input_api.AffectedSourceFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if (script_common_initialize_pattern.search(line) or
+          devil_env_config_initialize.search(line)):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+
+  if errors:
+    results.append(output_api.PresubmitError(
+        'Devil initialization should always be done using '
+        'devil_chromium.Initialize() in the chromium project, to use better '
+        'defaults for dependencies (ex. up-to-date version of adb).',
+        errors))
+
+  return results
+
+
 def _MatchesFile(input_api, patterns, path):
   for pattern in patterns:
     if input_api.re.search(pattern, path):
@@ -3816,6 +3850,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckCorrectProductNameInMessages(input_api, output_api))
   results.extend(_CheckBuildtoolsRevisionsAreInSync(input_api, output_api))
   results.extend(_CheckForTooLargeFiles(input_api, output_api))
+  results.extend(_CheckPythonDevilInit(input_api, output_api))
 
   for f in input_api.AffectedFiles():
     path, name = input_api.os_path.split(f.LocalPath())

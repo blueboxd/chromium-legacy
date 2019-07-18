@@ -13,11 +13,8 @@ namespace media_session {
 namespace test {
 
 MockMediaSessionMojoObserver::MockMediaSessionMojoObserver(
-    mojom::MediaSession& media_session)
-    : binding_(this) {
-  mojo::PendingRemote<mojom::MediaSessionObserver> observer;
-  binding_.Bind(observer.InitWithNewPipeAndPassReceiver());
-  media_session.AddObserver(std::move(observer));
+    mojom::MediaSession& media_session) {
+  media_session.AddObserver(receiver_.BindNewPipeAndPassRemote());
 }
 
 MockMediaSessionMojoObserver::~MockMediaSessionMojoObserver() = default;

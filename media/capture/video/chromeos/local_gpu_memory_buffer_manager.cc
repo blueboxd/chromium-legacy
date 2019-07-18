@@ -15,6 +15,7 @@
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
@@ -224,7 +225,7 @@ LocalGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     gpu::SurfaceHandle surface_handle) {
   if (usage != gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE &&
       usage != gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE) {
-    LOG(ERROR) << "Unsupported gfx::BufferUsage" << static_cast<int>(usage);
+    LOG(ERROR) << "Unsupported usage " << gfx::BufferUsageToString(usage);
     return std::unique_ptr<gfx::GpuMemoryBuffer>();
   }
   if (!gbm_device_) {

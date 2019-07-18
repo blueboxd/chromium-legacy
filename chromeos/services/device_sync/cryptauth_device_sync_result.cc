@@ -48,6 +48,9 @@ std::ostream& operator<<(
     case ResultCode::kSuccess:
       stream << "[Success]";
       break;
+    case ResultCode::kFinishedWithNonFatalErrors:
+      stream << "[Finished with non-fatal errors]";
+      break;
     case ResultCode::kErrorMissingUserKeyPair:
       stream << "[Error: No user key pair in registry]";
       break;
@@ -60,12 +63,9 @@ std::ostream& operator<<(
     case ResultCode::kErrorNoMetadataInResponse:
       stream << "[Error: No encrypted metadata in SyncMetadata response]";
       break;
-    case ResultCode::kErrorInvalidMetadataInResponse:
-      stream << "[Error: Invalid DeviceMetadataPacket in SyncMetadata "
-             << "response]";
-      break;
-    case ResultCode::kErrorDuplicateDeviceIdsInResponse:
-      stream << "[Error: Duplicate device IDs in SyncMetadata response]";
+    case ResultCode::kErrorAllResponseMetadataInvalid:
+      stream << "[Error: All DeviceMetadataPackets in SyncMetadata "
+             << "response are invalid]";
       break;
     case ResultCode::kErrorNoLocalDeviceMetadataInResponse:
       stream << "[Error: No local device metadata in SyncMetadata response]";

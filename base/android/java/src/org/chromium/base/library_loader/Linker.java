@@ -55,14 +55,6 @@ import java.util.Map;
 /*
  * Security considerations:
  *
- * - Whether the browser process loads its native libraries at the same
- *   addresses as the service ones (to save RAM by sharing the RELRO too)
- *   depends on the configuration variable BROWSER_SHARED_RELRO_CONFIG.
- *
- *   Not using fixed library addresses in the browser process is preferred
- *   for regular devices since it maintains the efficacy of ASLR as an
- *   exploit mitigation across the render <-> browser privilege boundary.
- *
  * - The shared RELRO memory region is always forced read-only after creation,
  *   which means it is impossible for a compromised service process to map
  *   it read-write (e.g. by calling mmap() or mprotect()) and modify its
@@ -122,13 +114,6 @@ import java.util.Map;
  *         in service processes.
  *       - Create a shared memory region populated with the RELRO region
  *         content pre-relocated for the specific fixed address above.
- *
- *    Note that these shared RELRO regions cannot be used inside the browser
- *    process. They are also never mapped into it.
- *
- *    This behaviour is altered by the BROWSER_SHARED_RELRO_CONFIG configuration
- *    variable below, which may force the browser to load the libraries at
- *    fixed addresses too.
  *
  *  - Once all libraries are loaded in the browser process, one can call
  *    getSharedRelros() which returns a Bundle instance containing a map that

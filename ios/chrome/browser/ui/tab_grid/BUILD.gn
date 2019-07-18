@@ -130,27 +130,6 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("egtest_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "tab_grid_egtest_util.h",
-    "tab_grid_egtest_util.mm",
-  ]
-
-  deps = [
-    ":tab_grid_ui_constants",
-    "grid:grid_ui_constants",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui_constants",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-    "//ui/base",
-  ]
-}
-
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -160,7 +139,6 @@ source_set("eg_tests") {
   ]
 
   deps = [
-    ":egtest_support",
     ":tab_grid_ui_constants",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings:ios_strings_grit",

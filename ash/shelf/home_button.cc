@@ -8,8 +8,10 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -33,10 +35,8 @@ constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
 // static
 const char HomeButton::kViewClassName[] = "ash/HomeButton";
 
-HomeButton::HomeButton(Shelf* shelf, ShelfButtonDelegate* shelf_button_delegate)
-    : ShelfControlButton(shelf, shelf_button_delegate),
-      controller_(this, shelf_button_delegate) {
-  DCHECK(shelf_button_delegate);
+HomeButton::HomeButton(Shelf* shelf)
+    : ShelfControlButton(shelf, this), controller_(this) {
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   set_notify_action(Button::NOTIFY_ON_PRESS);
@@ -54,6 +54,33 @@ void HomeButton::OnGestureEvent(ui::GestureEvent* event) {
 
 const char* HomeButton::GetClassName() const {
   return kViewClassName;
+}
+
+void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
+    ShelfButton* button,
+    bool reverse) {
+  DCHECK_EQ(button, this);
+  if (!reverse) {
+    // We're trying to focus this button by advancing from the last view of
+    // the shelf. Let the focus manager advance to the status area instead.
+    shelf()->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
+  }
+}
+
+void HomeButton::ButtonPressed(views::Button* sender,
+                               const ui::Event& event,
+                               views::InkDrop* ink_drop) {
+  Shell::Get()->metrics()->RecordUserMetricsAction(
+      UMA_LAUNCHER_CLICK_ON_APPLIST_BUTTON);
+  const app_list::AppListShowSource show_source =
+      event.IsShiftDown() ? app_list::kShelfButtonFullscreen
+                          : app_list::kShelfButton;
+  OnPressed(show_source, event.time_stamp());
+}
+
+bool HomeButton::ShouldEventActivateButton(views::View* view,
+                                           const ui::Event& event) {
+  return true;
 }
 
 void HomeButton::OnVoiceInteractionAvailabilityChanged() {

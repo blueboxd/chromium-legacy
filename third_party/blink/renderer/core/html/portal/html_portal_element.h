@@ -74,14 +74,14 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement,
 
   bool IsActivating() { return is_activating_; }
 
- private:
-  // Navigates the portal to |url_|.
-  void Navigate();
-
   // Consumes the portal interface. When a Portal is activated, or if the
   // renderer receives a connection error, this function will gracefully
   // terminate the portal interface.
   void ConsumePortal();
+
+ private:
+  // Navigates the portal to |url_|.
+  void Navigate();
 
   // Node overrides
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;

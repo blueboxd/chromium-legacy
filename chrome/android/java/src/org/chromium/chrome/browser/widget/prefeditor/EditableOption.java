@@ -16,6 +16,8 @@ public class EditableOption implements Completable {
     // By default an editable option is complete. It is up to the subclass to update this value if
     // the payment option is not complete.
     protected boolean mIsComplete = true;
+    // By default a complete editable option should have max completeness score.
+    protected int mCompletenessScore = Integer.MAX_VALUE;
     protected boolean mIsEditable;
     protected String mEditMessage;
     protected String mEditTitle;
@@ -48,6 +50,11 @@ public class EditableOption implements Completable {
     @Override
     public boolean isComplete() {
         return mIsComplete;
+    }
+
+    @Override
+    public int getCompletenessScore() {
+        return mCompletenessScore;
     }
 
     /**

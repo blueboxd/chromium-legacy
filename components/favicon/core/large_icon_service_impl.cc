@@ -73,13 +73,10 @@ GURL TrimPageUrlForGoogleServer(const GURL& page_url,
 GURL GetRequestUrlForGoogleServerV2(
     const GURL& page_url,
     const std::string& google_server_client_param,
-    int min_source_size_in_pixel,
     int desired_size_in_pixel,
     bool may_page_url_be_private) {
-  min_source_size_in_pixel =
-      std::max(min_source_size_in_pixel, kGoogleServerV2EnforcedMinSizeInPixel);
   desired_size_in_pixel =
-      std::max(desired_size_in_pixel, min_source_size_in_pixel);
+      std::max(desired_size_in_pixel, kGoogleServerV2EnforcedMinSizeInPixel);
   int max_size_in_pixel = static_cast<int>(
       desired_size_in_pixel * kGoogleServerV2DesiredToMaxSizeFactor);
   max_size_in_pixel =
@@ -88,7 +85,8 @@ GURL GetRequestUrlForGoogleServerV2(
   std::string request_url = base::StringPrintf(
       kGoogleServerV2RequestFormat,
       may_page_url_be_private ? kCheckSeenParam : "", desired_size_in_pixel,
-      min_source_size_in_pixel, max_size_in_pixel, page_url.spec().c_str());
+      kGoogleServerV2EnforcedMinSizeInPixel, max_size_in_pixel,
+      page_url.spec().c_str());
   base::ReplaceFirstSubstringAfterOffset(
       &request_url, 0, std::string(kClientParam), google_server_client_param);
   return GURL(request_url);
@@ -502,8 +500,6 @@ void LargeIconServiceImpl::
         bool should_trim_page_url_path,
         const net::NetworkTrafficAnnotationTag& traffic_annotation,
         favicon_base::GoogleFaviconServerCallback callback) {
-  DCHECK_LE(0, params->min_source_size_in_pixel());
-
   if (net::NetworkChangeNotifier::IsOffline()) {
     // By exiting early when offline, we avoid caching the failure and thus
     // allow icon fetches later when coming back online.
@@ -531,8 +527,7 @@ void LargeIconServiceImpl::
 
   const GURL server_request_url = GetRequestUrlForGoogleServerV2(
       trimmed_page_url, params->google_server_client_param(),
-      params->min_source_size_in_pixel(), params->desired_size_in_pixel(),
-      may_page_url_be_private);
+      params->desired_size_in_pixel(), may_page_url_be_private);
   if (!server_request_url.is_valid()) {
     FinishServerRequestAsynchronously(
         std::move(callback),

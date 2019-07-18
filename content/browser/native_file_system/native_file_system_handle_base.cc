@@ -29,11 +29,27 @@ class NativeFileSystemHandleBase::UsageIndicatorTracker
 
   ~UsageIndicatorTracker() override {
     if (web_contents()) {
-      if (is_directory_)
+      if (is_directory_ && is_readable_)
         web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
       if (is_writable_)
         web_contents()->DecrementWritableNativeFileSystemHandleCount();
     }
+  }
+
+  void UpdateStatus(bool readable, bool writable) {
+    SetReadable(readable);
+    SetWritable(writable);
+  }
+
+  void SetReadable(bool readable) {
+    if (readable == is_readable_ || !web_contents())
+      return;
+
+    is_readable_ = readable;
+    if (is_readable_)
+      web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
+    else
+      web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
   }
 
   void SetWritable(bool writable) {
@@ -54,6 +70,7 @@ class NativeFileSystemHandleBase::UsageIndicatorTracker
  private:
   const bool is_directory_;
   const base::FilePath directory_path_;
+  bool is_readable_ = true;
   bool is_writable_ = false;
 };
 
@@ -79,6 +96,13 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
       << url_.type();
   if (url_.type() == storage::kFileSystemTypeNativeLocal) {
     DCHECK_EQ(url_.mount_type(), storage::kFileSystemTypeIsolated);
+
+    handle_state_.read_grant->AddObserver(this);
+    // In some cases we use the same grant for read and write access. In that
+    // case only add an observer once.
+    if (handle_state_.read_grant != handle_state_.write_grant)
+      handle_state_.write_grant->AddObserver(this);
+
     base::FilePath directory_path;
     if (is_directory) {
       // For usage reporting purposes try to get the root path of the isolated
@@ -96,11 +120,16 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
         context_.process_id, context_.frame_id, bool{is_directory},
         base::FilePath(directory_path));
-    UpdateWritableUsage();
+    UpdateUsage();
   }
 }
 
-NativeFileSystemHandleBase::~NativeFileSystemHandleBase() = default;
+NativeFileSystemHandleBase::~NativeFileSystemHandleBase() {
+  // It is fine to remove an observer that never was added, so no need to check
+  // for URL type and/or the same grant being used for read and write access.
+  handle_state_.read_grant->RemoveObserver(this);
+  handle_state_.write_grant->RemoveObserver(this);
+}
 
 NativeFileSystemHandleBase::PermissionStatus
 NativeFileSystemHandleBase::GetReadPermissionStatus() {
@@ -109,7 +138,7 @@ NativeFileSystemHandleBase::GetReadPermissionStatus() {
 
 NativeFileSystemHandleBase::PermissionStatus
 NativeFileSystemHandleBase::GetWritePermissionStatus() {
-  UpdateWritableUsage();
+  UpdateUsage();
   // It is not currently possible to have write only handles, so first check the
   // read permission status. See also:
   // http://wicg.github.io/native-file-system/#api-filesystemhandle-querypermission
@@ -162,17 +191,25 @@ void NativeFileSystemHandleBase::DoRequestPermission(
                      AsWeakPtr(), writable, std::move(callback)));
 }
 
-void NativeFileSystemHandleBase::UpdateWritableUsage() {
+void NativeFileSystemHandleBase::UpdateUsage() {
   if (!usage_indicator_tracker_)
     return;
-  bool is_writable =
-      handle_state_.read_grant->GetStatus() == PermissionStatus::GRANTED &&
-      handle_state_.write_grant->GetStatus() == PermissionStatus::GRANTED;
-  if (is_writable != was_writable_at_last_check_) {
+  bool is_readable =
+      handle_state_.read_grant->GetStatus() == PermissionStatus::GRANTED;
+  bool is_writable = is_readable && handle_state_.write_grant->GetStatus() ==
+                                        PermissionStatus::GRANTED;
+  if (is_writable != was_writable_at_last_check_ ||
+      is_readable != was_readable_at_last_check_) {
+    was_readable_at_last_check_ = is_readable;
     was_writable_at_last_check_ = is_writable;
-    usage_indicator_tracker_.Post(
-        FROM_HERE, &UsageIndicatorTracker::SetWritable, is_writable);
+    usage_indicator_tracker_.Post(FROM_HERE,
+                                  &UsageIndicatorTracker::UpdateStatus,
+                                  is_readable, is_writable);
   }
+}
+
+void NativeFileSystemHandleBase::OnPermissionStatusChanged() {
+  UpdateUsage();
 }
 
 }  // namespace content

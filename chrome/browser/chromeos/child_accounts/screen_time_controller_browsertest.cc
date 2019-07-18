@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
-
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
@@ -24,6 +22,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_test_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -63,7 +62,7 @@ namespace utils = time_limit_test_utils;
 
 // Allows testing ScreenTimeController with UsageTimeStateNotifier enabled
 // (instantiated with |true|) or disabled (instantiated with |false|).
-class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
+class ScreenTimeControllerTest : public SupervisedUserTestBase,
                                  public testing::WithParamInterface<bool> {
  public:
   ScreenTimeControllerTest() = default;
@@ -85,7 +84,7 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
     policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
         "example.com");
 
-    policy::LoginPolicyTestBase::SetUp();
+    SupervisedUserTestBase::SetUp();
   }
 
   void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
@@ -103,8 +102,7 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
  protected:
   void LogInChildAndSetupClockWithTime(const char* time) {
     SetupTaskRunnerWithTime(utils::TimeFromString(time));
-    SkipToLoginScreen();
-    LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
+    LogInUser(LogInType::kChild);
     MockClockForActiveUser();
   }
 

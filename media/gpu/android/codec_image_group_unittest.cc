@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/gpu/android/codec_surface_bundle.h"
+#include "media/gpu/android/mock_codec_image.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,17 +39,6 @@ class CodecImageGroupWithDestructionHook : public CodecImageGroup {
   }
 
   base::OnceClosure destruction_cb_;
-};
-
-// CodecImage with a mocked ReleaseCodecBuffer.
-class MockCodecImage : public CodecImage {
- public:
-  MockCodecImage() = default;
-
-  MOCK_METHOD0(ReleaseCodecBuffer, void());
-
- protected:
-  ~MockCodecImage() override {}
 };
 
 }  // namespace

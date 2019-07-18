@@ -2809,6 +2809,9 @@ ChromeContentBrowserClient::GetGeneratedCodeCacheSettings(
   PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
   DCHECK(prefs);
   size_in_bytes = prefs->GetInteger(prefs::kDiskCacheSize);
+  base::FilePath disk_cache_dir = prefs->GetFilePath(prefs::kDiskCacheDir);
+  if (!disk_cache_dir.empty())
+    cache_path = disk_cache_dir.Append(cache_path.BaseName());
   return content::GeneratedCodeCacheSettings(true, size_in_bytes, cache_path);
 }
 

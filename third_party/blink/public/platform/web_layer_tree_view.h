@@ -29,8 +29,8 @@
 #include "base/callback.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/layers/layer.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
-#include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/paint_holding_commit_trigger.h"
@@ -68,22 +68,6 @@ class WebLayerTreeView {
                                         bool shrink_viewport) {}
 
   // Flow control and scheduling ---------------------------------------
-
-  // Prevents any updates to the input for the layer tree, and the layer tree
-  // itself, and the layer tree from becoming visible.
-  virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-  DeferMainFrameUpdate() {
-    return nullptr;
-  }
-
-  // Start defering commits to the compositor, allowing document lifecycle
-  // updates without committing the layer tree. Commits are deferred
-  // until at most the given |timeout| has passed. If multiple calls are made
-  // when deferal is active then the initial timeout applies.
-  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
-
-  // Immediately stop deferring commits.
-  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.

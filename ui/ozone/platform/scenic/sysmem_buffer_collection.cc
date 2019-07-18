@@ -8,6 +8,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/native_pixmap.h"
 
 namespace ui {
@@ -105,6 +106,37 @@ VkFormat VkFormatForBufferFormat(gfx::BufferFormat buffer_format) {
   }
 }
 
+fuchsia::sysmem::PixelFormat BufferFormatToSysmemPixelFormat(
+    gfx::BufferFormat format) {
+  fuchsia::sysmem::PixelFormat result;
+  switch (format) {
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      result.type = fuchsia::sysmem::PixelFormatType::NV12;
+      break;
+
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RG_88:
+      // sysmem currently doesn't support R8 and R8G8 images. To workaround this
+      // issue they are masqueraded as RGBA images with shorter rows.
+      result.type = fuchsia::sysmem::PixelFormatType::BGRA32;
+      break;
+
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
+      result.type = fuchsia::sysmem::PixelFormatType::BGRA32;
+      break;
+
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+      result.type = fuchsia::sysmem::PixelFormatType::R8G8B8A8;
+      break;
+
+    default:
+      NOTREACHED();
+  }
+  return result;
+}
+
 }  // namespace
 
 // static
@@ -172,6 +204,15 @@ bool SysmemBufferCollection::Initialize(
     return false;
   }
 
+  // sysmem currently doesn't support R8 and R8G8 images. To workaround this
+  // issue they are masqueraded as RGBA images with shorter rows.
+  size_t width_divider = 1;
+  if (format_ == gfx::BufferFormat::R_8) {
+    width_divider = 4;
+  } else if (format_ == gfx::BufferFormat::RG_88) {
+    width_divider = 2;
+  }
+
   fuchsia::sysmem::BufferCollectionConstraints constraints;
   if (is_mappable()) {
     constraints.usage.cpu =
@@ -179,6 +220,30 @@ bool SysmemBufferCollection::Initialize(
   }
   constraints.min_buffer_count_for_camping = num_buffers;
   constraints.image_format_constraints_count = 0;
+
+  constraints.image_format_constraints_count = 1;
+  constraints.image_format_constraints[0].pixel_format =
+      BufferFormatToSysmemPixelFormat(format);
+  constraints.image_format_constraints[0].min_coded_width =
+      size_.width() / width_divider;
+  constraints.image_format_constraints[0].max_coded_width =
+      std::numeric_limits<uint32_t>::max();
+  constraints.image_format_constraints[0].min_coded_height = size_.height();
+  constraints.image_format_constraints[0].max_coded_height =
+      std::numeric_limits<uint32_t>::max();
+  constraints.image_format_constraints[0].min_bytes_per_row =
+      gfx::RowSizeForBufferFormat(size_.width(), format, 0);
+  constraints.image_format_constraints[0].max_bytes_per_row =
+      std::numeric_limits<uint32_t>::max();
+  constraints.image_format_constraints[0].color_spaces_count = 1;
+
+  if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+    constraints.image_format_constraints[0].color_space[0].type =
+        fuchsia::sysmem::ColorSpaceType::REC709;
+  } else {
+    constraints.image_format_constraints[0].color_space[0].type =
+        fuchsia::sysmem::ColorSpaceType::SRGB;
+  }
 
   status = collection_->SetConstraints(/*has_constraints=*/true,
                                        std::move(constraints));
@@ -206,14 +271,9 @@ bool SysmemBufferCollection::Initialize(
   VkImageCreateInfo image_create_info;
   InitializeImageCreateInfo(&image_create_info);
 
-  // sysmem currently doesn't support R8 and R8G8 images. To workaround this
-  // issue they are masqueraded as RGBA images with shorter rows.
-  if (format_ == gfx::BufferFormat::R_8) {
+  if (width_divider > 1) {
     image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
-    image_create_info.extent.width = size_.width() / 4;
-  } else if (format_ == gfx::BufferFormat::RG_88) {
-    image_create_info.format = VK_FORMAT_B8G8R8A8_UNORM;
-    image_create_info.extent.width = size_.width() / 2;
+    image_create_info.extent.width = size_.width() / width_divider;
   }
 
   if (vkSetBufferCollectionConstraintsFUCHSIA(vk_device_, vk_buffer_collection_,
@@ -307,7 +367,7 @@ bool SysmemBufferCollection::CreateVkImage(size_t buffer_index,
       VK_STRUCTURE_TYPE_BUFFER_COLLECTION_PROPERTIES_FUCHSIA};
   if (vkGetBufferCollectionPropertiesFUCHSIA(vk_device_, vk_buffer_collection_,
                                              &properties) != VK_SUCCESS) {
-    DLOG(ERROR) << "vkGetBufferCollectionPropertiesFUCHSIA_ failed";
+    DLOG(ERROR) << "vkGetBufferCollectionPropertiesFUCHSIA failed";
     return false;
   }
 

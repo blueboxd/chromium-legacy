@@ -29,6 +29,7 @@ chrome.automation.EventType = {
   CHECKED_STATE_CHANGED: 'checkedStateChanged',
   CHILDREN_CHANGED: 'childrenChanged',
   CLICKED: 'clicked',
+  CONTROLS_CHANGED: 'controlsChanged',
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
   DOCUMENT_TITLE_CHANGED: 'documentTitleChanged',
   END_OF_TEST: 'endOfTest',

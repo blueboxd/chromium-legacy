@@ -12,7 +12,7 @@ from .common import WithExtendedAttributes
 from .common import WithIdentifier
 from .common import WithOwner
 from .idl_member import IdlMember
-from .idl_types import IdlType
+from .idl_type import IdlType
 
 
 class Operation(IdlMember):

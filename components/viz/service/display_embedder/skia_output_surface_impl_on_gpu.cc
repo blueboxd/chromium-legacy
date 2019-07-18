@@ -546,7 +546,24 @@ void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
   promise_texture_ = {};
 }
 
+// static
+std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
+    SkiaOutputSurfaceDependency* deps,
+    const RendererSettings& renderer_settings,
+    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
+    const BufferPresentedCallback& buffer_presented_callback,
+    const ContextLostCallback& context_lost_callback) {
+  auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
+      util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps, renderer_settings,
+      did_swap_buffer_complete_callback, buffer_presented_callback,
+      context_lost_callback);
+  if (!impl_on_gpu->Initialize())
+    impl_on_gpu = nullptr;
+  return impl_on_gpu;
+}
+
 SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
+    util::PassKey<SkiaOutputSurfaceImplOnGpu> /* pass_key */,
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
@@ -561,22 +578,9 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       renderer_settings_(renderer_settings),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
-      context_lost_callback_(context_lost_callback) {
+      context_lost_callback_(context_lost_callback),
+      gpu_preferences_(dependency_->GetGpuPreferences()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
-#if defined(USE_OZONE)
-  window_surface_ =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreatePlatformWindowSurface(dependency_->GetSurfaceHandle());
-#endif
-  gpu_preferences_ = dependency_->GetGpuPreferences();
-
-  if (is_using_vulkan())
-    InitializeForVulkan();
-  else
-    InitializeForGL();
-  max_resource_cache_bytes_ = context_state_->max_resource_cache_bytes();
 }
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
@@ -584,7 +588,7 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
 
   // |context_provider_| and clients want either the context to be lost or made
   // current on destruction.
-  if (MakeCurrent(false /* need_fbo0 */)) {
+  if (context_state_ && MakeCurrent(false /* need_fbo0 */)) {
     // This ensures any outstanding callbacks for promise images are performed.
     gr_context()->flush();
   }
@@ -1235,7 +1239,23 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
       did_swap_buffer_complete_callback_);
 }
 
-void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
+bool SkiaOutputSurfaceImplOnGpu::Initialize() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+#if defined(USE_OZONE)
+  window_surface_ =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreatePlatformWindowSurface(dependency_->GetSurfaceHandle());
+#endif
+
+  if (!(is_using_vulkan() ? InitializeForVulkan() : InitializeForGL()))
+    return false;
+  max_resource_cache_bytes_ = context_state_->max_resource_cache_bytes();
+  return true;
+}
+
+bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   std::unique_ptr<SkiaOutputDeviceGL> onscreen_device;
   if (!dependency_->IsOffscreen()) {
     onscreen_device = std::make_unique<SkiaOutputDeviceGL>(
@@ -1244,13 +1264,16 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
   } else {
     gl_surface_ = dependency_->CreateGLSurface(nullptr);
   }
-  DCHECK(gl_surface_);
+
+  if (!gl_surface_)
+    return false;
+
   DCHECK_EQ(gl_surface_->IsOffscreen(), dependency_->IsOffscreen());
 
   context_state_ = dependency_->GetSharedContextState();
   if (!context_state_) {
-    LOG(FATAL) << "Failed to create GrContext";
-    // TODO(penghuang): handle the failure.
+    DLOG(ERROR) << "Failed to create GrContext";
+    return false;
   }
 
   auto* context = context_state_->real_context();
@@ -1260,8 +1283,10 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 
   if (onscreen_device) {
     if (!MakeCurrent(true /* need_fbo0 */)) {
-      LOG(FATAL) << "Failed to make current during initialization.";
-      return;
+      gl_surface_ = nullptr;
+      context_state_ = nullptr;
+      DLOG(ERROR) << "Failed to make current during initialization.";
+      return false;
     }
     onscreen_device->Initialize(gr_context(), context);
     supports_alpha_ = onscreen_device->supports_alpha();
@@ -1273,9 +1298,10 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
         did_swap_buffer_complete_callback_);
     supports_alpha_ = renderer_settings_.requires_alpha_channel;
   }
+  return true;
 }
 
-void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
+bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
   context_state_ = dependency_->GetSharedContextState();
   DCHECK(context_state_);
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -1304,6 +1330,7 @@ void SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #endif
   }
 #endif
+  return true;
 }
 
 bool SkiaOutputSurfaceImplOnGpu::BindOrCopyTextureIfNecessary(

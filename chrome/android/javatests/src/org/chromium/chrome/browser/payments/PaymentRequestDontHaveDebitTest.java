@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -78,6 +79,11 @@ public class PaymentRequestDontHaveDebitTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        // Verify that the type mismatch bit is recorded for the most complete payment method.
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        "PaymentRequest.MissingPaymentFields",
+                        AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_TYPE_MISMATCH));
 
         Assert.assertTrue(
                 mPaymentRequestTestRule.getPaymentInstrumentLabel(0).contains("Discover"));

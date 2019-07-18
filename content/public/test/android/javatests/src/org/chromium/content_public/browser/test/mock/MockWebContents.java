@@ -134,11 +134,6 @@ public class MockWebContents implements WebContents {
     public void setAudioMuted(boolean mute) {}
 
     @Override
-    public int getBackgroundColor() {
-        return 0;
-    }
-
-    @Override
     public boolean isShowingInterstitialPage() {
         return false;
     }

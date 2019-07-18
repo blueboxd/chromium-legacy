@@ -140,7 +140,7 @@ class LargeIconServiceTest : public testing::Test {
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
   const GURL kExpectedServerUrl(
       "https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2"
-      "&check_seen=true&size=61&min_size=42&max_size=256"
+      "&check_seen=true&size=61&min_size=16&max_size=256"
       "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/");
 
   EXPECT_CALL(mock_favicon_service_, UnableToDownloadFavicon(_)).Times(0);
@@ -170,7 +170,6 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
@@ -185,7 +184,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServer) {
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerForDesktop) {
   const GURL kExpectedServerUrl(
       "https://t0.gstatic.com/faviconV2?client=chrome_desktop"
-      "&nfrp=2&check_seen=true&size=32&min_size=32&max_size=256"
+      "&nfrp=2&check_seen=true&size=32&min_size=16&max_size=256"
       "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/");
 
   EXPECT_CALL(mock_favicon_service_, UnableToDownloadFavicon(_)).Times(0);
@@ -228,7 +227,7 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerForDesktop) {
 TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
   const GURL kExpectedServerUrl(
       "https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2"
-      "&check_seen=true&size=61&min_size=42&max_size=256"
+      "&check_seen=true&size=61&min_size=16&max_size=256"
       "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/");
   const GURL kExpectedOriginalUrl("http://www.example.com/favicon.png");
 
@@ -262,7 +261,6 @@ TEST_F(LargeIconServiceTest, ShouldGetFromGoogleServerWithOriginalUrl) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
@@ -276,7 +274,7 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
   const GURL kDummyUrlWithQuery("http://www.example.com?foo=1");
   const GURL kExpectedServerUrl(
       "https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2"
-      "&check_seen=true&size=61&min_size=42&max_size=256"
+      "&check_seen=true&size=61&min_size=16&max_size=256"
       "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/");
 
   EXPECT_CALL(mock_favicon_service_,
@@ -299,7 +297,6 @@ TEST_F(LargeIconServiceTest, ShouldTrimQueryParametersForGoogleServer) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrlWithQuery),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -330,7 +327,6 @@ TEST_F(LargeIconServiceTest, ShouldNotCheckOnPublicUrls) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/false,
           /*should_trim_page_url_path=*/false, TRAFFIC_ANNOTATION_FOR_TESTS,
@@ -352,7 +348,6 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidScheme) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyFtpUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
@@ -376,7 +371,6 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidURL) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyInvalidUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
@@ -392,7 +386,7 @@ TEST_F(LargeIconServiceTest, ShouldNotQueryGoogleServerIfInvalidURL) {
 TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
   const GURL kExpectedServerUrl(
       "https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2"
-      "&check_seen=true&size=61&min_size=42&max_size=256"
+      "&check_seen=true&size=61&min_size=16&max_size=256"
       "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/");
 
   EXPECT_CALL(mock_favicon_service_,
@@ -416,7 +410,6 @@ TEST_F(LargeIconServiceTest, ShouldReportUnavailableIfFetchFromServerFails) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
@@ -433,7 +426,7 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
   ON_CALL(mock_favicon_service_,
           WasUnableToDownloadFavicon(
               GURL("https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2"
-                   "&check_seen=true&size=61&min_size=42&max_size=256"
+                   "&check_seen=true&size=61&min_size=16&max_size=256"
                    "&fallback_opts=TYPE,SIZE,URL&url=http://www.example.com/")))
       .WillByDefault(Return(true));
 
@@ -447,7 +440,6 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfUnavailable) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());
@@ -479,7 +471,6 @@ TEST_F(LargeIconServiceTest, ShouldNotGetFromGoogleServerIfCannotSet) {
       .GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
           favicon::FaviconServerFetcherParams::CreateForMobile(
               GURL(kDummyUrl),
-              /*min_source_size_in_pixel=*/42,
               /*desired_size_in_pixel=*/61),
           /*may_page_url_be_private=*/true, /*should_trim_page_url_path=*/false,
           TRAFFIC_ANNOTATION_FOR_TESTS, callback.Get());

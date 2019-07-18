@@ -1756,8 +1756,8 @@ bool RenderProcessHostImpl::Init() {
 
     // In single process mode, browser-side tracing and memory will cover the
     // whole process including renderers.
-    BackgroundTracingManagerImpl::ActivateForProcess(
-        GetID(), child_control_interface_.get());
+    BackgroundTracingManagerImpl::ActivateForProcess(GetID(),
+                                                     child_process_.get());
 
     fast_shutdown_started_ = false;
   }
@@ -1816,7 +1816,10 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
           std::move(pipe.handle0), io_task_runner,
           base::ThreadTaskRunnerHandle::Get());
 
-  content::BindInterface(this, &child_control_interface_);
+  child_process_.reset();
+  content::BindInterface(
+      this,
+      mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
 
   ResetChannelProxy();
 
@@ -1976,7 +1979,7 @@ void RenderProcessHostImpl::BindIndexedDB(
 }
 
 void RenderProcessHostImpl::ForceCrash() {
-  child_connection_->ForceCrash();
+  child_process_->CrashHungProcess();
 }
 
 void RenderProcessHostImpl::BindFileSystemManager(
@@ -3315,7 +3318,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 
 #if defined(OS_MACOSX)
   ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
-      peer_pid, child_control_interface_.get());
+      peer_pid, child_process_.get());
 #endif
 
   if (IsReady()) {
@@ -3327,8 +3330,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   }
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
-  child_control_interface_->SetIPCLoggingEnabled(
-      IPC::Logging::GetInstance()->Enabled());
+  child_process_->SetIPCLoggingEnabled(IPC::Logging::GetInstance()->Enabled());
 #endif
 }
 

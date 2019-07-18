@@ -57,6 +57,9 @@ class TestSystemTrayClient;
 // root window and an ash::Shell instance with a test delegate.
 class AshTestHelper {
  public:
+  // Instantiates/destroys an AshTestHelper. This can happen in a
+  // single-threaded phase without a backing task environment. As such, the vast
+  // majority of initialization/tear down will be done in SetUp()/TearDown().
   AshTestHelper();
   ~AshTestHelper();
 

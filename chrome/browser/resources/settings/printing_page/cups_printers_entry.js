@@ -20,20 +20,7 @@ Polymer({
      * @type {string}
      */
     subtext: {type: String, value: ''},
-
-    /**
-     * @type {boolean}
-     * @private
-     */
-    isSavedPrinter_ : {
-      type: Boolean,
-      value: false,
-    },
   },
-
-  observers: [
-    'onPrinterEntryChanged_(printerEntry.*)',
-  ],
 
   /**
    * Fires a custom event when the menu button is clicked. Sends the details of
@@ -46,12 +33,36 @@ Polymer({
     });
   },
 
+  onOpenManufacturerModelDialogTap_: function(e) {
+    this.fire('open-manufacturer-model-dialog-for-specified-printer',
+        {item: this.printerEntry.printerInfo});
+  },
+
+  onAddAutomaticPrinterTap_: function() {
+    this.fire('add-automatic-printer', {item: this.printerEntry});
+  },
+
   /**
-   * Observes when |printerEntry| gets initialized and determines which button
-   * to place for the printer entry.
+   * @return {boolean}
    * @private
    */
-  onPrinterEntryChanged_: function() {
-    this.isSavedPrinter_ = this.printerEntry.printerType == PrinterType.SAVED;
+  isSavedPrinter_: function() {
+    return this.printerEntry.printerType == PrinterType.SAVED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isDiscoveredPrinter_: function() {
+    return this.printerEntry.printerType == PrinterType.DISCOVERED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isAutomaticPrinter_: function() {
+    return this.printerEntry.printerType == PrinterType.AUTOMATIC;
   }
 });

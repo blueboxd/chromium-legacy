@@ -2927,12 +2927,13 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
       progressive_paints_[progressive_index].rect();
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap();
 
+  constexpr draw_utils::PageInsetSizes kInsetSizes{
+      kPageShadowLeft, kPageShadowTop, kPageShadowRight, kPageShadowBottom};
+
   pp::Rect page_rect = pages_[page_index]->rect();
   if (page_rect.x() > 0) {
-    pp::Rect left(0, page_rect.y() - kPageShadowTop,
-                  page_rect.x() - kPageShadowLeft,
-                  page_rect.height() + kPageShadowTop + kPageShadowBottom +
-                      kPageSeparatorThickness);
+    pp::Rect left = draw_utils::GetLeftFillRect(page_rect, kInsetSizes,
+                                                kPageSeparatorThickness);
     left = GetScreenRect(left).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
@@ -2941,11 +2942,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   }
 
   if (page_rect.right() < document_size_.width()) {
-    pp::Rect right(
-        page_rect.right() + kPageShadowRight, page_rect.y() - kPageShadowTop,
-        document_size_.width() - page_rect.right() - kPageShadowRight,
-        page_rect.height() + kPageShadowTop + kPageShadowBottom +
-            kPageSeparatorThickness);
+    pp::Rect right = draw_utils::GetRightFillRect(page_rect, kInsetSizes,
+                                                  document_size_.width(),
+                                                  kPageSeparatorThickness);
     right = GetScreenRect(right).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
@@ -2954,10 +2953,8 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   }
 
   // Paint separator.
-  pp::Rect bottom(page_rect.x() - kPageShadowLeft,
-                  page_rect.bottom() + kPageShadowBottom,
-                  page_rect.width() + kPageShadowLeft + kPageShadowRight,
-                  kPageSeparatorThickness);
+  pp::Rect bottom = draw_utils::GetBottomFillRect(page_rect, kInsetSizes,
+                                                  kPageSeparatorThickness);
   bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
 
   FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),

@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/animation_target.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/property_animation_state.h"
 #include "cc/trees/target_property.h"
 #include "ui/gfx/geometry/scroll_offset.h"

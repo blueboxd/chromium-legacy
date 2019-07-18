@@ -26,6 +26,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -150,11 +152,18 @@ class AccessibleInputField : public views::Textfield {
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     views::Textfield::GetAccessibleNodeData(node_data);
+    // The following property setup is needed to match the custom behavior of
+    // parent access input. It results in the following a11y vocalizations:
+    // * when input field is empty: "Next number, {current field index} of
+    // {number of fields}"
+    // * when input field is populated: "{value}, {current field index} of
+    // {number of fields}"
+    node_data->RemoveState(ax::mojom::State::kEditable);
     node_data->role = ax::mojom::Role::kListItem;
+    base::string16 description =
+        text().empty() ? accessible_description_ : text();
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
-                                  base::UTF16ToUTF8(accessible_description_));
-    node_data->SetDescription(text());
-    node_data->SetName(text());
+                                  base::UTF16ToUTF8(description));
   }
 
   bool IsGroupFocusTraversable() const override { return false; }
@@ -230,7 +239,12 @@ class ParentAccessView::AccessCodeInput : public views::View,
 
     ActiveField()->SetText(base::NumberToString16(value));
     bool was_last_field = IsLastFieldActive();
-    FocusNextField();
+
+    // Moving focus is delayed by using PostTask to allow for proper
+    // a11y announcements. Without that some of them are skipped.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&AccessCodeInput::FocusNextField,
+                                  weak_ptr_factory_.GetWeakPtr()));
 
     on_input_change_.Run(GetCode().has_value(), was_last_field);
   }
@@ -371,7 +385,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
   }
 
   // Returns pointer to the active input field.
-  views::Textfield* ActiveField() const {
+  AccessibleInputField* ActiveField() const {
     return input_fields_[active_input_index_];
   }
 
@@ -390,7 +404,9 @@ class ParentAccessView::AccessCodeInput : public views::View,
   int active_input_index_ = 0;
 
   // Unowned input textfields ordered from the first to the last digit.
-  std::vector<views::Textfield*> input_fields_;
+  std::vector<AccessibleInputField*> input_fields_;
+
+  base::WeakPtrFactory<AccessCodeInput> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessCodeInput);
 };
@@ -737,14 +753,23 @@ void ParentAccessView::UpdatePreferredSize() {
   SetPreferredSize(CalculatePreferredSize());
 }
 
+void ParentAccessView::FocusSubmitButton() {
+  submit_button_->RequestFocus();
+}
+
 void ParentAccessView::OnInputChange(bool complete, bool last_field_active) {
   if (state_ == State::kError)
     UpdateState(State::kNormal);
 
   submit_button_->SetEnabled(complete);
 
-  if (complete && last_field_active)
-    submit_button_->RequestFocus();
+  if (complete && last_field_active) {
+    // Moving focus is delayed by using PostTask to allow for proper
+    // a11y announcements.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ParentAccessView::FocusSubmitButton,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ParentAccessView::GetAccessibleNodeData(ui::AXNodeData* node_data) {

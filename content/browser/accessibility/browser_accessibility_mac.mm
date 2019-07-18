@@ -94,7 +94,7 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetLastChild() const {
 BrowserAccessibility* BrowserAccessibilityMac::PlatformGetNextSibling() const {
   BrowserAccessibility* parent = PlatformGetParent();
   if (parent) {
-    uint32_t next_child_index = GetIndexInParent() + 1;
+    uint32_t next_child_index = node()->GetUnignoredIndexInParent() + 1;
     if (next_child_index >= parent->InternalChildCount() &&
         next_child_index < parent->PlatformChildCount()) {
       // get the extra_mac_node
@@ -110,7 +110,7 @@ BrowserAccessibility* BrowserAccessibilityMac::PlatformGetPreviousSibling()
     const {
   BrowserAccessibility* parent = PlatformGetParent();
   if (parent) {
-    uint32_t previous_child_index = GetIndexInParent() - 1;
+    uint32_t previous_child_index = node()->GetUnignoredIndexInParent() - 1;
     if (previous_child_index >= parent->InternalChildCount() &&
         previous_child_index < parent->PlatformChildCount()) {
       // get the extra_mac_node

@@ -493,6 +493,21 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                                    .getNumberOfOptionLabelsForTest());
     }
 
+    /**
+     * Returns the label corresponding to the payment method suggestion at the specified
+     * |suggestionIndex|.
+     */
+    protected String getPaymentMethodSuggestionLabel(final int suggestionIndex) {
+        Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
+
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                ()
+                        -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
+                                   .getOptionLabelsForTest(suggestionIndex)
+                                   .getText()
+                                   .toString());
+    }
+
     /** Returns the number of contact detail suggestions. */
     protected int getNumberOfContactDetailSuggestions() {
         return ThreadUtils.runOnUiThreadBlockingNoException(

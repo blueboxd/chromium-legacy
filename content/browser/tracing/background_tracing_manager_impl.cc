@@ -26,7 +26,7 @@
 #include "content/browser/tracing/background_tracing_agent_client_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
-#include "content/common/child_control.mojom.h"
+#include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -98,12 +98,12 @@ BackgroundTracingManagerImpl* BackgroundTracingManagerImpl::GetInstance() {
 // static
 void BackgroundTracingManagerImpl::ActivateForProcess(
     int child_process_id,
-    mojom::ChildControl* child_control) {
+    mojom::ChildProcess* child_process) {
   // NOTE: Called from any thread.
 
   mojo::PendingRemote<tracing::mojom::BackgroundTracingAgentProvider>
       pending_provider;
-  child_control->GetBackgroundTracingAgentProvider(
+  child_process->GetBackgroundTracingAgentProvider(
       pending_provider.InitWithNewPipeAndPassReceiver());
 
   auto constructor =

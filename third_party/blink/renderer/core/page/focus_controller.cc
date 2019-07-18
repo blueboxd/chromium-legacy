@@ -1061,10 +1061,17 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     return true;
   }
 
+  // Focus frames rather than frame owners.  Note that we should always attempt
+  // to descend into frame owners with remote frames, since we don't know ahead
+  // of time whether they contain focusable elements.  If a remote frame
+  // doesn't contain any focusable elements, the search will eventually return
+  // back to this frame and continue looking for focusable elements after the
+  // frame owner.
   auto* owner = DynamicTo<HTMLFrameOwnerElement>(element);
-  if (owner &&
-      (!IsHTMLPlugInElement(*element) || !element->IsKeyboardFocusable())) {
-    // We focus frames rather than frame owners.
+  bool has_remote_frame =
+      owner && owner->ContentFrame() && owner->ContentFrame()->IsRemoteFrame();
+  if (owner && (has_remote_frame || !IsHTMLPlugInElement(*element) ||
+                !element->IsKeyboardFocusable())) {
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.
     if (!owner->ContentFrame())

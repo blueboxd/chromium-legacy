@@ -27,6 +27,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -44,6 +45,11 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/accessibility/uia_accessibility_event_waiter.h"
 #endif
 
 namespace {
@@ -657,3 +663,73 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
   EXPECT_FALSE(popup_node_data_2.HasState(ax::mojom::State::kCollapsed));
   EXPECT_FALSE(popup_node_data_2.HasState(ax::mojom::State::kInvisible));
 }
+
+// The following set of tests require UIA accessibility support, which only
+// exists on Windows.
+#if defined(OS_WIN)
+class OmniboxViewViewsUIATest : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsUIATest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    OmniboxViewViewsTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableExperimentalUIAutomation);
+  }
+};
+
+// Omnibox fires the right events when the popup opens/closes with UIA turned
+// on.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsUIATest, AccessibleOmnibox) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+
+  base::string16 match_url = base::ASCIIToUTF16("https://example.com");
+  AutocompleteMatch match(nullptr, 500, false,
+                          AutocompleteMatchType::HISTORY_TITLE);
+  match.contents = match_url;
+  match.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::URL));
+  match.destination_url = GURL(match_url);
+  match.description = base::ASCIIToUTF16("Example");
+  match.allowed_to_be_default_match = true;
+
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+
+  HWND window_handle =
+      browser()->window()->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
+  UiaAccessibilityWaiterInfo info = {
+      window_handle, base::ASCIIToUTF16("textbox"),
+      base::ASCIIToUTF16("Address and search bar"),
+      ax::mojom::Event::kControlsChanged};
+  UiaAccessibilityEventWaiter open_waiter(info);
+
+  // Populate suggestions for the omnibox popup.
+  AutocompleteController* autocomplete_controller =
+      omnibox_view->model()->popup_model()->autocomplete_controller();
+  AutocompleteResult& results = autocomplete_controller->result_;
+  ACMatches matches;
+  matches.push_back(match);
+  AutocompleteInput input(base::ASCIIToUTF16("e"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  results.AppendMatches(input, matches);
+  results.SortAndCull(
+      input, TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+
+  // The omnibox popup should open with suggestions displayed.
+  chrome::FocusLocationBar(browser());
+  omnibox_view->model()->popup_model()->OnResultChanged();
+
+  // Wait for ControllerFor property changed event.
+  open_waiter.Wait();
+
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+
+  UiaAccessibilityEventWaiter close_waiter(info);
+  // Close the popup. Another property change event is expected.
+  ClickBrowserWindowCenter();
+  close_waiter.Wait();
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+}
+#endif  // OS_WIN

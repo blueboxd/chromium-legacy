@@ -473,8 +473,11 @@ cr.define('settings', function() {
       // <if expr="chromeos">
       r.MANAGE_ACCESSIBILITY =
           r.ACCESSIBILITY.createChild('/manageAccessibility');
-      r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
-          '/manageAccessibility/switchAccess');
+      if (loadTimeData.getBoolean(
+              'showExperimentalAccessibilitySwitchAccess')) {
+        r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
+            '/manageAccessibility/switchAccess');
+      }
       r.MANAGE_TTS_SETTINGS =
           r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
       // </if>

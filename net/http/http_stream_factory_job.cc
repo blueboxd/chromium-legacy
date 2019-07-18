@@ -708,25 +708,6 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     // Disable network fetches for HTTPS proxies, since the network requests
     // are probably going to need to go through the proxy too.
     proxy_ssl_config_.disable_cert_verification_network_fetches = true;
-
-    if (proxy_ssl_config_.send_client_cert) {
-      // When connecting through an HTTPS proxy, disable TLS False Start so that
-      // client authentication errors can be distinguished between those
-      // originating from the proxy server (ERR_PROXY_CONNECTION_FAILED) and
-      // those originating from the endpoint (ERR_SSL_PROTOCOL_ERROR /
-      // ERR_BAD_SSL_CLIENT_AUTH_CERT).
-      //
-      // We now handle this fine for SSLClientAuthCache updates, though not
-      // ReconsiderProxyAfterError() below. In case of issues there, and general
-      // False Start compatibility risk, we continue to disable False Start. (If
-      // it becomes a problem, the risk of removing this is likely low.)
-      //
-      // This assumes the proxy will only request certificates on the initial
-      // handshake; renegotiation on the proxy connection is unsupported.
-      //
-      // See https://crbug.com/828965.
-      proxy_ssl_config_.false_start_enabled = false;
-    }
   }
   if (using_ssl_) {
     // Prior to HTTP/2 and SPDY, some servers use TLS renegotiation to request

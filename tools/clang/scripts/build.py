@@ -98,8 +98,8 @@ def CopyDirectoryContents(src, dst):
 def CheckoutLLVM(commit, dir):
   """Checkout the LLVM monorepo at a certain git commit in dir. Any local
   modifications in dir will be lost."""
-  print('Checking out LLVM monorepo %s into %s' % (commit, dir))
 
+  print('Checking out LLVM monorepo %s into %s' % (commit, dir))
   git_dir = os.path.join(dir, '.git')
   fetch_cmd = ['git', '--git-dir', git_dir, 'fetch']
   checkout_cmd = ['git', 'checkout', commit]
@@ -304,6 +304,15 @@ def main():
                       dest='with_fuchsia',
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
+
+  # TODO(crbug.com/985289): Remove when rolling past r366427.
+  if args.llvm_force_head_revision:
+    global RELEASE_VERSION
+    RELEASE_VERSION = '10.0.0'
+    old_lib_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '9.0.0')
+    if (os.path.isdir(old_lib_dir)):
+      print('Removing old lib dir: ' + old_lib_dir)
+      RmTree(old_lib_dir)
 
   if args.lto_lld and not args.bootstrap:
     print('--lto-lld requires --bootstrap')

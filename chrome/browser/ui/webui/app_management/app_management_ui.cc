@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/app_management/app_management_ui.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,13 +19,24 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "extensions/common/constants.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "components/arc/arc_prefs.h"
+#endif
+
 namespace {
+
+#if defined(OS_CHROMEOS)
+constexpr char kArcFrameworkPackage[] = "android";
+constexpr int kMinAndroidFrameworkVersion = 28;  // Android P
+#endif
 
 content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
@@ -61,7 +73,10 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   };
   AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
 
-  source->AddString("chromeAppId", extension_misc::kChromeAppId);
+#if defined(OS_CHROMEOS)
+  source->AddBoolean("isSupportedArcVersion",
+                     AppManagementUI::IsCurrentArcVersionSupported(profile));
+#endif  // OS_CHROMEOS
 
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);
@@ -197,6 +212,12 @@ AppManagementUI::AppManagementUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "appListPreview", IDS_APP_MANAGEMENT_APP_LIST_PREVIEW);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
+
+#if defined(OS_CHROMEOS)
+  if (arc::IsArcAllowedForProfile(profile)) {
+    ArcAppListPrefs::Get(profile)->AddObserver(this);
+  }
+#endif
 }
 
 AppManagementUI::~AppManagementUI() = default;
@@ -207,8 +228,9 @@ bool AppManagementUI::IsEnabled() {
 
 void AppManagementUI::BindPageHandlerFactory(
     app_management::mojom::PageHandlerFactoryRequest request) {
-  if (page_factory_binding_.is_bound())
+  if (page_factory_binding_.is_bound()) {
     page_factory_binding_.Unbind();
+  }
 
   page_factory_binding_.Bind(std::move(request));
 }
@@ -218,6 +240,41 @@ void AppManagementUI::CreatePageHandler(
     app_management::mojom::PageHandlerRequest request) {
   DCHECK(page);
 
-  page_handler_.reset(new AppManagementPageHandler(std::move(request),
-                                                   std::move(page), web_ui()));
+  page_handler_ = std::make_unique<AppManagementPageHandler>(
+      std::move(request), std::move(page), web_ui());
 }
+
+#if defined(OS_CHROMEOS)
+bool AppManagementUI::IsCurrentArcVersionSupported(Profile* profile) {
+  if (arc::IsArcAllowedForProfile(profile)) {
+    auto package =
+        ArcAppListPrefs::Get(profile)->GetPackage(kArcFrameworkPackage);
+    return package && (package->package_version >= kMinAndroidFrameworkVersion);
+  }
+  return false;
+}
+
+void AppManagementUI::NotifyAndroidVersionChange(int androidVersion) {
+  if (!page_handler_) {
+    return;
+  }
+  const bool supported = androidVersion >= kMinAndroidFrameworkVersion;
+  page_handler_->OnArcSupportChanged(supported);
+}
+
+void AppManagementUI::OnPackageInstalled(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  if (package_info.package_name != kArcFrameworkPackage) {
+    return;
+  }
+  NotifyAndroidVersionChange(package_info.package_version);
+}
+
+void AppManagementUI::OnPackageModified(
+    const arc::mojom::ArcPackageInfo& package_info) {
+  if (package_info.package_name != kArcFrameworkPackage) {
+    return;
+  }
+  NotifyAndroidVersionChange(package_info.package_version);
+}
+#endif  // OS_CHROMEOS

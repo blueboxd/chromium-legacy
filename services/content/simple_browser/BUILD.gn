@@ -41,7 +41,7 @@ component("simple_browser") {
   if (is_linux) {
     public_deps += [
       "//components/services/font/public/cpp",
-      "//components/services/font/public/interfaces",
+      "//components/services/font/public/mojom",
     ]
   }
 }

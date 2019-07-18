@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.CoreAccountInfo;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
@@ -103,13 +104,12 @@ public final class SigninTestUtil {
     }
 
     private static void seedAccounts() {
-        AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
-        Account[] accounts = sAccountManager.getAccountsSyncNoThrow();
-        String[] accountNames = new String[accounts.length];
-        String[] accountIds = new String[accounts.length];
-        for (int i = 0; i < accounts.length; i++) {
-            accountNames[i] = accounts[i].name;
-            accountIds[i] = accountIdProvider.getAccountId(accounts[i].name);
+        List<CoreAccountInfo> accountInfos = sAccountManager.getAccountsSyncNoThrow();
+        String[] accountNames = new String[accountInfos.size()];
+        String[] accountIds = new String[accountInfos.size()];
+        for (int i = 0; i < accountInfos.size(); i++) {
+            accountNames[i] = accountInfos.get(i).getName();
+            accountIds[i] = accountInfos.get(i).getId().getGaiaIdAsString();
         }
         IdentityServicesProvider.getAccountTrackerService().syncForceRefreshForTest(
                 accountIds, accountNames);

@@ -507,14 +507,14 @@ apps::mojom::InstallSource GetInstallSource(
   if (extensions::Manifest::IsComponentLocation(extension->location()) ||
       web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
-          web_app::InstallSource::kSystemInstalled)) {
+          web_app::ExternalInstallSource::kSystemInstalled)) {
     return apps::mojom::InstallSource::kSystem;
   }
 
   if (extensions::Manifest::IsPolicyLocation(extension->location()) ||
       web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
-          web_app::InstallSource::kExternalPolicy)) {
+          web_app::ExternalInstallSource::kExternalPolicy)) {
     return apps::mojom::InstallSource::kPolicy;
   }
 
@@ -525,7 +525,7 @@ apps::mojom::InstallSource GetInstallSource(
   if (extension->was_installed_by_default() ||
       web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
           profile->GetPrefs(), extension->id(),
-          web_app::InstallSource::kExternalDefault)) {
+          web_app::ExternalInstallSource::kExternalDefault)) {
     return apps::mojom::InstallSource::kDefault;
   }
 

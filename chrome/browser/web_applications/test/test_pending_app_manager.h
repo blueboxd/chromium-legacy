@@ -43,7 +43,7 @@ class TestPendingAppManager : public PendingAppManager {
   }
 
   void SimulatePreviouslyInstalledApp(const GURL& url,
-                                      InstallSource install_source);
+                                      ExternalInstallSource install_source);
 
   void SetInstallResultCode(InstallResultCode result_code);
 

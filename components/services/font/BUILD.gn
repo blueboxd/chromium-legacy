@@ -17,7 +17,7 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//components/services/font/public/interfaces",
+    "//components/services/font/public/mojom",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//ppapi/buildflags:buildflags",
@@ -74,7 +74,7 @@ test("font_service_unittests") {
     "//base/test:test_support",
     "//components/services/font/public/cpp",
     "//components/services/font/public/cpp:manifest",
-    "//components/services/font/public/interfaces",
+    "//components/services/font/public/mojom",
     "//mojo/core/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

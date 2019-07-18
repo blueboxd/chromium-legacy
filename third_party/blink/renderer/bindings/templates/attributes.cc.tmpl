@@ -612,7 +612,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
 
 
 {##############################################################################}
-{# This macro installs |attributes_to_install| on v8::Object/v8::Function, not on v8::ObjectTemplate/v8::FunctionTemplate. #}
+{# This macro installs |attributes_to_install| conditionally based on Exposed, SecureContext, and RuntimeEnabled checks. #}
 {% macro install_conditional_attributes(attributes_to_install) %}
 {% for exposed_test, exposed_attribute_list in attributes_to_install | groupby('exposed_test') %}
 {% filter exposed(exposed_test) %}
@@ -620,15 +620,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
 {% filter secure_context(secure_context_test) %}
 {% for feature_name, attribute_list in secure_context_attribute_list | groupby('runtime_enabled_feature_name') %}
 {% filter runtime_enabled(feature_name) %}
-static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
-    {% for attribute in attribute_list | sort %}
-    {{accessor_configuration(attribute) | trim | indent(4)}},
-    {% endfor %}
-};
-V8DOMConfiguration::InstallAccessors(
-    isolate, world, instance_object, prototype_object, interface_object,
-    signature, accessor_configurations,
-    base::size(accessor_configurations));
+{{install_attributes(attribute_list | sort, 'instance_object', 'prototype_object', 'interface_object')}}
 {% endfilter %}{# runtime_enabled #}
 {% endfor %}{# secure_context_attribute_list grouped by runtime_enabled #}
 {% endfilter %}{# secure_context #}
@@ -639,6 +631,23 @@ V8DOMConfiguration::InstallAccessors(
 
 
 {##############################################################################}
+{# This macro installs |attributes_to_install| unconditionally. #}
+{% macro install_attributes(attributes_to_install, instance_variable, prototype_variable, interface_variable) %}
+static constexpr V8DOMConfiguration::AccessorConfiguration
+kAccessorConfigurations[] = {
+    {% for attribute in attributes_to_install %}
+    {{accessor_configuration(attribute) | trim | indent(4)}},
+    {% endfor %}
+};
+V8DOMConfiguration::InstallAccessors(
+    isolate, world, {{instance_variable}}, {{prototype_variable}}, {{interface_variable}},
+    signature, kAccessorConfigurations,
+    base::size(kAccessorConfigurations));
+{% endmacro %}
+
+
+{##############################################################################}
+{# This macro installs |attributes_to_install| conditionally based on Exposed, SecureContext, and RuntimeEnabled checks. #}
 {% macro install_conditional_interface_objects(attributes_to_install) %}
 {% for exposed_test, exposed_attribute_list in attributes_to_install | groupby('exposed_test') %}
 {% filter exposed(exposed_test) %}
@@ -646,18 +655,26 @@ V8DOMConfiguration::InstallAccessors(
 {% filter secure_context(secure_context_test) %}
 {% for feature_name, attribute_list in secure_context_attribute_list | groupby('runtime_enabled_feature_name') %}
 {% filter runtime_enabled(feature_name) %}
-static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {
-    {% for attribute in attribute_list | sort %}
-    {{attribute_configuration(attribute) | trim | indent(4)}},
-    {% endfor %}
-};
-V8DOMConfiguration::InstallAttributes(
-    isolate, world, instance_object, prototype_object,
-    attribute_configurations, base::size(attribute_configurations));
+{{install_interface_objects(attribute_list | sort, 'instance_object', 'prototype_object')}}
 {% endfilter %}{# runtime_enabled #}
 {% endfor %}{# secure_context_attribute_list grouped by runtime_enabled #}
 {% endfilter %}{# secure_context #}
 {% endfor %}{# exposed_attribute_list grouped by secure_context_text #}
 {% endfilter %}{# exposed #}
 {% endfor %}{# attributes grouped by exposed_test #}
+{% endmacro %}
+
+
+{##############################################################################}
+{# This macro installs |attributes_to_install| unconditionally. #}
+{% macro install_interface_objects(attributes_to_install, instance_variable, prototype_variable) %}
+static constexpr V8DOMConfiguration::AttributeConfiguration
+kAttributeConfigurations[] = {
+    {% for attribute in attributes_to_install %}
+    {{attribute_configuration(attribute) | trim | indent(4)}},
+    {% endfor %}
+};
+V8DOMConfiguration::InstallAttributes(
+    isolate, world, {{instance_variable}}, {{prototype_variable}},
+    kAttributeConfigurations, base::size(kAttributeConfigurations));
 {% endmacro %}

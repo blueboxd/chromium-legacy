@@ -26,16 +26,17 @@ namespace cc {
 
 class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
  public:
-  static constexpr int kRasterMetricFrequency = 100;
-  GpuRasterBufferProvider(viz::ContextProvider* compositor_context_provider,
-                          viz::RasterContextProvider* worker_context_provider,
-                          bool use_gpu_memory_buffer_resources,
-                          int gpu_rasterization_msaa_sample_count,
-                          viz::ResourceFormat tile_format,
-                          const gfx::Size& max_tile_size,
-                          bool unpremultiply_and_dither_low_bit_depth_tiles,
-                          bool enable_oop_rasterization,
-                          int raster_metric_frequency = kRasterMetricFrequency);
+  static constexpr float kRasterMetricProbability = 0.01;
+  GpuRasterBufferProvider(
+      viz::ContextProvider* compositor_context_provider,
+      viz::RasterContextProvider* worker_context_provider,
+      bool use_gpu_memory_buffer_resources,
+      int gpu_rasterization_msaa_sample_count,
+      viz::ResourceFormat tile_format,
+      const gfx::Size& max_tile_size,
+      bool unpremultiply_and_dither_low_bit_depth_tiles,
+      bool enable_oop_rasterization,
+      float raster_metric_probability = kRasterMetricProbability);
   GpuRasterBufferProvider(const GpuRasterBufferProvider&) = delete;
   ~GpuRasterBufferProvider() override;
 
@@ -154,7 +155,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const gfx::Size max_tile_size_;
   const bool unpremultiply_and_dither_low_bit_depth_tiles_;
   const bool enable_oop_rasterization_;
-  const int raster_metric_frequency_;
 
   // Note that this lock should never be acquired while holding the raster
   // context lock.
@@ -164,7 +164,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
 
   // Accessed with the worker context lock acquired.
   std::mt19937 random_generator_;
-  std::uniform_int_distribution<int> uniform_distribution_;
+  std::bernoulli_distribution bernoulli_distribution_;
 };
 
 }  // namespace cc

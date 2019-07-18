@@ -94,8 +94,8 @@ bool ContributesToClip(const SVGElement& element) {
 }
 
 Path PathFromElement(const SVGElement& element) {
-  if (auto* svg_geometry_element = DynamicTo<SVGGeometryElement>(element))
-    return svg_geometry_element->ToClipPath();
+  if (IsSVGGeometryElement(element))
+    return ToSVGGeometryElement(element).ToClipPath();
 
   // Guaranteed by DetermineClipStrategy() above, only <use> element and
   // SVGGraphicsElement that has a LayoutSVGShape can reach here.

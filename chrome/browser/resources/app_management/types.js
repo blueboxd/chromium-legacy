@@ -55,6 +55,7 @@ let NotificationsState;
  * @typedef {{
  *   apps: !AppMap,
  *   currentPage: !Page,
+ *   arcSupported: boolean,
  *   search: !SearchState,
  *   notifications: !NotificationsState,
  * }}

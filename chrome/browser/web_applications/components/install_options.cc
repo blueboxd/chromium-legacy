@@ -13,7 +13,7 @@ namespace web_app {
 
 InstallOptions::InstallOptions(const GURL& url,
                                LaunchContainer launch_container,
-                               InstallSource install_source)
+                               ExternalInstallSource install_source)
     : url(url),
       launch_container(launch_container),
       install_source(install_source) {}

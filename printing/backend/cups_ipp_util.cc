@@ -38,8 +38,10 @@ constexpr char kIppPinEncryption[] = "job-password-encryption";  // PWG 5100.11
 constexpr char kCollated[] = "collated";
 constexpr char kUncollated[] = "uncollated";
 
+#if defined(OS_CHROMEOS)
 constexpr int kPinMinimumLength = 4;
 constexpr char kPinEncryptionNone[] = "none";
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -158,6 +160,31 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(base::StringPiece value) {
   return paper;
 }
 
+ColorModel DefaultColorModel(const CupsOptionProvider& printer) {
+  // default color
+  ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppColor);
+  if (!attr)
+    return UNKNOWN_COLOR_MODEL;
+
+  return ColorModelFromIppColor(ippGetString(attr, 0, nullptr));
+}
+
+std::vector<ColorModel> SupportedColorModels(
+    const CupsOptionProvider& printer) {
+  std::vector<ColorModel> colors;
+
+  std::vector<base::StringPiece> color_modes =
+      printer.GetSupportedOptionValueStrings(kIppColor);
+  for (base::StringPiece color : color_modes) {
+    ColorModel color_model = ColorModelFromIppColor(color);
+    if (color_model != UNKNOWN_COLOR_MODEL) {
+      colors.push_back(color_model);
+    }
+  }
+
+  return colors;
+}
+
 void ExtractColor(const CupsOptionProvider& printer,
                   PrinterSemanticCapsAndDefaults* printer_info) {
   printer_info->bw_model = UNKNOWN_COLOR_MODEL;
@@ -201,6 +228,18 @@ void ExtractDuplexModes(const CupsOptionProvider& printer,
   printer_info->duplex_default =
       attr ? DuplexModeFromIpp(ippGetString(attr, 0, nullptr))
            : UNKNOWN_DUPLEX_MODE;
+}
+
+void CopiesRange(const CupsOptionProvider& printer,
+                 int* lower_bound,
+                 int* upper_bound) {
+  ipp_attribute_t* attr = printer.GetSupportedOptionValues(kIppCopies);
+  if (!attr) {
+    *lower_bound = -1;
+    *upper_bound = -1;
+  }
+
+  *lower_bound = ippGetRange(attr, 0, upper_bound);
 }
 
 void ExtractCopies(const CupsOptionProvider& printer,
@@ -249,42 +288,6 @@ void ExtractResolutions(const CupsOptionProvider& printer,
     printer_info->default_dpi = size.value();
 }
 
-}  // namespace
-
-ColorModel DefaultColorModel(const CupsOptionProvider& printer) {
-  // default color
-  ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppColor);
-  if (!attr)
-    return UNKNOWN_COLOR_MODEL;
-
-  return ColorModelFromIppColor(ippGetString(attr, 0, nullptr));
-}
-
-std::vector<ColorModel> SupportedColorModels(
-    const CupsOptionProvider& printer) {
-  std::vector<ColorModel> colors;
-
-  std::vector<base::StringPiece> color_modes =
-      printer.GetSupportedOptionValueStrings(kIppColor);
-  for (base::StringPiece color : color_modes) {
-    ColorModel color_model = ColorModelFromIppColor(color);
-    if (color_model != UNKNOWN_COLOR_MODEL) {
-      colors.push_back(color_model);
-    }
-  }
-
-  return colors;
-}
-
-PrinterSemanticCapsAndDefaults::Paper DefaultPaper(
-    const CupsOptionProvider& printer) {
-  ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppMedia);
-  if (!attr)
-    return PrinterSemanticCapsAndDefaults::Paper();
-
-  return ParsePaper(ippGetString(attr, 0, nullptr));
-}
-
 PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
     const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> papers =
@@ -295,18 +298,6 @@ PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
     parsed_papers.push_back(ParsePaper(paper));
 
   return parsed_papers;
-}
-
-void CopiesRange(const CupsOptionProvider& printer,
-                 int* lower_bound,
-                 int* upper_bound) {
-  ipp_attribute_t* attr = printer.GetSupportedOptionValues(kIppCopies);
-  if (!attr) {
-    *lower_bound = -1;
-    *upper_bound = -1;
-  }
-
-  *lower_bound = ippGetRange(attr, 0, upper_bound);
 }
 
 bool CollateCapable(const CupsOptionProvider& printer) {
@@ -324,6 +315,7 @@ bool CollateDefault(const CupsOptionProvider& printer) {
   return name.compare(kCollated) == 0;
 }
 
+#if defined(OS_CHROMEOS)
 bool PinSupported(const CupsOptionProvider& printer) {
   ipp_attribute_t* attr = printer.GetSupportedOptionValues(kIppPin);
   if (!attr)
@@ -335,6 +327,18 @@ bool PinSupported(const CupsOptionProvider& printer) {
   std::vector<base::StringPiece> values =
       printer.GetSupportedOptionValueStrings(kIppPinEncryption);
   return base::Contains(values, kPinEncryptionNone);
+}
+#endif  // defined(OS_CHROMEOS)
+
+}  // namespace
+
+PrinterSemanticCapsAndDefaults::Paper DefaultPaper(
+    const CupsOptionProvider& printer) {
+  ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppMedia);
+  if (!attr)
+    return PrinterSemanticCapsAndDefaults::Paper();
+
+  return ParsePaper(ippGetString(attr, 0, nullptr));
 }
 
 void CapsAndDefaultsFromPrinter(const CupsOptionProvider& printer,

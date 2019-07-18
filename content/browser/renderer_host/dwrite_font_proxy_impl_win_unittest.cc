@@ -27,6 +27,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dwrite_rasterizer_support/dwrite_rasterizer_support.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_table_matcher.h"
+#include "third_party/icu/source/common/unicode/umachine.h"
+#include "ui/gfx/test/font_fallback_test_data.h"
 
 namespace content {
 
@@ -249,6 +251,34 @@ TEST_F(DWriteFontProxyImplUnitTest, TestCustomFontFiles) {
   for (auto& file : handles) {
     EXPECT_TRUE(file.IsValid());
     EXPECT_LT(0, file.GetLength());  // Check the file exists
+  }
+}
+
+TEST_F(DWriteFontProxyImplUnitTest, FallbackFamily) {
+  const bool on_win10 = base::win::GetVersion() >= base::win::Version::WIN10;
+
+  for (auto& fallback_request : gfx::kGetFontFallbackTests) {
+    if (fallback_request.is_win10 && !on_win10)
+      continue;
+
+    std::string family_name;
+    UChar32 codepoint;
+    U16_GET(fallback_request.text.c_str(), 0, 0, fallback_request.text.size(),
+            codepoint);
+    dwrite_font_proxy().FallbackFamilyNameForCodepoint(
+        "Times New Roman", fallback_request.language_tag, codepoint,
+        &family_name);
+
+    auto find_result_it =
+        std::find(fallback_request.fallback_fonts.begin(),
+                  fallback_request.fallback_fonts.end(), family_name);
+
+    EXPECT_TRUE(find_result_it != fallback_request.fallback_fonts.end())
+        << "Did not find expected fallback font for language: "
+        << fallback_request.language_tag << ", codepoint U+" << std::hex
+        << codepoint << " DWrite returned font name: \"" << family_name << "\""
+        << ", expected: "
+        << base::JoinString(fallback_request.fallback_fonts, ", ");
   }
 }
 

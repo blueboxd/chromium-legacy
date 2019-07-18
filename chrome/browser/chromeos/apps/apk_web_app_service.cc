@@ -99,7 +99,8 @@ void ApkWebAppService::SetWebAppUninstalledCallbackForTesting(
 
 void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
   if (!web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
-          profile_->GetPrefs(), web_app_id, web_app::InstallSource::kArc)) {
+          profile_->GetPrefs(), web_app_id,
+          web_app::ExternalInstallSource::kArc)) {
     // Do not uninstall a web app that was not installed via ApkWebAppInstaller.
     return;
   }

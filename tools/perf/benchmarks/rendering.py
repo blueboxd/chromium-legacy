@@ -1,6 +1,7 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import sys
 from core import perf_benchmark
 
 import page_sets
@@ -33,6 +34,15 @@ class RenderingDesktop(perf_benchmark.PerfBenchmark):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     options.AppendExtraBrowserArgs('--touch-events=enabled')
+
+    # The feature below is only needed for macOS.
+    # We found that the normal priorities used for mac is resulting into
+    # unreliable values for avg_fps and frame_times. Increasing the priority
+    # and using it in telemetry tests can help with more accurate values.
+    # crbug.com/970607
+    if sys.platform == 'darwin':
+      options.AppendExtraBrowserArgs(
+          '--use-gpu-high-thread-priority-for-perf-tests')
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()

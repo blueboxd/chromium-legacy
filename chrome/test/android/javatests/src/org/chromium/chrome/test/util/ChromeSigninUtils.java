@@ -17,6 +17,7 @@ import android.text.TextUtils;
 
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.CoreAccountInfo;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
@@ -85,9 +86,11 @@ public class ChromeSigninUtils {
      * Removes all fake accounts from the OS.
      */
     public void removeAllFakeAccountsFromOs() throws Exception {
-        for (Account acct : mFakeAccountManagerDelegate.getAccountsSyncNoThrow()) {
+        for (CoreAccountInfo accountInfo : mFakeAccountManagerDelegate.getAccountsSyncNoThrow()) {
             mFakeAccountManagerDelegate.removeAccountHolderBlocking(
-                    AccountHolder.builder(acct).build());
+                    AccountHolder.builder(accountInfo.getAccount())
+                            .accountId(accountInfo.getId())
+                            .build());
         }
     }
 
@@ -98,8 +101,8 @@ public class ChromeSigninUtils {
      * @return {@code true} if fake account is on OS, false otherwise.
      */
     public boolean isExistingFakeAccountOnOs(String username) {
-        for (Account acct : mFakeAccountManagerDelegate.getAccountsSyncNoThrow()) {
-            if (username.equals(acct.name)) {
+        for (CoreAccountInfo accountInfo : mFakeAccountManagerDelegate.getAccountsSyncNoThrow()) {
+            if (username.equals(accountInfo.getName())) {
                 return true;
             }
         }

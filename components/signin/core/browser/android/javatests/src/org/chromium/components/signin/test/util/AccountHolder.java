@@ -7,6 +7,9 @@ package org.chromium.components.signin.test.util;
 import android.accounts.Account;
 import android.support.annotation.NonNull;
 
+import org.chromium.components.signin.CoreAccountId;
+import org.chromium.components.signin.CoreAccountInfo;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,28 +20,28 @@ import java.util.Set;
  * account, such as its password and set of granted auth tokens.
  */
 public class AccountHolder {
-    private final Account mAccount;
+    private final CoreAccountInfo mAccountInfo;
     private final Map<String, String> mAuthTokens;
     private final Map<String, Boolean> mHasBeenAccepted;
     private final boolean mAlwaysAccept;
     private final Set<String> mFeatures;
 
-    private AccountHolder(Account account, Map<String, String> authTokens,
+    private AccountHolder(CoreAccountInfo accountInfo, Map<String, String> authTokens,
             Map<String, Boolean> hasBeenAccepted, boolean alwaysAccept, Set<String> features) {
-        assert account != null;
+        assert accountInfo != null;
         assert authTokens != null;
         assert hasBeenAccepted != null;
         assert features != null;
 
-        mAccount = account;
+        mAccountInfo = accountInfo;
         mAuthTokens = authTokens;
         mHasBeenAccepted = hasBeenAccepted;
         mAlwaysAccept = alwaysAccept;
         mFeatures = features;
     }
 
-    public Account getAccount() {
-        return mAccount;
+    public CoreAccountInfo getAccountInfo() {
+        return mAccountInfo;
     }
 
     public boolean hasAuthTokenRegistered(String authTokenType) {
@@ -83,13 +86,13 @@ public class AccountHolder {
 
     @Override
     public int hashCode() {
-        return mAccount.hashCode();
+        return mAccountInfo.hashCode();
     }
 
     @Override
     public boolean equals(Object that) {
         return that instanceof AccountHolder
-                && mAccount.equals(((AccountHolder) that).getAccount());
+                && mAccountInfo.equals(((AccountHolder) that).getAccountInfo());
     }
 
     public static Builder builder(@NonNull Account account) {
@@ -113,7 +116,8 @@ public class AccountHolder {
     }
 
     private Builder copy() {
-        return builder(mAccount)
+        return builder(mAccountInfo.getAccount())
+                .accountId(mAccountInfo.getId())
                 .authTokens(mAuthTokens)
                 .hasBeenAcceptedMap(mHasBeenAccepted)
                 .alwaysAccept(mAlwaysAccept);
@@ -124,6 +128,7 @@ public class AccountHolder {
      */
     public static class Builder {
         private Account mAccount;
+        private CoreAccountId mAccountId;
         private Map<String, String> mAuthTokens = new HashMap<>();
         private Map<String, Boolean> mHasBeenAccepted = new HashMap<>();
         private boolean mAlwaysAccept;
@@ -135,6 +140,11 @@ public class AccountHolder {
 
         public Builder account(@NonNull Account account) {
             mAccount = account;
+            return this;
+        }
+
+        public Builder accountId(@NonNull CoreAccountId accountId) {
+            mAccountId = accountId;
             return this;
         }
 
@@ -180,8 +190,13 @@ public class AccountHolder {
         }
 
         public AccountHolder build() {
-            return new AccountHolder(
-                    mAccount, mAuthTokens, mHasBeenAccepted, mAlwaysAccept, mFeatures);
+            if (mAccountId == null) {
+                // CoreAccountId rejects strings containing '@' symbol.
+                String fakeGaiaId = "gaia-id-" + mAccount.name.replace("@", "[at]");
+                mAccountId = new CoreAccountId(fakeGaiaId);
+            }
+            return new AccountHolder(new CoreAccountInfo(mAccountId, mAccount), mAuthTokens,
+                    mHasBeenAccepted, mAlwaysAccept, mFeatures);
         }
     }
 }

@@ -485,13 +485,12 @@ static bool IsDirectReference(const SVGElement& element) {
 }
 
 Path SVGUseElement::ToClipPath() const {
-  auto* svg_geometry_element =
-      DynamicTo<SVGGeometryElement>(VisibleTargetGraphicsElementForClipping());
-  if (!svg_geometry_element)
+  const SVGGraphicsElement* element = VisibleTargetGraphicsElementForClipping();
+  if (!element || !element->IsSVGGeometryElement())
     return Path();
 
   DCHECK(GetLayoutObject());
-  Path path = svg_geometry_element->ToClipPath();
+  Path path = ToSVGGeometryElement(*element).ToClipPath();
   AffineTransform transform = GetLayoutObject()->LocalSVGTransform();
   if (!transform.IsIdentity())
     path.Transform(transform);

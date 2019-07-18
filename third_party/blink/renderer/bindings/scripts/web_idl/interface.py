@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import exceptions
+
 from .attribute import Attribute
 from .common import WithCodeGeneratorInfo
 from .common import WithComponent
@@ -12,9 +13,9 @@ from .common import WithExtendedAttributes
 from .constant import Constant
 from .identifier_ir_map import IdentifierIRMap
 from .idl_member import IdlMember
-from .idl_reference_proxy import RefByIdFactory
 from .idl_types import IdlType
 from .operation import Operation
+from .reference import RefById
 from .user_defined_type import UserDefinedType
 
 
@@ -48,7 +49,7 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
                      debug_info=None):
             assert isinstance(is_partial, bool)
             assert isinstance(is_mixin, bool)
-            assert inherited is None or RefByIdFactory.is_reference(inherited)
+            assert inherited is None or isinstance(inherited, RefById)
             assert attributes is None or isinstance(attributes, (list, tuple))
             assert constants is None or isinstance(constants, (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))

@@ -160,12 +160,12 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindLambdaForTesting(
-            [&, app_id, url, code, callback = std::move(callback)]() mutable {
-              registrar_->AddExternalApp(
-                  app_id, {url, web_app::InstallSource::kExternalPolicy});
-              std::move(callback).Run(app_id, code);
-            }));
+        base::BindLambdaForTesting([&, app_id, url, code,
+                                    callback = std::move(callback)]() mutable {
+          registrar_->AddExternalApp(
+              app_id, {url, web_app::ExternalInstallSource::kExternalPolicy});
+          std::move(callback).Run(app_id, code);
+        }));
   }
 
   void UninstallExternalWebApp(
@@ -350,7 +350,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
   auto task = GetInstallationTaskWithTestMocks(
       {kWebAppUrl, web_app::LaunchContainer::kDefault,
-       web_app::InstallSource::kInternalDefault});
+       web_app::ExternalInstallSource::kInternalDefault});
 
   base::RunLoop run_loop;
 
@@ -390,7 +390,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationFails) {
   auto task = GetInstallationTaskWithTestMocks(
       {kWebAppUrl, web_app::LaunchContainer::kWindow,
-       web_app::InstallSource::kInternalDefault});
+       web_app::ExternalInstallSource::kInternalDefault});
   data_retriever()->SetRendererWebApplicationInfo(nullptr);
 
   base::RunLoop run_loop;
@@ -419,7 +419,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoDesktopShortcut) {
   web_app::InstallOptions install_options(
       kWebAppUrl, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kInternalDefault);
+      web_app::ExternalInstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -450,7 +450,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoQuickLaunchBarShortcut) {
   web_app::InstallOptions install_options(
       kWebAppUrl, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kInternalDefault);
+      web_app::ExternalInstallSource::kInternalDefault);
   install_options.add_to_quick_launch_bar = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -481,7 +481,7 @@ TEST_F(
     WebAppOrShortcutFromContents_NoDesktopShortcutAndNoQuickLaunchBarShortcut) {
   web_app::InstallOptions install_options(
       kWebAppUrl, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kInternalDefault);
+      web_app::ExternalInstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
@@ -512,7 +512,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                              web_app::InstallSource::kInternalDefault);
+                              web_app::ExternalInstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
@@ -536,7 +536,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kTab,
-                              web_app::InstallSource::kInternalDefault);
+                              web_app::ExternalInstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
@@ -559,7 +559,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_DefaultApp) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
-                              web_app::InstallSource::kInternalDefault);
+                              web_app::ExternalInstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
@@ -583,7 +583,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_AppFromPolicy) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
-                              web_app::InstallSource::kExternalPolicy);
+                              web_app::ExternalInstallSource::kExternalPolicy);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
@@ -604,8 +604,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
-  web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   auto task = GetInstallationTaskWithTestMocks(std::move(options));
 
@@ -637,8 +638,9 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholder) {
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
-  web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   web_app::AppId placeholder_app_id;
 
@@ -678,8 +680,9 @@ TEST_F(BookmarkAppInstallationTaskTest, InstallPlaceholderTwice) {
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
-  web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   web_app::AppId placeholder_app_id;
 
@@ -726,8 +729,9 @@ TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderSucceeds) {
 }
 
 TEST_F(BookmarkAppInstallationTaskTest, ReinstallPlaceholderFails) {
-  web_app::InstallOptions options(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   options.install_placeholder = true;
   web_app::AppId placeholder_app_id;
 

@@ -193,9 +193,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   bool is_status_area_visible() const { return state_.is_status_area_visible; }
 
-  // Returns whether status area is shown without the shelf.
-  bool IsShowingStatusAreaWithoutShelf() const;
-
   bool updating_bounds() const { return updating_bounds_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
@@ -350,14 +347,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns whether status area is visible. Status area visibility is
   // independent from shelf visibility when home screen is shown.
   bool CalculateStatusAreaVisibility(const State& state) const;
-
-  // Returns whether status area should be repainted when state changes from
-  // |old_state| to |new_state|. Status area needs repainting due to being
-  // showed without shelf - its background changes without bounds nor position
-  // change.
-  bool ShouldRepaintStatusAreaOnStateChange(
-      ShelfLayoutManager::State old_state,
-      ShelfLayoutManager::State new_state) const;
 
   // Returns true if |window| is a descendant of the shelf.
   bool IsShelfWindow(aura::Window* window);

@@ -30,6 +30,8 @@ suite('<app-management-arc-permission-view>', () => {
   setup(async () => {
     fakeHandler = setupFakeHandler();
     replaceStore();
+    app_management.Store.getInstance().dispatch(
+        app_management.actions.updateArcSupported(true));
 
     // Create an ARC app without microphone permissions.
     const arcOptions = {
@@ -65,6 +67,9 @@ suite('<app-management-arc-permission-view>', () => {
         isHidden(getPermissionItemByType(arcPermissionView, 'MICROPHONE')));
     assertFalse(
         isHidden(getPermissionItemByType(arcPermissionView, 'LOCATION')));
+    assertFalse(isHidden(getPermissionItemByType(arcPermissionView, 'CAMERA')));
+    assertFalse(
+        isHidden(getPermissionItemByType(arcPermissionView, 'STORAGE')));
     assertFalse(isHidden(getPermissionItemByType(arcPermissionView, 'CAMERA')));
   });
 
@@ -119,5 +124,23 @@ suite('<app-management-arc-permission-view>', () => {
     await checkPermissionItemOnClick('NOTIFICATIONS');
     await checkPermissionItemOnClick('CONTACTS');
     await checkPermissionItemOnClick('STORAGE');
+  });
+
+  test('Unsupported Arc hides correctly', () => {
+    assertFalse(
+        isHidden(getPermissionItemByType(arcPermissionView, 'NOTIFICATIONS')));
+    assertFalse(
+        isHidden(arcPermissionView.root.getElementById('permissions-card')));
+
+    app_management.Store.getInstance().dispatch(
+        app_management.actions.updateArcSupported(false));
+
+    assertTrue(
+        isHidden(getPermissionItemByType(arcPermissionView, 'NOTIFICATIONS')));
+    assertTrue(
+        isHidden(arcPermissionView.root.getElementById('permissions-card')));
+
+    app_management.Store.getInstance().dispatch(
+        app_management.actions.updateArcSupported(true));
   });
 });

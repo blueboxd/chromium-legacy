@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/dom/node.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/node_or_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -736,17 +736,19 @@ Node* Node::appendChild(Node* new_child) {
   return appendChild(new_child, ASSERT_NO_EXCEPTION);
 }
 
-static bool IsNodeInNodes(const Node* const node,
-                          const HeapVector<NodeOrString>& nodes) {
-  for (const NodeOrString& node_or_string : nodes) {
+static bool IsNodeInNodes(
+    const Node* const node,
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
+  for (const NodeOrStringOrTrustedScript& node_or_string : nodes) {
     if (node_or_string.IsNode() && node_or_string.GetAsNode() == node)
       return true;
   }
   return false;
 }
 
-static Node* FindViablePreviousSibling(const Node& node,
-                                       const HeapVector<NodeOrString>& nodes) {
+static Node* FindViablePreviousSibling(
+    const Node& node,
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
   for (Node* sibling = node.previousSibling(); sibling;
        sibling = sibling->previousSibling()) {
     if (!IsNodeInNodes(sibling, nodes))
@@ -755,8 +757,9 @@ static Node* FindViablePreviousSibling(const Node& node,
   return nullptr;
 }
 
-static Node* FindViableNextSibling(const Node& node,
-                                   const HeapVector<NodeOrString>& nodes) {
+static Node* FindViableNextSibling(
+    const Node& node,
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
   for (Node* sibling = node.nextSibling(); sibling;
        sibling = sibling->nextSibling()) {
     if (!IsNodeInNodes(sibling, nodes))
@@ -765,79 +768,162 @@ static Node* FindViableNextSibling(const Node& node,
   return nullptr;
 }
 
-static Node* NodeOrStringToNode(const NodeOrString& node_or_string,
-                                Document& document) {
-  if (node_or_string.IsNode())
+static Node* NodeOrStringToNode(
+    const NodeOrStringOrTrustedScript& node_or_string,
+    Document& document,
+    bool needs_trusted_types_check,
+    ExceptionState& exception_state) {
+  if (!needs_trusted_types_check) {
+    // Without trusted type checks, we simply extract the string from whatever
+    // constituent type we find.
+    if (node_or_string.IsNode())
+      return node_or_string.GetAsNode();
+    if (node_or_string.IsTrustedScript()) {
+      return Text::Create(document,
+                          node_or_string.GetAsTrustedScript()->toString());
+    }
+    return Text::Create(document, node_or_string.GetAsString());
+  }
+
+  // With trusted type checks, we can process trusted script or non-text nodes
+  // directly. Strings or text nodes need to be checked.
+  if (node_or_string.IsNode() && !node_or_string.GetAsNode()->IsTextNode())
     return node_or_string.GetAsNode();
-  return Text::Create(document, node_or_string.GetAsString());
+
+  if (node_or_string.IsTrustedScript()) {
+    return Text::Create(document,
+                        node_or_string.GetAsTrustedScript()->toString());
+  }
+
+  String string_value = node_or_string.IsString()
+                            ? node_or_string.GetAsString()
+                            : node_or_string.GetAsNode()->textContent();
+
+  string_value =
+      GetStringFromTrustedScript(string_value, &document, exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return Text::Create(document, string_value);
 }
 
 // Returns nullptr if an exception was thrown.
-static Node* ConvertNodesIntoNode(const HeapVector<NodeOrString>& nodes,
-                                  Document& document,
-                                  ExceptionState& exception_state) {
+static Node* ConvertNodesIntoNode(
+    const Node* parent,
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+    Document& document,
+    ExceptionState& exception_state) {
+  bool needs_check =
+      IsHTMLScriptElement(parent) && document.IsTrustedTypesEnabledForDoc();
+
   if (nodes.size() == 1)
-    return NodeOrStringToNode(nodes[0], document);
+    return NodeOrStringToNode(nodes[0], document, needs_check, exception_state);
 
   Node* fragment = DocumentFragment::Create(document);
-  for (const NodeOrString& node_or_string : nodes) {
-    fragment->appendChild(NodeOrStringToNode(node_or_string, document),
-                          exception_state);
+  for (const NodeOrStringOrTrustedScript& node_or_string_or_trusted_script :
+       nodes) {
+    Node* node = NodeOrStringToNode(node_or_string_or_trusted_script, document,
+                                    needs_check, exception_state);
+    if (node)
+      fragment->appendChild(node, exception_state);
     if (exception_state.HadException())
       return nullptr;
   }
   return fragment;
 }
 
-void Node::Prepend(const HeapVector<NodeOrString>& nodes,
+void Node::Prepend(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                    ExceptionState& exception_state) {
-  if (Node* node = ConvertNodesIntoNode(nodes, GetDocument(), exception_state))
-    insertBefore(node, firstChild(), exception_state);
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (!this_node) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kHierarchyRequestError,
+        "This node type does not support this method.");
+    return;
+  }
+
+  if (Node* node =
+          ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state))
+    this_node->InsertBefore(node, firstChild(), exception_state);
 }
 
-void Node::Append(const HeapVector<NodeOrString>& nodes,
+void Node::Append(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                   ExceptionState& exception_state) {
-  if (Node* node = ConvertNodesIntoNode(nodes, GetDocument(), exception_state))
-    appendChild(node, exception_state);
+  auto* this_node = DynamicTo<ContainerNode>(this);
+  if (!this_node) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kHierarchyRequestError,
+        "This node type does not support this method.");
+    return;
+  }
+
+  if (Node* node =
+          ConvertNodesIntoNode(this, nodes, GetDocument(), exception_state))
+    this_node->AppendChild(node, exception_state);
 }
 
-void Node::Before(const HeapVector<NodeOrString>& nodes,
+void Node::Before(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                   ExceptionState& exception_state) {
   Node* parent = parentNode();
   if (!parent)
     return;
+  auto* parent_node = DynamicTo<ContainerNode>(parent);
+  if (!parent_node) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kHierarchyRequestError,
+        "This node type does not support this method.");
+    return;
+  }
   Node* viable_previous_sibling = FindViablePreviousSibling(*this, nodes);
-  if (Node* node = ConvertNodesIntoNode(nodes, GetDocument(), exception_state))
-    parent->insertBefore(node,
-                         viable_previous_sibling
-                             ? viable_previous_sibling->nextSibling()
-                             : parent->firstChild(),
-                         exception_state);
+  if (Node* node =
+          ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state)) {
+    parent_node->InsertBefore(node,
+                              viable_previous_sibling
+                                  ? viable_previous_sibling->nextSibling()
+                                  : parent->firstChild(),
+                              exception_state);
+  }
 }
 
-void Node::After(const HeapVector<NodeOrString>& nodes,
+void Node::After(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                  ExceptionState& exception_state) {
   Node* parent = parentNode();
   if (!parent)
     return;
+  auto* parent_node = DynamicTo<ContainerNode>(parent);
+  if (!parent_node) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kHierarchyRequestError,
+        "This node type does not support this method.");
+    return;
+  }
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
-  if (Node* node = ConvertNodesIntoNode(nodes, GetDocument(), exception_state))
-    parent->insertBefore(node, viable_next_sibling, exception_state);
+  if (Node* node =
+          ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state))
+    parent_node->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
-void Node::ReplaceWith(const HeapVector<NodeOrString>& nodes,
+void Node::ReplaceWith(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                        ExceptionState& exception_state) {
   Node* parent = parentNode();
   if (!parent)
     return;
+  auto* parent_node = DynamicTo<ContainerNode>(parent);
+  if (!parent_node) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kHierarchyRequestError,
+        "This node type does not support this method.");
+    return;
+  }
+
   Node* viable_next_sibling = FindViableNextSibling(*this, nodes);
-  Node* node = ConvertNodesIntoNode(nodes, GetDocument(), exception_state);
+  Node* node =
+      ConvertNodesIntoNode(parent, nodes, GetDocument(), exception_state);
   if (exception_state.HadException())
     return;
-  if (parent == parentNode())
-    parent->replaceChild(node, this, exception_state);
+  if (parent_node == parentNode())
+    parent_node->ReplaceChild(node, this, exception_state);
   else
-    parent->insertBefore(node, viable_next_sibling, exception_state);
+    parent_node->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
 void Node::remove(ExceptionState& exception_state) {

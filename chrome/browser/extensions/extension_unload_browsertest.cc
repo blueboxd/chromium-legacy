@@ -5,6 +5,7 @@
 #include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -188,7 +189,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, OpenedOpaqueWindows) {
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, CrashedTabs) {
+// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_CrashedTabs DISABLED_CrashedTabs
+#else
+#define MAYBE_CrashedTabs CrashedTabs
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionUnloadBrowserTest, MAYBE_CrashedTabs) {
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
       R"({

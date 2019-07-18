@@ -283,8 +283,8 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
       GetValidIconUrlsToDownload(*web_app_info, /*data=*/nullptr);
 
   // A system app should always have a manifest icon.
-  if (install_options_ &&
-      install_options_->install_source == InstallSource::kSystemInstalled) {
+  if (install_options_ && install_options_->install_source ==
+                              ExternalInstallSource::kSystemInstalled) {
     DCHECK(!manifest.icons.empty());
   }
 
@@ -478,17 +478,17 @@ void WebAppInstallTask::OnDialogCompleted(
     switch (install_options_->install_source) {
       // TODO(nigeltao/ortuno): should these two cases lead to different
       // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-      case InstallSource::kInternalDefault:
-      case InstallSource::kExternalDefault:
+      case ExternalInstallSource::kInternalDefault:
+      case ExternalInstallSource::kExternalDefault:
         finalize_options.source = InstallFinalizer::Source::kDefaultInstalled;
         break;
-      case InstallSource::kExternalPolicy:
+      case ExternalInstallSource::kExternalPolicy:
         finalize_options.source = InstallFinalizer::Source::kPolicyInstalled;
         break;
-      case InstallSource::kSystemInstalled:
+      case ExternalInstallSource::kSystemInstalled:
         finalize_options.source = InstallFinalizer::Source::kSystemInstalled;
         break;
-      case InstallSource::kArc:
+      case ExternalInstallSource::kArc:
         NOTREACHED();
         break;
     }

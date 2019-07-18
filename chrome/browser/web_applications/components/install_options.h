@@ -11,13 +11,13 @@
 
 namespace web_app {
 
-enum class InstallSource;
+enum class ExternalInstallSource;
 enum class LaunchContainer;
 
 struct InstallOptions {
   InstallOptions(const GURL& url,
                  LaunchContainer launch_container,
-                 InstallSource install_source);
+                 ExternalInstallSource install_source);
   ~InstallOptions();
   InstallOptions(const InstallOptions& other);
   InstallOptions(InstallOptions&& other);
@@ -27,7 +27,7 @@ struct InstallOptions {
 
   GURL url;
   LaunchContainer launch_container;
-  InstallSource install_source;
+  ExternalInstallSource install_source;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start
   // Menu on Linux and Windows. On Chrome OS, all installed apps show up in the

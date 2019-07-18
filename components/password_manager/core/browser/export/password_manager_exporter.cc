@@ -54,8 +54,6 @@ bool Write(
 
 namespace password_manager {
 
-using metrics_util::ExportPasswordsResult;
-
 PasswordManagerExporter::PasswordManagerExporter(
     password_manager::CredentialProviderInterface*
         credential_provider_interface,
@@ -79,7 +77,6 @@ PasswordManagerExporter::~PasswordManagerExporter() {}
 
 void PasswordManagerExporter::PreparePasswordsForExport() {
   DCHECK_EQ(GetProgressStatus(), ExportProgressStatus::NOT_STARTED);
-  export_preparation_started_ = base::Time::Now();
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list =
       credential_provider_interface_->GetAllPasswords();
@@ -110,10 +107,6 @@ void PasswordManagerExporter::SetSerialisedPasswordList(
     const std::string& serialised) {
   serialised_password_list_ = serialised;
   password_count_ = count;
-
-  UMA_HISTOGRAM_MEDIUM_TIMES("PasswordManager.TimeReadingExportedPasswords",
-                             base::Time::Now() - export_preparation_started_);
-
   if (IsReadyForExport())
     Export();
 }
@@ -129,13 +122,6 @@ void PasswordManagerExporter::Cancel() {
   // If we are currently writing to the disk, we will have to cleanup the file
   // once writing stops.
   Cleanup();
-
-  // TODO(crbug.com/789561) If the passwords have already been written to the
-  // disk, then we've already recorded ExportPasswordsResult::SUCCESS. Ideally,
-  // we should make different results mutually exclusive.
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
-                            ExportPasswordsResult::USER_ABORTED,
-                            ExportPasswordsResult::COUNT);
 }
 
 password_manager::ExportProgressStatus
@@ -177,25 +163,14 @@ void PasswordManagerExporter::Export() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void PasswordManagerExporter::OnPasswordsExported(
-    bool success) {
+void PasswordManagerExporter::OnPasswordsExported(bool success) {
   if (success) {
     OnProgress(ExportProgressStatus::SUCCEEDED, std::string());
-
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
-                              ExportPasswordsResult::SUCCESS,
-                              ExportPasswordsResult::COUNT);
-    UMA_HISTOGRAM_COUNTS_1M("PasswordManager.ExportedPasswordsPerUserInCSV",
-                            password_count_);
   } else {
     OnProgress(ExportProgressStatus::FAILED_WRITE_FAILED,
                destination_.DirName().BaseName().AsUTF8Unsafe());
     // Don't leave partial password files, if we tell the user we couldn't write
     Cleanup();
-
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ExportPasswordsToCSVResult",
-                              ExportPasswordsResult::WRITE_FAILED,
-                              ExportPasswordsResult::COUNT);
   }
 }
 

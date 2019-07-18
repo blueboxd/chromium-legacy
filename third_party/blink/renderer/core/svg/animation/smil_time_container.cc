@@ -379,16 +379,23 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
   if (!GetDocument().IsActive())
     return;
 
-  SMILTime earliest_fire_time = UpdateAnimations(elapsed, seek_to_time);
+  UpdateAnimations(elapsed, seek_to_time);
   ApplyAnimations(elapsed);
+
+  SMILTime earliest_fire_time = SMILTime::Unresolved();
+  for (auto& sandwich : scheduled_animations_) {
+    SMILTime next_fire_time = sandwich.value->GetNextFireTime();
+    if (next_fire_time.IsFinite())
+      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
+  }
+
   if (!CanScheduleFrame(earliest_fire_time))
     return;
   double delay_time = earliest_fire_time.Value() - elapsed;
   ScheduleAnimationFrame(delay_time);
 }
 
-SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
-                                             bool seek_to_time) {
+void SMILTimeContainer::UpdateAnimations(double elapsed, bool seek_to_time) {
   DCHECK(GetDocument().IsActive());
 
 #if DCHECK_IS_ON()
@@ -414,14 +421,9 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
   }
 
   active_sandwiches_.ReserveCapacity(scheduled_animations_.size());
-  SMILTime earliest_fire_time = SMILTime::Unresolved();
   for (auto& entry : scheduled_animations_) {
     auto* sandwich = entry.value.Get();
     sandwich->UpdateTiming(elapsed, seek_to_time);
-
-    SMILTime next_fire_time = sandwich->GetNextFireTime();
-    if (next_fire_time.IsFinite())
-      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
 
     if (!sandwich->IsEmpty()) {
       active_sandwiches_.push_back(sandwich);
@@ -430,11 +432,7 @@ SMILTime SMILTimeContainer::UpdateAnimations(double elapsed,
 
   for (auto& sandwich : active_sandwiches_) {
     sandwich->SendEvents(elapsed, seek_to_time);
-    SMILTime next_fire_time = sandwich->GetNextFireTime();
-    if (next_fire_time.IsFinite())
-      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
   }
-  return earliest_fire_time;
 }
 
 void SMILTimeContainer::ApplyAnimations(double elapsed) {

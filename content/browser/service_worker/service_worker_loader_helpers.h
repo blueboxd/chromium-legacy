@@ -12,6 +12,16 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
+namespace base {
+class TimeDelta;
+}
+
+namespace blink {
+namespace mojom {
+enum class ServiceWorkerUpdateViaCache;
+}
+}  // namespace blink
+
 namespace content {
 
 namespace service_worker_loader_helpers {
@@ -23,6 +33,16 @@ std::unique_ptr<net::HttpResponseInfo> CreateHttpResponseInfoAndCheckHeaders(
 
 blink::ServiceWorkerStatusCode MapNetErrorToServiceWorkerStatus(
     net::Error error_code);
+
+bool ShouldBypassCacheDueToUpdateViaCache(
+    bool is_main_script,
+    blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
+
+bool ShouldValidateBrowserCacheForScript(
+    bool is_main_script,
+    bool force_bypass_cache,
+    blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
+    base::TimeDelta time_since_last_check);
 
 }  // namespace service_worker_loader_helpers
 

@@ -333,3 +333,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_client_enabled_bbr_v2,
           false)
+
+// When true, QuicDispatcher will pass the version from the packet to the
+// ChloExtractor instead of all supported versions.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_restart_flag_quic_dispatcher_hands_chlo_extractor_one_version,
+    true)

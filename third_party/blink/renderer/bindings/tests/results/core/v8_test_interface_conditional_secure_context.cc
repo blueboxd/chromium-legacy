@@ -489,60 +489,69 @@ void V8TestInterfaceConditionalSecureContext::InstallConditionalFeatures(
 
   if (!prototype_object.IsEmpty() || !interface_object.IsEmpty()) {
     if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
-      static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+      static constexpr V8DOMConfiguration::AccessorConfiguration
+      kAccessorConfigurations[] = {
           { "secureContextAttribute", V8TestInterfaceConditionalSecureContext::SecureContextAttributeAttributeGetterCallback, V8TestInterfaceConditionalSecureContext::SecureContextAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
       };
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instance_object, prototype_object, interface_object,
-          signature, accessor_configurations,
-          base::size(accessor_configurations));
+          signature, kAccessorConfigurations,
+          base::size(kAccessorConfigurations));
+
       if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+        static constexpr V8DOMConfiguration::AccessorConfiguration
+        kAccessorConfigurations[] = {
             { "secureContextRuntimeEnabledAttribute", V8TestInterfaceConditionalSecureContext::SecureContextRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterfaceConditionalSecureContext::SecureContextRuntimeEnabledAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         };
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instance_object, prototype_object, interface_object,
-            signature, accessor_configurations,
-            base::size(accessor_configurations));
+            signature, kAccessorConfigurations,
+            base::size(kAccessorConfigurations));
       }
     }
     if (execution_context && (execution_context->IsDocument())) {
       if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+        static constexpr V8DOMConfiguration::AccessorConfiguration
+        kAccessorConfigurations[] = {
             { "secureContextWindowExposedAttribute", V8TestInterfaceConditionalSecureContext::SecureContextWindowExposedAttributeAttributeGetterCallback, V8TestInterfaceConditionalSecureContext::SecureContextWindowExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         };
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instance_object, prototype_object, interface_object,
-            signature, accessor_configurations,
-            base::size(accessor_configurations));
+            signature, kAccessorConfigurations,
+            base::size(kAccessorConfigurations));
+
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
-          static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+          static constexpr V8DOMConfiguration::AccessorConfiguration
+          kAccessorConfigurations[] = {
               { "secureContextWindowExposedRuntimeEnabledAttribute", V8TestInterfaceConditionalSecureContext::SecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterfaceConditionalSecureContext::SecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
           };
           V8DOMConfiguration::InstallAccessors(
               isolate, world, instance_object, prototype_object, interface_object,
-              signature, accessor_configurations,
-              base::size(accessor_configurations));
+              signature, kAccessorConfigurations,
+              base::size(kAccessorConfigurations));
         }
       }
     }
     if (execution_context && (execution_context->IsWorkerGlobalScope())) {
       if (is_secure_context || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
-        static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+        static constexpr V8DOMConfiguration::AccessorConfiguration
+        kAccessorConfigurations[] = {
             { "secureContextWorkerExposedAttribute", V8TestInterfaceConditionalSecureContext::SecureContextWorkerExposedAttributeAttributeGetterCallback, V8TestInterfaceConditionalSecureContext::SecureContextWorkerExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
         };
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instance_object, prototype_object, interface_object,
-            signature, accessor_configurations,
-            base::size(accessor_configurations));
+            signature, kAccessorConfigurations,
+            base::size(kAccessorConfigurations));
+
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
-          static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+          static constexpr V8DOMConfiguration::AccessorConfiguration
+          kAccessorConfigurations[] = {
               { "secureContextWorkerExposedRuntimeEnabledAttribute", V8TestInterfaceConditionalSecureContext::SecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterfaceConditionalSecureContext::SecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
           };
           V8DOMConfiguration::InstallAccessors(
               isolate, world, instance_object, prototype_object, interface_object,
-              signature, accessor_configurations,
-              base::size(accessor_configurations));
+              signature, kAccessorConfigurations,
+              base::size(kAccessorConfigurations));
         }
       }
     }

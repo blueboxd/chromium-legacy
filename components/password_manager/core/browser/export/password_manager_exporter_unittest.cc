@@ -35,8 +35,6 @@ using ::testing::SaveArg;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
-using password_manager::metrics_util::ExportPasswordsResult;
-
 // A callback that matches the signature of base::WriteFile
 using WriteCallback =
     base::RepeatingCallback<int(const base::FilePath&, const char*, int)>;
@@ -148,14 +146,6 @@ TEST_F(PasswordManagerExporterTest, PasswordExportSetPasswordListFirst) {
   exporter_.SetDestination(destination_path_);
 
   scoped_task_environment_.RunUntilIdle();
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", password_list_.size(),
-      1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      ExportPasswordsResult::SUCCESS, 1);
 }
 
 // When writing fails, we should notify the UI of the failure and try to cleanup
@@ -177,11 +167,6 @@ TEST_F(PasswordManagerExporterTest, WriteFileFailed) {
   exporter_.SetDestination(destination_path_);
 
   scoped_task_environment_.RunUntilIdle();
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      ExportPasswordsResult::WRITE_FAILED, 1);
 }
 
 // A partial write should be considered a failure and be cleaned up.
@@ -240,12 +225,6 @@ TEST_F(PasswordManagerExporterTest, DontExportWithOnlyDestination) {
   exporter_.SetDestination(destination_path_);
 
   scoped_task_environment_.RunUntilIdle();
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 0);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportPasswordsToCSVResult", 0);
 }
 
 TEST_F(PasswordManagerExporterTest, CancelAfterPasswords) {
@@ -258,11 +237,6 @@ TEST_F(PasswordManagerExporterTest, CancelAfterPasswords) {
   exporter_.Cancel();
 
   scoped_task_environment_.RunUntilIdle();
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      ExportPasswordsResult::USER_ABORTED, 1);
 }
 
 TEST_F(PasswordManagerExporterTest, CancelWhileExporting) {
@@ -280,11 +254,6 @@ TEST_F(PasswordManagerExporterTest, CancelWhileExporting) {
   exporter_.Cancel();
 
   scoped_task_environment_.RunUntilIdle();
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      ExportPasswordsResult::USER_ABORTED, 1);
 }
 
 // The "Cancel" button may still be visible on the UI after we've completed

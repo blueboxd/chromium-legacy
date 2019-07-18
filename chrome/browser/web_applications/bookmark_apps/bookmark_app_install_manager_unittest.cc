@@ -137,7 +137,7 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_WebContentsDestroyed) {
 
   web_app::InstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -169,7 +169,7 @@ TEST_F(BookmarkAppInstallManagerTest,
 
   web_app::InstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop retrieval_run_loop;
   bool data_retrieval_passed = false;
@@ -229,7 +229,7 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_InstallManagerDestroyed) {
 
   web_app::InstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -262,7 +262,7 @@ TEST_F(BookmarkAppInstallManagerTest,
 
   web_app::InstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop retrieval_run_loop;
   bool data_retrieval_passed = false;

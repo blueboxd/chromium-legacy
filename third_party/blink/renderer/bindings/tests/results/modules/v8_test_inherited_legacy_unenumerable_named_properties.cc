@@ -201,10 +201,6 @@ void V8TestInheritedLegacyUnenumerableNamedProperties::IndexedPropertyDescriptor
   test_inherited_legacy_unenumerable_named_properties_v8_internal::NamedPropertyDescriptor(index, info);
 }
 
-static constexpr V8DOMConfiguration::AccessorConfiguration kV8TestInheritedLegacyUnenumerableNamedPropertiesAccessors[] = {
-    { "longAttribute", V8TestInheritedLegacyUnenumerableNamedProperties::LongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-};
-
 static void InstallV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
@@ -220,9 +216,14 @@ static void InstallV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
   ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
+  static constexpr V8DOMConfiguration::AccessorConfiguration
+  kAccessorConfigurations[] = {
+      { "longAttribute", V8TestInheritedLegacyUnenumerableNamedProperties::LongAttributeAttributeGetterCallback, nullptr, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+  };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
-      signature, kV8TestInheritedLegacyUnenumerableNamedPropertiesAccessors, base::size(kV8TestInheritedLegacyUnenumerableNamedPropertiesAccessors));
+      signature, kAccessorConfigurations,
+      base::size(kAccessorConfigurations));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(

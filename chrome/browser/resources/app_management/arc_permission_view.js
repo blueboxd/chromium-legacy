@@ -21,10 +21,18 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * @private {boolean}
+     */
+    isArcSupported_: {
+      type: Boolean,
+    }
   },
 
   attached: function() {
     this.watch('app_', state => app_management.util.getSelectedApp(state));
+    this.watch('isArcSupported_', state => state.arcSupported);
     this.updateFromStore();
 
     this.listExpanded_ = false;

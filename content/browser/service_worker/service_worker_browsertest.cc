@@ -36,6 +36,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -3733,6 +3734,17 @@ class ThrottlingContentBrowserClient : public TestContentBrowserClient {
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override {
+    return CreateURLLoaderThrottles(request, /*browser_context=*/nullptr,
+                                    wc_getter, navigation_ui_data,
+                                    frame_tree_node_id);
+  }
+
+  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      BrowserContext* browser_context,
+      const base::RepeatingCallback<WebContents*()>& wc_getter,
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override {
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
     auto throttle = std::make_unique<HeaderInjectingThrottle>();
     throttles.push_back(std::move(throttle));
@@ -3801,9 +3813,12 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerURLLoaderThrottleTest,
   ASSERT_TRUE(dict);
 
   // Default headers are present.
-  EXPECT_TRUE(CheckHeader(*dict, "accept",
-                          std::string(network::kFrameAcceptHeader) +
-                              std::string(kAcceptHeaderSignedExchangeSuffix)));
+  std::string expect_accept(network::kFrameAcceptHeader);
+  // See http://crbug.com/824854.
+  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled())
+    expect_accept += std::string(kAcceptHeaderSignedExchangeSuffix);
+  EXPECT_TRUE(CheckHeader(*dict, "accept", expect_accept));
+
   // Injected headers are present.
   EXPECT_TRUE(CheckHeader(*dict, "x-injected", "injected value"));
 

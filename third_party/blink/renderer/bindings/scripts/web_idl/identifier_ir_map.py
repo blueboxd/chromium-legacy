@@ -174,7 +174,7 @@ class IdentifierIRMap(object):
             for irs_per_kind in irs_per_phase.values():
                 if identifier in irs_per_kind:
                     return irs_per_kind[identifier]
-        raise KeyError
+        raise KeyError(identifier)
 
     def find_by_kind(self, kind, skip_current_phase=False):
         """

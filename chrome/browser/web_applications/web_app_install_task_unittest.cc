@@ -1032,7 +1032,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithOptions_GuestProfile) {
       guest_profile, install_finalizer_.get(), std::move(data_retriever));
 
   InstallOptions install_options{app_url, LaunchContainer::kDefault,
-                                 InstallSource::kExternalDefault};
+                                 ExternalInstallSource::kExternalDefault};
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithOptions(

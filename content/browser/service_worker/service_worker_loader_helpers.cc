@@ -6,9 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -71,6 +73,32 @@ blink::ServiceWorkerStatusCode MapNetErrorToServiceWorkerStatus(
     default:
       return blink::ServiceWorkerStatusCode::kErrorNetwork;
   }
+}
+
+bool ShouldBypassCacheDueToUpdateViaCache(
+    bool is_main_script,
+    blink::mojom::ServiceWorkerUpdateViaCache cache_mode) {
+  switch (cache_mode) {
+    case blink::mojom::ServiceWorkerUpdateViaCache::kImports:
+      return is_main_script;
+    case blink::mojom::ServiceWorkerUpdateViaCache::kNone:
+      return true;
+    case blink::mojom::ServiceWorkerUpdateViaCache::kAll:
+      return false;
+  }
+  NOTREACHED() << static_cast<int>(cache_mode);
+  return false;
+}
+
+bool ShouldValidateBrowserCacheForScript(
+    bool is_main_script,
+    bool force_bypass_cache,
+    blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
+    base::TimeDelta time_since_last_check) {
+  return (ShouldBypassCacheDueToUpdateViaCache(is_main_script, cache_mode) ||
+          time_since_last_check >
+              ServiceWorkerConsts::kServiceWorkerScriptMaxCacheAge ||
+          force_bypass_cache);
 }
 
 }  // namespace service_worker_loader_helpers

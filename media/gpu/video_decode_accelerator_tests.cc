@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "media/base/test_data_util.h"
 #include "media/gpu/test/video_frame_file_writer.h"
 #include "media/gpu/test/video_frame_validator.h"
@@ -324,7 +326,7 @@ int main(int argc, char** argv) {
   LOG_ASSERT(cmd_line);
   if (cmd_line->HasSwitch("help")) {
     std::cout << media::test::usage_msg << "\n" << media::test::help_msg;
-    return 0;
+    return EXIT_SUCCESS;
   }
 
   // Check if a video was specified on the command line.
@@ -342,8 +344,11 @@ int main(int argc, char** argv) {
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
-    if (it->first.find("gtest_") == 0 ||               // Handled by GoogleTest
-        it->first == "v" || it->first == "vmodule") {  // Handled by Chrome
+    // Ignore arguments handled by Chrome, GoogleTest, and base::TestLauncher.
+    if (it->first == "v" || it->first == "vmodule" ||
+        it->first.find("gtest_") == 0 ||
+        it->first.find("test-launcher") != std::string::npos ||
+        it->first == "single-process-tests") {
       continue;
     }
 
@@ -375,5 +380,8 @@ int main(int argc, char** argv) {
   media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
       testing::AddGlobalTestEnvironment(test_environment));
 
-  return RUN_ALL_TESTS();
+  base::TestSuite test_suite(argc, argv);
+  return base::LaunchUnitTestsSerially(
+      argc, argv,
+      base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

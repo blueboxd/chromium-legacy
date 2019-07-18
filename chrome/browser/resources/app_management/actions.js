@@ -76,6 +76,17 @@ cr.define('app_management.actions', function() {
     };
   }
 
+  /**
+   * @param {boolean} isSupported
+   * @return {!cr.ui.Action}
+   */
+  function updateArcSupported(isSupported) {
+    return {
+      name: 'update-arc-supported',
+      value: isSupported,
+    };
+  }
+
 
   return {
     addApp: addApp,
@@ -84,5 +95,6 @@ cr.define('app_management.actions', function() {
     changePage: changePage,
     clearSearch: clearSearch,
     setSearchTerm: setSearchTerm,
+    updateArcSupported: updateArcSupported,
   };
 });

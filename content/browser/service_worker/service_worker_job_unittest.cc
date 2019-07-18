@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -29,7 +30,6 @@
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/test_service_worker_observer.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_network_url_loader_factory.h"
@@ -1265,7 +1265,8 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       base::TimeDelta time_since_last_check =
           base::Time::Now() - registration->last_update_check();
       if (!is_update || script.GetOrigin() != kNoChangeOrigin ||
-          time_since_last_check > kServiceWorkerScriptMaxCacheAge) {
+          time_since_last_check >
+              ServiceWorkerConsts::kServiceWorkerScriptMaxCacheAge) {
         version->embedded_worker()->OnNetworkAccessedForScriptLoad();
       }
     }

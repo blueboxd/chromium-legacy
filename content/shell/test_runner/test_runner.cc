@@ -130,7 +130,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   static void Install(base::WeakPtr<TestRunner> test_runner,
                       base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
                       blink::WebLocalFrame* frame,
-                      bool is_wpt_reftest);
+                      bool is_wpt_reftest,
+                      bool is_frame_part_of_main_test_window);
 
  private:
   explicit TestRunnerBindings(
@@ -312,7 +313,8 @@ void TestRunnerBindings::Install(
     base::WeakPtr<TestRunner> test_runner,
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner,
     blink::WebLocalFrame* frame,
-    bool is_wpt_test) {
+    bool is_wpt_test,
+    bool is_frame_part_of_main_test_window) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = frame->MainWorldScriptContext();
@@ -348,7 +350,8 @@ void TestRunnerBindings::Install(
   // Note that this method may be called multiple times on a frame, so we put
   // the code behind a flag. The flag is safe to be installed on testRunner
   // because WPT reftests never access this object.
-  if (is_wpt_test && !frame->Parent() && !frame->Opener()) {
+  if (is_wpt_test && is_frame_part_of_main_test_window && !frame->Parent() &&
+      !frame->Opener()) {
     frame->ExecuteScript(blink::WebString(
         R"(if (!window.testRunner._wpt_reftest_setup) {
           window.testRunner._wpt_reftest_setup = true;
@@ -1503,7 +1506,8 @@ void TestRunner::Install(
     base::WeakPtr<TestRunnerForSpecificView> view_test_runner) {
   // In WPT, only reftests generate pixel results.
   TestRunnerBindings::Install(weak_factory_.GetWeakPtr(), view_test_runner,
-                              frame, is_web_platform_tests_mode());
+                              frame, is_web_platform_tests_mode(),
+                              IsFramePartOfMainTestWindow(frame));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame);
 }

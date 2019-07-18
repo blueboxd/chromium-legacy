@@ -47,8 +47,9 @@ const GURL kQuxWebAppUrl("https://qux.example");
 web_app::InstallOptions GetFooInstallOptions(
     base::Optional<bool> override_previous_user_uninstall =
         base::Optional<bool>()) {
-  web_app::InstallOptions options(kFooWebAppUrl, web_app::LaunchContainer::kTab,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kFooWebAppUrl, web_app::LaunchContainer::kTab,
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   if (override_previous_user_uninstall.has_value())
     options.override_previous_user_uninstall =
@@ -58,16 +59,16 @@ web_app::InstallOptions GetFooInstallOptions(
 }
 
 web_app::InstallOptions GetBarInstallOptions() {
-  web_app::InstallOptions options(kBarWebAppUrl,
-                                  web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kBarWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
 web_app::InstallOptions GetQuxInstallOptions() {
-  web_app::InstallOptions options(kQuxWebAppUrl,
-                                  web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::InstallOptions options(
+      kQuxWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
@@ -650,9 +651,9 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
   auto get_force_reinstall_info = []() {
-    web_app::InstallOptions options(kFooWebAppUrl,
-                                    web_app::LaunchContainer::kWindow,
-                                    web_app::InstallSource::kExternalPolicy);
+    web_app::InstallOptions options(
+        kFooWebAppUrl, web_app::LaunchContainer::kWindow,
+        web_app::ExternalInstallSource::kExternalPolicy);
     options.force_reinstall = true;
     return options;
   };
@@ -1094,7 +1095,7 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
   registrar()->AddExternalApp(
       GenerateFakeAppId(kFooWebAppUrl),
-      {kFooWebAppUrl, web_app::InstallSource::kExternalPolicy});
+      {kFooWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy});
 
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);
@@ -1124,10 +1125,10 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Multiple) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
   registrar()->AddExternalApp(
       GenerateFakeAppId(kFooWebAppUrl),
-      {kFooWebAppUrl, web_app::InstallSource::kExternalPolicy});
+      {kFooWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy});
   registrar()->AddExternalApp(
       GenerateFakeAppId(kBarWebAppUrl),
-      {kFooWebAppUrl, web_app::InstallSource::kExternalPolicy});
+      {kFooWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy});
 
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);

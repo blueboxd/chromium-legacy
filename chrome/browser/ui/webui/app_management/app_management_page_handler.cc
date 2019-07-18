@@ -247,6 +247,10 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   }
 }
 
+void AppManagementPageHandler::OnArcSupportChanged(bool supported) {
+  page_->OnArcSupportChanged(supported);
+}
+
 void AppManagementPageHandler::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   Observe(nullptr);

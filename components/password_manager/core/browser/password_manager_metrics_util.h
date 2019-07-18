@@ -257,15 +257,6 @@ enum class CertificateError {
   COUNT
 };
 
-// Metric: PasswordManager.ExportPasswordsToCSVResult
-enum class ExportPasswordsResult {
-  SUCCESS = 0,
-  USER_ABORTED = 1,
-  WRITE_FAILED = 2,
-  NO_CONSUMER = 3,  // Only used on Android.
-  COUNT,
-};
-
 // Used in UMA histograms, please do NOT reorder.
 // Metric: "PasswordManager.ReusedPasswordType".
 enum class PasswordType {

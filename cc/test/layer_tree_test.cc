@@ -1057,9 +1057,6 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
 
   if (mode == CompositorMode::THREADED)
     settings_.commit_to_active_tree = false;
-  // Spend less time waiting for BeginFrame because the output is
-  // mocked out.
-  settings_.background_animation_rate = 200.0;
   // Disable latency recovery to make the scheduler more predictable in its
   // actions and less dependent on timings to make decisions.
   settings_.enable_latency_recovery = false;

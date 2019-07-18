@@ -13,8 +13,8 @@ source_set("cpp") {
   ]
 
   deps = [
-    "../interfaces",
     "//base",
+    "//components/services/font/public/mojom",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
@@ -31,7 +31,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
-    "//components/services/font/public/interfaces",
+    "//components/services/font/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

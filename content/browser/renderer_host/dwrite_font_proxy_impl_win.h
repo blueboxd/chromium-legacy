@@ -70,6 +70,12 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
 
+  void FallbackFamilyNameForCodepoint(
+      const std::string& base_family_name,
+      const std::string& locale_name,
+      uint32_t codepoint,
+      FallbackFamilyNameForCodepointCallback callback) override;
+
   void InitializeDirectWrite();
 
  private:
@@ -78,6 +84,7 @@ class CONTENT_EXPORT DWriteFontProxyImpl
  private:
   bool direct_write_initialized_ = false;
   Microsoft::WRL::ComPtr<IDWriteFontCollection> collection_;
+  Microsoft::WRL::ComPtr<IDWriteFactory> factory_;
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
   Microsoft::WRL::ComPtr<IDWriteFactory3> factory3_;
   Microsoft::WRL::ComPtr<IDWriteFontFallback> font_fallback_;

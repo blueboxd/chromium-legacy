@@ -757,13 +757,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(
                                          IDS_IOS_EXPORT_PASSWORDS_CANCEL_BUTTON)
                                style:UIAlertActionStyleCancel
-                             handler:^(UIAlertAction* action) {
-                               UMA_HISTOGRAM_ENUMERATION(
-                                   "PasswordManager.ExportPasswordsToCSVResult",
-                                   password_manager::metrics_util::
-                                       ExportPasswordsResult::USER_ABORTED,
-                                   password_manager::metrics_util::
-                                       ExportPasswordsResult::COUNT);
+                             handler:^(UIAlertAction* action){
                              }];
   [exportConfirmation addAction:cancelAction];
 

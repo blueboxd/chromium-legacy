@@ -244,7 +244,7 @@ base::Value CWTRequestHandler::InitializeSession() {
 
   [CWTWebDriverAppInterface enablePopups];
   target_tab_id_ =
-      base::SysNSStringToUTF8([CWTWebDriverAppInterface getCurrentTabID]);
+      base::SysNSStringToUTF8([CWTWebDriverAppInterface currentTabID]);
 
   base::Value result(base::Value::Type::DICTIONARY);
   session_id_ = base::GenerateGUID();
@@ -317,7 +317,7 @@ base::Value CWTRequestHandler::SetTimeouts(const base::Value& timeouts) {
 }
 
 base::Value CWTRequestHandler::GetTargetTabId() {
-  NSArray* tab_ids = [CWTWebDriverAppInterface getTabIDs];
+  NSArray* tab_ids = [CWTWebDriverAppInterface tabIDs];
   if ([tab_ids indexOfObject:base::SysUTF8ToNSString(target_tab_id_)] ==
       NSNotFound) {
     return CreateErrorValue(kWebDriverNoSuchWindowError,
@@ -329,7 +329,7 @@ base::Value CWTRequestHandler::GetTargetTabId() {
 
 base::Value CWTRequestHandler::GetAllTabIds() {
   base::Value id_list(base::Value::Type::LIST);
-  NSArray* tab_ids = [CWTWebDriverAppInterface getTabIDs];
+  NSArray* tab_ids = [CWTWebDriverAppInterface tabIDs];
   for (NSString* tab_id in tab_ids) {
     id_list.GetList().push_back(base::Value(base::SysNSStringToUTF8(tab_id)));
   }

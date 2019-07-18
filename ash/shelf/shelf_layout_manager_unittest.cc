@@ -81,7 +81,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -3081,6 +3080,54 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
+TEST_F(ShelfLayoutManagerTest, StatusAreaAndShelfVisibilityOnHomeScreen) {
+  // Home screen is only available in tablet mode.
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  MockHomeScreenDelegate home_screen_delegate;
+  Shell::Get()->home_screen_controller()->SetDelegate(&home_screen_delegate);
+
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  EXPECT_EQ(SHELF_VISIBLE, layout_manager->visibility_state());
+  EXPECT_TRUE(layout_manager->is_status_area_visible());
+  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
+
+  // Shelf not visible, status area not visible.
+  EXPECT_CALL(home_screen_delegate, ShouldShowShelfOnHomeScreen())
+      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(home_screen_delegate, ShouldShowStatusAreaOnHomeScreen())
+      .WillRepeatedly(testing::Return(false));
+
+  layout_manager->UpdateVisibilityState();
+
+  EXPECT_EQ(SHELF_HIDDEN, layout_manager->visibility_state());
+  EXPECT_FALSE(layout_manager->is_status_area_visible());
+  EXPECT_FALSE(GetShelfWidget()->status_area_widget()->IsVisible());
+
+  // Shelf visible, status area visible.
+  EXPECT_CALL(home_screen_delegate, ShouldShowShelfOnHomeScreen())
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(home_screen_delegate, ShouldShowStatusAreaOnHomeScreen())
+      .WillRepeatedly(testing::Return(true));
+
+  layout_manager->UpdateVisibilityState();
+
+  EXPECT_EQ(SHELF_VISIBLE, layout_manager->visibility_state());
+  EXPECT_TRUE(layout_manager->is_status_area_visible());
+  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
+
+  // Shelf not visible, status area visible.
+  EXPECT_CALL(home_screen_delegate, ShouldShowShelfOnHomeScreen())
+      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(home_screen_delegate, ShouldShowStatusAreaOnHomeScreen())
+      .WillRepeatedly(testing::Return(true));
+
+  layout_manager->UpdateVisibilityState();
+
+  EXPECT_EQ(SHELF_HIDDEN, layout_manager->visibility_state());
+  EXPECT_TRUE(layout_manager->is_status_area_visible());
+  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
+}
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {
  public:
@@ -3290,94 +3337,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfBoundsUpdateAfterOverviewAnimation) {
     waiter.Wait();
   }
   EXPECT_EQ(bottom_shelf_bounds, GetShelfWidget()->GetWindowBoundsInScreen());
-}
-
-// Tests of ShelfLayoutManager on home screen for KioskNext.
-class ShelfLayoutManagerHomeScreenTest : public ShelfLayoutManagerTest {
- protected:
-  ShelfLayoutManagerHomeScreenTest() = default;
-  ~ShelfLayoutManagerHomeScreenTest() override = default;
-
-  // ShelfLayoutManagerTest:
-  void SetUp() override {
-    ShelfLayoutManagerTest::SetUp();
-
-    // Home screen is only available in tablet mode.
-    TabletModeControllerTestApi().EnterTabletMode();
-
-    Shell::Get()->home_screen_controller()->SetDelegate(&home_screen_delegate_);
-  }
-
-  void UpdateVisibility(bool shelf_visible, bool status_area_visible) {
-    EXPECT_CALL(home_screen_delegate_, ShouldShowShelfOnHomeScreen())
-        .WillRepeatedly(testing::Return(shelf_visible));
-    EXPECT_CALL(home_screen_delegate_, ShouldShowStatusAreaOnHomeScreen())
-        .WillRepeatedly(testing::Return(status_area_visible));
-    GetShelfLayoutManager()->UpdateVisibilityState();
-  }
-
- private:
-  MockHomeScreenDelegate home_screen_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManagerHomeScreenTest);
-};
-
-TEST_F(ShelfLayoutManagerHomeScreenTest, StatusAreaAndShelfVisibility) {
-  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
-  EXPECT_EQ(SHELF_VISIBLE, layout_manager->visibility_state());
-  EXPECT_TRUE(layout_manager->is_status_area_visible());
-  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
-
-  // Shelf not visible, status area not visible.
-  UpdateVisibility(false /* shelf_visible */, false /* status_area_visible */);
-
-  EXPECT_EQ(SHELF_HIDDEN, layout_manager->visibility_state());
-  EXPECT_FALSE(layout_manager->is_status_area_visible());
-  EXPECT_FALSE(GetShelfWidget()->status_area_widget()->IsVisible());
-
-  // Shelf visible, status area visible.
-  UpdateVisibility(true /* shelf_visible */, true /* status_area_visible */);
-
-  EXPECT_EQ(SHELF_VISIBLE, layout_manager->visibility_state());
-  EXPECT_TRUE(layout_manager->is_status_area_visible());
-  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
-
-  // Shelf not visible, status area visible.
-  UpdateVisibility(false /* shelf_visible */, true /* status_area_visible */);
-
-  EXPECT_EQ(SHELF_HIDDEN, layout_manager->visibility_state());
-  EXPECT_TRUE(layout_manager->is_status_area_visible());
-  EXPECT_TRUE(GetShelfWidget()->status_area_widget()->IsVisible());
-}
-
-TEST_F(ShelfLayoutManagerHomeScreenTest, TrayBubblePositionOnHomeScreen) {
-  // Returns system tray bounds in screen coordinates.
-  auto tray_bounds = []() -> gfx::Rect {
-    return GetPrimaryUnifiedSystemTray()->GetBoundsInScreen();
-  };
-
-  // Shelf visible, status area visible.
-  GetPrimaryUnifiedSystemTray()->CloseBubble();
-  UpdateVisibility(true /* shelf_visible */, true /* status_area_visible */);
-  EXPECT_EQ(gfx::Rect(),
-            GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen());
-
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true /* show_by_click */);
-  gfx::Rect bubble_bounds =
-      GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
-  EXPECT_NE(gfx::Rect(), bubble_bounds);
-  EXPECT_FALSE(bubble_bounds.Intersects(tray_bounds()));
-
-  // Shelf not visible, status area visible.
-  GetPrimaryUnifiedSystemTray()->CloseBubble();
-  UpdateVisibility(false /* shelf_visible */, true /* status_area_visible */);
-  EXPECT_EQ(gfx::Rect(),
-            GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen());
-
-  GetPrimaryUnifiedSystemTray()->ShowBubble(true /* show_by_click */);
-  bubble_bounds = GetPrimaryUnifiedSystemTray()->GetBubbleBoundsInScreen();
-  EXPECT_NE(gfx::Rect(), bubble_bounds);
-  EXPECT_FALSE(bubble_bounds.Intersects(tray_bounds()));
 }
 
 }  // namespace ash

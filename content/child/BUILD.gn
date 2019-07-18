@@ -143,7 +143,7 @@ target(link_target_type, "child") {
   if (is_linux) {
     deps += [
       "//components/services/font/public/cpp",
-      "//components/services/font/public/interfaces",
+      "//components/services/font/public/mojom",
       "//services/service_manager/zygote",
     ]
   }

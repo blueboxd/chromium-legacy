@@ -37,18 +37,19 @@ class ExternallyInstalledWebAppPrefs {
   // |pref_service|.
   static bool HasAppIdWithInstallSource(const PrefService* pref_service,
                                         const AppId& app_id,
-                                        InstallSource install_source);
+                                        ExternalInstallSource install_source);
 
   // Returns the URLs of the apps that have been installed from
   // |install_source|. Will still return apps that have been uninstalled.
-  static std::map<AppId, GURL> BuildAppIdsMap(const PrefService* pref_service,
-                                              InstallSource install_source);
+  static std::map<AppId, GURL> BuildAppIdsMap(
+      const PrefService* pref_service,
+      ExternalInstallSource install_source);
 
   explicit ExternallyInstalledWebAppPrefs(PrefService* pref_service);
 
   void Insert(const GURL& url,
               const AppId& app_id,
-              InstallSource install_source);
+              ExternalInstallSource install_source);
   base::Optional<AppId> LookupAppId(const GURL& url) const;
 
   // Returns an id if there is a placeholder app for |url|. Note that nullopt

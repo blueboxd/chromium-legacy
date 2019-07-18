@@ -307,14 +307,7 @@ TrayBackgroundView* Shelf::GetSystemTrayAnchorView() const {
 }
 
 gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
-  // If status area widget is shown without the shelf, system tray should be
-  // aligned above status area widget (shown at the same place as if shelf was
-  // visible).
-  const WorkAreaInsets* const work_area_insets = GetWorkAreaInsets();
-  gfx::Rect work_area = shelf_layout_manager_->IsShowingStatusAreaWithoutShelf()
-                            ? work_area_insets->ComputeStableWorkArea()
-                            : work_area_insets->user_work_area_bounds();
-
+  gfx::Rect work_area = GetWorkAreaInsets()->user_work_area_bounds();
   switch (alignment_) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:

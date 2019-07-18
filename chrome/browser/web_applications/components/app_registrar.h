@@ -19,7 +19,7 @@ namespace web_app {
 
 class AppRegistrarObserver;
 
-enum class InstallSource;
+enum class ExternalInstallSource;
 
 class AppRegistrar {
  public:
@@ -45,7 +45,7 @@ class AppRegistrar {
   // Returns the AppIds and URLs of apps externally installed from
   // |install_source|.
   virtual std::map<AppId, GURL> GetExternallyInstalledApps(
-      InstallSource install_source) const;
+      ExternalInstallSource install_source) const;
 
   // Returns the app id for |install_url| if the AppRegistrar is aware of an
   // externally installed app for it. Note that the |install_url| is the URL
@@ -58,7 +58,7 @@ class AppRegistrar {
   // |app_id| from |install_source|.
   virtual bool HasExternalAppWithInstallSource(
       const AppId& app_id,
-      web_app::InstallSource install_source) const;
+      web_app::ExternalInstallSource install_source) const;
 
   // Searches for the first app id in the registry for which the |url| is in
   // scope.

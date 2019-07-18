@@ -346,7 +346,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
 
   web_app::InstallOptions install_options{
       kAppUrl, web_app::LaunchContainer::kDefault,
-      web_app::InstallSource::kExternalDefault};
+      web_app::ExternalInstallSource::kExternalDefault};
 
   const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -366,7 +366,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppPolicyInstalled) {
 
   web_app::InstallOptions install_options{
       kAppUrl, web_app::LaunchContainer::kDefault,
-      web_app::InstallSource::kExternalPolicy};
+      web_app::ExternalInstallSource::kExternalPolicy};
 
   const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -541,7 +541,7 @@ TEST_F(InstallManagerBookmarkAppTest,
 
     web_app::InstallOptions install_options{
         app_url, web_app::LaunchContainer::kTab,
-        web_app::InstallSource::kInternalDefault};
+        web_app::ExternalInstallSource::kInternalDefault};
 
     const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -554,7 +554,7 @@ TEST_F(InstallManagerBookmarkAppTest,
 
     web_app::InstallOptions install_options{
         kAppUrl, web_app::LaunchContainer::kWindow,
-        web_app::InstallSource::kInternalDefault};
+        web_app::ExternalInstallSource::kInternalDefault};
 
     const Extension* extension = InstallWebAppWithOptions(install_options);
 

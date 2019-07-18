@@ -26,6 +26,7 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   ~AppManagementPageHandler() override;
 
   void OnPinnedChanged(const std::string& app_id, bool pinned);
+  void OnArcSupportChanged(bool supported);
 
   // app_management::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;

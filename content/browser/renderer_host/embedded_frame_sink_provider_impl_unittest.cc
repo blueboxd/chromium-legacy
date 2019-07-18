@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
@@ -169,57 +168,9 @@ class EmbeddedFrameSinkProviderImplTest : public testing::Test {
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> provider_;
 };
 
-// Mimics the workflow of OffscreenCanvas.commit() on renderer process. Assumes
-// surface sync is disabled.
+// Mimics the workflow of OffscreenCanvas.commit() on renderer process.
 TEST_F(EmbeddedFrameSinkProviderImplTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
-  if (features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  // Mimic connection from the renderer main thread to browser.
-  StubEmbeddedFrameSinkClient efs_client;
-  provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkA,
-                                        efs_client.GetInterfacePtr());
-
-  EmbeddedFrameSinkImpl* efs_impl = GetEmbeddedFrameSink(kFrameSinkA);
-
-  // There should be a single EmbeddedFrameSinkImpl and it should have the
-  // provided FrameSinkId.
-  EXPECT_EQ(kFrameSinkA, efs_impl->frame_sink_id());
-  EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkA));
-
-  // Mimic connection from the renderer main or worker thread to browser.
-  viz::mojom::CompositorFrameSinkPtr compositor_frame_sink;
-  viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
-  provider()->CreateCompositorFrameSink(
-      kFrameSinkA, compositor_frame_sink_client.BindInterfacePtr(),
-      mojo::MakeRequest(&compositor_frame_sink));
-
-  // Renderer submits a CompositorFrame with |local_id|.
-  const viz::LocalSurfaceId local_id(1, base::UnguessableToken::Create());
-  compositor_frame_sink->SubmitCompositorFrame(
-      local_id, viz::MakeDefaultCompositorFrame(), base::nullopt, 0);
-
-  RunUntilIdle();
-
-  // EmbeddedFrameSinkImpl in browser should have LocalSurfaceId that was
-  // submitted with the CompositorFrame.
-  EXPECT_EQ(local_id, efs_impl->local_surface_id());
-
-  // EmbeddedFrameSinkClient in the renderer should get the new SurfaceId
-  // including the |local_id|.
-  const auto& surface_info = efs_client.last_surface_info();
-  EXPECT_EQ(kFrameSinkA, surface_info.id().frame_sink_id());
-  EXPECT_EQ(local_id, surface_info.id().local_surface_id());
-}
-
-// Mimics the workflow of OffscreenCanvas.commit() on renderer process. Assumes
-// surface sync is enabled.
-TEST_F(EmbeddedFrameSinkProviderImplTest,
-       SingleHTMLCanvasElementTransferToOffscreenSurfaceSync) {
-  if (!features::IsSurfaceSynchronizationEnabled())
-    return;
-
   // Mimic connection from the renderer main thread to browser.
   StubEmbeddedFrameSinkClient efs_client;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkA,

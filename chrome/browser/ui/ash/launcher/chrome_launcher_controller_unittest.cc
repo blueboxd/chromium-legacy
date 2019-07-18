@@ -2982,7 +2982,7 @@ TEST_F(ChromeLauncherControllerTest, WebAppPolicy) {
   // Simulate one Web App being installed.
   web_app::ExternallyInstalledWebAppPrefs web_app_prefs(profile()->GetPrefs());
   web_app_prefs.Insert(GURL(kWebAppUrl), kWebAppId,
-                       web_app::InstallSource::kExternalPolicy);
+                       web_app::ExternalInstallSource::kExternalPolicy);
   extension_service_->AddExtension(web_app_.get());
 
   // Set the policy value.

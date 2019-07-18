@@ -69,9 +69,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 
   // Background image for this tab.
   UIImageView* _backgroundImageView;
-  // This view is used to draw a separator line at the bottom of the tab view.
-  // This view is hidden when the tab view is in a selected state.
-  UIView* _lineSeparator;
   BOOL _incognitoStyle;
 
   // Set to YES when the layout constraints have been initialized.
@@ -93,9 +90,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 
 // Creates the close button, favicon button, and title.
 - (void)createButtonsAndLabel;
-
-// Updates this tab's line separator color based on the current incognito style.
-- (void)updateLineSeparator;
 
 // Updates this tab's background image based on the value of |selected|.
 - (void)updateBackgroundImage:(BOOL)selected;
@@ -119,12 +113,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 
 @implementation TabView
 
-@synthesize delegate = _delegate;
-@synthesize titleLabel = _titleLabel;
-@synthesize collapsed = _collapsed;
-@synthesize background = background_;
-@synthesize incognitoStyle = _incognitoStyle;
-
 - (id)initWithEmptyView:(BOOL)emptyView selected:(BOOL)selected {
   if ((self = [super initWithFrame:CGRectZero])) {
     [self setOpaque:NO];
@@ -133,7 +121,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
     // changes.  |isSelected| defaults to NO, so if |selected| is also NO,
     // -updateBackgroundImage needs to be called explicitly.
     [self setSelected:selected];
-    [self updateLineSeparator];
     [self updateBackgroundImage:selected];
     if (!emptyView)
       [self createButtonsAndLabel];
@@ -154,8 +141,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 - (void)setSelected:(BOOL)selected {
   BOOL wasSelected = [self isSelected];
   [super setSelected:selected];
-
-  [_lineSeparator setHidden:selected];
 
   if (selected != wasSelected)
     [self updateBackgroundImage:selected];
@@ -202,7 +187,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   _titleLabel.textColor =
       incognitoStyle ? [UIColor whiteColor] : [UIColor blackColor];
   [_faviconView setImage:[self defaultFaviconImage]];
-  [self updateLineSeparator];
   [self updateCloseButtonImages];
   [self updateBackgroundImage:[self isSelected]];
 }
@@ -261,22 +245,15 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   _backgroundImageView = [[UIImageView alloc] init];
   [_backgroundImageView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self addSubview:_backgroundImageView];
-
-  _lineSeparator = [[UIView alloc] initWithFrame:CGRectZero];
-  [_lineSeparator setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [self addSubview:_lineSeparator];
 }
 
 - (void)addCommonConstraints {
   NSDictionary* commonViewsDictionary = @{
     @"backgroundImageView" : _backgroundImageView,
-    @"lineSeparator" : _lineSeparator
   };
   NSArray* commonConstraints = @[
     @"H:|-0-[backgroundImageView]-0-|",
     @"V:|-0-[backgroundImageView]-0-|",
-    @"H:|-tabStripLineMargin-[lineSeparator]-tabStripLineMargin-|",
-    @"V:[lineSeparator(==tabStripLineHeight)]-0-|",
   ];
   NSDictionary* commonMetrics = @{
     @"tabStripLineMargin" : @(kTabStripLineMargin),
@@ -364,13 +341,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   AddSameCenterXConstraint(self, _faviconView, _activityIndicator);
   AddSameCenterYConstraint(self, _faviconView, _activityIndicator);
   AddSameCenterYConstraint(self, _faviconView, _titleLabel);
-}
-
-- (void)updateLineSeparator {
-  UIColor* separatorColor =
-      _incognitoStyle ? [UIColor colorWithWhite:36 / 255.0 alpha:1.0]
-                      : [UIColor colorWithWhite:185 / 255.0 alpha:1.0];
-  [_lineSeparator setBackgroundColor:separatorColor];
 }
 
 - (void)updateBackgroundImage:(BOOL)selected {

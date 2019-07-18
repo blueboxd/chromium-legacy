@@ -19137,7 +19137,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -19153,7 +19153,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -19184,7 +19184,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -19215,7 +19215,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -19231,7 +19231,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -20206,7 +20206,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -20237,7 +20237,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }
@@ -20253,7 +20253,7 @@
           "dimension_sets": [
             {
               "cpu": "x86",
-              "os": "Ubuntu-14.04"
+              "os": "Ubuntu-16.04"
             }
           ]
         }

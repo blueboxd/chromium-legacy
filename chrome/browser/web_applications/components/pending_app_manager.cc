@@ -44,7 +44,7 @@ void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
 
 void PendingAppManager::SynchronizeInstalledApps(
     std::vector<InstallOptions> desired_apps_install_options,
-    InstallSource install_source,
+    ExternalInstallSource install_source,
     SynchronizeCallback callback) {
   DCHECK(registrar_);
   DCHECK(std::all_of(desired_apps_install_options.begin(),
@@ -52,7 +52,8 @@ void PendingAppManager::SynchronizeInstalledApps(
                      [&install_source](const InstallOptions& install_options) {
                        return install_options.install_source == install_source;
                      }));
-  // Only one concurrent SynchronizeInstalledApps() expected per InstallSource.
+  // Only one concurrent SynchronizeInstalledApps() expected per
+  // ExternalInstallSource.
   DCHECK(!base::Contains(synchronize_requests_, install_source));
 
   std::vector<GURL> installed_urls;
@@ -95,9 +96,10 @@ void PendingAppManager::SynchronizeInstalledApps(
                           weak_ptr_factory_.GetWeakPtr(), install_source));
 }
 
-void PendingAppManager::InstallForSynchronizeCallback(InstallSource source,
-                                                      const GURL& app_url,
-                                                      InstallResultCode code) {
+void PendingAppManager::InstallForSynchronizeCallback(
+    ExternalInstallSource source,
+    const GURL& app_url,
+    InstallResultCode code) {
   switch (code) {
     case InstallResultCode::kSuccess:
     case InstallResultCode::kAlreadyInstalled:
@@ -117,9 +119,10 @@ void PendingAppManager::InstallForSynchronizeCallback(InstallSource source,
   OnAppSynchronized(source, app_url);
 }
 
-void PendingAppManager::UninstallForSynchronizeCallback(InstallSource source,
-                                                        const GURL& app_url,
-                                                        bool succeeded) {
+void PendingAppManager::UninstallForSynchronizeCallback(
+    ExternalInstallSource source,
+    const GURL& app_url,
+    bool succeeded) {
   auto source_and_request = synchronize_requests_.find(source);
   DCHECK(source_and_request != synchronize_requests_.end());
   SynchronizeRequest& request = source_and_request->second;
@@ -128,7 +131,7 @@ void PendingAppManager::UninstallForSynchronizeCallback(InstallSource source,
   OnAppSynchronized(source, app_url);
 }
 
-void PendingAppManager::OnAppSynchronized(InstallSource source,
+void PendingAppManager::OnAppSynchronized(ExternalInstallSource source,
                                           const GURL& app_url) {
   auto source_and_request = synchronize_requests_.find(source);
   DCHECK(source_and_request != synchronize_requests_.end());

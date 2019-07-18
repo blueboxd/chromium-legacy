@@ -17,6 +17,7 @@ cr.define('app_management.util', function() {
         pageType: PageType.MAIN,
         selectedAppId: null,
       },
+      arcSupported: false,
       search: {
         term: null,
         results: null,
@@ -34,6 +35,10 @@ cr.define('app_management.util', function() {
    */
   function createInitialState(apps) {
     const initialState = createEmptyState();
+
+    initialState.arcSupported =
+        loadTimeData.valueExists('isSupportedArcVersion') &&
+        loadTimeData.getBoolean('isSupportedArcVersion');
 
     for (const app of apps) {
       initialState.apps[app.id] = app;

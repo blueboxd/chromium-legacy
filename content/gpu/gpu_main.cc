@@ -335,7 +335,16 @@ int GpuMain(const MainFunctionParams& parameters) {
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
           ? base::ThreadPriority::DISPLAY
           : base::ThreadPriority::NORMAL;
+#if defined(OS_MACOSX)
+  // Increase the thread priority to get more reliable values in performance
+  // test of mac_os.
+  GpuProcess gpu_process(
+      (command_line.HasSwitch(switches::kUseHighGPUThreadPriorityForPerfTests)
+           ? base::ThreadPriority::REALTIME_AUDIO
+           : io_thread_priority));
+#else
   GpuProcess gpu_process(io_thread_priority);
+#endif
 
   auto* client = GetContentClient()->gpu();
   if (client)

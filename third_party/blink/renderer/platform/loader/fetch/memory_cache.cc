@@ -40,8 +40,10 @@ namespace blink {
 static Persistent<MemoryCache>* g_memory_cache;
 
 static const unsigned kCDefaultCacheCapacity = 8192 * 1024;
-static const int kCMinDelayBeforeLiveDecodedPrune = 1;  // Seconds.
-static const double kCMaxPruneDeferralDelay = 0.5;      // Seconds.
+static const base::TimeDelta kCMinDelayBeforeLiveDecodedPrune =
+    base::TimeDelta::FromSeconds(1);
+static const base::TimeDelta kCMaxPruneDeferralDelay =
+    base::TimeDelta::FromMilliseconds(500);
 
 // Percentage of capacity toward which we prune, to avoid immediately pruning
 // again.
@@ -82,10 +84,6 @@ MemoryCache::MemoryCache(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : in_prune_resources_(false),
       prune_pending_(false),
-      max_prune_deferral_delay_(kCMaxPruneDeferralDelay),
-      prune_time_stamp_(0.0),
-      prune_frame_time_stamp_(0.0),
-      last_frame_paint_time_stamp_(0.0),
       capacity_(kCDefaultCacheCapacity),
       delay_before_live_decoded_prune_(kCMinDelayBeforeLiveDecodedPrune),
       size_(0),
@@ -260,7 +258,8 @@ void MemoryCache::PruneResources(PruneStrategy strategy) {
       if (resource->IsLoaded() && resource->DecodedSize()) {
         // Check to see if the remaining resources are too new to prune.
         if (strategy == kAutomaticPrune &&
-            prune_frame_time_stamp_ < delay_before_live_decoded_prune_)
+            prune_frame_time_stamp_.since_origin() <
+                delay_before_live_decoded_prune_)
           continue;
         resource->Prune();
         if (size_ <= target_size)
@@ -364,13 +363,13 @@ void MemoryCache::Prune() {
   // the current thread's run loop is not active, then pruning will happen
   // immediately only if it has been over m_maxPruneDeferralDelay since the last
   // prune.
-  double current_time = WTF::CurrentTime();
+  auto current_time = base::TimeTicks::Now();
   if (prune_pending_) {
-    if (current_time - prune_time_stamp_ >= max_prune_deferral_delay_) {
+    if (current_time - prune_time_stamp_ >= kCMaxPruneDeferralDelay) {
       PruneNow(kAutomaticPrune);
     }
   } else {
-    if (current_time - prune_time_stamp_ >= max_prune_deferral_delay_) {
+    if (current_time - prune_time_stamp_ >= kCMaxPruneDeferralDelay) {
       PruneNow(kAutomaticPrune);  // Delay exceeded, prune now.
     } else {
       // Defer.
@@ -393,11 +392,11 @@ void MemoryCache::PruneNow(PruneStrategy strategy) {
 
   PruneResources(strategy);
   prune_frame_time_stamp_ = last_frame_paint_time_stamp_;
-  prune_time_stamp_ = WTF::CurrentTime();
+  prune_time_stamp_ = base::TimeTicks::Now();
 }
 
 void MemoryCache::UpdateFramePaintTimestamp() {
-  last_frame_paint_time_stamp_ = CurrentTime();
+  last_frame_paint_time_stamp_ = base::TimeTicks::Now();
 }
 
 bool MemoryCache::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,

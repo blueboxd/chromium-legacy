@@ -239,23 +239,15 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    // AllowServiceWorker() expects to be called on the IO thread with a valid
-    // ResourceContext, and we have a null context here, so skip calling it.
-    // TODO(crbug.com/926114, crbug.com/908955): Implement
-    // AllowServiceWorkerUI() with a browser_context instead of
-    // resource_context?
-  } else {
-    if (!GetContentClient()->browser()->AllowServiceWorker(
-            registration->scope(), provider_host_->site_for_cookies(), GURL(),
-            resource_context_, provider_host_->web_contents_getter())) {
-      TRACE_EVENT_ASYNC_END1(
-          "ServiceWorker",
-          "ServiceWorkerControlleeRequestHandler::PrepareForMainResource", this,
-          "Info", "ServiceWorker is blocked");
-      CompleteWithoutLoader();
-      return;
-    }
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          registration->scope(), provider_host_->site_for_cookies(), GURL(),
+          resource_context_, provider_host_->web_contents_getter())) {
+    TRACE_EVENT_ASYNC_END1(
+        "ServiceWorker",
+        "ServiceWorkerControlleeRequestHandler::MaybeCreateLoader", this,
+        "Info", "ServiceWorker is blocked");
+    CompleteWithoutLoader();
+    return;
   }
 
   if (!provider_host_->IsContextSecureForServiceWorker()) {

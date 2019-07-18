@@ -76,7 +76,7 @@ enum class InstallResultCode {
 // In practice, every kExternalXxx enum definition should correspond to
 // exactly one place in the code where
 // PendingAppManager::SynchronizeInstalledApps is called.
-enum class InstallSource {
+enum class ExternalInstallSource {
   // Do not remove or re-order the names, only append to the end. Their
   // integer values are persisted in the preferences.
 

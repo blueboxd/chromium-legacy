@@ -335,7 +335,6 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void DrawForced();
   void ProcessScheduledActions();
   void UpdateCompositorTimingHistoryRecordingEnabled();
-  bool ShouldDropBeginFrame(const viz::BeginFrameArgs& args) const;
   bool ShouldRecoverMainLatency(const viz::BeginFrameArgs& args,
                                 bool can_activate_before_deadline) const;
   bool ShouldRecoverImplLatency(const viz::BeginFrameArgs& args,

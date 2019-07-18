@@ -660,15 +660,15 @@ crbug.com/983642 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-createImag
 crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Slow ]
 
-# We can replace these tests with different tests but need to see
-# exactly how slow they are before doing that.
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-62-0px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-62-10px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-63-0px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-63-10px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-64-0px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-64-10px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-65-0px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-65-10px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-66-0px.html [ Slow ]
-crbug.com/984003 [ Linux Mac10.13 Debug ] http/tests/virtual-scroller/find-element-66-10px.html [ Slow ]
+# These tests work fine but are slow in all Debug builds and for some
+# reason Win7 is timing out occasionally crbug.com/985231.
+crbug.com/984003 http/tests/virtual-scroller/find-element-62-0px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-62-10px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-63-0px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-63-10px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-64-0px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-64-10px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-65-0px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-65-10px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-66-0px.html [ Slow ]
+crbug.com/984003 http/tests/virtual-scroller/find-element-66-10px.html [ Slow ]

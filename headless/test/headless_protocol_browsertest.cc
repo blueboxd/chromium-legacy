@@ -10,11 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -293,18 +291,7 @@ class HeadlessProtocolCompositorBrowserTest
     for (auto* compositor_switch : compositor_switches) {
       command_line->AppendSwitch(compositor_switch);
     }
-
-    // In surface synchronization, child surface IDs are allocated by
-    // parents and new CompositorFrames only activate once all their child
-    // surfaces exist. In --run-all-compositor-stages-before-draw mode, this
-    // means that child surface initialization and resize fully propagates
-    // within a single BeginFrame.
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableSurfaceSynchronization);
   }
-
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // BeginFrameControl is not supported on MacOS yet, see: https://cs.chromium.org

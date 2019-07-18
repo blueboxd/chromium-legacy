@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
+#include "third_party/blink/renderer/core/svg/graphics/dark_mode_svg_image_classifier.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_fe_image_element.h"
@@ -55,7 +56,6 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -847,11 +847,10 @@ String SVGImage::FilenameExtension() const {
   return "svg";
 }
 
-DarkModeClassification SVGImage::CheckTypeSpecificConditionsForDarkMode(
-    const FloatRect& src_rect,
-    DarkModeImageClassifier* classifier) {
-  classifier->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
-  return DarkModeClassification::kApplyFilter;
+DarkModeClassification SVGImage::ClassifyImageForDarkMode(
+    const FloatRect& src_rect) {
+  DarkModeSVGImageClassifier dark_mode_svg_image_classifier;
+  return dark_mode_svg_image_classifier.Classify(this, src_rect);
 }
 
 }  // namespace blink

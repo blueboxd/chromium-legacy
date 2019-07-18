@@ -90,7 +90,7 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
   return testing::NSErrorWithLocalizedDescription(@"Page load timed out");
 }
 
-+ (NSString*)getCurrentTabID {
++ (NSString*)currentTabID {
   __block NSString* tabID = nil;
   grey_dispatch_sync_on_main_thread(^{
     web::WebState* webState = chrome_test_util::GetCurrentWebState();
@@ -101,7 +101,7 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
   return tabID;
 }
 
-+ (NSArray*)getTabIDs {
++ (NSArray*)tabIDs {
   __block NSMutableArray* tabIDs;
   grey_dispatch_sync_on_main_thread(^{
     DCHECK(!chrome_test_util::IsIncognitoMode());

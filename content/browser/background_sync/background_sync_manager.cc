@@ -743,6 +743,9 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
   if (existing_registration) {
     DCHECK_EQ(existing_registration->options()->tag, options.tag);
+    DCHECK_EQ(existing_registration->sync_type(),
+              GetBackgroundSyncType(options));
+
     if (existing_registration->options()->Equals(options)) {
       BackgroundSyncMetrics::RegistrationCouldFire registration_could_fire =
           AreOptionConditionsMet()
@@ -800,8 +803,8 @@ void BackgroundSyncManager::RegisterDidGetDelay(
     base::TimeDelta delay) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // For one-shot registrations, we let the delay_until be in the past, so that
-  // an event is fired at the soonest opportune moment.
+  // We don't fire periodic Background Sync registrations immediately after
+  // registration, so set delay_until to override its default value.
   if (registration.sync_type() == BackgroundSyncType::PERIODIC) {
     registration.set_delay_until(clock_->Now() + delay);
   }

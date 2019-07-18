@@ -2615,7 +2615,7 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
               'cpu': 'x86'
             },
           ],
@@ -2633,7 +2633,7 @@
             # This suite simply analyzes build targets without running them.
             # It can thus run on a standard linux machine w/o a device.
             {
-              'os': 'Ubuntu-14.04',
+              'os': 'Ubuntu-16.04',
               'cpu': 'x86'
             },
           ],

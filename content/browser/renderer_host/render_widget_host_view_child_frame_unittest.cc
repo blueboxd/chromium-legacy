@@ -16,7 +16,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -207,28 +206,6 @@ TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
 
   view_->Hide();
   ASSERT_FALSE(view_->IsShowing());
-}
-
-// Verify that RenderWidgetHostViewChildFrame passes the child's SurfaceId to
-// FrameConnectorDelegate to be sent to the embedding renderer.
-TEST_F(RenderWidgetHostViewChildFrameTest, PassesSurfaceId) {
-  if (features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  gfx::Size view_size(100, 100);
-  gfx::Rect view_rect(view_size);
-  float scale_factor = 1.f;
-
-  view_->SetSize(view_size);
-  view_->Show();
-
-  viz::SurfaceId surface_id(
-      view_->GetFrameSinkId(),
-      view_->GetLocalSurfaceIdAllocation().local_surface_id());
-  viz::SurfaceInfo surface_info(surface_id, scale_factor, view_size);
-  view_->OnFirstSurfaceActivation(surface_info);
-
-  EXPECT_EQ(surface_info, test_frame_connector_->last_surface_info_);
 }
 
 // Tests that the viewport intersection rect is dispatched to the RenderWidget

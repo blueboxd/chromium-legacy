@@ -173,7 +173,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
 
   SetFetchMetadataHeadersForBrowserInitiatedRequest(&resource_request);
 
-  if (ServiceWorkerUtils::ShouldValidateBrowserCacheForScript(
+  if (service_worker_loader_helpers::ShouldValidateBrowserCacheForScript(
           is_main_script_, force_bypass_cache_, update_via_cache_,
           time_since_last_check_)) {
     resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;

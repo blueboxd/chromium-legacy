@@ -115,7 +115,8 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     run_loop.Run();
 
     web_app::ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(app_url, app_id, web_app::InstallSource::kExternalPolicy);
+        .Insert(app_url, app_id,
+                web_app::ExternalInstallSource::kExternalPolicy);
 
     return app_id;
   }

@@ -74,7 +74,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
@@ -628,15 +627,6 @@ public class SavePasswordsPreferencesTest {
         // Check that the warning dialog is displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
                 .check(matches(isDisplayed()));
-
-        MetricsUtils.HistogramDelta userAbortedDelta =
-                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        ExportFlow.HistogramExportResult.USER_ABORTED);
-
-        // Hit the Cancel button to cancel the flow.
-        Espresso.onView(withText(R.string.cancel)).perform(click());
-
-        Assert.assertEquals(1, userAbortedDelta.getDelta());
     }
 
     /**
@@ -842,13 +832,6 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
-        MetricsUtils.HistogramDelta successDelta =
-                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        ExportFlow.HistogramExportResult.SUCCESS);
-
-        MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.ExportedPasswordsPerUserInCSV", 123);
-
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
@@ -860,9 +843,6 @@ public class SavePasswordsPreferencesTest {
         Intents.release();
 
         tempFile.delete();
-
-        Assert.assertEquals(1, successDelta.getDelta());
-        Assert.assertEquals(1, countDelta.getDelta());
     }
 
     /**
@@ -901,13 +881,6 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
-        MetricsUtils.HistogramDelta successDelta =
-                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        ExportFlow.HistogramExportResult.SUCCESS);
-
-        MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
-                "PasswordManager.ExportedPasswordsPerUserInCSV", 56);
-
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
@@ -919,9 +892,6 @@ public class SavePasswordsPreferencesTest {
         Intents.release();
 
         tempFile.delete();
-
-        Assert.assertEquals(1, successDelta.getDelta());
-        Assert.assertEquals(1, countDelta.getDelta());
     }
 
     /**
@@ -1208,18 +1178,12 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(matches(isDisplayed()));
 
-        MetricsUtils.HistogramDelta userAbortedDelta =
-                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        ExportFlow.HistogramExportResult.USER_ABORTED);
-
         // Hit the Cancel button.
         Espresso.onView(withText(R.string.cancel)).perform(click());
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
         checkExportMenuItemState(MenuItemState.ENABLED);
-
-        Assert.assertEquals(1, userAbortedDelta.getDelta());
     }
 
     /**

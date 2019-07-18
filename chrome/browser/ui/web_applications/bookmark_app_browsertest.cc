@@ -43,7 +43,7 @@ void NavigateToURLAndWait(Browser* browser, const GURL& url) {
 web_app::InstallOptions CreateInstallOptions(const GURL& url) {
   web_app::InstallOptions install_options(
       url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kInternalDefault);
+      web_app::ExternalInstallSource::kInternalDefault);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

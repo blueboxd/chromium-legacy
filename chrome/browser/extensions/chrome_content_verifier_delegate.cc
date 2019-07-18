@@ -196,9 +196,18 @@ void ChromeContentVerifierDelegate::VerifyFailed(
     ContentVerifyJob::FailureReason reason) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
   const Extension* extension =
-      registry->enabled_extensions().GetByID(extension_id);
+      registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
   if (!extension)
     return;
+
+  Mode mode = ShouldBeVerified(*extension);
+  // If the failure was due to hashes missing, only "enforce_strict" would
+  // disable the extension, but not "enforce".
+  if (reason == ContentVerifyJob::MISSING_ALL_HASHES &&
+      mode != ContentVerifierDelegate::ENFORCE_STRICT) {
+    return;
+  }
+
   ExtensionSystem* system = ExtensionSystem::Get(context_);
   if (!system->management_policy()) {
     // Some tests will add an extension to the registry, but there is no
@@ -206,7 +215,6 @@ void ChromeContentVerifierDelegate::VerifyFailed(
     return;
   }
   ExtensionService* service = system->extension_service();
-  Mode mode = ShouldBeVerified(*extension);
   if (mode >= ContentVerifierDelegate::ENFORCE) {
     if (system->management_policy()->ShouldRepairIfCorrupted(extension)) {
       PendingExtensionManager* pending_manager =

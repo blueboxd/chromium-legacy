@@ -128,11 +128,8 @@ class PLATFORM_EXPORT MemoryCache final
   //  - totalBytes: The maximum number of bytes that the cache should consume
   //    overall.
   void SetCapacity(size_t total_bytes);
-  void SetDelayBeforeLiveDecodedPrune(double seconds) {
+  void SetDelayBeforeLiveDecodedPrune(base::TimeDelta seconds) {
     delay_before_live_decoded_prune_ = seconds;
-  }
-  void SetMaxPruneDeferralDelay(double seconds) {
-    max_prune_deferral_delay_ = seconds;
   }
 
   void EvictResources();
@@ -183,14 +180,14 @@ class PLATFORM_EXPORT MemoryCache final
 
   bool in_prune_resources_;
   bool prune_pending_;
-  double max_prune_deferral_delay_;
-  double prune_time_stamp_;
-  double prune_frame_time_stamp_;
-  double last_frame_paint_time_stamp_;  // used for detecting decoded resource
-                                        // thrash in the cache
+  base::TimeDelta max_prune_deferral_delay_;
+  base::TimeTicks prune_time_stamp_;
+  base::TimeTicks prune_frame_time_stamp_;
+  base::TimeTicks last_frame_paint_time_stamp_;  // used for detecting decoded
+                                                 // resource thrash in the cache
 
   size_t capacity_;
-  double delay_before_live_decoded_prune_;
+  base::TimeDelta delay_before_live_decoded_prune_;
 
   // The number of bytes currently consumed by resources in the cache.
   size_t size_;

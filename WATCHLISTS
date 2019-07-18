@@ -586,6 +586,7 @@
       'filepath': 'chrome/browser/net/spdyproxy|'\
                   'chrome_proxy|'\
                   'client_hints|'
+                  'chrome/browser/predictors|'
                   'components/blacklist|'\
                   'components/data_use|'\
                   'data_reduction_proxy|'\

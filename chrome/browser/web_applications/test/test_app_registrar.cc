@@ -53,7 +53,7 @@ bool TestAppRegistrar::WasExternalAppUninstalledByUser(
 }
 
 std::map<AppId, GURL> TestAppRegistrar::GetExternallyInstalledApps(
-    InstallSource install_source) const {
+    ExternalInstallSource install_source) const {
   std::map<AppId, GURL> apps;
   for (auto& id_and_info : installed_apps_) {
     if (id_and_info.second.source == install_source)
@@ -74,7 +74,7 @@ base::Optional<AppId> TestAppRegistrar::LookupExternalAppId(
 
 bool TestAppRegistrar::HasExternalAppWithInstallSource(
     const AppId& app_id,
-    InstallSource install_source) const {
+    ExternalInstallSource install_source) const {
   auto it = std::find_if(installed_apps_.begin(), installed_apps_.end(),
                          [app_id, install_source](const auto& app_it) {
                            return app_it.first == app_id &&

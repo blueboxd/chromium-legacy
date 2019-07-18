@@ -31,7 +31,7 @@ TestPendingAppManager::~TestPendingAppManager() = default;
 
 void TestPendingAppManager::SimulatePreviouslyInstalledApp(
     const GURL& url,
-    InstallSource install_source) {
+    ExternalInstallSource install_source) {
   registrar_->AddExternalApp(TestInstallFinalizer::GetAppIdForUrl(url),
                              {url, install_source});
 }

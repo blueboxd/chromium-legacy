@@ -47,4 +47,10 @@ const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
 // Enables WebGL overlays for Windows.
 const char kEnableWebGLSwapChain[] = "enable-webgl-swap-chain";
 
+// Increases the priority (to REALTIME_AUDIO) of gpu process and compositor
+// thread.
+// This is only to be used for perf tests on macOS for more reliable values.
+const char kUseHighGPUThreadPriorityForPerfTests[] =
+    "use-gpu-high-thread-priority-for-perf-tests";
+
 }  // namespace switches

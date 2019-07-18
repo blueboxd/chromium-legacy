@@ -84,7 +84,9 @@ void MaybeCreateLoaderOnIO(
 
   ServiceWorkerContextCore* context_core =
       handle_core->context_wrapper()->context();
-  if (!context_core) {
+  ResourceContext* resource_context =
+      handle_core->context_wrapper()->resource_context();
+  if (!context_core || !resource_context) {
     LoaderCallbackWrapperOnIO(handle_core, std::move(interceptor_on_ui),
                               /*provider_info=*/nullptr,
                               /*handler=*/{});
@@ -118,7 +120,7 @@ void MaybeCreateLoaderOnIO(
   // It's safe to bind the raw |handle_core| to the callback because it owns the
   // interceptor, which invokes the callback.
   handle_core->interceptor()->MaybeCreateLoader(
-      tentative_resource_request, browser_context, /*resource_context=*/nullptr,
+      tentative_resource_request, browser_context, resource_context,
       base::BindOnce(&LoaderCallbackWrapperOnIO, handle_core, interceptor_on_ui,
                      std::move(provider_info)),
       base::BindOnce(&FallbackCallbackWrapperOnIO, interceptor_on_ui));

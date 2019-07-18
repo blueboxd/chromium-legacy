@@ -64,13 +64,13 @@ class ParentNode {
   }
 
   static void prepend(Node& node,
-                      const HeapVector<NodeOrString>& nodes,
+                      const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                       ExceptionState& exception_state) {
     return node.Prepend(nodes, exception_state);
   }
 
   static void append(Node& node,
-                     const HeapVector<NodeOrString>& nodes,
+                     const HeapVector<NodeOrStringOrTrustedScript>& nodes,
                      ExceptionState& exception_state) {
     return node.Append(nodes, exception_state);
   }

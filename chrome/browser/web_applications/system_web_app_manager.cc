@@ -59,9 +59,9 @@ InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info,
                                                 bool force_update) {
   DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
 
-  web_app::InstallOptions install_options(info.install_url,
-                                          LaunchContainer::kWindow,
-                                          InstallSource::kSystemInstalled);
+  web_app::InstallOptions install_options(
+      info.install_url, LaunchContainer::kWindow,
+      ExternalInstallSource::kSystemInstalled);
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
@@ -106,8 +106,8 @@ void SystemWebAppManager::SetSubsystems(PendingAppManager* pending_app_manager,
 }
 
 void SystemWebAppManager::Start() {
-  std::map<AppId, GURL> installed_apps =
-      registrar_->GetExternallyInstalledApps(InstallSource::kSystemInstalled);
+  std::map<AppId, GURL> installed_apps = registrar_->GetExternallyInstalledApps(
+      ExternalInstallSource::kSystemInstalled);
 
   std::set<SystemAppType> installed_app_types;
   for (const auto& type_and_info : system_app_infos_) {
@@ -130,7 +130,7 @@ void SystemWebAppManager::Start() {
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kSystemInstalled,
+      std::move(install_options_list), ExternalInstallSource::kSystemInstalled,
       base::BindOnce(&SystemWebAppManager::OnAppsSynchronized,
                      weak_ptr_factory_.GetWeakPtr(), installed_app_types));
 }
@@ -158,7 +158,7 @@ base::Optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
   return registrar_->HasExternalAppWithInstallSource(
-      app_id, InstallSource::kSystemInstalled);
+      app_id, ExternalInstallSource::kSystemInstalled);
 }
 
 void SystemWebAppManager::SetSystemAppsForTesting(

@@ -58,8 +58,7 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
     {USCRIPT_CHEROKEE,
      "chr",
      L"\u13A1\u13A2",
-     {"Gadugi", "Plantagenet Cheroke"},
-     kWin10Only},
+     {"Gadugi", "Plantagenet Cherokee"}},
 
     {USCRIPT_COPTIC,
      "copt",
@@ -191,8 +190,7 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
     {USCRIPT_OLD_ITALIC,
      "",
      L"\U00010301\U00010302",
-     {"Segoe UI Historic"},
-     kWin10Only},
+     {"Segoe UI Historic", "Segoe UI Symbol"}},
 
     {USCRIPT_OLD_PERSIAN,
      "peo",

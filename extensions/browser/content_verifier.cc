@@ -514,21 +514,6 @@ void ContentVerifier::VerifyFailed(const ExtensionId& extension_id,
   VLOG(1) << "VerifyFailed " << extension_id << " reason:" << reason;
   DCHECK_NE(ContentVerifyJob::NONE, reason);
 
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
-  const Extension* extension =
-      registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-
-  if (!extension)
-    return;
-
-  ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
-  // If the failure was due to hashes missing, only "enforce_strict" would
-  // disable the extension, but not "enforce".
-  if (reason == ContentVerifyJob::MISSING_ALL_HASHES &&
-      mode != ContentVerifierDelegate::ENFORCE_STRICT) {
-    return;
-  }
-
   delegate_->VerifyFailed(extension_id, reason);
 }
 

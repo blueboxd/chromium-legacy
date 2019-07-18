@@ -110,7 +110,7 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   bool CanScheduleFrame(SMILTime earliest_fire_time) const;
   void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed,
                                                 bool seek_to_time = false);
-  SMILTime UpdateAnimations(double elapsed, bool seek_to_time);
+  void UpdateAnimations(double elapsed, bool seek_to_time);
   void ApplyAnimations(double elapsed);
   void ServiceOnNextFrame();
   void ScheduleWakeUp(double delay_time, FrameSchedulingState);

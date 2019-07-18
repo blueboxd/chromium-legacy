@@ -59,7 +59,6 @@
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
-#include "components/viz/common/features.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -889,23 +888,6 @@ class WebViewDPITest : public WebViewTest {
   static float scale() { return 2.0f; }
 };
 
-class WebViewSurfaceSynchronizationTest : public WebViewTest {
- public:
-  WebViewSurfaceSynchronizationTest() = default;
-  ~WebViewSurfaceSynchronizationTest() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kEnableSurfaceSynchronization);
-    WebViewTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewSurfaceSynchronizationTest);
-};
-
 class WebViewWithZoomForDSFTest : public WebViewTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -1219,25 +1201,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AddRemoveWebView_AddRemoveWebView) {
 IN_PROC_BROWSER_TEST_F(WebViewSizeTest, AutoSize) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
       << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewSurfaceSynchronizationTest, AutoSize) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
-      << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewSurfaceSynchronizationTest, AutoSizeHeight) {
-  TestHelper("testAutosizeHeight", "web_view/shim", NO_TEST_SERVER);
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewSurfaceSynchronizationTest,
-                       AutosizeBeforeNavigation) {
-  TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
-}
-
-IN_PROC_BROWSER_TEST_F(WebViewSurfaceSynchronizationTest,
-                       AutosizeRemoveAttributes) {
-  TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
 // Test for http://crbug.com/419611.

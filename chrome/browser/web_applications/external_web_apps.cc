@@ -173,7 +173,7 @@ std::vector<web_app::InstallOptions> ScanDir(const base::FilePath& dir,
 
     web_app::InstallOptions install_options(
         std::move(app_url), launch_container,
-        web_app::InstallSource::kExternalDefault);
+        web_app::ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = create_shortcuts;
     install_options.add_to_desktop = create_shortcuts;
     install_options.add_to_quick_launch_bar = create_shortcuts;

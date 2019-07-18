@@ -10,9 +10,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_icon_classifier.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
@@ -47,27 +44,12 @@ bool ShouldApplyToImage(const DarkModeSettings& settings,
                         const FloatRect& src_rect,
                         Image* image) {
   switch (settings.image_policy) {
-    case DarkModeImagePolicy::kFilterSmart: {
-      DarkModeImageClassifier* classifier;
-      switch (settings.classifier_type) {
-        case DarkModeClassifierType::kIcon: {
-          DarkModeIconClassifier icon_classifier;
-          classifier = &icon_classifier;
-          break;
-        }
-        case DarkModeClassifierType::kGeneric: {
-          DarkModeGenericClassifier generic_classifier;
-          classifier = &generic_classifier;
-          break;
-        }
-      }
-      DarkModeClassification result = classifier->Classify(image, src_rect);
-      return result == DarkModeClassification::kApplyFilter;
-    }
-    case DarkModeImagePolicy::kFilterNone:
-      return false;
+    case DarkModeImagePolicy::kFilterSmart:
+      return image->ShouldApplyDarkModeFilter(src_rect);
     case DarkModeImagePolicy::kFilterAll:
       return true;
+    default:
+      return false;
   }
 }
 
@@ -132,6 +114,9 @@ Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
   return color;
 }
 
+// TODO(gilmanmh): Investigate making |image| a const reference. This code
+// relies on Image::ShouldApplyDarkModeFilter(), which is not const. If it
+// could be made const, then |image| could also be const.
 void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
                                                Image* image,
                                                cc::PaintFlags* flags) {

@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_bitmap_image_classifier.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
-namespace blink {
 namespace {
-
 const float kEpsilon = 0.00001;
 
 }  // namespace
+
+namespace blink {
 
 class FakeImageForCacheTest : public Image {
  public:
@@ -51,7 +50,7 @@ class FakeImageForCacheTest : public Image {
             ImageDecodingMode) override {}
 };
 
-class DarkModeImageClassifierTest : public testing::Test {
+class DarkModeBitmapImageClassifierTest : public testing::Test {
  public:
   // Loads the image from |file_name|, computes features vector into |features|,
   // and returns the classification result.
@@ -59,14 +58,9 @@ class DarkModeImageClassifierTest : public testing::Test {
                                     Vector<float>* features) {
     SCOPED_TRACE(file_name);
     scoped_refptr<BitmapImage> image = LoadImage(file_name);
-    DarkModeImageClassifier dark_mode_image_classifier;
-    if (!dark_mode_image_classifier.GetFeatures(
-            image.get(), FloatRect(0, 0, image->width(), image->height()),
-            features)) {
-      return false;
-    }
-    DarkModeClassification result =
-        dark_mode_generic_classifier_.ClassifyWithFeatures(*features);
+    classifier_.ComputeImageFeaturesForTesting(*image.get(), features);
+    DarkModeClassification result = classifier_.Classify(
+        *image.get(), FloatRect(0, 0, image->width(), image->height()));
     return result == DarkModeClassification::kApplyFilter;
   }
 
@@ -79,9 +73,7 @@ class DarkModeImageClassifierTest : public testing::Test {
     }
   }
 
-  DarkModeGenericClassifier* classifier() {
-    return &dark_mode_generic_classifier_;
-  }
+  DarkModeBitmapImageClassifier* classifier() { return &classifier_; }
 
  protected:
   scoped_refptr<BitmapImage> LoadImage(const String& file_name) {
@@ -96,10 +88,10 @@ class DarkModeImageClassifierTest : public testing::Test {
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
-  DarkModeGenericClassifier dark_mode_generic_classifier_;
+  DarkModeBitmapImageClassifier classifier_;
 };
 
-TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
+TEST_F(DarkModeBitmapImageClassifierTest, FeaturesAndClassification) {
   Vector<float> features;
 
   // Test Case 1:
@@ -109,9 +101,9 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Neural Network: NA
   EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/grid-large.png",
                                            &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.0f, 0.0f});
+  AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.0f});
 
   // Test Case 2:
   // Grayscale
@@ -120,9 +112,9 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Neural Network: Apply
   EXPECT_FALSE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
                                             &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kNotClassified);
-  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.446667f, 0.03f, 0.0f});
+  AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.446667f, 0.03f});
 
   // Test Case 3:
   // Color
@@ -131,10 +123,9 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Neural Network: NA.
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/twitter_favicon.ico", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features,
-                      {1.0f, 0.0002441f, 0.542092f, 0.1500000f, 0.0f});
+  AssertFeaturesEqual(features, {1.0f, 0.0002441f, 0.542092f, 0.1500000f});
 
   // Test Case 4:
   // Color
@@ -143,9 +134,9 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Neural Network: NA.
   EXPECT_FALSE(GetFeaturesAndClassification(
       "/images/resources/blue-wheel-srgb-color-profile.png", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kDoNotApplyFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.032959f, 0.0f, 0.0f, 0.0f});
+  AssertFeaturesEqual(features, {1.0f, 0.032959f, 0.0f, 0.0f});
 
   // Test Case 5:
   // Color
@@ -154,12 +145,12 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Neural Network: NA.
   EXPECT_TRUE(GetFeaturesAndClassification(
       "/images/resources/ycbcr-444-float.jpg", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             DarkModeClassification::kApplyFilter);
-  AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f, 0.0f});
+  AssertFeaturesEqual(features, {1.0f, 0.0151367f, 0.0f, 0.0f});
 }
 
-TEST_F(DarkModeImageClassifierTest, Caching) {
+TEST_F(DarkModeBitmapImageClassifierTest, Caching) {
   scoped_refptr<FakeImageForCacheTest> image = FakeImageForCacheTest::Create();
   FloatRect src_rect1(0, 0, 50, 50);
   FloatRect src_rect2(5, 20, 100, 100);

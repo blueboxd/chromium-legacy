@@ -12,9 +12,20 @@ cr.define('app_management', function() {
       this.handler = null;
 
       const urlParams = new URLSearchParams(window.location.search);
+      const arcSupported = urlParams.get('arcSupported');
       const useFake = urlParams.get('fakeBackend');
 
       if (useFake) {
+        if (arcSupported) {
+          loadTimeData.overrideValues({
+            'isSupportedArcVersion': arcSupported.toLowerCase() === 'true',
+          });
+        } else {
+          loadTimeData.overrideValues({
+            'isSupportedArcVersion': true,
+          });
+        }
+
         this.handler = new app_management.FakePageHandler(
             this.callbackRouter.$.createProxy());
 

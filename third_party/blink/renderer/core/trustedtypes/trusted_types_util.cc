@@ -271,23 +271,26 @@ String GetStringFromTrustedScript(
   // string_or_trusted_script.IsNull(), unlike the various similar methods in
   // this file.
 
-  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
-  if (!require_trusted_type) {
-    if (string_or_trusted_script.IsString()) {
-      return string_or_trusted_script.GetAsString();
-    }
-    if (string_or_trusted_script.IsNull()) {
-      return g_empty_string;
-    }
-  }
 
   if (string_or_trusted_script.IsTrustedScript()) {
     return string_or_trusted_script.GetAsTrustedScript()->toString();
   }
 
-  DCHECK(require_trusted_type);
-  DCHECK(string_or_trusted_script.IsNull() ||
-         string_or_trusted_script.IsString());
+  if (string_or_trusted_script.IsNull()) {
+    string_or_trusted_script =
+        StringOrTrustedScript::FromString(g_empty_string);
+  }
+  return GetStringFromTrustedScript(string_or_trusted_script.GetAsString(),
+                                    execution_context, exception_state);
+}
+
+String GetStringFromTrustedScript(const String& potential_script,
+                                  const ExecutionContext* execution_context,
+                                  ExceptionState& exception_state) {
+  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
+  if (!require_trusted_type) {
+    return potential_script;
+  }
 
   TrustedTypePolicy* default_policy = GetDefaultPolicy(execution_context);
   if (!default_policy) {
@@ -295,17 +298,11 @@ String GetStringFromTrustedScript(
                         exception_state)) {
       return g_empty_string;
     }
-    if (string_or_trusted_script.IsNull())
-      return g_empty_string;
-    return string_or_trusted_script.GetAsString();
+    return potential_script;
   }
 
-  const String& string_value_or_empty =
-      string_or_trusted_script.IsNull()
-          ? g_empty_string
-          : string_or_trusted_script.GetAsString();
   TrustedScript* result = default_policy->CreateScript(
-      execution_context->GetIsolate(), string_value_or_empty, exception_state);
+      execution_context->GetIsolate(), potential_script, exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {
     exception_state.ClearException();

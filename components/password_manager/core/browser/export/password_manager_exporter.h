@@ -115,10 +115,6 @@ class PasswordManagerExporter {
   // sent. It will be cleared once exporting is complete.
   base::FilePath destination_;
 
-  // The moment in time that we started reading and serialising the password
-  // list. Useful for metrics.
-  base::Time export_preparation_started_;
-
   // The function which does the actual writing. It should wrap
   // base::WriteFile, unless it's changed for testing purposes.
   WriteCallback write_function_;

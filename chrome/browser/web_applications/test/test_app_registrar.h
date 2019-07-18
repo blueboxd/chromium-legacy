@@ -19,7 +19,7 @@ class TestAppRegistrar : public AppRegistrar {
  public:
   struct AppInfo {
     GURL install_url;
-    InstallSource source = InstallSource::kExternalDefault;
+    ExternalInstallSource source = ExternalInstallSource::kExternalDefault;
   };
 
   TestAppRegistrar();
@@ -43,12 +43,12 @@ class TestAppRegistrar : public AppRegistrar {
   bool IsInstalled(const AppId& app_id) const override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
-      InstallSource install_source) const override;
+      ExternalInstallSource install_source) const override;
   base::Optional<AppId> LookupExternalAppId(
       const GURL& install_url) const override;
   bool HasExternalAppWithInstallSource(
       const AppId& app_id,
-      InstallSource install_source) const override;
+      ExternalInstallSource install_source) const override;
   base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const AppId& app_id) const override;

@@ -3,14 +3,17 @@
 # found in the LICENSE file.
 
 import exceptions
+
 from blinkbuild.name_style_converter import NameStyleConverter
+
 from .common import WithCodeGeneratorInfo
 from .common import WithDebugInfo
 from .common import WithExtendedAttributes
 from .common import WithIdentifier
-from .idl_reference_proxy import RefByIdFactory
-from .idl_reference_proxy import Proxy
+from .reference import Proxy
+from .reference import RefById
 from .user_defined_type import UserDefinedType
+
 
 # The implementation class hierarchy of IdlType
 #
@@ -378,13 +381,18 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
     identifier may be resolved to a TypedefType.
     """
 
+    _attrs_to_be_proxied = set(Proxy.get_all_attributes(IdlType)).difference(
+        # attributes not to be proxied
+        set(('code_generator_info', 'debug_info', 'extended_attributes',
+             'is_optional')))
+
     def __init__(self,
                  ref_to_idl_type,
                  is_optional=False,
                  extended_attributes=None,
                  code_generator_info=None,
                  debug_info=None):
-        assert RefByIdFactory.is_reference(ref_to_idl_type)
+        assert isinstance(ref_to_idl_type, RefById)
         IdlType.__init__(
             self,
             is_optional=is_optional,
@@ -392,8 +400,10 @@ class ReferenceType(IdlType, WithIdentifier, Proxy):
             code_generator_info=code_generator_info,
             debug_info=debug_info)
         WithIdentifier.__init__(self, ref_to_idl_type.identifier)
-        # TODO(yukishiino): Set appropriate attributes to proxy.
-        Proxy.__init__(self, target_object=ref_to_idl_type)
+        Proxy.__init__(
+            self,
+            target_object=ref_to_idl_type,
+            target_attrs_with_priority=ReferenceType._attrs_to_be_proxied)
 
 
 class DefinitionType(IdlType, WithIdentifier):

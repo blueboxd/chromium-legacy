@@ -5,8 +5,8 @@
 #include "components/services/font/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
-#include "components/services/font/public/interfaces/constants.mojom.h"
-#include "components/services/font/public/interfaces/font_service.mojom.h"
+#include "components/services/font/public/mojom/constants.mojom.h"
+#include "components/services/font/public/mojom/font_service.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace font_service {

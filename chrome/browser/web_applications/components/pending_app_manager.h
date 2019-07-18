@@ -97,7 +97,7 @@ class PendingAppManager {
   // uninstallation) to be done. It does not wait until that work is complete.
   void SynchronizeInstalledApps(
       std::vector<InstallOptions> desired_apps_install_options,
-      InstallSource install_source,
+      ExternalInstallSource install_source,
       SynchronizeCallback callback);
 
  protected:
@@ -122,19 +122,20 @@ class PendingAppManager {
     DISALLOW_COPY_AND_ASSIGN(SynchronizeRequest);
   };
 
-  void InstallForSynchronizeCallback(InstallSource source,
+  void InstallForSynchronizeCallback(ExternalInstallSource source,
                                      const GURL& app_url,
                                      InstallResultCode code);
-  void UninstallForSynchronizeCallback(InstallSource source,
+  void UninstallForSynchronizeCallback(ExternalInstallSource source,
                                        const GURL& app_url,
                                        bool succeeded);
-  void OnAppSynchronized(InstallSource source, const GURL& app_url);
+  void OnAppSynchronized(ExternalInstallSource source, const GURL& app_url);
 
   AppRegistrar* registrar_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
 
-  base::flat_map<InstallSource, SynchronizeRequest> synchronize_requests_;
+  base::flat_map<ExternalInstallSource, SynchronizeRequest>
+      synchronize_requests_;
 
   base::WeakPtrFactory<PendingAppManager> weak_ptr_factory_{this};
 

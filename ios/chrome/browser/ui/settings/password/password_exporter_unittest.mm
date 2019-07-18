@@ -148,14 +148,6 @@ TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
   [fake_password_file_writer executeHandler];
 
   EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::SUCCESS, 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 1, 1);
 }
 
 // Tests that if the file writing fails because of not enough disk space
@@ -194,14 +186,6 @@ TEST_F(PasswordExporterTest, WritingFailedOutOfDiskSpace) {
 
   // Failure to write the passwords file ends the export operation.
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::WRITE_FAILED, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
 }
 
 // Tests that if a file write fails with an error other than not having
@@ -239,14 +223,6 @@ TEST_F(PasswordExporterTest, WritingFailedUnknownError) {
 
   // Failure to write the passwords file ends the export operation.
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::WRITE_FAILED, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
 }
 
 // Tests that when reauthentication fails the export flow is interrupted.
@@ -291,14 +267,6 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
   // successful, so writing the file was not attempted.
   EXPECT_FALSE(fake_password_file_writer.writeAttempted);
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
 }
 
 // Tests that cancelling the export while serialization is still ongoing
@@ -336,14 +304,6 @@ TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
   }
   EXPECT_FALSE(fake_password_file_writer.writeAttempted);
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
 }
 
 // Tests that if the export is cancelled before writing to file finishes
@@ -376,14 +336,6 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFinishesSuccessfully) {
     GTEST_FAIL();
   }
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
 }
 
 // Tests that if the export is cancelled before writing to file fails
@@ -415,14 +367,6 @@ TEST_F(PasswordExporterTest, CancelledBeforeWriteToFileFails) {
     GTEST_FAIL();
   }
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::USER_ABORTED, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 0);
 }
 
 }  // namespace

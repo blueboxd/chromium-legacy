@@ -4702,7 +4702,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
+  // TODO(falken): Uncomment out the DCHECK when PlzWorker is moved to the UI
+  // thread.
+  // DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 

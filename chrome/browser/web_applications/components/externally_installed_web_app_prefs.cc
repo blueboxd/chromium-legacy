@@ -96,7 +96,7 @@ bool ExternallyInstalledWebAppPrefs::HasAppId(const PrefService* pref_service,
 bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
     const PrefService* pref_service,
     const AppId& app_id,
-    InstallSource install_source) {
+    ExternalInstallSource install_source) {
   const base::Value* v = GetPreferenceValue(pref_service, app_id);
   if (v == nullptr || !v->is_dict())
     return false;
@@ -108,7 +108,7 @@ bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
 // static
 std::map<AppId, GURL> ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
     const PrefService* pref_service,
-    InstallSource install_source) {
+    ExternalInstallSource install_source) {
   const base::DictionaryValue* urls_to_dicts =
       pref_service->GetDictionary(prefs::kWebAppsExtensionIDs);
 
@@ -148,9 +148,10 @@ ExternallyInstalledWebAppPrefs::ExternallyInstalledWebAppPrefs(
     PrefService* pref_service)
     : pref_service_(pref_service) {}
 
-void ExternallyInstalledWebAppPrefs::Insert(const GURL& url,
-                                            const AppId& app_id,
-                                            InstallSource install_source) {
+void ExternallyInstalledWebAppPrefs::Insert(
+    const GURL& url,
+    const AppId& app_id,
+    ExternalInstallSource install_source) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::Value dict(base::Value::Type::DICTIONARY);

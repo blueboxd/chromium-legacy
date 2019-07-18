@@ -28,6 +28,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/payment_handler_support.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
@@ -1905,7 +1906,8 @@ void ServiceWorkerVersion::MarkIfStale() {
     return;
   base::TimeDelta time_since_last_check =
       clock_->Now() - registration->last_update_check();
-  if (time_since_last_check > kServiceWorkerScriptMaxCacheAge)
+  if (time_since_last_check >
+      ServiceWorkerConsts::kServiceWorkerScriptMaxCacheAge)
     RestartTick(&stale_time_);
 }
 

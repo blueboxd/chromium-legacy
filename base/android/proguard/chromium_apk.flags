@@ -15,7 +15,11 @@
   public static *** CREATOR;
 }
 
-# Keep all Fragment constructors since they are only usable via reflection.
+# Keep all default constructors for used Fragments. Required since they are
+# called reflectively when fragments are reinflated after the app is killed.
+-keepclassmembers class * extends android.app.Fragment {
+  public <init>();
+}
 -keepclassmembers class * extends android.support.v4.app.Fragment {
   public <init>();
 }

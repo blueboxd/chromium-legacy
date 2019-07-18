@@ -44,7 +44,7 @@ const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
 
 InstallOptions GetWindowedInstallOptions() {
   InstallOptions options(kAppUrl1, LaunchContainer::kWindow,
-                         InstallSource::kSystemInstalled);
+                         ExternalInstallSource::kSystemInstalled);
   options.add_to_applications_menu = false;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -89,9 +89,8 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     provider->SetWebAppUiManager(std::move(ui_manager));
   }
 
-  void SimulatePreviouslyInstalledApp(
-      GURL url,
-      InstallSource install_source) {
+  void SimulatePreviouslyInstalledApp(GURL url,
+                                      ExternalInstallSource install_source) {
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
   }
 
@@ -125,7 +124,8 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   base::test::ScopedFeatureList disable_feature_list;
   disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-  SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl1,
+                                 ExternalInstallSource::kSystemInstalled);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
   system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
@@ -161,9 +161,12 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
 TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl2, InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl3, InstallSource::kInternalDefault);
+  SimulatePreviouslyInstalledApp(kAppUrl1,
+                                 ExternalInstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl2,
+                                 ExternalInstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl3,
+                                 ExternalInstallSource::kInternalDefault);
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
   system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 

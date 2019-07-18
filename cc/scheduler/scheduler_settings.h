@@ -26,18 +26,17 @@ class CC_EXPORT SchedulerSettings {
   SchedulerSettings(const SchedulerSettings& other);
   ~SchedulerSettings();
 
-  bool main_frame_while_submit_frame_throttled_enabled = false;
+  // Whether a BeginMainFrame should be issued while there is a pending-tree
+  // still waiting to be activated. This is disabled by default for the UI
+  // compositor, and enabled for renderers (unless there are too few cores).
   bool main_frame_before_activation_enabled = false;
+
   bool commit_to_active_tree = false;
-  bool timeout_and_draw_when_animation_checkerboards = true;
   bool using_synchronous_renderer_compositor = false;
   bool enable_latency_recovery = true;
   bool wait_for_all_pipeline_stages_before_draw = false;
-  bool enable_surface_synchronization = false;
-  bool compositor_threaded_scrollbar_scrolling = false;
 
   int maximum_number_of_failed_draws_before_draw_is_forced = 3;
-  base::TimeDelta background_frame_interval = base::TimeDelta::FromSeconds(1);
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
 };

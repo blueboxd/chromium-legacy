@@ -135,7 +135,7 @@ void ApkWebAppInstaller::OnWebAppCreated(const GURL& app_url,
   // removed automatically. TODO(crbug.com/910008): have a less bad way of doing
   // this.
   web_app::ExternallyInstalledWebAppPrefs(profile_->GetPrefs())
-      .Insert(app_url, app_id, web_app::InstallSource::kArc);
+      .Insert(app_url, app_id, web_app::ExternalInstallSource::kArc);
   CompleteInstallation(app_id, code);
 }
 

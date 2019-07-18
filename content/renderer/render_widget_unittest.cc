@@ -13,13 +13,11 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -681,21 +679,7 @@ TEST(RenderWidgetTest, LargeScreensUseMoreMemory) {
 #endif
 
 #if defined(OS_ANDROID)
-class RenderWidgetSurfaceSyncUnittest : public RenderWidgetUnittest {
- public:
-  RenderWidgetSurfaceSyncUnittest() = default;
-  ~RenderWidgetSurfaceSyncUnittest() override = default;
-
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kEnableSurfaceSynchronization);
-    RenderWidgetUnittest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(RenderWidgetSurfaceSyncUnittest, ForceSendMetadataOnInput) {
+TEST_F(RenderWidgetUnittest, ForceSendMetadataOnInput) {
   auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
   // We should not have any force send metadata requests at start.
   EXPECT_FALSE(layer_tree_host->TakeForceSendMetadataRequest());

@@ -236,6 +236,7 @@ static const char* const kSwitchNames[] = {
     switches::kDisableMacOverlays,
     switches::kDisableRemoteCoreAnimation,
     switches::kShowMacOverlayBorders,
+    switches::kUseHighGPUThreadPriorityForPerfTests,
 #endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,

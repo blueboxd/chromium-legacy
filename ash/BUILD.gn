@@ -1540,7 +1540,7 @@ static_library("ash_shell_lib_with_content") {
     "//chromeos/system",
     "//components/discardable_memory/public/mojom",
     "//components/services/font:lib",
-    "//components/services/font/public/interfaces",
+    "//components/services/font/public/mojom",
     "//content",
     "//content/shell:content_shell_lib",
     "//device/bluetooth",

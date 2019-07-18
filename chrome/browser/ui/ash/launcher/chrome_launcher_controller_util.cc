@@ -59,7 +59,7 @@ std::string GetPolicyValueFromAppId(const std::string& app_id,
   if (auto* provider = web_app::WebAppProvider::Get(profile)) {
     std::map<web_app::AppId, GURL> installed_apps =
         provider->registrar().GetExternallyInstalledApps(
-            web_app::InstallSource::kExternalPolicy);
+            web_app::ExternalInstallSource::kExternalPolicy);
     auto it = installed_apps.find(app_id);
     if (it != installed_apps.end())
       return it->second.spec();

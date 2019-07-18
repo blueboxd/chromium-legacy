@@ -121,9 +121,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // based on background insets returned from GetBackgroundInsets().
   gfx::Rect GetBackgroundBounds() const;
 
-  // Returns background color for the tray.
-  SkColor GetBackgroundColor() const;
-
  protected:
   // ActionableView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

@@ -16,6 +16,8 @@ import android.support.annotation.WorkerThread;
 
 import org.chromium.base.Callback;
 
+import java.util.List;
+
 /**
  * Abstraction of account management implementation.
  * Provides methods for getting accounts and managing auth tokens.
@@ -42,10 +44,10 @@ public interface AccountManagerDelegate {
     void removeObserver(AccountsChangeObserver observer);
 
     /**
-     * Get all the accounts synchronously.
+     * Get information about all the accounts synchronously.
      */
     @WorkerThread
-    Account[] getAccountsSync() throws AccountManagerDelegateException;
+    List<CoreAccountInfo> getAccountInfosSync() throws AccountManagerDelegateException;
 
     /**
      * Get an auth token.

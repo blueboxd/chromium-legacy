@@ -20,10 +20,10 @@
     timeoutInSeconds:(NSTimeInterval)timeout;
 
 // Returns the id of the current tab. If no tabs are open, returns nil.
-+ (NSString*)getCurrentTabID;
++ (NSString*)currentTabID;
 
 // Returns an array containing the ids of all open tabs.
-+ (NSArray*)getTabIDs;
++ (NSArray*)tabIDs;
 
 // Closes the tab identified by |tabID|. Returns an error if there is no such
 // tab.

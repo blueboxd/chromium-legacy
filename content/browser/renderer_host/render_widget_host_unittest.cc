@@ -21,7 +21,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -1354,72 +1353,6 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
   RunLoopFor(TimeDelta::FromMicroseconds(20));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
-
-// This tests that a compositor frame received with a stale content source ID
-// in its metadata is properly discarded.
-TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
-  // If Surface Synchronization is on, we don't keep track of content_source_id
-  // in CompositorFrameMetadata.
-  if (features::IsSurfaceSynchronizationEnabled())
-    return;
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
-
-  host_->DidNavigate();
-  host_->set_new_content_rendering_delay_for_testing(
-      base::TimeDelta::FromMicroseconds(9999));
-
-  {
-    // First swap a frame with an invalid ID.
-    auto frame = viz::CompositorFrameBuilder()
-                     .AddDefaultRenderPass()
-                     .SetBeginFrameAck(viz::BeginFrameAck(0, 1, true))
-                     .Build();
-
-    // Mocking |renderer_compositor_frame_sink_| to prevent crashes in
-    // renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources).
-    std::unique_ptr<viz::MockCompositorFrameSinkClient>
-        mock_compositor_frame_sink_client =
-            std::make_unique<viz::MockCompositorFrameSinkClient>();
-    host_->SetMockRendererCompositorFrameSink(
-        mock_compositor_frame_sink_client.get());
-
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt, 0);
-    EXPECT_FALSE(
-        static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-    EXPECT_EQ(viz::BeginFrameAck(0, 1, false),
-              static_cast<TestView*>(host_->GetView())
-                  ->last_did_not_produce_frame_ack());
-    static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
-  }
-
-  {
-    // Test with a valid content ID as a control.
-    auto frame = viz::CompositorFrameBuilder()
-                     .AddDefaultRenderPass()
-                     .Build();
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt, 0);
-    EXPECT_TRUE(
-        static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-    static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
-  }
-
-  {
-    // We also accept frames with higher content IDs, to cover the case where
-    // the browser process receives a compositor frame for a new page before
-    // the corresponding DidCommitProvisionalLoad (it's a race).
-    auto frame = viz::CompositorFrameBuilder()
-                     .AddDefaultRenderPass()
-                     .Build();
-    host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 base::nullopt, 0);
-    EXPECT_TRUE(
-        static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-  }
-}
-
 TEST_F(RenderWidgetHostTest, IgnoreInputEvent) {
   host_->SetupForInputRouterTest();
 

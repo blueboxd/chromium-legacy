@@ -690,18 +690,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
 };
 
-class RenderWidgetHostViewAuraSurfaceSynchronizationTest
-    : public RenderWidgetHostViewAuraTest {
-  void SetUp() override {
-    surface_synchronization_feature_list_.InitAndEnableFeature(
-        features::kEnableSurfaceSynchronization);
-    SetUpEnvironment();
-  }
-
- private:
-  base::test::ScopedFeatureList surface_synchronization_feature_list_;
-};
-
 void InstallDelegatedFrameHostClient(
     RenderWidgetHostViewAura* render_widget_host_view,
     std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client) {
@@ -1489,22 +1477,20 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
       ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
-  // The touch events should get forwarded from the view and make it all the
-  // way to the renderer.
+  // The touch events should get forwarded from the view, but they should not
+  // reach the renderer.
   view_->OnTouchEvent(&press);
   base::RunLoop().RunUntilIdle();
   MockWidgetInputHandler::MessageVector events =
       GetAndResetDispatchedMessages();
-  EXPECT_EQ(1U, events.size());
-  EXPECT_EQ("TouchStart", GetMessageNames(events));
+  EXPECT_EQ(0U, events.size());
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::Action::DOWN, pointer_state().GetAction());
 
   view_->OnTouchEvent(&move);
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(1U, events.size());
-  EXPECT_EQ("TouchMove", GetMessageNames(events));
+  EXPECT_EQ(0U, events.size());
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(ui::MotionEvent::Action::MOVE, pointer_state().GetAction());
   EXPECT_EQ(1U, pointer_state().GetPointerCount());
@@ -1512,8 +1498,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->OnTouchEvent(&release);
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(1U, events.size());
-  EXPECT_EQ("TouchEnd", GetMessageNames(events));
+  EXPECT_EQ(0U, events.size());
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
 
@@ -1577,8 +1562,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_TRUE(press.synchronous_handling_disabled());
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
   events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(2U, events.size());
-  EXPECT_EQ("TouchMove TouchEnd", GetMessageNames(events));
+  EXPECT_EQ(0U, events.size());
 }
 
 // The DOM KeyCode map for Fuchsia maps all DomCodes to 0.  This means that
@@ -3389,7 +3373,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
 }
 
 // This test verifies that the primary SurfaceId is populated on resize.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
+TEST_F(RenderWidgetHostViewAuraTest, SurfaceChanges) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3406,8 +3390,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
 
 // This test verifies that the primary SurfaceId is updated on device scale
 // factor changes.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       DeviceScaleFactorChanges) {
+TEST_F(RenderWidgetHostViewAuraTest, DeviceScaleFactorChanges) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3428,8 +3411,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
 // This test verifies that changing the CompositorFrameSink (and thus evicting
 // the current surface) does not crash,
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       CompositorFrameSinkChange) {
+TEST_F(RenderWidgetHostViewAuraTest, CompositorFrameSinkChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (features::IsVizDisplayCompositorEnabled())
@@ -3463,10 +3445,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 }
 
 // This test verifies that frame eviction plays well with surface
-// synchronizaton. This test is similar to
-// RenderWidgetHostViewAuraTest.DiscardDelegatedFrame.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       DiscardDelegatedFrames) {
+// synchronization.
+TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // Make sure |parent_view_| is evicted to avoid interfering with the code
   // below.
   parent_view_->Hide();
@@ -5651,8 +5631,7 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
 
 // Test that the rendering timeout for newly loaded content fires when enough
 // time passes without receiving a new compositor frame.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       NewContentRenderingTimeout) {
+TEST_F(RenderWidgetHostViewAuraTest, NewContentRenderingTimeout) {
   constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMicroseconds(10);
 
   view_->InitAsChild(nullptr);
@@ -5705,8 +5684,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 }
 
 // If a tab is evicted, allocate a new LocalSurfaceId next time it's shown.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       AllocateLocalSurfaceIdOnEviction) {
+TEST_F(RenderWidgetHostViewAuraTest, AllocateLocalSurfaceIdOnEviction) {
   view_->InitAsChild(nullptr);
   // View has to not be empty in order for frame eviction to be invoked.
   view_->SetSize(gfx::Size(54, 32));
@@ -5727,8 +5705,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
 // If a tab was resized while it's hidden, drop the fallback so next time it's
 // visible we show blank.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       DropFallbackIfResizedWhileHidden) {
+TEST_F(RenderWidgetHostViewAuraTest, DropFallbackIfResizedWhileHidden) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5744,8 +5721,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
 // If a tab is hidden and shown without being resized in the meantime, the
 // fallback SurfaceId has to be preserved.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       DontDropFallbackIfNotResizedWhileHidden) {
+TEST_F(RenderWidgetHostViewAuraTest, DontDropFallbackIfNotResizedWhileHidden) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -5767,8 +5743,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
 // Check that TakeFallbackContentFrom() copies the fallback SurfaceId and
 // background color from the previous view to the new view.
-TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
-       TakeFallbackContent) {
+TEST_F(RenderWidgetHostViewAuraTest, TakeFallbackContent) {
   // Initialize the first view.
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(

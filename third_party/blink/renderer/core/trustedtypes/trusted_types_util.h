@@ -54,6 +54,10 @@ String CORE_EXPORT GetStringFromTrustedScript(StringOrTrustedScript,
                                               const ExecutionContext*,
                                               ExceptionState&);
 
+String GetStringFromTrustedScript(const String&,
+                                  const ExecutionContext*,
+                                  ExceptionState&);
+
 String CORE_EXPORT GetStringFromTrustedScriptURL(StringOrTrustedScriptURL,
                                                  const ExecutionContext*,
                                                  ExceptionState&);

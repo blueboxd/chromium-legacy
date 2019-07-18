@@ -338,7 +338,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     const gfx::Size& max_tile_size,
     bool unpremultiply_and_dither_low_bit_depth_tiles,
     bool enable_oop_rasterization,
-    int raster_metric_frequency)
+    float raster_metric_probability)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
@@ -348,9 +348,8 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       unpremultiply_and_dither_low_bit_depth_tiles_(
           unpremultiply_and_dither_low_bit_depth_tiles),
       enable_oop_rasterization_(enable_oop_rasterization),
-      raster_metric_frequency_(raster_metric_frequency),
-      random_generator_(base::RandUint64()),
-      uniform_distribution_(1, raster_metric_frequency) {
+      random_generator_((uint32_t)base::RandUint64()),
+      bernoulli_distribution_(raster_metric_probability) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
 }
@@ -497,8 +496,7 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThreadInternal(
   gpu::raster::RasterInterface* ri = scoped_context.RasterInterface();
   DCHECK(ri);
 
-  const bool measure_raster_metric =
-      uniform_distribution_(random_generator_) == raster_metric_frequency_;
+  const bool measure_raster_metric = bernoulli_distribution_(random_generator_);
 
   gfx::Rect playback_rect = raster_full_rect;
   if (resource_has_previous_content) {

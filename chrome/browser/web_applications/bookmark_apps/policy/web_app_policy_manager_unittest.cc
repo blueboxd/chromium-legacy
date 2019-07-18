@@ -51,7 +51,7 @@ base::Value GetWindowedItem() {
 
 InstallOptions GetWindowedInstallOptions() {
   InstallOptions options(kWindowedUrl, LaunchContainer::kWindow,
-                         InstallSource::kExternalPolicy);
+                         ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -71,7 +71,7 @@ base::Value GetTabbedItem() {
 
 InstallOptions GetTabbedInstallOptions() {
   InstallOptions options(kTabbedUrl, LaunchContainer::kTab,
-                         InstallSource::kExternalPolicy);
+                         ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -89,7 +89,7 @@ base::Value GetNoContainerItem() {
 
 InstallOptions GetNoContainerInstallOptions() {
   InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         InstallSource::kExternalPolicy);
+                         ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -107,7 +107,7 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
 
 InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
   InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         InstallSource::kExternalPolicy);
+                         ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -126,7 +126,7 @@ base::Value GetCreateDesktopShorcutFalseItem() {
 
 InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
   InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         InstallSource::kExternalPolicy);
+                         ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -145,7 +145,7 @@ base::Value GetCreateDesktopShorcutTrueItem() {
 
 InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
   InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         InstallSource::kExternalPolicy);
+                         ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = true;
   options.add_to_quick_launch_bar = false;
@@ -185,9 +185,8 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
     provider->SetWebAppPolicyManager(std::move(web_app_policy_manager));
   }
 
-  void SimulatePreviouslyInstalledApp(
-      GURL url,
-      InstallSource install_source) {
+  void SimulatePreviouslyInstalledApp(GURL url,
+                                      ExternalInstallSource install_source) {
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
   }
 
@@ -330,10 +329,12 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
 TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate two policy apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(kWindowedUrl, InstallSource::kExternalPolicy);
-  SimulatePreviouslyInstalledApp(kTabbedUrl, InstallSource::kExternalPolicy);
+  SimulatePreviouslyInstalledApp(kWindowedUrl,
+                                 ExternalInstallSource::kExternalPolicy);
+  SimulatePreviouslyInstalledApp(kTabbedUrl,
+                                 ExternalInstallSource::kExternalPolicy);
   SimulatePreviouslyInstalledApp(kNoContainerUrl,
-                                 InstallSource::kInternalDefault);
+                                 ExternalInstallSource::kInternalDefault);
 
   // Push a policy with only one of the apps.
   base::Value first_list(base::Value::Type::LIST);
@@ -473,7 +474,7 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
   std::map<AppId, GURL> apps =
       WebAppProviderBase::GetProviderBase(profile())
           ->registrar()
-          .GetExternallyInstalledApps(InstallSource::kExternalPolicy);
+          .GetExternallyInstalledApps(ExternalInstallSource::kExternalPolicy);
   EXPECT_EQ(1u, apps.size());
   for (auto& it : apps)
     EXPECT_EQ(it.second, kTabbedUrl);

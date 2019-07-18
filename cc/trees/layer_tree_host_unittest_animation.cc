@@ -722,13 +722,6 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     animation_child_->set_animation_delegate(this);
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // Make sure that drawing many times doesn't cause a checkerboarded
-    // animation to start so we avoid flake in this test.
-    settings->timeout_and_draw_when_animation_checkerboards = false;
-    LayerTreeHostAnimationTest::InitializeSettings(settings);
-  }
-
   void BeginTest() override {
     prevented_draw_ = 0;
     started_times_ = 0;

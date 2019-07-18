@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/services/font/public/cpp/font_loader.h"
-#include "components/services/font/public/interfaces/font_service.mojom.h"
+#include "components/services/font/public/mojom/font_service.mojom.h"
 #include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/public/platform/web_string.h"

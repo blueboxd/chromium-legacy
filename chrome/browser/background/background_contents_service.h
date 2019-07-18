@@ -20,6 +20,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "net/base/backoff_entry.h"
 #include "ui/base/window_open_disposition.h"
@@ -39,7 +40,6 @@ class SessionStorageNamespace;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 }  // namespace extensions
 
 namespace gfx {

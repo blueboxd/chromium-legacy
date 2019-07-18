@@ -3611,7 +3611,7 @@ jumbo_split_static_library("browser") {
       "//chromeos/services/secure_channel/public/mojom",
       "//chromeos/strings",
       "//components/services/font:lib",
-      "//components/services/font/public/interfaces",
+      "//components/services/font/public/mojom",
       "//ui/ozone",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]

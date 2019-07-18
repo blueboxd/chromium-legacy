@@ -268,6 +268,22 @@ cr.define('app_management', function() {
     }
   };
 
+  const ArcSupported = {};
+
+  /**
+   * @param {boolean} arcSupported
+   * @param {Object} action
+   * @return {boolean}
+   */
+  ArcSupported.updateArcSupported = function(arcSupported, action) {
+    switch (action.name) {
+      case 'update-arc-supported':
+        return action.value;
+      default:
+        return arcSupported;
+    }
+  };
+
   /**
    * Root reducer for the App Management page. This is called by the store in
    * response to an action, and the return value is used to update the UI.
@@ -280,6 +296,7 @@ cr.define('app_management', function() {
       apps: AppState.updateApps(state.apps, action),
       currentPage: CurrentPageState.updateCurrentPage(
           state.apps, state.currentPage, action),
+      arcSupported: ArcSupported.updateArcSupported(state.arcSupported, action),
       search: SearchState.updateSearch(state.apps, state.search, action),
       notifications:
           NotificationsState.updateNotifications(state.notifications, action),
@@ -290,6 +307,7 @@ cr.define('app_management', function() {
     reduceAction: reduceAction,
     AppState: AppState,
     CurrentPageState: CurrentPageState,
+    ArcSupported: ArcSupported,
     NotificationsState: NotificationsState,
     SearchState: SearchState,
   };

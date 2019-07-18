@@ -113,10 +113,6 @@ void V8SVGTestInterface::TypeAttributeSetterCallback(
   svg_test_interface_v8_internal::TypeAttributeSetter(v8_value, info);
 }
 
-static constexpr V8DOMConfiguration::AccessorConfiguration kV8SVGTestInterfaceAccessors[] = {
-    { "type", V8SVGTestInterface::TypeAttributeGetterCallback, V8SVGTestInterface::TypeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-};
-
 static void InstallV8SVGTestInterfaceTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
@@ -132,9 +128,14 @@ static void InstallV8SVGTestInterfaceTemplate(
   ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
+  static constexpr V8DOMConfiguration::AccessorConfiguration
+  kAccessorConfigurations[] = {
+      { "type", V8SVGTestInterface::TypeAttributeGetterCallback, V8SVGTestInterface::TypeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+  };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
-      signature, kV8SVGTestInterfaceAccessors, base::size(kV8SVGTestInterfaceAccessors));
+      signature, kAccessorConfigurations,
+      base::size(kAccessorConfigurations));
 
   // Custom signature
 

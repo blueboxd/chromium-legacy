@@ -416,18 +416,18 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
       const std::map<std::string, cryptohome::Key>& keys,
       const std::string& label);
 
-  bool service_is_available_;
+  bool service_is_available_ = true;
   // If set, WaitForServiceToBeAvailable will run the callback, even if service
   // is not available (instead of adding the callback to pending callback list).
-  bool service_reported_not_available_;
+  bool service_reported_not_available_ = false;
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  int remove_firmware_management_parameters_from_tpm_call_count_;
+  int remove_firmware_management_parameters_from_tpm_call_count_ = 0;
 
-  int async_call_id_;
+  int async_call_id_ = 1;
   bool mount_create_required_ = false;
-  bool unmount_result_;
-  std::vector<uint8_t> system_salt_;
+  bool unmount_result_ = true;
+  std::vector<uint8_t> system_salt_{GetStubSystemSalt()};
 
   std::vector<WaitForServiceToBeAvailableCallback>
       pending_wait_for_service_to_be_available_callbacks_;
@@ -452,7 +452,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   std::map<std::string, std::string> device_key_payload_map_;
 
   base::RepeatingTimer dircrypto_migration_progress_timer_;
-  uint64_t dircrypto_migration_progress_;
+  uint64_t dircrypto_migration_progress_ = 0;
 
   bool needs_dircrypto_migration_ = false;
   bool run_default_dircrypto_migration_ = true;
@@ -484,7 +484,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) FakeCryptohomeClient
   // Used by LockToSingleUserMountUntilReboot.
   bool is_device_locked_to_single_user_ = false;
 
-  base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptohomeClient);
 };

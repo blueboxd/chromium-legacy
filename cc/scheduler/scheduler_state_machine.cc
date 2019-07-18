@@ -548,18 +548,16 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!HasInitializedLayerTreeFrameSink())
     return false;
 
-  if (!settings_.main_frame_while_submit_frame_throttled_enabled) {
-    // Throttle the BeginMainFrames on CompositorFrameAck unless we just
-    // submitted a frame to potentially improve impl-thread latency over
-    // main-thread throughput.
-    // TODO(brianderson): Remove this restriction to improve throughput or
-    // make it conditional on ImplLatencyTakesPriority.
-    bool just_submitted_in_deadline =
-        begin_impl_frame_state_ == BeginImplFrameState::INSIDE_DEADLINE &&
-        did_submit_in_last_frame_;
-    if (IsDrawThrottled() && !just_submitted_in_deadline)
-      return false;
-  }
+  // Throttle the BeginMainFrames on CompositorFrameAck unless we just
+  // submitted a frame to potentially improve impl-thread latency over
+  // main-thread throughput.
+  // TODO(brianderson): Remove this restriction to improve throughput or
+  // make it conditional on ImplLatencyTakesPriority.
+  bool just_submitted_in_deadline =
+      begin_impl_frame_state_ == BeginImplFrameState::INSIDE_DEADLINE &&
+      did_submit_in_last_frame_;
+  if (IsDrawThrottled() && !just_submitted_in_deadline)
+    return false;
 
   if (skip_next_begin_main_frame_to_reduce_latency_)
     return false;
@@ -922,8 +920,7 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
 
       if (consecutive_checkerboard_animations_ >=
               settings_.maximum_number_of_failed_draws_before_draw_is_forced &&
-          forced_redraw_state_ == ForcedRedrawOnTimeoutState::IDLE &&
-          settings_.timeout_and_draw_when_animation_checkerboards) {
+          forced_redraw_state_ == ForcedRedrawOnTimeoutState::IDLE) {
         // We need to force a draw, but it doesn't make sense to do this until
         // we've committed and have new textures.
         forced_redraw_state_ = ForcedRedrawOnTimeoutState::WAITING_FOR_COMMIT;

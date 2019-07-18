@@ -228,7 +228,8 @@ class _IRBuilder(object):
         assert node.GetClass() == 'Key'
 
         child_nodes = list(node.GetChildren())
-        idl_type = self._take_type(child_nodes)
+        is_required = bool(node.GetProperty('REQUIRED'))
+        idl_type = self._take_type(child_nodes, is_optional=(not is_required))
         default_value = self._take_default_value(child_nodes)
         extended_attributes = self._take_extended_attributes(child_nodes)
         assert len(child_nodes) == 0
@@ -236,7 +237,6 @@ class _IRBuilder(object):
         return DictionaryMember.IR(
             identifier=node.GetName(),
             idl_type=idl_type,
-            is_required=bool(node.GetProperty('REQUIRED')),
             default_value=default_value,
             extended_attributes=extended_attributes,
             component=self._component,

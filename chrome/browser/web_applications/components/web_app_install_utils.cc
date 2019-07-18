@@ -208,19 +208,19 @@ WebappInstallSource ConvertOptionsToMetricsInstallSource(
     const InstallOptions& options) {
   auto metrics_install_source = WebappInstallSource::COUNT;
   switch (options.install_source) {
-    case InstallSource::kInternalDefault:
+    case ExternalInstallSource::kInternalDefault:
       metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
       break;
-    case InstallSource::kExternalDefault:
+    case ExternalInstallSource::kExternalDefault:
       metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
       break;
-    case InstallSource::kExternalPolicy:
+    case ExternalInstallSource::kExternalPolicy:
       metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
       break;
-    case InstallSource::kSystemInstalled:
+    case ExternalInstallSource::kSystemInstalled:
       metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
       break;
-    case InstallSource::kArc:
+    case ExternalInstallSource::kArc:
       metrics_install_source = WebappInstallSource::ARC;
       break;
   }

@@ -30,11 +30,6 @@ constexpr int kShelfControlSizeDense = 36;
 ASH_EXPORT constexpr SkColor kShelfControlPermanentHighlightBackground =
     SkColorSetA(SK_ColorWHITE, 26);  // 10%
 
-// Color used as the background for status area trays when status area widget is
-// shown in a standalone mode without the shelf.
-ASH_EXPORT constexpr SkColor kStandaloneStatusAreaBackground =
-    gfx::kGoogleGrey400;
-
 constexpr SkColor kShelfFocusBorderColor = gfx::kGoogleBlue300;
 
 // We reserve a small area on the edge of the workspace area to ensure that

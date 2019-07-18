@@ -29,13 +29,15 @@ class PendingAppManagerTest : public testing::Test {
 
     std::vector<InstallOptions> install_options_list;
     for (const auto& url : urls) {
-      install_options_list.emplace_back(url, LaunchContainer::kWindow,
-                                        InstallSource::kInternalDefault);
+      install_options_list.emplace_back(
+          url, LaunchContainer::kWindow,
+          ExternalInstallSource::kInternalDefault);
     }
 
     base::RunLoop run_loop;
     pending_app_manager_.SynchronizeInstalledApps(
-        std::move(install_options_list), InstallSource::kInternalDefault,
+        std::move(install_options_list),
+        ExternalInstallSource::kInternalDefault,
         base::BindLambdaForTesting(
             [&run_loop, urls](std::map<GURL, InstallResultCode> install_results,
                               std::map<GURL, bool> uninstall_results) {
@@ -53,8 +55,8 @@ class PendingAppManagerTest : public testing::Test {
     EXPECT_EQ(deduped_uninstall_count,
               pending_app_manager_.deduped_uninstall_count());
 
-    std::map<AppId, GURL> apps =
-        registrar_.GetExternallyInstalledApps(InstallSource::kInternalDefault);
+    std::map<AppId, GURL> apps = registrar_.GetExternallyInstalledApps(
+        ExternalInstallSource::kInternalDefault);
     std::vector<GURL> urls;
     for (auto it : apps)
       urls.push_back(it.second);
@@ -79,13 +81,13 @@ TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
   std::vector<InstallOptions> install_options_list;
   install_options_list.emplace_back(GURL("https://foo.example"),
                                     LaunchContainer::kWindow,
-                                    InstallSource::kInternalDefault);
+                                    ExternalInstallSource::kInternalDefault);
   install_options_list.emplace_back(GURL("https://bar.example"),
                                     LaunchContainer::kWindow,
-                                    InstallSource::kInternalDefault);
+                                    ExternalInstallSource::kInternalDefault);
 
   pending_app_manager->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kInternalDefault,
+      std::move(install_options_list), ExternalInstallSource::kInternalDefault,
       // PendingAppManager gives no guarantees about whether its pending
       // callbacks will be run or not when it gets destroyed.
       base::DoNothing());
@@ -106,10 +108,11 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
     std::vector<InstallOptions> install_options_list;
     install_options_list.emplace_back(GURL("https://foo.example"),
                                       LaunchContainer::kWindow,
-                                      InstallSource::kInternalDefault);
+                                      ExternalInstallSource::kInternalDefault);
     base::RunLoop run_loop;
     pending_app_manager->SynchronizeInstalledApps(
-        std::move(install_options_list), InstallSource::kInternalDefault,
+        std::move(install_options_list),
+        ExternalInstallSource::kInternalDefault,
         base::BindLambdaForTesting(
             [&](std::map<GURL, InstallResultCode> install_results,
                 std::map<GURL, bool> uninstall_results) { run_loop.Quit(); }));
@@ -117,7 +120,7 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
   }
 
   pending_app_manager->SynchronizeInstalledApps(
-      std::vector<InstallOptions>(), InstallSource::kInternalDefault,
+      std::vector<InstallOptions>(), ExternalInstallSource::kInternalDefault,
       // PendingAppManager gives no guarantees about whether its pending
       // callbacks will be run or not when it gets destroyed.
       base::DoNothing());

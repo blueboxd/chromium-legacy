@@ -50,14 +50,7 @@ FakeCryptohomeClient* g_instance = nullptr;
 // static
 constexpr char FakeCryptohomeClient::kStubTpmPassword[] = "Stub-TPM-password";
 
-FakeCryptohomeClient::FakeCryptohomeClient()
-    : service_is_available_(true),
-      service_reported_not_available_(false),
-      remove_firmware_management_parameters_from_tpm_call_count_(0),
-      async_call_id_(1),
-      unmount_result_(true),
-      system_salt_(GetStubSystemSalt()),
-      weak_ptr_factory_(this) {
+FakeCryptohomeClient::FakeCryptohomeClient() {
   DCHECK(!g_instance);
   g_instance = this;
 

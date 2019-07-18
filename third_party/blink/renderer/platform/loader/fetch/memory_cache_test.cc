@@ -185,7 +185,7 @@ static void TestResourcePruningLater(ResourceFetcher* fetcher,
   auto* platform = static_cast<TestingPlatformSupportWithMockScheduler*>(
       Platform::Current());
 
-  GetMemoryCache()->SetDelayBeforeLiveDecodedPrune(0);
+  GetMemoryCache()->SetDelayBeforeLiveDecodedPrune(base::TimeDelta());
 
   // Enforce pruning by adding |dummyResource| and then call prune().
   Resource* dummy_resource = RawResource::CreateForTest(

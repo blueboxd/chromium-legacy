@@ -11,7 +11,7 @@
 #include "third_party/blink/public/web/web_remote_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/renderer/bindings/core/v8/node_or_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
@@ -225,8 +225,8 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
 
   // Replace the documentElement with the iframe. The effectiveRootScroller
   // should remain the same.
-  HeapVector<NodeOrString> nodes;
-  nodes.push_back(NodeOrString::FromNode(iframe));
+  HeapVector<NodeOrStringOrTrustedScript> nodes;
+  nodes.push_back(NodeOrStringOrTrustedScript::FromNode(iframe));
   document->documentElement()->ReplaceWith(nodes, ASSERT_NO_EXCEPTION);
 
   UpdateAllLifecyclePhases(MainFrameView());

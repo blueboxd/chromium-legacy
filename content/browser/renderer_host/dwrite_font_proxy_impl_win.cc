@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/dwrite_font_file_util_win.h"
 #include "content/browser/renderer_host/dwrite_font_uma_logging_win.h"
@@ -32,10 +33,11 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/font_unique_name_table.pb.h"
 #include "third_party/blink/public/common/font_unique_name_lookup/icu_fold_case_util.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/text_analysis_source.h"
-
-#include "base/threading/platform_thread.h"
 
 namespace mswr = Microsoft::WRL;
 
@@ -506,6 +508,37 @@ void DWriteFontProxyImpl::GetUniqueNameLookupTable(
       base::SequencedTaskRunnerHandle::Get(), std::move(callback));
 }
 
+void DWriteFontProxyImpl::FallbackFamilyNameForCodepoint(
+    const std::string& base_family_name,
+    const std::string& locale_name,
+    uint32_t codepoint,
+    FallbackFamilyNameForCodepointCallback callback) {
+  InitializeDirectWrite();
+  callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
+                                                         std::string());
+
+  if (!codepoint)
+    return;
+
+  sk_sp<SkFontMgr> font_mgr(
+      SkFontMgr_New_DirectWrite(factory_.Get(), collection_.Get()));
+
+  const char* bcp47_locales[] = {locale_name.c_str()};
+  int num_locales = locale_name.empty() ? 0 : 1;
+  const char** locales = locale_name.empty() ? nullptr : bcp47_locales;
+
+  sk_sp<SkTypeface> typeface(font_mgr->matchFamilyStyleCharacter(
+      base_family_name.c_str(), SkFontStyle(), locales, num_locales,
+      codepoint));
+
+  if (!typeface)
+    return;
+
+  SkString family_name;
+  typeface->getFamilyName(&family_name);
+  std::move(callback).Run(family_name.c_str());
+}
+
 void DWriteFontProxyImpl::InitializeDirectWrite() {
   if (direct_write_initialized_)
     return;
@@ -513,9 +546,8 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
 
   TRACE_EVENT0("dwrite,fonts", "DWriteFontProxyImpl::InitializeDirectWrite");
 
-  mswr::ComPtr<IDWriteFactory> factory;
-  gfx::win::CreateDWriteFactory(&factory);
-  if (factory == nullptr) {
+  gfx::win::CreateDWriteFactory(&factory_);
+  if (factory_ == nullptr) {
     // We won't be able to load fonts, but we should still return messages so
     // renderers don't hang if they for some reason send us a font message.
     return;
@@ -523,14 +555,14 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
 
   // QueryInterface for IDWriteFactory2. It's ok for this to fail if we are
   // running an older version of DirectWrite (earlier than Win8.1).
-  factory.As<IDWriteFactory2>(&factory2_);
+  factory_.As<IDWriteFactory2>(&factory2_);
 
   // QueryInterface for IDwriteFactory3, needed for MatchUniqueFont on Windows
   // 10. May fail on older versions, in which case, unique font matching must be
   // done through indexing system fonts using DWriteFontLookupTableBuilder.
-  factory.As<IDWriteFactory3>(&factory3_);
+  factory_.As<IDWriteFactory3>(&factory3_);
 
-  HRESULT hr = factory->GetSystemFontCollection(&collection_);
+  HRESULT hr = factory_->GetSystemFontCollection(&collection_);
   DCHECK(SUCCEEDED(hr));
 
   if (!collection_) {

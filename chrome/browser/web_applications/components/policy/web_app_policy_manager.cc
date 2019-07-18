@@ -51,7 +51,7 @@ InstallOptions ParseInstallOptionsFromPolicyEntry(const base::Value& entry) {
   }
 
   InstallOptions install_options{GURL(url.GetString()), launch_container,
-                                 InstallSource::kExternalPolicy};
+                                 ExternalInstallSource::kExternalPolicy};
 
   install_options.add_to_applications_menu = true;
   install_options.add_to_desktop =
@@ -156,7 +156,7 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   }
 
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(install_options_list), InstallSource::kExternalPolicy,
+      std::move(install_options_list), ExternalInstallSource::kExternalPolicy,
       base::BindOnce(&WebAppPolicyManager::OnAppsSynchronized,
                      weak_ptr_factory_.GetWeakPtr()));
 }

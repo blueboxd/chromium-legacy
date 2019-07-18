@@ -46,7 +46,7 @@ void AppRegistrar::NotifyAppRegistrarShutdown() {
 }
 
 std::map<AppId, GURL> AppRegistrar::GetExternallyInstalledApps(
-    InstallSource install_source) const {
+    ExternalInstallSource install_source) const {
   std::map<AppId, GURL> installed_apps =
       ExternallyInstalledWebAppPrefs::BuildAppIdsMap(profile()->GetPrefs(),
                                                      install_source);
@@ -65,7 +65,7 @@ base::Optional<AppId> AppRegistrar::LookupExternalAppId(
 
 bool AppRegistrar::HasExternalAppWithInstallSource(
     const AppId& app_id,
-    InstallSource install_source) const {
+    ExternalInstallSource install_source) const {
   return ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
       profile()->GetPrefs(), app_id, install_source);
 }

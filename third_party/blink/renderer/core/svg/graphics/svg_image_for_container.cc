@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/core/svg/graphics/dark_mode_svg_image_classifier.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -67,6 +68,12 @@ PaintImage SVGImageForContainer::PaintImageForCurrentFrame() {
       image_->completion_state());
   image_->PopulatePaintRecordForCurrentFrameForContainer(builder, url_, Size());
   return builder.TakePaintImage();
+}
+
+DarkModeClassification SVGImageForContainer::ClassifyImageForDarkMode(
+    const FloatRect& src_rect) {
+  DarkModeSVGImageClassifier dark_mode_svg_image_classifier;
+  return dark_mode_svg_image_classifier.Classify(image_, src_rect);
 }
 
 }  // namespace blink

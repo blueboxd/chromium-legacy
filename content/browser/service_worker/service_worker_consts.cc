@@ -95,4 +95,7 @@ const int ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId = -1;
 
 const int64_t ServiceWorkerConsts::kInvalidServiceWorkerResourceId = -1;
 
+// static
+constexpr base::TimeDelta ServiceWorkerConsts::kServiceWorkerScriptMaxCacheAge;
+
 }  // namespace content

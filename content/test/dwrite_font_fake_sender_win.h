@@ -127,6 +127,11 @@ class FakeFontCollection : public blink::mojom::DWriteFontProxy {
       GetUniqueNameLookupTableIfAvailableCallback callback) override;
   void GetUniqueNameLookupTable(
       GetUniqueNameLookupTableCallback callback) override;
+  void FallbackFamilyNameForCodepoint(
+      const std::string& base_family_name,
+      const std::string& locale_name,
+      uint32_t codepoint,
+      FallbackFamilyNameForCodepointCallback callback) override;
 
  private:
   std::vector<FakeFont> fonts_;

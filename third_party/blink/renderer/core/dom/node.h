@@ -63,7 +63,7 @@ class MutationObserver;
 class MutationObserverRegistration;
 class NodeList;
 class NodeListsNodeData;
-class NodeOrString;
+class NodeOrStringOrTrustedScript;
 class NodeRareData;
 class QualifiedName;
 class RegisteredEventListener;
@@ -219,11 +219,12 @@ class CORE_EXPORT Node : public EventTarget {
   // https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
   bool IsClosedShadowHiddenFrom(const Node&) const;
 
-  void Prepend(const HeapVector<NodeOrString>&, ExceptionState&);
-  void Append(const HeapVector<NodeOrString>&, ExceptionState&);
-  void Before(const HeapVector<NodeOrString>&, ExceptionState&);
-  void After(const HeapVector<NodeOrString>&, ExceptionState&);
-  void ReplaceWith(const HeapVector<NodeOrString>&, ExceptionState&);
+  void Prepend(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
+  void Append(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
+  void Before(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
+  void After(const HeapVector<NodeOrStringOrTrustedScript>&, ExceptionState&);
+  void ReplaceWith(const HeapVector<NodeOrStringOrTrustedScript>&,
+                   ExceptionState&);
   void remove(ExceptionState&);
   void remove();
 

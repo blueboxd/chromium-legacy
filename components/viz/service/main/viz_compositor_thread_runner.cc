@@ -21,6 +21,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/config/gpu_finch_features.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/switches.h"
@@ -53,7 +54,18 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread(
 
   base::Thread::Options thread_options;
   thread_options.message_loop_type = message_loop_type;
+
+#if defined(OS_MACOSX)
+  // Increase the thread priority to get more reliable values in performance
+  // test of macOS.
+  thread_options.priority =
+      (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseHighGPUThreadPriorityForPerfTests))
+          ? base::ThreadPriority::REALTIME_AUDIO
+          : thread_priority;
+#else
   thread_options.priority = thread_priority;
+#endif  // !defined(OS_MACOSX)
 
   CHECK(thread->StartWithOptions(thread_options));
   return thread;

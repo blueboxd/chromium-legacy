@@ -167,17 +167,17 @@ ProfileOAuth2TokenServiceIOSDelegate::ProfileOAuth2TokenServiceIOSDelegate(
 }
 
 ProfileOAuth2TokenServiceIOSDelegate::~ProfileOAuth2TokenServiceIOSDelegate() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::Shutdown() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   accounts_.clear();
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const CoreAccountId& primary_account_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
   set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
@@ -200,7 +200,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Get the list of new account ids.
   std::set<std::string> new_account_ids;
@@ -246,13 +246,13 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateCredentials(
     const CoreAccountId& account_id,
     const std::string& refresh_token) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTREACHED() << "Unexpected call to UpdateCredentials when using shared "
                   "authentication.";
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::RevokeAllCredentials() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   ScopedBatchChange batch(this);
   AccountStatusMap toRemove = accounts_;
@@ -285,7 +285,7 @@ ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
 
 std::vector<CoreAccountId> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts()
     const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::vector<CoreAccountId> account_ids;
   for (const auto& account : accounts_)
     account_ids.push_back(account.first);
@@ -294,7 +294,7 @@ std::vector<CoreAccountId> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts()
 
 bool ProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
     const CoreAccountId& account_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   return accounts_.count(account_id) > 0;
 }
@@ -309,7 +309,7 @@ GoogleServiceAuthError ProfileOAuth2TokenServiceIOSDelegate::GetAuthError(
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
@@ -333,7 +333,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
 // refresh token is available so that they request new access tokens.
 void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
     const CoreAccountId& account_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Account must have been seeded before attempting to add it.
   DCHECK(!account_tracker_service_->GetAccountInfo(account_id).gaia.empty());
@@ -355,7 +355,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
 
 void ProfileOAuth2TokenServiceIOSDelegate::RemoveAccount(
     const CoreAccountId& account_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!account_id.empty());
 
   if (accounts_.count(account_id) > 0) {

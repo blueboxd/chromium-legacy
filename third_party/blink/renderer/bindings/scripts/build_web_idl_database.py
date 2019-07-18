@@ -10,11 +10,13 @@ The output file may contain information about component, too.
 """
 
 import optparse
+
 import utilities
+
 from web_idl.identifier_ir_map import IdentifierIRMap
 from web_idl.idl_compiler import IdlCompiler
-from web_idl.idl_reference_proxy import RefByIdFactory
 from web_idl.ir_builder import load_and_register_idl_definitions
+from web_idl.reference import RefByIdFactory
 
 
 def parse_options():

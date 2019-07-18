@@ -919,12 +919,6 @@
       invalidate: "Paint",
     },
     {
-      name: "darkModeClassifierType",
-      initial: "DarkModeClassifierType::kGeneric",
-      type: "DarkModeClassifierType",
-      invalidate: "Paint",
-    },
-    {
       name: "darkModeImagePolicy",
       initial: "DarkModeImagePolicy::kFilterNone",
       type: "DarkModeImagePolicy",

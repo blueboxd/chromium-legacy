@@ -271,7 +271,8 @@ void WebAppProvider::ProfileDestroyed() {
 void WebAppProvider::OnScanForExternalWebApps(
     std::vector<InstallOptions> desired_apps_install_options) {
   pending_app_manager_->SynchronizeInstalledApps(
-      std::move(desired_apps_install_options), InstallSource::kExternalDefault,
+      std::move(desired_apps_install_options),
+      ExternalInstallSource::kExternalDefault,
       base::BindOnce(&OnExternalWebAppsSynchronized));
 }
 

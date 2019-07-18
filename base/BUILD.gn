@@ -3504,6 +3504,7 @@ if (is_android) {
   }
 
   write_native_libraries_java("base_native_libraries_gen") {
+    use_final_fields = false
   }
 
   android_library("base_java_unittest_support") {

@@ -377,16 +377,24 @@ void ReportCookiesChangedOnUI(
       case net::CanonicalCookie::CookieInclusionStatus::
           EXCLUDE_USER_PREFERENCES:
         for (const GlobalFrameRoutingId& id : destinations) {
-          GetContentClient()->browser()->OnCookieChange(
-              id.child_id, id.frame_routing_id, url, site_for_cookies,
-              cookie_and_status.cookie, /* blocked_by_policy = */ true);
+          WebContents* web_contents = GetWebContentsForStoragePartition(
+              id.child_id, id.frame_routing_id);
+          if (!web_contents)
+            continue;
+          web_contents->OnCookieChange(url, site_for_cookies,
+                                       cookie_and_status.cookie,
+                                       /* blocked_by_policy =*/true);
         }
         break;
       case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
         for (const GlobalFrameRoutingId& id : destinations) {
-          GetContentClient()->browser()->OnCookieChange(
-              id.child_id, id.frame_routing_id, url, site_for_cookies,
-              cookie_and_status.cookie, /* blocked_by_policy = */ false);
+          WebContents* web_contents = GetWebContentsForStoragePartition(
+              id.child_id, id.frame_routing_id);
+          if (!web_contents)
+            continue;
+          web_contents->OnCookieChange(url, site_for_cookies,
+                                       cookie_and_status.cookie,
+                                       /* blocked_by_policy =*/false);
         }
         break;
       default:
@@ -423,17 +431,23 @@ void ReportCookiesReadOnUI(
 
   if (!accepted.empty()) {
     for (const GlobalFrameRoutingId& id : destinations) {
-      GetContentClient()->browser()->OnCookiesRead(
-          id.child_id, id.frame_routing_id, url, site_for_cookies, accepted,
-          /* blocked_by_policy = */ false);
+      WebContents* web_contents =
+          GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
+      if (!web_contents)
+        continue;
+      web_contents->OnCookiesRead(url, site_for_cookies, accepted,
+                                  /* blocked_by_policy =*/false);
     }
   }
 
   if (!blocked.empty()) {
     for (const GlobalFrameRoutingId& id : destinations) {
-      GetContentClient()->browser()->OnCookiesRead(
-          id.child_id, id.frame_routing_id, url, site_for_cookies, blocked,
-          /* blocked_by_policy = */ true);
+      WebContents* web_contents =
+          GetWebContentsForStoragePartition(id.child_id, id.frame_routing_id);
+      if (!web_contents)
+        continue;
+      web_contents->OnCookiesRead(url, site_for_cookies, blocked,
+                                  /* blocked_by_policy =*/true);
     }
   }
 }

@@ -44,11 +44,11 @@ class MEDIA_GPU_EXPORT CodecImageGroup
   CodecImageGroup(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   scoped_refptr<CodecSurfaceBundle> bundle);
 
-  // Set the callback that we'll notify when any image is destroyed.
-  void SetDestructionCB(CodecImage::DestructionCB destruction_cb);
-
   // Notify us that |image| uses |surface_bundle_|.
   void AddCodecImage(CodecImage* image);
+
+  // Notify us that |image| no longer depends on |surface_bundle_|.
+  void RemoveCodecImage(CodecImage* image);
 
  protected:
   virtual ~CodecImageGroup();
@@ -67,9 +67,6 @@ class MEDIA_GPU_EXPORT CodecImageGroup
 
   // All the images that use |surface_bundle_|.
   std::unordered_set<CodecImage*> images_;
-
-  // We'll forward CodecImage destructions to |destruction_cb_|.
-  CodecImage::DestructionCB destruction_cb_;
 
   base::WeakPtrFactory<CodecImageGroup> weak_this_factory_;
 };

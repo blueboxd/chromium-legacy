@@ -34,9 +34,6 @@ class OpenVRRenderLoop : public XRCompositorCommon {
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
   mojom::XRGamepadDataPtr GetNextGamepadData() override;
-  void GetEnvironmentIntegrationProvider(
-      mojom::XREnvironmentIntegrationProviderAssociatedRequest
-          environment_provider) override;
   bool StartRuntime() override;
   void StopRuntime() override;
   void OnSessionStart() override;

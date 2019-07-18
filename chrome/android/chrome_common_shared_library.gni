@@ -62,8 +62,6 @@ template("chrome_common_shared_library") {
     }
 
     configs += [ "//build/config/compiler:chrome_orderfile_config" ]
-    public_configs = extra_chrome_shared_library_configs
-    deps += extra_chrome_shared_library_deps
 
     # Use a dynamically-generated linker script.
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]

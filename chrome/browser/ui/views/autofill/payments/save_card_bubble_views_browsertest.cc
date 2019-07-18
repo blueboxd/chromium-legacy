@@ -802,14 +802,12 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ClickingNoThanksClosesBubble) {
-  // Enable the updated UI.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardImprovedUserConsent);
-
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
@@ -829,6 +827,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
 }
+#endif
 
 // Tests the sign in promo bubble. Ensures that clicking the [Save] button
 // on the local save bubble successfully causes the sign in promo to show.
@@ -1205,13 +1204,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 }
 #endif
 
+#if defined(OS_CHROMEOS)
 // Tests the local save bubble. Ensures that the bubble does not have a
 // [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ShouldNotHaveNoThanksButton) {
-  // Disable the updated UI.
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCardImprovedUserConsent);
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -1224,6 +1221,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Assert that the cancel button cannot be found.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
+#endif
 
 // Tests the local save bubble. Ensures that the bubble behaves correctly if
 // dismissed and then immediately torn down (e.g. by closing browser window)
@@ -1449,19 +1447,15 @@ IN_PROC_BROWSER_TEST_F(
             base::ASCIIToUTF16("John Smith"));
 }
 
-#endif  // !OS_CHROMEOS
+#endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ClickingNoThanksClosesBubble) {
-  // Enable the updated UI.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillUpstream},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   // Start sync.
   harness_->SetupSync();
@@ -1490,17 +1484,14 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
 }
+#endif
 
+#if defined(OS_CHROMEOS)
 // Tests the upload save bubble. Ensures that the bubble does not have a
 // [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotHaveNoThanksButton) {
-  // Disable the updated UI.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream},
-      // Disable the updated UI.
-      {features::kAutofillSaveCardImprovedUserConsent});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   // Start sync.
   harness_->SetupSync();
@@ -1523,6 +1514,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   // Assert that the cancel button cannot be found.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
+#endif  // defined(OS_CHROMEOS)
 
 // Tests the upload save bubble. Ensures that clicking the top-right [X] close
 // button successfully causes the bubble to go away.
@@ -2601,14 +2593,12 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       /*sample=*/1, /*count=*/1);
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
 // successfully causes a strike to be added.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Local_AddStrikeIfBubbleDeclined) {
-  // Enable the updated UI.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardImprovedUserConsent);
-
   // Submitting the form and having Payments decline offering to save should
   // show the local save bubble.
   // (Must wait for response from Payments before accessing the controller.)
@@ -2628,18 +2618,15 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
       /*sample=*/(1), /*count=*/1);
 }
+#endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests the upload save bubble. Ensures that clicking the [No thanks] button
 // successfully causes a strike to be added.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Upload_AddStrikeIfBubbleDeclined) {
-  // Enable the updated UI.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillUpstream},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   // Start sync.
   harness_->SetupSync();
@@ -2668,16 +2655,16 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.StrikeDatabase.NthStrikeAdded.CreditCardSave",
       /*sample=*/(1), /*count=*/1);
 }
+#endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests overall StrikeDatabase interaction with the local save bubble. Runs an
 // example of declining the prompt three times and ensuring that the
 // offer-to-save bubble does not appear on the fourth try. Then, ensures that no
 // strikes are added if the card already has max strikes.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Local_FullFlowTest) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardImprovedUserConsent);
-
   bool controller_observer_set = false;
 
   // Show and ignore the bubble enough times in order to accrue maximum strikes.
@@ -2748,19 +2735,17 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
 }
+#endif
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Tests overall StrikeDatabase interaction with the upload save bubble. Runs an
 // example of declining the prompt three times and ensuring that the
 // offer-to-save bubble does not appear on the fourth try. Then, ensures that no
 // strikes are added if the card already has max strikes.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        StrikeDatabase_Upload_FullFlowTest) {
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillSaveCardImprovedUserConsent,
-       features::kAutofillUpstream},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   bool controller_observer_set = false;
 
@@ -2844,6 +2829,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
 }
+#endif
 
 // TODO(crbug.com/932818): Remove the condition once the experiment is enabled
 // on ChromeOS.

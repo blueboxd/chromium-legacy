@@ -26,7 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/autofill/core/browser/logging/log_router.h"

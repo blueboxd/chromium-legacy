@@ -28,13 +28,27 @@ class MockNativeFileSystemPermissionContext
       const base::FilePath& path,
       int process_id,
       int frame_id,
-      base::OnceCallback<void(PermissionStatus)> callback);
+      base::OnceCallback<void(PermissionStatus)> callback) override;
   MOCK_METHOD5(ConfirmDirectoryReadAccess_,
                void(const url::Origin& origin,
                     const base::FilePath& path,
                     int process_id,
                     int frame_id,
                     base::OnceCallback<void(PermissionStatus)>& callback));
+
+  void ConfirmSensitiveDirectoryAccess(
+      const url::Origin& origin,
+      const std::vector<base::FilePath>& paths,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
+  MOCK_METHOD5(
+      ConfirmSensitiveDirectoryAccess_,
+      void(const url::Origin& origin,
+           const std::vector<base::FilePath>& paths,
+           int process_id,
+           int frame_id,
+           base::OnceCallback<void(SensitiveDirectoryResult)>& callback));
 };
 
 }  // namespace content

@@ -4,7 +4,10 @@
 
 #include "services/device/usb/usb_device.h"
 
+#include <utility>
+
 #include "base/guid.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_device_handle.h"
 #include "services/device/usb/webusb_descriptors.h"
 
@@ -14,24 +17,19 @@ UsbDevice::Observer::~Observer() = default;
 
 void UsbDevice::Observer::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {}
 
-UsbDevice::UsbDevice(uint32_t bus_number, uint32_t port_number)
-    : bus_number_(bus_number),
-      port_number_(port_number),
-      guid_(base::GenerateGUID()) {}
+UsbDevice::UsbDevice(uint32_t bus_number, uint32_t port_number) {
+  device_info_ = mojom::UsbDeviceInfo::New();
+  device_info_->guid = base::GenerateGUID();
+  device_info_->bus_number = bus_number;
+  device_info_->port_number = port_number;
+}
 
-UsbDevice::UsbDevice(const UsbDeviceDescriptor& descriptor,
-                     const base::string16& manufacturer_string,
-                     const base::string16& product_string,
-                     const base::string16& serial_number,
-                     uint32_t bus_number,
-                     uint32_t port_number)
-    : descriptor_(descriptor),
-      manufacturer_string_(manufacturer_string),
-      product_string_(product_string),
-      serial_number_(serial_number),
-      bus_number_(bus_number),
-      port_number_(port_number),
-      guid_(base::GenerateGUID()) {}
+UsbDevice::UsbDevice(mojom::UsbDeviceInfoPtr device_info)
+    : device_info_(std::move(device_info)) {
+  DCHECK(device_info_);
+  device_info_->guid = base::GenerateGUID();
+  ActiveConfigurationChanged(device_info_->active_configuration);
+}
 
 UsbDevice::UsbDevice(uint16_t usb_version,
                      uint8_t device_class,
@@ -44,23 +42,36 @@ UsbDevice::UsbDevice(uint16_t usb_version,
                      const base::string16& product_string,
                      const base::string16& serial_number,
                      uint32_t bus_number,
-                     uint32_t port_number)
-    : manufacturer_string_(manufacturer_string),
-      product_string_(product_string),
-      serial_number_(serial_number),
-      bus_number_(bus_number),
-      port_number_(port_number),
-      guid_(base::GenerateGUID()) {
-  descriptor_.usb_version = usb_version;
-  descriptor_.device_class = device_class;
-  descriptor_.device_subclass = device_subclass;
-  descriptor_.device_protocol = device_protocol;
-  descriptor_.vendor_id = vendor_id;
-  descriptor_.product_id = product_id;
-  descriptor_.device_version = device_version;
+                     uint32_t port_number) {
+  device_info_ = mojom::UsbDeviceInfo::New();
+  device_info_->guid = base::GenerateGUID();
+  device_info_->usb_version_major = usb_version >> 8;
+  device_info_->usb_version_minor = usb_version >> 4 & 0xf;
+  device_info_->usb_version_subminor = usb_version & 0xf;
+  device_info_->class_code = device_class;
+  device_info_->subclass_code = device_subclass;
+  device_info_->protocol_code = device_protocol;
+  device_info_->vendor_id = vendor_id;
+  device_info_->product_id = product_id;
+  device_info_->device_version_major = device_version >> 8;
+  device_info_->device_version_minor = device_version >> 4 & 0xf;
+  device_info_->device_version_subminor = device_version & 0xf;
+  device_info_->manufacturer_name = manufacturer_string;
+  device_info_->product_name = product_string;
+  device_info_->serial_number = serial_number;
+  device_info_->bus_number = bus_number;
+  device_info_->port_number = port_number;
 }
 
 UsbDevice::~UsbDevice() = default;
+
+uint16_t UsbDevice::usb_version() const {
+  return GetUsbVersion(*device_info_);
+}
+
+uint16_t UsbDevice::device_version() const {
+  return GetDeviceVersion(*device_info_);
+}
 
 void UsbDevice::CheckUsbAccess(ResultCallback callback) {
   // By default assume that access to the device is allowed. This is implemented

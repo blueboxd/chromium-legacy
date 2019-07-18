@@ -54,7 +54,7 @@ GPUBindGroup* GPUBindGroup::Create(GPUDevice* device,
   std::unique_ptr<DawnBindGroupBinding[]> bindings =
       binding_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
 
-  DawnBindGroupDescriptor dawn_desc;
+  DawnBindGroupDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
   dawn_desc.bindingCount = binding_count;

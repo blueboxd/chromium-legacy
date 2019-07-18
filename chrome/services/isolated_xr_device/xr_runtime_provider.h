@@ -16,7 +16,7 @@ class OculusDevice;
 class OpenVRDevice;
 class MixedRealityDevice;
 class MixedRealityDeviceStatics;
-class OpenXRDevice;
+class OpenXrDevice;
 }  // namespace device
 
 class IsolatedXRRuntimeProvider
@@ -64,7 +64,7 @@ class IsolatedXRRuntimeProvider
   bool IsOpenXrHardwareAvailable();
   void SetOpenXrRuntimeStatus(RuntimeStatus status);
   bool should_check_openxr_ = false;
-  std::unique_ptr<device::OpenXRDevice> openxr_device_;
+  std::unique_ptr<device::OpenXrDevice> openxr_device_;
 #endif
 
   device::mojom::IsolatedXRRuntimeProviderClientPtr client_;

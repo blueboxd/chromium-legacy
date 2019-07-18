@@ -186,11 +186,16 @@ blink::WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
                                        predicted_pointer_events);
 }
 
-viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebNode& node) {
+viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
+  const blink::WebNode& node = result.GetNode();
+  DCHECK(!node.IsNull());
   blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
   if (result_frame && result_frame->IsWebRemoteFrame()) {
     blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
     if (remote_frame->IsIgnoredForHitTest())
+      return viz::FrameSinkId();
+
+    if (!result.ContentBoxContainsPoint())
       return viz::FrameSinkId();
 
     return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
@@ -242,7 +247,7 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
                             widget_->routing_id());
   }
 
-  viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result_node);
+  viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result);
   if (frame_sink_id.is_valid()) {
     *local_point = gfx::PointF(result.LocalPointWithoutContentBoxOffset());
     if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
@@ -253,8 +258,8 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   }
 
   // Return the FrameSinkId for the current widget if the point did not hit
-  // test to a remote frame, or the remote frame doesn't have a valid
-  // FrameSinkId yet.
+  // test to a remote frame, or the point is outside of the remote frame's
+  // content box, or the remote frame doesn't have a valid FrameSinkId yet.
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                           widget_->routing_id());
 }

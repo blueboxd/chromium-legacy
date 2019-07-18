@@ -44,6 +44,8 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 CodecImage::CodecImage() = default;
 
 CodecImage::~CodecImage() {
+  if (now_unused_cb_)
+    std::move(now_unused_cb_).Run(this);
   if (destruction_cb_)
     std::move(destruction_cb_).Run(this);
 }
@@ -57,6 +59,10 @@ void CodecImage::Initialize(
   output_buffer_ = std::move(output_buffer);
   texture_owner_ = std::move(texture_owner);
   promotion_hint_cb_ = std::move(promotion_hint_cb);
+}
+
+void CodecImage::SetNowUnusedCB(NowUnusedCB now_unused_cb) {
+  now_unused_cb_ = std::move(now_unused_cb);
 }
 
 void CodecImage::SetDestructionCB(DestructionCB destruction_cb) {

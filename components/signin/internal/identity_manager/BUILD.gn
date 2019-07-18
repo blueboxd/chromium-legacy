@@ -41,6 +41,8 @@ source_set("identity_manager") {
     "profile_oauth2_token_service_builder.h",
     "profile_oauth2_token_service_delegate_chromeos.cc",
     "profile_oauth2_token_service_delegate_chromeos.h",
+    "profile_oauth2_token_service_delegate_ios.h",
+    "profile_oauth2_token_service_delegate_ios.mm",
     "ubertoken_fetcher_impl.cc",
     "ubertoken_fetcher_impl.h",
   ]
@@ -94,10 +96,14 @@ source_set("identity_manager") {
   }
 
   if (is_ios) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+
     sources += [
       "device_accounts_synchronizer_impl.cc",
       "device_accounts_synchronizer_impl.h",
     ]
+
+    deps += [ "//components/signin/public/identity_manager/ios" ]
   }
 }
 
@@ -115,6 +121,7 @@ source_set("unit_tests") {
     "primary_account_manager_unittest.cc",
     "primary_account_policy_manager_impl_unittest.cc",
     "profile_oauth2_token_service_delegate_chromeos_unittest.cc",
+    "profile_oauth2_token_service_delegate_ios_unittest.mm",
     "profile_oauth2_token_service_unittest.cc",
     "ubertoken_fetcher_impl_unittest.cc",
   ]
@@ -139,6 +146,7 @@ source_set("unit_tests") {
     "//google_apis",
     "//google_apis:test_support",
     "//net",
+    "//net:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//testing/gmock",
@@ -149,6 +157,12 @@ source_set("unit_tests") {
     sources -= [ "primary_account_policy_manager_impl_unittest.cc" ]
 
     deps += [ "//chromeos/components/account_manager" ]
+  }
+
+  if (is_ios) {
+    configs += [ "//build/config/compiler:enable_arc" ]
+
+    deps += [ "//components/signin/public/identity_manager/ios:test_support" ]
   }
 }
 

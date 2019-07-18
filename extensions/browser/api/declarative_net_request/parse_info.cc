@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "extensions/common/error_utils.h"
 
 namespace extensions {
@@ -28,74 +29,82 @@ std::string ParseInfo::GetErrorDescription() const {
       break;
     case ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED:
       error = ErrorUtils::FormatErrorMessage(kErrorResourceTypeDuplicated,
-                                             std::to_string(*rule_id_));
+                                             base::NumberToString(*rule_id_));
       break;
     case ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyRedirectRuleKey, std::to_string(*rule_id_), kPriorityKey);
+      error = ErrorUtils::FormatErrorMessage(kErrorEmptyRedirectRuleKey,
+                                             base::NumberToString(*rule_id_),
+                                             kPriorityKey);
+      break;
+    case ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY:
+      error = ErrorUtils::FormatErrorMessage(kErrorEmptyUpgradeRulePriority,
+                                             base::NumberToString(*rule_id_));
       break;
     case ParseResult::ERROR_EMPTY_REDIRECT_URL:
       error = ErrorUtils::FormatErrorMessage(kErrorEmptyRedirectRuleKey,
-                                             std::to_string(*rule_id_),
+                                             base::NumberToString(*rule_id_),
                                              kRedirectUrlKey);
       break;
     case ParseResult::ERROR_INVALID_RULE_ID:
-      error = ErrorUtils::FormatErrorMessage(kErrorInvalidRuleKey,
-                                             std::to_string(*rule_id_), kIDKey,
-                                             std::to_string(kMinValidID));
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidRuleKey, base::NumberToString(*rule_id_), kIDKey,
+          base::NumberToString(kMinValidID));
       break;
     case ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY:
+    case ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidRuleKey, std::to_string(*rule_id_), kPriorityKey,
-          std::to_string(kMinValidPriority));
+          kErrorInvalidRuleKey, base::NumberToString(*rule_id_), kPriorityKey,
+          base::NumberToString(kMinValidPriority));
       break;
     case ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES:
       error = ErrorUtils::FormatErrorMessage(kErrorNoApplicableResourceTypes,
 
-                                             std::to_string(*rule_id_));
+                                             base::NumberToString(*rule_id_));
       break;
     case ParseResult::ERROR_EMPTY_DOMAINS_LIST:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyList, std::to_string(*rule_id_), kDomainsKey);
+          kErrorEmptyList, base::NumberToString(*rule_id_), kDomainsKey);
       break;
     case ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyList, std::to_string(*rule_id_), kResourceTypesKey);
+          kErrorEmptyList, base::NumberToString(*rule_id_), kResourceTypesKey);
       break;
     case ParseResult::ERROR_EMPTY_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorEmptyUrlFilter, std::to_string(*rule_id_), kUrlFilterKey);
+          kErrorEmptyUrlFilter, base::NumberToString(*rule_id_), kUrlFilterKey);
       break;
     case ParseResult::ERROR_INVALID_REDIRECT_URL:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidRedirectUrl, std::to_string(*rule_id_), kRedirectUrlKey);
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidRedirectUrl,
+                                             base::NumberToString(*rule_id_),
+                                             kRedirectUrlKey);
       break;
     case ParseResult::ERROR_DUPLICATE_IDS:
       error = ErrorUtils::FormatErrorMessage(kErrorDuplicateIDs,
-                                             std::to_string(*rule_id_));
+                                             base::NumberToString(*rule_id_));
       break;
     case ParseResult::ERROR_PERSISTING_RULESET:
       error = kErrorPersisting;
       break;
     case ParseResult::ERROR_NON_ASCII_URL_FILTER:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, std::to_string(*rule_id_), kUrlFilterKey);
+          kErrorNonAscii, base::NumberToString(*rule_id_), kUrlFilterKey);
       break;
     case ParseResult::ERROR_NON_ASCII_DOMAIN:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, std::to_string(*rule_id_), kDomainsKey);
+          kErrorNonAscii, base::NumberToString(*rule_id_), kDomainsKey);
       break;
     case ParseResult::ERROR_NON_ASCII_EXCLUDED_DOMAIN:
       error = ErrorUtils::FormatErrorMessage(
-          kErrorNonAscii, std::to_string(*rule_id_), kExcludedDomainsKey);
+          kErrorNonAscii, base::NumberToString(*rule_id_), kExcludedDomainsKey);
       break;
     case ParseResult::ERROR_INVALID_URL_FILTER:
-      error = ErrorUtils::FormatErrorMessage(
-          kErrorInvalidUrlFilter, std::to_string(*rule_id_), kUrlFilterKey);
+      error = ErrorUtils::FormatErrorMessage(kErrorInvalidUrlFilter,
+                                             base::NumberToString(*rule_id_),
+                                             kUrlFilterKey);
       break;
     case ParseResult::ERROR_EMPTY_REMOVE_HEADERS_LIST:
       error = ErrorUtils::FormatErrorMessage(kErrorEmptyRemoveHeadersList,
-                                             std::to_string(*rule_id_),
+                                             base::NumberToString(*rule_id_),
                                              kRemoveHeadersListKey);
       break;
   }

@@ -233,7 +233,7 @@ void AndroidSmsAppSetupControllerImpl::TryInstallApp(const GURL& install_url,
                   << ". Num attempts so far # " << num_attempts_so_far;
   web_app::InstallOptions options(install_url,
                                   web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kInternal);
+                                  web_app::InstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
   // The ServiceWorker does not load in time for the installability check, so
   // bypass it as a workaround.

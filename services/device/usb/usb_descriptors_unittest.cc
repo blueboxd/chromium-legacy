@@ -183,16 +183,20 @@ void ExpectConfig2Info(const mojom::UsbConfigurationInfo& config) {
 
 void ExpectDeviceDescriptor(const UsbDeviceDescriptor& descriptor) {
   // Device
-  EXPECT_EQ(0x0310, descriptor.usb_version);
-  EXPECT_EQ(0xFF, descriptor.device_class);
-  EXPECT_EQ(0xFF, descriptor.device_subclass);
-  EXPECT_EQ(0xFF, descriptor.device_protocol);
-  EXPECT_EQ(0x1234, descriptor.vendor_id);
-  EXPECT_EQ(0x5678, descriptor.product_id);
-  EXPECT_EQ(0x0100, descriptor.device_version);
-  ASSERT_EQ(2u, descriptor.configurations.size());
-  ExpectConfig1Info(*descriptor.configurations[0]);
-  ExpectConfig2Info(*descriptor.configurations[1]);
+  EXPECT_EQ(0x03, descriptor.device_info->usb_version_major);
+  EXPECT_EQ(0x01, descriptor.device_info->usb_version_minor);
+  EXPECT_EQ(0x00, descriptor.device_info->usb_version_subminor);
+  EXPECT_EQ(0xFF, descriptor.device_info->class_code);
+  EXPECT_EQ(0xFF, descriptor.device_info->subclass_code);
+  EXPECT_EQ(0xFF, descriptor.device_info->protocol_code);
+  EXPECT_EQ(0x1234, descriptor.device_info->vendor_id);
+  EXPECT_EQ(0x5678, descriptor.device_info->product_id);
+  EXPECT_EQ(0x01, descriptor.device_info->device_version_major);
+  EXPECT_EQ(0x00, descriptor.device_info->device_version_minor);
+  EXPECT_EQ(0x00, descriptor.device_info->device_version_subminor);
+  ASSERT_EQ(2u, descriptor.device_info->configurations.size());
+  ExpectConfig1Info(*descriptor.device_info->configurations[0]);
+  ExpectConfig2Info(*descriptor.device_info->configurations[1]);
 }
 
 void OnReadDescriptors(std::unique_ptr<UsbDeviceDescriptor> descriptor) {

@@ -6,19 +6,20 @@ package org.chromium.chrome.browser.preferences.website;
 
 import static org.chromium.chrome.browser.preferences.SearchUtils.handleSearchNavigation;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceGroup;
+import android.support.v7.preference.PreferenceManager;
+import android.support.v7.preference.PreferenceScreen;
+import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.format.Formatter;
@@ -31,7 +32,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -41,12 +41,12 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
-import org.chromium.chrome.browser.preferences.ChromeBasePreference;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
 import org.chromium.chrome.browser.preferences.ExpandablePreferenceGroup;
 import org.chromium.chrome.browser.preferences.LocationSettings;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
@@ -73,10 +73,10 @@ import java.util.Set;
  * the websites with microphone permissions. When the user selects a site, SingleWebsitePreferences
  * is launched to allow the user to see or modify the settings for that particular website.
  */
-public class SingleCategoryPreferences extends PreferenceFragment
-        implements OnPreferenceChangeListener, OnPreferenceClickListener,
-                   AddExceptionPreference.SiteAddedCallback,
-                   View.OnClickListener {
+public class SingleCategoryPreferences extends PreferenceFragmentCompat
+        implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener,
+                   AddExceptionPreference.SiteAddedCallback, View.OnClickListener,
+                   PreferenceManager.OnPreferenceTreeClickListener {
     // The key to use to pass which category this preference should display,
     // e.g. Location/Popups/All sites (if blank).
     public static final String EXTRA_CATEGORY = "category";
@@ -89,7 +89,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     public static final String EXTRA_SELECTED_DOMAINS = "selected_domains";
 
     // The list that contains preferences.
-    private ListView mListView;
+    private RecyclerView mListView;
     // The view to show when the list is empty.
     private TextView mEmptyView;
     // The item for searching the list of items.
@@ -162,8 +162,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
             boolean hasEntries =
                     chooserDataType == -1 ? addWebsites(sites) : addChosenObjects(sites);
 
-            if (!hasEntries && mEmptyView != null)
-                mEmptyView.setText(R.string.no_saved_website_settings);
+            if (mEmptyView == null) return;
+
+            mEmptyView.setVisibility(hasEntries ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -287,11 +288,25 @@ public class SingleCategoryPreferences extends PreferenceFragment
         mRequiresTriStateSetting =
                 PrefServiceBridge.getInstance().requiresTriStateContentSetting(contentType);
 
-        if (!mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
-            return super.onCreateView(inflater, container, savedInstanceState);
-        } else {
-            return inflater.inflate(R.layout.storage_preferences, container, false);
+        ViewGroup view = (ViewGroup) super.onCreateView(inflater, container, savedInstanceState);
+
+        // Add custom views for Storage Preferences to bottom of the fragment.
+        if (mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
+            inflater.inflate(R.layout.storage_preferences_view, view, true);
+            mEmptyView = view.findViewById(R.id.empty_storage);
+            mClearButton = view.findViewById(R.id.clear_button);
+            mClearButton.setOnClickListener(this);
         }
+
+        mListView = getListView();
+
+        // Disable animations of preference changes.
+        mListView.setItemAnimator(null);
+
+        // Remove dividers between preferences.
+        setDivider(null);
+
+        return view;
     }
 
     /**
@@ -325,16 +340,12 @@ public class SingleCategoryPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.website_preferences);
-        mListView = (ListView) getView().findViewById(android.R.id.list);
-        mEmptyView = (TextView) getView().findViewById(android.R.id.empty);
-        mListView.setEmptyView(mEmptyView);
-        mListView.setDivider(null);
+    }
 
-        mClearButton = (Button) getView().findViewById(R.id.clear_button);
-        if (mClearButton != null) mClearButton.setOnClickListener(this);
-
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
         String title = getArguments().getString(EXTRA_TITLE);
         if (title != null) getActivity().setTitle(title);
 
@@ -392,7 +403,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     }
 
     @Override
-    public boolean onPreferenceTreeClick(PreferenceScreen screen, Preference preference) {
+    public boolean onPreferenceTreeClick(Preference preference) {
         // Do not show the toast if the System Location setting is disabled.
         if (getPreferenceScreen().findPreference(BINARY_TOGGLE_KEY) != null
                 && mCategory.isManaged()) {
@@ -415,7 +426,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
             website.getExtras().putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
         }
 
-        return super.onPreferenceTreeClick(screen, preference);
+        return super.onPreferenceTreeClick(preference);
     }
 
     /** OnClickListener for the clear button. We show an alert dialog to confirm the action */
@@ -492,13 +503,14 @@ public class SingleCategoryPreferences extends PreferenceFragment
                         getPreferenceScreen().removePreference(addException);
                     }
                 } else {
-                    getPreferenceScreen().addPreference(new AddExceptionPreference(getActivity(),
-                            ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), this));
+                    getPreferenceScreen().addPreference(
+                            new AddExceptionPreference(getStyledContext(), ADD_EXCEPTION_KEY,
+                                    getAddExceptionDialogMessage(), this));
                 }
             }
 
-            ChromeSwitchPreference binaryToggle =
-                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
+            ChromeSwitchPreferenceCompat binaryToggle =
+                    (ChromeSwitchPreferenceCompat) getPreferenceScreen().findPreference(
                             BINARY_TOGGLE_KEY);
             updateAllowedHeader(mAllowedSiteCount, !binaryToggle.isChecked());
 
@@ -635,7 +647,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         }
         if (exception) {
             getPreferenceScreen().addPreference(new AddExceptionPreference(
-                    getActivity(), ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), this));
+                    getStyledContext(), ADD_EXCEPTION_KEY, getAddExceptionDialogMessage(), this));
         }
     }
 
@@ -647,7 +659,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         // Find origins matching the current search.
         for (Website site : sites) {
             if (mSearch == null || mSearch.isEmpty() || site.getTitle().contains(mSearch)) {
-                websites.add(new WebsitePreference(getActivity(), site, mCategory));
+                websites.add(new WebsitePreference(getStyledContext(), site, mCategory));
             }
         }
 
@@ -736,6 +748,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
         return websites.size() != 0;
     }
 
+    private Context getStyledContext() {
+        return getPreferenceManager().getContext();
+    }
+
     private void filterSelectedDomains(Collection<Website> websites) {
         if (mSelectedDomains == null) {
             return;
@@ -777,7 +793,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         updateManagedHeader(0);
 
         for (Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry : objects.values()) {
-            Preference preference = new Preference(getActivity());
+            Preference preference = new Preference(getStyledContext());
             Bundle extras = preference.getExtras();
             extras.putInt(
                     ChosenObjectPreferences.EXTRA_CATEGORY, mCategory.getContentSettingsType());
@@ -801,8 +817,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                             TRI_STATE_TOGGLE_KEY);
             return (triStateToggle.getCheckedSetting() == ContentSettingValues.BLOCK);
         } else {
-            ChromeSwitchPreference binaryToggle =
-                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
+            ChromeSwitchPreferenceCompat binaryToggle =
+                    (ChromeSwitchPreferenceCompat) getPreferenceScreen().findPreference(
                             BINARY_TOGGLE_KEY);
             if (binaryToggle != null) return !binaryToggle.isChecked();
         }
@@ -816,8 +832,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         // Find all preferences on the current preference screen. Some preferences are
         // not needed for the current category and will be removed in the steps below.
-        ChromeSwitchPreference binaryToggle =
-                (ChromeSwitchPreference) screen.findPreference(BINARY_TOGGLE_KEY);
+        ChromeSwitchPreferenceCompat binaryToggle =
+                (ChromeSwitchPreferenceCompat) screen.findPreference(BINARY_TOGGLE_KEY);
         TriStateSiteSettingsPreference triStateToggle =
                 (TriStateSiteSettingsPreference) screen.findPreference(TRI_STATE_TOGGLE_KEY);
         Preference thirdPartyCookies = screen.findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
@@ -888,6 +904,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
         } else {
             // On small screens with no touch input, nested focusable items inside a LinearLayout in
             // ListView cause focus problems when using a keyboard (crbug.com/974413).
+            // TODO(chouinard): Verify on a small screen device whether this patch is still needed
+            // now that we've migrated this fragment to Support Library (mListView is a RecyclerView
+            // now).
             mListView.setFocusable(false);
         }
 
@@ -911,8 +930,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
         }
 
         // Show the link to system settings since permission is disabled.
-        ChromeBasePreference osWarning = new ChromeBasePreference(getActivity(), null);
-        ChromeBasePreference osWarningExtra = new ChromeBasePreference(getActivity(), null);
+        ChromeBasePreferenceCompat osWarning =
+                new ChromeBasePreferenceCompat(getStyledContext(), null);
+        ChromeBasePreferenceCompat osWarningExtra =
+                new ChromeBasePreferenceCompat(getStyledContext(), null);
         mCategory.configurePermissionIsOffPreferences(
                 osWarning, osWarningExtra, getActivity(), true);
         if (osWarning.getTitle() != null) {
@@ -933,7 +954,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         triStateToggle.initialize(setting, descriptionIds);
     }
 
-    private void configureBinaryToggle(ChromeSwitchPreference binaryToggle, int contentType) {
+    private void configureBinaryToggle(ChromeSwitchPreferenceCompat binaryToggle, int contentType) {
         binaryToggle.setOnPreferenceChangeListener(this);
         binaryToggle.setTitle(ContentSettingsResources.getTitle(contentType));
 
@@ -946,7 +967,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         }
         binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
 
-        binaryToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        binaryToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 // TODO(bauerb): Align the ManagedPreferenceDelegate and
@@ -970,8 +991,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     }
 
     private void updateThirdPartyCookiesCheckBox() {
-        ChromeBaseCheckBoxPreference thirdPartyCookiesPref =
-                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
+        ChromeBaseCheckBoxPreferenceCompat thirdPartyCookiesPref =
+                (ChromeBaseCheckBoxPreferenceCompat) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(
                 PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
@@ -982,8 +1003,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     }
 
     private void updateNotificationsVibrateCheckBox() {
-        ChromeBaseCheckBoxPreference preference =
-                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
+        ChromeBaseCheckBoxPreferenceCompat preference =
+                (ChromeBaseCheckBoxPreferenceCompat) getPreferenceScreen().findPreference(
                         NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         if (preference != null) {
             preference.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(

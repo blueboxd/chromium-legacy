@@ -569,7 +569,7 @@ void MemoryProgramCache::LoadProgram(const std::string& key,
     UMA_HISTOGRAM_COUNTS_1M("GPU.ProgramCache.MemorySizeAfterKb",
                             curr_size_bytes_ / 1024);
   } else {
-    LOG(ERROR) << "Failed to parse proto file.";
+    DVLOG(2) << "Failed to parse proto file.";
   }
 }
 

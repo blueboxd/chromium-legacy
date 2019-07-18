@@ -4,6 +4,8 @@
 
 #include "media/gpu/android/maybe_render_early_manager.h"
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequence_bound.h"
@@ -21,13 +23,18 @@ class GpuMaybeRenderEarlyImpl {
 
   void SetCodecImageGroup(scoped_refptr<CodecImageGroup> image_group) {
     image_group_ = std::move(image_group);
-    image_group_->SetDestructionCB(
-        base::BindRepeating(&GpuMaybeRenderEarlyImpl::OnImageDestructed,
-                            weak_factory_.GetWeakPtr()));
   }
 
   void AddCodecImage(scoped_refptr<CodecImageHolder> codec_image_holder) {
+    // Register to find out when this CodecImage is unused, so that we can try
+    // to render a new image early.
+    codec_image_holder->codec_image_raw()->SetNowUnusedCB(base::BindOnce(
+        &GpuMaybeRenderEarlyImpl::OnImageUnused, weak_factory_.GetWeakPtr()));
+
+    DCHECK(std::find(images_.begin(), images_.end(),
+                     codec_image_holder->codec_image_raw()) == images_.end());
     images_.push_back(codec_image_holder->codec_image_raw());
+
     // Add |image| to our current image group.  This makes sure that any overlay
     // lasts as long as the images.  For TextureOwner, it doesn't do much.
     image_group_->AddCodecImage(codec_image_holder->codec_image_raw());
@@ -36,7 +43,15 @@ class GpuMaybeRenderEarlyImpl {
   void MaybeRenderEarly() { internal::MaybeRenderEarly(&images_); }
 
  private:
-  void OnImageDestructed(CodecImage* image) {
+  void OnImageUnused(CodecImage* image) {
+    // |image| no longer needs a reference to the surface, so remove it from the
+    // current image group.
+    //
+    // It would be nice if this were sufficient to allow CodecImageGroup to skip
+    // adding a DestructionCB to CodecImage.  However, since we use a weak ptr
+    // for the callback, it isn't safe.  CodecImageGroup uses a strong ref.
+    DCHECK(std::find(images_.begin(), images_.end(), image) != images_.end());
+    image_group_->RemoveCodecImage(image);
     base::Erase(images_, image);
     internal::MaybeRenderEarly(&images_);
   }

@@ -4,29 +4,28 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ListView;
 
 import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
-import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ import java.util.Locale;
  * Shows a particular chosen object (e.g. a USB device) and the list of sites that have been
  * granted access to it by the user.
  */
-public class ChosenObjectPreferences extends PreferenceFragment {
+public class ChosenObjectPreferences extends PreferenceFragmentCompat {
     public static final String EXTRA_OBJECT_INFOS = "org.chromium.chrome.preferences.object_infos";
     public static final String EXTRA_SITES = "org.chromium.chrome.preferences.site_set";
     public static final String EXTRA_CATEGORY =
@@ -55,12 +54,16 @@ public class ChosenObjectPreferences extends PreferenceFragment {
     private String mSearch = "";
 
     @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        // Set empty preferences screen.
+        PreferenceScreen screen = getPreferenceManager().createPreferenceScreen(getStyledContext());
+        setPreferenceScreen(screen);
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public void onActivityCreated(Bundle savedInstanceState) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.blank_preference_fragment_screen);
-        ListView listView = (ListView) getView().findViewById(android.R.id.list);
-        listView.setDivider(null);
-
+        setDivider(null);
         int contentSettingsType = getArguments().getInt(EXTRA_CATEGORY);
         mCategory = SiteSettingsCategory.createFromContentSettingsType(contentSettingsType);
         mObjectInfos =
@@ -226,7 +229,8 @@ public class ChosenObjectPreferences extends PreferenceFragment {
      */
     private void createHeader() {
         PreferenceScreen preferenceScreen = getPreferenceScreen();
-        ChromeImageViewPreference header = new ChromeImageViewPreference(getActivity());
+        ChromeImageViewPreferenceCompat header =
+                new ChromeImageViewPreferenceCompat(getStyledContext());
         String titleText = mObjectInfos.get(0).getName();
         String dialogMsg =
                 String.format(getView().getContext().getString(
@@ -249,7 +253,10 @@ public class ChosenObjectPreferences extends PreferenceFragment {
                 });
         preferenceScreen.addPreference(header);
 
-        Preference divider = new Preference(getActivity());
+        // TODO(chouinard): Handle this header and divider in a cleaner way. May need to migrate
+        // WebsitePreference to extend ChromeBasePreferenceCompat to more easily set dividers
+        // programmatically.
+        Preference divider = new Preference(getStyledContext());
         divider.setLayoutResource(R.layout.divider_preference);
         preferenceScreen.addPreference(divider);
     }
@@ -268,7 +275,8 @@ public class ChosenObjectPreferences extends PreferenceFragment {
         for (int i = 0; i < mSites.size() && i < mObjectInfos.size(); ++i) {
             Website site = mSites.get(i);
             ChosenObjectInfo info = mObjectInfos.get(i);
-            WebsitePreference preference = new WebsitePreference(getActivity(), site, mCategory);
+            WebsitePreference preference =
+                    new WebsitePreference(getStyledContext(), site, mCategory);
 
             preference.getExtras().putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
             preference.setFragment(SingleWebsitePreferences.class.getCanonicalName());
@@ -278,7 +286,7 @@ public class ChosenObjectPreferences extends PreferenceFragment {
                         getInfo();
                     });
 
-            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+            preference.setManagedPreferenceDelegate(new ManagedPreferenceDelegateCompat() {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return info.isManaged();
@@ -300,5 +308,9 @@ public class ChosenObjectPreferences extends PreferenceFragment {
 
         // Force this list to be reloaded if the activity is resumed.
         mSites = null;
+    }
+
+    private Context getStyledContext() {
+        return getPreferenceManager().getContext();
     }
 }

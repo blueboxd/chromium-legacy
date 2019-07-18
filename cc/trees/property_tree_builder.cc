@@ -320,23 +320,7 @@ static bool LayerClipsSubtree(LayerType* layer) {
 }
 
 gfx::RectF EffectiveClipRect(Layer* layer) {
-  // If the layer does not have a clip rect set, then the subtree is clipped by
-  // the bounds of this layer.
-  const gfx::RectF layer_bounds(gfx::PointF(), gfx::SizeF(layer->bounds()));
-  if (!HasClipRect(layer))
-    return layer_bounds;
-
-  const gfx::RectF clip_rect(layer->clip_rect());
-
-  // Layer needs to clip to its bounds as well apply a clip rect. Intersect the
-  // two to get the effective clip.
-  if (LayerClipsSubtreeToItsBounds(layer) ||
-      Filters(layer).HasFilterThatMovesPixels()) {
-    return gfx::IntersectRects(layer_bounds, clip_rect);
-  }
-
-  // Clip rect is the only clip effecting the layer.
-  return clip_rect;
+  return layer->EffectiveClipRect();
 }
 
 gfx::RectF EffectiveClipRect(LayerImpl* layer) {

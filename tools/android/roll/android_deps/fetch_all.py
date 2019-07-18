@@ -341,7 +341,7 @@ def main():
       help='Reset your Chromium workspace to its HEAD state, but preserves '
       'build.gradle changes. Use this to undo previous --update-all changes.')
   parser.add_argument(
-      '--debug', actino='store_true', help='Enable debug logging')
+      '--debug', action='store_true', help='Enable debug logging')
   args = parser.parse_args()
 
   # Determine Chromium source tree.

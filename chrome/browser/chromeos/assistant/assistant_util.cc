@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -88,7 +88,7 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
   }
 
-  if (prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy))
+  if (prefs->GetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy))
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY;
 
   // Bypass the account type check when using fake gaia login, e.g. in Tast

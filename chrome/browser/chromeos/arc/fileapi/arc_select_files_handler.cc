@@ -225,7 +225,10 @@ ArcSelectFilesHandler::ArcSelectFilesHandler(content::BrowserContext* context)
   dialog_holder_ = std::make_unique<SelectFileDialogHolder>(this);
 }
 
-ArcSelectFilesHandler::~ArcSelectFilesHandler() = default;
+ArcSelectFilesHandler::~ArcSelectFilesHandler() {
+  // Make sure to close SelectFileDialog when the handler is destroyed.
+  dialog_holder_->ExecuteJavaScript(kScriptClickCancel, {});
+}
 
 void ArcSelectFilesHandler::SelectFiles(
     const mojom::SelectFilesRequestPtr& request,

@@ -53,6 +53,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeCapability(
               "renderer",
               std::set<const char*>{
+                  "blink.mojom.AecDumpManager",
                   "blink.mojom.AppCacheBackend",
                   "blink.mojom.BlobRegistry",
                   "blink.mojom.BroadcastChannelProvider",
@@ -72,7 +73,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.ReportingServiceProxy",
                   "blink.mojom.StoragePartitionService",
                   "blink.mojom.WebDatabaseHost",
-                  "content.mojom.AecDumpManager",
                   "content.mojom.ClipboardHost",
                   "content.mojom.FieldTrialRecorder",
                   "content.mojom.FrameSinkProvider",

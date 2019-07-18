@@ -5,45 +5,76 @@
 #ifndef CONTENT_BROWSER_SMS_SMS_SERVICE_H_
 #define CONTENT_BROWSER_SMS_SMS_SERVICE_H_
 
-#include <map>
+#include <list>
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "content/browser/sms/sms_provider.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "content/public/browser/frame_service_base.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
-
-namespace url {
-class Origin;
-}
+#include "url/origin.h"
 
 namespace content {
 
-// The SmsService is responsible for binding the incoming mojo connections
-// from the renderer process and their corresponding SmsReceiverImpl.
-// SmsService is owned by BrowserMainLoop, making it effectively a singleton,
-// which allows it to serialize and manage a global queue of incoming SMS
-// messsages.
-class CONTENT_EXPORT SmsService {
+class RenderFrameHost;
+
+// SmsService handles mojo connections from the renderer, observing the incoming
+// SMS messages from an SmsProvider.
+// In practice, it is owned and managed by a RenderFrameHost. It accomplishes
+// that via subclassing FrameServiceBase, which observes the lifecycle of a
+// RenderFrameHost and manages it own memory.
+// Create() creates a self-managed instance of SmsService and binds it to the
+// request.
+class CONTENT_EXPORT SmsService
+    : public FrameServiceBase<blink::mojom::SmsReceiver>,
+      public content::SmsProvider::Observer {
  public:
-  SmsService();
-  ~SmsService();
+  static void Create(SmsProvider*,
+                     RenderFrameHost*,
+                     blink::mojom::SmsReceiverRequest);
 
-  void Bind(blink::mojom::SmsReceiverRequest, const url::Origin&);
+  SmsService(SmsProvider*, RenderFrameHost*, blink::mojom::SmsReceiverRequest);
+  SmsService(SmsProvider*,
+             const url::Origin&,
+             RenderFrameHost*,
+             blink::mojom::SmsReceiverRequest);
+  ~SmsService() override;
 
-  // Testing helpers.
-  void SetSmsProviderForTest(std::unique_ptr<SmsProvider>);
+  struct Request {
+    explicit Request(ReceiveCallback callback);
+    ~Request();
+
+    base::OneShotTimer timer;
+    ReceiveCallback callback;
+
+    DISALLOW_COPY_AND_ASSIGN(Request);
+  };
+
+  // content::SmsProvider::Observer:
+  bool OnReceive(const url::Origin&, const std::string& message) override;
+
+  // blink::mojom::SmsReceiver:
+  void Receive(base::TimeDelta timeout, ReceiveCallback) override;
 
  private:
-  std::unique_ptr<SmsProvider> sms_provider_;
+  bool Pop(blink::mojom::SmsStatus, base::Optional<std::string>);
+  void OnTimeout(Request* request);
+  // |sms_provider_| is safe because all instances of SmsProvider are owned
+  // by a SmsKeyedService, which is owned by a Profile, which transitively
+  // owns SmsServices.
+  SmsProvider* sms_provider_;
+  const url::Origin origin_;
 
-  // Registered clients.
-  mojo::StrongBindingSet<blink::mojom::SmsReceiver> bindings_;
+  using SmsRequestList = std::list<std::unique_ptr<Request>>;
+  SmsRequestList requests_;
+
   SEQUENCE_CHECKER(sequence_checker_);
-
   DISALLOW_COPY_AND_ASSIGN(SmsService);
 };
 

@@ -7,13 +7,12 @@
 
 #include <string>
 
+#include "components/optimization_guide/proto/hints.pb.h"
+
 class GURL;
+
 namespace optimization_guide {
-namespace proto {
-class Hint;
-class Optimization;
-class PageHint;
-}  // namespace proto
+class HintUpdateData;
 
 // Returns whether |optimization| is disabled subject to it being part of
 // an optimization hint experiment. |optimization| could be disabled either
@@ -36,6 +35,13 @@ const proto::PageHint* FindPageHintForURL(const GURL& gurl,
 // of a collision for the number of hosts allowed in the blacklist is
 // practically zero.
 std::string HashHostForDictionary(const std::string& host);
+
+// Verifies and processes |hints| and places the ones it supports into
+// |hint_update_data|.
+//
+// Returns true if there was at least one hint moved into |hint_update_data|.
+bool ProcessHints(google::protobuf::RepeatedPtrField<proto::Hint>* hints,
+                  HintUpdateData* hint_update_data);
 
 }  // namespace optimization_guide
 

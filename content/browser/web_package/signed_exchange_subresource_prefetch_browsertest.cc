@@ -197,6 +197,7 @@ class NavigationHandleSXGAttributeObserver : public WebContentsObserver {
 class SignedExchangePrefetchBrowserTest
     : public testing::WithParamInterface<
           std::tuple<bool /* network_service_enabled */,
+                     bool /* sxg_prefetch_cache_for_navigations_enabled */,
                      bool /* sxg_subresource_prefetch_enabled */>>,
       public PrefetchBrowserTestBase {
  public:
@@ -209,9 +210,11 @@ class SignedExchangePrefetchBrowserTest
 
   void SetUp() override {
     bool network_service_enabled;
+    bool sxg_prefetch_cache_for_navigations_enabled;
     bool sxg_subresource_prefetch_enabled;
-    std::tie(network_service_enabled, sxg_subresource_prefetch_enabled) =
-        GetParam();
+    std::tie(network_service_enabled,
+             sxg_prefetch_cache_for_navigations_enabled,
+             sxg_subresource_prefetch_enabled) = GetParam();
 
     std::vector<base::Feature> enable_features;
     std::vector<base::Feature> disabled_features;
@@ -224,12 +227,17 @@ class SignedExchangePrefetchBrowserTest
     } else {
       disabled_features.push_back(network::features::kNetworkService);
     }
+    if (sxg_prefetch_cache_for_navigations_enabled) {
+      enable_features.push_back(
+          features::kSignedExchangePrefetchCacheForNavigations);
+    } else {
+      disabled_features.push_back(
+          features::kSignedExchangePrefetchCacheForNavigations);
+    }
     if (sxg_subresource_prefetch_enabled) {
       enable_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     } else {
       disabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
-      enable_features.push_back(
-          features::kSignedExchangePrefetchCacheForNavigations);
     }
     feature_list_.InitWithFeatures(enable_features, disabled_features);
     PrefetchBrowserTestBase::SetUp();
@@ -247,6 +255,13 @@ class SignedExchangePrefetchBrowserTest
   static constexpr uint64_t kTestBlobStorageMaxDiskSpace = 500;
   static constexpr uint64_t kTestBlobStorageMinFileSizeBytes = 10;
   static constexpr uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
+
+  static bool IsSignedExchangePrefetchCacheEnabled() {
+    return base::FeatureList::IsEnabled(
+               features::kSignedExchangePrefetchCacheForNavigations) ||
+           base::FeatureList::IsEnabled(
+               features::kSignedExchangeSubresourcePrefetch);
+  }
 
   void SetBlobLimits() {
     scoped_refptr<ChromeBlobStorageContext> blob_context =
@@ -280,6 +295,36 @@ class SignedExchangePrefetchBrowserTest
     const GURL sxg_url = embedded_test_server()->GetURL(sxg_hostname, sxg_path);
     const GURL inner_url =
         embedded_test_server()->GetURL(inner_url_hostname, inner_url_path);
+
+    if (!IsSignedExchangePrefetchCacheEnabled()) {
+      EXPECT_TRUE(GetCachedExchanges(shell()).empty());
+
+      // Shutdown the server.
+      EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+      // Need to setup MockSignedExchangeHandlerFactory because the SXG is
+      // loaded from HTTPCache.
+      MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+          sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
+          "text/html", {}, header_integrity,
+          base::Time() /* signature_expire_time */)});
+      ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+
+      base::HistogramTester histograms;
+      // Subsequent navigation to the target URL wouldn't hit the network for
+      // the target URL. The target content should still be read correctly.
+      // The content is loaded from HTTPCache.
+      NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+      EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
+      histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.Count", 0);
+      histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.BodySize", 0);
+      histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.BodySizeTotal",
+                                  0);
+      histograms.ExpectTotalCount(
+          "PrefetchedSignedExchangeCache.HeadersSizeTotal", 0);
+      return;
+    }
 
     const auto cached_exchanges = GetCachedExchanges(shell());
     EXPECT_EQ(1u, cached_exchanges.size());
@@ -483,7 +528,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   // The signed exchange which response header has "vary: accept-encoding"
   // header should be stored to the cache.
   const auto cached_exchanges = GetCachedExchanges(shell());
-  EXPECT_EQ(1u, cached_exchanges.size());
+  EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
+            cached_exchanges.size());
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
@@ -507,7 +553,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   const GURL inner_url =
       embedded_test_server()->GetURL(hostname, inner_url_path);
 
-  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+  EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
+            GetCachedExchanges(shell()).size());
 
   MockClock::Get().Advance(base::TimeDelta::FromSeconds(
       net::HttpCache::kPrefetchReuseMins * 60 + 1));
@@ -535,11 +582,11 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       "<head><title>Prefetch Target (SXG)</title></head>";
   auto sxg_request_counter =
       RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
+  const auto header_integrity = net::SHA256HashValue({{0x01}});
 
   LoadPrefetchMainResourceSXGTestPage(
       hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
-      hostname, inner_url_path,
-      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      hostname, inner_url_path, header_integrity, content,
       {{"cache-control",
         base::StringPrintf("public, max-age=%d",
                            net::HttpCache::kPrefetchReuseMins * 3 *
@@ -550,11 +597,24 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   const GURL inner_url =
       embedded_test_server()->GetURL(hostname, inner_url_path);
 
-  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+  EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
+            GetCachedExchanges(shell()).size());
 
   MockClock::Get().Advance(base::TimeDelta::FromSeconds(
       net::HttpCache::kPrefetchReuseMins * 2 * 60));
-  NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+
+  if (IsSignedExchangePrefetchCacheEnabled()) {
+    NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+  } else {
+    // Need to setup MockSignedExchangeHandlerFactory because the SXG is loaded
+    // from HTTPCache.
+    MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
+        sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
+        "text/html", {}, header_integrity,
+        base::Time() /* signature_expire_time */)});
+    ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
+    NavigateToURLAndWaitTitle(sxg_url, "Prefetch Target (SXG)");
+  }
 
   // SXG must Not be fetched again.
   EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
@@ -584,7 +644,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   const GURL inner_url =
       embedded_test_server()->GetURL(hostname, inner_url_path);
 
-  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+  EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
+            GetCachedExchanges(shell()).size());
 
   MockClock::Get().Advance(base::TimeDelta::FromSeconds(
       net::HttpCache::kPrefetchReuseMins * 3 * 60 + 1));
@@ -626,7 +687,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   const GURL inner_url =
       embedded_test_server()->GetURL(hostname, inner_url_path);
 
-  EXPECT_EQ(1u, GetCachedExchanges(shell()).size());
+  EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
+            GetCachedExchanges(shell()).size());
 
   MockClock::Get().Advance(
       base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins * 3));
@@ -667,6 +729,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   const char* script_sxg_path = "/script_js.sxg";
   const char* script_inner_url_path = "/script.js";
 
+  auto page_sxg_request_counter =
+      RequestCounter::CreateAndMonitor(embedded_test_server(), page_sxg_path);
   auto script_sxg_request_counter =
       RequestCounter::CreateAndMonitor(embedded_test_server(), script_sxg_path);
   auto script_request_counter = RequestCounter::CreateAndMonitor(
@@ -734,6 +798,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     WaitUntilLoaded(inner_url_script_url);
   }
 
+  EXPECT_EQ(1, page_sxg_request_counter->GetRequestCount());
   if (base::FeatureList::IsEnabled(
           features::kSignedExchangeSubresourcePrefetch)) {
     EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
@@ -749,36 +814,41 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
   int64_t expected_body_size_total = 0u;
   int64_t expected_headers_size_total = 0u;
 
-  if (base::FeatureList::IsEnabled(
-          features::kSignedExchangeSubresourcePrefetch)) {
-    EXPECT_EQ(2u, cached_exchanges.size());
+  if (IsSignedExchangePrefetchCacheEnabled()) {
+    if (base::FeatureList::IsEnabled(
+            features::kSignedExchangeSubresourcePrefetch)) {
+      EXPECT_EQ(2u, cached_exchanges.size());
 
-    const auto script_it = cached_exchanges.find(sxg_script_url);
-    ASSERT_TRUE(script_it != cached_exchanges.end());
+      const auto script_it = cached_exchanges.find(sxg_script_url);
+      ASSERT_TRUE(script_it != cached_exchanges.end());
+      const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
+          script_exchange = script_it->second;
+      EXPECT_EQ(sxg_script_url, script_exchange->outer_url());
+      EXPECT_EQ(inner_url_script_url, script_exchange->inner_url());
+      EXPECT_EQ(script_header_integrity, *script_exchange->header_integrity());
+      expected_body_size_total += script_sxg_content.size();
+      expected_headers_size_total +=
+          script_exchange->outer_response()->headers->raw_headers().size() +
+          script_exchange->inner_response()->headers->raw_headers().size();
+    } else {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kSignedExchangePrefetchCacheForNavigations));
+      EXPECT_EQ(1u, cached_exchanges.size());
+    }
+    const auto page_it = cached_exchanges.find(sxg_page_url);
+    ASSERT_TRUE(page_it != cached_exchanges.end());
     const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
-        script_exchange = script_it->second;
-    EXPECT_EQ(sxg_script_url, script_exchange->outer_url());
-    EXPECT_EQ(inner_url_script_url, script_exchange->inner_url());
-    EXPECT_EQ(script_header_integrity, *script_exchange->header_integrity());
-    expected_body_size_total += script_sxg_content.size();
+        page_exchange = page_it->second;
+    EXPECT_EQ(sxg_page_url, page_exchange->outer_url());
+    EXPECT_EQ(inner_url_page_url, page_exchange->inner_url());
+    EXPECT_EQ(page_header_integrity, *page_exchange->header_integrity());
+    expected_body_size_total += page_sxg_content.size();
     expected_headers_size_total +=
-        script_exchange->outer_response()->headers->raw_headers().size() +
-        script_exchange->inner_response()->headers->raw_headers().size();
+        page_exchange->outer_response()->headers->raw_headers().size() +
+        page_exchange->inner_response()->headers->raw_headers().size();
   } else {
-    EXPECT_EQ(1u, cached_exchanges.size());
+    EXPECT_EQ(0u, cached_exchanges.size());
   }
-
-  const auto page_it = cached_exchanges.find(sxg_page_url);
-  ASSERT_TRUE(page_it != cached_exchanges.end());
-  const std::unique_ptr<const PrefetchedSignedExchangeCache::Entry>&
-      page_exchange = page_it->second;
-  EXPECT_EQ(sxg_page_url, page_exchange->outer_url());
-  EXPECT_EQ(inner_url_page_url, page_exchange->inner_url());
-  EXPECT_EQ(page_header_integrity, *page_exchange->header_integrity());
-  expected_body_size_total += page_sxg_content.size();
-  expected_headers_size_total +=
-      page_exchange->outer_response()->headers->raw_headers().size() +
-      page_exchange->inner_response()->headers->raw_headers().size();
 
   base::HistogramTester histograms;
 
@@ -789,34 +859,55 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
     // The content is loaded from PrefetchedSignedExchangeCache. And the script
     // is also loaded from PrefetchedSignedExchangeCache.
     NavigateToURLAndWaitTitle(sxg_page_url, "done");
-    EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
-    EXPECT_EQ(0, script_request_counter->GetRequestCount());
-    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 2, 1);
-    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
-                                 page_sxg_content.size(), 1);
-    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
-                                 script_sxg_content.size(), 1);
   } else {
     // Subsequent navigation to the target URL wouldn't hit the network for
     // the target URL. The target content should still be read correctly.
-    // The content is loaded from PrefetchedSignedExchangeCache. But the script
-    // is loaded from the server.
+    // The content is loaded from PrefetchedSignedExchangeCache when
+    // SignedExchangePrefetchCacheForNavigations is enabled, otherwise from
+    // HTTPCache. But the script is loaded from the server.
     NavigateToURLAndWaitTitle(sxg_page_url, "from server");
-    EXPECT_EQ(0, script_sxg_request_counter->GetRequestCount());
-    EXPECT_EQ(1, script_request_counter->GetRequestCount());
-    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 1, 1);
-    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
-                                 page_sxg_content.size(), 1);
   }
-  histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySizeTotal",
-                               expected_body_size_total, 1);
-  histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.HeadersSizeTotal",
-                               expected_headers_size_total, 1);
+
+  EXPECT_EQ(1, page_sxg_request_counter->GetRequestCount());
+
+  if (IsSignedExchangePrefetchCacheEnabled()) {
+    if (base::FeatureList::IsEnabled(
+            features::kSignedExchangeSubresourcePrefetch)) {
+      EXPECT_EQ(1, script_sxg_request_counter->GetRequestCount());
+      EXPECT_EQ(0, script_request_counter->GetRequestCount());
+      histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 2, 1);
+      histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                   page_sxg_content.size(), 1);
+      histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                   script_sxg_content.size(), 1);
+    } else {
+      DCHECK(base::FeatureList::IsEnabled(
+          features::kSignedExchangePrefetchCacheForNavigations));
+      EXPECT_EQ(0, script_sxg_request_counter->GetRequestCount());
+      EXPECT_EQ(1, script_request_counter->GetRequestCount());
+      histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.Count", 1, 1);
+      histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySize",
+                                   page_sxg_content.size(), 1);
+    }
+    histograms.ExpectBucketCount("PrefetchedSignedExchangeCache.BodySizeTotal",
+                                 expected_body_size_total, 1);
+    histograms.ExpectBucketCount(
+        "PrefetchedSignedExchangeCache.HeadersSizeTotal",
+        expected_headers_size_total, 1);
+  } else {
+    histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.Count", 0);
+    histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.BodySize", 0);
+    histograms.ExpectTotalCount("PrefetchedSignedExchangeCache.BodySizeTotal",
+                                0);
+    histograms.ExpectTotalCount(
+        "PrefetchedSignedExchangeCache.HeadersSizeTotal", 0);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(SignedExchangePrefetchBrowserTest,
                          SignedExchangePrefetchBrowserTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 class SignedExchangeSubresourcePrefetchBrowserTest

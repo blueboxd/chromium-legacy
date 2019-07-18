@@ -258,7 +258,7 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
     ModuleRecord record) const {
   // <spec step="1">Let module script be moduleRecord.[[HostDefined]].</spec>
   const ModuleScript* module_script =
-      module_record_resolver_->GetHostDefined(record);
+      module_record_resolver_->GetModuleScriptFromModuleRecord(record);
   DCHECK(module_script);
 
   // <spec step="3">Let urlString be module script's base URL,

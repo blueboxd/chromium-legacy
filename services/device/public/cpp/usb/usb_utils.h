@@ -31,6 +31,10 @@ uint8_t ConvertEndpointNumberToAddress(uint8_t endpoint_number,
 uint8_t ConvertEndpointNumberToAddress(
     const mojom::UsbEndpointInfo& mojo_endpoint);
 
+uint16_t GetUsbVersion(const mojom::UsbDeviceInfo& device_info);
+
+uint16_t GetDeviceVersion(const mojom::UsbDeviceInfo& device_info);
+
 }  // namespace device
 
 #endif  // SERVICES_DEVICE_PUBLIC_CPP_USB_USB_UTILS_H_

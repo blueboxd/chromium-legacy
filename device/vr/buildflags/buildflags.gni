@@ -15,15 +15,13 @@ declare_args() {
 
   enable_windows_mr = is_win
 
+  # Do not enable OpenXR until it can build without exceptions.
   enable_openxr = false
 
   # To build with Oculus support, the Oculus SDK for Windows will need to be
   # installed in third_party/libovr/src.  See
   # third_party/libovr/README.chromium for details.
   enable_oculus_vr = checkout_oculus_sdk && is_chrome_branded && is_win
-
-  # Do not enable OpenXR until it can build without exceptions.
-  enable_openxr = false
 }
 
 declare_args() {

@@ -95,6 +95,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool custom_proxy_use_alternate_proxy_list = false;
   base::Optional<base::UnguessableToken> fetch_window_id;
   base::Optional<std::string> devtools_request_id;
+  bool is_signed_exchange_prefetch_cache_enabled = false;
 };
 
 }  // namespace network

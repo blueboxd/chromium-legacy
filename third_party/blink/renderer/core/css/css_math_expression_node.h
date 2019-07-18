@@ -81,6 +81,19 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual void AccumulatePixelsAndPercent(const CSSToLengthConversionData&,
                                           PixelsAndPercent&,
                                           float multiplier = 1) const = 0;
+
+  // Evaluates the expression with type conversion (e.g., cm -> px) handled, and
+  // returns the result value in the canonical unit of the corresponding
+  // category (see https://www.w3.org/TR/css3-values/#canonical-unit).
+  // TODO(crbug.com/984372): We currently use 'ms' as the canonical unit of
+  // <time>. Switch to 's' to follow the spec.
+  // Returns |nullopt| on evaluation failures due to the following reasons:
+  // - The category doesn't have a canonical unit (e.g., |kCalcPercentLength|).
+  // - A type conversion that doesn't have a fixed conversion ratio is needed
+  //   (e.g., between 'px' and 'em').
+  // - There's an unsupported calculation, e.g., dividing two lengths.
+  virtual base::Optional<double> ComputeValueInCanonicalUnit() const = 0;
+
   virtual String CustomCSSText() const = 0;
   virtual bool operator==(const CSSMathExpressionNode& other) const {
     return category_ == other.category_ && is_integer_ == other.is_integer_;
@@ -131,6 +144,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
       PixelsAndPercent& value,
       float multiplier) const final;
   double DoubleValue() const final;
+  base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,
@@ -180,6 +194,7 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
       PixelsAndPercent& value,
       float multiplier) const final;
   double DoubleValue() const final;
+  base::Optional<double> ComputeValueInCanonicalUnit() const final;
   double ComputeLengthPx(
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,

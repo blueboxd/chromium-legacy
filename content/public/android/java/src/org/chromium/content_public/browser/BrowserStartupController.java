@@ -98,4 +98,11 @@ public interface BrowserStartupController {
      * define their own way of initializing the C++ system.
      */
     void setContentMainCallbackForTests(Runnable r);
+
+    /**
+     * @return how Chrome is launched, either in ServiceManager only mode or as full browser, as
+     * well as either cold start or warm start.
+     * See {@link org.chromium.content.browser.ServicificationStartupUma} for more details.
+     */
+    int getStartupMode(boolean startServiceManagerOnly);
 }

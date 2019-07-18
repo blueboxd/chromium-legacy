@@ -98,7 +98,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemFileUtil {
   // current call returns to the main FILE message loop.
   //
   // The supplied context must remain valid at least lifetime of the enumerator
-  // instance.
+  // instance. |this| must remain valid through the lifetime of the created
+  // enumerator instance.
   virtual std::unique_ptr<AbstractFileEnumerator> CreateFileEnumerator(
       FileSystemOperationContext* context,
       const FileSystemURL& root_url,

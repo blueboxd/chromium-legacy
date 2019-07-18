@@ -130,4 +130,28 @@ void OverlayCandidateValidatorSurfaceControl::SetViewportSize(
   viewport_size_ = viewport_size;
 }
 
+gfx::Rect
+OverlayCandidateValidatorSurfaceControl::GetOverlayDamageRectForOutputSurface(
+    const OverlayCandidate& candidate) const {
+  // When the overlay is handled by the validator, we transform its display rect
+  // to the logical screen space (used by the ui when preparing the frame) that
+  // the SurfaceControl expects it to be in. So in order to provide a damage
+  // rect which maps to the OutputSurface's main plane, we need to undo that
+  // transformation.
+  // But only if the overlay is in handled state, since the modification above
+  // is only applied when we mark the overlay as handled.
+  if (!candidate.overlay_handled) {
+    return OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
+        candidate);
+  }
+
+  gfx::Size viewport_size_pre_display_transform(viewport_size_.height(),
+                                                viewport_size_.width());
+  auto transform = gfx::OverlayTransformToTransform(
+      display_transform_, viewport_size_pre_display_transform);
+  gfx::RectF transformed_rect(candidate.display_rect);
+  transform.TransformRect(&transformed_rect);
+  return gfx::ToEnclosedRect(transformed_rect);
+}
+
 }  // namespace viz

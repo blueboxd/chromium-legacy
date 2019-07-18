@@ -73,7 +73,9 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          custom_proxy_use_alternate_proxy_list ==
              request.custom_proxy_use_alternate_proxy_list &&
          fetch_window_id == request.fetch_window_id &&
-         devtools_request_id == request.devtools_request_id;
+         devtools_request_id == request.devtools_request_id &&
+         is_signed_exchange_prefetch_cache_enabled ==
+             request.is_signed_exchange_prefetch_cache_enabled;
 }
 
 bool ResourceRequest::SendsCookies() const {

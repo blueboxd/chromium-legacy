@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/find_bar/find_bar.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -228,7 +229,7 @@ DownloadShelf* TestBrowserWindow::GetDownloadShelf() {
   return &download_shelf_;
 }
 
-FindBar* TestBrowserWindow::CreateFindBar() {
+std::unique_ptr<FindBar> TestBrowserWindow::CreateFindBar() {
   return NULL;
 }
 

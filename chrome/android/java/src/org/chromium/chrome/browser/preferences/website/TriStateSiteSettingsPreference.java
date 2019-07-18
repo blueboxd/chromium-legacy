@@ -5,10 +5,9 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.content.Context;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
-import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
@@ -29,6 +28,10 @@ public class TriStateSiteSettingsPreference
 
     public TriStateSiteSettingsPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        // Inflating from XML.
+        setLayoutResource(R.layout.tri_state_site_settings_preference);
+
         // Make unselectable, otherwise TriStateSiteSettingsPreference is treated as one
         // selectable Preference, instead of three selectable radio buttons.
         // Allows radio buttons to be selected via Bluetooth keyboard (key events).
@@ -54,13 +57,6 @@ public class TriStateSiteSettingsPreference
     }
 
     @Override
-    public View onCreateView(ViewGroup parent) {
-        // Inflating from XML.
-        setLayoutResource(R.layout.tri_state_site_settings_preference);
-        return super.onCreateView(parent);
-    }
-
-    @Override
     public void onCheckedChanged() {
         if (mAllowed.isChecked())
             mSetting = ContentSettingValues.ALLOW;
@@ -73,16 +69,18 @@ public class TriStateSiteSettingsPreference
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
 
-        mAllowed = (RadioButtonWithDescription) view.findViewById(R.id.allowed);
-        mAsk = (RadioButtonWithDescription) view.findViewById(R.id.ask);
-        mBlocked = (RadioButtonWithDescription) view.findViewById(R.id.blocked);
+        mAllowed = (RadioButtonWithDescription) holder.findViewById(R.id.allowed);
+        mAsk = (RadioButtonWithDescription) holder.findViewById(R.id.ask);
+        mBlocked = (RadioButtonWithDescription) holder.findViewById(R.id.blocked);
 
-        mAllowed.setDescriptionText(getContext().getText(mDescriptionIds[0]));
-        mAsk.setDescriptionText(getContext().getText(mDescriptionIds[1]));
-        mBlocked.setDescriptionText(getContext().getText(mDescriptionIds[2]));
+        if (mDescriptionIds != null) {
+            mAllowed.setDescriptionText(getContext().getText(mDescriptionIds[0]));
+            mAsk.setDescriptionText(getContext().getText(mDescriptionIds[1]));
+            mBlocked.setDescriptionText(getContext().getText(mDescriptionIds[2]));
+        }
 
         List<RadioButtonWithDescription> radioGroup = Arrays.asList(mAllowed, mAsk, mBlocked);
         for (RadioButtonWithDescription option : radioGroup) {

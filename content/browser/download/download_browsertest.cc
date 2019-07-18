@@ -1994,11 +1994,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, InvalidRangeHeader) {
 
   ASSERT_EQ(4u, requests.size());
 
-  // None of the request should have transferred the entire resource.
+  // The last request will transfer the entire resource as the interrupt
+  // reason doesn't allow download to continue.
   EXPECT_GT(parameters.size, requests[0]->transferred_byte_count);
   EXPECT_EQ(0, requests[1]->transferred_byte_count);
   EXPECT_EQ(0, requests[2]->transferred_byte_count);
-  EXPECT_GT(parameters.size, requests[3]->transferred_byte_count);
+  EXPECT_EQ(parameters.size, requests[3]->transferred_byte_count);
 }
 
 // If the server response for the resumption request cannot be decoded,

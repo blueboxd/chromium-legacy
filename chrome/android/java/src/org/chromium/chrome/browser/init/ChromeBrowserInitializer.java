@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -311,8 +312,13 @@ public class ChromeBrowserInitializer {
             delegate.startNativeInitialization();
         });
 
-        if (!mNativeInitializationComplete)
-            tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishNativeInitialization);
+        if (!mNativeInitializationComplete) {
+            tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
+                int startupMode = getBrowserStartupController().getStartupMode(
+                        delegate.startServiceManagerOnly());
+                onFinishNativeInitialization(startupMode);
+            });
+        }
 
         if (isAsync) {
             // We want to start this queue once the C++ startup tasks have run; allow the
@@ -394,7 +400,7 @@ public class ChromeBrowserInitializer {
         SpeechRecognition.initialize();
     }
 
-    private void onFinishNativeInitialization() {
+    private void onFinishNativeInitialization(int startupMode) {
         if (mNativeInitializationComplete) return;
 
         mNativeInitializationComplete = true;
@@ -429,6 +435,8 @@ public class ChromeBrowserInitializer {
 
         // TODO(crbug.com/960767): Remove this in M77.
         ServiceManagerStartupUtils.cleanupSharedPreferences();
+
+        BackgroundTaskSchedulerExternalUma.reportStartupMode(startupMode);
 
         PostTask.postTask(
                 TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);

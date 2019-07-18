@@ -67,6 +67,10 @@ class XRCompositorCommon : public base::Thread,
       XRFrameDataProvider::GetFrameDataCallback callback,
       mojom::XRFrameDataPtr frame_data);
 
+  void GetEnvironmentIntegrationProvider(
+      device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
+          environment_provider) final;
+
   void RequestGamepadProvider(mojom::IsolatedXRGamepadProviderRequest request);
   void RequestOverlay(mojom::ImmersiveOverlayRequest request);
 

@@ -180,10 +180,12 @@ ArcFileSystemBridge::ArcFileSystemBridge(content::BrowserContext* context,
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bridge_service_->file_system()->SetHost(this);
+  bridge_service_->file_system()->AddObserver(this);
 }
 
 ArcFileSystemBridge::~ArcFileSystemBridge() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bridge_service_->file_system()->RemoveObserver(this);
   bridge_service_->file_system()->SetHost(nullptr);
 }
 
@@ -334,11 +336,6 @@ void ArcFileSystemBridge::OnFileSelectorEvent(
     mojom::FileSelectorEventPtr event,
     ArcFileSystemBridge::OnFileSelectorEventCallback callback) {
   std::string track;
-  if (!IsTestImageBuild()) {
-    LOG(ERROR) << "OnFileSelectorEvent is only allowed under test conditions";
-    std::move(callback).Run();
-    return;
-  }
   select_files_handlers_manager_->OnFileSelectorEvent(std::move(event),
                                                       std::move(callback));
 }
@@ -441,6 +438,12 @@ void ArcFileSystemBridge::OnReadRequestCompleted(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOG_IF(ERROR, !result) << "Failed to read " << id;
   file_stream_forwarders_.erase(it);
+}
+
+void ArcFileSystemBridge::OnConnectionClosed() {
+  LOG(WARNING) << "FileSystem connection has been closed. "
+               << "Closing SelectFileDialogs owned by ARC apps, if any.";
+  select_files_handlers_manager_->DeleteAllHandlers();
 }
 
 }  // namespace arc

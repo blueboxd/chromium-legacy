@@ -16,6 +16,9 @@ dictionary GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
     required GPUVertexInputDescriptor vertexInput;
 
     unsigned long sampleCount = 1;
+
+    unsigned long sampleMask = 0xFFFFFFFF;
+    boolean alphaToCoverageEnabled = false;
 };
 
 enum GPUPrimitiveTopology {

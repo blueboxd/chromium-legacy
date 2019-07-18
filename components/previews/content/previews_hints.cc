@@ -174,63 +174,6 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
   }
 }
 
-PreviewsProcessHintsResult ProcessConfigurationHints(
-    optimization_guide::proto::Configuration* config,
-    optimization_guide::HintUpdateData* component_update_data) {
-  DCHECK(config);
-  // If there's no component update data, then there's nothing to do. This
-  // component is not newer than the one contained within the hint cache.
-  if (!component_update_data) {
-    return PreviewsProcessHintsResult::kSkippedProcessingPreviewsHints;
-  }
-
-  std::unordered_set<std::string> seen_host_suffixes;
-
-  size_t total_processed_hints_with_page_hints = 0;
-
-  // Process each hint in the the hint configuration. The hints are mutable
-  // because once processing is completed on each individual hint, it is moved
-  // into the component update data. This eliminates the need to make any
-  // additional copies of the hints.
-  for (auto& hint : *(config->mutable_hints())) {
-    // We only support host suffixes at the moment. Skip anything else.
-    // One |hint| applies to one host URL suffix.
-    if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
-      continue;
-    }
-
-    const std::string& hint_key = hint.key();
-
-    // Validate configuration keys.
-    DCHECK(!hint_key.empty());
-    if (hint_key.empty()) {
-      continue;
-    }
-
-    auto seen_host_suffixes_iter = seen_host_suffixes.find(hint_key);
-    DCHECK(seen_host_suffixes_iter == seen_host_suffixes.end());
-    if (seen_host_suffixes_iter != seen_host_suffixes.end()) {
-      DLOG(WARNING) << "Received config with duplicate key";
-      continue;
-    }
-    seen_host_suffixes.insert(hint_key);
-
-    if (!hint.page_hints().empty()) {
-      ++total_processed_hints_with_page_hints;
-
-      // Now that processing is finished on |hint|, move it into the component
-      // data.
-      // WARNING: Do not use |hint| after this call. Its contents will no
-      // longer be valid.
-      component_update_data->MoveHintIntoUpdateData(std::move(hint));
-    }
-  }
-
-  return total_processed_hints_with_page_hints > 0
-             ? PreviewsProcessHintsResult::kProcessedPreviewsHints
-             : PreviewsProcessHintsResult::kProcessedNoPreviewsHints;
-}
-
 void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
   base::UmaHistogramEnumeration("Previews.ProcessHintsResult", result);
 }
@@ -285,10 +228,18 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
     std::unique_ptr<optimization_guide::proto::Configuration> config,
     std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
-  // Process the hints within the configuration. This will move the hints from
-  // |config| into |component_update_data|.
   PreviewsProcessHintsResult process_hints_result =
-      ProcessConfigurationHints(config.get(), component_update_data.get());
+      PreviewsProcessHintsResult::kSkippedProcessingPreviewsHints;
+  if (component_update_data) {
+    // Process the hints within the configuration. This will move the hints from
+    // |config| into |component_update_data|.
+    bool did_process_hints = ProcessHints(config.get()->mutable_hints(),
+                                          component_update_data.get());
+    process_hints_result =
+        did_process_hints
+            ? PreviewsProcessHintsResult::kProcessedPreviewsHints
+            : PreviewsProcessHintsResult::kProcessedNoPreviewsHints;
+  }
 
   // Construct the PrevewsHints object with |component_update_data|, which
   // will later be used to update the HintCache's component data during

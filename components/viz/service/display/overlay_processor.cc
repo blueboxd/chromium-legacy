@@ -308,7 +308,8 @@ void OverlayProcessor::UpdateDamageRect(
       // However, if the underlay is unoccluded, we check if the damage is due
       // to a solid-opaque-transparent quad. If so, then we subtract this
       // damage.
-      this_frame_underlay_rect = ToEnclosedRect(overlay.display_rect);
+      this_frame_underlay_rect =
+          overlay_validator_->GetOverlayDamageRectForOutputSurface(overlay);
 
       bool same_underlay_rect =
           this_frame_underlay_rect == previous_frame_underlay_rect;

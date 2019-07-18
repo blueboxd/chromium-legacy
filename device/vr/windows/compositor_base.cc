@@ -374,6 +374,14 @@ void XRCompositorCommon::GetControllerDataAndSendFrameData(
                               : mojom::XRFrameData::New());
 }
 
+void XRCompositorCommon::GetEnvironmentIntegrationProvider(
+    device::mojom::XREnvironmentIntegrationProviderAssociatedRequest
+        environment_provider) {
+  // Environment integration is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Environment integration is not supported.");
+}
+
 void XRCompositorCommon::SubmitOverlayTexture(
     int16_t frame_id,
     mojo::ScopedHandle texture_handle,

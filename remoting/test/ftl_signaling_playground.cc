@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
@@ -59,6 +60,9 @@ constexpr char kSwitchNameStoragePath[] = "storage-path";
 constexpr char kSwitchNamePin[] = "pin";
 constexpr char kSwitchNameHostId[] = "host-id";
 constexpr char kSwitchNameUseChromotocol[] = "use-chromotocol";
+
+// Delay to allow sending session-terminate before tearing down.
+constexpr base::TimeDelta kTearDownDelay = base::TimeDelta::FromSeconds(2);
 
 const char* SignalStrategyErrorToString(SignalStrategy::Error error) {
   switch (error) {
@@ -342,11 +346,12 @@ void FtlSignalingPlayground::OnSessionStateChange(
       break;
   }
 
-  TearDownAndRunCallback();
+  AsyncTearDownAndRunCallback();
 }
 
 void FtlSignalingPlayground::AsyncTearDownAndRunCallback() {
-  tear_down_timer_.Start(FROM_HERE, base::TimeDelta(), this,
+  HOST_LOG << "Tearing down in " << kTearDownDelay;
+  tear_down_timer_.Start(FROM_HERE, kTearDownDelay, this,
                          &FtlSignalingPlayground::TearDownAndRunCallback);
 }
 

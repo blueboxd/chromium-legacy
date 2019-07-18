@@ -201,6 +201,10 @@ class PLATFORM_EXPORT FetchParameters {
     is_from_origin_dirty_style_sheet_ = dirty;
   }
 
+  void SetSignedExchangePrefetchCacheEnabled(bool enabled) {
+    resource_request_.SetSignedExchangePrefetchCacheEnabled(enabled);
+  }
+
  private:
   ResourceRequest resource_request_;
   // |decoder_options_|'s ContentType is set to |kPlainTextContent| in

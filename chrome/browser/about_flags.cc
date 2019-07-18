@@ -2427,12 +2427,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillLocalCardMigrationUsesStrikeSystemV2)},
-    {"enable-autofill-save-card-improved-user-consent",
-     flag_descriptions::kEnableAutofillSaveCardImprovedUserConsentName,
-     flag_descriptions::kEnableAutofillSaveCardImprovedUserConsentDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCardImprovedUserConsent)},
     {"enable-autofill-send-experiment-ids-in-payments-rpcs",
      flag_descriptions::kEnableAutofillSendExperimentIdsInPaymentsRPCsName,
      flag_descriptions::

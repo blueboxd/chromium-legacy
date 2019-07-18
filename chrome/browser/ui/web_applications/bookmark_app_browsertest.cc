@@ -41,9 +41,9 @@ void NavigateToURLAndWait(Browser* browser, const GURL& url) {
 // TODO(loyso): Merge this with PendingBookmarkAppManagerBrowserTest's
 // implementation in some test_support library.
 web_app::InstallOptions CreateInstallOptions(const GURL& url) {
-  web_app::InstallOptions install_options(url,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      url, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

@@ -1337,6 +1337,100 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
   }
 }
 
+// Test that upgradeScheme rules will change the scheme of matching requests to
+// https.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
+  auto get_url_for_host = [this](std::string hostname, const char* scheme) {
+    GURL url = embedded_test_server()->GetURL(hostname,
+                                              "/pages_with_script/index.html");
+
+    url::Replacements<char> replacements;
+    replacements.SetScheme(scheme, url::Component(0, strlen(scheme)));
+
+    return url.ReplaceComponents(replacements);
+  };
+
+  GURL google_url = get_url_for_host("google.com", url::kHttpScheme);
+  struct {
+    std::string url_filter;
+    int id;
+    int priority;
+    std::string action_type;
+    base::Optional<std::string> redirect_url;
+  } rules_data[] = {
+      {"exa*", 1, 4, "upgradeScheme", base::nullopt},
+      {"|http:*yahoo", 2, 100, "redirect", "http://other.com"},
+      // Since the test server can only display http requests, redirect all
+      // https requests to google.com in the end.
+      // TODO(crbug.com/985104): Add a https test server to display https pages
+      // so this redirect rule can be removed.
+      {"|https*", 3, 6, "redirect", google_url.spec()},
+      {"exact.com", 4, 1, "block", base::nullopt},
+  };
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.id = rule_data.id;
+    rule.priority = rule_data.priority;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect_url = rule_data.redirect_url;
+    rules.push_back(rule);
+  }
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  // Now load an extension with another ruleset, except this extension has no
+  // host permissions.
+  TestRule upgrade_rule = CreateGenericRule();
+  upgrade_rule.condition->url_filter = "yahoo";
+  upgrade_rule.id = kMinValidID;
+  upgrade_rule.priority = kMinValidPriority;
+  upgrade_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+  upgrade_rule.action->type = "upgradeScheme";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      std::vector<TestRule>({upgrade_rule}), "test_extension_2", {}));
+
+  struct {
+    std::string hostname;
+    const char* scheme;
+    // |expected_final_url| is null if the request is expected to be blocked.
+    base::Optional<GURL> expected_final_url;
+  } test_cases[] = {
+      {"exact.com", url::kHttpScheme, base::nullopt},
+      // http://example.com -> https://example.com/ -> http://google.com
+      {"example.com", url::kHttpScheme, google_url},
+      // test_extension_2 should upgrade the scheme for http://yahoo.com
+      // despite having no host permissions. Note that this request is not
+      // matched with test_extension_1's ruleset as test_extension_2 is
+      // installed more recently.
+      // http://yahoo.com -> https://yahoo.com/ -> http://google.com
+      {"yahoo.com", url::kHttpScheme, google_url},
+  };
+
+  for (const auto& test_case : test_cases) {
+    GURL url = get_url_for_host(test_case.hostname, test_case.scheme);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    if (!test_case.expected_final_url) {
+      EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
+    } else {
+      EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+
+      const GURL& final_url = web_contents()->GetLastCommittedURL();
+      EXPECT_EQ(*test_case.expected_final_url, final_url);
+    }
+  }
+}
+
 // Tests that only extensions enabled in incognito mode affect network requests
 // from an incognito context.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,

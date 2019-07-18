@@ -89,4 +89,15 @@ uint8_t ConvertEndpointNumberToAddress(
                                         mojo_endpoint.direction);
 }
 
+uint16_t GetUsbVersion(const mojom::UsbDeviceInfo& device_info) {
+  return device_info.usb_version_major << 8 |
+         device_info.usb_version_minor << 4 | device_info.usb_version_subminor;
+}
+
+uint16_t GetDeviceVersion(const mojom::UsbDeviceInfo& device_info) {
+  return device_info.device_version_major << 8 |
+         device_info.device_version_minor << 4 |
+         device_info.device_version_subminor;
+}
+
 }  // namespace device

@@ -42,50 +42,6 @@ struct CORE_EXPORT NGPhysicalStaticPosition {
   HorizontalEdge horizontal_edge;
   VerticalEdge vertical_edge;
 
-  // Left/Right/TopPosition functions map static position to inset of
-  // left/right/top edge wrt container space.
-  // The function arguments are required to solve the equation:
-  // contaner_size = left + margin_left + width + margin_right + right
-  LayoutUnit LeftInset(LayoutUnit container_size,
-                       LayoutUnit width,
-                       LayoutUnit margin_left,
-                       LayoutUnit margin_right) const;
-  LayoutUnit RightInset(LayoutUnit container_size,
-                        LayoutUnit width,
-                        LayoutUnit margin_left,
-                        LayoutUnit margin_right) const;
-  LayoutUnit TopInset(LayoutUnit container_size,
-                      LayoutUnit height,
-                      LayoutUnit margin_top,
-                      LayoutUnit margin_bottom) const;
-  LayoutUnit BottomInset(LayoutUnit container_size,
-                         LayoutUnit height,
-                         LayoutUnit margin_top,
-                         LayoutUnit margin_bottom) const;
-
-  LayoutUnit Left() const {
-    DCHECK(HasLeft());
-    return offset.left;
-  }
-
-  LayoutUnit Right() const {
-    DCHECK(!HasLeft());
-    return offset.left;
-  }
-
-  LayoutUnit Top() const {
-    DCHECK(HasTop());
-    return offset.top;
-  }
-
-  LayoutUnit Bottom() const {
-    DCHECK(!HasTop());
-    return offset.top;
-  }
-
-  bool HasLeft() const { return horizontal_edge == kLeft; }
-  bool HasTop() const { return vertical_edge == kTop; }
-
   NGLogicalStaticPosition ConvertToLogical(WritingMode writing_mode,
                                            TextDirection direction,
                                            const PhysicalSize& size) const {

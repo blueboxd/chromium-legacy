@@ -12,6 +12,9 @@ const char kErrorResourceTypeDuplicated[] =
 const char kErrorEmptyRedirectRuleKey[] =
     "Rule with id * does not specify the value for * key. This is required "
     "for redirect rules.";
+const char kErrorEmptyUpgradeRulePriority[] =
+    "Rule with id * does not specify the value for priority key. This is "
+    "required for upgradeScheme rules.";
 const char kErrorInvalidRuleKey[] =
     "Rule with id * has an invalid value for * key. This should be greater "
     "than or equal to *.";

@@ -40,6 +40,7 @@
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/signed_exchange_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
@@ -130,6 +131,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
         AdsPageLoadMetricsObserver::CreateIfNeeded();
     if (ads_observer)
       tracker->AddObserver(std::move(ads_observer));
+
+    tracker->AddObserver(std::make_unique<ThirdPartyMetricsObserver>());
 
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver> ukm_observer =
         UkmPageLoadMetricsObserver::CreateIfNeeded();

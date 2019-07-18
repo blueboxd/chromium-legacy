@@ -1,3 +1,5 @@
+CONSOLE WARNING: '-webkit-appearance: slider-vertical' for elements other than input[type=range] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: slider-horizontal' for elements other than input[type=range] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
 No crash means test PASS.
 
  

@@ -351,24 +351,9 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner({1, 2, 3, 4}));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      root->PushPropertiesTo(root_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+  root->SetRoundedCorner({1, 2, 3, 4});
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetIsFastRoundedCorner(true));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      root->PushPropertiesTo(root_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get()));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetRoundedCorner({0, 0, 0, 0}));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
@@ -1834,6 +1819,118 @@ TEST_F(LayerTest, UpdatingClipRect) {
                                 gfx::RectF(gfx::SizeF(kLayerSize))) +
                 kParentOffset);
   EXPECT_EQ(node_4->clip, gfx::RectF(kUpdatedClipRect_4) + kParentOffset);
+}
+
+TEST_F(LayerTest, UpdatingRoundedCorners) {
+  const gfx::Size kRootSize(200, 200);
+  const gfx::Size kLayerSize(100, 100);
+  const gfx::Rect kClipRect(50, 25, 100, 100);
+  const gfx::Rect kUpdatedClipRect(10, 20, 30, 40);
+  const gfx::RoundedCornersF kRoundedCorners(5);
+  const gfx::RoundedCornersF kUpdatedRoundedCorners(10);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> layer_1 = Layer::Create();
+  scoped_refptr<Layer> layer_2 = Layer::Create();
+  scoped_refptr<Layer> layer_3 = Layer::Create();
+  scoped_refptr<Layer> layer_4 = Layer::Create();
+  scoped_refptr<Layer> layer_5 = Layer::Create();
+
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(AtLeast(1));
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
+  layer_tree_host_->SetRootLayer(root);
+  root->AddChild(layer_1);
+  root->AddChild(layer_2);
+  root->AddChild(layer_3);
+  root->AddChild(layer_4);
+  root->AddChild(layer_5);
+
+  root->SetBounds(kRootSize);
+  layer_1->SetBounds(kLayerSize);
+  layer_2->SetBounds(kLayerSize);
+  layer_3->SetBounds(kLayerSize);
+  layer_4->SetBounds(kLayerSize);
+  layer_5->SetBounds(kLayerSize);
+
+  layer_1->SetClipRect(kClipRect);
+  layer_2->SetClipRect(kClipRect);
+  layer_3->SetClipRect(kClipRect);
+  layer_4->SetClipRect(kClipRect);
+  layer_1->SetRoundedCorner(kRoundedCorners);
+  layer_2->SetRoundedCorner(kRoundedCorners);
+  layer_3->SetRoundedCorner(kRoundedCorners);
+  layer_4->SetRoundedCorner(kRoundedCorners);
+  layer_5->SetRoundedCorner(kRoundedCorners);
+  EXPECT_EQ(layer_1->corner_radii(), kRoundedCorners);
+  EXPECT_EQ(layer_2->corner_radii(), kRoundedCorners);
+  EXPECT_EQ(layer_3->corner_radii(), kRoundedCorners);
+  EXPECT_EQ(layer_4->corner_radii(), kRoundedCorners);
+  EXPECT_EQ(layer_5->corner_radii(), kRoundedCorners);
+
+  root->layer_tree_host()->BuildPropertyTreesForTesting();
+  EffectNode* node_1 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_1->effect_tree_index());
+  EffectNode* node_2 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_2->effect_tree_index());
+  EffectNode* node_3 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_3->effect_tree_index());
+  EffectNode* node_4 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_4->effect_tree_index());
+  EffectNode* node_5 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_5->effect_tree_index());
+
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
+            node_1->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
+            node_2->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
+            node_3->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
+            node_4->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::Rect(kLayerSize)), kRoundedCorners),
+            node_5->rounded_corner_bounds);
+
+  // Setting clip to layer bounds.
+  layer_1->SetMasksToBounds(true);
+
+  // Setting a mask.
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  layer_2->SetMaskLayer(mask.get());
+
+  layer_1->SetRoundedCorner(kUpdatedRoundedCorners);
+  layer_2->SetRoundedCorner(kUpdatedRoundedCorners);
+  layer_3->SetRoundedCorner(kUpdatedRoundedCorners);
+  // Updates the clip rect instead of rounded corners.
+  layer_4->SetClipRect(kUpdatedClipRect);
+  layer_5->SetRoundedCorner(kUpdatedRoundedCorners);
+
+  node_1 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_1->effect_tree_index());
+  node_2 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_2->effect_tree_index());
+  node_3 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_3->effect_tree_index());
+  node_4 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_4->effect_tree_index());
+  node_5 = layer_tree_host_->property_trees()->effect_tree.Node(
+      layer_5->effect_tree_index());
+
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::IntersectRects(gfx::Rect(kLayerSize),
+                                                       kClipRect)),
+                        kUpdatedRoundedCorners),
+            node_1->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::IntersectRects(gfx::Rect(kLayerSize),
+                                                       kClipRect)),
+                        kUpdatedRoundedCorners),
+            node_2->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kUpdatedRoundedCorners),
+            node_3->rounded_corner_bounds);
+  EXPECT_EQ(gfx::RRectF(gfx::RectF(kUpdatedClipRect), kRoundedCorners),
+            node_4->rounded_corner_bounds);
+  EXPECT_EQ(
+      gfx::RRectF(gfx::RectF(gfx::Rect(kLayerSize)), kUpdatedRoundedCorners),
+      node_5->rounded_corner_bounds);
 }
 
 class LayerTestWithLayerLists : public LayerTest {

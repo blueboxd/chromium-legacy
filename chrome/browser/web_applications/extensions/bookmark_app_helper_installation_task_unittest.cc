@@ -185,7 +185,7 @@ class TestBookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
         base::BindLambdaForTesting(
             [&, app_id, url, code, callback = std::move(callback)]() mutable {
               registrar_->AddExternalApp(
-                  app_id, {url, web_app::InstallSource::kInternal});
+                  app_id, {url, web_app::InstallSource::kInternalDefault});
               std::move(callback).Run(app_id, code);
             }));
   }
@@ -370,7 +370,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(),
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
-                              web_app::InstallSource::kInternal));
+                              web_app::InstallSource::kInternalDefault));
 
   bool callback_called = false;
   task->Install(
@@ -413,7 +413,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(),
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                              web_app::InstallSource::kInternal));
+                              web_app::InstallSource::kInternalDefault));
 
   bool callback_called = false;
   task->Install(
@@ -444,9 +444,9 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
 
 TEST_F(BookmarkAppHelperInstallationTaskTest,
        WebAppOrShortcutFromContents_NoDesktopShortcut) {
-  web_app::InstallOptions install_options(kWebAppUrl,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), std::move(install_options));
@@ -473,9 +473,9 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
 
 TEST_F(BookmarkAppHelperInstallationTaskTest,
        WebAppOrShortcutFromContents_NoQuickLaunchBarShortcut) {
-  web_app::InstallOptions install_options(kWebAppUrl,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   install_options.add_to_quick_launch_bar = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), std::move(install_options));
@@ -504,9 +504,9 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
 TEST_F(
     BookmarkAppHelperInstallationTaskTest,
     WebAppOrShortcutFromContents_NoDesktopShortcutAndNoQuickLaunchBarShortcut) {
-  web_app::InstallOptions install_options(kWebAppUrl,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   auto task = std::make_unique<BookmarkAppInstallationTask>(
@@ -537,7 +537,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                              web_app::InstallSource::kInternal);
+                              web_app::InstallSource::kInternalDefault);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
@@ -564,7 +564,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kTab,
-                              web_app::InstallSource::kInternal);
+                              web_app::InstallSource::kInternalDefault);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), std::move(install_options));
 
@@ -591,7 +591,7 @@ TEST_F(BookmarkAppHelperInstallationTaskTest,
        WebAppOrShortcutFromContents_DefaultApp) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
-                              web_app::InstallSource::kInternal);
+                              web_app::InstallSource::kInternalDefault);
   auto task = std::make_unique<BookmarkAppInstallationTask>(
       profile(), registrar(), install_finalizer(), std::move(install_options));
 

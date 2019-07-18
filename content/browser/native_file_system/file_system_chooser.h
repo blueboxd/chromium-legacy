@@ -28,13 +28,29 @@ class CONTENT_EXPORT FileSystemChooser : public ui::SelectFileDialog::Listener {
       base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
                               std::vector<base::FilePath>)>;
 
-  static void CreateAndShow(
-      WebContents* web_contents,
-      blink::mojom::ChooseFileSystemEntryType type,
-      std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-      bool include_accepts_all,
-      ResultCallback callback,
-      scoped_refptr<base::TaskRunner> callback_runner);
+  class CONTENT_EXPORT Options {
+   public:
+    Options(blink::mojom::ChooseFileSystemEntryType type,
+            std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr>
+                accepts,
+            bool include_accepts_all);
+    Options(const Options&) = default;
+    Options& operator=(const Options&) = default;
+
+    blink::mojom::ChooseFileSystemEntryType type() const { return type_; }
+    const ui::SelectFileDialog::FileTypeInfo& file_type_info() const {
+      return file_types_;
+    }
+
+   private:
+    blink::mojom::ChooseFileSystemEntryType type_;
+    ui::SelectFileDialog::FileTypeInfo file_types_;
+  };
+
+  static void CreateAndShow(WebContents* web_contents,
+                            const Options& options,
+                            ResultCallback callback,
+                            scoped_refptr<base::TaskRunner> callback_runner);
 
   FileSystemChooser(blink::mojom::ChooseFileSystemEntryType type,
                     ResultCallback callback,

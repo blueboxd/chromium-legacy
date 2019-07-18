@@ -117,6 +117,14 @@ void TestLayerAnimationDelegate::SetClipRectFromAnimation(
   last_property_change_reason_is_set_ = true;
 }
 
+void TestLayerAnimationDelegate::SetRoundedCornersFromAnimation(
+    const gfx::RoundedCornersF& rounded_corners,
+    PropertyChangeReason reason) {
+  rounded_corners_ = rounded_corners;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
+}
+
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
 }
 
@@ -150,6 +158,11 @@ SkColor TestLayerAnimationDelegate::GetColorForAnimation() const {
 
 gfx::Rect TestLayerAnimationDelegate::GetClipRectForAnimation() const {
   return clip_rect_;
+}
+
+gfx::RoundedCornersF TestLayerAnimationDelegate::GetRoundedCornersForAnimation()
+    const {
+  return rounded_corners_;
 }
 
 float TestLayerAnimationDelegate::GetDeviceScaleFactor() const {

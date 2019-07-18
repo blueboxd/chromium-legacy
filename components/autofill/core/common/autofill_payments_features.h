@@ -32,7 +32,6 @@ extern const base::Feature kAutofillImportNonFocusableCreditCardForms;
 extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
-extern const base::Feature kAutofillSaveCardImprovedUserConsent;
 extern const base::Feature kAutofillSaveCardShowNoThanks;
 extern const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;
@@ -54,6 +53,10 @@ extern const char
     kAutofillSaveCreditCardUsesImprovedMessagingParamValueAddCard[];
 extern const char
     kAutofillSaveCreditCardUsesImprovedMessagingParamValueConfirmAndSaveCard[];
+
+// Return whether a [No thanks] button and new messaging is shown in the save
+// card bubbles. This will be called only on desktop platforms.
+bool ShouldShowImprovedUserConsentForCreditCardSave();
 
 }  // namespace features
 }  // namespace autofill

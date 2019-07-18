@@ -1,0 +1,1 @@
+CONSOLE WARNING: '-webkit-appearance: square-button' for elements other than input[type=color] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.

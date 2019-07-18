@@ -49,7 +49,7 @@ public class TaskRunnerImpl implements TaskRunner {
 
     /**
      * @param traits The TaskTraits associated with this TaskRunnerImpl.
-     * @param traceCategory Specifies which subclass is this instance for logging purposes.
+     * @param traceCategory Specifies the name of this instance's subclass for logging purposes.
      * @param taskRunnerType Specifies which subclass is this instance for initialising the correct
      *         native scheduler.
      */
@@ -119,6 +119,8 @@ public class TaskRunnerImpl implements TaskRunner {
     /**
      * Runs a single task and returns when its finished.
      */
+    // The trace event name is derived from string literals.
+    @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
     protected void runPreNativeTask() {
         try (TraceEvent te = TraceEvent.scoped(mTraceEvent)) {
             Runnable task;

@@ -13,7 +13,7 @@ namespace {
 
 DawnShaderModuleDescriptor AsDawnType(
     const GPUShaderModuleDescriptor* webgpu_desc) {
-  DawnShaderModuleDescriptor dawn_desc;
+  DawnShaderModuleDescriptor dawn_desc = {};
 
   dawn_desc.nextInChain = nullptr;
   dawn_desc.code = webgpu_desc->code().View()->Data();

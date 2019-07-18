@@ -10,18 +10,10 @@
 
 namespace ash {
 
-// Padding used to position the system menu relative to the status area.
-const int kBubblePaddingHorizontalBottom = 6;
-
 const int kTrayTextFontSizeIncrease = 2;
 
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
-
-const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
-
-// Vertical padding between status tray items when the shelf is vertical.
-const int kTrayLabelItemVerticalPaddingVerticalAlignment = 4;
 
 const int kTrayMenuWidth = 360;
 
@@ -35,18 +27,11 @@ const int kTrayPopupItemMinStartWidth = 48;
 const int kTrayPopupItemMinEndWidth =
     kMenuIconSize + 2 * kTrayPopupButtonEndMargin;
 
-const int kTrayDetailedViewTransitionDelayMs = 100;
-
 const int kTrayPopupLabelRightPadding = 8;
 
 const int kTrayRoundedBorderRadius = 2;
 
 const int kTrayToggleButtonWidth = 68;
-
-const SkColor kPublicAccountUserCardTextColor = SkColorSetRGB(0x66, 0x66, 0x66);
-const SkColor kPublicAccountUserCardNameColor = SK_ColorBLACK;
-
-const SkColor kHeaderBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
 const SkColor kMobileNotConnectedXIconColor = SkColorSetRGB(0xb2, 0xb2, 0xb2);
 
@@ -75,8 +60,6 @@ const float kTrayPopupInkDropRippleOpacity = 0.06f;
 const float kTrayPopupInkDropHighlightOpacity = 0.08f;
 const int kTrayPopupInkDropInset = 4;
 const int kTrayPopupInkDropCornerRadius = 2;
-
-const int kTrayPopupSystemInfoRowHeight = 40;
 
 static_assert(kTrayMenuWidth == kUnifiedFeaturePodHorizontalSidePadding * 2 +
                                     kUnifiedFeaturePodHorizontalMiddlePadding *

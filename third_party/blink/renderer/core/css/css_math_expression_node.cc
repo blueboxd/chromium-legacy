@@ -191,6 +191,27 @@ double CSSMathExpressionNumericLiteral::DoubleValue() const {
   return 0;
 }
 
+base::Optional<double>
+CSSMathExpressionNumericLiteral::ComputeValueInCanonicalUnit() const {
+  switch (category_) {
+    case kCalcNumber:
+    case kCalcPercent:
+      return value_->DoubleValue();
+    case kCalcLength:
+      if (CSSPrimitiveValue::IsRelativeUnit(value_->GetType()))
+        return base::nullopt;
+      U_FALLTHROUGH;
+    case kCalcAngle:
+    case kCalcTime:
+    case kCalcFrequency:
+      return value_->DoubleValue() *
+             CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
+                 value_->GetType());
+    default:
+      return base::nullopt;
+  }
+}
+
 double CSSMathExpressionNumericLiteral::ComputeLengthPx(
     const CSSToLengthConversionData& conversion_data) const {
   switch (category_) {
@@ -480,6 +501,29 @@ void CSSMathExpressionBinaryOperation::AccumulatePixelsAndPercent(
 double CSSMathExpressionBinaryOperation::DoubleValue() const {
   DCHECK(HasDoubleValue(ResolvedUnitType())) << CustomCSSText();
   return Evaluate(left_side_->DoubleValue(), right_side_->DoubleValue());
+}
+
+static bool HasCanonicalUnit(CalculationCategory category) {
+  return category == kCalcNumber || category == kCalcLength ||
+         category == kCalcPercent || category == kCalcAngle ||
+         category == kCalcTime || category == kCalcFrequency;
+}
+
+base::Optional<double>
+CSSMathExpressionBinaryOperation::ComputeValueInCanonicalUnit() const {
+  if (!HasCanonicalUnit(category_))
+    return base::nullopt;
+
+  base::Optional<double> left_value = left_side_->ComputeValueInCanonicalUnit();
+  if (!left_value)
+    return base::nullopt;
+
+  base::Optional<double> right_value =
+      right_side_->ComputeValueInCanonicalUnit();
+  if (!right_value)
+    return base::nullopt;
+
+  return Evaluate(*left_value, *right_value);
 }
 
 double CSSMathExpressionBinaryOperation::ComputeLengthPx(

@@ -5,9 +5,7 @@
 import("//device/vr/buildflags/buildflags.gni")
 
 if (enable_openxr) {
-  component("openxr") {
-    output_name = "openxr_loader"
-
+  source_set("openxr") {
     sources = [
       "gen/xr_generated_dispatch_table.c",
       "gen/xr_generated_dispatch_table.h",
@@ -68,10 +66,6 @@ if (enable_openxr) {
       "OPENXR_NON_CMAKE_BUILD",
       "DISABLE_STD_FILESYSTEM",
     ]
-
-    if (is_component_build) {
-      defines += [ "XRAPI_DLL_EXPORT" ]
-    }
 
     cflags_cc = [
       "-Wno-format",

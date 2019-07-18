@@ -73,7 +73,7 @@ public class TouchlessPreferencesTest {
         Assert.assertTrue(activity instanceof TouchlessPreferences);
 
         SingleCategoryPreferences cookiesPreferences =
-                (SingleCategoryPreferences) activity.getMainFragment();
+                (SingleCategoryPreferences) activity.getMainFragmentCompat();
         Assert.assertNull(cookiesPreferences.findPreference(
                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY));
     }

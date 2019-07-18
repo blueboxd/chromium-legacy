@@ -478,7 +478,7 @@ void WebAppInstallTask::OnDialogCompleted(
     switch (install_options_->install_source) {
       // TODO(nigeltao/ortuno): should these two cases lead to different
       // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-      case InstallSource::kInternal:
+      case InstallSource::kInternalDefault:
       case InstallSource::kExternalDefault:
         finalize_options.source = InstallFinalizer::Source::kDefaultInstalled;
         break;
@@ -489,7 +489,6 @@ void WebAppInstallTask::OnDialogCompleted(
         finalize_options.source = InstallFinalizer::Source::kSystemInstalled;
         break;
       case InstallSource::kArc:
-      case InstallSource::kInvalid:
         NOTREACHED();
         break;
     }

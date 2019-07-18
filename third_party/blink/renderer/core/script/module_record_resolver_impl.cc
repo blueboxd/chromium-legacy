@@ -40,7 +40,7 @@ void ModuleRecordResolverImpl::UnregisterModuleScript(
   record_to_module_script_map_.erase(module_script->Record());
 }
 
-const ModuleScript* ModuleRecordResolverImpl::GetHostDefined(
+const ModuleScript* ModuleRecordResolverImpl::GetModuleScriptFromModuleRecord(
     const ModuleRecord& record) const {
   const auto it = record_to_module_script_map_.find(record);
   CHECK_NE(it, record_to_module_script_map_.end())
@@ -74,7 +74,8 @@ ModuleRecord ModuleRecordResolverImpl::Resolve(
 
   // <spec step="3.1">Let referencing script be
   // referencingScriptOrModule.[[HostDefined]].</spec>
-  const ModuleScript* referrer_module = GetHostDefined(referrer);
+  const ModuleScript* referrer_module =
+      GetModuleScriptFromModuleRecord(referrer);
 
   // <spec step="3.3">Set base URL to referencing script's base URL.</spec>
   // <spec step="5">Let url be the result of resolving a module specifier given

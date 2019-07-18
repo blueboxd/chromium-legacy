@@ -33,8 +33,7 @@ enum class FindBoxResultAction;
 class FindBarController : public content::NotificationObserver,
                           public FindResultObserver {
  public:
-  // FindBar takes ownership of |find_bar_view|.
-  FindBarController(FindBar* find_bar, Browser* browser);
+  FindBarController(std::unique_ptr<FindBar> find_bar, Browser* browser);
 
   ~FindBarController() override;
 

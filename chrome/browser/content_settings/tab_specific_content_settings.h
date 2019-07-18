@@ -96,29 +96,6 @@ class TabSpecificContentSettings
   static TabSpecificContentSettings* GetForFrame(int render_process_id,
                                                  int render_frame_id);
 
-  // Static methods called on the UI threads.
-  // Called when cookies for the given URL were read either from within the
-  // current page or while loading it. |blocked_by_policy| should be true, if
-  // reading cookies was blocked due to the user's content settings. In that
-  // case, this function should invoke OnContentBlocked.
-  static void CookiesRead(
-      const base::Callback<content::WebContents*(void)>& wc_getter,
-      const GURL& url,
-      const GURL& first_party_url,
-      const net::CookieList& cookie_list,
-      bool blocked_by_policy);
-
-  // Called when a specific cookie in the current page was changed.
-  // |blocked_by_policy| should be true, if the cookie was blocked due to the
-  // user's content settings. In that case, this function should invoke
-  // OnContentBlocked.
-  static void CookieChanged(
-      const base::Callback<content::WebContents*(void)>& wc_getter,
-      const GURL& url,
-      const GURL& first_party_url,
-      const net::CanonicalCookie& cookie,
-      bool blocked_by_policy);
-
   // Called when a specific Web database in the current page was accessed. If
   // access was blocked due to the user's content settings,
   // |blocked_by_policy| should be true, and this function should invoke
@@ -318,14 +295,6 @@ class TabSpecificContentSettings
 
   // These methods are invoked on the UI thread by the static functions above.
   // Only public for tests.
-  void OnCookiesRead(const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy);
-  void OnCookieChange(const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy);
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url, bool blocked_by_policy);
@@ -400,6 +369,14 @@ class TabSpecificContentSettings
       content::NavigationHandle* navigation_handle) override;
   void AppCacheAccessed(const GURL& manifest_url,
                         bool blocked_by_policy) override;
+  void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override;
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override;
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,

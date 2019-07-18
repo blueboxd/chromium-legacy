@@ -1197,22 +1197,33 @@ TEST_F(NetworkQualityEstimatorTest, DefaultHttpRTTBasedThresholds) {
 TEST_F(NetworkQualityEstimatorTest, SignalStrengthBasedCapping) {
   const struct {
     bool enable_signal_strength_capping_experiment;
+    NetworkChangeNotifier::ConnectionType device_connection_type;
     int32_t signal_strength_level;
     int32_t http_rtt_msec;
     EffectiveConnectionType expected_ect;
     bool expected_http_rtt_overridden;
   } tests[] = {
       // Signal strength is unavailable.
-      {true, INT32_MIN, 20, EFFECTIVE_CONNECTION_TYPE_4G, false},
+      {true, NetworkChangeNotifier::CONNECTION_4G, INT32_MIN, 20,
+       EFFECTIVE_CONNECTION_TYPE_4G, false},
 
-      // Signal strength is too low. Even though RTT is reported as low,
+      // 4G device connection type: Signal strength is too low. Even though RTT
+      // is reported as low,
       // ECT is expected to be capped to 2G.
-      {true, 0, 20, EFFECTIVE_CONNECTION_TYPE_2G, true},
+      {true, NetworkChangeNotifier::CONNECTION_4G, 0, 20,
+       EFFECTIVE_CONNECTION_TYPE_2G, true},
+
+      // WiFi device connection type: Signal strength is too low. Even though
+      // RTT is reported as low, ECT is expected to be capped to 2G.
+      {true, NetworkChangeNotifier::CONNECTION_WIFI, 0, 20,
+       EFFECTIVE_CONNECTION_TYPE_2G, true},
 
       // When the signal strength based capping experiment is not enabled,
       // ECT should be computed only on the based of |http_rtt_msec|.
-      {false, INT32_MIN, 20, EFFECTIVE_CONNECTION_TYPE_4G, false},
-      {false, 0, 20, EFFECTIVE_CONNECTION_TYPE_4G, false},
+      {false, NetworkChangeNotifier::CONNECTION_4G, INT32_MIN, 20,
+       EFFECTIVE_CONNECTION_TYPE_4G, false},
+      {false, NetworkChangeNotifier::CONNECTION_4G, 0, 20,
+       EFFECTIVE_CONNECTION_TYPE_4G, false},
   };
 
   for (const auto& test : tests) {
@@ -1227,8 +1238,7 @@ TEST_F(NetworkQualityEstimatorTest, SignalStrengthBasedCapping) {
     // does not return Offline if the device is offline.
     estimator.SetCurrentSignalStrength(test.signal_strength_level);
 
-    estimator.SimulateNetworkChange(NetworkChangeNotifier::CONNECTION_4G,
-                                    "test");
+    estimator.SimulateNetworkChange(test.device_connection_type, "test");
 
     estimator.SetStartTimeNullHttpRtt(
         base::TimeDelta::FromMilliseconds(test.http_rtt_msec));

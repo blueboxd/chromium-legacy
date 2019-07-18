@@ -2350,7 +2350,8 @@ void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
 
   if (chromeos::CrosUsbDetector::Get()) {
     // Mount shared devices
-    chromeos::CrosUsbDetector::Get()->ConnectSharedDevicesOnVmStartup();
+    chromeos::CrosUsbDetector::Get()->ConnectSharedDevicesOnVmStartup(
+        restarter->vm_name());
   }
 }
 

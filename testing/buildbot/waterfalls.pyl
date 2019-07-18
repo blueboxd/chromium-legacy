@@ -3378,7 +3378,7 @@
       # linux-rel or ended up not being able to fold.
       'Linux Tests Code Coverage': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
           'code-coverage',
         ],
         'test_suites': {
@@ -4326,7 +4326,7 @@
       'linux-coverage-rel': {
         'mixins': [
           'code-coverage',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',

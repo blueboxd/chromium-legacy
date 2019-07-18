@@ -46,6 +46,7 @@
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/http/http_request_headers.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -348,6 +349,9 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
 
     HttpRequestHeaders extra_request_headers;
     extra_request_headers.SetHeader("Accept", kDnsOverHttpResponseContentType);
+    // Send minimal request headers where possible.
+    extra_request_headers.SetHeader(HttpRequestHeaders::kAcceptLanguage, "*");
+    extra_request_headers.SetHeader(HttpRequestHeaders::kUserAgent, "Chrome");
 
     DCHECK(url_request_context);
     request_ = url_request_context->CreateRequest(

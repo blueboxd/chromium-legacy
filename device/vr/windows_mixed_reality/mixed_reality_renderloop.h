@@ -58,9 +58,6 @@ class MixedRealityRenderLoop : public XRCompositorCommon {
   // XRDeviceAbstraction:
   mojom::XRFrameDataPtr GetNextFrameData() override;
   mojom::XRGamepadDataPtr GetNextGamepadData() override;
-  void GetEnvironmentIntegrationProvider(
-      mojom::XREnvironmentIntegrationProviderAssociatedRequest
-          environment_provider) override;
   bool PreComposite() override;
   bool SubmitCompositedFrame() override;
 

@@ -28,6 +28,7 @@ using UsbEndpointInfoPtr = mojom::UsbEndpointInfoPtr;
 using UsbAlternateInterfaceInfoPtr = mojom::UsbAlternateInterfaceInfoPtr;
 using UsbInterfaceInfoPtr = mojom::UsbInterfaceInfoPtr;
 using UsbConfigurationInfoPtr = mojom::UsbConfigurationInfoPtr;
+using UsbDeviceInfoPtr = mojom::UsbDeviceInfoPtr;
 
 struct CombinedInterfaceInfo {
   CombinedInterfaceInfo() = default;
@@ -42,11 +43,8 @@ struct CombinedInterfaceInfo {
 
 struct UsbDeviceDescriptor {
   UsbDeviceDescriptor();
-  UsbDeviceDescriptor(const UsbDeviceDescriptor& other);
-  UsbDeviceDescriptor(UsbDeviceDescriptor&& other);
+  UsbDeviceDescriptor(const UsbDeviceDescriptor& other) = delete;
   ~UsbDeviceDescriptor();
-
-  UsbDeviceDescriptor& operator=(UsbDeviceDescriptor&& other);
 
   // Parses |buffer| for USB descriptors. Any configuration descriptors found
   // will be added to |configurations|. If a device descriptor is found it will
@@ -55,18 +53,11 @@ struct UsbDeviceDescriptor {
   // each).
   bool Parse(const std::vector<uint8_t>& buffer);
 
-  uint16_t usb_version = 0;
-  uint8_t device_class = 0;
-  uint8_t device_subclass = 0;
-  uint8_t device_protocol = 0;
-  uint16_t vendor_id = 0;
-  uint16_t product_id = 0;
-  uint16_t device_version = 0;
   uint8_t i_manufacturer = 0;
   uint8_t i_product = 0;
   uint8_t i_serial_number = 0;
   uint8_t num_configurations = 0;
-  std::vector<UsbConfigurationInfoPtr> configurations;
+  UsbDeviceInfoPtr device_info;
 };
 
 void ReadUsbDescriptors(

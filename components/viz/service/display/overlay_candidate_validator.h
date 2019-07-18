@@ -58,6 +58,13 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
   virtual void SetDisplayTransform(gfx::OverlayTransform transform) {}
   virtual void SetViewportSize(const gfx::Size& size) {}
 
+  // Returns the overlay damage rect covering the main plane rendered by the
+  // OutputSurface. This rect is in the same space where the OutputSurface
+  // renders the content for the main plane, including the display transform if
+  // needed.
+  virtual gfx::Rect GetOverlayDamageRectForOutputSurface(
+      const OverlayCandidate& candidate) const;
+
   // Disables overlays when software mirroring display. This only needs to be
   // implemented for Chrome OS.
   virtual void SetSoftwareMirrorMode(bool enabled) {}

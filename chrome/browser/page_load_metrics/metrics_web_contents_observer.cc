@@ -364,6 +364,26 @@ void MetricsWebContentsObserver::FrameSizeChanged(
     committed_load_->FrameSizeChanged(render_frame_host, frame_size);
 }
 
+void MetricsWebContentsObserver::OnCookiesRead(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  if (committed_load_)
+    committed_load_->OnCookiesRead(url, first_party_url, cookie_list,
+                                   blocked_by_policy);
+}
+
+void MetricsWebContentsObserver::OnCookieChange(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  if (committed_load_)
+    committed_load_->OnCookieChange(url, first_party_url, cookie,
+                                    blocked_by_policy);
+}
+
 const PageLoadExtraInfo
 MetricsWebContentsObserver::GetPageLoadExtraInfoForCommittedLoad() {
   DCHECK(committed_load_);

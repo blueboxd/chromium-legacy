@@ -11,7 +11,8 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.text.format.Formatter;
 import android.view.View;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.preferences.ChromeImageViewPreference;
+import org.chromium.chrome.browser.preferences.ChromeImageViewPreferenceCompat;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
@@ -29,7 +31,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
  * of the preference. See {@link ChromeImageViewPreference} for more details on how this icon can
  * be used.
  */
-class WebsitePreference extends ChromeImageViewPreference implements FaviconImageCallback {
+class WebsitePreference extends ChromeImageViewPreferenceCompat implements FaviconImageCallback {
     private final Website mSite;
     private final SiteSettingsCategory mCategory;
 
@@ -139,10 +141,10 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
 
-        TextView usageText = (TextView) view.findViewById(R.id.usage_text);
+        TextView usageText = (TextView) holder.findViewById(R.id.usage_text);
         usageText.setVisibility(View.GONE);
         if (mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
             long totalUsage = mSite.getTotalUsage();
@@ -165,7 +167,7 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
 
         float density = getContext().getResources().getDisplayMetrics().density;
         int iconPadding = Math.round(FAVICON_PADDING_DP * density);
-        View iconView = view.findViewById(android.R.id.icon);
+        View iconView = holder.findViewById(android.R.id.icon);
         iconView.setPadding(iconPadding, iconPadding, iconPadding, iconPadding);
     }
 }

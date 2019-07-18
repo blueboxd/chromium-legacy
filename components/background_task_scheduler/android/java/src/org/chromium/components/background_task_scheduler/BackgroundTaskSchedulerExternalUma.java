@@ -46,4 +46,14 @@ public final class BackgroundTaskSchedulerExternalUma {
         BackgroundTaskSchedulerUma.getInstance().reportNativeTaskFinished(
                 taskId, serviceManagerOnlyMode);
     }
+
+    /**
+     * Reports metrics of how Chrome is launched, either in ServiceManager only mode or as full
+     * browser, as well as either cold start or warm start.
+     * See {@link org.chromium.content.browser.ServicificationStartupUma} for more details.
+     * @param startupMode Chrome's startup mode.
+     */
+    public static void reportStartupMode(int startupMode) {
+        BackgroundTaskSchedulerUma.getInstance().reportStartupMode(startupMode);
+    }
 }

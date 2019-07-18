@@ -7,6 +7,7 @@
 
 namespace gfx {
 class Rect;
+class RoundedCornersF;
 class Transform;
 }
 
@@ -17,6 +18,8 @@ class Compositor;
 void CheckApproximatelyEqual(const gfx::Transform& lhs,
                              const gfx::Transform& rhs);
 void CheckApproximatelyEqual(const gfx::Rect& lhs, const gfx::Rect& rhs);
+void CheckApproximatelyEqual(const gfx::RoundedCornersF& lhs,
+                             const gfx::RoundedCornersF& rhs);
 
 // Runs a RunLoop until the next frame is presented.
 void WaitForNextFrameToBePresented(ui::Compositor* compositor);

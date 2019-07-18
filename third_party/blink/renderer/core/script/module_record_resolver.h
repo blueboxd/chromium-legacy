@@ -36,8 +36,8 @@ class CORE_EXPORT ModuleRecordResolver
   // Notifies the ModuleRecordResolver to clear its ModuleScript mapping.
   virtual void UnregisterModuleScript(const ModuleScript*) = 0;
 
-  // Corresponds to the spec concept "[[HostDefined]]".
-  virtual const ModuleScript* GetHostDefined(const ModuleRecord&) const = 0;
+  virtual const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const = 0;
 
   // Implements "Runtime Semantics: HostResolveImportedModule"
   // https://tc39.github.io/ecma262/#sec-hostresolveimportedmodule

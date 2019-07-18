@@ -7,7 +7,6 @@
 
 #include <iosfwd>
 
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -16,7 +15,6 @@ enum class InstallSource;
 enum class LaunchContainer;
 
 struct InstallOptions {
-  InstallOptions();
   InstallOptions(const GURL& url,
                  LaunchContainer launch_container,
                  InstallSource install_source);
@@ -28,8 +26,8 @@ struct InstallOptions {
   bool operator==(const InstallOptions& other) const;
 
   GURL url;
-  LaunchContainer launch_container = LaunchContainer::kTab;
-  InstallSource install_source = InstallSource::kInvalid;
+  LaunchContainer launch_container;
+  InstallSource install_source;
 
   // If true, a shortcut is added to the Applications folder on macOS, and Start
   // Menu on Linux and Windows. On Chrome OS, all installed apps show up in the

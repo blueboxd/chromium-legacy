@@ -168,10 +168,16 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
                                   base::File::Error result);
 
   void DidChooseEntries(const BindingContext& binding_context,
-                        blink::mojom::ChooseFileSystemEntryType type,
+                        const FileSystemChooser::Options& options,
                         ChooseEntriesCallback callback,
                         blink::mojom::NativeFileSystemErrorPtr result,
                         std::vector<base::FilePath> entries);
+  void DidVerifySensitiveDirectoryAccess(
+      const BindingContext& binding_context,
+      const FileSystemChooser::Options& options,
+      ChooseEntriesCallback callback,
+      std::vector<base::FilePath> entries,
+      NativeFileSystemPermissionContext::SensitiveDirectoryResult result);
   void DidChooseDirectory(
       const BindingContext& binding_context,
       const base::FilePath& path,

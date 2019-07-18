@@ -4,6 +4,7 @@
 
 #include "components/exo/display.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/wm/desks/desks_util.h"
 #include "components/exo/buffer.h"
 #include "components/exo/client_controlled_shell_surface.h"
@@ -243,6 +244,24 @@ TEST_F(DisplayTest, CreateDataDevice) {
   std::unique_ptr<DataDevice> device =
       display.CreateDataDevice(&device_delegate);
   EXPECT_TRUE(device.get());
+}
+
+TEST_F(DisplayTest, PinnedAlwaysOnTopWindow) {
+  Display display;
+
+  std::unique_ptr<Surface> surface = display.CreateSurface();
+  ASSERT_TRUE(surface);
+
+  std::unique_ptr<ClientControlledShellSurface> shell_surface =
+      display.CreateClientControlledShellSurface(
+          surface.get(), ash::desks_util::GetActiveDeskContainerId(),
+          2.0 /* default_scale_factor */);
+  ASSERT_TRUE(shell_surface);
+  EXPECT_EQ(shell_surface->scale(), 2.0);
+
+  // This should not crash
+  shell_surface->SetAlwaysOnTop(true);
+  shell_surface->SetPinned(ash::WindowPinType::kPinned);
 }
 
 }  // namespace

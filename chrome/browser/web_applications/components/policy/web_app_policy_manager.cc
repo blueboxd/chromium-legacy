@@ -27,10 +27,7 @@ namespace web_app {
 
 namespace {
 
-void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
-                                        InstallOptions* install_options) {
-  DCHECK(install_options);
-
+InstallOptions ParseInstallOptionsFromPolicyEntry(const base::Value& entry) {
   const base::Value& url = *entry.FindKey(kUrlKey);
   const base::Value* default_launch_container =
       entry.FindKey(kDefaultLaunchContainerKey);
@@ -43,24 +40,27 @@ void ParseInstallOptionsFromPolicyEntry(const base::Value& entry,
          default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue);
 
-  install_options->url = GURL(url.GetString());
-  install_options->install_source = web_app::InstallSource::kExternalPolicy;
-
+  LaunchContainer launch_container;
   if (!default_launch_container) {
-    install_options->launch_container = LaunchContainer::kTab;
+    launch_container = LaunchContainer::kTab;
   } else if (default_launch_container->GetString() ==
              kDefaultLaunchContainerTabValue) {
-    install_options->launch_container = LaunchContainer::kTab;
+    launch_container = LaunchContainer::kTab;
   } else {
-    install_options->launch_container = LaunchContainer::kWindow;
+    launch_container = LaunchContainer::kWindow;
   }
 
-  install_options->add_to_applications_menu = true;
-  install_options->add_to_desktop =
+  InstallOptions install_options{GURL(url.GetString()), launch_container,
+                                 InstallSource::kExternalPolicy};
+
+  install_options.add_to_applications_menu = true;
+  install_options.add_to_desktop =
       create_desktop_shortcut ? create_desktop_shortcut->GetBool() : false;
   // Pinning apps to the ChromeOS shelf is done through the PinnedLauncherApps
   // policy.
-  install_options->add_to_quick_launch_bar = false;
+  install_options.add_to_quick_launch_bar = false;
+
+  return install_options;
 }
 
 }  // namespace
@@ -99,8 +99,7 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   if (it == web_apps_list.end())
     return;
 
-  InstallOptions install_options;
-  ParseInstallOptionsFromPolicyEntry(*it, &install_options);
+  InstallOptions install_options = ParseInstallOptionsFromPolicyEntry(*it);
 
   // No need to install a placeholder because there should be one already.
   install_options.wait_for_windows_closed = true;
@@ -145,8 +144,7 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   // are using a SimpleSchemaValidatingPolicyHandler which should validate them
   // for us.
   for (const base::Value& entry : web_apps->GetList()) {
-    InstallOptions install_options;
-    ParseInstallOptionsFromPolicyEntry(entry, &install_options);
+    InstallOptions install_options = ParseInstallOptionsFromPolicyEntry(entry);
 
     install_options.install_placeholder = true;
     // When the policy gets refreshed, we should try to reinstall placeholder

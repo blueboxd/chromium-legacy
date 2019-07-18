@@ -248,18 +248,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                       content::ResourceContext* context,
                       int render_process_id,
                       int render_frame_id) override;
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override;
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override;
   void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
@@ -676,6 +664,19 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::vector<content::GlobalFrameRoutingId>& render_frames,
       base::Callback<void(bool)> callback,
       bool allow);
+
+  void OnCookiesRead(int process_id,
+                     int routing_id,
+                     const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy);
+  void OnCookieChange(int process_id,
+                      int routing_id,
+                      const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void GuestPermissionRequestHelper(

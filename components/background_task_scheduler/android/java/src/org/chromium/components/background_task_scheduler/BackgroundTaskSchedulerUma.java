@@ -207,6 +207,16 @@ class BackgroundTaskSchedulerUma {
         }
     }
 
+    /**
+     * Reports metrics of how Chrome is launched, either in ServiceManager only mode or as full
+     * browser, as well as either cold start or warm start.
+     * See {@link org.chromium.content.browser.ServicificationStartupUma} for more details.
+     * @param startupMode Chrome's startup mode.
+     */
+    public void reportStartupMode(int startupMode) {
+        cacheEvent("Servicification.Startup3", startupMode);
+    }
+
     /** Method that actually invokes histogram recording. Extracted for testing. */
     @VisibleForTesting
     void recordEnumeratedHistogram(String histogram, int value, int maxCount) {

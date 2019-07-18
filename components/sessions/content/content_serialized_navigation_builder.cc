@@ -118,6 +118,11 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
   entry->SetTimestamp(navigation->timestamp_);
   entry->SetHttpStatusCode(navigation->http_status_code_);
   entry->SetRedirectChain(navigation->redirect_chain_);
+  sessions::NavigationTaskId* navigation_task_id =
+      sessions::NavigationTaskId::Get(entry.get());
+  navigation_task_id->set_id(navigation->task_id());
+  navigation_task_id->set_parent_id(navigation->parent_task_id());
+  navigation_task_id->set_root_id(navigation->root_task_id());
 
   const ContentSerializedNavigationDriver::ExtendedInfoHandlerMap&
       extended_info_handlers = ContentSerializedNavigationDriver::GetInstance()

@@ -234,6 +234,23 @@ void PageLoadMetricsObserverTester::SimulateMediaPlayed() {
                                  content::MediaPlayerId(render_frame_host, 0));
 }
 
+void PageLoadMetricsObserverTester::SimulateCookiesRead(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  observer_->OnCookiesRead(url, first_party_url, cookie_list,
+                           blocked_by_policy);
+}
+
+void PageLoadMetricsObserverTester::SimulateCookieChange(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  observer_->OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
+}
+
 MetricsWebContentsObserver* PageLoadMetricsObserverTester::observer() const {
   return observer_;
 }

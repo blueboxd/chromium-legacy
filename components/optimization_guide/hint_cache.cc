@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "components/optimization_guide/hint_update_data.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "url/gurl.h"
 
@@ -18,44 +19,6 @@ namespace {
 // The default number of hints retained within the memory cache. When the limit
 // is exceeded, the least recently used hint is purged from the cache.
 const size_t kDefaultMaxMemoryCacheHints = 20;
-
-// Verify |get_hints_response| and load the hints that have keys represented by
-// hosts suffix into UpdateData to be stored in the HintCache. Returns true if
-// there are applicable hints moved into UpdateData that can be stored.
-// TODO(crbug/969558): Consolidate this with ProcessConfigurationHints for
-// component hints.
-bool ProcessGetHintsResponse(proto::GetHintsResponse* get_hints_response,
-                             HintUpdateData* fetched_hints_update_data) {
-  std::unordered_set<std::string> seen_host_suffixes;
-
-  bool has_processed_hints = false;
-  // Process each hint in |get_hints_response|.
-  for (auto& hint : *(get_hints_response->mutable_hints())) {
-    // One |hint| applies to one host URL suffix.
-    if (hint.key_representation() != proto::HOST_SUFFIX) {
-      continue;
-    }
-    const std::string& hint_key = hint.key();
-
-    // Validate configuration keys.
-    DCHECK(!hint_key.empty());
-    if (hint_key.empty()) {
-      continue;
-    }
-
-    auto seen_host_suffixes_iter = seen_host_suffixes.find(hint_key);
-    DCHECK(seen_host_suffixes_iter == seen_host_suffixes.end());
-
-    seen_host_suffixes.insert(hint_key);
-
-    if (!hint.page_hints().empty()) {
-      // Move fetched hints into update data
-      fetched_hints_update_data->MoveHintIntoUpdateData(std::move(hint));
-      has_processed_hints = true;
-    }
-  }
-  return has_processed_hints;
-}
 
 }  // namespace
 
@@ -121,8 +84,8 @@ void HintCache::UpdateFetchedHints(
   }
   std::unique_ptr<HintUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
-  ProcessGetHintsResponse(get_hints_response.get(),
-                          fetched_hints_update_data.get());
+  ProcessHints(get_hints_response.get()->mutable_hints(),
+               fetched_hints_update_data.get());
   hint_store_->UpdateFetchedHints(std::move(fetched_hints_update_data),
                                   std::move(callback));
 }

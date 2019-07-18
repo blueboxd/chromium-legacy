@@ -36,6 +36,8 @@ namespace content {
 
 namespace {
 
+const char kTestUrl[] = "https://www.google.com";
+
 class MockSmsProvider : public SmsProvider {
  public:
   MockSmsProvider() = default;
@@ -60,18 +62,17 @@ class SmsServiceTest : public RenderViewHostTestHarness {
 }  // namespace
 
 TEST_F(SmsServiceTest, Basic) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
+  NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
-  GURL url("http://google.com");
-  impl->Bind(mojo::MakeRequest(&service_ptr), url::Origin::Create(url));
+  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
+                                              mojo::MakeRequest(&service_ptr));
+
   base::RunLoop loop;
 
-  EXPECT_CALL(*mock, Retrieve()).WillOnce(Invoke([&mock, &url]() {
-    mock->NotifyReceive(url::Origin::Create(url), "hi");
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&provider]() {
+    provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "hi");
   }));
 
   service_ptr->Receive(
@@ -85,27 +86,24 @@ TEST_F(SmsServiceTest, Basic) {
 
   loop.Run();
 
-  ASSERT_FALSE(mock->HasObservers());
+  ASSERT_FALSE(provider.HasObservers());
 }
 
 TEST_F(SmsServiceTest, ExpectTwoReceiveTwoSerially) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
-  GURL url("http://google.com");
-
-  EXPECT_CALL(*mock, Retrieve())
-      .WillOnce(Invoke([&mock, &url]() {
-        mock->NotifyReceive(url::Origin::Create(url), "first");
-      }))
-      .WillOnce(Invoke([&mock, &url]() {
-        mock->NotifyReceive(url::Origin::Create(url), "second");
-      }));
-
+  NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
-  impl->Bind(mojo::MakeRequest(&service_ptr), url::Origin::Create(url));
+  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
+                                              mojo::MakeRequest(&service_ptr));
+
+  EXPECT_CALL(provider, Retrieve())
+      .WillOnce(Invoke([&provider]() {
+        provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "first");
+      }))
+      .WillOnce(Invoke([&provider]() {
+        provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "second");
+      }));
 
   {
     base::RunLoop loop;
@@ -139,22 +137,19 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoSerially) {
 }
 
 TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
+  NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
-  GURL url("http://a.com");
-  url::Origin origin = url::Origin::Create(url);
-  impl->Bind(mojo::MakeRequest(&service_ptr), origin);
+  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
+                                              mojo::MakeRequest(&service_ptr));
 
   blink::mojom::SmsStatus sms_status;
   base::Optional<std::string> response;
 
   base::RunLoop listen_loop, sms_loop;
 
-  EXPECT_CALL(*mock, Retrieve()).WillOnce(Invoke([&listen_loop]() {
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&listen_loop]() {
     listen_loop.Quit();
   }));
 
@@ -172,9 +167,9 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
   // Delivers an SMS from an unrelated origin first and expect the receiver to
   // ignore it.
   GURL another_url("http://b.com");
-  mock->NotifyReceive(url::Origin::Create(another_url), "wrong");
+  provider.NotifyReceive(url::Origin::Create(another_url), "wrong");
 
-  mock->NotifyReceive(origin, "right");
+  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "right");
 
   sms_loop.Run();
 
@@ -183,22 +178,19 @@ TEST_F(SmsServiceTest, IgnoreFromOtherOrigins) {
 }
 
 TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
+  NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
-  GURL url("http://a.com");
-  url::Origin origin = url::Origin::Create(url);
-  impl->Bind(mojo::MakeRequest(&service_ptr), origin);
+  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
+                                              mojo::MakeRequest(&service_ptr));
 
   blink::mojom::SmsStatus sms_status;
   base::Optional<std::string> response;
 
   base::RunLoop listen_loop, sms_loop;
 
-  EXPECT_CALL(*mock, Retrieve()).WillOnce(Invoke([&listen_loop]() {
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&listen_loop]() {
     listen_loop.Quit();
   }));
 
@@ -215,8 +207,8 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 
   // Delivers two SMSes for the same origin, even if only one was being
   // expected.
-  mock->NotifyReceive(origin, "first");
-  mock->NotifyReceive(origin, "second");
+  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "first");
+  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "second");
 
   sms_loop.Run();
 
@@ -225,15 +217,12 @@ TEST_F(SmsServiceTest, ExpectOneReceiveTwo) {
 }
 
 TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
+  NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
-  GURL url("http://a.com");
-  url::Origin origin = url::Origin::Create(url);
-  impl->Bind(mojo::MakeRequest(&service_ptr), origin);
+  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
+                                              mojo::MakeRequest(&service_ptr));
 
   blink::mojom::SmsStatus sms_status1;
   base::Optional<std::string> response1;
@@ -244,7 +233,7 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
 
   // Expects two Receive() calls to be made before any of them gets
   // an SMS to resolve them.
-  EXPECT_CALL(*mock, Retrieve())
+  EXPECT_CALL(provider, Retrieve())
       .WillOnce(testing::Return())
       .WillOnce(Invoke([&listen_loop]() { listen_loop.Quit(); }));
 
@@ -270,7 +259,7 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
 
   // Delivers the first SMS.
 
-  mock->NotifyReceive(origin, "first");
+  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "first");
 
   sms1_loop.Run();
 
@@ -279,7 +268,7 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
 
   // Delivers the second SMS.
 
-  mock->NotifyReceive(origin, "second");
+  provider.NotifyReceive(url::Origin::Create(GURL(kTestUrl)), "second");
 
   sms2_loop.Run();
 
@@ -288,14 +277,12 @@ TEST_F(SmsServiceTest, ExpectTwoReceiveTwoConcurrently) {
 }
 
 TEST_F(SmsServiceTest, Timeout) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
+  NiceMock<MockSmsProvider> provider;
   blink::mojom::SmsReceiverPtr service_ptr;
-  GURL url("http://a.com");
-  impl->Bind(mojo::MakeRequest(&service_ptr), url::Origin::Create(url));
+  auto service = std::make_unique<SmsService>(&provider, main_rfh(),
+                                              mojo::MakeRequest(&service_ptr));
 
   base::RunLoop loop;
 
@@ -310,19 +297,55 @@ TEST_F(SmsServiceTest, Timeout) {
   loop.Run();
 }
 
-TEST_F(SmsServiceTest, TimeoutTwoOrigins) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+TEST_F(SmsServiceTest, CleansUp) {
+  NavigateAndCommit(GURL(kTestUrl));
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
+  NiceMock<MockSmsProvider> provider;
+  blink::mojom::SmsReceiverPtr service_ptr;
+  SmsService::Create(&provider, main_rfh(), mojo::MakeRequest(&service_ptr));
+
+  base::RunLoop navigate;
+
+  EXPECT_CALL(provider, Retrieve()).WillOnce(Invoke([&navigate]() {
+    navigate.Quit();
+  }));
+
+  base::RunLoop reload;
+
+  service_ptr->Receive(base::TimeDelta::FromSeconds(10),
+                       base::BindLambdaForTesting(
+                           [&reload](blink::mojom::SmsStatus status,
+                                     const base::Optional<std::string>& sms) {
+                             EXPECT_EQ(blink::mojom::SmsStatus::kTimeout,
+                                       status);
+                             reload.Quit();
+                           }));
+
+  navigate.Run();
+
+  // Simulates the user reloading the page and navigating away, which
+  // destructs the service.
+  NavigateAndCommit(GURL(kTestUrl));
+
+  reload.Run();
+
+  ASSERT_FALSE(provider.HasObservers());
+}
+
+TEST_F(SmsServiceTest, TimeoutTwoTabs) {
+  NiceMock<MockSmsProvider> provider;
 
   blink::mojom::SmsReceiverPtr service_ptr1;
   GURL url1("http://a.com");
-  impl->Bind(mojo::MakeRequest(&service_ptr1), url::Origin::Create(url1));
+  auto tab1 = std::make_unique<SmsService>(&provider, url::Origin::Create(url1),
+                                           main_rfh(),
+                                           mojo::MakeRequest(&service_ptr1));
 
   blink::mojom::SmsReceiverPtr service_ptr2;
   GURL url2("http://b.com");
-  impl->Bind(mojo::MakeRequest(&service_ptr2), url::Origin::Create(url2));
+  auto tab2 = std::make_unique<SmsService>(&provider, url::Origin::Create(url2),
+                                           main_rfh(),
+                                           mojo::MakeRequest(&service_ptr2));
 
   blink::mojom::SmsStatus sms_status1;
   base::Optional<std::string> response1;
@@ -331,7 +354,7 @@ TEST_F(SmsServiceTest, TimeoutTwoOrigins) {
 
   base::RunLoop listen, sms_loop1, sms_loop2;
 
-  EXPECT_CALL(*mock, Retrieve())
+  EXPECT_CALL(provider, Retrieve())
       .WillOnce(testing::Return())
       .WillOnce(Invoke([&listen]() { listen.Quit(); }));
 
@@ -363,8 +386,7 @@ TEST_F(SmsServiceTest, TimeoutTwoOrigins) {
   EXPECT_EQ(blink::mojom::SmsStatus::kTimeout, sms_status1);
 
   // Delivers the second SMS.
-
-  mock->NotifyReceive(url::Origin::Create(url2), "second");
+  provider.NotifyReceive(url::Origin::Create(url2), "second");
 
   sms_loop2.Run();
 
@@ -373,18 +395,19 @@ TEST_F(SmsServiceTest, TimeoutTwoOrigins) {
 }
 
 TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
-  auto impl = std::make_unique<SmsService>();
-  auto* mock = new NiceMock<MockSmsProvider>();
+  NiceMock<MockSmsProvider> provider;
 
-  impl->SetSmsProviderForTest(base::WrapUnique(mock));
-
-  blink::mojom::SmsReceiverPtr service_ptr1;
   GURL url1("http://a.com");
-  impl->Bind(mojo::MakeRequest(&service_ptr1), url::Origin::Create(url1));
+  blink::mojom::SmsReceiverPtr service_ptr1;
+  std::unique_ptr<SmsService> service1 = std::make_unique<SmsService>(
+      &provider, url::Origin::Create(url1), main_rfh(),
+      mojo::MakeRequest(&service_ptr1));
 
-  blink::mojom::SmsReceiverPtr service_ptr2;
   GURL url2("http://b.com");
-  impl->Bind(mojo::MakeRequest(&service_ptr2), url::Origin::Create(url2));
+  blink::mojom::SmsReceiverPtr service_ptr2;
+  std::unique_ptr<SmsService> service2 = std::make_unique<SmsService>(
+      &provider, url::Origin::Create(url2), main_rfh(),
+      mojo::MakeRequest(&service_ptr2));
 
   blink::mojom::SmsStatus sms_status1;
   base::Optional<std::string> response1;
@@ -393,7 +416,7 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
 
   base::RunLoop listen, sms_loop1, sms_loop2;
 
-  EXPECT_CALL(*mock, Retrieve())
+  EXPECT_CALL(provider, Retrieve())
       .WillOnce(testing::Return())
       .WillOnce(Invoke([&listen]() { listen.Quit(); }));
 
@@ -426,7 +449,7 @@ TEST_F(SmsServiceTest, SecondRequestTimesOutEarlierThanFirstRequest) {
 
   // Delivers the first SMS.
 
-  mock->NotifyReceive(url::Origin::Create(url1), "first");
+  provider.NotifyReceive(url::Origin::Create(url1), "first");
 
   sms_loop1.Run();
 

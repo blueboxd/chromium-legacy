@@ -37,7 +37,8 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
 
   void RegisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
   void UnregisterModuleScript(const ModuleScript*) override { NOTREACHED(); }
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
+  const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const override {
     NOTREACHED();
     return nullptr;
   }

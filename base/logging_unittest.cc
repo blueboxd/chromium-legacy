@@ -4,10 +4,12 @@
 
 #include <sstream>
 
-#include "base/logging.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -237,6 +239,81 @@ TEST_F(LoggingTest, LogToStdErrFlag) {
   EXPECT_CALL(mock_log_source_stderr, Log()).Times(1).WillOnce(Return("foo"));
   LOG(INFO) << mock_log_source_stderr.Log();
 }
+
+// Check that messages with severity ERROR or higher are always logged to
+// stderr if no log-destinations are set, other than LOG_TO_FILE.
+// This test is currently only POSIX-compatible.
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+namespace {
+void TestForLogToStderr(int log_destinations,
+                        bool* did_log_info,
+                        bool* did_log_error) {
+  const char kInfoLogMessage[] = "This is an INFO level message";
+  const char kErrorLogMessage[] = "Here we have a message of level ERROR";
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Set up logging.
+  LoggingSettings settings;
+  settings.logging_dest = log_destinations;
+  base::FilePath file_logs_path;
+  if (log_destinations & LOG_TO_FILE) {
+    file_logs_path = temp_dir.GetPath().Append("file.log");
+    settings.log_file = file_logs_path.value().c_str();
+  }
+  InitLogging(settings);
+
+  // Create a file and change stderr to write to that file, to easily check
+  // contents.
+  base::FilePath stderr_logs_path = temp_dir.GetPath().Append("stderr.log");
+  base::File stderr_logs = base::File(
+      stderr_logs_path,
+      base::File::FLAG_CREATE | base::File::FLAG_WRITE | base::File::FLAG_READ);
+  base::ScopedFD stderr_backup = base::ScopedFD(dup(STDERR_FILENO));
+  int dup_result = dup2(stderr_logs.GetPlatformFile(), STDERR_FILENO);
+  ASSERT_EQ(dup_result, STDERR_FILENO);
+
+  LOG(INFO) << kInfoLogMessage;
+  LOG(ERROR) << kErrorLogMessage;
+
+  // Restore the original stderr logging destination.
+  dup_result = dup2(stderr_backup.get(), STDERR_FILENO);
+  ASSERT_EQ(dup_result, STDERR_FILENO);
+
+  // Check which of the messages were written to stderr.
+  std::string written_logs;
+  ASSERT_TRUE(base::ReadFileToString(stderr_logs_path, &written_logs));
+  *did_log_info = written_logs.find(kInfoLogMessage) != std::string::npos;
+  *did_log_error = written_logs.find(kErrorLogMessage) != std::string::npos;
+}
+}  // namespace
+
+TEST_F(LoggingTest, AlwaysLogErrorsToStderr) {
+  bool did_log_info = false;
+  bool did_log_error = false;
+
+  // When no destinations are specified, ERRORs should still log to stderr.
+  TestForLogToStderr(LOG_NONE, &did_log_info, &did_log_error);
+  EXPECT_FALSE(did_log_info);
+  EXPECT_TRUE(did_log_error);
+
+  // Logging only to a file should also log ERRORs to stderr as well.
+  TestForLogToStderr(LOG_TO_FILE, &did_log_info, &did_log_error);
+  EXPECT_FALSE(did_log_info);
+  EXPECT_TRUE(did_log_error);
+
+  // ERRORs should not be logged to stderr if any destination besides FILE is
+  // set.
+  TestForLogToStderr(LOG_TO_SYSTEM_DEBUG_LOG, &did_log_info, &did_log_error);
+  EXPECT_FALSE(did_log_info);
+  EXPECT_FALSE(did_log_error);
+
+  // Both ERRORs and INFO should be logged if LOG_TO_STDERR is set.
+  TestForLogToStderr(LOG_TO_STDERR, &did_log_info, &did_log_error);
+  EXPECT_TRUE(did_log_info);
+  EXPECT_TRUE(did_log_error);
+}
+#endif
 
 // Official builds have CHECKs directly call BreakDebugger.
 #if !defined(OFFICIAL_BUILD)

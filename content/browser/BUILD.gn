@@ -1826,8 +1826,6 @@ jumbo_source_set("browser") {
     "sms/sms_parser.h",
     "sms/sms_provider.cc",
     "sms/sms_provider.h",
-    "sms/sms_receiver_impl.cc",
-    "sms/sms_receiver_impl.h",
     "sms/sms_service.cc",
     "sms/sms_service.h",
     "speech/speech_recognition_dispatcher_host.cc",

@@ -5,6 +5,8 @@
 #ifndef SERVICES_DEVICE_USB_USB_DEVICE_WIN_H_
 #define SERVICES_DEVICE_USB_USB_DEVICE_WIN_H_
 
+#include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -47,6 +49,9 @@ class UsbDeviceWin : public UsbDevice {
   void OnReadStringDescriptors(
       base::OnceCallback<void(bool)> callback,
       scoped_refptr<UsbDeviceHandle> device_handle,
+      uint8_t i_manufacturer,
+      uint8_t i_product,
+      uint8_t i_serial_number,
       std::unique_ptr<std::map<uint8_t, base::string16>> string_map);
   void OnOpenedToReadWebUsbDescriptors(
       base::OnceCallback<void(bool)> callback,

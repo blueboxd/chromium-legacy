@@ -208,7 +208,7 @@ WebappInstallSource ConvertOptionsToMetricsInstallSource(
     const InstallOptions& options) {
   auto metrics_install_source = WebappInstallSource::COUNT;
   switch (options.install_source) {
-    case InstallSource::kInternal:
+    case InstallSource::kInternalDefault:
       metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
       break;
     case InstallSource::kExternalDefault:
@@ -221,8 +221,7 @@ WebappInstallSource ConvertOptionsToMetricsInstallSource(
       metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
       break;
     case InstallSource::kArc:
-    case InstallSource::kInvalid:
-      NOTREACHED();
+      metrics_install_source = WebappInstallSource::ARC;
       break;
   }
 

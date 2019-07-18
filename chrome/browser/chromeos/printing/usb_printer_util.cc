@@ -157,17 +157,6 @@ void MD5UpdateString16(base::MD5Context* ctx, const base::string16& str) {
   base::MD5Update(ctx, base::StringPiece(tmp.data(), tmp.size()));
 }
 
-uint16_t GetUsbVersion(const UsbDeviceInfo& device_info) {
-  return device_info.usb_version_major << 8 |
-         device_info.usb_version_minor << 4 | device_info.usb_version_subminor;
-}
-
-uint16_t GetDeviceVersion(const UsbDeviceInfo& device_info) {
-  return device_info.device_version_major << 8 |
-         device_info.device_version_minor << 4 |
-         device_info.device_version_subminor;
-}
-
 // Get the usb printer id for |device|.  This is used both as the identifier for
 // the printer in the user's PrintersManager and as the name of the printer in
 // CUPS, so it has to satisfy the naming restrictions of both.  CUPS in
@@ -186,7 +175,7 @@ std::string CreateUsbPrinterId(const UsbDeviceInfo& device_info) {
                 "Protocol size changed");
   static_assert(sizeof(device_info.vendor_id) == 2, "Vendor id size changed");
   static_assert(sizeof(device_info.product_id) == 2, "Product id size changed");
-  static_assert(sizeof(GetDeviceVersion(device_info)) == 2,
+  static_assert(sizeof(device::GetDeviceVersion(device_info)) == 2,
                 "Version size changed");
 
   base::MD5Context ctx;
@@ -196,7 +185,7 @@ std::string CreateUsbPrinterId(const UsbDeviceInfo& device_info) {
   MD5UpdateBigEndian(&ctx, device_info.protocol_code);
   MD5UpdateBigEndian(&ctx, device_info.vendor_id);
   MD5UpdateBigEndian(&ctx, device_info.product_id);
-  MD5UpdateBigEndian(&ctx, GetDeviceVersion(device_info));
+  MD5UpdateBigEndian(&ctx, device::GetDeviceVersion(device_info));
   MD5UpdateString16(&ctx, GetManufacturerName(device_info));
   MD5UpdateString16(&ctx, GetProductName(device_info));
   MD5UpdateString16(&ctx, GetSerialNumber(device_info));
@@ -239,10 +228,10 @@ std::string UsbPrinterDeviceDetailsAsString(const UsbDeviceInfo& device_info) {
       " manufacturer string: %s\n"
       " product string:      %s\n"
       " serial number:       %s",
-      device_info.guid.c_str(), GetUsbVersion(device_info),
+      device_info.guid.c_str(), device::GetUsbVersion(device_info),
       device_info.class_code, device_info.subclass_code,
       device_info.protocol_code, device_info.vendor_id, device_info.product_id,
-      GetDeviceVersion(device_info),
+      device::GetDeviceVersion(device_info),
       base::UTF16ToUTF8(GetManufacturerName(device_info)).c_str(),
       base::UTF16ToUTF8(GetProductName(device_info)).c_str(),
       base::UTF16ToUTF8(GetSerialNumber(device_info)).c_str());

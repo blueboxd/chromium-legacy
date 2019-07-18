@@ -230,6 +230,13 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     private void setUp() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            DownloadController.enableNewDownloadBackendForTesting(true);
+            mSavedDownloadManagerService =
+                    DownloadManagerService.setDownloadManagerService(new TestDownloadManagerService(
+                            new SystemDownloadNotifier(), new Handler(), UPDATE_DELAY_MILLIS));
+        });
+
         mActivityStart.customMainActivityStart();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -240,9 +247,6 @@ public class DownloadTestRule extends ChromeActivityTestRule<ChromeActivity> {
         cleanUpAllDownloads();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mSavedDownloadManagerService =
-                    DownloadManagerService.setDownloadManagerService(new TestDownloadManagerService(
-                            new SystemDownloadNotifier(), new Handler(), UPDATE_DELAY_MILLIS));
             DownloadController.setDownloadNotificationService(
                     DownloadManagerService.getDownloadManagerService());
             OfflineContentAggregatorFactory.get().addObserver(new TestDownloadBackendObserver());

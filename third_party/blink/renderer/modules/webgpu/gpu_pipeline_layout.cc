@@ -25,7 +25,7 @@ GPUPipelineLayout* GPUPipelineLayout::Create(
       bind_group_layout_count != 0 ? AsDawnType(webgpu_desc->bindGroupLayouts())
                                    : nullptr;
 
-  DawnPipelineLayoutDescriptor dawn_desc;
+  DawnPipelineLayoutDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.bindGroupLayoutCount = bind_group_layout_count;
   dawn_desc.bindGroupLayouts = bind_group_layouts.get();

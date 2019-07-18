@@ -407,7 +407,7 @@ class BrowserView : public BrowserWindow,
   bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   void CutCopyPaste(int command_id) override;
-  FindBar* CreateFindBar() override;
+  std::unique_ptr<FindBar> CreateFindBar() override;
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
   void ShowAvatarBubbleFromAvatarButton(

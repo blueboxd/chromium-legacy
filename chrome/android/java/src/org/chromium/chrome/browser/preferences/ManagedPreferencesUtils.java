@@ -96,6 +96,32 @@ public class ManagedPreferencesUtils {
     }
 
     /**
+     * TODO(crbug.com/967022): This method is a duplicate of {@link
+     * #getManagedIconDrawable(ManagedPreferenceDelegate, Preference)}, but with Support Library
+     * classes replacing deprecated Framework classes. When Preference Support Library migration is
+     * complete remove {@link #getManagedIconDrawable(ManagedPreferenceDelegate, Preference)} in
+     * favor of this method.
+     *
+     * @return The appropriate Drawable based on whether the preference is controlled by a policy or
+     *      a custodian.
+     */
+    public static Drawable getManagedIconDrawable(
+            @Nullable ManagedPreferenceDelegateCompat delegate,
+            android.support.v7.preference.Preference preference) {
+        if (delegate == null) return preference.getIcon();
+
+        if (delegate.isPreferenceControlledByPolicy(preference)) {
+            return PreferenceUtils.getTintedIcon(
+                    preference.getContext(), getManagedByEnterpriseIconId());
+        } else if (delegate.isPreferenceControlledByCustodian(preference)) {
+            return PreferenceUtils.getTintedIcon(
+                    preference.getContext(), getManagedByCustodianIconId());
+        }
+
+        return preference.getIcon();
+    }
+
+    /**
      * Initializes the Preference based on the state of any policies that may affect it,
      * e.g. by showing a managed icon or disabling clicks on the preference. If |preference| is an
      * instance of ChromeImageViewPreference, the icon is not set since the ImageView widget will
@@ -146,13 +172,9 @@ public class ManagedPreferencesUtils {
             android.support.v7.preference.Preference preference) {
         if (delegate == null) return;
 
-        // TODO(chouinard): A compat version of ChromeImageViewPreference hasn't been created yet.
-        // Once it is, uncomment this section.
-        /*
-        if (!(preference instanceof ChromeImageViewPreference)) {
+        if (!(preference instanceof ChromeImageViewPreferenceCompat)) {
             preference.setIcon(getManagedIconDrawable(delegate, preference));
         }
-        */
 
         if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
             // Disable the views and prevent the Preference from mucking with the enabled state.
@@ -247,6 +269,47 @@ public class ManagedPreferencesUtils {
      */
     public static void onBindViewToImageViewPreference(@Nullable ManagedPreferenceDelegate delegate,
             ChromeImageViewPreference preference, View view) {
+        if (delegate == null) return;
+
+        onBindViewToPreference(delegate, preference, view);
+
+        if (!delegate.isPreferenceControlledByPolicy(preference)
+                && !delegate.isPreferenceControlledByCustodian(preference)) {
+            return;
+        }
+
+        ImageView button = view.findViewById(R.id.image_view_widget);
+        button.setImageDrawable(getManagedIconDrawable(delegate, preference));
+        button.setOnClickListener((View v) -> {
+            if (delegate.isPreferenceControlledByPolicy(preference)) {
+                showManagedByAdministratorToast(preference.getContext());
+            } else if (delegate.isPreferenceControlledByCustodian(preference)) {
+                showManagedByParentToast(preference.getContext());
+            }
+        });
+    }
+
+    /**
+     * TODO(crbug.com/967022): This method is a duplicate of {@link
+     * #onBindViewToPreference(ManagedPreferenceDelegate, Preference, View)}, but with Support
+     * Library classes replacing deprecated Framework classes. When Preference Support Library
+     * migration is complete remove {@link #onBindViewToPreference(ManagedPreferenceDelegate,
+     * Preference, View)} in favor of this method.
+     *
+     * Calls onBindViewToPreference() above. Then, if the ChromeImageViewPreference is managed, the
+     * widget ImageView is set to the appropriate managed icon, and its onClick listener is set to
+     * show the appropriate managed message toast.
+     *
+     * This should be called from the Preference's onBindView() method.
+     *
+     * @param delegate The delegate that controls whether the preference is managed. May be null,
+     *                 then this method does nothing.
+     * @param preference The ChromeImageViewPreference that owns the view.
+     * @param view The View that was bound to the ChromeImageViewPreference.
+     */
+    public static void onBindViewToImageViewPreference(
+            @Nullable ManagedPreferenceDelegateCompat delegate,
+            ChromeImageViewPreferenceCompat preference, View view) {
         if (delegate == null) return;
 
         onBindViewToPreference(delegate, preference, view);

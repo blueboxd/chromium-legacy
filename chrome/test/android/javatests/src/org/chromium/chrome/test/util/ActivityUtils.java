@@ -208,4 +208,34 @@ public class ActivityUtils {
                 }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
         return (T) activity.getMainFragment();
     }
+
+    /**
+     * TODO(crbug.com/967022): This method is a duplicate of {@link #waitForFragment(Activity,
+     * String)}, but with Support Library classes replacing deprecated Framework classes. When
+     * Preference Support Library migration is complete remove {@link #waitForFragment(Activity,
+     * String)} in favor of this method.
+     *
+     * Waits until the specified fragment has been attached to the specified activity. Note that
+     * we don't guarantee that the fragment is visible. Some UI operations can happen too
+     * quickly and we can miss the time that a fragment is visible. This method allows you to get a
+     * reference to any fragment that was attached to the activity at any point.
+     *
+     * @param <T> A subclass of {@link android.support.v4.app.Fragment}.
+     * @param activity An instance or subclass of {@link Preferences}.
+     * @param fragmentClass The class object for {@link T}.
+     * @return A reference to the requested fragment or null.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends android.support.v4.app.Fragment> T waitForFragmentToAttachCompat(
+            final Preferences activity, final Class<T> fragmentClass) {
+        String failureReason = String.format(
+                "Could not find fragment of type %s", fragmentClass.getCanonicalName());
+        CriteriaHelper.pollInstrumentationThread(new Criteria(failureReason) {
+            @Override
+            public boolean isSatisfied() {
+                return fragmentClass.isInstance(activity.getMainFragmentCompat());
+            }
+        }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
+        return (T) activity.getMainFragmentCompat();
+    }
 }

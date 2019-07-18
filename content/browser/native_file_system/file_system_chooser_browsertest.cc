@@ -29,6 +29,8 @@ namespace content {
 
 using base::test::RunOnceCallback;
 using blink::mojom::PermissionStatus;
+using SensitiveDirectoryResult =
+    NativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
 // This browser test implements end-to-end tests for the chooseFileSystemEntry
 // API.
@@ -196,6 +198,11 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
           shell()->web_contents()->GetSiteInstance())
           ->GetNativeFileSystemEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context,
+              ConfirmSensitiveDirectoryAccess_(
+                  testing::_, testing::_, testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<4>(SensitiveDirectoryResult::kAllowed));
 
   EXPECT_CALL(
       permission_context,

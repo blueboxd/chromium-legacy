@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/enterprise_reporting/profile_report_generator.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;
@@ -19,15 +18,10 @@ namespace enterprise_reporting {
 
 class ReportGenerator {
  public:
-  using ReportCallback = base::OnceCallback<void(
-      std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>)>;
-
   ReportGenerator();
   ~ReportGenerator();
 
-  void Generate(ReportCallback callback);
-
-  void SetMaximumReportSizeForTesting(size_t size);
+  std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> Generate();
 
  protected:
   // Creates a basic request that will be used by all Profiles.
@@ -56,24 +50,10 @@ class ReportGenerator {
   std::vector<std::unique_ptr<em::ChromeUserProfileInfo>> GetProfiles();
 
  private:
-  void GetNextProfileReport(int profile_index);
-  void OnProfileReportReady(
-      int profile_index,
-      std::unique_ptr<em::ChromeUserProfileInfo> profile_report);
-
-  ProfileReportGenerator profile_report_generator_;
-
-  ReportCallback callback_;
-
   std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> requests_;
 
   // Basic information that is shared among requests.
   em::ChromeDesktopReportRequest basic_request_;
-  size_t basic_request_size_;
-
-  size_t maximum_report_size_;
-
-  base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportGenerator);
 };

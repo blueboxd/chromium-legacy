@@ -43,6 +43,9 @@ ScopedImageDecodeTask::ScopedImageDecodeTask(const void* image_ptr,
 ScopedImageDecodeTask::~ScopedImageDecodeTask() {
   TRACE_EVENT_END0(internal::CategoryName::kTimeline,
                    internal::kImageDecodeTask);
+  if (suppress_metrics_)
+    return;
+
   base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
   switch (task_type_) {
     case kInRaster:

@@ -27,7 +27,7 @@ AecDumpManagerImpl::AecDumpManagerImpl() = default;
 AecDumpManagerImpl::~AecDumpManagerImpl() = default;
 
 void AecDumpManagerImpl::AddRequest(
-    mojo::InterfaceRequest<mojom::AecDumpManager> request) {
+    mojo::InterfaceRequest<blink::mojom::AecDumpManager> request) {
   receiver_set_.Add(this, std::move(request));
 }
 
@@ -47,7 +47,8 @@ void AecDumpManagerImpl::Stop() {
     it.second->Stop();
 }
 
-void AecDumpManagerImpl::Add(mojo::PendingRemote<mojom::AecDumpAgent> agent) {
+void AecDumpManagerImpl::Add(
+    mojo::PendingRemote<blink::mojom::AecDumpAgent> agent) {
   int id = ++id_counter_;
 
   agents_.emplace(std::make_pair(id, std::move(agent)));

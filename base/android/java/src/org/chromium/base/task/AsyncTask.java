@@ -276,6 +276,8 @@ public abstract class AsyncTask<Result> {
      *         while waiting.
      */
     @DoNotInline
+    // The string passed is safe since it is class and method name.
+    @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
     public final Result get() throws InterruptedException, ExecutionException {
         Result r;
         if (getStatus() != Status.FINISHED && ThreadUtils.runningOnUiThread()) {

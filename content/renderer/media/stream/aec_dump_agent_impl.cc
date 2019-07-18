@@ -16,7 +16,7 @@ std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
   if (!ChildThread::Get())  // Can be true in unit tests.
     return nullptr;
 
-  mojo::Remote<mojom::AecDumpManager> manager;
+  mojo::Remote<blink::mojom::AecDumpManager> manager;
   ChildThread::Get()->GetConnector()->Connect(
       mojom::kBrowserServiceName, manager.BindNewPipeAndPassReceiver());
 
@@ -30,7 +30,7 @@ std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
 
 AecDumpAgentImpl::AecDumpAgentImpl(
     Delegate* delegate,
-    mojo::PendingReceiver<mojom::AecDumpAgent> receiver)
+    mojo::PendingReceiver<blink::mojom::AecDumpAgent> receiver)
     : delegate_(delegate), receiver_(this, std::move(receiver)) {}
 
 AecDumpAgentImpl::~AecDumpAgentImpl() = default;

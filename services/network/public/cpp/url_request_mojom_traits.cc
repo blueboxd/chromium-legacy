@@ -215,6 +215,8 @@ bool StructTraits<
   out->is_revalidating = data.is_revalidating();
   out->should_also_use_factory_bound_origin_for_cors =
       data.should_also_use_factory_bound_origin_for_cors();
+  out->is_signed_exchange_prefetch_cache_enabled =
+      data.is_signed_exchange_prefetch_cache_enabled();
   return true;
 }
 

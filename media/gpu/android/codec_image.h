@@ -30,9 +30,19 @@ namespace media {
 // as needed in order to draw them.
 class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
-  // A callback for observing CodecImage destruction.  This is a repeating cb
-  // since CodecImageGroup calls the same cb for multiple images.
-  using DestructionCB = base::RepeatingCallback<void(CodecImage*)>;
+  // Callback to notify that a codec image is now unused in the sense of not
+  // being out for display.  This lets us signal interested folks once a video
+  // frame is destroyed and the sync token clears, so that that CodecImage may
+  // be re-used.  Once legacy mailboxes go away, SharedImageVideo can manage all
+  // of this instead.
+  //
+  // Also note that, presently, only destruction does this.  However, with
+  // pooling, there will be a way to mark a CodecImage as unused without
+  // destroying it.
+  using NowUnusedCB = base::OnceCallback<void(CodecImage*)>;
+
+  // A callback for observing CodecImage destruction.
+  using DestructionCB = base::OnceCallback<void(CodecImage*)>;
 
   CodecImage();
 
@@ -45,6 +55,7 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
       scoped_refptr<TextureOwner> texture_owner,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
+  void SetNowUnusedCB(NowUnusedCB now_unused_cb);
   void SetDestructionCB(DestructionCB destruction_cb);
 
   // gl::GLImage implementation
@@ -155,7 +166,10 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // Callback to notify about promotion hints and overlay position.
   PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb_;
 
+  NowUnusedCB now_unused_cb_;
+
   DestructionCB destruction_cb_;
+
   bool was_tex_image_bound_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CodecImage);

@@ -93,8 +93,9 @@ class FindBrowserListObserver : public BrowserListObserver {
 
 }  // namespace
 
-FindBarController::FindBarController(FindBar* find_bar, Browser* browser)
-    : find_bar_(find_bar),
+FindBarController::FindBarController(std::unique_ptr<FindBar> find_bar,
+                                     Browser* browser)
+    : find_bar_(std::move(find_bar)),
       browser_(browser),
       find_bar_platform_helper_(FindBarPlatformHelper::Create(this)) {
   FindBrowserListObserver::EnsureInstance();

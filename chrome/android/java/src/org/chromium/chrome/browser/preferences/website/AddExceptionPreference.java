@@ -10,10 +10,10 @@ import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Vibrator;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -30,7 +30,8 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
  * A utility class for the UI recording exceptions to the blocked list for site
  * settings.
  */
-public class AddExceptionPreference extends Preference implements OnPreferenceClickListener {
+public class AddExceptionPreference
+        extends Preference implements Preference.OnPreferenceClickListener {
     // The callback to notify when the user adds a site.
     private SiteAddedCallback mSiteAddedCallback;
 
@@ -81,9 +82,9 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
-        TextView titleView = (TextView) view.findViewById(android.R.id.title);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
+        TextView titleView = (TextView) holder.findViewById(android.R.id.title);
         titleView.setAllCaps(true);
         titleView.setTextColor(mPrefAccentColor);
     }

@@ -237,17 +237,16 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
   }
 }
 
-void SearchResultRanker::Train(const std::string& query,
-                               const std::string& id,
-                               RankingItemType type) {
-  // TODO(931149): Use the passed |query| as part of the training for the query
-  // model if it requires it.
-  if (ModelForType(type) == Model::MIXED_TYPES) {
+void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
+  // TODO(931149): Use the passed |app_launch_data.query| as part of the
+  // training for the query model if it requires it.
+  if (ModelForType(app_launch_data.ranking_item_type) == Model::MIXED_TYPES) {
     if (results_list_group_ranker_) {
-      results_list_group_ranker_->Record(
-          base::NumberToString(static_cast<int>(type)));
+      results_list_group_ranker_->Record(base::NumberToString(
+          static_cast<int>(app_launch_data.ranking_item_type)));
     } else if (query_based_mixed_types_ranker_) {
-      query_based_mixed_types_ranker_->Record(NormalizeId(id, type));
+      query_based_mixed_types_ranker_->Record(
+          NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type));
     }
   }
 }

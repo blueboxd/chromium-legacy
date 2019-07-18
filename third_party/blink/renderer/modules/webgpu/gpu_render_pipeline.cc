@@ -24,7 +24,7 @@ namespace {
 DawnBlendDescriptor AsDawnType(const GPUBlendDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnBlendDescriptor dawn_desc;
+  DawnBlendDescriptor dawn_desc = {};
   dawn_desc.dstFactor = AsDawnEnum<DawnBlendFactor>(webgpu_desc->dstFactor());
   dawn_desc.srcFactor = AsDawnEnum<DawnBlendFactor>(webgpu_desc->srcFactor());
   dawn_desc.operation =
@@ -39,7 +39,7 @@ DawnColorStateDescriptor AsDawnType(
     const GPUColorStateDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnColorStateDescriptor dawn_desc;
+  DawnColorStateDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
 
   GPUBlendDescriptor* gpu_alpha_blend = webgpu_desc->hasAlphaBlend()
@@ -65,7 +65,7 @@ DawnStencilStateFaceDescriptor AsDawnType(
     const GPUStencilStateFaceDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnStencilStateFaceDescriptor dawn_desc;
+  DawnStencilStateFaceDescriptor dawn_desc = {};
   dawn_desc.compare = AsDawnEnum<DawnCompareFunction>(webgpu_desc->compare());
   dawn_desc.depthFailOp =
       AsDawnEnum<DawnStencilOperation>(webgpu_desc->depthFailOp());
@@ -79,7 +79,7 @@ DawnDepthStencilStateDescriptor AsDawnType(
     const GPUDepthStencilStateDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnDepthStencilStateDescriptor dawn_desc;
+  DawnDepthStencilStateDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.depthCompare =
       AsDawnEnum<DawnCompareFunction>(webgpu_desc->depthCompare());
@@ -101,7 +101,7 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
     v8::Isolate* isolate,
     const GPUVertexInputDescriptor* descriptor,
     ExceptionState& exception_state) {
-  DawnVertexInputDescriptor dawn_desc;
+  DawnVertexInputDescriptor dawn_desc = {};
   dawn_desc.indexFormat =
       AsDawnEnum<DawnIndexFormat>(descriptor->indexFormat());
   dawn_desc.bufferCount = 0;
@@ -135,7 +135,7 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
       v8::Local<v8::Value> value;
       if (!maybe_value.ToLocal(&value) || value.IsEmpty() ||
           value->IsNullOrUndefined()) {
-        DawnVertexBufferDescriptor dawn_vertex_buffer;
+        DawnVertexBufferDescriptor dawn_vertex_buffer = {};
         dawn_vertex_buffer.stride = 0;
         dawn_vertex_buffer.stepMode = DAWN_INPUT_STEP_MODE_VERTEX;
         dawn_vertex_buffer.attributeCount = 0;
@@ -152,7 +152,7 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
                                std::move(dawn_vertex_attributes));
       }
 
-      DawnVertexBufferDescriptor dawn_vertex_buffer;
+      DawnVertexBufferDescriptor dawn_vertex_buffer = {};
       dawn_vertex_buffer.stride = vertex_buffer.stride();
       dawn_vertex_buffer.stepMode =
           AsDawnEnum<DawnInputStepMode>(vertex_buffer.stepMode());
@@ -164,7 +164,7 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
       for (wtf_size_t j = 0; j < vertex_buffer.attributes().size(); ++j) {
         const GPUVertexAttributeDescriptor* attribute =
             vertex_buffer.attributes()[j];
-        DawnVertexAttributeDescriptor dawn_vertex_attribute;
+        DawnVertexAttributeDescriptor dawn_vertex_attribute = {};
         dawn_vertex_attribute.shaderLocation = attribute->shaderLocation();
         dawn_vertex_attribute.offset = attribute->offset();
         dawn_vertex_attribute.format =
@@ -193,7 +193,7 @@ DawnRasterizationStateDescriptor AsDawnType(
     const GPURasterizationStateDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnRasterizationStateDescriptor dawn_desc;
+  DawnRasterizationStateDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.frontFace = AsDawnEnum<DawnFrontFace>(webgpu_desc->frontFace());
   dawn_desc.cullMode = AsDawnEnum<DawnCullMode>(webgpu_desc->cullMode());
@@ -214,7 +214,7 @@ GPURenderPipeline* GPURenderPipeline::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  DawnRenderPipelineDescriptor dawn_desc;
+  DawnRenderPipelineDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
 
@@ -252,7 +252,7 @@ GPURenderPipeline* GPURenderPipeline::Create(
 
   dawn_desc.sampleCount = webgpu_desc->sampleCount();
 
-  DawnDepthStencilStateDescriptor depth_stencil_state;
+  DawnDepthStencilStateDescriptor depth_stencil_state = {};
   if (webgpu_desc->hasDepthStencilState()) {
     depth_stencil_state = AsDawnType(webgpu_desc->depthStencilState());
     dawn_desc.depthStencilState = &depth_stencil_state;
@@ -267,6 +267,9 @@ GPURenderPipeline* GPURenderPipeline::Create(
 
   DawnColorStateDescriptor* color_state_descriptors = color_states.get();
   dawn_desc.colorStates = &color_state_descriptors;
+
+  dawn_desc.sampleMask = webgpu_desc->sampleMask();
+  dawn_desc.alphaToCoverageEnabled = webgpu_desc->alphaToCoverageEnabled();
 
   return MakeGarbageCollected<GPURenderPipeline>(
       device, device->GetProcs().deviceCreateRenderPipeline(device->GetHandle(),

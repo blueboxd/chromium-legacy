@@ -72,7 +72,7 @@ void FontCache::GetFontForCharacter(
         gfx::GetFallbackFontForChar(c, locale);
     fallback_font->name = String::FromUTF8(fallback_data.name.data(),
                                            fallback_data.name.length());
-    fallback_font->filename = fallback_data.filename;
+    fallback_font->filename = std::move(fallback_data.filename);
     fallback_font->fontconfig_interface_id = 0;
     fallback_font->ttc_index = fallback_data.ttc_index;
     fallback_font->is_bold = fallback_data.is_bold;

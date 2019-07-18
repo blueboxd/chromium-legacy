@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/process/process_handle.h"
-#include "content/common/media/aec_dump.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "third_party/blink/public/mojom/mediastream/aec_dump.mojom.h"
 
 namespace base {
 class File;
@@ -19,12 +19,12 @@ class FilePath;
 
 namespace content {
 
-class AecDumpManagerImpl : public mojom::AecDumpManager {
+class AecDumpManagerImpl : public blink::mojom::AecDumpManager {
  public:
   AecDumpManagerImpl();
   ~AecDumpManagerImpl() override;
 
-  void AddRequest(mojo::InterfaceRequest<mojom::AecDumpManager> request);
+  void AddRequest(mojo::InterfaceRequest<blink::mojom::AecDumpManager> request);
 
   // Start generating AEC dumps using default settings.
   void AutoStart();
@@ -36,7 +36,7 @@ class AecDumpManagerImpl : public mojom::AecDumpManager {
   void Stop();
 
   // mojom::AecDumpManager methods:
-  void Add(mojo::PendingRemote<mojom::AecDumpAgent> agent) override;
+  void Add(mojo::PendingRemote<blink::mojom::AecDumpAgent> agent) override;
 
   void set_pid(base::ProcessId pid) { pid_ = pid; }
 
@@ -46,9 +46,9 @@ class AecDumpManagerImpl : public mojom::AecDumpManager {
   void OnAgentDisconnected(int id);
 
   base::ProcessId pid_ = 0;
-  std::map<int /* id */, mojo::Remote<mojom::AecDumpAgent>> agents_;
+  std::map<int /* id */, mojo::Remote<blink::mojom::AecDumpAgent>> agents_;
   int id_counter_ = 0;
-  mojo::ReceiverSet<mojom::AecDumpManager> receiver_set_;
+  mojo::ReceiverSet<blink::mojom::AecDumpManager> receiver_set_;
 
   base::WeakPtrFactory<AecDumpManagerImpl> weak_factory_{this};
 

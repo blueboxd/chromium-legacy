@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/apps_launch.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/install_chrome_app.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -552,8 +553,8 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(Profile* profile) {
   // TODO(skerner): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty()) {
-    return apps::OpenApplicationWindow(profile, app_id, command_line_,
-                                       cur_dir_);
+    return apps::LaunchService::Get(profile)->OpenApplicationWindow(
+        app_id, command_line_, cur_dir_);
   }
 
   if (url_string.empty())
@@ -585,7 +586,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
   if (!IsAppLaunch(nullptr, &app_id) || app_id.empty())
     return false;
 
-  return apps::OpenApplicationTab(profile, app_id);
+  return apps::LaunchService::Get(profile)->OpenApplicationTab(app_id);
 }
 
 void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(

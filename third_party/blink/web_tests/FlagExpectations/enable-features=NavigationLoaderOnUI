@@ -2,20 +2,9 @@
 # See https://crbug.com/824840
 
 # service worker
-Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) http/tests/devtools/service-workers/service-workers-bypass-for-network-navigation.js [ Failure ]
-Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
-Bug(none) virtual/blink-cors/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
-Bug(none) virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/not-omt-sw-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
-Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
-Bug(none) virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
-Bug(none) virtual/omt-worker-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
-Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Failure ]
-Bug(none) virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Failure ]
+Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
+Bug(none) virtual/not-omt-sw-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
+Bug(none) virtual/omt-worker-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
 
 # signed exchange
 Bug(none) external/wpt/signed-exchange [ Skip ]

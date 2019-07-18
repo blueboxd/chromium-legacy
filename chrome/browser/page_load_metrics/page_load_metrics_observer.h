@@ -18,6 +18,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
@@ -575,6 +576,18 @@ class PageLoadMetricsObserver {
                                 const gfx::Size& frame_size) {}
 
   virtual void OnFrameDeleted(content::RenderFrameHost* render_frame_host) {}
+
+  // Called when a cookie is read for a resource request or by document.cookie.
+  virtual void OnCookiesRead(const GURL& url,
+                             const GURL& first_party_url,
+                             const net::CookieList& cookie_list,
+                             bool blocked_by_policy) {}
+
+  // Called when a cookie is set by a header or via document.cookie.
+  virtual void OnCookieChange(const GURL& url,
+                              const GURL& first_party_url,
+                              const net::CanonicalCookie& cookie,
+                              bool blocked_by_policy) {}
 
   // Called when the event corresponding to |event_key| occurs in this page
   // load.

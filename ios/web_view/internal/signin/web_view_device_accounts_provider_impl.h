@@ -5,11 +5,12 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_SIGNIN_WEB_VIEW_DEVICE_ACCOUNTS_PROVIDER_IMPL_H_
 #define IOS_WEB_VIEW_INTERNAL_SIGNIN_WEB_VIEW_DEVICE_ACCOUNTS_PROVIDER_IMPL_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "components/signin/ios/browser/device_accounts_provider.h"
+#include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
 
 class IOSWebViewSigninClient;
 

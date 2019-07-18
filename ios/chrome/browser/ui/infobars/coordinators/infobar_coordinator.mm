@@ -81,6 +81,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 #pragma mark - Public Methods.
 
+- (void)stop {
+  animatedFullscreenDisabler_ = nullptr;
+  _infobarDelegate = nil;
+}
+
 - (void)presentInfobarBannerAnimated:(BOOL)animated
                           completion:(ProceduralBlock)completion {
   DCHECK(self.browserState);

@@ -20,7 +20,8 @@ class EmptyModuleRecordResolver final : public ModuleRecordResolver {
   void RegisterModuleScript(const ModuleScript*) override {}
   void UnregisterModuleScript(const ModuleScript*) override {}
 
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
+  const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const override {
     NOTREACHED();
     return nullptr;
   }

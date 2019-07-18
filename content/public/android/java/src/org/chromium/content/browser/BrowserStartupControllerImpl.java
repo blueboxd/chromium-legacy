@@ -21,6 +21,7 @@ import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.content.app.ContentMain;
+import org.chromium.content.browser.ServicificationStartupUma.ServicificationStartup;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.resources.ResourceExtractor;
@@ -342,6 +343,11 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         } else {
             mAsyncStartupCallbacks.add(callback);
         }
+    }
+    @Override
+    public @ServicificationStartup int getStartupMode(boolean startServiceManagerOnly) {
+        return ServicificationStartupUma.getStartupMode(
+                mFullBrowserStartupDone, mServiceManagerStarted, startServiceManagerOnly);
     }
 
     /**

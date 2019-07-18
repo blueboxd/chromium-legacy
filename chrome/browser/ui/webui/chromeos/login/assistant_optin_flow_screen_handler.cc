@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -209,7 +208,7 @@ void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
   // If Assistant is disabled by domain admin, end the flow.
-  if (prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy)) {
+  if (prefs->GetBoolean(assistant::prefs::kAssistantDisabledByPolicy)) {
     HandleFlowFinished();
     return;
   }
@@ -339,7 +338,7 @@ void AssistantOptInFlowScreenHandler::OnGetSettingsResponse(
       DVLOG(1) << "Assistant is disabled by domain policy. Skip Assistant "
                   "opt-in flow.";
       PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-      prefs->SetBoolean(::assistant::prefs::kAssistantDisabledByPolicy, true);
+      prefs->SetBoolean(assistant::prefs::kAssistantDisabledByPolicy, true);
       prefs->SetBoolean(arc::prefs::kVoiceInteractionEnabled, false);
       HandleFlowFinished();
       return;

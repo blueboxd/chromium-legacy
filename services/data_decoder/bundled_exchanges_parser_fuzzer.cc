@@ -15,6 +15,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/data_decoder/bundled_exchanges_parser.h"
+#include "services/data_decoder/bundled_exchanges_parser_factory.h"
 
 namespace {
 
@@ -27,8 +28,10 @@ class DataSource : public data_decoder::mojom::BundleDataSource {
   }
 
   void Read(uint64_t offset, uint64_t length, ReadCallback callback) override {
-    if (offset + length > size_)
+    if (offset + length > size_) {
       std::move(callback).Run(base::nullopt);
+      return;
+    }
     const uint8_t* start = data_ + offset;
     std::move(callback).Run(std::vector<uint8_t>(start, start + length));
   }
@@ -55,15 +58,14 @@ class BundledExchangesParserFuzzer {
     data_source_.AddReceiver(
         data_source_remote.InitWithNewPipeAndPassReceiver());
 
-    mojo::PendingRemote<data_decoder::mojom::BundledExchangesParser>
-        remote_parser;
-    std::unique_ptr<data_decoder::mojom::BundledExchangesParser> parser =
-        std::make_unique<data_decoder::BundledExchangesParser>(
-            remote_parser.InitWithNewPipeAndPassReceiver(),
-            std::move(data_source_remote));
+    data_decoder::BundledExchangesParserFactory factory_impl(
+        /*service_ref=*/nullptr);
+    data_decoder::mojom::BundledExchangesParserFactory& factory = factory_impl;
+    factory.GetParserForDataSource(parser_.BindNewPipeAndPassReceiver(),
+                                   std::move(data_source_remote));
 
     quit_loop_ = run_loop->QuitClosure();
-    parser->ParseMetadata(
+    parser_->ParseMetadata(
         base::Bind(&BundledExchangesParserFuzzer::OnParseMetadata,
                    base::Unretained(this)));
   }
@@ -84,17 +86,7 @@ class BundledExchangesParserFuzzer {
       return;
     }
 
-    mojo::PendingRemote<data_decoder::mojom::BundleDataSource>
-        data_source_remote;
-    data_source_.AddReceiver(
-        data_source_remote.InitWithNewPipeAndPassReceiver());
-
-    mojo::PendingReceiver<data_decoder::mojom::BundledExchangesParser> receiver;
-    data_decoder::BundledExchangesParser parser_impl(
-        std::move(receiver), std::move(data_source_remote));
-    data_decoder::mojom::BundledExchangesParser& parser = parser_impl;
-
-    parser.ParseResponse(
+    parser_->ParseResponse(
         metadata_->index[index]->response_offset,
         metadata_->index[index]->response_length,
         base::Bind(&BundledExchangesParserFuzzer::OnParseResponse,
@@ -108,6 +100,7 @@ class BundledExchangesParserFuzzer {
   }
 
  private:
+  mojo::Remote<data_decoder::mojom::BundledExchangesParser> parser_;
   DataSource data_source_;
   base::Closure quit_loop_;
   data_decoder::mojom::BundleMetadataPtr metadata_;

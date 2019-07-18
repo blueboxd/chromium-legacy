@@ -480,6 +480,11 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
       link_fetch_params.SetCrossOriginAccessControl(
           document.GetSecurityOrigin(), params.cross_origin);
     }
+    link_fetch_params.SetSignedExchangePrefetchCacheEnabled(
+        RuntimeEnabledFeatures::
+            SignedExchangePrefetchCacheForNavigationsEnabled() ||
+        RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+            &document));
     return LinkFetchResource::Fetch(ResourceType::kLinkPrefetch,
                                     link_fetch_params, document.Fetcher());
   }

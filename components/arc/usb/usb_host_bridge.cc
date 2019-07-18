@@ -211,6 +211,9 @@ void ArcUsbHostBridge::GetDeviceInfo(const std::string& guid,
 }
 
 void ArcUsbHostBridge::OnConnectionReady() {
+  if (delegate_)
+    delegate_->AttachDevicesToArcVm();
+
   // Request UsbDeviceManagerPtr from DeviceService.
   content::GetSystemConnector()->BindInterface(
       device::mojom::kServiceName, mojo::MakeRequest(&usb_manager_));
@@ -239,6 +242,10 @@ void ArcUsbHostBridge::Shutdown() {
 
 void ArcUsbHostBridge::SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
+}
+
+void ArcUsbHostBridge::SetDelegate(std::unique_ptr<Delegate> delegate) {
+  delegate_ = std::move(delegate);
 }
 
 void ArcUsbHostBridge::InitDeviceList(

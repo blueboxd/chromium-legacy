@@ -28,9 +28,6 @@ namespace remoting {
 
 namespace {
 
-constexpr base::TimeDelta kDestroyMessagingClientDelay =
-    base::TimeDelta::FromSeconds(5);
-
 SignalStrategy::Error GrpcStatusToSignalingError(const grpc::Status& status) {
   switch (status.error_code()) {
     case grpc::StatusCode::OK:
@@ -130,26 +127,6 @@ FtlSignalStrategy::Core::Core(
 FtlSignalStrategy::Core::~Core() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Disconnect();
-
-  registration_manager_->SignOut();
-  // Dirty hack to make sure session-terminate message is sent before the
-  // |messaging_client_| gets deleted.
-  // TODO(yuweih): Either improve this by waiting for request queue to drain or
-  // make MessagingClient a singleton if we decide to reuse it for host
-  // status discovery.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](std::unique_ptr<RegistrationManager> registration_manager,
-             std::unique_ptr<MessagingClient> messaging_client,
-             std::unique_ptr<OAuthTokenGetter> oauth_token_getter) {
-            messaging_client.reset();
-            registration_manager.reset();
-            oauth_token_getter.reset();
-          },
-          std::move(registration_manager_), std::move(messaging_client_),
-          std::move(oauth_token_getter_)),
-      kDestroyMessagingClientDelay);
 }
 
 void FtlSignalStrategy::Core::Connect() {

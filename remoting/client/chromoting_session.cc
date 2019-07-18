@@ -54,6 +54,11 @@ const int kMinDimension = 640;
 // Interval at which to log performance statistics, if enabled.
 constexpr base::TimeDelta kPerfStatsInterval = base::TimeDelta::FromMinutes(1);
 
+// Delay to destroy the signal strategy, so that the session-terminate event can
+// still be sent out.
+constexpr base::TimeDelta kDestroySignalingDelay =
+    base::TimeDelta::FromSeconds(2);
+
 bool IsClientResolutionValid(int dips_width, int dips_height) {
   // This prevents sending resolution on a portrait mode small phone screen
   // because resizing the remote desktop to portrait will mess with icons and
@@ -451,15 +456,31 @@ base::WeakPtr<ChromotingSession::Core> ChromotingSession::Core::GetWeakPtr() {
 }
 
 void ChromotingSession::Core::Invalidate() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+
   // Prevent all pending and future calls from ChromotingSession.
   weak_factory_.InvalidateWeakPtrs();
 
   client_.reset();
   token_getter_.reset();
-  signaling_.reset();
   perf_tracker_.reset();
   client_context_.reset();
   session_context_.reset();
+
+  // Dirty hack to make sure session-terminate message is sent before
+  // |signaling_| gets deleted. W/o the message being sent, the other side will
+  // believe an error has occurred.
+  if (signaling_) {
+    signaling_->Disconnect();
+    network_task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](std::unique_ptr<SignalStrategy> signaling) {
+              signaling.reset();
+            },
+            std::move(signaling_)),
+        kDestroySignalingDelay);
+  }
 }
 
 void ChromotingSession::Core::ConnectOnNetworkThread() {

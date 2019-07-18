@@ -32,6 +32,7 @@ TEST(TargetValueTest, VerifyLayerAnimationDelegateConstructor) {
   const float kGrayscale = 2.5813f;
   const SkColor kColor = SK_ColorCYAN;
   const gfx::Rect kClipRect(2, 3, 4, 5);
+  const gfx::RoundedCornersF kRoundedCorners(2.0f, 3.0f, 4.0f, 5.0f);
 
   TestLayerAnimationDelegate delegate;
   delegate.SetBoundsFromAnimation(kBounds,
@@ -50,6 +51,8 @@ TEST(TargetValueTest, VerifyLayerAnimationDelegateConstructor) {
                                  PropertyChangeReason::NOT_FROM_ANIMATION);
   delegate.SetClipRectFromAnimation(kClipRect,
                                     PropertyChangeReason::NOT_FROM_ANIMATION);
+  delegate.SetRoundedCornersFromAnimation(
+      kRoundedCorners, PropertyChangeReason::NOT_FROM_ANIMATION);
 
   LayerAnimationElement::TargetValue target_value(&delegate);
 
@@ -61,6 +64,7 @@ TEST(TargetValueTest, VerifyLayerAnimationDelegateConstructor) {
   EXPECT_FLOAT_EQ(kGrayscale, target_value.grayscale);
   EXPECT_EQ(SK_ColorCYAN, target_value.color);
   EXPECT_EQ(kClipRect, target_value.clip_rect);
+  EXPECT_EQ(kRoundedCorners, target_value.rounded_corners);
 }
 
 // Check that the transformation element progresses the delegate as expected and
@@ -418,6 +422,50 @@ TEST(LayerAnimationElementTest, ClipRectElement) {
   LayerAnimationElement::TargetValue target_value(&delegate);
   element->GetTargetValue(&target_value);
   CheckApproximatelyEqual(target, target_value.clip_rect);
+}
+
+// Check that the RoundedCorners element progresses the delegate as expected and
+// that the element can be reused after it completes.
+TEST(LayerAnimationElementTest, RoundedCornersElement) {
+  TestLayerAnimationDelegate delegate;
+  gfx::RoundedCornersF start(1.0f, 2.0f, 3.0f, 4.0f);
+  gfx::RoundedCornersF target(11.0f, 12.0f, 13.0f, 14.0f);
+  gfx::RoundedCornersF middle(6.0f, 7.0f, 8.0f, 9.0f);
+
+  base::TimeTicks start_time;
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+
+  std::unique_ptr<LayerAnimationElement> element =
+      LayerAnimationElement::CreateRoundedCornersElement(target, delta);
+
+  for (int i = 0; i < 2; ++i) {
+    start_time += delta;
+    element->set_requested_start_time(start_time);
+    delegate.SetRoundedCornersFromAnimation(
+        start, PropertyChangeReason::NOT_FROM_ANIMATION);
+    element->Start(&delegate, 1);
+    element->Progress(start_time, &delegate);
+    CheckApproximatelyEqual(start, delegate.GetRoundedCornersForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
+    element->Progress(start_time + delta / 2, &delegate);
+    CheckApproximatelyEqual(middle, delegate.GetRoundedCornersForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
+
+    base::TimeDelta element_duration;
+    EXPECT_TRUE(element->IsFinished(start_time + delta, &element_duration));
+    EXPECT_EQ(delta, element_duration);
+
+    element->Progress(start_time + delta, &delegate);
+    CheckApproximatelyEqual(target, delegate.GetRoundedCornersForAnimation());
+    delegate.ExpectLastPropertyChangeReason(
+        PropertyChangeReason::FROM_ANIMATION);
+  }
+
+  LayerAnimationElement::TargetValue target_value(&delegate);
+  element->GetTargetValue(&target_value);
+  CheckApproximatelyEqual(target, target_value.rounded_corners);
 }
 
 // Check that a threaded opacity element updates the delegate as expected when

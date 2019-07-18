@@ -36,7 +36,7 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
   std::unique_ptr<DawnBindGroupLayoutBinding[]> bindings =
       binding_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
 
-  DawnBindGroupLayoutDescriptor dawn_desc;
+  DawnBindGroupLayoutDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.bindingCount = binding_count;
   dawn_desc.bindings = bindings.get();

@@ -1743,8 +1743,8 @@ void BrowserView::CutCopyPaste(int command_id) {
 #endif  // defined(OS_MACOSX)
 }
 
-FindBar* BrowserView::CreateFindBar() {
-  return new FindBarHost(this);
+std::unique_ptr<FindBar> BrowserView::CreateFindBar() {
+  return std::make_unique<FindBarHost>(this);
 }
 
 WebContentsModalDialogHost* BrowserView::GetWebContentsModalDialogHost() {

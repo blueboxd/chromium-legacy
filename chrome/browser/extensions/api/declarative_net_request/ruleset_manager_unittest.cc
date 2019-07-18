@@ -39,21 +39,21 @@ namespace declarative_net_request {
 // with gtest.
 bool operator==(const RulesetManager::Action& lhs,
                 const RulesetManager::Action& rhs) {
-  static_assert(flat::ActionIndex_count == 6,
-                  "Modify this method to ensure it stays updated as new actions "
-                  "are added.");
+  static_assert(flat::ActionIndex_count == 7,
+                "Modify this method to ensure it stays updated as new actions "
+                "are added.");
 
-    auto are_vectors_equal = [](std::vector<const char*> a,
-                                std::vector<const char*> b) {
-      return std::set<base::StringPiece>(a.begin(), a.end()) ==
-             std::set<base::StringPiece>(b.begin(), b.end());
-    };
+  auto are_vectors_equal = [](std::vector<const char*> a,
+                              std::vector<const char*> b) {
+    return std::set<base::StringPiece>(a.begin(), a.end()) ==
+           std::set<base::StringPiece>(b.begin(), b.end());
+  };
 
-    return lhs.type == rhs.type && lhs.redirect_url == rhs.redirect_url &&
-           are_vectors_equal(lhs.request_headers_to_remove,
-                             rhs.request_headers_to_remove) &&
-           are_vectors_equal(lhs.response_headers_to_remove,
-                             rhs.response_headers_to_remove);
+  return lhs.type == rhs.type && lhs.redirect_url == rhs.redirect_url &&
+         are_vectors_equal(lhs.request_headers_to_remove,
+                           rhs.request_headers_to_remove) &&
+         are_vectors_equal(lhs.response_headers_to_remove,
+                           rhs.response_headers_to_remove);
 }
 
 namespace {

@@ -38,11 +38,6 @@ CodecImageGroup::CodecImageGroup(
 
 CodecImageGroup::~CodecImageGroup() {}
 
-void CodecImageGroup::SetDestructionCB(
-    CodecImage::DestructionCB destruction_cb) {
-  destruction_cb_ = std::move(destruction_cb);
-}
-
 void CodecImageGroup::AddCodecImage(CodecImage* image) {
   // If somebody adds an image after the surface has been destroyed, fail the
   // image immediately.  This can happen due to thread hopping.
@@ -60,10 +55,14 @@ void CodecImageGroup::AddCodecImage(CodecImage* image) {
                           scoped_refptr<CodecImageGroup>(this)));
 }
 
+void CodecImageGroup::RemoveCodecImage(CodecImage* image) {
+  images_.erase(image);
+  // Clear the destruction CB, since it has a strong ref to us.
+  image->SetDestructionCB(CodecImage::DestructionCB());
+}
+
 void CodecImageGroup::OnCodecImageDestroyed(CodecImage* image) {
   images_.erase(image);
-  if (destruction_cb_)
-    destruction_cb_.Run(image);
 }
 
 void CodecImageGroup::OnSurfaceDestroyed(AndroidOverlay* overlay) {

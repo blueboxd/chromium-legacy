@@ -46,28 +46,51 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
     virtual void OnDeviceRemoved(scoped_refptr<UsbDevice> device);
   };
 
+  const mojom::UsbDeviceInfo& device_info() const { return *device_info_; }
+
   // A unique identifier which remains stable for the lifetime of this device
   // object (i.e., until the device is unplugged or the USB service dies.)
-  const std::string& guid() const { return guid_; }
+  const std::string& guid() const { return device_info_->guid; }
 
   // Accessors to basic information.
-  uint32_t bus_number() const { return bus_number_; }
-  uint32_t port_number() const { return port_number_; }
-  uint16_t usb_version() const { return descriptor_.usb_version; }
-  uint8_t device_class() const { return descriptor_.device_class; }
-  uint8_t device_subclass() const { return descriptor_.device_subclass; }
-  uint8_t device_protocol() const { return descriptor_.device_protocol; }
-  uint16_t vendor_id() const { return descriptor_.vendor_id; }
-  uint16_t product_id() const { return descriptor_.product_id; }
-  uint16_t device_version() const { return descriptor_.device_version; }
+  uint32_t bus_number() const { return device_info_->bus_number; }
+  uint32_t port_number() const { return device_info_->port_number; }
+  uint8_t device_class() const { return device_info_->class_code; }
+  uint8_t device_subclass() const { return device_info_->subclass_code; }
+  uint8_t device_protocol() const { return device_info_->protocol_code; }
+  uint16_t vendor_id() const { return device_info_->vendor_id; }
+  uint16_t product_id() const { return device_info_->product_id; }
+
+  uint16_t usb_version() const;
+  uint16_t device_version() const;
+
   const base::string16& manufacturer_string() const {
-    return manufacturer_string_;
+    if (device_info_->manufacturer_name)
+      return *device_info_->manufacturer_name;
+
+    return base::EmptyString16();
   }
-  const base::string16& product_string() const { return product_string_; }
-  const base::string16& serial_number() const { return serial_number_; }
-  const GURL& webusb_landing_page() const { return webusb_landing_page_; }
+  const base::string16& product_string() const {
+    if (device_info_->product_name)
+      return *device_info_->product_name;
+
+    return base::EmptyString16();
+  }
+  const base::string16& serial_number() const {
+    if (device_info_->serial_number)
+      return *device_info_->serial_number;
+
+    return base::EmptyString16();
+  }
+  const GURL& webusb_landing_page() const {
+    if (device_info_->webusb_landing_page)
+      return *device_info_->webusb_landing_page;
+
+    return GURL::EmptyGURL();
+  }
+
   const std::vector<mojom::UsbConfigurationInfoPtr>& configurations() const {
-    return descriptor_.configurations;
+    return device_info_->configurations;
   }
   const mojom::UsbConfigurationInfo* active_configuration() const {
     return active_configuration_;
@@ -95,12 +118,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   friend class UsbService;
 
   UsbDevice(uint32_t bus_number, uint32_t port_number);
-  UsbDevice(const UsbDeviceDescriptor& descriptor,
-            const base::string16& manufacturer_string,
-            const base::string16& product_string,
-            const base::string16& serial_number,
-            uint32_t bus_number,
-            uint32_t port_number);
+  explicit UsbDevice(mojom::UsbDeviceInfoPtr device_info);
   UsbDevice(uint16_t usb_version,
             uint8_t device_class,
             uint8_t device_subclass,
@@ -120,14 +138,10 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
 
   std::list<UsbDeviceHandle*>& handles() { return handles_; }
 
-  // These members must be mutable by subclasses as necessary during device
+  // This member must be mutable by subclasses as necessary during device
   // enumeration. To preserve the thread safety of this object they must remain
   // constant afterwards.
-  UsbDeviceDescriptor descriptor_;
-  base::string16 manufacturer_string_;
-  base::string16 product_string_;
-  base::string16 serial_number_;
-  GURL webusb_landing_page_;
+  mojom::UsbDeviceInfoPtr device_info_;
 
  private:
   friend class base::RefCountedThreadSafe<UsbDevice>;
@@ -141,11 +155,6 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
 
   void OnDisconnect();
   void HandleClosed(UsbDeviceHandle* handle);
-
-  const uint32_t bus_number_;
-  const uint32_t port_number_;
-
-  const std::string guid_;
 
   // The current device configuration descriptor. May be null if the device is
   // in an unconfigured state; if not null, it is a pointer to one of the

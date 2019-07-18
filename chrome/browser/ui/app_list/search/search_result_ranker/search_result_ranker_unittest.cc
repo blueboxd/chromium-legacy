@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/test/base/testing_profile.h"
@@ -134,8 +135,12 @@ class SearchResultRankerTest : public testing::Test {
 
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
   auto ranker = MakeRanker(false);
+  AppLaunchData app_launch_data;
+  app_launch_data.id = "unused";
+  app_launch_data.ranking_item_type = RankingItemType::kFile;
+  app_launch_data.query = "query";
   for (int i = 0; i < 20; ++i)
-    ranker->Train("query", "unused", RankingItemType::kFile);
+    ranker->Train(app_launch_data);
   ranker->FetchRankings(base::string16());
 
   auto results =
@@ -153,8 +158,12 @@ TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
 TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
   auto ranker = MakeRanker(
       true, {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
+  AppLaunchData app_launch_data;
+  app_launch_data.id = "unused";
+  app_launch_data.ranking_item_type = RankingItemType::kFile;
+  app_launch_data.query = "query";
   for (int i = 0; i < 20; ++i)
-    ranker->Train("query", "unused", RankingItemType::kFile);
+    ranker->Train(app_launch_data);
   ranker->FetchRankings(base::string16());
 
   auto results =
@@ -172,10 +181,19 @@ TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
   // Without the |use_category_model| parameter, the ranker defaults to the item
   // model.
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  AppLaunchData app_launch_data_c;
+  app_launch_data_c.id = "C";
+  app_launch_data_c.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_c.query = "query";
+
+  AppLaunchData app_launch_data_d;
+  app_launch_data_d.id = "D";
+  app_launch_data_d.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_d.query = "query";
 
   for (int i = 0; i < 10; ++i) {
-    ranker->Train("query", "C", RankingItemType::kFile);
-    ranker->Train("query", "D", RankingItemType::kFile);
+    ranker->Train(app_launch_data_c);
+    ranker->Train(app_launch_data_d);
   }
   ranker->FetchRankings(base::string16());
 
@@ -203,10 +221,18 @@ TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
   const std::string& url_4 = "some.domain.com";
 
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  AppLaunchData app_launch_data_1;
+  app_launch_data_1.id = url_1;
+  app_launch_data_1.ranking_item_type = RankingItemType::kOmniboxHistory;
+  app_launch_data_1.query = "query";
+  AppLaunchData app_launch_data_3;
+  app_launch_data_3.id = url_3;
+  app_launch_data_3.ranking_item_type = RankingItemType::kOmniboxHistory;
+  app_launch_data_3.query = "query";
 
   for (int i = 0; i < 5; ++i) {
-    ranker->Train("query", url_1, RankingItemType::kOmniboxHistory);
-    ranker->Train("query", url_3, RankingItemType::kOmniboxHistory);
+    ranker->Train(app_launch_data_1);
+    ranker->Train(app_launch_data_3);
   }
   ranker->FetchRankings(base::string16());
 

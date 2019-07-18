@@ -56,32 +56,14 @@ double CSSMathFunctionValue::DoubleValue() const {
 
 double CSSMathFunctionValue::ComputeSeconds() const {
   DCHECK_EQ(kCalcTime, expression_->Category());
-  UnitType expression_type = expression_->ResolvedUnitType();
-  if (expression_type == UnitType::kSeconds)
-    return DoubleValue();
-  if (expression_type == UnitType::kMilliseconds)
-    return DoubleValue() / 1000;
-  NOTREACHED();
-  return 0;
+  // TODO(crbug.com/984372): We currently use 'ms' as the canonical unit of
+  // <time>. Switch to 's' to follow the spec.
+  return *expression_->ComputeValueInCanonicalUnit() / 1000;
 }
 
 double CSSMathFunctionValue::ComputeDegrees() const {
   DCHECK_EQ(kCalcAngle, expression_->Category());
-  double expression_value = DoubleValue();
-  UnitType expression_type = expression_->ResolvedUnitType();
-  switch (expression_type) {
-    case UnitType::kDegrees:
-      return expression_value;
-    case UnitType::kRadians:
-      return rad2deg(expression_value);
-    case UnitType::kGradians:
-      return grad2deg(expression_value);
-    case UnitType::kTurns:
-      return turn2deg(expression_value);
-    default:
-      NOTREACHED();
-      return 0;
-  }
+  return *expression_->ComputeValueInCanonicalUnit();
 }
 
 double CSSMathFunctionValue::ComputeLengthPx(

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -36,20 +37,16 @@ class UsbDeviceLinux : public UsbDevice {
 
   // These functions are used during enumeration only. The values must not
   // change during the object's lifetime.
-  void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }
+  void set_webusb_landing_page(const GURL& url) {
+    device_info_->webusb_landing_page = url;
+  }
 
  protected:
   friend class UsbServiceLinux;
 
   // Called by UsbServiceLinux only.
   UsbDeviceLinux(const std::string& device_path,
-                 const UsbDeviceDescriptor& descriptor,
-                 const std::string& manufacturer_string,
-                 const std::string& product_string,
-                 const std::string& serial_number,
-                 uint8_t active_configuration,
-                 uint32_t bus_number,
-                 uint32_t port_number);
+                 std::unique_ptr<UsbDeviceDescriptor> descriptor);
 
   ~UsbDeviceLinux() override;
 

@@ -80,15 +80,6 @@ mojom::XRGamepadDataPtr OculusRenderLoop::GetNextGamepadData() {
   return OculusGamepadHelper::GetGamepadData(session_);
 }
 
-void OculusRenderLoop::GetEnvironmentIntegrationProvider(
-    mojom::XREnvironmentIntegrationProviderAssociatedRequest
-        environment_provider) {
-  // Environment integration is not supported. This call should not
-  // be made on this device.
-  mojo::ReportBadMessage("Environment integration is not supported.");
-  return;
-}
-
 bool OculusRenderLoop::StartRuntime() {
   if (!session_) {
     ovrInitParams initParams = {ovrInit_RequestVersion | ovrInit_MixedRendering,

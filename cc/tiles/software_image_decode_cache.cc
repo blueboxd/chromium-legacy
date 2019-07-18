@@ -76,7 +76,12 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
         paint_image_.GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
-    cache_->DecodeImageInTask(image_key_, paint_image_, task_type_);
+    SoftwareImageDecodeCache::TaskProcessingResult result =
+        cache_->DecodeImageInTask(image_key_, paint_image_, task_type_);
+
+    // Do not log timing UMAs if we did not perform a full decode.
+    if (result != SoftwareImageDecodeCache::TaskProcessingResult::kFullDecode)
+      image_decode_task.SuppressMetrics();
   }
 
   // Overridden from TileTask:
@@ -300,9 +305,10 @@ void SoftwareImageDecodeCache::UnrefImage(const CacheKey& key) {
   }
 }
 
-void SoftwareImageDecodeCache::DecodeImageInTask(const CacheKey& key,
-                                                 const PaintImage& paint_image,
-                                                 DecodeTaskType task_type) {
+SoftwareImageDecodeCache::TaskProcessingResult
+SoftwareImageDecodeCache::DecodeImageInTask(const CacheKey& key,
+                                            const PaintImage& paint_image,
+                                            DecodeTaskType task_type) {
   TRACE_EVENT1("cc,benchmark", "SoftwareImageDecodeCache::DecodeImageInTask",
                "key", key.ToString());
   base::AutoLock lock(lock_);
@@ -316,14 +322,16 @@ void SoftwareImageDecodeCache::DecodeImageInTask(const CacheKey& key,
   DCHECK_GT(cache_entry->ref_count, 0);
   DCHECK(cache_entry->is_budgeted);
 
-  DecodeImageIfNecessary(key, paint_image, cache_entry);
+  TaskProcessingResult result =
+      DecodeImageIfNecessary(key, paint_image, cache_entry);
   DCHECK(cache_entry->decode_failed || cache_entry->is_locked);
+  return result;
 }
 
-void SoftwareImageDecodeCache::DecodeImageIfNecessary(
-    const CacheKey& key,
-    const PaintImage& paint_image,
-    CacheEntry* entry) {
+SoftwareImageDecodeCache::TaskProcessingResult
+SoftwareImageDecodeCache::DecodeImageIfNecessary(const CacheKey& key,
+                                                 const PaintImage& paint_image,
+                                                 CacheEntry* entry) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DecodeImageIfNecessary", "key",
                key.ToString());
@@ -334,18 +342,18 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
     entry->decode_failed = true;
 
   if (entry->decode_failed)
-    return;
+    return TaskProcessingResult::kCancelled;
 
   if (entry->memory) {
     if (entry->is_locked)
-      return;
+      return TaskProcessingResult::kLockOnly;
 
     bool lock_succeeded = entry->Lock();
     // TODO(vmpstr): Deprecate the prepaint split, since it doesn't matter.
     RecordLockExistingCachedImageHistogram(TilePriority::NOW, lock_succeeded);
 
     if (lock_succeeded)
-      return;
+      return TaskProcessingResult::kLockOnly;
   }
 
   std::unique_ptr<CacheEntry> local_cache_entry;
@@ -437,7 +445,7 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
 
   if (!local_cache_entry) {
     entry->decode_failed = true;
-    return;
+    return TaskProcessingResult::kCancelled;
   }
 
   // Just in case someone else did this already, just unlock our work.
@@ -455,6 +463,8 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
     local_cache_entry->MoveImageMemoryTo(entry);
     DCHECK(entry->is_locked);
   }
+
+  return TaskProcessingResult::kFullDecode;
 }
 
 base::Optional<SoftwareImageDecodeCache::CacheKey>

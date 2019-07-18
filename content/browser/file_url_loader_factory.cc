@@ -118,20 +118,39 @@ bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
          network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
-base::File::Error ToFileError(int net_error) {
+net::Error ConvertMojoResultToNetError(MojoResult result) {
+  switch (result) {
+    case MOJO_RESULT_OK:
+      return net::OK;
+    case MOJO_RESULT_NOT_FOUND:
+      return net::ERR_FILE_NOT_FOUND;
+    case MOJO_RESULT_PERMISSION_DENIED:
+      return net::ERR_ACCESS_DENIED;
+    case MOJO_RESULT_RESOURCE_EXHAUSTED:
+      return net::ERR_INSUFFICIENT_RESOURCES;
+    case MOJO_RESULT_ABORTED:
+      return net::ERR_ABORTED;
+    default:
+      return net::ERR_FAILED;
+  }
+}
+
+MojoResult ConvertNetErrorToMojoResult(net::Error net_error) {
   // Note: For now, only return specific errors that our obervers care about.
   switch (net_error) {
     case net::OK:
-      return base::File::FILE_OK;
+      return MOJO_RESULT_OK;
     case net::ERR_FILE_NOT_FOUND:
-      return base::File::FILE_ERROR_NOT_FOUND;
+      return MOJO_RESULT_NOT_FOUND;
     case net::ERR_ACCESS_DENIED:
-      return base::File::FILE_ERROR_ACCESS_DENIED;
+      return MOJO_RESULT_PERMISSION_DENIED;
+    case net::ERR_INSUFFICIENT_RESOURCES:
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
     case net::ERR_ABORTED:
     case net::ERR_CONNECTION_ABORTED:
-      return base::File::FILE_ERROR_ABORT;
+      return MOJO_RESULT_ABORTED;
     default:
-      return base::File::FILE_ERROR_FAILED;
+      return MOJO_RESULT_UNKNOWN;
   }
 }
 
@@ -543,8 +562,11 @@ class FileURLLoader : public network::mojom::URLLoader {
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (!file.IsValid()) {
       if (observer) {
-        observer->OnBytesRead(nullptr, 0u, file.error_details());
-        observer->OnDoneReading();
+        mojo::DataPipeProducer::DataSource::ReadResult result;
+        result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
+            file.error_details());
+        observer->OnRead(base::span<char>(), &result);
+        observer->OnDone();
       }
       net::Error net_error = net::FileErrorToNetError(file.error_details());
       client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
@@ -556,23 +578,27 @@ class FileURLLoader : public network::mojom::URLLoader {
     int initial_read_result =
         file.ReadAtCurrentPos(initial_read_buffer, net::kMaxBytesToSniff);
     if (initial_read_result < 0) {
-      base::File::Error read_error = base::File::GetLastFileError();
-      DCHECK_NE(base::File::FILE_OK, read_error);
+      mojo::DataPipeProducer::DataSource::ReadResult result;
+      result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
+          base::File::GetLastFileError());
+      DCHECK_NE(MOJO_RESULT_OK, result.result);
       if (observer) {
         // This can happen when the file is unreadable (which can happen during
         // corruption). We need to be sure to inform
         // the observer that we've finished reading so that it can proceed.
-        observer->OnBytesRead(nullptr, 0u, read_error);
-        observer->OnDoneReading();
+        observer->OnRead(base::span<char>(), &result);
+        observer->OnDone();
       }
-      net::Error net_error = net::FileErrorToNetError(read_error);
+      net::Error net_error = ConvertMojoResultToNetError(result.result);
       client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
       client_.reset();
       MaybeDeleteSelf();
       return;
     } else if (observer) {
-      observer->OnBytesRead(initial_read_buffer, initial_read_result,
-                            base::File::FILE_OK);
+      base::span<char> buffer(initial_read_buffer, net::kMaxBytesToSniff);
+      mojo::DataPipeProducer::DataSource::ReadResult result;
+      result.bytes_read = initial_read_result;
+      observer->OnRead(buffer, &result);
     }
     size_t initial_read_size = static_cast<size_t>(initial_read_result);
 
@@ -669,9 +695,11 @@ class FileURLLoader : public network::mojom::URLLoader {
       observer->OnSeekComplete(new_position);
 
     data_producer_ = std::make_unique<mojo::DataPipeProducer>(
-        std::move(pipe.producer_handle), std::move(observer));
-    data_producer_->Write(std::make_unique<mojo::FileDataSource>(
-                              std::move(file), total_bytes_to_send),
+        std::move(pipe.producer_handle));
+    data_producer_->Write(std::make_unique<mojo::FilteredDataSource>(
+                              std::make_unique<mojo::FileDataSource>(
+                                  std::move(file), total_bytes_to_send),
+                              std::move(observer)),
                           base::BindOnce(&FileURLLoader::OnFileWritten,
                                          base::Unretained(this), nullptr));
   }
@@ -686,9 +714,12 @@ class FileURLLoader : public network::mojom::URLLoader {
     client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
     client_.reset();
     if (observer) {
-      if (net_error != net::OK)
-        observer->OnBytesRead(nullptr, 0u, ToFileError(net_error));
-      observer->OnDoneReading();
+      if (net_error != net::OK) {
+        mojo::DataPipeProducer::DataSource::ReadResult result;
+        result.result = ConvertNetErrorToMojoResult(net_error);
+        observer->OnRead(base::span<char>(), &result);
+      }
+      observer->OnDone();
     }
     MaybeDeleteSelf();
   }
@@ -704,7 +735,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     // be notified that there will be no more data to read from now.
     data_producer_.reset();
     if (observer)
-      observer->OnDoneReading();
+      observer->OnDone();
 
     if (result == MOJO_RESULT_OK) {
       network::URLLoaderCompletionStatus status(net::OK);

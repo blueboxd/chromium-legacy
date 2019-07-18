@@ -30,7 +30,7 @@ const base::Feature kEagerCacheStorageSetupForServiceWorkers{
 // mobile. See https://crbug.com/899399
 const base::Feature kEnableGpuRasterizationViewportRestriction{
     "EnableGpuRasterizationViewportRestriction",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls script streaming.
 const base::Feature kScriptStreaming{"ScriptStreaming",
@@ -330,7 +330,7 @@ const base::Feature kBlinkHeapConcurrentMarking{
     "BlinkHeapConcurrentMarking", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables concurrently sweeping Blink's heap.
 const base::Feature kBlinkHeapConcurrentSweeping{
-    "BlinkHeapConcurrentSweeping", base::FEATURE_ENABLED_BY_DEFAULT};
+    "BlinkHeapConcurrentSweeping", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables incrementally marking Blink's heap.
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};

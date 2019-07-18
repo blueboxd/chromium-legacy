@@ -9,6 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -37,6 +38,14 @@ void CheckApproximatelyEqual(const gfx::Rect& lhs, const gfx::Rect& rhs) {
   EXPECT_FLOAT_EQ(lhs.y(), rhs.y());
   EXPECT_FLOAT_EQ(lhs.width(), rhs.width());
   EXPECT_FLOAT_EQ(lhs.height(), rhs.height());
+}
+
+void CheckApproximatelyEqual(const gfx::RoundedCornersF& lhs,
+                             const gfx::RoundedCornersF& rhs) {
+  EXPECT_FLOAT_EQ(lhs.upper_left(), rhs.upper_left());
+  EXPECT_FLOAT_EQ(lhs.upper_right(), rhs.upper_right());
+  EXPECT_FLOAT_EQ(lhs.lower_left(), rhs.lower_left());
+  EXPECT_FLOAT_EQ(lhs.lower_right(), rhs.lower_right());
 }
 
 void WaitForNextFrameToBePresented(ui::Compositor* compositor) {

@@ -16,10 +16,17 @@ namespace prefs {
 // This preference should only be changed in browser.
 const char kAssistantConsentStatus[] =
     "settings.voice_interaction.activity_control.consent_status";
+// A preference that indicates the Assistant has been disabled by domain policy.
+// If true, the Assistant will always been disabled and user cannot enable it.
+// This preference should only be changed in browser.
+const char kAssistantDisabledByPolicy[] =
+    "settings.assistant.disabled_by_policy";
 
 void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kAssistantConsentStatus,
                                 ConsentStatus::kUnknown, PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantDisabledByPolicy, false,
+                                PrefRegistry::PUBLIC);
 }
 
 void RegisterProfilePrefsForeign(PrefRegistrySimple* registry, bool for_test) {
@@ -30,6 +37,7 @@ void RegisterProfilePrefsForeign(PrefRegistrySimple* registry, bool for_test) {
     return;
   }
   registry->RegisterForeignPref(kAssistantConsentStatus);
+  registry->RegisterForeignPref(kAssistantDisabledByPolicy);
 }
 
 }  // namespace prefs

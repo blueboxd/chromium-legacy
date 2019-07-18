@@ -96,9 +96,8 @@ class CrosUsbDetector : public device::mojom::UsbDeviceManagerClient {
   // device manager during testing.
   void ConnectToDeviceManager();
 
-  // Called by CrostiniManager when a VM starts, to attach USB devices marked as
-  // shared to the VM.
-  void ConnectSharedDevicesOnVmStartup();
+  // Called when a VM starts, to attach USB devices marked as shared to the VM.
+  void ConnectSharedDevicesOnVmStartup(const std::string& vm_name);
 
   // device::mojom::UsbDeviceManagerClient
   void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device) override;

@@ -64,7 +64,8 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
     FAIL() << "UnregisterModuleScript shouldn't be called in ModuleMapTest";
   }
 
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
+  const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const override {
     NOTREACHED();
     return nullptr;
   }

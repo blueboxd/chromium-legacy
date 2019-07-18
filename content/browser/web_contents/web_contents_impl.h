@@ -54,6 +54,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
@@ -380,6 +381,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::vector<WebContents*> GetInnerWebContents() override;
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;
+  void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override;
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override;
 
   void Stop() override;
   void SetPageFrozen(bool frozen) override;

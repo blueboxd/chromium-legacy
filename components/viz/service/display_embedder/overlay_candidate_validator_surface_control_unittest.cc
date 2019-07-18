@@ -127,4 +127,27 @@ TEST(OverlayCandidateValidatorSurfaceControlTest,
   EXPECT_EQ(candidate.transform, gfx::OVERLAY_TRANSFORM_ROTATE_90);
 }
 
+TEST(OverlayCandidateValidatorTest, OverlayDamageRectForOutputSurface) {
+  OverlayCandidate candidate;
+  candidate.display_rect = gfx::RectF(10, 10, 50, 100);
+  candidate.use_output_surface_for_resource = false;
+  candidate.transform = gfx::OVERLAY_TRANSFORM_ROTATE_90;
+  candidate.overlay_handled = false;
+
+  OverlayCandidateValidatorSurfaceControl validator;
+  validator.SetViewportSize(gfx::Size(100, 200));
+  validator.SetDisplayTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90);
+
+  EXPECT_EQ(validator.GetOverlayDamageRectForOutputSurface(candidate),
+            gfx::Rect(10, 10, 50, 100));
+
+  OverlayCandidateList candidates;
+  candidates.push_back(candidate);
+  validator.CheckOverlaySupport(&candidates);
+  EXPECT_TRUE(candidates.back().overlay_handled);
+  EXPECT_RECTF_EQ(candidates.back().display_rect, gfx::RectF(10, 40, 100, 50));
+  EXPECT_EQ(validator.GetOverlayDamageRectForOutputSurface(candidates.back()),
+            gfx::Rect(10, 10, 50, 100));
+}
+
 }  // namespace viz

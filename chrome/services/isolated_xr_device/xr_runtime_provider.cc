@@ -158,7 +158,7 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
 
 #if BUILDFLAG(ENABLE_OPENXR)
   if (base::FeatureList::IsEnabled(features::kOpenXR)) {
-    should_check_openxr_ = device::OpenXRDevice::IsApiAvailable();
+    should_check_openxr_ = device::OpenXrDevice::IsApiAvailable();
     any_runtimes_available |= should_check_openxr_;
   }
 #endif
@@ -213,7 +213,7 @@ void IsolatedXRRuntimeProvider::SetWMRRuntimeStatus(RuntimeStatus status) {
 
 #if BUILDFLAG(ENABLE_OPENXR)
 bool IsolatedXRRuntimeProvider::IsOpenXrHardwareAvailable() {
-  return should_check_openxr_ && device::OpenXRDevice::IsHardwareAvailable();
+  return should_check_openxr_ && device::OpenXrDevice::IsHardwareAvailable();
 }
 
 void IsolatedXRRuntimeProvider::SetOpenXrRuntimeStatus(RuntimeStatus status) {

@@ -289,6 +289,10 @@ TEST_F(ArcSelectFilesHandlerTest, OnFileSelectorEvent) {
   CallOnFileSelectorEventAndCheckScript(
       mojom::FileSelectorEventType::CLICK_FILE, "Click\tTarget",
       base::StringPrintf(kScriptClickFile, "\"Click\\tTarget\""));
+
+  // The handler executes click-cancel script in its destructor.
+  EXPECT_CALL(*mock_dialog_holder_, ExecuteJavaScript(kScriptClickCancel, _))
+      .Times(1);
 }
 
 TEST_F(ArcSelectFilesHandlerTest, GetFileSelectorElements) {
@@ -316,6 +320,10 @@ TEST_F(ArcSelectFilesHandlerTest, GetFileSelectorElements) {
 
   arc_select_files_handler_->GetFileSelectorElements(
       arc::mojom::GetFileSelectorElementsRequest::New(), callback.Get());
+
+  // The handler executes click-cancel script in its destructor.
+  EXPECT_CALL(*mock_dialog_holder_, ExecuteJavaScript(kScriptClickCancel, _))
+      .Times(1);
 }
 
 }  // namespace arc

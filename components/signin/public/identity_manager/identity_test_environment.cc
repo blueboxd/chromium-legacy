@@ -35,8 +35,7 @@
 
 #if defined(OS_IOS)
 #include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
-#include "components/signin/ios/browser/device_accounts_provider.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_ios.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

@@ -322,34 +322,26 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
       verify_job_ = nullptr;
   }
 
-  void OnBytesRead(const void* data,
-                   size_t num_bytes_read,
-                   base::File::Error read_result) override {
-    if (read_result == base::File::FILE_OK) {
-      UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.OnReadCompleteResult",
-                              read_result);
-    } else {
-      net::Error net_error = net::FileErrorToNetError(read_result);
-      base::UmaHistogramSparse("ExtensionUrlRequest.OnReadCompleteError",
-                               net_error);
-    }
+  void OnRead(base::span<char> buffer,
+              mojo::DataPipeProducer::DataSource::ReadResult* result) override {
+    DCHECK(result);
     {
       base::AutoLock auto_lock(lock_);
-      bytes_read_ += num_bytes_read;
+      bytes_read_ += result->bytes_read;
       if (verify_job_) {
         // Note: We still pass the data to |verify_job_|, even if there was a
         // read error, because some errors are ignorable. See
         // ContentVerifyJob::BytesRead() for more details.
-        verify_job_->BytesRead(static_cast<const char*>(data), num_bytes_read,
-                               read_result);
+        verify_job_->Read(static_cast<const char*>(buffer.data()),
+                          result->bytes_read, result->result);
       }
     }
   }
 
-  void OnDoneReading() override {
+  void OnDone() override {
     base::AutoLock auto_lock(lock_);
     if (verify_job_.get())
-      verify_job_->DoneReading();
+      verify_job_->Done();
   }
 
  private:

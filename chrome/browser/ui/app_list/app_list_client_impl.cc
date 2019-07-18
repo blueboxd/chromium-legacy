@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -106,9 +107,12 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
   if (!result)
     return;
 
+  app_list::AppLaunchData app_launch_data;
+  app_launch_data.id = result_id;
+  app_launch_data.ranking_item_type =
+      app_list::RankingItemTypeFromSearchResult(*result);
   // Send training signal to search controller.
-  search_controller_->Train(result_id,
-                            app_list::RankingItemTypeFromSearchResult(*result));
+  search_controller_->Train(std::move(app_launch_data));
 
   if (launch_type == ash::AppListLaunchType::kAppSearchResult) {
     // Log the AppResult (either in the search result page, or in chip form in
@@ -193,8 +197,11 @@ void AppListClientImpl::ActivateItem(int profile_id,
   CHECK(current_model_updater_);
   const auto* item = current_model_updater_->FindItem(id);
   if (item) {
-    search_controller_->Train(
-        id, app_list::RankingItemTypeFromChromeAppListItem(*item));
+    app_list::AppLaunchData app_launch_data;
+    app_launch_data.id = id;
+    app_launch_data.ranking_item_type =
+        app_list::RankingItemTypeFromChromeAppListItem(*item);
+    search_controller_->Train(std::move(app_launch_data));
   }
 
   app_launch_event_logger_.OnGridClicked(id);

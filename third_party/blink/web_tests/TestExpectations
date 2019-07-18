@@ -3253,9 +3253,6 @@ crbug.com/968164 external/wpt/css/css-ui/appearance-menulist-button-002.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ Failure ]
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
-crbug.com/983157 external/wpt/css/filter-effects/animation/backdrop-filter-interpolation-003.html [ Crash ]
-crbug.com/983157 virtual/scalefactor200/external/wpt/css/filter-effects/animation/backdrop-filter-interpolation-003.html [ Crash ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]

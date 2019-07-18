@@ -43,15 +43,17 @@ class UsbDeviceImpl : public UsbDevice {
   // These functions are used during enumeration only. The values must not
   // change during the object's lifetime.
   void set_manufacturer_string(const base::string16& value) {
-    manufacturer_string_ = value;
+    device_info_->manufacturer_name = value;
   }
   void set_product_string(const base::string16& value) {
-    product_string_ = value;
+    device_info_->product_name = value;
   }
   void set_serial_number(const base::string16& value) {
-    serial_number_ = value;
+    device_info_->serial_number = value;
   }
-  void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }
+  void set_webusb_landing_page(const GURL& url) {
+    device_info_->webusb_landing_page = url;
+  }
 
   libusb_device* platform_device() const { return platform_device_.get(); }
 

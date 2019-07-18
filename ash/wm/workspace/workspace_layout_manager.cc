@@ -518,6 +518,9 @@ void WorkspaceLayoutManager::UpdateAlwaysOnTop(
   // appropriate windows will be included in the iteration.
   WindowSet windows(windows_);
   for (aura::Window* window : windows) {
+    if (window == active_desk_fullscreen_window)
+      continue;
+
     wm::WindowState* window_state = wm::GetWindowState(window);
     if (active_desk_fullscreen_window)
       window_state->DisableZOrdering(active_desk_fullscreen_window);

@@ -12,13 +12,11 @@
 #include "base/feature_list.h"
 #include "chrome/android/chrome_jni_headers/DownloadManagerBridge_jni.h"
 #include "components/download/public/common/download_features.h"
-#include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
-using content::BrowserThread;
 using download::DownloadItem;
 
 static void JNI_DownloadManagerBridge_OnAddCompletedDownloadDone(
@@ -26,7 +24,6 @@ static void JNI_DownloadManagerBridge_OnAddCompletedDownloadDone(
     jlong callback_id,
     jlong download_id,
     jboolean can_resolve) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback_id);
 
   // Convert java long long int to c++ pointer, take ownership.

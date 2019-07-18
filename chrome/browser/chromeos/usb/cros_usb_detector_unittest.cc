@@ -171,6 +171,12 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void DetachDeviceFromVm(const std::string& vm_name, const std::string& guid) {
+    cros_usb_detector_->DetachUsbDeviceFromVm(
+        vm_name, guid, base::Bind([](bool result) { EXPECT_TRUE(result); }));
+    base::RunLoop().RunUntilIdle();
+  }
+
   chromeos::CrosUsbDeviceInfo GetSingleDeviceInfo() const {
     auto devices = cros_usb_detector_->GetConnectedDevices();
     EXPECT_EQ(1U, devices.size());
@@ -738,9 +744,7 @@ TEST_F(CrosUsbDetectorTest, DetachingDeviceFromCrostiniAttachesItToArcVm) {
   auto device_info = GetSingleDeviceInfo();
   AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device_info.guid);
   cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
-  cros_usb_detector_->DetachUsbDeviceFromVm(
-      crostini::kCrostiniDefaultVmName, device_info.guid,
-      base::Bind([](bool result) { EXPECT_TRUE(result); }));
+  DetachDeviceFromVm(crostini::kCrostiniDefaultVmName, device_info.guid);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(2, usb_device_observer_.notify_count());
@@ -781,5 +785,37 @@ TEST_F(CrosUsbDetectorTest, DeviceCanBeAttachedToArcVmWhenCrostiniIsDisabled) {
   device_manager_.AddDevice(device_1);
   base::RunLoop().RunUntilIdle();
 
+  EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info[arc::kArcVmName].shared);
+}
+
+TEST_F(CrosUsbDetectorTest, SharedDevicesGetAttachedOnStartup) {
+  ConnectToDeviceManager();
+  base::RunLoop().RunUntilIdle();
+
+  auto device_1 = base::MakeRefCounted<device::FakeUsbDeviceInfo>(
+      0, 1, kManufacturerName, kProductName_1, "002");
+  device_manager_.AddDevice(device_1);
+  base::RunLoop().RunUntilIdle();
+
+  const auto device = GetSingleDeviceInfo();
+  AttachDeviceToVm(crostini::kCrostiniDefaultVmName, device.guid);
+  base::RunLoop().RunUntilIdle();
+
+  cros_usb_detector_->AddUsbDeviceObserver(&usb_device_observer_);
+  cros_usb_detector_->ConnectSharedDevicesOnVmStartup(arc::kArcVmName);
+  base::RunLoop().RunUntilIdle();
+  // Starting ARCVM should be a no-op here as the device was already shared with
+  // Crostini.
+  EXPECT_EQ(0, usb_device_observer_.notify_count());
+
+  cros_usb_detector_->ConnectSharedDevicesOnVmStartup(
+      crostini::kCrostiniDefaultVmName);
+  base::RunLoop().RunUntilIdle();
+  // The device was already attached to Crostini.
+  EXPECT_EQ(0, usb_device_observer_.notify_count());
+
+  DetachDeviceFromVm(crostini::kCrostiniDefaultVmName, device.guid);
+  cros_usb_detector_->ConnectSharedDevicesOnVmStartup(arc::kArcVmName);
+  EXPECT_EQ(2, usb_device_observer_.notify_count());
   EXPECT_TRUE(GetSingleDeviceInfo().vm_sharing_info[arc::kArcVmName].shared);
 }

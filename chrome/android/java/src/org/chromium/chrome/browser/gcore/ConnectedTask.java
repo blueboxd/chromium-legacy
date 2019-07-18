@@ -52,7 +52,7 @@ public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements 
 
     /**
      * @param client
-     * @param logPrefix used for logging and tracing.
+     * @param logPrefix used for logging and tracing. Must be string literal.
      */
     public ConnectedTask(T client, String logPrefix) {
         assert logPrefix != null;
@@ -95,6 +95,8 @@ public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements 
 
     @Override
     @VisibleForTesting
+    // We always only pass in a string literal here.
+    @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
     public final void run() {
         TraceEvent.begin("GCore:" + mLogPrefix + ":run");
         try {

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<style>
+span, a {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+</style>
+<body>
+<br>
+<p>See if we have deprecation messages for -webkit-appearance.</p>
+
+<span style="-webkit-appearance: checkbox"></span>
+<span style="-webkit-appearance: radio"></span>
+<span style="-webkit-appearance: push-button"></span>
+<span style="-webkit-appearance: square-button"></span>
+<a style="-webkit-appearance: button"></a>
+<select style="-webkit-appearance: button"></select>
+<span style="-webkit-appearance: inner-spin-button"></span>
+<select style="-webkit-appearance: listbox"></select>
+<span style="-webkit-appearance: listbox"></span>
+<!-- font and height are necessary to avoid fallback to 'menulist-button'. -->
+<span style="-webkit-appearance: menulist; font: -webkit-small-control; height: auto">menulist</span>
+<span style="-webkit-appearance: menulist-button"></span>
+<span style="-webkit-appearance: meter"></span>
+<span style="-webkit-appearance: progress-bar"></span>
+<span style="-webkit-appearance: slider-horizontal"></span>
+<span style="-webkit-appearance: slider-vertical"></span>
+<span style="-webkit-appearance: sliderthumb-horizontal"></span>
+<span style="-webkit-appearance: sliderthumb-vertical"></span>
+<span style="-webkit-appearance: searchfield"></span>
+<span style="-webkit-appearance: searchfield-cancel-button"></span>
+<textarea style="-webkit-appearance: textfield"></textarea>
+<input style="-webkit-appearance: textarea">
+
+<script>
+testRunner.dumpAsText();
+</script>
+</body>

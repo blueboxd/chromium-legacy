@@ -15,13 +15,10 @@ from native_libraries_template import NATIVE_LIBRARIES_TEMPLATE
 from util import build_utils
 
 
-def _GetFormattedBoolean(value):
-  return ' = true' if value else ''
-
-
 def main():
   parser = argparse.ArgumentParser()
 
+  parser.add_argument('--final', action='store_true', help='Use final fields.')
   parser.add_argument(
       '--enable-chromium-linker',
       action='store_true',
@@ -77,19 +74,21 @@ def main():
   native_libraries_list = (
       '{%s}' % ','.join(['"%s"' % s[3:-3] for s in lib_paths]))
 
+  def bool_str(value):
+    if value:
+      return ' = true'
+    elif options.final:
+      return ' = false'
+    return ''
+
   format_dict = {
-      'USE_LINKER':
-      _GetFormattedBoolean(options.enable_chromium_linker),
-      'USE_LIBRARY_IN_ZIP_FILE':
-      _GetFormattedBoolean(options.load_library_from_apk),
-      'ENABLE_LINKER_TESTS':
-      _GetFormattedBoolean(options.enable_chromium_linker_tests),
-      'LIBRARIES':
-      native_libraries_list,
-      'VERSION_NUMBER':
-      options.version_number,
-      'CPU_FAMILY':
-      options.cpu_family,
+      'MAYBE_FINAL': 'final ' if options.final else '',
+      'USE_LINKER': bool_str(options.enable_chromium_linker),
+      'USE_LIBRARY_IN_ZIP_FILE': bool_str(options.load_library_from_apk),
+      'ENABLE_LINKER_TESTS': bool_str(options.enable_chromium_linker_tests),
+      'LIBRARIES': native_libraries_list,
+      'VERSION_NUMBER': options.version_number,
+      'CPU_FAMILY': options.cpu_family,
   }
   with build_utils.AtomicOutput(options.output) as f:
     with zipfile.ZipFile(f.name, 'w') as srcjar_file:

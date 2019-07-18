@@ -74,16 +74,10 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
                                     WebStateList::INSERT_NO_FLAGS,
                                     WebStateOpener());
     web_state_list_->ActivateWebStateAt(0);
-    std::unique_ptr<web::TestWebState> second_web_state =
-        std::make_unique<web::TestWebState>();
-    web_state_list_->InsertWebState(1, std::move(second_web_state),
-                                    WebStateList::INSERT_NO_FLAGS,
-                                    WebStateOpener());
 
     // Setup InfobarBadgeTabHelper and InfoBarManager
     InfobarBadgeTabHelper::CreateForWebState(
         web_state_list_->GetActiveWebState());
-    InfobarBadgeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(1));
     InfoBarManagerImpl::CreateForWebState(web_state_list_->GetActiveWebState());
 
     // Setup the InfobarContainerCoordinator.
@@ -140,6 +134,15 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         coordinator_, std::move(infobar_delegate_)));
   }
 
+  void AddSecondWebstate() {
+    std::unique_ptr<web::TestWebState> second_web_state =
+        std::make_unique<web::TestWebState>();
+    web_state_list_->InsertWebState(1, std::move(second_web_state),
+                                    WebStateList::INSERT_NO_FLAGS,
+                                    WebStateOpener());
+    InfobarBadgeTabHelper::CreateForWebState(web_state_list_->GetWebStateAt(1));
+  }
+
   // Adds a Legacy Infobar to the InfobarManager, triggering an InfobarBanner
   // presentation.
   void AddLegacyInfobar() {
@@ -173,23 +176,23 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
 // InfobarBanner is presented.
 TEST_F(InfobarContainerCoordinatorTest,
        InfobarBannerPresentationStatePresented) {
-  EXPECT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  EXPECT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests that the InfobarBanner is automatically dismissed after
 // kInfobarBannerPresentationDurationInSeconds seconds.
 TEST_F(InfobarContainerCoordinatorTest, TestAutomaticInfobarBannerDismissal) {
-  EXPECT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  EXPECT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   AddInfobar();
 
@@ -199,15 +202,15 @@ TEST_F(InfobarContainerCoordinatorTest, TestAutomaticInfobarBannerDismissal) {
                InfobarBannerPresentationState::Presented;
       }));
 
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       kInfobarBannerPresentationDurationInSeconds, ^bool {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::NotPresented;
       }));
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests that the InfobarBanner is correctly dismissed after calling
@@ -223,8 +226,8 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissal) {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   [infobar_container_coordinator_ dismissInfobarBannerAnimated:NO
                                                     completion:nil];
@@ -233,8 +236,8 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissal) {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::NotPresented;
       }));
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests that a legacy Infobar can be presented and
@@ -242,11 +245,11 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissal) {
 TEST_F(InfobarContainerCoordinatorTest, TestLegacyInfobarPresentation) {
   EXPECT_FALSE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
-  EXPECT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::NotPresented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
   AddLegacyInfobar();
-  EXPECT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  EXPECT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   EXPECT_TRUE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
 }
@@ -255,19 +258,19 @@ TEST_F(InfobarContainerCoordinatorTest, TestLegacyInfobarPresentation) {
 // presented InfobarBanner.
 TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerPresentationBeforeLegacyPresentation) {
-  EXPECT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  EXPECT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   AddLegacyInfobar();
-  EXPECT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  EXPECT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests that a presented LegacyInfobar doesn't interfere with presenting an
@@ -279,30 +282,31 @@ TEST_F(InfobarContainerCoordinatorTest,
   AddLegacyInfobar();
   ASSERT_TRUE([infobar_container_coordinator_
       isInfobarPresentingForWebState:web_state_list_->GetActiveWebState()]);
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests that the InfobarBanner is dismissed when changing Webstates.
 TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerDismissAtWebStateChange) {
   AddInfobar();
+  AddSecondWebstate();
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   web_state_list_->ActivateWebStateAt(1);
 
@@ -311,8 +315,8 @@ TEST_F(InfobarContainerCoordinatorTest,
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::NotPresented;
       }));
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests that the InfobarBanner is not presented again after returning from a
@@ -320,14 +324,15 @@ TEST_F(InfobarContainerCoordinatorTest,
 TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerNotPresentAfterWebStateChange) {
   AddInfobar();
+  AddSecondWebstate();
 
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   web_state_list_->ActivateWebStateAt(1);
 
@@ -336,15 +341,15 @@ TEST_F(InfobarContainerCoordinatorTest,
         return !(infobar_container_coordinator_.infobarBannerState ==
                  InfobarBannerPresentationState::Presented);
       }));
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   web_state_list_->ActivateWebStateAt(0);
   // Wait for any potential presentation.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
 
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 }
 
 // Tests infobarBannerState is NotPresented once an InfobarBanner has been
@@ -356,8 +361,8 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissalByBaseVC) {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   [base_view_controller_ dismissViewControllerAnimated:NO completion:nil];
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -365,8 +370,89 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarBannerDismissalByBaseVC) {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::NotPresented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::NotPresented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
+}
+
+// Tests that the Infobar is dismissed before its presentation is completed.
+TEST_F(InfobarContainerCoordinatorTest,
+       TestInfobarBannerDismissalMidPresentation) {
+  AddInfobar();
+  // Call dismiss without calling WaitUntilConditionOrTimeout before.
+  [base_view_controller_ dismissViewControllerAnimated:NO completion:nil];
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return infobar_container_coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::NotPresented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
+}
+
+// Tests that the Infobar is dismissed by closing the Webstate before its
+// presentation is completed.
+TEST_F(InfobarContainerCoordinatorTest,
+       TestInfobarBannerDismissedClosingWebstate) {
+  AddInfobar();
+  // Close the Webstate without calling WaitUntilConditionOrTimeout.
+  web_state_list_->CloseWebStateAt(0, 0);
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return infobar_container_coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::NotPresented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
+}
+
+// Tests that the Infobar is dismissed when both the VC and Webstate are closed.
+TEST_F(InfobarContainerCoordinatorTest, TestDismissingAndClosingWebstate) {
+  AddInfobar();
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return infobar_container_coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::Presented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
+
+  [base_view_controller_ dismissViewControllerAnimated:NO completion:nil];
+  web_state_list_->CloseWebStateAt(0, 0);
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return infobar_container_coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::NotPresented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
+}
+
+// Tests that the Infobar is dismissed when both the VC and Webstate are closed,
+// and there's more than one webstate.
+TEST_F(InfobarContainerCoordinatorTest,
+       TestDismissingAndClosingWebstateSecondWebstate) {
+  AddInfobar();
+  AddSecondWebstate();
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return infobar_container_coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::Presented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
+
+  [base_view_controller_ dismissViewControllerAnimated:NO completion:nil];
+  web_state_list_->CloseWebStateAt(0, 0);
+
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return infobar_container_coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::NotPresented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
 }
 
 // Tests that the ChildCoordinator is deleted once it stops.
@@ -380,15 +466,14 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarChildCoordinatorCount) {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::Presented;
       }));
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
   ASSERT_EQ(NSUInteger(1),
             infobar_container_coordinator_.childCoordinators.count);
-  ASSERT_TRUE(infobar_container_coordinator_.infobarBannerState ==
-              InfobarBannerPresentationState::Presented);
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
 
-  // Dismiss the Banner before closing the Webstate to avoid bug 966057.
   [infobar_container_coordinator_ dismissInfobarBannerAnimated:NO
                                                     completion:nil];
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -404,8 +489,8 @@ TEST_F(InfobarContainerCoordinatorTest, TestInfobarChildCoordinatorCount) {
         return infobar_container_coordinator_.infobarBannerState ==
                InfobarBannerPresentationState::NotPresented;
       }));
-  ASSERT_FALSE(infobar_container_coordinator_.infobarBannerState ==
-               InfobarBannerPresentationState::Presented);
+  ASSERT_NE(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
   ASSERT_EQ(NSUInteger(0),
             infobar_container_coordinator_.childCoordinators.count);
 }

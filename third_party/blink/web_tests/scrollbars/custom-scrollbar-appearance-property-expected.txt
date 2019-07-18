@@ -1,0 +1,1 @@
+CONSOLE WARNING: '-webkit-appearance: searchfield-cancel-button' for elements other than ::-webkit-clear-button and ::-webkit-search-cancel-button is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.

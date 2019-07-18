@@ -3319,7 +3319,9 @@ PaintLayer::CreateCompositorFilterOperationsForBackdropFilter() const {
   return_value = FilterEffectBuilder(reference_box, zoom, nullptr, nullptr,
                                      SkBlurImageFilter::kClamp_TileMode)
                      .BuildFilterOperations(filter_operations);
-  DCHECK(!return_value.IsEmpty());
+  // Note that return_value may be empty here, if the |filter_operations| list
+  // contains only invalid filters (e.g. invalid reference filters). See
+  // https://crbug.com/983157 for details.
   return return_value;
 }
 

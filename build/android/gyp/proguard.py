@@ -169,7 +169,7 @@ def _CreateR8Command(options, map_output_path, output_dir, tmp_config_path,
             options.repackage_classes)
       if options.min_api:
         temp_config_string += (
-            '-assumevalues class android.os.Build$VERSION {\n' +
+            '-assumenosideeffects class android.os.Build$VERSION {\n' +
             '    public static final int SDK_INT return ' + options.min_api +
             '..9999;\n}\n')
       f.write(temp_config_string)

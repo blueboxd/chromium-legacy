@@ -358,6 +358,12 @@ struct URLRequest {
   // renderer process and is only present when DevTools is enabled in the
   // renderer.
   string? devtools_request_id;
+
+  // True for prefetch requests when SignedExchangePrefetchCacheForNavigations
+  // feature is enabled by flags or SignedExchangeSubresourcePrefetch feature is
+  // enabled by flags, or OriginTrial. TODO(horo): Remove this when these
+  // features are enabled by default.
+  bool is_signed_exchange_prefetch_cache_enabled;
 };
 
 // URLRequestBody represents body (i.e. upload data) of a HTTP request.

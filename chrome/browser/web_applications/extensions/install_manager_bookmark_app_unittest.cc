@@ -344,8 +344,9 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
-  web_app::InstallOptions install_options;
-  install_options.install_source = web_app::InstallSource::kExternalDefault;
+  web_app::InstallOptions install_options{
+      kAppUrl, web_app::LaunchContainer::kDefault,
+      web_app::InstallSource::kExternalDefault};
 
   const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -363,8 +364,9 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppPolicyInstalled) {
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
-  web_app::InstallOptions install_options;
-  install_options.install_source = web_app::InstallSource::kExternalPolicy;
+  web_app::InstallOptions install_options{
+      kAppUrl, web_app::LaunchContainer::kDefault,
+      web_app::InstallSource::kExternalPolicy};
 
   const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -532,13 +534,14 @@ TEST_F(InstallManagerBookmarkAppTest,
 TEST_F(InstallManagerBookmarkAppTest,
        CreateBookmarkAppForcedLauncherContainers) {
   {
-    CreateDataRetrieverWithLaunchContainer(GURL("https://www.example.org/"),
+    const GURL app_url("https://www.example.org/");
+    CreateDataRetrieverWithLaunchContainer(app_url,
                                            /*open_as_window=*/true,
                                            /*is_installable=*/true);
 
-    web_app::InstallOptions install_options;
-    install_options.launch_container = web_app::LaunchContainer::kTab;
-    install_options.install_source = web_app::InstallSource::kInternal;
+    web_app::InstallOptions install_options{
+        app_url, web_app::LaunchContainer::kTab,
+        web_app::InstallSource::kInternalDefault};
 
     const Extension* extension = InstallWebAppWithOptions(install_options);
 
@@ -549,9 +552,9 @@ TEST_F(InstallManagerBookmarkAppTest,
     CreateDataRetrieverWithLaunchContainer(kAppUrl, /*open_as_window=*/false,
                                            /*is_installable=*/false);
 
-    web_app::InstallOptions install_options;
-    install_options.launch_container = web_app::LaunchContainer::kWindow;
-    install_options.install_source = web_app::InstallSource::kInternal;
+    web_app::InstallOptions install_options{
+        kAppUrl, web_app::LaunchContainer::kWindow,
+        web_app::InstallSource::kInternalDefault};
 
     const Extension* extension = InstallWebAppWithOptions(install_options);
 

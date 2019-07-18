@@ -239,6 +239,12 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
             new_navigation_entry->GetRedirectChain()[1]);
   EXPECT_EQ(test_data::kVirtualURL,
             new_navigation_entry->GetRedirectChain()[2]);
+  sessions::NavigationTaskId* new_navigation_task_id =
+      sessions::NavigationTaskId::Get(new_navigation_entry.get());
+
+  EXPECT_EQ(test_data::kTaskId, new_navigation_task_id->id());
+  EXPECT_EQ(test_data::kParentTaskId, new_navigation_task_id->parent_id());
+  EXPECT_EQ(test_data::kRootTaskId, new_navigation_task_id->root_id());
 
   TestData* test_data = static_cast<TestData*>(
       new_navigation_entry->GetUserData(kExtendedInfoKey1));

@@ -104,6 +104,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   virtual void SetClipRect(const gfx::Rect& clip_rect);
   gfx::Rect GetTargetClipRect() const;
 
+  // Sets the rounded corners on the delegate. May cause an implicit animation.
+  virtual void SetRoundedCorners(const gfx::RoundedCornersF& rounded_corners);
+  gfx::RoundedCornersF GetTargetRoundedCorners() const;
+
   // Returns the default length of animations, including adjustment for slow
   // animation mode if set.
   base::TimeDelta GetTransitionDuration() const;

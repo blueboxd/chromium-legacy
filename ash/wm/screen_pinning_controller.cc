@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/window_user_data.h"
+#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_state.h"
@@ -176,6 +177,7 @@ void ScreenPinningController::SetPinnedWindow(aura::Window* pinned_window) {
 
     // Set up the container which has the pinned window.
     pinned_window_ = pinned_window;
+    AlwaysOnTopController::SetDisallowReparent(pinned_window);
     container->StackChildAtTop(pinned_window);
     container->StackChildBelow(CreateWindowDimmer(container), pinned_window);
 
@@ -262,6 +264,7 @@ aura::Window* ScreenPinningController::CreateWindowDimmer(
   std::unique_ptr<WindowDimmer> window_dimmer =
       std::make_unique<WindowDimmer>(container);
   window_dimmer->SetDimOpacity(1);  // Fully opaque.
+  AlwaysOnTopController::SetDisallowReparent(window_dimmer->window());
   ::wm::SetWindowFullscreen(window_dimmer->window(), true);
   window_dimmer->window()->Show();
   aura::Window* window = window_dimmer->window();

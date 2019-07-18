@@ -163,7 +163,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // previous session.
   SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
   SimulatePreviouslyInstalledApp(kAppUrl2, InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl3, InstallSource::kInternal);
+  SimulatePreviouslyInstalledApp(kAppUrl3, InstallSource::kInternalDefault);
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
   system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 

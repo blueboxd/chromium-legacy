@@ -23909,6 +23909,12 @@ Called by update_net_error_codes.py.-->
   <int value="2960" label="V8Database_Transaction_Method"/>
   <int value="2961" label="V8Database_ReadTransaction_Method"/>
   <int value="2962" label="V8SQLTransaction_ExecuteSql_Method"/>
+  <int value="2963"
+      label="CSSValueAppearanceButtonForBootstrapLooseSelectorRendered"/>
+  <int value="2964" label="CSSValueAppearanceButtonForOthers2Rendered"/>
+  <int value="2965" label="CSSValueAppearanceButtonForSelectRendered"/>
+  <int value="2966" label="CSSValueAppearanceListboxForOthersRendered"/>
+  <int value="2967" label="CSSValueAppearanceMeterForOthersRendered"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

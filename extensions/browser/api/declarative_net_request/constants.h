@@ -18,9 +18,11 @@ enum class ParseResult {
   SUCCESS,
   ERROR_RESOURCE_TYPE_DUPLICATED,
   ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
+  ERROR_EMPTY_UPGRADE_RULE_PRIORITY,
   ERROR_EMPTY_REDIRECT_URL,
   ERROR_INVALID_RULE_ID,
   ERROR_INVALID_REDIRECT_RULE_PRIORITY,
+  ERROR_INVALID_UPGRADE_RULE_PRIORITY,
   ERROR_NO_APPLICABLE_RESOURCE_TYPES,
   ERROR_EMPTY_DOMAINS_LIST,
   ERROR_EMPTY_RESOURCE_TYPES_LIST,
@@ -81,6 +83,7 @@ enum RemoveHeadersMask : uint8_t {
 // Rule parsing errors.
 extern const char kErrorResourceTypeDuplicated[];
 extern const char kErrorEmptyRedirectRuleKey[];
+extern const char kErrorEmptyUpgradeRulePriority[];
 extern const char kErrorInvalidRuleKey[];
 extern const char kErrorNoApplicableResourceTypes[];
 extern const char kErrorEmptyList[];

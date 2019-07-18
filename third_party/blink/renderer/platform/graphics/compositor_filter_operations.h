@@ -42,6 +42,7 @@ class PLATFORM_EXPORT CompositorFilterOperations {
 
   void Clear();
   bool IsEmpty() const;
+  size_t size() const { return filter_operations_.size(); }
 
   // Returns a rect covering the destination pixels that can be affected by
   // source pixels in |inputRect|.

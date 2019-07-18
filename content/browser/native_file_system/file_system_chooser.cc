@@ -53,12 +53,12 @@ bool GetFileTypesFromAcceptsOption(
   return true;
 }
 
-void ConvertAcceptsToFileTypeInfo(
+ui::SelectFileDialog::FileTypeInfo ConvertAcceptsToFileTypeInfo(
     const std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr>&
         accepts,
-    bool include_accepts_all,
-    ui::SelectFileDialog::FileTypeInfo* file_types) {
-  file_types->include_all_files = include_accepts_all;
+    bool include_accepts_all) {
+  ui::SelectFileDialog::FileTypeInfo file_types;
+  file_types.include_all_files = include_accepts_all;
 
   for (const auto& option : accepts) {
     std::vector<base::FilePath::StringType> extensions;
@@ -67,29 +67,36 @@ void ConvertAcceptsToFileTypeInfo(
     if (!GetFileTypesFromAcceptsOption(*option, &extensions, &description))
       continue;  // No extensions were found for this option, skip it.
 
-    file_types->extensions.push_back(extensions);
+    file_types.extensions.push_back(extensions);
     // FileTypeInfo expects each set of extension to have a corresponding
     // description. A blank description will result in a system generated
     // description to be used.
-    file_types->extension_description_overrides.push_back(description);
+    file_types.extension_description_overrides.push_back(description);
   }
 
-  if (file_types->extensions.empty())
-    file_types->include_all_files = true;
+  if (file_types.extensions.empty())
+    file_types.include_all_files = true;
+
+  return file_types;
 }
 
 }  // namespace
 
+FileSystemChooser::Options::Options(
+    blink::mojom::ChooseFileSystemEntryType type,
+    std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
+    bool include_accepts_all)
+    : type_(type),
+      file_types_(ConvertAcceptsToFileTypeInfo(accepts, include_accepts_all)) {}
+
 // static
 void FileSystemChooser::CreateAndShow(
     WebContents* web_contents,
-    blink::mojom::ChooseFileSystemEntryType type,
-    std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-    bool include_accepts_all,
+    const Options& options,
     ResultCallback callback,
     scoped_refptr<base::TaskRunner> callback_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* listener = new FileSystemChooser(type, std::move(callback),
+  auto* listener = new FileSystemChooser(options.type(), std::move(callback),
                                          std::move(callback_runner));
   listener->dialog_ = ui::SelectFileDialog::Create(
       listener,
@@ -98,7 +105,7 @@ void FileSystemChooser::CreateAndShow(
   //     SelectFile.
 
   ui::SelectFileDialog::Type dialog_type = ui::SelectFileDialog::SELECT_NONE;
-  switch (type) {
+  switch (options.type()) {
     case blink::mojom::ChooseFileSystemEntryType::kOpenFile:
       dialog_type = ui::SelectFileDialog::SELECT_OPEN_FILE;
       break;
@@ -114,12 +121,9 @@ void FileSystemChooser::CreateAndShow(
   }
   DCHECK_NE(dialog_type, ui::SelectFileDialog::SELECT_NONE);
 
-  ui::SelectFileDialog::FileTypeInfo file_types;
-  ConvertAcceptsToFileTypeInfo(accepts, include_accepts_all, &file_types);
-
   listener->dialog_->SelectFile(
       dialog_type, /*title=*/base::string16(),
-      /*default_path=*/base::FilePath(), &file_types,
+      /*default_path=*/base::FilePath(), &options.file_type_info(),
       /*file_type_index=*/0,
       /*default_extension=*/base::FilePath::StringType(),
       web_contents ? web_contents->GetTopLevelNativeWindow() : nullptr,

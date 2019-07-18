@@ -20,4 +20,14 @@ void MockNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
   ConfirmDirectoryReadAccess_(origin, path, process_id, frame_id, callback);
 }
 
+void MockNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
+    const url::Origin& origin,
+    const std::vector<base::FilePath>& paths,
+    int process_id,
+    int frame_id,
+    base::OnceCallback<void(SensitiveDirectoryResult)> callback) {
+  ConfirmSensitiveDirectoryAccess_(origin, paths, process_id, frame_id,
+                                   callback);
+}
+
 }  // namespace content

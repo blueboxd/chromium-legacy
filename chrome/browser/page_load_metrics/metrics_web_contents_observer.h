@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_type.h"
+#include "net/cookies/canonical_cookie.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 namespace content {
@@ -116,6 +117,14 @@ class MetricsWebContentsObserver
                                 bool is_display_none) override;
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override;
+  void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override;
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override;
 
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);

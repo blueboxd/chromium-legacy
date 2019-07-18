@@ -15,8 +15,6 @@
 
 namespace ash {
 
-extern const int kBubblePaddingHorizontalBottom;
-
 // The size delta between the default font and the font size found in tray
 // items like labels and buttons.
 extern const int kTrayTextFontSizeIncrease;
@@ -25,9 +23,6 @@ ASH_EXPORT extern const int kTrayItemSize;
 
 // Extra padding used beside a single icon in the tray area of the shelf.
 constexpr int kTrayImageItemPadding = 3;
-
-extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;
-extern const int kTrayLabelItemVerticalPaddingVerticalAlignment;
 
 // The width of the tray menu.
 extern const int kTrayMenuWidth;
@@ -53,10 +48,6 @@ extern const int kTrayPopupItemMinStartWidth;
 // The width used for the end region of the row (usually a more arrow).
 extern const int kTrayPopupItemMinEndWidth;
 
-// When transitioning between a detailed and a default view, this delay is used
-// before the transition starts.
-ASH_EXPORT extern const int kTrayDetailedViewTransitionDelayMs;
-
 // Padding used on right side of labels to keep minimum distance to the next
 // item. This applies to all labels in the system menu.
 extern const int kTrayPopupLabelRightPadding;
@@ -66,17 +57,8 @@ extern const int kTrayRoundedBorderRadius;
 // The width of ToggleButton views including any border padding.
 extern const int kTrayToggleButtonWidth;
 
-extern const SkColor kPublicAccountUserCardTextColor;
-extern const SkColor kPublicAccountUserCardNameColor;
-
-extern const SkColor kHeaderBackgroundColor;
-
 // Constants for the title row.
-constexpr int kTitleRowVerticalPadding = 4;
 constexpr int kTitleRowProgressBarHeight = 2;
-constexpr int kTitleRowPaddingTop = kTitleRowVerticalPadding;
-constexpr int kTitleRowPaddingBottom =
-    kTitleRowVerticalPadding - kTitleRowProgressBarHeight;
 
 extern const SkColor kMobileNotConnectedXIconColor;
 
@@ -104,10 +86,6 @@ extern const int kTrayIconBackgroundAlpha;
 // The padding around network tray icon in dip.
 constexpr int kTrayNetworkIconPadding = 2;
 constexpr int kUnifiedTrayNetworkIconPadding = 4;
-
-// The total visual padding at the start and end of the icon/label section
-// of the tray.
-constexpr int kTrayEdgePadding = 6;
 
 // The size and foreground color of the icons appearing in the material design
 // system menu.
@@ -139,9 +117,6 @@ extern const int kTrayPopupInkDropInset;
 
 // The radius used to draw the corners of the rounded rect style ink drops.
 extern const int kTrayPopupInkDropCornerRadius;
-
-// The height of the system info row.
-extern const int kTrayPopupSystemInfoRowHeight;
 
 // The colors used when --enable-features=SystemTrayUnified flag is enabled.
 constexpr SkColor kUnifiedMenuBackgroundColor =
@@ -195,14 +170,8 @@ constexpr int kUnifiedNotificationMinimumHeight = 40;
 constexpr gfx::Insets kUnifiedTopShortcutPadding(0, 16);
 constexpr gfx::Insets kUnifiedNotificationHiddenPadding(6, 16);
 constexpr gfx::Insets kUnifiedCircularButtonFocusPadding(4);
-constexpr int kStackingNotificationCounterMax = 8;
-constexpr int kStackingNotificationCounterRadius = 2;
-constexpr int kStackingNotificationCounterStartX = 18;
-constexpr int kStackingNotificationCounterDistanceX = 10;
 constexpr int kStackingNotificationCounterHeight = 32;
 constexpr gfx::Insets kStackingNotificationClearAllButtonPadding(8, 16);
-constexpr SkColor kStackingNotificationCounterColor =
-    SkColorSetRGB(0x5f, 0x63, 0x68);
 constexpr SkColor kStackingNotificationCounterBorderColor =
     SkColorSetRGB(0xe0, 0xe0, 0xe0);
 constexpr SkColor kStackingNotificationCounterLabelColor =
@@ -261,10 +230,8 @@ constexpr int kUnifiedUserChooserSeparatorSideMargin = 64;
 // Additional gap above and below the longer separator between user list and
 // "Sign in another user..." button.
 constexpr int kUnifiedUserChooserLargeSeparatorVerticalSpacing = 8;
-//
+
 constexpr int kUnifiedUserChooserRowHeight = 64;
-constexpr int kUnifiedUserChooserAvatorIconColumnWidth = 64;
-constexpr int kUnifiedUserChooserCloseIconColumnWidth = 64;
 
 // Gap between the buttons on the top shortcut row, other than the
 // expand/collapse button.

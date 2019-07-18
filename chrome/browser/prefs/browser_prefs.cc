@@ -314,7 +314,6 @@
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #endif
 
@@ -873,9 +872,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   ::onc::RegisterProfilePrefs(registry);
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  // TODO(b/110211045): Merge these two methods after migrating other Assistant
-  // related prefs.
-  assistant::prefs::RegisterProfilePrefs(registry);
   chromeos::assistant::prefs::RegisterProfilePrefsForBrowser(registry);
 #endif
 

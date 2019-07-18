@@ -27,7 +27,7 @@ DawnRenderPassColorAttachmentDescriptor AsDawnType(
     const GPURenderPassColorAttachmentDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnRenderPassColorAttachmentDescriptor dawn_desc;
+  DawnRenderPassColorAttachmentDescriptor dawn_desc = {};
   dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
   dawn_desc.resolveTarget = webgpu_desc->resolveTarget()
                                 ? webgpu_desc->resolveTarget()->GetHandle()
@@ -45,7 +45,7 @@ DawnRenderPassDepthStencilAttachmentDescriptor AsDawnType(
     const GPURenderPassDepthStencilAttachmentDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnRenderPassDepthStencilAttachmentDescriptor dawn_desc;
+  DawnRenderPassDepthStencilAttachmentDescriptor dawn_desc = {};
   dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
   dawn_desc.depthLoadOp = AsDawnEnum<DawnLoadOp>(webgpu_desc->depthLoadOp());
   dawn_desc.depthStoreOp = AsDawnEnum<DawnStoreOp>(webgpu_desc->depthStoreOp());
@@ -91,7 +91,7 @@ DawnCommandEncoderDescriptor AsDawnType(
     const GPUCommandEncoderDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnCommandEncoderDescriptor dawn_desc;
+  DawnCommandEncoderDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
 
   return dawn_desc;
@@ -137,7 +137,7 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
   uint32_t color_attachment_count =
       static_cast<uint32_t>(descriptor->colorAttachments().size());
 
-  DawnRenderPassDescriptor dawn_desc;
+  DawnRenderPassDescriptor dawn_desc = {};
   dawn_desc.colorAttachmentCount = color_attachment_count;
   dawn_desc.colorAttachments = nullptr;
 

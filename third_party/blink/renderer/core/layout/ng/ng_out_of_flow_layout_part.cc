@@ -445,6 +445,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   const TextDirection default_direction = default_containing_block_.direction;
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
+  const TextDirection candidate_direction = candidate_style.Direction();
 
   LogicalSize container_content_size =
       container_info.ContentSize(candidate_style.GetPosition());
@@ -473,15 +474,18 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   NGLogicalStaticPosition static_position = candidate.static_position;
   static_position.offset -= container_info.container_offset;
 
-  NGPhysicalStaticPosition physical_static_position =
-      static_position.ConvertToPhysical(writing_mode_, default_direction,
-                                        container_physical_content_size);
+  NGLogicalStaticPosition candidate_static_position =
+      static_position
+          .ConvertToPhysical(writing_mode_, default_direction,
+                             container_physical_content_size)
+          .ConvertToLogical(candidate_writing_mode, candidate_direction,
+                            container_physical_content_size);
 
   // Need a constraint space to resolve offsets.
   NGConstraintSpace candidate_constraint_space =
       NGConstraintSpaceBuilder(writing_mode_, candidate_writing_mode,
                                /* is_new_fc */ true)
-          .SetTextDirection(candidate_style.Direction())
+          .SetTextDirection(candidate_direction)
           .SetAvailableSize(container_content_size)
           .SetPercentageResolutionSize(container_content_size)
           .ToConstraintSpace();
@@ -490,7 +494,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
       freeze_scrollbars;
   do {
     scoped_refptr<const NGLayoutResult> layout_result =
-        Layout(node, candidate_constraint_space, physical_static_position,
+        Layout(node, candidate_constraint_space, candidate_static_position,
                container_content_size, container_info, only_layout);
 
     if (!freeze_scrollbars.has_value()) {
@@ -518,13 +522,14 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
 scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     NGBlockNode node,
     const NGConstraintSpace& candidate_constraint_space,
-    const NGPhysicalStaticPosition& physical_static_position,
+    const NGLogicalStaticPosition& candidate_static_position,
     LogicalSize container_content_size,
     const ContainingBlockInfo& container_info,
     const LayoutBox* only_layout) {
   const TextDirection default_direction = default_containing_block_.direction;
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
+  const TextDirection candidate_direction = candidate_style.Direction();
   const TextDirection container_direction = container_info.direction;
 
   PhysicalSize container_physical_content_size =
@@ -570,10 +575,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
                         candidate_constraint_space.AvailableSize().inline_size),
                     kIndefiniteSize};
   }
-  NGAbsolutePhysicalPosition node_position =
+  NGLogicalOutOfFlowPosition node_position =
       ComputePartialAbsoluteWithChildInlineSize(
           candidate_constraint_space, candidate_style, border_padding,
-          physical_static_position, min_max_size, replaced_size, writing_mode_,
+          candidate_static_position, min_max_size, replaced_size, writing_mode_,
           container_direction);
 
   // |should_be_considered_as_replaced| sets the inline-size.
@@ -596,11 +601,13 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   ComputeFullAbsoluteWithChildBlockSize(
       candidate_constraint_space, candidate_style, border_padding,
-      physical_static_position, block_estimate, replaced_size, writing_mode_,
+      candidate_static_position, block_estimate, replaced_size, writing_mode_,
       container_direction, &node_position);
 
   NGBoxStrut inset =
-      node_position.inset.ConvertToLogical(writing_mode_, default_direction);
+      node_position.inset
+          .ConvertToPhysical(candidate_writing_mode, candidate_direction)
+          .ConvertToLogical(writing_mode_, default_direction);
 
   // |inset| is relative to the container's padding-box. Convert this to being
   // relative to the default container's border-box.
@@ -665,8 +672,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   // Skip this step if we produced a fragment when estimating the block-size.
   if (!layout_result) {
-    block_estimate =
-        node_position.size.ConvertToLogical(candidate_writing_mode).block_size;
+    block_estimate = node_position.size.block_size;
     layout_result =
         GenerateFragment(node, container_content_size_in_candidate_writing_mode,
                          block_estimate, node_position);
@@ -682,8 +688,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
   // break if we set them here.
   if (!container_builder_->GetLayoutObject()
            ->Style()
-           ->IsDisplayFlexibleOrGridBox())
-    node.GetLayoutBox()->SetMargin(node_position.margins);
+           ->IsDisplayFlexibleOrGridBox()) {
+    node.GetLayoutBox()->SetMargin(node_position.margins.ConvertToPhysical(
+        candidate_writing_mode, candidate_direction));
+  }
 
   // Adjusting the offset for a dialog after layout is fine, since we cannot
   // have dialogs needing alignment inside block fragmentation.
@@ -729,13 +737,12 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     NGBlockNode node,
     const LogicalSize& container_content_size_in_candidate_writing_mode,
     const base::Optional<LayoutUnit>& block_estimate,
-    const NGAbsolutePhysicalPosition& node_position) {
+    const NGLogicalOutOfFlowPosition& node_position) {
   // As the |block_estimate| is always in the node's writing mode, we
   // build the constraint space in the node's writing mode.
   WritingMode writing_mode = node.Style().GetWritingMode();
 
-  LayoutUnit inline_size =
-      node_position.size.ConvertToLogical(writing_mode).inline_size;
+  LayoutUnit inline_size = node_position.size.inline_size;
   LayoutUnit block_size =
       block_estimate
           ? *block_estimate

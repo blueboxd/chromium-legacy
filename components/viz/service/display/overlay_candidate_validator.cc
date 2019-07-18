@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/display_embedder/overlay_candidate_validator_android.h"
@@ -156,6 +157,11 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                             OverlayStrategy::kNoStrategyUsed);
   return false;
+}
+
+gfx::Rect OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
+    const OverlayCandidate& candidate) const {
+  return ToEnclosedRect(candidate.display_rect);
 }
 
 }  // namespace viz

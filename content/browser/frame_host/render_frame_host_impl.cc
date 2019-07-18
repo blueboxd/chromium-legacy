@@ -6157,8 +6157,8 @@ void RenderFrameHostImpl::BindSmsReceiverRequest(
     mojo::ReportBadMessage("Must be in top-level browser context.");
     return;
   }
-  SmsService* sms_service = BrowserMainLoop::GetInstance()->GetSmsService();
-  sms_service->Bind(std::move(request), GetLastCommittedOrigin());
+  auto* provider = BrowserMainLoop::GetInstance()->GetSmsProvider();
+  SmsService::Create(provider, this, std::move(request));
 }
 
 void RenderFrameHostImpl::GetInterface(

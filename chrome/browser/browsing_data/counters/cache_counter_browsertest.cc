@@ -174,9 +174,16 @@ IN_PROC_BROWSER_TEST_F(CacheCounterTest, AfterDoom) {
   EXPECT_EQ(0u, GetResult());
 }
 
+// TODO(crbug.com/985131): Test is flaky in Linux component builds.
+#if defined(OS_LINUX) && defined(COMPONENT_BUILD)
+#define MAYBE_PrefChanged DISABLED_PrefChanged
+#else
+#define MAYBE_PrefChanged PrefChanged
+#endif
+
 // Tests that the counter starts counting automatically when the deletion
 // pref changes to true.
-IN_PROC_BROWSER_TEST_F(CacheCounterTest, PrefChanged) {
+IN_PROC_BROWSER_TEST_F(CacheCounterTest, MAYBE_PrefChanged) {
   SetCacheDeletionPref(false);
 
   Profile* profile = browser()->profile();

@@ -110,10 +110,17 @@ class RulesetMatcher {
   uint8_t GetRemoveHeadersMask(const RequestParams& params,
                                uint8_t current_mask) const;
 
-  // Returns whether the ruleset has a matching redirect rule. Populates
-  // |redirect_url| on returning true. |redirect_url| must not be null.
-  bool HasMatchingRedirectRule(const RequestParams& params,
-                               GURL* redirect_url) const;
+  // Returns the ruleset's matching redirect rule and populates
+  // |redirect_url| if there is a matching redirect rule, otherwise returns
+  // nullptr.
+  const url_pattern_index::flat::UrlRule* GetRedirectRule(
+      const RequestParams& params,
+      GURL* redirect_url) const;
+
+  // Returns the ruleset's matching upgrade scheme rule or nullptr if no
+  // matching rule is found or if the request's scheme is not upgradeable.
+  const url_pattern_index::flat::UrlRule* GetUpgradeRule(
+      const RequestParams& params) const;
 
   // Returns whether this modifies "extraHeaders".
   bool IsExtraHeadersMatcher() const { return is_extra_headers_matcher_; }

@@ -132,7 +132,6 @@ body.hide-fakebox #fakebox {
   cursor: text;
   font-size: 16px;
   height: 44px;
-  line-height: 21px;
   margin: 0 auto;
   max-width: 584px;
   opacity: 1;
@@ -190,8 +189,9 @@ html[dir=rtl] #fakebox-search-icon {
   bottom: 0;
   color: rgb(117, 117, 117);
   font-size: 16px;
-  height: 21px;
+  height: 44px;
   left: 0;
+  line-height: 44px;
   margin: auto 0;
   overflow: hidden;
   padding-inline-start: 48px;

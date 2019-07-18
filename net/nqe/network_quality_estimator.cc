@@ -929,31 +929,31 @@ NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
   if (current_network_id_.signal_strength == INT32_MIN)
     return effective_connection_type_;
 
-  // Capping ECT on WiFi is currently not enabled.
-  if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_WIFI) {
-    // The maximum signal strength level is 4.
-    UMA_HISTOGRAM_EXACT_LINEAR("NQE.WifiSignalStrength.AtECTComputation",
-                               current_network_id_.signal_strength, 4);
-    return effective_connection_type_;
-  }
-
   if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
       effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
     return effective_connection_type_;
   }
 
-  // The maximum signal strength level is 4.
-  UMA_HISTOGRAM_EXACT_LINEAR("NQE.CellularSignalStrength.AtECTComputation",
-                             current_network_id_.signal_strength, 4);
+  if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_WIFI) {
+    // The maximum signal strength level is 4.
+    UMA_HISTOGRAM_EXACT_LINEAR("NQE.WifiSignalStrength.AtECTComputation",
+                               current_network_id_.signal_strength, 4);
+  } else if (current_network_id_.type == NetworkChangeNotifier::CONNECTION_2G ||
+             current_network_id_.type == NetworkChangeNotifier::CONNECTION_3G ||
+             current_network_id_.type == NetworkChangeNotifier::CONNECTION_4G) {
+    // The maximum signal strength level is 4.
+    UMA_HISTOGRAM_EXACT_LINEAR("NQE.CellularSignalStrength.AtECTComputation",
+                               current_network_id_.signal_strength, 4);
+  } else {
+    NOTREACHED();
+    return effective_connection_type_;
+  }
 
   // Do not cap ECT if the signal strength is high.
   if (current_network_id_.signal_strength > 2)
     return effective_connection_type_;
 
   DCHECK_LE(0, current_network_id_.signal_strength);
-
-  DCHECK_LE(NetworkChangeNotifier::CONNECTION_2G, current_network_id_.type);
-  DCHECK_GE(NetworkChangeNotifier::CONNECTION_4G, current_network_id_.type);
 
   // When signal strength is 0, the device is almost offline.
   if (current_network_id_.signal_strength == 0) {
@@ -963,6 +963,7 @@ NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
         return std::min(effective_connection_type_,
                         EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
       case NetworkChangeNotifier::CONNECTION_4G:
+      case NetworkChangeNotifier::CONNECTION_WIFI:
         return std::min(effective_connection_type_,
                         EFFECTIVE_CONNECTION_TYPE_2G);
       default:
@@ -980,6 +981,7 @@ NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
         return std::min(effective_connection_type_,
                         EFFECTIVE_CONNECTION_TYPE_2G);
       case NetworkChangeNotifier::CONNECTION_4G:
+      case NetworkChangeNotifier::CONNECTION_WIFI:
         return std::min(effective_connection_type_,
                         EFFECTIVE_CONNECTION_TYPE_3G);
       default:
@@ -997,6 +999,7 @@ NetworkQualityEstimator::GetCappedECTBasedOnSignalStrength() const {
         return std::min(effective_connection_type_,
                         EFFECTIVE_CONNECTION_TYPE_3G);
       case NetworkChangeNotifier::CONNECTION_4G:
+      case NetworkChangeNotifier::CONNECTION_WIFI:
         return std::min(effective_connection_type_,
                         EFFECTIVE_CONNECTION_TYPE_4G);
       default:

@@ -6,14 +6,14 @@
 #define CONTENT_RENDERER_MEDIA_STREAM_AEC_DUMP_AGENT_IMPL_H_
 
 #include "base/macros.h"
-#include "content/common/media/aec_dump.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/mediastream/aec_dump.mojom.h"
 
 namespace content {
 
 // An instance of this class connects to the browser process to register for
 // notifications to start / stop writing to a dump file.
-class AecDumpAgentImpl : public mojom::AecDumpAgent {
+class AecDumpAgentImpl : public blink::mojom::AecDumpAgent {
  public:
   class Delegate {
    public:
@@ -33,10 +33,10 @@ class AecDumpAgentImpl : public mojom::AecDumpAgent {
  private:
   explicit AecDumpAgentImpl(
       Delegate* delegate,
-      mojo::PendingReceiver<mojom::AecDumpAgent> receiver);
+      mojo::PendingReceiver<blink::mojom::AecDumpAgent> receiver);
 
   Delegate* delegate_;
-  mojo::Receiver<mojom::AecDumpAgent> receiver_{this};
+  mojo::Receiver<blink::mojom::AecDumpAgent> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AecDumpAgentImpl);
 };

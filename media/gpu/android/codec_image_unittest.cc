@@ -114,6 +114,14 @@ class CodecImageTestExplicitBind : public CodecImageTest {
   bool BindsTextureOnUpdate() override { return false; }
 };
 
+TEST_F(CodecImageTest, NowUnusedCBRuns) {
+  base::MockCallback<CodecImage::NowUnusedCB> cb;
+  auto i = NewImage(kOverlay);
+  i->SetNowUnusedCB(cb.Get());
+  EXPECT_CALL(cb, Run(i.get()));
+  i = nullptr;
+}
+
 TEST_F(CodecImageTest, DestructionCBRuns) {
   base::MockCallback<CodecImage::DestructionCB> cb;
   auto i = NewImage(kOverlay, cb.Get());

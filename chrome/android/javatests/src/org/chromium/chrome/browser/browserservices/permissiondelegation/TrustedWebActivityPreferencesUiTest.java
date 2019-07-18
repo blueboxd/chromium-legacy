@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
-import android.preference.Preference;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -82,7 +81,7 @@ public class TrustedWebActivityPreferencesUiTest {
         final SingleCategoryPreferences websitePreferences =
                 TestThreadUtils.runOnUiThreadBlocking(() -> {
                     final SingleCategoryPreferences preferences =
-                            (SingleCategoryPreferences) preferenceActivity.getMainFragment();
+                            (SingleCategoryPreferences) preferenceActivity.getMainFragmentCompat();
                     final ExpandablePreferenceGroup group =
                             (ExpandablePreferenceGroup) preferences.findPreference(groupName);
                     preferences.onPreferenceClick(group);
@@ -104,7 +103,7 @@ public class TrustedWebActivityPreferencesUiTest {
             final ExpandablePreferenceGroup group =
                     (ExpandablePreferenceGroup) websitePreferences.findPreference(groupName);
             Assert.assertEquals(1, group.getPreferenceCount());
-            Preference preference = group.getPreference(0);
+            android.support.v7.preference.Preference preference = group.getPreference(0);
             CharSequence title = preference.getTitle();
             Assert.assertEquals("example.com", title.toString());
         });

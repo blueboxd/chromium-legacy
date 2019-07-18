@@ -146,6 +146,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsUnifiedInstall;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDesktopPWAsUnifiedLaunch;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsUSS;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

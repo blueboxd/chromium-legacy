@@ -1023,15 +1023,16 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithOptions_GuestProfile) {
   ASSERT_TRUE(profile_manager.SetUp());
   Profile* guest_profile = profile_manager.CreateGuestProfile();
 
+  const GURL app_url("https://example.com/path");
   auto data_retriever = std::make_unique<TestDataRetriever>();
-  data_retriever->BuildDefaultDataToRetrieve(GURL("https://example.com/path"),
+  data_retriever->BuildDefaultDataToRetrieve(app_url,
                                              /*scope=*/GURL{});
 
   auto install_task = std::make_unique<WebAppInstallTask>(
       guest_profile, install_finalizer_.get(), std::move(data_retriever));
 
-  InstallOptions install_options;
-  install_options.install_source = InstallSource::kExternalDefault;
+  InstallOptions install_options{app_url, LaunchContainer::kDefault,
+                                 InstallSource::kExternalDefault};
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithOptions(

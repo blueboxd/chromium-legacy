@@ -17,7 +17,7 @@ namespace {
 DawnTextureDescriptor AsDawnType(const GPUTextureDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnTextureDescriptor dawn_desc;
+  DawnTextureDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.usage = static_cast<DawnTextureUsageBit>(webgpu_desc->usage());
   dawn_desc.dimension =
@@ -35,7 +35,7 @@ DawnTextureViewDescriptor AsDawnType(
     const GPUTextureViewDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnTextureViewDescriptor dawn_desc;
+  DawnTextureViewDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.format = AsDawnEnum<DawnTextureFormat>(webgpu_desc->format());
   dawn_desc.dimension =

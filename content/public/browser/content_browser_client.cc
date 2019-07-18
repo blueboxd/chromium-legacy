@@ -355,20 +355,6 @@ bool ContentBrowserClient::AllowSetCookie(const GURL& url,
   return true;
 }
 
-void ContentBrowserClient::OnCookiesRead(int process_id,
-                                         int routing_id,
-                                         const GURL& url,
-                                         const GURL& first_party_url,
-                                         const net::CookieList& cookie_list,
-                                         bool blocked_by_policy) {}
-
-void ContentBrowserClient::OnCookieChange(int process_id,
-                                          int routing_id,
-                                          const GURL& url,
-                                          const GURL& first_party_url,
-                                          const net::CanonicalCookie& cookie,
-                                          bool blocked_by_policy) {}
-
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     ResourceContext* context,

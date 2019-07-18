@@ -16,17 +16,7 @@
 // public Mojo interface data types. This must be included by any source file
 // that uses these conversions explicitly or implicitly.
 
-namespace device {
-class UsbDevice;
-}  // namespace device
-
 namespace mojo {
-
-template <>
-struct TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice> {
-  static device::mojom::UsbDeviceInfoPtr Convert(
-      const device::UsbDevice& device);
-};
 
 template <>
 struct TypeConverter<device::mojom::UsbIsochronousPacketPtr,

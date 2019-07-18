@@ -671,11 +671,7 @@ bool Layer::ShouldDraw() const {
 }
 
 void Layer::SetRoundedCornerRadius(const gfx::RoundedCornersF& corner_radii) {
-  cc_layer_->SetRoundedCorner(corner_radii);
-  ScheduleDraw();
-
-  for (const auto& mirror : mirrors_)
-    mirror->dest()->SetRoundedCornerRadius(corner_radii);
+  GetAnimator()->SetRoundedCorners(corner_radii);
 }
 
 void Layer::SetIsFastRoundedCorner(bool enable) {
@@ -1436,6 +1432,15 @@ void Layer::SetClipRectFromAnimation(const gfx::Rect& clip_rect,
   cc_layer_->SetClipRect(clip_rect);
 }
 
+void Layer::SetRoundedCornersFromAnimation(
+    const gfx::RoundedCornersF& rounded_corners,
+    PropertyChangeReason reason) {
+  cc_layer_->SetRoundedCorner(rounded_corners);
+
+  for (const auto& mirror : mirrors_)
+    mirror->dest()->SetRoundedCornersFromAnimation(rounded_corners, reason);
+}
+
 void Layer::ScheduleDrawForAnimation() {
   ScheduleDraw();
 }
@@ -1475,6 +1480,10 @@ gfx::Rect Layer::GetClipRectForAnimation() const {
   if (clip_rect().IsEmpty())
     return gfx::Rect(size());
   return clip_rect();
+}
+
+gfx::RoundedCornersF Layer::GetRoundedCornersForAnimation() const {
+  return rounded_corner_radii();
 }
 
 float Layer::GetDeviceScaleFactor() const {

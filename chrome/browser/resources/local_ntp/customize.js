@@ -29,7 +29,8 @@ customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE = {
   // The 'Upload an image' menu item was clicked.
   NTP_CUSTOMIZE_LOCAL_IMAGE_CLICKED: 41,
   // The 'Restore default background' menu item was clicked.
-  NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED: 42,
+  // NOTE: NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED (42) is logged on the
+  // backend.
   // The attribution link on a customized background image was clicked.
   NTP_CUSTOMIZE_ATTRIBUTION_CLICKED: 43,
   // The 'Restore default shortcuts' menu item was clicked.
@@ -40,12 +41,7 @@ customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE = {
   NTP_CUSTOMIZE_CHROME_BACKGROUND_SELECT_IMAGE: 48,
   // 'Cancel' was clicked in the 'Chrome backgrounds' dialog.
   NTP_CUSTOMIZE_CHROME_BACKGROUND_CANCEL: 49,
-  // NOTE: NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE (50) is logged on the backend
-  // when the selected image is saved.
-  // 'Cancel' was clicked in the 'Upload an image' dialog.
-  NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL: 51,
-  // 'Done' was clicked in the 'Upload an image' dialog.
-  NTP_CUSTOMIZE_LOCAL_IMAGE_DONE: 52,
+  // NOTE: NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE (50) is logged on the backend.
 };
 
 /**
@@ -1632,8 +1628,6 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
     editDialog.close();
     customize.clearAttribution();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
-    ntpApiHandle.logEvent(customize.BACKGROUND_CUSTOMIZATION_LOG_TYPE
-                              .NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
   };
   $(customize.IDS.RESTORE_DEFAULT).onclick = (event) => {
     if (!$(customize.IDS.RESTORE_DEFAULT)

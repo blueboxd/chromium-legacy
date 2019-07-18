@@ -80,8 +80,8 @@ public class NotificationPlatformBridgeIntentTest {
                 });
         Assert.assertNotNull("Could not find the Preferences activity", activity);
 
-        SingleCategoryPreferences fragment =
-                ActivityUtils.waitForFragmentToAttach(activity, SingleCategoryPreferences.class);
+        SingleCategoryPreferences fragment = ActivityUtils.waitForFragmentToAttachCompat(
+                activity, SingleCategoryPreferences.class);
         Assert.assertNotNull("Could not find the SingleCategoryPreferences fragment", fragment);
     }
 

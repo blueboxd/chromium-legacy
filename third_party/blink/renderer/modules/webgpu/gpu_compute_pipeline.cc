@@ -20,7 +20,7 @@ GPUComputePipeline* GPUComputePipeline::Create(
   DCHECK(device);
   DCHECK(webgpu_desc);
 
-  DawnComputePipelineDescriptor dawn_desc;
+  DawnComputePipelineDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.layout = AsDawnType(webgpu_desc->layout());
 

@@ -44,7 +44,7 @@ const char kTestUrl2[] = "https://test-url-2.com/";
 
 web_app::InstallOptions GetInstallOptionsForUrl(const GURL& url) {
   web_app::InstallOptions options(url, web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kInternal);
+                                  web_app::InstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
   options.bypass_service_worker_check = true;
   options.require_manifest = true;

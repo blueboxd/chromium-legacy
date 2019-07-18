@@ -9,7 +9,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"

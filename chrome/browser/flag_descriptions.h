@@ -306,9 +306,6 @@ extern const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[];
 extern const char
     kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[];
 
-extern const char kEnableAutofillSaveCardImprovedUserConsentName[];
-extern const char kEnableAutofillSaveCardImprovedUserConsentDescription[];
-
 extern const char kEnableAutofillSaveCardShowNoThanksName[];
 extern const char kEnableAutofillSaveCardShowNoThanksDescription[];
 

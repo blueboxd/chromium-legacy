@@ -549,21 +549,44 @@ void Layer::SetClipRect(const gfx::Rect& clip_rect) {
   SetSubtreePropertyChanged();
   if (clip_tree_index() != ClipTree::kInvalidNodeId && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_host_->property_trees();
+    gfx::RectF effective_clip_rect = EffectiveClipRect();
     if (ClipNode* node = property_trees->clip_tree.Node(clip_tree_index())) {
-      node->clip = gfx::RectF(clip_rect);
-      // This mirrors the logic in PropertyTreeBuilder's AddClipNodeIfNeeded
-      // method.
-      if (masks_to_bounds() || mask_layer() ||
-          filters().HasFilterThatMovesPixels()) {
-        node->clip.Intersect(gfx::RectF(gfx::SizeF(bounds())));
-      }
+      node->clip = effective_clip_rect;
       node->clip += offset_to_transform_parent();
       property_trees->clip_tree.set_needs_update(true);
+    }
+    if (HasRoundedCorner() &&
+        effect_tree_index() != EffectTree::kInvalidNodeId) {
+      if (EffectNode* node =
+              property_trees->effect_tree.Node(effect_tree_index())) {
+        node->rounded_corner_bounds =
+            gfx::RRectF(effective_clip_rect, corner_radii());
+        node->effect_changed = true;
+        property_trees->effect_tree.set_needs_update(true);
+      }
     }
   } else {
     SetPropertyTreesNeedRebuild();
   }
   SetNeedsCommit();
+}
+
+gfx::RectF Layer::EffectiveClipRect() {
+  // If this does not have a clip rect set, then the subtree is clipped by
+  // the bounds.
+  const gfx::RectF layer_bounds = gfx::RectF(gfx::SizeF(bounds()));
+  if (clip_rect().IsEmpty())
+    return layer_bounds;
+
+  const gfx::RectF clip_rect_f(clip_rect());
+
+  // Layer needs to clip to its bounds as well apply a clip rect. Intersect the
+  // two to get the effective clip.
+  if (masks_to_bounds() || mask_layer() || filters().HasFilterThatMovesPixels())
+    return gfx::IntersectRects(layer_bounds, clip_rect_f);
+
+  // Clip rect is the only clip effecting the layer.
+  return clip_rect_f;
 }
 
 void Layer::SetMaskLayer(PictureLayer* mask_layer) {
@@ -640,7 +663,17 @@ void Layer::SetRoundedCorner(const gfx::RoundedCornersF& corner_radii) {
   inputs_.corner_radii = corner_radii;
   SetSubtreePropertyChanged();
   SetNeedsCommit();
-  SetPropertyTreesNeedRebuild();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  EffectNode* node = nullptr;
+  if (effect_tree_index() != EffectTree::kInvalidNodeId &&
+      (node = property_trees->effect_tree.Node(effect_tree_index()))) {
+    node->rounded_corner_bounds =
+        gfx::RRectF(EffectiveClipRect(), corner_radii);
+    node->effect_changed = true;
+    property_trees->effect_tree.set_needs_update(true);
+  } else {
+    SetPropertyTreesNeedRebuild();
+  }
 }
 
 void Layer::SetIsFastRoundedCorner(bool enable) {

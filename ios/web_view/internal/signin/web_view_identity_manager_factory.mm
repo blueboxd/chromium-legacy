@@ -21,7 +21,7 @@
 #include "components/signin/internal/identity_manager/primary_account_mutator_impl.h"
 #include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
-#include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_ios.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_pref_names.h"

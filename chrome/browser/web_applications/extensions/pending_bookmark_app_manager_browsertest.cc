@@ -27,9 +27,9 @@
 namespace extensions {
 
 web_app::InstallOptions CreateInstallOptions(const GURL& url) {
-  web_app::InstallOptions install_options(url,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      url, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;

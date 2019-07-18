@@ -61,6 +61,7 @@
 }
 
 - (void)stop {
+  [super stop];
   if (self.started) {
     self.started = NO;
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator

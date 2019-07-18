@@ -96,8 +96,9 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
                                  gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
     for (auto usage : usages) {
       if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
-              TypeParam::kBufferType, format, usage))
+              TypeParam::kBufferType, format, usage)) {
         continue;
+      }
 
       bool destroyed = false;
       gfx::GpuMemoryBufferHandle handle;
@@ -115,6 +116,48 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
       // Check if destruction callback is executed when deleting the buffer.
       buffer.reset();
       ASSERT_TRUE(destroyed);
+    }
+  }
+}
+
+TYPED_TEST_P(GpuMemoryBufferImplTest, CreateFromHandleSmallBuffer) {
+  const gfx::Size kBufferSize(8, 8);
+
+  for (auto format : gfx::GetBufferFormatsForTesting()) {
+    gfx::BufferUsage usages[] = {gfx::BufferUsage::GPU_READ,
+                                 gfx::BufferUsage::SCANOUT,
+                                 gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                                 gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+                                 gfx::BufferUsage::SCANOUT_VDA_WRITE,
+                                 gfx::BufferUsage::GPU_READ_CPU_READ_WRITE};
+    for (auto usage : usages) {
+      if (!TestFixture::gpu_memory_buffer_support()->IsConfigurationSupported(
+              TypeParam::kBufferType, format, usage)) {
+        continue;
+      }
+
+      bool destroyed = false;
+      gfx::GpuMemoryBufferHandle handle;
+      GpuMemoryBufferImpl::DestructionCallback destroy_callback =
+          TestFixture::CreateGpuMemoryBuffer(kBufferSize, format, usage,
+                                             &handle, &destroyed);
+
+      gfx::Size bogus_size = kBufferSize;
+      bogus_size.Enlarge(100, 100);
+
+      // Handle import should fail when the size is bigger than expected.
+      std::unique_ptr<GpuMemoryBufferImpl> buffer(
+          TestFixture::gpu_memory_buffer_support()
+              ->CreateGpuMemoryBufferImplFromHandle(
+                  std::move(handle), bogus_size, format, usage,
+                  std::move(destroy_callback)));
+
+      // Only non-mappable GMB implementations can be imported with invalid
+      // size. In other words all GMP implementations that allow memory mapping
+      // must validate image size when importing a handle.
+      if (buffer)
+        ASSERT_FALSE(buffer->Map());
     }
   }
 }
@@ -295,6 +338,7 @@ TYPED_TEST_P(GpuMemoryBufferImplTest, SerializeAndDeserialize) {
 // from a GpuMemoryBuffer implementation in order to be conformant.
 REGISTER_TYPED_TEST_SUITE_P(GpuMemoryBufferImplTest,
                             CreateFromHandle,
+                            CreateFromHandleSmallBuffer,
                             Map,
                             PersistentMap,
                             SerializeAndDeserialize);

@@ -55,6 +55,23 @@ class NativeFileSystemPermissionContext {
       int frame_id,
       base::OnceCallback<void(PermissionStatus)> callback) = 0;
 
+  enum class SensitiveDirectoryResult {
+    kAllowed,   // Access to directory is okay.
+    kTryAgain,  // User should pick a different directory.
+    kAbort,     // Abandon entirely, as if picking was cancelled.
+  };
+  // Checks if access to the given |paths| should be allowed or blocked. This is
+  // used to implement blocks for certain sensitive directories such as the
+  // "Windows" system directory, as well as the root of the "home" directory.
+  // Calls |callback| with the result of the check, after potentially showing
+  // some UI to the user if the path should not be accessed.
+  virtual void ConfirmSensitiveDirectoryAccess(
+      const url::Origin& origin,
+      const std::vector<base::FilePath>& paths,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SensitiveDirectoryResult)> callback) = 0;
+
  protected:
   virtual ~NativeFileSystemPermissionContext() = default;
 };

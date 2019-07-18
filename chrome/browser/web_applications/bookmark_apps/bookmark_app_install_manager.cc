@@ -159,7 +159,7 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
   switch (options.install_source) {
     // TODO(nigeltao/ortuno): should these two cases lead to different
     // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-    case web_app::InstallSource::kInternal:
+    case web_app::InstallSource::kInternalDefault:
     case web_app::InstallSource::kExternalDefault:
       helper->set_is_default_app();
       break;
@@ -170,7 +170,6 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
       helper->set_is_system_app();
       break;
     case web_app::InstallSource::kArc:
-    case web_app::InstallSource::kInvalid:
       NOTREACHED();
       break;
   }

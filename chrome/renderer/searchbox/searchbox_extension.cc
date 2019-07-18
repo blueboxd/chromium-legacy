@@ -1131,9 +1131,8 @@ void NewTabPageBindings::LogMostVisitedNavigation(
 // static
 void NewTabPageBindings::SetCustomBackgroundURL(
     const std::string& background_url) {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  GURL url(background_url);
-  search_box->SetCustomBackgroundURLWithAttributions(url, std::string(), std::string(), GURL());
+  SetCustomBackgroundURLWithAttributions(background_url, std::string(),
+                                         std::string(), std::string());
 }
 
 // static
@@ -1147,8 +1146,13 @@ void NewTabPageBindings::SetCustomBackgroundURLWithAttributions(
       GURL(background_url), attribution_line_1, attribution_line_2,
       GURL(attribution_action_url));
   // Captures saving the background by double-clicking, or clicking 'Done'.
-  search_box->LogEvent(
-      NTPLoggingEventType::NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE);
+  if (background_url.empty()) {
+    search_box->LogEvent(
+        NTPLoggingEventType::NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
+  } else {
+    search_box->LogEvent(
+        NTPLoggingEventType::NTP_CUSTOMIZE_CHROME_BACKGROUND_DONE);
+  }
 }
 
 // static

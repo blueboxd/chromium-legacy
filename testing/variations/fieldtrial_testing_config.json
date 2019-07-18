@@ -1833,6 +1833,25 @@
             ]
         }
     ],
+    "DownloadOfflineContentProvider": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseDownloadOfflineContentProvider"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadProgressInfoBar": [
         {
             "platforms": [
@@ -4667,6 +4686,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SecurityInterstitialsDarkMode"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SendTabToSelfShowSendingUI": [
+        {
+            "platforms": [
+                "android",
+                "ios",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SendTabToSelfShowSendingUI"
                     ]
                 }
             ]

@@ -350,7 +350,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
   auto task = GetInstallationTaskWithTestMocks(
       {kWebAppUrl, web_app::LaunchContainer::kDefault,
-       web_app::InstallSource::kInternal});
+       web_app::InstallSource::kInternalDefault});
 
   base::RunLoop run_loop;
 
@@ -390,7 +390,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationFails) {
   auto task = GetInstallationTaskWithTestMocks(
       {kWebAppUrl, web_app::LaunchContainer::kWindow,
-       web_app::InstallSource::kInternal});
+       web_app::InstallSource::kInternalDefault});
   data_retriever()->SetRendererWebApplicationInfo(nullptr);
 
   base::RunLoop run_loop;
@@ -417,9 +417,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoDesktopShortcut) {
-  web_app::InstallOptions install_options(kWebAppUrl,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -448,9 +448,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_NoQuickLaunchBarShortcut) {
-  web_app::InstallOptions install_options(kWebAppUrl,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   install_options.add_to_quick_launch_bar = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
@@ -479,9 +479,9 @@ TEST_F(BookmarkAppInstallationTaskTest,
 TEST_F(
     BookmarkAppInstallationTaskTest,
     WebAppOrShortcutFromContents_NoDesktopShortcutAndNoQuickLaunchBarShortcut) {
-  web_app::InstallOptions install_options(kWebAppUrl,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+  web_app::InstallOptions install_options(
+      kWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::InstallSource::kInternalDefault);
   install_options.add_to_desktop = false;
   install_options.add_to_quick_launch_bar = false;
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
@@ -512,7 +512,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerWindow) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kWindow,
-                              web_app::InstallSource::kInternal);
+                              web_app::InstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
@@ -536,7 +536,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_ForcedContainerTab) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kTab,
-                              web_app::InstallSource::kInternal);
+                              web_app::InstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;
@@ -559,7 +559,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_DefaultApp) {
   auto install_options =
       web_app::InstallOptions(kWebAppUrl, web_app::LaunchContainer::kDefault,
-                              web_app::InstallSource::kInternal);
+                              web_app::InstallSource::kInternalDefault);
   auto task = GetInstallationTaskWithTestMocks(std::move(install_options));
 
   base::RunLoop run_loop;

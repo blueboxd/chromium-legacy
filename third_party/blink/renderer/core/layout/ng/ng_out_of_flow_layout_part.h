@@ -111,7 +111,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
                                              const NGConstraintSpace&,
-                                             const NGPhysicalStaticPosition&,
+                                             const NGLogicalStaticPosition&,
                                              LogicalSize container_content_size,
                                              const ContainingBlockInfo&,
                                              const LayoutBox* only_layout);
@@ -122,7 +122,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       NGBlockNode node,
       const LogicalSize& container_content_size_in_child_writing_mode,
       const base::Optional<LayoutUnit>& block_estimate,
-      const NGAbsolutePhysicalPosition& node_position);
+      const NGLogicalOutOfFlowPosition& node_position);
 
   const NGConstraintSpace& container_space_;
   NGBoxFragmentBuilder* container_builder_;

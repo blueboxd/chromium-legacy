@@ -10,61 +10,21 @@ NATIVE_LIBRARIES_TEMPLATE = """\
 package org.chromium.base.library_loader;
 
 public class NativeLibraries {{
-    /**
-     * IMPORTANT NOTE: The variables defined here must _not_ be 'final'.
-     *
-     * The reason for this is very subtle:
-     *
-     * - This template is used to generate several distinct, but similar
-     *   files used in different contexts:
-     *
-     *   o .../gen/templates/org/chromium/base/library_loader/NativeLibraries.java
-     *
-     *     This file is used to build base.jar, which is the library
-     *     jar used by chromium projects. However, the
-     *     corresponding NativeLibraries.class file will _not_ be part
-     *     of the final base.jar.
-     *
-     *   o .../$PROJECT/native_libraries_java/NativeLibraries.java
-     *
-     *     This file is used to build an APK (e.g. $PROJECT
-     *     could be 'content_shell_apk'). Its content will depend on
-     *     this target's specific build configuration, and differ from
-     *     the source file above.
-     *
-     * - During the final link, all .jar files are linked together into
-     *   a single .dex file, and the second version of NativeLibraries.class
-     *   will be put into the final output file, and used at runtime.
-     *
-     * - If the variables were defined as 'final', their value would be
-     *   optimized out inside of 'base.jar', and could not be specialized
-     *   for every chromium program. This, however, doesn't apply to arrays of
-     *   strings, which can be defined as final.
-     *
-     * This exotic scheme is used to avoid injecting project-specific, or
-     * even build-specific, values into the base layer. E.g. this is
-     * how the component build is supported on Android without modifying
-     * the sources of each and every Chromium-based target.
-     */
-
     public static final int CPU_FAMILY_UNKNOWN = 0;
     public static final int CPU_FAMILY_ARM = 1;
     public static final int CPU_FAMILY_MIPS = 2;
     public static final int CPU_FAMILY_X86 = 3;
 
     // Set to true to enable the use of the Chromium Linker.
-    public static boolean sUseLinker{USE_LINKER};
-    public static boolean sUseLibraryInZipFile{USE_LIBRARY_IN_ZIP_FILE};
-    public static boolean sEnableLinkerTests{ENABLE_LINKER_TESTS};
+    public static {MAYBE_FINAL}boolean sUseLinker{USE_LINKER};
+    public static {MAYBE_FINAL}boolean sUseLibraryInZipFile{USE_LIBRARY_IN_ZIP_FILE};
+    public static {MAYBE_FINAL}boolean sEnableLinkerTests{ENABLE_LINKER_TESTS};
 
     // This is the list of native libraries to be loaded (in the correct order)
-    // by LibraryLoader.java.  The base java library is compiled with no
-    // array defined, and then the build system creates a version of the file
-    // with the real list of libraries required (which changes based upon which
-    // .apk is being built).
+    // by LibraryLoader.java.
     // TODO(cjhopman): This is public since it is referenced by NativeTestActivity.java
     // directly. The two ways of library loading should be refactored into one.
-    public static final String[] LIBRARIES = {LIBRARIES};
+    public static {MAYBE_FINAL}String[] LIBRARIES = {LIBRARIES};
 
     // This is the expected version of the 'main' native library, which is the one that
     // implements the initial set of base JNI functions including
@@ -72,8 +32,8 @@ public class NativeLibraries {{
     // TODO(torne): This is public to work around classloader issues in Trichrome
     // where NativeLibraries is not in the same dex as LibraryLoader.
     // We should instead split up Java code along package boundaries.
-    public static String sVersionNumber = {VERSION_NUMBER};
+    public static {MAYBE_FINAL}String sVersionNumber = {VERSION_NUMBER};
 
-    public static int sCpuFamily = {CPU_FAMILY};
+    public static {MAYBE_FINAL}int sCpuFamily = {CPU_FAMILY};
 }}
 """

@@ -15,11 +15,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
+
+namespace content_settings {
+class CookieSettings;
+}
 
 namespace web {
 class BrowserState;
@@ -28,6 +31,7 @@ class WebStatePolicyDecider;
 }
 
 class AccountReconcilor;
+class PrefService;
 
 @class AccountConsistencyNavigationDelegate;
 @class WKWebView;

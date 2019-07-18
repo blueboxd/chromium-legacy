@@ -4,6 +4,8 @@
 
 #include "services/device/usb/mock_usb_device.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 
 namespace device {
@@ -32,7 +34,7 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
 MockUsbDevice::~MockUsbDevice() = default;
 
 void MockUsbDevice::AddMockConfig(mojom::UsbConfigurationInfoPtr config) {
-  descriptor_.configurations.push_back(std::move(config));
+  device_info_->configurations.push_back(std::move(config));
 }
 
 void MockUsbDevice::ActiveConfigurationChanged(int configuration_value) {

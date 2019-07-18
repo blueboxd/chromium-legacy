@@ -131,6 +131,8 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetUkmSourceId(GetUkmSourceId());
   request->SetInspectorId(InspectorId());
   request->SetFromOriginDirtyStyleSheet(IsFromOriginDirtyStyleSheet());
+  request->SetSignedExchangePrefetchCacheEnabled(
+      IsSignedExchangePrefetchCacheEnabled());
 
   return request;
 }

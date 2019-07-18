@@ -318,7 +318,6 @@ blink_core_sources("layout") {
     "ng/geometry/ng_fragment_geometry.h",
     "ng/geometry/ng_margin_strut.cc",
     "ng/geometry/ng_margin_strut.h",
-    "ng/geometry/ng_static_position.cc",
     "ng/geometry/ng_static_position.h",
     "ng/inline/empty_offset_mapping_builder.h",
     "ng/inline/layout_ng_text.h",

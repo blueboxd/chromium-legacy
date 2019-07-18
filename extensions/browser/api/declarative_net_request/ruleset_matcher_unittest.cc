@@ -76,7 +76,7 @@ TEST_F(RulesetMatcherTest, RedirectRule) {
 
   auto should_redirect_request = [&matcher](const RequestParams& params,
                                             GURL* redirect_url) {
-    return matcher->HasMatchingRedirectRule(params, redirect_url);
+    return matcher->GetRedirectRule(params, redirect_url) != nullptr;
   };
 
   GURL google_url("http://google.com");
@@ -113,7 +113,39 @@ TEST_F(RulesetMatcherTest, PreventSelfRedirect) {
   params.is_third_party = true;
 
   GURL redirect_url;
-  EXPECT_FALSE(matcher->HasMatchingRedirectRule(params, &redirect_url));
+  EXPECT_FALSE(matcher->GetRedirectRule(params, &redirect_url));
+}
+
+// Tests a simple upgrade scheme rule.
+TEST_F(RulesetMatcherTest, UpgradeRule) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("google.com");
+  rule.priority = kMinValidPriority;
+  rule.action->type = std::string("upgradeScheme");
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
+
+  auto should_upgrade_request = [&matcher](const RequestParams& params) {
+    return matcher->GetUpgradeRule(params) != nullptr;
+  };
+
+  GURL google_url("http://google.com");
+  GURL yahoo_url("http://yahoo.com");
+  GURL non_upgradeable_url("https://google.com");
+
+  RequestParams params;
+  params.url = &google_url;
+  params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  params.is_third_party = true;
+
+  EXPECT_TRUE(should_upgrade_request(params));
+
+  params.url = &yahoo_url;
+  EXPECT_FALSE(should_upgrade_request(params));
+
+  params.url = &non_upgradeable_url;
+  EXPECT_FALSE(should_upgrade_request(params));
 }
 
 // Tests that a modified ruleset file fails verification.

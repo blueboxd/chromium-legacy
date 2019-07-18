@@ -612,6 +612,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // resets |current_path_|.
   void ReleaseDownloadFile(bool destroy_file);
 
+  // Deletes the download file at |current_path_|.
+  void DeleteDownloadFile();
+
   // Check if a download is ready for completion.  The callback provided
   // may be called at some point in the future if an external entity
   // state has change s.t. this routine should be checked again.

@@ -59,7 +59,7 @@ zx::channel ValidateDirectoryAndTakeChannel(
 // directory.
 bool CheckVulkanSupport(
     const fidl::InterfaceHandle<::fuchsia::io::Directory>& directory_handle,
-    bool* enable_vulkan) {
+    bool* vulkan_supported) {
   zx::channel dir_channel(fdio_service_clone(directory_handle.channel().get()));
   if (!dir_channel)
     return false;
@@ -75,7 +75,7 @@ bool CheckVulkanSupport(
   struct stat statbuf;
   int result =
       fstatat(dir_fd.get(), "fuchsia.vulkan.loader.Loader", &statbuf, 0);
-  *enable_vulkan = result == 0;
+  *vulkan_supported = result == 0;
 
   return true;
 }
@@ -105,8 +105,8 @@ void ContextProviderImpl::Create(
 
   // Enable Vulkan if the Vulkan loader service is present in the service
   // directory.
-  bool enable_vulkan = false;
-  if (!CheckVulkanSupport(service_directory, &enable_vulkan)) {
+  bool vulkan_supported = false;
+  if (!CheckVulkanSupport(service_directory, &vulkan_supported)) {
     // TODO(crbug.com/934539): Add type epitaph.
     DLOG(WARNING) << "Invalid |service_directory| in CreateContextParams.";
     return;
@@ -178,16 +178,18 @@ void ContextProviderImpl::Create(
                                       base::JoinString(handles_ids, ","));
   }
 
+#if defined(WEB_ENGINE_ENABLE_VULKAN)
   // Enable Vulkan when the Vulkan loader service is included in the service
   // directory.
   // TODO(https://crbug.com/962617): Enable Vulkan by default and remove this
   // hack.
-  if (enable_vulkan) {
+  if (vulkan_supported) {
     launch_command.AppendSwitchASCII(
         "--enable-features", "DefaultEnableOopRasterization,UseSkiaRenderer");
     launch_command.AppendSwitch("--use-vulkan");
     launch_command.AppendSwitchASCII("--use-gl", "stub");
   }
+#endif  // WEB_ENGINE_ENABLE_VULKAN
 
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.

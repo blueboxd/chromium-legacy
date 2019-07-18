@@ -8,6 +8,27 @@
 
 namespace mojo {
 
+// static
+MojoResult FileDataSource::ConvertFileErrorToMojoResult(
+    base::File::Error error) {
+  switch (error) {
+    case base::File::FILE_OK:
+      return MOJO_RESULT_OK;
+    case base::File::FILE_ERROR_NOT_FOUND:
+      return MOJO_RESULT_NOT_FOUND;
+    case base::File::FILE_ERROR_SECURITY:
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+      return MOJO_RESULT_PERMISSION_DENIED;
+    case base::File::FILE_ERROR_TOO_MANY_OPENED:
+    case base::File::FILE_ERROR_NO_MEMORY:
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+    case base::File::FILE_ERROR_ABORT:
+      return MOJO_RESULT_ABORTED;
+    default:
+      return MOJO_RESULT_UNKNOWN;
+  }
+}
+
 FileDataSource::FileDataSource(base::File file, size_t max_bytes)
     : file_(std::move(file)), max_bytes_(max_bytes) {
   base_offset_ = file_.IsValid() ? file_.Seek(base::File::FROM_CURRENT, 0) : 0;
@@ -28,7 +49,7 @@ DataPipeProducer::DataSource::ReadResult FileDataSource::Read(
   int bytes_read = file_.Read(base_offset_ + offset, buffer.data(), read_size);
   if (bytes_read < 0) {
     result.bytes_read = 0;
-    result.error = file_.GetLastFileError();
+    result.result = ConvertFileErrorToMojoResult(file_.GetLastFileError());
   } else {
     result.bytes_read = bytes_read;
   }

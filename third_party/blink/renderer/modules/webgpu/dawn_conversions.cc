@@ -543,7 +543,7 @@ DawnFrontFace AsDawnEnum<DawnFrontFace>(const WTF::String& webgpu_enum) {
 DawnColor AsDawnType(const GPUColor* webgpu_color) {
   DCHECK(webgpu_color);
 
-  DawnColor dawn_color;
+  DawnColor dawn_color = {};
   dawn_color.r = webgpu_color->r();
   dawn_color.g = webgpu_color->g();
   dawn_color.b = webgpu_color->b();
@@ -555,7 +555,7 @@ DawnColor AsDawnType(const GPUColor* webgpu_color) {
 DawnExtent3D AsDawnType(const GPUExtent3D* webgpu_extent) {
   DCHECK(webgpu_extent);
 
-  DawnExtent3D dawn_extent;
+  DawnExtent3D dawn_extent = {};
   dawn_extent.width = webgpu_extent->width();
   dawn_extent.height = webgpu_extent->height();
   dawn_extent.depth = webgpu_extent->depth();
@@ -566,7 +566,7 @@ DawnExtent3D AsDawnType(const GPUExtent3D* webgpu_extent) {
 DawnOrigin3D AsDawnType(const GPUOrigin3D* webgpu_origin) {
   DCHECK(webgpu_origin);
 
-  DawnOrigin3D dawn_origin;
+  DawnOrigin3D dawn_origin = {};
   dawn_origin.x = webgpu_origin->x();
   dawn_origin.y = webgpu_origin->y();
   dawn_origin.z = webgpu_origin->z();
@@ -587,7 +587,7 @@ OwnedPipelineStageDescriptor AsDawnType(
   char* entry_point_ptr = entry_point_keepalive.get();
   memcpy(entry_point_ptr, entry_point.c_str(), byte_size);
 
-  DawnPipelineStageDescriptor dawn_stage;
+  DawnPipelineStageDescriptor dawn_stage = {};
   dawn_stage.module = webgpu_stage->module()->GetHandle();
   dawn_stage.entryPoint = entry_point_ptr;
 

@@ -193,11 +193,11 @@ int SearchController::GetLastQueryLength() const {
   return last_query_.size();
 }
 
-void SearchController::Train(const std::string& id, RankingItemType type) {
+void SearchController::Train(AppLaunchData&& app_launch_data) {
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
     ChromeOSAppListLaunchEventProto::LaunchType launch_type;
-    if (type == RankingItemType::kApp ||
-        type == RankingItemType::kArcAppShortcut) {
+    if (app_launch_data.ranking_item_type == RankingItemType::kApp ||
+        app_launch_data.ranking_item_type == RankingItemType::kArcAppShortcut) {
       launch_type = ChromeOSAppListLaunchEventProto::APP_TILES;
     } else {
       launch_type = ChromeOSAppListLaunchEventProto::RESULTS_LIST;
@@ -205,21 +205,24 @@ void SearchController::Train(const std::string& id, RankingItemType type) {
 
     // TODO(951287): Record the last-used domain.
     AppListLaunchRecorder::GetInstance()->Record(
-        {launch_type, NormalizeId(id), base::UTF16ToUTF8(last_query_),
-         std::string(), last_launched_app_id_});
+        {launch_type, NormalizeId(app_launch_data.id),
+         base::UTF16ToUTF8(last_query_), std::string(), last_launched_app_id_});
 
     // Only record the last launched app if the hashed logging feature flag is
     // enabled, because it is only used by hashed logging.
-    if (type == RankingItemType::kApp) {
-      last_launched_app_id_ = NormalizeId(id);
-    } else if (type == RankingItemType::kArcAppShortcut) {
-      last_launched_app_id_ = RemoveAppShortcutLabel(NormalizeId(id));
+    if (app_launch_data.ranking_item_type == RankingItemType::kApp) {
+      last_launched_app_id_ = NormalizeId(app_launch_data.id);
+    } else if (app_launch_data.ranking_item_type ==
+               RankingItemType::kArcAppShortcut) {
+      last_launched_app_id_ =
+          RemoveAppShortcutLabel(NormalizeId(app_launch_data.id));
     }
   }
 
   for (const auto& provider : providers_)
-    provider->Train(id, type);
-  mixer_->Train(base::UTF16ToUTF8(last_query_), id, type);
+    provider->Train(app_launch_data.id, app_launch_data.ranking_item_type);
+  app_launch_data.query = base::UTF16ToUTF8(last_query_);
+  mixer_->Train(app_launch_data);
 }
 
 }  // namespace app_list

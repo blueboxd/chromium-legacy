@@ -10,45 +10,7 @@
 #include <map>
 #include <utility>
 
-#include "services/device/public/cpp/usb/usb_utils.h"
-#include "services/device/usb/usb_descriptors.h"
-#include "services/device/usb/usb_device.h"
-
 namespace mojo {
-
-// static
-device::mojom::UsbDeviceInfoPtr
-TypeConverter<device::mojom::UsbDeviceInfoPtr, device::UsbDevice>::Convert(
-    const device::UsbDevice& device) {
-  auto info = device::mojom::UsbDeviceInfo::New();
-  info->guid = device.guid();
-  info->usb_version_major = device.usb_version() >> 8;
-  info->usb_version_minor = device.usb_version() >> 4 & 0xf;
-  info->usb_version_subminor = device.usb_version() & 0xf;
-  info->class_code = device.device_class();
-  info->subclass_code = device.device_subclass();
-  info->protocol_code = device.device_protocol();
-  info->bus_number = device.bus_number();
-  info->port_number = device.port_number();
-  info->vendor_id = device.vendor_id();
-  info->product_id = device.product_id();
-  info->device_version_major = device.device_version() >> 8;
-  info->device_version_minor = device.device_version() >> 4 & 0xf;
-  info->device_version_subminor = device.device_version() & 0xf;
-  info->manufacturer_name = device.manufacturer_string();
-  info->product_name = device.product_string();
-  info->serial_number = device.serial_number();
-  info->webusb_landing_page = device.webusb_landing_page();
-  const device::mojom::UsbConfigurationInfo* config =
-      device.active_configuration();
-  info->active_configuration = config ? config->configuration_value : 0;
-
-  info->configurations.reserve(device.configurations().size());
-  for (const auto& config : device.configurations()) {
-    info->configurations.push_back(config->Clone());
-  }
-  return info;
-}
 
 // static
 device::mojom::UsbIsochronousPacketPtr

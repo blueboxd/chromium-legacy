@@ -370,20 +370,4 @@ void Image::AddDarkModeClassification(
   dark_mode_classifications_.insert(key, dark_mode_classification);
 }
 
-bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
-  // Check if the image has already been classified.
-  DarkModeClassification result = GetDarkModeClassification(src_rect);
-  if (result != DarkModeClassification::kNotClassified)
-    return result == DarkModeClassification::kApplyFilter;
-
-  result = ClassifyImageForDarkMode(src_rect);
-
-  // Store the classification result using src_rect's location
-  // as a key for the map.
-  if (ShouldCacheDarkModeClassification())
-    AddDarkModeClassification(src_rect, result);
-
-  return result == DarkModeClassification::kApplyFilter;
-}
-
 }  // namespace blink

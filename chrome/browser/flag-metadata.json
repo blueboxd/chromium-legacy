@@ -944,11 +944,6 @@
     "expiry_milestone": 78
   },
   {
-    "name": "enable-autofill-save-card-improved-user-consent",
-    "owners": [ "chrome-autofill@google.com" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "enable-autofill-save-credit-card-uses-improved-messaging",
     "owners": [ "siyua@chromium.org", "payments-autofill-team@google.com" ],
     "expiry_milestone": 78

@@ -48,7 +48,7 @@ void GPUQueue::signal(GPUFence* fence, uint64_t signal_value) {
 GPUFence* GPUQueue::createFence(const GPUFenceDescriptor* descriptor) {
   DCHECK(descriptor);
 
-  DawnFenceDescriptor desc;
+  DawnFenceDescriptor desc = {};
   desc.nextInChain = nullptr;
   desc.initialValue = descriptor->initialValue();
 

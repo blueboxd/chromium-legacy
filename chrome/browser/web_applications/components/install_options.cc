@@ -7,9 +7,9 @@
 #include <ostream>
 #include <tuple>
 
-namespace web_app {
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 
-InstallOptions::InstallOptions() = default;
+namespace web_app {
 
 InstallOptions::InstallOptions(const GURL& url,
                                LaunchContainer launch_container,

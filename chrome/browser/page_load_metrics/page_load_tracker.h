@@ -19,6 +19,7 @@
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -246,6 +247,16 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                                 bool is_display_none);
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size);
+
+  void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy);
+
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy);
 
   // Signals that we should stop tracking metrics for the associated page load.
   // We may stop tracking a page load if it doesn't meet the criteria for

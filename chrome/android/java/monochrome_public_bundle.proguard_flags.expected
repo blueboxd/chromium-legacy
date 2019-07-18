@@ -735,6 +735,6 @@
 ################################################################################
 # Dynamically generated from build/android/gyp/proguard.py
 ################################################################################
--assumevalues class android.os.Build$VERSION {
+-assumenosideeffects class android.os.Build$VERSION {
     public static final int SDK_INT return 24..9999;
 }

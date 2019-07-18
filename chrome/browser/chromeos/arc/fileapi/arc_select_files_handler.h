@@ -40,6 +40,9 @@ class ArcSelectFilesHandlersManager {
   explicit ArcSelectFilesHandlersManager(content::BrowserContext* context);
   ~ArcSelectFilesHandlersManager();
 
+  // Delete all handlers and close all SelectFileDialogs.
+  void DeleteAllHandlers() { handlers_by_task_id_.clear(); }
+
   // Handler for FileSystemHost.SelectFiles.
   // Creates a new ArcSelectFilesHandler instance.
   void SelectFiles(const mojom::SelectFilesRequestPtr& request,

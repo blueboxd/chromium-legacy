@@ -6221,6 +6221,91 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       HitTestOOPIFWithPaddingAndBorder) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/oopif_with_padding_and_border.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  RenderWidgetHostViewBase* rwhv_parent =
+      static_cast<RenderWidgetHostViewBase*>(
+          root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  // Layout of the loaded page:
+  //
+  //  |(0, 0)----------------------------|
+  //  |             border               |
+  //  |    |(20, 20)----------------|    |
+  //  |    |        padding         |    |
+  //  |    |    |(40, 40) -------|  |    |
+  //  |    |    |                |  |    |
+  //  |    |    |  content box   |  |    |
+  //  |    |    |                |  |    |
+  //  |    |    |----------------|  |    |
+  //  |    |                        |    |
+  //  |----|------------------------|----|(280, 280)
+  //
+  // Clicks on the padding or border should be handled by the root while
+  // clicks on the content box should be handled by the iframe.
+
+  const gfx::PointF child_origin =
+      rwhv_child->TransformPointToRootCoordSpaceF(gfx::PointF());
+  {
+    gfx::PointF point_in_border = child_origin + gfx::Vector2dF(-30, -30);
+    base::RunLoop run_loop;
+    viz::FrameSinkId received_frame_sink_id;
+    root->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
+        point_in_border, 0,
+        base::BindLambdaForTesting(
+            [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+              received_frame_sink_id = id;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    EXPECT_EQ(rwhv_parent->GetFrameSinkId(), received_frame_sink_id);
+  }
+
+  {
+    gfx::PointF point_in_padding = child_origin + gfx::Vector2dF(-10, -10);
+    base::RunLoop run_loop;
+    viz::FrameSinkId received_frame_sink_id;
+    root->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
+        point_in_padding, 0,
+        base::BindLambdaForTesting(
+            [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+              received_frame_sink_id = id;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    EXPECT_EQ(rwhv_parent->GetFrameSinkId(), received_frame_sink_id);
+  }
+
+  {
+    gfx::PointF point_in_content_box = child_origin + gfx::Vector2dF(10, 10);
+    base::RunLoop run_loop;
+    viz::FrameSinkId received_frame_sink_id;
+    root->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
+        point_in_content_box, 0,
+        base::BindLambdaForTesting(
+            [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+              received_frame_sink_id = id;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    EXPECT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
+  }
+}
+
 class SitePerProcessHitTestDataGenerationBrowserTest
     : public SitePerProcessHitTestBrowserTest {
  public:

@@ -46,7 +46,7 @@ TestUsbDevice::TestUsbDevice(const std::string& name,
                 base::UTF8ToUTF16(serial_number),
                 0,
                 0) {
-  webusb_landing_page_ = landing_page;
+  device_info_->webusb_landing_page = landing_page;
 }
 
 void TestUsbDevice::Open(OpenCallback callback) {

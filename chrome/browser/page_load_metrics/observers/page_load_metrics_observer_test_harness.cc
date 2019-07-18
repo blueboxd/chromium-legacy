@@ -127,6 +127,24 @@ void PageLoadMetricsObserverTestHarness::SimulateMediaPlayed() {
   tester_->SimulateMediaPlayed();
 }
 
+void PageLoadMetricsObserverTestHarness::SimulateCookiesRead(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  tester_->SimulateCookiesRead(url, first_party_url, cookie_list,
+                               blocked_by_policy);
+}
+
+void PageLoadMetricsObserverTestHarness::SimulateCookieChange(
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  tester_->SimulateCookieChange(url, first_party_url, cookie,
+                                blocked_by_policy);
+}
+
 const base::HistogramTester&
 PageLoadMetricsObserverTestHarness::histogram_tester() const {
   return histogram_tester_;

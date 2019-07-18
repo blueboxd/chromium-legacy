@@ -271,6 +271,22 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const GlobalRequestID& request_id,
       const mojom::ResourceLoadInfo& resource_load_info) {}
 
+  // This method is invoked when a document or resource reads a cookie. Note
+  // that this isn't tied to any particular navigation (e.g., it may be called
+  // after a subsequent navigation commits).
+  virtual void OnCookiesRead(const GURL& url,
+                             const GURL& first_party_url,
+                             const net::CookieList& cookie_list,
+                             bool blocked_by_policy) {}
+
+  // This method is invoked when an attempt has been made to set |cookie|. Note
+  // that this isn't tied to any particular navigation (e.g., it may be called
+  // after a subsequent navigation commits).
+  virtual void OnCookieChange(const GURL& url,
+                              const GURL& first_party_url,
+                              const net::CanonicalCookie& cookie,
+                              bool blocked_by_policy) {}
+
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created
   // (in the case of new navigations) or renavigated to (for back/forward

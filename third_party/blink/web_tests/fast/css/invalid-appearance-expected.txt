@@ -1,0 +1,26 @@
+CONSOLE WARNING: '-webkit-appearance: checkbox' for elements other than input[type=checkbox] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: radio' for elements other than input[type=radio] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: push-button' for elements other than input[type=button], input[type=reset], and input[type=submit] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: square-button' for elements other than input[type=color] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: button' for a is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: button' for drop-down box select is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: inner-spin-button' for elements other than :-webkit-inner-spin-button is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: listbox' for elements other than listbox select is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: menulist' for elements other than select and input[type=color][list] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: menulist-button' for elements other than select and input[type=color][list] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: meter' for elements other than meter is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: progress-bar' for elements other than progress is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: slider-horizontal' for elements other than input[type=range] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: slider-vertical' for elements other than input[type=range] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: sliderthumb-horizontal' for elements other than ::-webkit-slider-thumb and ::-webkit-media-slider-thumb is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: sliderthumb-vertical' for elements other than ::-webkit-slider-thumb and ::-webkit-media-slider-thumb is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: searchfield' for elements other than input[type=search] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: searchfield-cancel-button' for elements other than ::-webkit-clear-button and ::-webkit-search-cancel-button is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: textfield' for elements other than input[type=email], input[type=number], input[type=password], input[type=search], input[type=tel], input[type=text], input[type=url], input[type=date], input[type=datetime-local], input[type=month], input[type=time], and input[type=week] is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+CONSOLE WARNING: '-webkit-appearance: textarea' for elements other than textarea is deprecated and will be removed in M79, around December 2019. See https://www.chromestatus.com/features/5070237827334144 for more details.
+
+
+
+See if we have deprecation messages for -webkit-appearance.
+
+         menulist           

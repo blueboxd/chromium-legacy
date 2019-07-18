@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -30,31 +29,6 @@ namespace mojo {
 class MOJO_CPP_SYSTEM_EXPORT DataPipeProducer {
  public:
   using CompletionCallback = base::OnceCallback<void(MojoResult result)>;
-
-  // Interface definition of an optional object that may be supplied to the
-  // DataPipeProducer so that the data being read from the DataSource can be
-  // observed.
-  // TODO(crbug.com/983023): Remove Observer and achieve the same goal with
-  // FilteredDataSource.
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Called once per read attempt. |data| contains the read data (if any).
-    // |num_bytes_read| is the number of read bytes, 0 indicates EOF. Both
-    // parameters may only be used when |read_result| is base::File::FILE_OK.
-    // Can be called on any sequence.
-    // TODO(crbug.com/983023): Consider to use MojoResult.
-    virtual void OnBytesRead(const void* data,
-                             size_t num_bytes_read,
-                             base::File::Error read_result) = 0;
-
-    // Called when the DataPipeProducer has finished reading all data. Will be
-    // called even if there was an error opening the file or reading the data.
-    // Can be called on any sequence.
-    virtual void OnDoneReading() = 0;
-  };
-
   // Interface definition of abstracted content reader that has minimum
   // base::File equivalent interface to read content.
   class DataSource {
@@ -65,9 +39,8 @@ class MOJO_CPP_SYSTEM_EXPORT DataPipeProducer {
       // requested size, it means EOF is reached.
       size_t bytes_read = 0;
 
-      // Error resulting from this call.
-      // TODO(crbug.com/983023): Consider to use MojoResult.
-      base::File::Error error = base::File::FILE_OK;
+      // MojoResult resulting from this call.
+      MojoResult result = MOJO_RESULT_OK;
     };
     virtual ~DataSource() {}
 
@@ -78,13 +51,13 @@ class MOJO_CPP_SYSTEM_EXPORT DataPipeProducer {
     // EOF is reached) starting with the given offset. Returns ReadResult to
     // represent the number of bytes read and errors.
     virtual ReadResult Read(int64_t offset, base::span<char> buffer) = 0;
+
+    // Notifies DataPipeProducer aborts read operations.
+    virtual void Abort() {}
   };
 
   // Constructs a new DataPipeProducer which will write data to |producer|.
-  // Caller may supply an optional |observer| if observation of the read data is
-  // desired.
-  DataPipeProducer(ScopedDataPipeProducerHandle producer,
-                   std::unique_ptr<Observer> observer);
+  explicit DataPipeProducer(ScopedDataPipeProducerHandle producer);
   ~DataPipeProducer();
 
   // Attempts to eventually write all of |data_source|'s contents to the pipe.
@@ -122,7 +95,6 @@ class MOJO_CPP_SYSTEM_EXPORT DataPipeProducer {
 
   ScopedDataPipeProducerHandle producer_;
   scoped_refptr<SequenceState> sequence_state_;
-  std::unique_ptr<Observer> observer_;
   base::WeakPtrFactory<DataPipeProducer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataPipeProducer);

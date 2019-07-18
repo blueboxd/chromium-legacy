@@ -1990,6 +1990,25 @@ void WebContentsImpl::NotifyPreferencesChanged() {
     render_view_host->OnWebkitPreferencesChanged();
 }
 
+void WebContentsImpl::OnCookiesRead(const GURL& url,
+                                    const GURL& first_party_url,
+                                    const net::CookieList& cookie_list,
+                                    bool blocked_by_policy) {
+  for (auto& observer : observers_) {
+    observer.OnCookiesRead(url, first_party_url, cookie_list,
+                           blocked_by_policy);
+  }
+}
+
+void WebContentsImpl::OnCookieChange(const GURL& url,
+                                     const GURL& first_party_url,
+                                     const net::CanonicalCookie& cookie,
+                                     bool blocked_by_policy) {
+  for (auto& observer : observers_) {
+    observer.OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
+  }
+}
+
 void WebContentsImpl::Stop() {
   for (FrameTreeNode* node : frame_tree_.Nodes())
     node->StopLoading();

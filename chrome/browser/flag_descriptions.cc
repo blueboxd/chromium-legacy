@@ -505,12 +505,6 @@ const char kEnableAutofillNativeDropdownViewsDescription[] =
     "If enabled, the Autofill Dropdown will be built natively using Views, "
     "rather than painted directly to a canvas.";
 
-const char kEnableAutofillSaveCardImprovedUserConsentName[] =
-    "Use updated UI for credit card save bubbles";
-const char kEnableAutofillSaveCardImprovedUserConsentDescription[] =
-    "If enabled, adds a [No thanks] button to credit card save bubbles and "
-    "updates their title headers.";
-
 const char kEnableAutofillSaveCardShowNoThanksName[] =
     "Show explicit decline option in credit card save prompts";
 const char kEnableAutofillSaveCardShowNoThanksDescription[] =

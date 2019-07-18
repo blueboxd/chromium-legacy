@@ -360,7 +360,7 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionIndex_count == 6,
+  static_assert(flat::ActionIndex_count == 7,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 
@@ -408,8 +408,12 @@ base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
   return base::nullopt;
 }
 
-base::Optional<RulesetManager::Action> RulesetManager::GetRedirectAction(
+base::Optional<RulesetManager::Action>
+RulesetManager::GetRedirectOrUpgradeAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
+    const WebRequestInfo& request,
+    const int tab_id,
+    const bool crosses_incognito,
     const RequestParams& params) const {
   DCHECK(std::is_sorted(rulesets.begin(), rulesets.end(),
                         [](const ExtensionRulesetData* a,
@@ -423,12 +427,28 @@ base::Optional<RulesetManager::Action> RulesetManager::GetRedirectAction(
   // more recently installed extensions get higher priority in choosing the
   // redirect url.
   for (const ExtensionRulesetData* ruleset : rulesets) {
-    GURL redirect_url;
-    if (ruleset->matcher->ShouldRedirectRequest(params, &redirect_url)) {
-      Action action(Action::Type::REDIRECT);
-      action.redirect_url = std::move(redirect_url);
-      return action;
+    PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
+        info_map_, ruleset->extension_id, request.url, tab_id,
+        crosses_incognito,
+        WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
+        request.initiator, request.type);
+
+    CompositeMatcher::RedirectAction redirect_action =
+        ruleset->matcher->ShouldRedirectRequest(params, page_access);
+
+    DCHECK(!(redirect_action.redirect_url &&
+             redirect_action.notify_request_withheld));
+    if (redirect_action.notify_request_withheld) {
+      NotifyRequestWithheld(ruleset->extension_id, request);
+      continue;
     }
+
+    if (!redirect_action.redirect_url)
+      continue;
+
+    Action action(Action::Type::REDIRECT);
+    action.redirect_url = std::move(redirect_action.redirect_url);
+    return action;
   }
 
   return base::nullopt;
@@ -507,37 +527,10 @@ RulesetManager::Action RulesetManager::EvaluateRequestInternal(
   if (action)
     return std::move(*action);
 
-  // Redirecting a request requires host permissions to the request url and
-  // its initiator.
-  std::vector<const ExtensionRulesetData*>
-      rulesets_to_evaluate_with_host_permissions;
-  for (const ExtensionRulesetData* ruleset : rulesets_to_evaluate) {
-    PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
-        info_map_, ruleset->extension_id, request.url, tab_id,
-        crosses_incognito,
-        WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-        request.initiator, request.type);
-
-    if (page_access != PageAccess::kAllowed) {
-      // Notify the web request was withheld if the extension would have
-      // redirected the request.
-      // Note: The following check should be modified if more actions needing
-      // host permissions are added.
-      GURL ignore;
-      if (page_access == PageAccess::kWithheld &&
-          ruleset->matcher->ShouldRedirectRequest(params, &ignore)) {
-        NotifyRequestWithheld(ruleset->extension_id, request);
-      }
-      continue;
-    }
-
-    rulesets_to_evaluate_with_host_permissions.push_back(ruleset);
-  }
-
   // If the request is redirected, no further modifications can happen. A new
   // request will be created and subsequently evaluated.
-  action =
-      GetRedirectAction(rulesets_to_evaluate_with_host_permissions, params);
+  action = GetRedirectOrUpgradeAction(rulesets_to_evaluate, request, tab_id,
+                                      crosses_incognito, params);
   if (action)
     return std::move(*action);
 

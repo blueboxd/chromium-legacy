@@ -27,6 +27,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidatorSurfaceControl
   void AdjustOutputSurfaceOverlay(OverlayCandidate* candidate) override;
   void SetDisplayTransform(gfx::OverlayTransform transform) override;
   void SetViewportSize(const gfx::Size& viewport_size) override;
+  gfx::Rect GetOverlayDamageRectForOutputSurface(
+      const OverlayCandidate& overlay) const override;
 
  private:
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;

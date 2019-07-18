@@ -960,6 +960,10 @@ void Window::StackChildRelativeTo(Window* child,
   const size_t target_i =
       std::find(children_.begin(), children_.end(), target) - children_.begin();
 
+  DCHECK_LT(child_i, children_.size()) << "Child was not in list of children!";
+  DCHECK_LT(target_i, children_.size())
+      << "Target was not in list of children!";
+
   // Don't move the child if it is already in the right place.
   if ((direction == STACK_ABOVE && child_i == target_i + 1) ||
       (direction == STACK_BELOW && child_i + 1 == target_i))

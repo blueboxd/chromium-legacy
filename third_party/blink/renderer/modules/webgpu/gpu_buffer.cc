@@ -47,7 +47,7 @@ bool ValidateMapSize(uint64_t buffer_size,
 DawnBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnBufferDescriptor dawn_desc;
+  DawnBufferDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.usage = AsDawnEnum<DawnBufferUsageBit>(webgpu_desc->usage());
   dawn_desc.size = webgpu_desc->size();

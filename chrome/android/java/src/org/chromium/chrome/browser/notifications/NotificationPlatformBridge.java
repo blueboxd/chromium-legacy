@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.app.Fragment;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.RemoteInput;
@@ -266,10 +265,6 @@ public class NotificationPlatformBridge {
         String origin = getOriginFromIntent(incomingIntent);
         boolean launchSingleWebsitePreferences = origin != null;
 
-        Class<? extends Fragment> fragment = launchSingleWebsitePreferences
-                ? SingleWebsitePreferences.class
-                : SingleCategoryPreferences.class;
-
         Bundle fragmentArguments;
         if (launchSingleWebsitePreferences) {
             // Record that the user has clicked on the [Site Settings] button.
@@ -287,7 +282,13 @@ public class NotificationPlatformBridge {
                             R.string.push_notifications_permission_title));
         }
 
-        PreferencesLauncher.launchSettingsPage(applicationContext, fragment, fragmentArguments);
+        if (launchSingleWebsitePreferences) {
+            PreferencesLauncher.launchSettingsPage(
+                    applicationContext, SingleWebsitePreferences.class, fragmentArguments);
+        } else {
+            PreferencesLauncher.launchSettingsPageCompat(
+                    applicationContext, SingleCategoryPreferences.class, fragmentArguments);
+        }
     }
 
     /**

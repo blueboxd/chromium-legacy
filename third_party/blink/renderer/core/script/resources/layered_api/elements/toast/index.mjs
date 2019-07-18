@@ -45,20 +45,32 @@ function stylesheetFactory() {
 const generateStylesheet = stylesheetFactory();
 
 export class StdToastElement extends HTMLElement {
-  static observedAttributes = ['open'];
+  static observedAttributes = ['open', 'closebutton'];
   #shadow = this.attachShadow({mode: 'closed'});
   #timeoutID;
   #actionSlot;
+  #closeButtonElement;
 
   constructor(message) {
     super();
 
     this.#shadow.adoptedStyleSheets = [generateStylesheet()];
 
-    this.#shadow.innerHTML = `<slot></slot>`;
+    this.#shadow.appendChild(document.createElement('slot'));
+
     this.#actionSlot = document.createElement('slot');
     this.#actionSlot.setAttribute('name', 'action');
     this.#shadow.appendChild(this.#actionSlot);
+
+    this.#closeButtonElement = document.createElement('button');
+    this.#closeButtonElement.setAttribute('part', 'closebutton');
+    this.#closeButtonElement.setAttribute('aria-label', 'close');
+    this.#closeButtonElement.textContent = '×';
+    this.#shadow.appendChild(this.#closeButtonElement);
+
+    this.#closeButtonElement.addEventListener('click', () => {
+      this.hide();
+    });
 
     if (message !== undefined) {
       this.textContent = message;
@@ -94,6 +106,24 @@ export class StdToastElement extends HTMLElement {
     }
   }
 
+  get closeButton() {
+    if (this.hasAttribute('closebutton')) {
+      const closeAttr = this.getAttribute('closebutton');
+      return closeAttr === '' ? true : closeAttr;
+    }
+    return false;
+  }
+
+  set closeButton(val) {
+    if (val === true) {
+      this.setAttribute('closebutton', '');
+    } else if (val === false) {
+      this.removeAttribute('closebutton');
+    } else {
+      this.setAttribute('closebutton', val);
+    }
+  }
+
   show({duration = DEFAULT_DURATION} = {}) {
     this.setAttribute('open', '');
     clearTimeout(this.#timeoutID);
@@ -120,6 +150,18 @@ export class StdToastElement extends HTMLElement {
           clearTimeout(this.#timeoutID);
           this.#timeoutID = null;
         }
+        break;
+      case 'closebutton':
+        if (newValue !== null) {
+          if (newValue === '') {
+            this.#closeButtonElement.textContent = '×';
+            this.#closeButtonElement.setAttribute('aria-label', 'close');
+          } else {
+            this.#closeButtonElement.textContent = newValue;
+            this.#closeButtonElement.removeAttribute('aria-label');
+          }
+        }
+        // if newValue === null we do nothing, since CSS will hide the button
         break;
     }
   }

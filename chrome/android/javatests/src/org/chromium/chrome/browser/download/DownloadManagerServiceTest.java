@@ -26,6 +26,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadInfo.Builder;
 import org.chromium.chrome.browser.download.DownloadManagerServiceTest.MockDownloadNotifier.MethodID;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -296,6 +297,10 @@ public class DownloadManagerServiceTest {
         RecordHistogram.setDisabledForTests(false);
     }
 
+    private static boolean useDownloadOfflineContentProvider() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER);
+    }
+
     private static Handler getTestHandler() {
         HandlerThread handlerThread = new HandlerThread("handlerThread");
         handlerThread.start();
@@ -394,6 +399,7 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     @RetryOnFailure
     public void testDownloadCompletedIsCalled() throws InterruptedException {
+        if (useDownloadOfflineContentProvider()) return;
         MockDownloadNotifier notifier = new MockDownloadNotifier();
         MockDownloadSnackbarController snackbarController = new MockDownloadSnackbarController();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);

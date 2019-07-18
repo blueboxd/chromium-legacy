@@ -722,6 +722,8 @@ if (enable_java_templates) {
   #   enable_chromium_linker_tests: (Optional) Whether to run tests.
   #   dont_load_shared_libraries: (Optional) List of native libraries to exclude
   #     from output.
+  #   use_final_fields: True to use final fields. When false, all other
+  #       variables must not be set.
   template("write_native_libraries_java") {
     _native_libraries_file = "$target_gen_dir/$target_name.srcjar"
     if (current_cpu == "arm" || current_cpu == "arm64") {
@@ -750,38 +752,39 @@ if (enable_java_templates) {
         "--cpu-family",
         _cpu_family,
       ]
-      if (defined(invoker.native_libraries_list_file)) {
+      if (invoker.use_final_fields) {
         args += [
+          "--final",
           "--native-libraries-list",
           rebase_path(invoker.native_libraries_list_file, root_build_dir),
         ]
         inputs = [
           invoker.native_libraries_list_file,
         ]
-      }
-      if (defined(invoker.version_number)) {
-        args += [
-          "--version-number",
-          invoker.version_number,
-        ]
-      }
-      if (defined(invoker.enable_chromium_linker) &&
-          invoker.enable_chromium_linker) {
-        args += [ "--enable-chromium-linker" ]
-      }
-      if (defined(invoker.load_library_from_apk) &&
-          invoker.load_library_from_apk) {
-        args += [ "--load-library-from-apk" ]
-      }
-      if (defined(invoker.enable_chromium_linker_tests) &&
-          invoker.enable_chromium_linker_tests) {
-        args += [ "--enable-chromium-linker-tests" ]
-      }
+        if (defined(invoker.version_number)) {
+          args += [
+            "--version-number",
+            invoker.version_number,
+          ]
+        }
+        if (defined(invoker.enable_chromium_linker) &&
+            invoker.enable_chromium_linker) {
+          args += [ "--enable-chromium-linker" ]
+        }
+        if (defined(invoker.load_library_from_apk) &&
+            invoker.load_library_from_apk) {
+          args += [ "--load-library-from-apk" ]
+        }
+        if (defined(invoker.enable_chromium_linker_tests) &&
+            invoker.enable_chromium_linker_tests) {
+          args += [ "--enable-chromium-linker-tests" ]
+        }
 
-      # TODO(tiborg): Remove once all usages are removed.
-      if (defined(invoker.dont_load_shared_libraries)) {
-        args += [ "--exclude-native-libraries=" +
-                  invoker.dont_load_shared_libraries ]
+        # TODO(tiborg): Remove once all usages are removed.
+        if (defined(invoker.dont_load_shared_libraries)) {
+          args += [ "--exclude-native-libraries=" +
+                    invoker.dont_load_shared_libraries ]
+        }
       }
     }
   }
@@ -1940,8 +1943,8 @@ if (enable_java_templates) {
   # apks that depend on //base:base_java.
   #
   # Variables:
-  #   use_final_fields: True to use final fields. All other variables are
-  #       ignored when this is false.
+  #   use_final_fields: True to use final fields. When false, all other
+  #       variables must not be set.
   #   enable_multidex: Value for ENABLE_MULTIDEX.
   #   min_sdk_version: Value for MIN_SDK_VERSION.
   #
@@ -2663,6 +2666,7 @@ if (enable_java_templates) {
         }
         enable_chromium_linker = _use_chromium_linker
         load_library_from_apk = _load_library_from_apk
+        use_final_fields = true
       }
       _srcjar_deps += [ ":${_template_name}__native_libraries" ]
     }

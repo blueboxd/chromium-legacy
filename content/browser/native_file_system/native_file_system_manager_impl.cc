@@ -32,18 +32,17 @@ namespace content {
 
 using blink::mojom::NativeFileSystemError;
 using PermissionStatus = NativeFileSystemPermissionGrant::PermissionStatus;
+using SensitiveDirectoryResult =
+    NativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
 namespace {
 
-void ShowFilePickerOnUIThread(
-    const url::Origin& requesting_origin,
-    int render_process_id,
-    int frame_id,
-    blink::mojom::ChooseFileSystemEntryType type,
-    std::vector<blink::mojom::ChooseFileSystemEntryAcceptsOptionPtr> accepts,
-    bool include_accepts_all,
-    FileSystemChooser::ResultCallback callback,
-    scoped_refptr<base::TaskRunner> callback_runner) {
+void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
+                              int render_process_id,
+                              int frame_id,
+                              const FileSystemChooser::Options& options,
+                              FileSystemChooser::ResultCallback callback,
+                              scoped_refptr<base::TaskRunner> callback_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_id, frame_id);
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
@@ -82,8 +81,7 @@ void ShowFilePickerOnUIThread(
     return;
   }
 
-  FileSystemChooser::CreateAndShow(web_contents, type, std::move(accepts),
-                                   include_accepts_all, std::move(callback),
+  FileSystemChooser::CreateAndShow(web_contents, options, std::move(callback),
                                    std::move(callback_runner));
 }
 
@@ -178,13 +176,15 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     return;
   }
 
+  FileSystemChooser::Options options(type, std::move(accepts),
+                                     include_accepts_all);
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ShowFilePickerOnUIThread, context.origin, context.process_id,
-          context.frame_id, type, std::move(accepts), include_accepts_all,
+          context.frame_id, options,
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
-                         weak_factory_.GetWeakPtr(), context, type,
+                         weak_factory_.GetWeakPtr(), context, options,
                          std::move(callback)),
           base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
 }
@@ -356,17 +356,60 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
 
 void NativeFileSystemManagerImpl::DidChooseEntries(
     const BindingContext& binding_context,
-    blink::mojom::ChooseFileSystemEntryType type,
+    const FileSystemChooser::Options& options,
     ChooseEntriesCallback callback,
     blink::mojom::NativeFileSystemErrorPtr result,
     std::vector<base::FilePath> entries) {
-  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
   if (result->error_code != base::File::FILE_OK) {
-    std::move(callback).Run(std::move(result), std::move(result_entries));
+    std::move(callback).Run(
+        std::move(result),
+        std::vector<blink::mojom::NativeFileSystemEntryPtr>());
     return;
   }
 
-  if (type == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory) {
+  if (!permission_context_) {
+    DidVerifySensitiveDirectoryAccess(binding_context, options,
+                                      std::move(callback), std::move(entries),
+                                      SensitiveDirectoryResult::kAllowed);
+    return;
+  }
+  auto entries_copy = entries;
+  permission_context_->ConfirmSensitiveDirectoryAccess(
+      binding_context.origin, entries_copy, binding_context.process_id,
+      binding_context.frame_id,
+      base::BindOnce(
+          &NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess,
+          weak_factory_.GetWeakPtr(), binding_context, options,
+          std::move(callback), std::move(entries)));
+}
+
+void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
+    const BindingContext& binding_context,
+    const FileSystemChooser::Options& options,
+    ChooseEntriesCallback callback,
+    std::vector<base::FilePath> entries,
+    SensitiveDirectoryResult result) {
+  if (result == SensitiveDirectoryResult::kAbort) {
+    std::move(callback).Run(
+        NativeFileSystemError::New(base::File::FILE_ERROR_ABORT),
+        std::vector<blink::mojom::NativeFileSystemEntryPtr>());
+    return;
+  }
+  if (result == SensitiveDirectoryResult::kTryAgain) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(
+            &ShowFilePickerOnUIThread, binding_context.origin,
+            binding_context.process_id, binding_context.frame_id, options,
+            base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
+                           weak_factory_.GetWeakPtr(), binding_context, options,
+                           std::move(callback)),
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+    return;
+  }
+
+  if (options.type() ==
+      blink::mojom::ChooseFileSystemEntryType::kOpenDirectory) {
     DCHECK_EQ(entries.size(), 1u);
     if (permission_context_) {
       permission_context_->ConfirmDirectoryReadAccess(
@@ -382,9 +425,10 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     return;
   }
 
+  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
   result_entries.reserve(entries.size());
   for (const auto& entry : entries) {
-    if (type == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
+    if (options.type() == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
       result_entries.push_back(
           CreateWritableFileEntryFromPath(binding_context, entry));
     } else {
@@ -392,7 +436,8 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     }
   }
 
-  std::move(callback).Run(std::move(result), std::move(result_entries));
+  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+                          std::move(result_entries));
 }
 
 void NativeFileSystemManagerImpl::DidChooseDirectory(

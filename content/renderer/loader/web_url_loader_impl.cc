@@ -822,6 +822,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       static_cast<int>(ResourceType::kPluginResource)) {
     resource_request->corb_excluded = true;
   }
+  if (request.IsSignedExchangePrefetchCacheEnabled()) {
+    DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
+              resource_request->resource_type);
+    resource_request->is_signed_exchange_prefetch_cache_enabled = true;
+  }
 
   auto throttles = extra_data->TakeURLLoaderThrottles();
   // The frame request blocker is only for a frame's subresources.

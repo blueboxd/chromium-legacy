@@ -86,7 +86,7 @@
 #include "content/browser/scheduler/responsiveness/watcher.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor.h"
 #include "content/browser/screenlock_monitor/screenlock_monitor_device_source.h"
-#include "content/browser/sms/sms_service.h"
+#include "content/browser/sms/sms_provider.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/browser/startup_task_runner.h"
@@ -1611,11 +1611,16 @@ bool BrowserMainLoop::AudioServiceOutOfProcess() const {
          !GetContentClient()->browser()->OverridesAudioManager();
 }
 
-SmsService* BrowserMainLoop::GetSmsService() {
-  if (!sms_service_) {
-    sms_service_ = std::make_unique<SmsService>();
+SmsProvider* BrowserMainLoop::GetSmsProvider() {
+  if (!sms_provider_) {
+    sms_provider_ = SmsProvider::Create();
   }
-  return sms_service_.get();
+  return sms_provider_.get();
+}
+
+void BrowserMainLoop::SetSmsProviderForTesting(
+    std::unique_ptr<SmsProvider> provider) {
+  sms_provider_ = std::move(provider);
 }
 
 }  // namespace content

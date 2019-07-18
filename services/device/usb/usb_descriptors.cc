@@ -81,12 +81,12 @@ void OnDoneReadingConfigDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
     std::unique_ptr<UsbDeviceDescriptor> desc,
     base::OnceCallback<void(std::unique_ptr<UsbDeviceDescriptor>)> callback) {
-  if (desc->num_configurations == desc->configurations.size()) {
+  if (desc->num_configurations == desc->device_info->configurations.size()) {
     std::move(callback).Run(std::move(desc));
   } else {
     LOG(ERROR) << "Failed to read all configuration descriptors. Expected "
                << static_cast<int>(desc->num_configurations) << ", got "
-               << desc->configurations.size() << ".";
+               << desc->device_info->configurations.size() << ".";
     std::move(callback).Run(nullptr);
   }
 }
@@ -244,46 +244,8 @@ bool CombinedInterfaceInfo::IsValid() const {
   return interface && alternate;
 }
 
-UsbDeviceDescriptor::UsbDeviceDescriptor() = default;
-
-// Do a deep copy especially for |configurations|.
-UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) {
-  usb_version = other.usb_version;
-  device_class = other.device_class;
-  device_subclass = other.device_subclass;
-  device_protocol = other.device_protocol;
-  vendor_id = other.vendor_id;
-  product_id = other.product_id;
-  device_version = other.device_version;
-  i_manufacturer = other.i_manufacturer;
-  i_product = other.i_product;
-  i_serial_number = other.i_serial_number;
-  num_configurations = other.num_configurations;
-
-  for (const auto& config : other.configurations) {
-    configurations.push_back(config->Clone());
-  }
-}
-
-UsbDeviceDescriptor::UsbDeviceDescriptor(UsbDeviceDescriptor&& other) = default;
-
-UsbDeviceDescriptor& UsbDeviceDescriptor::operator=(
-    UsbDeviceDescriptor&& other) {
-  usb_version = other.usb_version;
-  device_class = other.device_class;
-  device_subclass = other.device_subclass;
-  device_protocol = other.device_protocol;
-  vendor_id = other.vendor_id;
-  product_id = other.product_id;
-  device_version = other.device_version;
-  i_manufacturer = other.i_manufacturer;
-  i_product = other.i_product;
-  i_serial_number = other.i_serial_number;
-  num_configurations = other.num_configurations;
-  configurations.swap(other.configurations);
-
-  return *this;
-}
+UsbDeviceDescriptor::UsbDeviceDescriptor()
+    : device_info(mojom::UsbDeviceInfo::New()) {}
 
 UsbDeviceDescriptor::~UsbDeviceDescriptor() = default;
 
@@ -302,15 +264,21 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
 
     switch (data[1] /* bDescriptorType */) {
       case kDeviceDescriptorType:
-        if (configurations.size() > 0 || length < kDeviceDescriptorLength)
+        if (device_info->configurations.size() > 0 ||
+            length < kDeviceDescriptorLength) {
           return false;
-        usb_version = data[2] | data[3] << 8;
-        device_class = data[4];
-        device_subclass = data[5];
-        device_protocol = data[6];
-        vendor_id = data[8] | data[9] << 8;
-        product_id = data[10] | data[11] << 8;
-        device_version = data[12] | data[13] << 8;
+        }
+        device_info->usb_version_minor = data[2] >> 4 & 0xf;
+        device_info->usb_version_subminor = data[2] & 0xf;
+        device_info->usb_version_major = data[3];
+        device_info->class_code = data[4];
+        device_info->subclass_code = data[5];
+        device_info->protocol_code = data[6];
+        device_info->vendor_id = data[8] | data[9] << 8;
+        device_info->product_id = data[10] | data[11] << 8;
+        device_info->device_version_minor = data[12] >> 4 & 0xf;
+        device_info->device_version_subminor = data[12] & 0xf;
+        device_info->device_version_major = data[13];
         i_manufacturer = data[14];
         i_product = data[15];
         i_serial_number = data[16];
@@ -323,8 +291,9 @@ bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
           AssignFirstInterfaceNumbers(last_config);
           AggregateInterfacesForConfig(last_config);
         }
-        configurations.push_back(BuildUsbConfigurationInfoPtr(data));
-        last_config = configurations.back().get();
+        device_info->configurations.push_back(
+            BuildUsbConfigurationInfoPtr(data));
+        last_config = device_info->configurations.back().get();
         last_interface = nullptr;
         last_endpoint = nullptr;
         break;

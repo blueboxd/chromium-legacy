@@ -72,8 +72,6 @@ TEST_F(ContentSettingImageModelTest, RPHUpdate) {
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                  CONTENT_SETTING_BLOCK);
@@ -88,7 +86,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie);
-  content_settings->OnCookieChange(origin, origin, *cookie, false);
+  web_contents()->OnCookieChange(origin, origin, *cookie, false);
   content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));

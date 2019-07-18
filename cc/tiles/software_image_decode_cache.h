@@ -32,6 +32,10 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   enum class DecodeTaskType { USE_IN_RASTER_TASKS, USE_OUT_OF_RASTER_TASKS };
 
+  // Identifies whether a decode task performed decode work, or was fulfilled /
+  // failed trivially.
+  enum class TaskProcessingResult { kFullDecode, kLockOnly, kCancelled };
+
   SoftwareImageDecodeCache(SkColorType color_type,
                            size_t locked_memory_limit_bytes,
                            PaintImage::GeneratorClientId generator_client_id);
@@ -56,9 +60,9 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.
-  void DecodeImageInTask(const CacheKey& key,
-                         const PaintImage& paint_image,
-                         DecodeTaskType task_type);
+  TaskProcessingResult DecodeImageInTask(const CacheKey& key,
+                                         const PaintImage& paint_image,
+                                         DecodeTaskType task_type);
 
   void OnImageDecodeTaskCompleted(const CacheKey& key,
                                   DecodeTaskType task_type);
@@ -123,9 +127,9 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   CacheEntry* AddCacheEntry(const CacheKey& key);
 
-  void DecodeImageIfNecessary(const CacheKey& key,
-                              const PaintImage& paint_image,
-                              CacheEntry* cache_entry);
+  TaskProcessingResult DecodeImageIfNecessary(const CacheKey& key,
+                                              const PaintImage& paint_image,
+                                              CacheEntry* cache_entry);
   void AddBudgetForImage(const CacheKey& key, CacheEntry* entry);
   void RemoveBudgetForImage(const CacheKey& key, CacheEntry* entry);
   base::Optional<CacheKey> FindCachedCandidate(const CacheKey& key);

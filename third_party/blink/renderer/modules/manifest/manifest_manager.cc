@@ -267,6 +267,8 @@ void ManifestManager::Dispose() {
   // will be aware of the RenderFrame dying and should act on that. Consumers
   // in the renderer process should be correctly notified.
   ResolveCallbacks(ResolveStateFailure);
+
+  bindings_.CloseAllBindings();
 }
 
 void ManifestManager::Trace(blink::Visitor* visitor) {

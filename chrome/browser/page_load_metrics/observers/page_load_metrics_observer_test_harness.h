@@ -112,6 +112,18 @@ class PageLoadMetricsObserverTestHarness
   // Simulate playing a media element.
   void SimulateMediaPlayed();
 
+  // Simulate reading cookies.
+  void SimulateCookiesRead(const GURL& url,
+                           const GURL& first_party_url,
+                           const net::CookieList& cookie_list,
+                           bool blocked_by_policy);
+
+  // Simulate writing a cookie.
+  void SimulateCookieChange(const GURL& url,
+                            const GURL& first_party_url,
+                            const net::CanonicalCookie& cookie,
+                            bool blocked_by_policy);
+
   const base::HistogramTester& histogram_tester() const;
 
   MetricsWebContentsObserver* observer() const;

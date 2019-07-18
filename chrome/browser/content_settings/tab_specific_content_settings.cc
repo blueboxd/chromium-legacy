@@ -139,33 +139,6 @@ TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
 }
 
 // static
-void TabSpecificContentSettings::CookiesRead(
-    const base::Callback<content::WebContents*(void)>& wc_getter,
-    const GURL& url,
-    const GURL& frame_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
-  if (settings) {
-    settings->OnCookiesRead(url, frame_url, cookie_list, blocked_by_policy);
-  }
-}
-
-// static
-void TabSpecificContentSettings::CookieChanged(
-    const base::Callback<WebContents*(void)>& wc_getter,
-    const GURL& url,
-    const GURL& frame_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
-  if (settings)
-    settings->OnCookieChange(url, frame_url, cookie, blocked_by_policy);
-}
-
-// static
 void TabSpecificContentSettings::WebDatabaseAccessed(
     int render_process_id,
     int render_frame_id,

@@ -1231,6 +1231,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/ChromeBasePreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeBasePreferenceCompat.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeImageViewPreference.java",
+  "java/src/org/chromium/chrome/browser/preferences/ChromeImageViewPreferenceCompat.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromePreferenceManager.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeSwitchPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeSwitchPreferenceCompat.java",

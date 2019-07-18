@@ -504,6 +504,13 @@ class PLATFORM_EXPORT ResourceRequest final {
     is_from_origin_dirty_style_sheet_ = dirty;
   }
 
+  bool IsSignedExchangePrefetchCacheEnabled() const {
+    return is_signed_exchange_prefetch_cache_enabled_;
+  }
+  void SetSignedExchangePrefetchCacheEnabled(bool enabled) {
+    is_signed_exchange_prefetch_cache_enabled_ = enabled;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -593,6 +600,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   uint64_t inspector_id_ = 0;
 
   bool is_from_origin_dirty_style_sheet_ = false;
+
+  bool is_signed_exchange_prefetch_cache_enabled_ = false;
 };
 
 }  // namespace blink

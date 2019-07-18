@@ -15,7 +15,7 @@ namespace {
 DawnSamplerDescriptor AsDawnType(const GPUSamplerDescriptor* webgpu_desc) {
   DCHECK(webgpu_desc);
 
-  DawnSamplerDescriptor dawn_desc;
+  DawnSamplerDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.addressModeU =
       AsDawnEnum<DawnAddressMode>(webgpu_desc->addressModeU());

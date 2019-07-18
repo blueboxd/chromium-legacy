@@ -221,6 +221,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetClipRect(const gfx::Rect& clip_rect);
   const gfx::Rect& clip_rect() const { return inputs_.clip_rect; }
 
+  // Returns the bounds which is clipped by the clip rect.
+  gfx::RectF EffectiveClipRect();
+
   // Set or get a layer that is not an ancestor of this layer, but which should
   // be clipped to this layer's bounds if SetMasksToBounds() is set to true.
   // The parent layer does *not* retain ownership of a reference on this layer.

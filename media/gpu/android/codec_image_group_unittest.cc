@@ -143,25 +143,27 @@ TEST_F(CodecImageGroupTest, ImagesRetainRefToGroup) {
   ASSERT_TRUE(was_destroyed);
 }
 
-TEST_F(CodecImageGroupTest, DestroyedImagesForwardsImageDestruction) {
-  // Make sure that CodecImageGroup relays CodecImage destruction callbacks.
+TEST_F(CodecImageGroupTest, RemovingImageAllowsDestructionOfGroup) {
+  // Removing the last image from the group allows its destruction.
   Record rec = CreateImageGroup();
-  scoped_refptr<CodecImage> image_1 = new MockCodecImage();
-  scoped_refptr<CodecImage> image_2 = new MockCodecImage();
-  rec.image_group->SetDestructionCB(base::BindRepeating(
-      &CodecImageGroupTest::OnCodecImageDestroyed, base::Unretained(this)));
-  rec.image_group->AddCodecImage(image_1.get());
-  rec.image_group->AddCodecImage(image_2.get());
+  bool was_destroyed = false;
+  rec.image_group->SetDestructionCallback(
+      base::BindOnce([](bool* flag) -> void { *flag = true; }, &was_destroyed));
 
-  // Destroying |image_1| should call us back.
-  EXPECT_CALL(*this, OnCodecImageDestroyed(image_1.get()));
-  image_1 = nullptr;
-  testing::Mock::VerifyAndClearExpectations(this);
+  scoped_refptr<CodecImage> image = new MockCodecImage();
+  rec.image_group->AddCodecImage(image.get());
 
-  // Same for |image_2|.
-  EXPECT_CALL(*this, OnCodecImageDestroyed(image_2.get()));
-  image_2 = nullptr;
-  testing::Mock::VerifyAndClearExpectations(this);
+  // Dropping our ref should not delete the group, since the image holds it.
+  CodecImageGroup* image_group_raw = rec.image_group.get();
+  rec.image_group = nullptr;
+  ASSERT_FALSE(was_destroyed);
+
+  // Removing the codec image from the group should allow destruction.  Note
+  // that this also (subtly) tests that the CodecImageGroup clears the
+  // destruction CB that it set on the CodecImage; that callback holds a strong
+  // ref, so the group won't be destroyed if it doesn't.
+  image_group_raw->RemoveCodecImage(image.get());
+  ASSERT_TRUE(was_destroyed);
 }
 
 TEST_F(CodecImageGroupTest, ImageGroupDropsForwardsSurfaceDestruction) {

@@ -30,7 +30,7 @@ mojom("mojo_test_types") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "autofill_types_struct_traits_unittest.cc",
+    "autofill_types_mojom_traits_unittest.cc",
   ]
 
   public_deps = [

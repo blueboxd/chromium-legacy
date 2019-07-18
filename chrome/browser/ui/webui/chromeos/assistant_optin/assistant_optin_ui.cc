@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"

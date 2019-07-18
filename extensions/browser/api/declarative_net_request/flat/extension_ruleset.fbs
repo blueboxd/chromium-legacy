@@ -25,6 +25,7 @@ enum ActionIndex : ubyte {
   block = 0,
   allow,
   redirect,
+  upgrade_scheme,
   remove_cookie_header,
   remove_referer_header,
   remove_set_cookie_header,

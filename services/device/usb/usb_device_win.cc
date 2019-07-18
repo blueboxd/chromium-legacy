@@ -4,6 +4,10 @@
 
 #include "services/device/usb/usb_device_win.h"
 
+#include <windows.h>
+
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
@@ -13,8 +17,6 @@
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/usb/usb_device_handle_win.h"
 #include "services/device/usb/webusb_descriptors.h"
-
-#include <windows.h>
 
 namespace device {
 
@@ -81,39 +83,47 @@ void UsbDeviceWin::OnReadDescriptors(
     return;
   }
 
-  descriptor_ = std::move(*descriptor);
+  // Keep |bus_number| and |port_number| before updating the |device_info_|.
+  descriptor->device_info->bus_number = device_info_->bus_number,
+  descriptor->device_info->port_number = device_info_->port_number,
+  device_info_ = std::move(descriptor->device_info);
 
   // WinUSB only supports the configuration 1.
   ActiveConfigurationChanged(1);
 
   auto string_map = std::make_unique<std::map<uint8_t, base::string16>>();
-  if (descriptor_.i_manufacturer)
-    (*string_map)[descriptor_.i_manufacturer] = base::string16();
-  if (descriptor_.i_product)
-    (*string_map)[descriptor_.i_product] = base::string16();
-  if (descriptor_.i_serial_number)
-    (*string_map)[descriptor_.i_serial_number] = base::string16();
+  if (descriptor->i_manufacturer)
+    (*string_map)[descriptor->i_manufacturer] = base::string16();
+  if (descriptor->i_product)
+    (*string_map)[descriptor->i_product] = base::string16();
+  if (descriptor->i_serial_number)
+    (*string_map)[descriptor->i_serial_number] = base::string16();
 
   ReadUsbStringDescriptors(
       device_handle, std::move(string_map),
       base::BindOnce(&UsbDeviceWin::OnReadStringDescriptors, this,
-                     std::move(callback), device_handle));
+                     std::move(callback), device_handle,
+                     descriptor->i_manufacturer, descriptor->i_product,
+                     descriptor->i_serial_number));
 }
 
 void UsbDeviceWin::OnReadStringDescriptors(
     base::OnceCallback<void(bool)> callback,
     scoped_refptr<UsbDeviceHandle> device_handle,
+    uint8_t i_manufacturer,
+    uint8_t i_product,
+    uint8_t i_serial_number,
     std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   device_handle->Close();
 
-  if (descriptor_.i_manufacturer)
-    manufacturer_string_ = (*string_map)[descriptor_.i_manufacturer];
-  if (descriptor_.i_product)
-    product_string_ = (*string_map)[descriptor_.i_product];
-  if (descriptor_.i_serial_number)
-    serial_number_ = (*string_map)[descriptor_.i_serial_number];
+  if (i_manufacturer)
+    device_info_->manufacturer_name = (*string_map)[i_manufacturer];
+  if (i_product)
+    device_info_->product_name = (*string_map)[i_product];
+  if (i_serial_number)
+    device_info_->serial_number = (*string_map)[i_serial_number];
 
   if (usb_version() >= kUsbVersion2_1) {
     Open(base::BindOnce(&UsbDeviceWin::OnOpenedToReadWebUsbDescriptors, this,
@@ -146,7 +156,7 @@ void UsbDeviceWin::OnReadWebUsbDescriptors(
     const GURL& landing_page) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  webusb_landing_page_ = landing_page;
+  device_info_->webusb_landing_page = landing_page;
 
   device_handle->Close();
   std::move(callback).Run(true);

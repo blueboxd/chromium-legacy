@@ -53,6 +53,8 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
   dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
   dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
   dark_mode_settings.image_policy = frame_settings.GetDarkModeImagePolicy();
+  dark_mode_settings.classifier_type =
+      frame_settings.GetDarkModeClassifierType();
   dark_mode_settings.text_brightness_threshold =
       frame_settings.GetDarkModeTextBrightnessThreshold();
   dark_mode_settings.background_brightness_threshold =

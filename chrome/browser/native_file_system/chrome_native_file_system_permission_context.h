@@ -46,7 +46,12 @@ class ChromeNativeFileSystemPermissionContext
                           const base::FilePath& path,
                           bool is_directory,
                           UserAction user_action) override;
-
+  void ConfirmSensitiveDirectoryAccess(
+      const url::Origin& origin,
+      const std::vector<base::FilePath>& paths,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
   void ConfirmDirectoryReadAccess(
       const url::Origin& origin,
       const base::FilePath& path,
@@ -81,6 +86,14 @@ class ChromeNativeFileSystemPermissionContext
 
   class PermissionGrantImpl;
   void PermissionGrantDestroyed(PermissionGrantImpl* grant);
+
+  void DidConfirmSensitiveDirectoryAccess(
+      const url::Origin& origin,
+      const std::vector<base::FilePath>& paths,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SensitiveDirectoryResult)> callback,
+      bool should_block);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

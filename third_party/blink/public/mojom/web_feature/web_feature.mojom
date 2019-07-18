@@ -2346,6 +2346,11 @@ enum WebFeature {
   kV8Database_Transaction_Method = 2960,
   kV8Database_ReadTransaction_Method = 2961,
   kV8SQLTransaction_ExecuteSql_Method = 2962,
+  kCSSValueAppearanceButtonForBootstrapLooseSelectorRendered = 2963,
+  kCSSValueAppearanceButtonForOthers2Rendered = 2964,
+  kCSSValueAppearanceButtonForSelectRendered = 2965,
+  kCSSValueAppearanceListboxForOthersRendered = 2966,
+  kCSSValueAppearanceMeterForOthersRendered = 2967,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

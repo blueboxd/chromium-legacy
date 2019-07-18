@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_content_browser_overlay_manifest.h"
 
 #include "base/no_destructor.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"

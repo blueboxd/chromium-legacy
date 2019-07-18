@@ -36,13 +36,12 @@ void ProfileReportGenerator::set_policies_enabled(bool enabled) {
 void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
                                            const std::string& name,
                                            ReportCallback callback) {
-  DCHECK(!callback_);
   callback_ = std::move(callback);
 
   profile_ = g_browser_process->profile_manager()->GetProfileByPath(path);
 
   if (!profile_) {
-    CheckReportStatus();
+    CheckReportStatusAsync();
     return;
   }
 
@@ -67,7 +66,7 @@ void ProfileReportGenerator::MaybeGenerate(const base::FilePath& path,
     GetExtensionPolicyInfo();
   }
 
-  CheckReportStatus();
+  CheckReportStatusAsync();
   return;
 }
 
@@ -132,6 +131,12 @@ void ProfileReportGenerator::CheckReportStatus() {
     return;
 
   std::move(callback_).Run(std::move(report_));
+}
+
+void ProfileReportGenerator::CheckReportStatusAsync() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ProfileReportGenerator::CheckReportStatus,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace enterprise_reporting

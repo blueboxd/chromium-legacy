@@ -95,6 +95,12 @@ public class NativeBackgroundTaskTest {
         @Override
         public void setContentMainCallbackForTests(Runnable r) {}
 
+        @Override
+        public int getStartupMode(boolean startServiceManagerOnly) {
+            assertFalse(isNativeStarted());
+            return 0 /*ServicificationStartupUma.ServicificationStartup.CHROME_COLD*/;
+        }
+
         public void setIsStartupSuccessfullyCompleted(boolean flag) {
             mStartupSucceeded = flag;
         }

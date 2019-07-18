@@ -325,3 +325,11 @@ QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
 // If true, HTTP request header names sent from QuicSpdyClientBase(and
 // descendents) will be automatically converted to lower case.
 QUIC_FLAG(bool, FLAGS_quic_client_convert_http_header_name_to_lowercase, true)
+
+// If true, do not send STOP_WAITING if no_stop_waiting_frame_.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_stop_waiting, false)
+
+// If true, allow client to enable BBRv2 on server via connection option 'B2ON'.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_allow_client_enabled_bbr_v2,
+          false)

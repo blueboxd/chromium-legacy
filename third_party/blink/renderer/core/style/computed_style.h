@@ -1945,6 +1945,12 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Offset utility functions.
   // Accessors for positioned object edges that take into account writing mode.
+  const Length& LogicalInlineStart() const {
+    return PhysicalBoundsToLogical().InlineStart();
+  }
+  const Length& LogicalInlineEnd() const {
+    return PhysicalBoundsToLogical().InlineEnd();
+  }
   const Length& LogicalLeft() const {
     return PhysicalBoundsToLogical().LineLeft();
   }

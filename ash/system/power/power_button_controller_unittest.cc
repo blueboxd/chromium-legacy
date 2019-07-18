@@ -24,7 +24,6 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
@@ -798,9 +797,6 @@ TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
 
 // Tests the menu items according to the login and screen locked status.
 TEST_F(PowerButtonControllerTest, MenuItemsToLoginAndLockedStatus) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(PowerButtonMenuView::kEnableFeedbackItem);
-
   // No sign out, lock screen and feedback items if user is not logged in.
   ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
@@ -998,9 +994,6 @@ TEST_F(PowerButtonControllerTest, ESCDismissMenu) {
 
 // Tests the navigation of the menu.
 TEST_F(PowerButtonControllerTest, MenuNavigation) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(PowerButtonMenuView::kEnableFeedbackItem);
-
   OpenPowerButtonMenu();
   ASSERT_TRUE(power_button_test_api_->MenuHasSignOutItem());
   ASSERT_TRUE(power_button_test_api_->MenuHasLockScreenItem());

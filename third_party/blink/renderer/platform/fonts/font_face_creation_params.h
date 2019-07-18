@@ -86,7 +86,7 @@ class FontFaceCreationParams {
     DCHECK_EQ(creation_type_, kCreateFontByFamily);
     return family_;
   }
-  std::string Filename() const {
+  const std::string& Filename() const {
     DCHECK_EQ(creation_type_, kCreateFontByFciIdAndTtcIndex);
     return filename_;
   }

@@ -180,7 +180,7 @@ class ContentURLLoader : public network::mojom::URLLoader {
     file.Seek(base::File::FROM_BEGIN, static_cast<int64_t>(first_byte_to_send));
 
     data_producer_ = std::make_unique<mojo::DataPipeProducer>(
-        std::move(pipe.producer_handle), /*observer=*/nullptr);
+        std::move(pipe.producer_handle));
     data_producer_->Write(std::make_unique<mojo::FileDataSource>(
                               std::move(file), total_bytes_to_send),
                           base::BindOnce(&ContentURLLoader::OnFileWritten,

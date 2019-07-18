@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"

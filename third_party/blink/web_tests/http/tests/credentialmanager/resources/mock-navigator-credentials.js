@@ -16,8 +16,13 @@ class MockCredentialManager {
     this.reset();
   }
 
+  bindHandleToReceiver(handle) {
+    this.receiver_ = new blink.mojom.CredentialManagerReceiver(this);
+    this.receiver_.$.bindHandle(handle);
+  }
+
   constructCredentialInfo_(type, id, password, name, icon) {
-  return {
+    return {
       type: type,
       id: stringToMojoString16(id),
       name: stringToMojoString16(name),
@@ -66,6 +71,11 @@ class MockCredentialManager {
 class MockAuthenticator {
   constructor() {
     this.reset();
+  }
+
+  bindHandleToReceiver(handle) {
+    this.receiver_ = new blink.mojom.AuthenticatorReceiver(this);
+    this.receiver_.$.bindHandle(handle);
   }
 
   // Returns a MakeCredentialResponse to the client.
@@ -185,11 +195,9 @@ var mockCredentialManager = new MockCredentialManager();
 
 setDocumentInterfaceBrokerOverrides({
   getAuthenticator: request => {
-    var authenticator = new blink.mojom.Authenticator(mockAuthenticator);
-    authenticator.$.bindHandle(request.handle);
+    mockAuthenticator.bindHandleToReceiver(request.handle);
   },
   getCredentialManager: request => {
-    var credentialManager = new blink.mojom.CredentialManager(mockCredentialManager);
-    credentialManager.$.bindHandle(request.handle);
+    mockCredentialManager.bindHandleToReceiver(request.handle);
   }
 });

@@ -76,6 +76,16 @@ WebPoint WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
   return local_point;
 }
 
+bool WebHitTestResult::ContentBoxContainsPoint() const {
+  LayoutObject* object = private_->Result().GetLayoutObject();
+  DCHECK(object);
+  if (!object->IsBox())
+    return false;
+
+  IntPoint local_point = RoundedIntPoint(private_->Result().LocalPoint());
+  return ToLayoutBox(object)->ComputedCSSContentBoxRect().Contains(local_point);
+}
+
 WebElement WebHitTestResult::UrlElement() const {
   return WebElement(private_->Result().URLElement());
 }

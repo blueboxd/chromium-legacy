@@ -258,7 +258,7 @@ cr.define('ntp', function() {
       const headerContainer = $('login-status-header-container');
       headerContainer.classList.toggle('login-status-icon', !!iconURL);
       headerContainer.style.backgroundImage =
-          iconURL ? getUrlForCss(iconURL) : 'none';
+          iconURL ? cr.icon.getUrlForCss(iconURL) : 'none';
     }
   }
 

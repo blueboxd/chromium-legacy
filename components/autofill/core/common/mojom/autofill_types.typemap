@@ -15,9 +15,9 @@ public_headers = [
   "//components/autofill/core/common/password_generation_util.h",
 ]
 traits_headers =
-    [ "//components/autofill/core/common/mojom/autofill_types_struct_traits.h" ]
+    [ "//components/autofill/core/common/mojom/autofill_types_mojom_traits.h" ]
 sources = [
-  "//components/autofill/core/common/mojom/autofill_types_struct_traits.cc",
+  "//components/autofill/core/common/mojom/autofill_types_mojom_traits.cc",
 ]
 deps = [
   "//base",

@@ -27,22 +27,9 @@
 namespace device {
 
 UsbDeviceLinux::UsbDeviceLinux(const std::string& device_path,
-                               const UsbDeviceDescriptor& descriptor,
-                               const std::string& manufacturer_string,
-                               const std::string& product_string,
-                               const std::string& serial_number,
-                               uint8_t active_configuration,
-                               uint32_t bus_number,
-                               uint32_t port_number)
-    : UsbDevice(descriptor,
-                base::UTF8ToUTF16(manufacturer_string),
-                base::UTF8ToUTF16(product_string),
-                base::UTF8ToUTF16(serial_number),
-                bus_number,
-                port_number),
-      device_path_(device_path) {
-  ActiveConfigurationChanged(active_configuration);
-}
+                               std::unique_ptr<UsbDeviceDescriptor> descriptor)
+    : UsbDevice(std::move(descriptor->device_info)),
+      device_path_(device_path) {}
 
 UsbDeviceLinux::~UsbDeviceLinux() = default;
 

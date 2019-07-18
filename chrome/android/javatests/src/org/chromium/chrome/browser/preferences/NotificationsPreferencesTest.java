@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.app.Fragment;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v4.app.Fragment;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
@@ -173,7 +173,7 @@ public class NotificationsPreferencesTest {
     /** Gets the fragment of the top Activity. Assumes the top Activity is a Preferences. */
     private static Fragment getTopFragment() {
         Preferences preferences = (Preferences) ApplicationStatus.getLastTrackedFocusedActivity();
-        return preferences.getMainFragment();
+        return preferences.getMainFragmentCompat();
     }
 
     /** Gets the summary text that should be used for site specific notifications. */

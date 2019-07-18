@@ -99,12 +99,6 @@ const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess{
 const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
     "AutofillNoLocalSaveOnUploadSuccess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, local and upload credit card save dialogs will be updated to
-// new M72 guidelines, including a [No thanks] cancel button and an extended
-// title string.
-const base::Feature kAutofillSaveCardImprovedUserConsent{
-    "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When enabled, local and upload credit card save dialogs will add a
 // [No thanks] cancel button option. This is intended to bring the
 // AutofillSaveCardImprovedUserConsent functionality to Chrome OS, Android, and
@@ -177,6 +171,16 @@ const base::Feature kAutofillUpstreamEditableCardholderName{
 const base::Feature kAutofillUpstreamEditableExpirationDate{
     "AutofillUpstreamEditableExpirationDate",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool ShouldShowImprovedUserConsentForCreditCardSave() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // The new user consent UI is fully launched on MacOS, Windows and Linux.
+  return true;
+#endif
+  // Chrome OS does not have the new UI.
+  return false;
+}
 
 }  // namespace features
 }  // namespace autofill

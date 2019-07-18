@@ -161,9 +161,6 @@ class CC_EXPORT CompositorTimingHistory {
 
   bool pending_tree_is_impl_side_;
 
-  // Watchdog timers.
-  bool submit_ack_watchdog_enabled_;
-
   std::unique_ptr<UMAReporter> uma_reporter_;
 
   // Owned by LayerTreeHost and is destroyed when LayerTreeHost is destroyed.

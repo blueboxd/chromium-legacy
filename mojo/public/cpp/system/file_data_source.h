@@ -20,6 +20,8 @@ namespace mojo {
 class MOJO_CPP_SYSTEM_EXPORT FileDataSource final
     : public DataPipeProducer::DataSource {
  public:
+  static MojoResult ConvertFileErrorToMojoResult(base::File::Error error);
+
   FileDataSource(base::File file,
                  size_t max_bytes = std::numeric_limits<size_t>::max());
   ~FileDataSource() override;

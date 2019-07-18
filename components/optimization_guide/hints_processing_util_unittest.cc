@@ -4,6 +4,8 @@
 
 #include "components/optimization_guide/hints_processing_util.h"
 
+#include "components/optimization_guide/hint_update_data.h"
+#include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -60,6 +62,63 @@ TEST_F(HintsProcessingUtilTest, FindPageHintForSubstringPagePattern) {
 
   EXPECT_EQ(page_hint3, FindPageHintForURL(
                             GURL("https://www.foo.org/bar/three.jpg"), &hint1));
+}
+
+TEST_F(HintsProcessingUtilTest, ProcessHintsNoUpdateData) {
+  proto::Hint hint;
+  hint.set_key("whatever.com");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint = hint.add_page_hints();
+  page_hint->set_page_pattern("foo.org/*/one/");
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = hint;
+
+  EXPECT_FALSE(ProcessHints(&hints, nullptr));
+}
+
+TEST_F(HintsProcessingUtilTest, ProcessHintsWithNoPageHintsAndUpdateData) {
+  proto::Hint hint;
+  hint.set_key("whatever.com");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = hint;
+
+  std::unique_ptr<HintUpdateData> update_data =
+      HintUpdateData::CreateComponentHintUpdateData(base::Version("1.0.0"));
+  EXPECT_FALSE(ProcessHints(&hints, update_data.get()));
+  // Verify there is 1 store entries: 1 for the metadata entry.
+  EXPECT_EQ(1ul, update_data->TakeUpdateEntries()->size());
+}
+
+TEST_F(HintsProcessingUtilTest, ProcessHintsWithPageHintsAndUpdateData) {
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+
+  proto::Hint hint;
+  hint.set_key("foo.org");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint = hint.add_page_hints();
+  page_hint->set_page_pattern("foo.org/*/one/");
+  *(hints.Add()) = hint;
+
+  proto::Hint no_host_suffix_hint;
+  no_host_suffix_hint.set_key("foo2.org");
+  proto::PageHint* page_hint3 = no_host_suffix_hint.add_page_hints();
+  page_hint3->set_page_pattern("foo2.org/blahh");
+  *(hints.Add()) = no_host_suffix_hint;
+
+  proto::Hint no_page_hints_hint;
+  no_page_hints_hint.set_key("whatever.com");
+  no_page_hints_hint.set_key_representation(proto::HOST_SUFFIX);
+  *(hints.Add()) = no_page_hints_hint;
+
+  std::unique_ptr<HintUpdateData> update_data =
+      HintUpdateData::CreateComponentHintUpdateData(base::Version("1.0.0"));
+  EXPECT_TRUE(ProcessHints(&hints, update_data.get()));
+  // Verify there are 2 store entries: 1 for the metadata entry plus
+  // the 1 added hint entries.
+  EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
 }
 
 }  // namespace optimization_guide

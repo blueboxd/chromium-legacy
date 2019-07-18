@@ -30,25 +30,6 @@ namespace {
 // 64 MB chunks whenever a producer is writable.
 constexpr uint32_t kDefaultMaxReadSize = 64 * 1024 * 1024;
 
-MojoResult FileErrorToMojoResult(base::File::Error error) {
-  switch (error) {
-    case base::File::FILE_OK:
-      return MOJO_RESULT_OK;
-    case base::File::FILE_ERROR_NOT_FOUND:
-      return MOJO_RESULT_NOT_FOUND;
-    case base::File::FILE_ERROR_SECURITY:
-    case base::File::FILE_ERROR_ACCESS_DENIED:
-      return MOJO_RESULT_PERMISSION_DENIED;
-    case base::File::FILE_ERROR_TOO_MANY_OPENED:
-    case base::File::FILE_ERROR_NO_MEMORY:
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
-    case base::File::FILE_ERROR_ABORT:
-      return MOJO_RESULT_ABORTED;
-    default:
-      return MOJO_RESULT_UNKNOWN;
-  }
-}
-
 }  // namespace
 
 class DataPipeProducer::SequenceState
@@ -61,14 +42,12 @@ class DataPipeProducer::SequenceState
   SequenceState(ScopedDataPipeProducerHandle producer_handle,
                 scoped_refptr<base::SequencedTaskRunner> file_task_runner,
                 CompletionCallback callback,
-                scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-                std::unique_ptr<Observer> observer)
+                scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
       : base::RefCountedDeleteOnSequence<SequenceState>(
             std::move(file_task_runner)),
         callback_task_runner_(std::move(callback_task_runner)),
         producer_handle_(std::move(producer_handle)),
-        callback_(std::move(callback)),
-        observer_(std::move(observer)) {}
+        callback_(std::move(callback)) {}
 
   void Cancel() {
     base::AutoLock lock(lock_);
@@ -88,11 +67,11 @@ class DataPipeProducer::SequenceState
   ~SequenceState() = default;
 
   void StartOnSequence(std::unique_ptr<DataSource> data_source) {
-    if (!data_source->IsValid()) {
+    data_source_ = std::move(data_source);
+    if (!data_source_->IsValid()) {
       Finish(MOJO_RESULT_UNKNOWN);
       return;
     }
-    data_source_ = std::move(data_source);
     TransferSomeBytes();
     if (producer_handle_.is_valid()) {
       // If we didn't nail it all on the first transaction attempt, setup a
@@ -143,12 +122,10 @@ class DataPipeProducer::SequenceState
 
       DataSource::ReadResult result =
           data_source_->Read(bytes_transferred_, read_buffer);
-      if (observer_)
-        observer_->OnBytesRead(pipe_buffer, result.bytes_read, result.error);
       producer_handle_->EndWriteData(result.bytes_read);
 
-      if (result.error != base::File::FILE_OK) {
-        Finish(FileErrorToMojoResult(result.error));
+      if (result.result != MOJO_RESULT_OK) {
+        Finish(result.result);
         return;
       }
 
@@ -164,13 +141,10 @@ class DataPipeProducer::SequenceState
   }
 
   void Finish(MojoResult result) {
-    if (observer_) {
-      if (result != MOJO_RESULT_OK)
-        observer_->OnBytesRead(nullptr, 0u, base::File::FILE_ERROR_ABORT);
-      observer_->OnDoneReading();
-      observer_ = nullptr;
-    }
     watcher_.reset();
+    if (result != MOJO_RESULT_OK)
+      data_source_->Abort();
+    data_source_.reset();
     callback_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_),
                                   std::move(producer_handle_), result));
@@ -188,14 +162,11 @@ class DataPipeProducer::SequenceState
   base::Lock lock_;
   bool is_cancelled_ GUARDED_BY(lock_) = false;
 
-  std::unique_ptr<Observer> observer_;
-
   DISALLOW_COPY_AND_ASSIGN(SequenceState);
 };
 
-DataPipeProducer::DataPipeProducer(ScopedDataPipeProducerHandle producer,
-                                   std::unique_ptr<Observer> observer)
-    : producer_(std::move(producer)), observer_(std::move(observer)) {}
+DataPipeProducer::DataPipeProducer(ScopedDataPipeProducerHandle producer)
+    : producer_(std::move(producer)) {}
 
 DataPipeProducer::~DataPipeProducer() {
   if (sequence_state_)
@@ -219,7 +190,7 @@ void DataPipeProducer::InitializeNewRequest(CompletionCallback callback) {
       std::move(producer_), file_task_runner,
       base::BindOnce(&DataPipeProducer::OnWriteComplete,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
-      base::SequencedTaskRunnerHandle::Get(), std::move(observer_));
+      base::SequencedTaskRunnerHandle::Get());
 }
 
 void DataPipeProducer::OnWriteComplete(CompletionCallback callback,

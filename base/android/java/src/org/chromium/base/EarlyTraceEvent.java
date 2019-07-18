@@ -22,7 +22,8 @@ import java.util.Map;
 
 import javax.annotation.concurrent.GuardedBy;
 
-/** Support for early tracing, before the native library is loaded.
+/**
+ * Support for early tracing, before the native library is loaded.
  *
  * This is limited, as:
  * - Arguments are not supported
@@ -37,6 +38,9 @@ import javax.annotation.concurrent.GuardedBy;
  *          as some are pending, then early tracing is permanently disabled after dumping the
  *          events.  This means that if any early event is still pending when tracing is disabled,
  *          all early events are dropped.
+ *
+ * Like the TraceEvent, the event name of the trace events must be a string literal or a |static
+ * final String| class member. Otherwise NoDynamicStringsInTraceEventCheck error will be thrown.
  */
 @JNINamespace("base::android")
 @MainDex

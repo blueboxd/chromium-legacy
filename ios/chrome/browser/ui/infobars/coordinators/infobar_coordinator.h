@@ -65,6 +65,9 @@ enum class InfobarBannerPresentationState;
 - (void)dismissInfobarBannerAnimated:(BOOL)animated
                           completion:(void (^)())completion;
 
+// Stops this Coordinator.
+- (void)stop NS_REQUIRES_SUPER;
+
 // YES if the Coordinator has been started.
 @property(nonatomic, assign) BOOL started;
 

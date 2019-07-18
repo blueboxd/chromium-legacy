@@ -63,8 +63,8 @@ PrefetchURLLoader::PrefetchURLLoader(
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
     resource_request_.headers.SetHeader(
         network::kAcceptHeader, kSignedExchangeEnabledAcceptHeaderForPrefetch);
-
-    if (prefetched_signed_exchange_cache) {
+    if (prefetched_signed_exchange_cache &&
+        resource_request.is_signed_exchange_prefetch_cache_enabled) {
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
               std::move(prefetched_signed_exchange_cache),

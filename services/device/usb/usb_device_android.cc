@@ -4,6 +4,10 @@
 
 #include "services/device/usb/usb_device_android.h"
 
+#include <list>
+#include <memory>
+#include <utility>
+
 #include "base/android/build_info.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -134,9 +138,9 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
       base::android::SDK_VERSION_LOLLIPOP) {
     JavaObjectArrayReader<jobject> configurations(
         Java_ChromeUsbDevice_getConfigurations(env, j_object_));
-    descriptor_.configurations.reserve(configurations.size());
+    device_info_->configurations.reserve(configurations.size());
     for (auto config : configurations) {
-      descriptor_.configurations.push_back(
+      device_info_->configurations.push_back(
           UsbConfigurationAndroid::Convert(env, config));
     }
   } else {
@@ -156,7 +160,7 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
           UsbInterfaceAndroid::Convert(env, interface));
     }
     AggregateInterfacesForConfig(config.get());
-    descriptor_.configurations.push_back(std::move(config));
+    device_info_->configurations.push_back(std::move(config));
   }
 
   if (configurations().size() > 0)
@@ -174,7 +178,7 @@ void UsbDeviceAndroid::PermissionGranted(JNIEnv* env, bool granted) {
   ScopedJavaLocalRef<jstring> serial_jstring =
       Java_ChromeUsbDevice_getSerialNumber(env, j_object_);
   if (!serial_jstring.is_null())
-    serial_number_ = ConvertJavaStringToUTF16(env, serial_jstring);
+    device_info_->serial_number = ConvertJavaStringToUTF16(env, serial_jstring);
 
   Open(
       base::BindOnce(&UsbDeviceAndroid::OnDeviceOpenedToReadDescriptors, this));
@@ -209,7 +213,16 @@ void UsbDeviceAndroid::OnReadDescriptors(
     return;
   }
 
-  descriptor_ = std::move(*descriptor);
+  // Keep following members in original |device_info_| because they will
+  // not be updated in the new |descriptor->device_info|:
+  //   |bus_number|, |port_number|,
+  //   |manufacturer_string|, |product_string|, |serial_number|.
+  descriptor->device_info->bus_number = device_info_->bus_number,
+  descriptor->device_info->port_number = device_info_->port_number,
+  descriptor->device_info->manufacturer_name = device_info_->manufacturer_name,
+  descriptor->device_info->product_name = device_info_->product_name,
+  descriptor->device_info->serial_number = device_info_->serial_number,
+  device_info_ = std::move(descriptor->device_info);
 
   if (usb_version() >= 0x0210) {
     ReadWebUsbDescriptors(
@@ -226,7 +239,7 @@ void UsbDeviceAndroid::OnReadWebUsbDescriptors(
     scoped_refptr<UsbDeviceHandle> device_handle,
     const GURL& landing_page) {
   if (landing_page.is_valid())
-    webusb_landing_page_ = landing_page;
+    device_info_->webusb_landing_page = landing_page;
 
   device_handle->Close();
   CallRequestPermissionCallbacks(true);

@@ -31,6 +31,7 @@ enum ConsentStatus {
 };
 
 extern const char kAssistantConsentStatus[];
+extern const char kAssistantDisabledByPolicy[];
 
 // Registers Assistant specific profile preferences for browser prefs.
 void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry);

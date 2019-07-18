@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"

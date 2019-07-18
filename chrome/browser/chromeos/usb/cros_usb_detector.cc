@@ -413,18 +413,23 @@ void CrosUsbDetector::OnDeviceManagerConnectionError() {
   ConnectToDeviceManager();
 }
 
-void CrosUsbDetector::ConnectSharedDevicesOnVmStartup() {
+void CrosUsbDetector::ConnectSharedDevicesOnVmStartup(
+    const std::string& vm_name) {
   // Reattach shared devices when the VM becomes available.
   for (auto& device : usb_devices_) {
-    bool attached_device = false;
+    bool is_shared = false;
+    bool is_shared_with_this_vm = false;
     for (const auto& sharing_pair : device.vm_sharing_info) {
       if (sharing_pair.second.shared) {
-        attached_device = true;
-        AttachUsbDeviceToVm(sharing_pair.first, device.guid, base::DoNothing());
+        is_shared = true;
+        if (sharing_pair.first == vm_name) {
+          is_shared_with_this_vm = true;
+          break;
+        }
       }
     }
-    if (!attached_device) {
-      AttachUsbDeviceToVm(kDefaultVmName, device.guid, base::DoNothing());
+    if (is_shared_with_this_vm || (vm_name == kDefaultVmName && !is_shared)) {
+      AttachUsbDeviceToVm(vm_name, device.guid, base::DoNothing());
     }
   }
 }

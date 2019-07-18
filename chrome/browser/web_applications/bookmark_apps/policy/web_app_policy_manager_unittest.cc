@@ -332,7 +332,8 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   // previous session.
   SimulatePreviouslyInstalledApp(kWindowedUrl, InstallSource::kExternalPolicy);
   SimulatePreviouslyInstalledApp(kTabbedUrl, InstallSource::kExternalPolicy);
-  SimulatePreviouslyInstalledApp(kNoContainerUrl, InstallSource::kInternal);
+  SimulatePreviouslyInstalledApp(kNoContainerUrl,
+                                 InstallSource::kInternalDefault);
 
   // Push a policy with only one of the apps.
   base::Value first_list(base::Value::Type::LIST);

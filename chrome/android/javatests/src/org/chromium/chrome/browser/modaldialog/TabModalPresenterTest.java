@@ -42,6 +42,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -51,6 +52,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -111,9 +113,11 @@ public class TabModalPresenterTest {
         mTabModalPresenter.disableAnimationForTest();
     }
 
+    // TODO(crbug/984793) remove explicit disabling for send_tab_to_self in this test.
     @Test
     @SmallTest
     @Feature({"ModalDialog"})
+    @DisableFeatures(ChromeFeatureList.SEND_TAB_TO_SELF)
     public void testShow_UrlBarFocused() throws Exception {
         // Show a tab modal dialog. The dialog should be shown on top of the toolbar.
         PropertyModel dialog1 = createDialog(mActivity, "1", null);

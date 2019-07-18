@@ -38,7 +38,6 @@ constexpr int kPaddingBetweenMenuItems = 8;
 
 using PowerButtonPosition = PowerButtonController::PowerButtonPosition;
 
-constexpr base::Feature PowerButtonMenuView::kEnableFeedbackItem;
 constexpr base::TimeDelta PowerButtonMenuView::kMenuAnimationDuration;
 
 PowerButtonMenuView::PowerButtonMenuView(
@@ -163,13 +162,10 @@ void PowerButtonMenuView::CreateItems() {
               IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON));
       AddChildView(lock_screen_item_);
 
-      if (base::FeatureList::IsEnabled(kEnableFeedbackItem)) {
-        feedback_item_ = new PowerButtonMenuItemView(
-            this, kSystemPowerButtonMenuFeedbackIcon,
-            l10n_util::GetStringUTF16(
-                IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON));
-        AddChildView(feedback_item_);
-      }
+      feedback_item_ = new PowerButtonMenuItemView(
+          this, kSystemPowerButtonMenuFeedbackIcon,
+          l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON));
+      AddChildView(feedback_item_);
     }
   }
 }

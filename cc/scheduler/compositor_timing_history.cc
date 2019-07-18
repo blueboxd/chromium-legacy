@@ -77,9 +77,6 @@ const double kPrepareTilesEstimationPercentile = 90.0;
 const double kActivateEstimationPercentile = 90.0;
 const double kDrawEstimationPercentile = 90.0;
 
-constexpr base::TimeDelta kSubmitAckWatchdogTimeout =
-    base::TimeDelta::FromSeconds(8);
-
 // This macro is deprecated since its bucket count uses too much bandwidth.
 // It also has sub-optimal range and bucket distribution.
 // TODO(brianderson): Delete this macro and associated UMAs once there is
@@ -423,7 +420,6 @@ CompositorTimingHistory::CompositorTimingHistory(
       activate_duration_history_(kDurationHistorySize),
       draw_duration_history_(kDurationHistorySize),
       begin_main_frame_on_critical_path_(false),
-      submit_ack_watchdog_enabled_(false),
       uma_reporter_(CreateUMAReporter(uma_category)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       compositor_frame_reporting_controller_(
@@ -559,7 +555,6 @@ void CompositorTimingHistory::DidCreateAndInitializeLayerTreeFrameSink() {
   // After we get a new output surface, we won't get a spurious
   // CompositorFrameAck from the old output surface.
   submit_start_time_ = base::TimeTicks();
-  submit_ack_watchdog_enabled_ = false;
 }
 
 void CompositorTimingHistory::WillBeginImplFrame(
@@ -580,14 +575,6 @@ void CompositorTimingHistory::WillBeginImplFrame(
   if (!new_active_tree_is_likely && !did_send_begin_main_frame_) {
     SetBeginMainFrameNeededContinuously(false);
     SetBeginMainFrameCommittingContinuously(false);
-  }
-
-  if (submit_ack_watchdog_enabled_) {
-    base::TimeDelta submit_not_acked_time_ = now - submit_start_time_;
-    if (submit_not_acked_time_ >= kSubmitAckWatchdogTimeout) {
-      // Only record this UMA once per submitted CompositorFrame.
-      submit_ack_watchdog_enabled_ = false;
-    }
   }
 
   if (frame_type == viz::BeginFrameArgs::NORMAL)
@@ -926,7 +913,6 @@ void CompositorTimingHistory::DidSubmitCompositorFrame(uint32_t frame_token) {
   DCHECK_EQ(base::TimeTicks(), submit_start_time_);
   compositor_frame_reporting_controller_->DidSubmitCompositorFrame(frame_token);
   submit_start_time_ = Now();
-  submit_ack_watchdog_enabled_ = true;
 }
 
 void CompositorTimingHistory::DidNotProduceFrame() {
@@ -937,8 +923,6 @@ void CompositorTimingHistory::DidReceiveCompositorFrameAck() {
   DCHECK_NE(base::TimeTicks(), submit_start_time_);
   base::TimeDelta submit_to_ack_duration = Now() - submit_start_time_;
   uma_reporter_->AddSubmitToAckLatency(submit_to_ack_duration);
-  if (submit_ack_watchdog_enabled_)
-    submit_ack_watchdog_enabled_ = false;
   submit_start_time_ = base::TimeTicks();
 }
 

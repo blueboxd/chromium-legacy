@@ -823,6 +823,16 @@ class DnsTransactionTest : public DnsTransactionTestBase,
     EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept", &accept));
     EXPECT_EQ(accept, "application/dns-message");
 
+    std::string language;
+    EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept-Language",
+                                                           &language));
+    EXPECT_EQ(language, "*");
+
+    std::string user_agent;
+    EXPECT_TRUE(
+        request->extra_request_headers().GetHeader("User-Agent", &user_agent));
+    EXPECT_EQ(user_agent, "Chrome");
+
     SocketDataProvider* provider = socket_factory_->mock_data().GetNext();
 
     if (doh_job_maker_)

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern_set.h"
@@ -141,8 +142,11 @@ class RulesetManager {
   base::Optional<Action> GetBlockOrCollapseAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
-  base::Optional<Action> GetRedirectAction(
+  base::Optional<Action> GetRedirectOrUpgradeAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
+      const WebRequestInfo& request,
+      const int tab_id,
+      const bool crosses_incognito,
       const RequestParams& params) const;
   base::Optional<Action> GetRemoveHeadersAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,

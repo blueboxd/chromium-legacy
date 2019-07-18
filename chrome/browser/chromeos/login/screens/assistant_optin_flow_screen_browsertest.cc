@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
@@ -1094,8 +1093,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
 
   ExpectCollectedOptIns({});
   PrefService* const prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
-  EXPECT_TRUE(
-      prefs->GetBoolean(::assistant::prefs::kAssistantDisabledByPolicy));
+  EXPECT_TRUE(prefs->GetBoolean(assistant::prefs::kAssistantDisabledByPolicy));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled));
   EXPECT_FALSE(prefs->GetBoolean(arc::prefs::kVoiceInteractionContextEnabled));

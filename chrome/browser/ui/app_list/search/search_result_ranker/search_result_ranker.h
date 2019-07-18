@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 
 namespace app_list {
 
@@ -47,13 +48,8 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
   void Rank(Mixer::SortedResults* results);
 
   // Forwards the given training signal to the relevant models contained within
-  // the SearchResultRanker. |query| is the user's search string, which may be
-  // empty. |id| is the string ID of an item that is launched from the launcher,
-  // eg. an app ID or a filepath, and is derived from the relevant
-  // ChromeSearchResult's ID.
-  void Train(const std::string& query,
-             const std::string& id,
-             RankingItemType type);
+  // the SearchResultRanker.
+  void Train(const AppLaunchData& app_launch_data);
 
   // file_manager::file_tasks::FileTaskObserver:
   void OnFilesOpened(const std::vector<FileOpenEvent>& file_opens) override;

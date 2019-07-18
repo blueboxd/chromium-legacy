@@ -420,7 +420,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void CutCopyPaste(int command_id) = 0;
 
   // Construct a FindBar implementation for the |browser|.
-  virtual FindBar* CreateFindBar() = 0;
+  virtual std::unique_ptr<FindBar> CreateFindBar() = 0;
 
   // Return the WebContentsModalDialogHost for use in positioning web contents
   // modal dialogs within the browser window. This can sometimes be NULL (for

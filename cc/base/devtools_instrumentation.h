@@ -76,10 +76,15 @@ class CC_BASE_EXPORT ScopedImageDecodeTask {
 
   ScopedImageDecodeTask& operator=(const ScopedImageDecodeTask&) = delete;
 
+  // Prevents logging duration metrics. Used in cases where a task performed
+  // uninteresting work or was terminated early.
+  void SuppressMetrics() { suppress_metrics_ = true; }
+
  private:
   const DecodeType decode_type_;
   const TaskType task_type_;
   const base::TimeTicks start_time_;
+  bool suppress_metrics_ = false;
 };
 
 class CC_BASE_EXPORT ScopedLayerTreeTask {

@@ -23,6 +23,9 @@ import org.chromium.base.annotations.MainDex;
  * }
  * }</pre>
  *
+ * The event name of the trace events must be a string literal or a |static final String| class
+ * member. Otherwise NoDynamicStringsInTraceEventCheck error will be thrown.
+ *
  * It is OK to use tracing before the native library has loaded, in a slightly restricted fashion.
  * @see EarlyTraceEvent for details.
  */

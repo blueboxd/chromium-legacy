@@ -1104,6 +1104,33 @@ void MaybeAppendSecureOriginsAllowlistSwitch(base::CommandLine* cmdline) {
   }
 }
 
+void CookiesReadOnUI(
+    const base::Callback<content::WebContents*(void)>& wc_getter,
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* web_contents = wc_getter.Run();
+  if (!web_contents)
+    return;
+  web_contents->OnCookiesRead(url, first_party_url, cookie_list,
+                              blocked_by_policy);
+}
+
+void CookieChangedOnUI(
+    const base::Callback<content::WebContents*(void)>& wc_getter,
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  WebContents* web_contents = wc_getter.Run();
+  if (!web_contents)
+    return;
+  web_contents->OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
+}
+
 }  // namespace
 
 std::string GetUserAgent() {
@@ -2518,50 +2545,6 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   return allow;
 }
 
-void ChromeContentBrowserClient::OnCookiesRead(
-    int process_id,
-    int routing_id,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
-      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
-                          routing_id);
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    // Internal calls from AllowGetCookie are on IO thread, so need to jump.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
-                       first_party_url, cookie_list, blocked_by_policy));
-  } else {
-    TabSpecificContentSettings::CookiesRead(wc_getter, url, first_party_url,
-                                            cookie_list, blocked_by_policy);
-  }
-}
-
-void ChromeContentBrowserClient::OnCookieChange(
-    int process_id,
-    int routing_id,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
-      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
-                          routing_id);
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    // Internal calls from AllowSetCookie are on IO thread, so need to jump.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter,
-                       url, first_party_url, cookie, blocked_by_policy));
-  } else {
-    TabSpecificContentSettings::CookieChanged(wc_getter, url, first_party_url,
-                                              cookie, blocked_by_policy);
-  }
-}
-
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
@@ -2647,6 +2630,39 @@ void ChromeContentBrowserClient::FileSystemAccessed(
                        it.child_id, it.frame_routing_id, url, !allow));
   }
   callback.Run(allow);
+}
+
+void ChromeContentBrowserClient::OnCookiesRead(
+    int process_id,
+    int routing_id,
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
+  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
+      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
+                          routing_id);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&CookiesReadOnUI, wc_getter, url, first_party_url,
+                     cookie_list, blocked_by_policy));
+}
+
+void ChromeContentBrowserClient::OnCookieChange(
+    int process_id,
+    int routing_id,
+    const GURL& url,
+    const GURL& first_party_url,
+    const net::CanonicalCookie& cookie,
+    bool blocked_by_policy) {
+  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
+      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
+                          routing_id);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&CookieChangedOnUI, wc_getter, url, first_party_url,
+                     cookie, blocked_by_policy));
 }
 
 bool ChromeContentBrowserClient::AllowWorkerIndexedDB(

@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"

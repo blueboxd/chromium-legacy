@@ -78,28 +78,43 @@ TEST_F(IndexedRuleTest, IDParsing) {
 
 TEST_F(IndexedRuleTest, PriorityParsing) {
   struct {
+    dnr_api::RuleActionType action_type;
     std::unique_ptr<int> priority;
     const ParseResult expected_result;
     // Only valid if |expected_result| is SUCCESS.
     const uint32_t expected_priority;
   } cases[] = {
-      {std::make_unique<int>(kMinValidPriority - 1),
+      {dnr_api::RULE_ACTION_TYPE_REDIRECT,
+       std::make_unique<int>(kMinValidPriority - 1),
        ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, kDefaultPriority},
-      {std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
+      {dnr_api::RULE_ACTION_TYPE_REDIRECT,
+       std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
        kMinValidPriority},
-      {std::make_unique<int>(kMinValidPriority + 1), ParseResult::SUCCESS,
+      {dnr_api::RULE_ACTION_TYPE_REDIRECT,
+       std::make_unique<int>(kMinValidPriority + 1), ParseResult::SUCCESS,
        kMinValidPriority + 1},
-      {nullptr, ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
-       kDefaultPriority},
+      {dnr_api::RULE_ACTION_TYPE_REDIRECT, nullptr,
+       ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, kDefaultPriority},
+      {dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME,
+       std::make_unique<int>(kMinValidPriority - 1),
+       ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY, kDefaultPriority},
+      {dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME,
+       std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
+       kMinValidPriority},
+      {dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME, nullptr,
+       ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY, kDefaultPriority},
   };
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
     dnr_api::Rule rule = CreateGenericParsedRule();
     rule.priority = std::move(cases[i].priority);
-    rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
-    rule.action.redirect_url =
-        std::make_unique<std::string>("http://google.com");
+    rule.action.type = cases[i].action_type;
+
+    if (cases[i].action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
+      rule.action.redirect_url =
+          std::make_unique<std::string>("http://google.com");
+    }
 
     IndexedRule indexed_rule;
     ParseResult result = IndexedRule::CreateIndexedRule(

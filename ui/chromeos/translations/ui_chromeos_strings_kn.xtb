@@ -40,6 +40,7 @@
 <translation id="1395262318152388157">ಸೀಕ್ ಸ್ಲೈಡರ್</translation>
 <translation id="1399648040768741453">ತೆಲುಗು ಕೀಬೋರ್ಡ್ (ಫೋನೆಟಿಕ್)</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" /> ಗೆ ಸರಿಸಲಾಗಿದೆ.</translation>
 <translation id="1441841714100794440">ವಿಯೆಟ್ನಾಮೀಸ್ ಕೀಬೋರ್ಡ್ (ಟೆಲೆಕ್ಸ್)</translation>
 <translation id="1455548678241328678">ನಾರ್ವೇಜಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="1464724975715666883">1 ದೋಷ.</translation>
@@ -200,6 +201,7 @@
 <translation id="3466147780910026086">ನಿಮ್ಮ ಮಾಧ್ಯಮ ಸಾಧನವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3468522857997926824"><ph name="BEGIN_LINK" />Google ಡ್ರೈವ್<ph name="END_LINK" /> ಗೆ <ph name="FILE_COUNT" /> ಫೋಟೋಗಳನ್ನು ಬ್ಯಾಕಪ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3470502288861289375">ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" /> ಗೆ ನಕಲಿಸಲಾಗಿದೆ.</translation>
 <translation id="3475447146579922140">Google ಸ್ಪ್ರೆಡ್‌ಶೀಟ್‌</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ದೋಷಗಳು.</translation>
 <translation id="3519867315646775981">ಲಿಪ್ಯಂತರಣ (shalom ← שלום)</translation>
@@ -433,6 +435,7 @@
 <translation id="5923484009666796948">ಜಪಾನೀಸ್ ಇನ್‌ಪುಟ್ (ಜಪಾನಿ ಕೀಬೋರ್ಡ್‌ಗಾಗಿ)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">ನಿಮ್ಮ Google ಡ್ರೈವ್‌ನಲ್ಲಿರುವ ಫೈಲ್‌ಗಳನ್ನು ಮಾರ್ಪಡಿಸಲು Linux ಆ್ಯಪ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ. ಈ ಬದಲಾವಣೆಗಳು, ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳೊಂದಿಗೆ ಸಿಂಕ್ ಆಗುತ್ತವೆ.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> ಐಟಂಗಳು</translation>
 <translation id="5982621672636444458">ಆಯ್ಕೆಗಳನ್ನು ವಿಂಗಡಿಸು</translation>
 <translation id="6005282720244019462">ಲ್ಯಾಟಿನ್ ಅಮೇರಿಕನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="6007237601604674381">ಸರಿಸುವುದು ವಿಫಲವಾಗಿದೆ. <ph name="ERROR_MESSAGE" /></translation>

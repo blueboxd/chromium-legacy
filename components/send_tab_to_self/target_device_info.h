@@ -14,7 +14,8 @@ namespace send_tab_to_self {
 // Device information for generating send tab to self UI.
 struct TargetDeviceInfo {
  public:
-  TargetDeviceInfo(const std::string& cache_guid,
+  TargetDeviceInfo(const std::string& device_name,
+                   const std::string& cache_guid,
                    const sync_pb::SyncEnums::DeviceType device_type,
                    base::Time last_updated_timestamp);
   TargetDeviceInfo(const TargetDeviceInfo& other) = default;
@@ -22,6 +23,8 @@ struct TargetDeviceInfo {
 
   bool operator==(const TargetDeviceInfo& rhs) const;
 
+  // Device name.
+  std::string device_name;
   // Device guid.
   std::string cache_guid;
   // Device type.

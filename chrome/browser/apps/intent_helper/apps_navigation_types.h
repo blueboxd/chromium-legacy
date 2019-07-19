@@ -60,6 +60,13 @@ enum class AppsNavigationAction {
   RESUME,
 };
 
+// This enum backs an UMA histogram and must be treated as append-only.
+enum class Source {
+  kHttpOrHttps = 0,
+  kExternalProtocol = 1,
+  kMaxValue = kExternalProtocol
+};
+
 // Represents the data required to display an app in a picker to the user.
 struct IntentPickerAppInfo {
   IntentPickerAppInfo(apps::mojom::AppType type,

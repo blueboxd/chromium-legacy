@@ -64,7 +64,7 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     runnable_scripts_ = runnable_scripts;
   }
 
-  void OnNoRunnableScripts() override { no_runnable_scripts_anymore_++; }
+  void OnNoRunnableScriptsForPage() override { no_runnable_scripts_anymore_++; }
 
   void SetAndCheckScripts() {
     std::vector<std::unique_ptr<Script>> scripts;
@@ -139,7 +139,7 @@ TEST_F(ScriptTrackerTest, NoScripts) {
   tracker_.SetScripts({});
   tracker_.CheckScripts();
   EXPECT_THAT(runnable_scripts(), IsEmpty());
-  EXPECT_EQ(0, runnable_scripts_changed_);
+  EXPECT_EQ(1, runnable_scripts_changed_);
   EXPECT_EQ(0, no_runnable_scripts_anymore_);
 }
 

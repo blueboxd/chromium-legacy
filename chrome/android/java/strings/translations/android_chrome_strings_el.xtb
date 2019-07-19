@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Αποθηκ. χώρος ιστοσελίδας</translation>
 <translation id="2328985652426384049">Δεν είναι δυνατή η σύνδεση</translation>
 <translation id="2349710944427398404">Σύνολο δεδομένων που χρησιμοποιούνται από το Chrome, συμπεριλαμβανομένων των λογαριασμών, των σελιδοδεικτών και των αποθηκευμένων ρυθμίσεων</translation>
-<translation id="2351097562818989364">Έγινε επαναφορά ρυθμίσεων μετάφρασης.</translation>
 <translation id="2353636109065292463">Έλεγχος της σύνδεσής σας στο διαδίκτυο</translation>
 <translation id="2359808026110333948">Συνέχεια</translation>
 <translation id="2369533728426058518">ανοικτές καρτέλες</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Απομένουν <ph name="SECONDS" /> δευτερόλεπτα</translation>
 <translation id="2779651927720337254">απέτυχε</translation>
 <translation id="2781151931089541271">Απομένει 1 δευτερόλεπτο</translation>
+<translation id="2796941233371040292">Δεν υπάρχουν δεδομένα αποθηκευτικού χώρου σε αυτό το σημείο.</translation>
 <translation id="2801022321632964776">Ενημερώστε για να χρησιμοποιείτε τη γλώσσα σας στην πιο πρόσφατη έκδοση του Chrome</translation>
 <translation id="2810645512293415242">Απλοποιημένη σελίδα για την αποθήκευση δεδομένων και για πιο γρήγορη φόρτωση.</translation>
 <translation id="281504910091592009">Προβολή και διαχείριση αποθηκευμένων κωδικών πρόσβασης στον <ph name="BEGIN_LINK" />Λογαριασμό σας Google<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Σχετικά με το Chrome</translation>
 <translation id="2891154217021530873">Διακοπή φόρτωσης σελίδας</translation>
 <translation id="2893180576842394309">Η Google μπορεί να χρησιμοποιήσει το ιστορικό σας για την εξατομίκευση της Αναζήτησης και άλλων υπηρεσιών Google</translation>
+<translation id="2898264748040935573">Επεξεργασία αποθηκευμένου κωδικού πρόσβασης.</translation>
 <translation id="2900528713135656174">Δημιουργία συμβάντος</translation>
 <translation id="2902702728133930130">Η εκκίνηση του Chrome απέτυχε λόγω ενός μη αναμενόμενου σφάλματος.</translation>
 <translation id="290376772003165898">Η σελίδα δεν είναι στα <ph name="LANGUAGE" />;</translation>
@@ -520,6 +521,7 @@
 <translation id="4913169188695071480">Διακοπή ανανέωσης</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Λήψη βοήθειας<ph name="END_LINK" /> κατά τη σάρωση για συσκευές…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Σελίδα}other{# Σελίδες}}</translation>
+<translation id="4932247056774066048">Τα δεδομένα σας Chrome θα διαγραφούν από αυτήν τη συσκευή, λόγω της αποσύνδεσής σας από έναν λογαριασμό, η διαχείριση του οποίου γίνεται από τον τομέα <ph name="DOMAIN_NAME" />. Θα παραμείνει στον Λογαριασμό σας Google.</translation>
 <translation id="4943703118917034429">Εικονική πραγματικότητα</translation>
 <translation id="4943872375798546930">Δεν υπάρχουν αποτελέσματα</translation>
 <translation id="4958708863221495346">Η καρτέλα <ph name="URL_OF_THE_CURRENT_TAB" /> μοιράζεται την οθόνη σας.</translation>
@@ -562,6 +564,7 @@
 <translation id="5210286577605176222">Μετάβαση στην προηγούμενη καρτέλα</translation>
 <translation id="5210365745912300556">Κλείσιμο καρτέλας</translation>
 <translation id="5224771365102442243">Με βίντεο</translation>
+<translation id="5230560987958996918">Ο ιστότοπος <ph name="SITE" /> θέλει να κάνει σάρωση για κοντινές συσκευές Bluetooth. Βρέθηκαν οι παρακάτω συσκευές:</translation>
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
 <translation id="526421993248218238">Δεν είναι δυνατή η φόρτωση αυτής της σελίδας</translation>
 <translation id="5271967389191913893">Η συσκευή δεν μπορεί να ανοίξει το περιεχόμενο προς λήψη.</translation>
@@ -571,7 +574,6 @@
 <translation id="5301954838959518834">OK, το κατάλαβα</translation>
 <translation id="5304593522240415983">Αυτό το πεδίο δεν μπορεί να είναι κενό</translation>
 <translation id="5308380583665731573">Σύνδεση</translation>
-<translation id="5308603654685598744">Όταν είναι ενεργοποιημένη αυτή η λειτουργία, το Chrome θα προσφέρεται να μεταφράζει σελίδες σε άλλες γλώσσες χρησιμοποιώντας τη Μετάφραση Google.</translation>
 <translation id="5313967007315987356">Προσθήκη ιστότοπου</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
 <translation id="5324858694974489420">Ρυθμίσεις γονικού ελέγχου</translation>
@@ -586,6 +588,7 @@
 <translation id="5414836363063783498">Γίνεται επαλήθευση…</translation>
 <translation id="5423934151118863508">Οι πιο δημοφιλείς σελίδες σας θα εμφανίζονται εδώ</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB διαθέσιμα</translation>
+<translation id="543338862236136125">Επεξεργασία κωδικού πρόσβασης</translation>
 <translation id="5433691172869980887">Το όνομα χρήστη αντιγράφηκε</translation>
 <translation id="543509235395288790">Λήψη <ph name="COUNT" /> αρχείων (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Μετάβαση στη γραμμή διευθύνσεων</translation>
@@ -660,7 +663,6 @@
 <translation id="5865733239029070421">Αποστέλλει αυτόματα στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων στην Google</translation>
 <translation id="5869522115854928033">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
 <translation id="5902828464777634901">Όλα τα δεδομένα αποθήκευσης στον ιστοτόπων, όπως τα cookie, θα διαγραφούν</translation>
-<translation id="5911030830365207728">Μετάφραση Google</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5919204609460789179">Ενημερώστε το <ph name="PRODUCT_NAME" /> για να ξεκινήσει ο συγχρονισμός</translation>
 <translation id="5937580074298050696">Εξοικονομήθηκαν <ph name="AMOUNT" /></translation>
@@ -805,7 +807,6 @@
 <translation id="6963642900430330478">Αυτή η σελίδα είναι επικίνδυνη. Πληροφορίες ιστοτόπου</translation>
 <translation id="6963766334940102469">Διαγραφή σελιδοδεικτών</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Επαναφορά ρυθμίσεων μετάφρασης</translation>
 <translation id="6979737339423435258">Από την αρχή</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="6989267951144302301">Δεν ήταν δυνατή η λήψη</translation>
@@ -941,7 +942,7 @@
 <translation id="7929962904089429003">Άνοιγμα μενού</translation>
 <translation id="7942131818088350342">Το <ph name="PRODUCT_NAME" /> δεν είναι ενημερωμένο.</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
-<translation id="7963646190083259054">Προμηθευτής:</translation>
+<translation id="7963646190083259054">Πάροχος υπηρεσιών:</translation>
 <translation id="7971136598759319605">Ενεργή 1 ημέρα πριν</translation>
 <translation id="7975379999046275268">Προεπισκόπηση σελίδας <ph name="BEGIN_NEW" />Νέο<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Προφόρτωση ιστοσελίδων για ταχύτερη περιήγηση και αναζήτηση</translation>

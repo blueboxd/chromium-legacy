@@ -9,17 +9,22 @@
 <translation id="2338501278241028356">Lülitage Bluetooth sisse, et läheduses olevaid seadmeid avastada</translation>
 <translation id="2805756323405976993">Rakendused</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
+<translation id="3008341117444806826">VÄRSKENDA</translation>
 <translation id="3838338534323494292">Uus parool</translation>
+<translation id="4429881212383817840">Kerberose pilet aegub peagi</translation>
 <translation id="445059817448385655">Vana parool</translation>
 <translation id="467510802200863975">Paroolid ei kattu</translation>
 <translation id="4731797938093519117">Vanema juurdepääs</translation>
 <translation id="476166673298332917">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
+<translation id="4890353053343094602">Valige kohe uus</translation>
 <translation id="5212543919916444558">Ma ei leia teie ekraanilt midagi, mille puhul saaksin aidata.
 Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="5222676887888702881">Logi välja</translation>
 <translation id="5317780077021120954">Salvesta</translation>
+<translation id="5332948983412042822">Valige kohe uus</translation>
 <translation id="5457599981699367932">Sirvi külalisena</translation>
 <translation id="54609108002486618">Hallatud</translation>
+<translation id="5632302877407885207">{NUM_DAYS,plural, =0{Parool on aegunud}=1{Parool aegub vähem kui ühe päeva pärast}other{Parool aegub vähem kui # päeva pärast}}</translation>
 <translation id="5832805196449965646">Lisa inimene</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
 <translation id="6058625436358447366">Toimingu lõpuleviimiseks sisestage oma vana ja uus parool</translation>
@@ -30,5 +35,6 @@ Kui soovite mulle küsimuse esitada, puudutage mikrofoni.</translation>
 <translation id="7690294790491645610">Kinnitage uus parool</translation>
 <translation id="808894953321890993">Muuda parooli</translation>
 <translation id="8747900814994928677">Kinnita muudatus</translation>
+<translation id="910415269708673980">Kasutaja <ph name="PRINCIPAL_NAME" /> pileti värskendamine</translation>
 <translation id="9111102763498581341">Ava lukk</translation>
 </translationbundle>

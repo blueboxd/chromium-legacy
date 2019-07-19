@@ -447,7 +447,6 @@
       "os": {
         "type": "linux"
       },
-      "gl_type": "gl",
       "gl_renderer": ".*Mesa.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
@@ -1850,7 +1849,6 @@
       "os": {
         "type": "linux"
       },
-      "gl_type": "gl",
       "gl_version_string": ".*Mesa.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"

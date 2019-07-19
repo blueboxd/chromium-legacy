@@ -10592,6 +10592,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ManualFallback_CreditCard_OpenAddCreditCard">
+  <owner>javierrobles@chromium.org</owner>
+  <description>
+    The user tapped on &quot;Add credit card&quot; on the Password Manual
+    Fallback view.
+  </description>
+</action>
+
 <action name="ManualFallback_CreditCard_OpenManageCreditCard">
   <owner>javierrobles@chromium.org</owner>
   <description>

@@ -26,6 +26,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
@@ -492,20 +493,16 @@ void DeleteResolverFactoryRequestCallback(
 }
 
 void CheckCapturedNetLogEntries(const std::string& expected_string,
-                                const net::TestNetLogEntry::List& entries) {
+                                const std::vector<net::NetLogEntry>& entries) {
   ASSERT_EQ(2u, entries.size());
   EXPECT_EQ(net::NetLogEventType::PAC_JAVASCRIPT_ALERT, entries[0].type);
-  std::string message;
-  ASSERT_TRUE(entries[0].GetStringValue("message", &message));
-  EXPECT_EQ(expected_string, message);
-  ASSERT_FALSE(entries[0].params->HasKey("line_number"));
-  message.clear();
+  EXPECT_EQ(expected_string,
+            net::GetStringValueFromParams(entries[0], "message"));
+  ASSERT_FALSE(entries[0].params.FindKey("line_number"));
   EXPECT_EQ(net::NetLogEventType::PAC_JAVASCRIPT_ERROR, entries[1].type);
-  ASSERT_TRUE(entries[1].GetStringValue("message", &message));
-  EXPECT_EQ(expected_string, message);
-  int line_number = 0;
-  ASSERT_TRUE(entries[1].GetIntegerValue("line_number", &line_number));
-  EXPECT_EQ(12345, line_number);
+  EXPECT_EQ(expected_string,
+            net::GetStringValueFromParams(entries[1], "message"));
+  EXPECT_EQ(12345, net::GetIntegerValueFromParams(entries[1], "line_number"));
 }
 
 }  // namespace
@@ -565,9 +562,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test {
 
 TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver) {
   CreateProxyResolver();
-  net::TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
-  CheckCapturedNetLogEntries(kScriptData, entries);
+  CheckCapturedNetLogEntries(kScriptData, net_log_.GetEntries());
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, CreateProxyResolver_Empty) {
@@ -783,12 +778,8 @@ TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL) {
 
   EXPECT_EQ("DIRECT", request->results().ToPacString());
 
-  net::TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
-  CheckCapturedNetLogEntries(url.spec(), entries);
-  entries.clear();
-  request->net_log().GetEntries(&entries);
-  CheckCapturedNetLogEntries(url.spec(), entries);
+  CheckCapturedNetLogEntries(url.spec(), net_log_.GetEntries());
+  CheckCapturedNetLogEntries(url.spec(), request->net_log().GetEntries());
 }
 
 TEST_F(ProxyResolverFactoryMojoTest, GetProxyForURL_MultipleResults) {

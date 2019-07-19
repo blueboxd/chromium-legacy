@@ -503,13 +503,13 @@ void SurfaceAggregator::EmitSurfaceContent(
 
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
-    copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target, source.filters,
-                      source.backdrop_filters, source.backdrop_filter_bounds,
-                      blending_color_space_, source.has_transparent_background,
-                      source.cache_render_pass,
-                      source.has_damage_from_contributing_content,
-                      source.generate_mipmap);
+    copy_pass->SetAll(
+        remapped_pass_id, source.output_rect, source.output_rect,
+        source.transform_to_root_target, source.filters,
+        source.backdrop_filters, source.backdrop_filter_bounds,
+        output_color_space_.GetBlendingColorSpace(),
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
@@ -603,7 +603,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
     quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
                  remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                 gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
+                 /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
+                 gfx::PointF(), gfx::RectF(scaled_rect),
                  /*force_anti_aliasing_off=*/false,
                  /* backdrop_filter_quality*/ 1.0f);
   }
@@ -735,7 +736,8 @@ void SurfaceAggregator::AddColorConversionPass() {
       color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
+               gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
@@ -785,7 +787,8 @@ void SurfaceAggregator::AddDisplayTransformPass() {
       display_transform_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
+               gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(display_transform_pass));
@@ -1066,9 +1069,9 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     copy_pass->SetAll(
         remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
-        blending_color_space_, source.has_transparent_background,
-        source.cache_render_pass, source.has_damage_from_contributing_content,
-        source.generate_mipmap);
+        output_color_space_.GetBlendingColorSpace(),
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     frame.device_scale_factor(), child_to_parent_map,
@@ -1634,11 +1637,7 @@ void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
 }
 
 void SurfaceAggregator::SetOutputColorSpace(
-    const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
-  blending_color_space_ = blending_color_space.IsValid()
-                              ? blending_color_space
-                              : gfx::ColorSpace::CreateSRGB();
   output_color_space_ = output_color_space.IsValid()
                             ? output_color_space
                             : gfx::ColorSpace::CreateSRGB();

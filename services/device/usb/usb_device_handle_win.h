@@ -42,9 +42,9 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   void ResetDevice(ResultCallback callback) override;
   void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
 
-  void ControlTransfer(UsbTransferDirection direction,
-                       UsbControlTransferType request_type,
-                       UsbControlTransferRecipient recipient,
+  void ControlTransfer(mojom::UsbTransferDirection direction,
+                       mojom::UsbControlTransferType request_type,
+                       mojom::UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -63,7 +63,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
 
-  void GenericTransfer(UsbTransferDirection direction,
+  void GenericTransfer(mojom::UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
@@ -101,14 +101,14 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
 
   struct Endpoint {
     const mojom::UsbInterfaceInfo* interface;
-    UsbTransferType type;
+    mojom::UsbTransferType type;
   };
 
   bool OpenInterfaceHandle(Interface* interface);
   void RegisterEndpoints(const CombinedInterfaceInfo& interface);
   void UnregisterEndpoints(const CombinedInterfaceInfo& interface);
   WINUSB_INTERFACE_HANDLE GetInterfaceForControlTransfer(
-      UsbControlTransferRecipient recipient,
+      mojom::UsbControlTransferRecipient recipient,
       uint16_t index);
   void SetInterfaceAlternateSettingBlocking(uint8_t interface_number,
                                             uint8_t alternate_setting,
@@ -138,7 +138,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                         size_t bytes_transferred);
   void ReportIsochronousError(const std::vector<uint32_t>& packet_lengths,
                               IsochronousTransferCallback callback,
-                              UsbTransferStatus status);
+                              mojom::UsbTransferStatus status);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

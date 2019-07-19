@@ -14,6 +14,11 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+
 FakeUsbDeviceHandle::FakeUsbDeviceHandle(const uint8_t* data, size_t size)
     : data_(data), size_(size), position_(0) {}
 

@@ -44,7 +44,7 @@ ppapi::host::HostFactory* TestNaClBrowserDelegate::CreatePpapiHostFactory(
 bool TestNaClBrowserDelegate::MapUrlToLocalFilePath(
     const GURL& url,
     bool use_blocking_api,
-    const base::FilePath& profile_directory,
+    extensions::ExtensionSystem* extension_system,
     base::FilePath* file_path) {
   return false;
 }
@@ -58,7 +58,12 @@ bool TestNaClBrowserDelegate::URLMatchesDebugPatterns(
 }
 
 bool TestNaClBrowserDelegate::IsNonSfiModeAllowed(
-    const base::FilePath& profile_directory,
+    extensions::ExtensionSystem* extension_system,
     const GURL& manifest_url) {
   return false;
+}
+
+extensions::ExtensionSystem* TestNaClBrowserDelegate::GetExtensionSystem(
+    const base::FilePath& profile_directory) {
+  return nullptr;
 }

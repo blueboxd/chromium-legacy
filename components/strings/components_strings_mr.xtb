@@ -229,6 +229,7 @@
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">कार्ड</translation>
 <translation id="2114841414352855701">दुर्लक्ष केले कारण ते <ph name="POLICY_NAME" /> कडून अधिलिखित झाले होते.</translation>
+<translation id="2119505898009119320"><ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />] यांना जारी केलेले</translation>
 <translation id="2129079103035905234">मोशन सेन्सर</translation>
 <translation id="213826338245044447">Mobile बुकमार्क</translation>
 <translation id="214556005048008348">पेमेंट रद्द करा</translation>
@@ -310,6 +311,7 @@
 <translation id="2515629240566999685">आपल्या क्षेत्रातील सिग्नल तपासणे</translation>
 <translation id="2523886232349826891">फक्त या डिव्हाइसवर सेव्ह केले जाईल</translation>
 <translation id="2524461107774643265">अधिक माहिती जोडा</translation>
+<translation id="2535659140340599600">{COUNT,plural, =1{आणि आणखी एक}other{आणि आणखी #}}</translation>
 <translation id="2536110899380797252">पत्ता जोडा</translation>
 <translation id="2539524384386349900">शोधा</translation>
 <translation id="254947805923345898">धोरण मूल्य वैध नाही.</translation>
@@ -721,6 +723,7 @@
 <translation id="4858792381671956233">या साइटला भेट देणे ठीक आहे का ते तुम्ही तुमच्या पालकांना विचारले</translation>
 <translation id="4876188919622883022">सिंप्लिफाइड व्ह्यू</translation>
 <translation id="4876305945144899064">वापरकर्तानाव नाही</translation>
+<translation id="4877083676943085827">{COUNT,plural, =0{काहीही नाही}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
 <translation id="4877422487531841831"><ph name="TEXT" /> शोधा</translation>
 <translation id="4879491255372875719">आपोआप (डीफॉल्ट)</translation>
 <translation id="4880827082731008257">इतिहास शोध</translation>
@@ -1016,6 +1019,7 @@
 <translation id="650855688985305916">होय, स्टोअर करा</translation>
 <translation id="6508722015517270189">Chrome रीस्टार्ट करा</translation>
 <translation id="6517596291481585650">चेतावणी: धोरणामध्ये नमूद केल्याप्रमाणे हे धोरण सूची म्हणून विलीन केले नाही कारण ती एखादी सूची नाही.</translation>
+<translation id="6521745193039995384">सुरू नाही</translation>
 <translation id="6529602333819889595">&amp;पुन्हा करा हटवा</translation>
 <translation id="6534179046333460208">वास्तविक वेब सूचना</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कॅन करत आहे</translation>
@@ -1478,6 +1482,7 @@
 <translation id="9076630408993835509">हा ब्राउझर कंपनी किंवा अन्य संस्थेद्वारे व्यवस्थापित केलेला नाही. या डिव्हाइसवरील अ‍ॅक्टिव्हिटी कदाचित Chrome च्या बाहेर व्यवस्थापित केलेली असू शकते. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">अधिक माहिती आवश्यक आहे</translation>
 <translation id="9080712759204168376">मागणी सारांश</translation>
+<translation id="9089260154716455634">कामाच्या तासानंतरचे धोरण:</translation>
 <translation id="9095388113577226029">आणखी भाषा...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> तुमची माहिती संरक्षित करण्यासाठी सामान्यतः एंक्रिप्शन वापरते. Chromium ने यावेळी <ph name="SITE" /> शी कनेक्‍ट करण्‍याचा प्रयत्न केला तेव्‍हा, वेबसाइटने असामान्य आणि अयोग्य क्रेडेन्शियल परत पाठविले. एकतर आक्रमणकर्ता <ph name="SITE" /> असल्याची बतावणी करण्याचा प्रयत्न करतो तेव्‍हा किंवा वाय-फाय साइन इन स्क्रीनने कनेक्शनमध्ये व्यत्यय आणले तेव्‍हा हे घडू शकते. कोणत्याही डेटाची अदलाबदल करण्यापूर्वी Chromium ने कनेक्शन थांबविल्यामुळे तुमची माहिती अद्याप सुरक्षित आहे.</translation>
 <translation id="9106062320799175032">बिलिंग पत्ता जोडा</translation>

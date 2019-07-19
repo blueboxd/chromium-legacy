@@ -133,6 +133,12 @@
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">330dp</dimen>
 
+    <!-- Password entry editor dimensions -->
+    <dimen name="password_entry_editor_content_spacing">12dp</dimen>
+    <dimen name="password_entry_editor_field_bottom_margin">8dp</dimen>
+    <dimen name="password_entry_editor_field_large_top_margin">16dp</dimen>
+    <dimen name="password_entry_editor_field_top_margin">8dp</dimen>
+
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_text_size">14sp</dimen>
     <dimen name="password_generation_horizontal_margin">10dp</dimen>

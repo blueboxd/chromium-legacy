@@ -142,8 +142,7 @@ void ImageDownloaderImpl::DidDownloadImage(
 }
 
 void ImageDownloaderImpl::Dispose() {
-  if (binding_.is_bound())
-    binding_.Unbind();
+  binding_.Close();
 }
 
 void ImageDownloaderImpl::ContextDestroyed(ExecutionContext*) {

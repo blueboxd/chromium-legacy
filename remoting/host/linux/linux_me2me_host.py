@@ -1769,6 +1769,9 @@ Web Store: https://chrome.google.com/remotedesktop"""
         elif os.WEXITSTATUS(status) == 105:
           logging.info("Username is blocked by policy - exiting.")
           return 0
+        elif os.WEXITSTATUS(status) == 106:
+          logging.info("Host has been deleted - exiting.")
+          return 0
         else:
           logging.info("Host exited with status %s." % os.WEXITSTATUS(status))
       elif os.WIFSIGNALED(status):

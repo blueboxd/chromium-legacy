@@ -41,7 +41,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_internals_logging.h"
+#include "components/autofill/core/browser/autofill_internals_service.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -55,6 +55,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
@@ -240,16 +241,17 @@ bool IsAddressForm(FieldTypeGroup field_type_group) {
 }
 
 void LogAutofillTypePredictionsAvailable(
+    LogManager* log_manager,
     const std::vector<FormStructure*>& forms) {
-  if (!IsLogAutofillInternalsActive())
+  if (!log_manager || !log_manager->IsLoggingActive())
     return;
 
   LogBuffer buffer;
   for (FormStructure* form : forms)
     buffer << *form;
 
-  LOG_AF_INTERNALS << LoggingScope::kParsing << LogMessage::kParsedForms
-                   << std::move(buffer);
+  log_manager->Log() << LoggingScope::kParsing << LogMessage::kParsedForms
+                     << std::move(buffer);
 }
 
 }  // namespace
@@ -1181,7 +1183,7 @@ void AutofillManager::OnLoadedServerPredictions(
   // annotate forms with the predicted types or add console warnings.
   driver()->SendAutofillTypePredictionsToRenderer(queried_forms);
 
-  LogAutofillTypePredictionsAvailable(queried_forms);
+  LogAutofillTypePredictionsAvailable(log_manager_, queried_forms);
 }
 
 void AutofillManager::OnCreditCardFetched(bool did_succeed,
@@ -1335,6 +1337,7 @@ AutofillManager::AutofillManager(
     AutofillDownloadManagerState enable_download_manager)
     : AutofillHandler(driver),
       client_(client),
+      log_manager_(client_->GetLogManager()),
       app_locale_(app_locale),
       personal_data_(personal_data),
       field_filler_(app_locale, client->GetAddressNormalizer()),
@@ -1759,8 +1762,8 @@ void AutofillManager::OnFormsParsed(
   // queryable forms will be updated once the field type query is complete.
   driver()->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
   driver()->SendAutofillTypePredictionsToRenderer(queryable_forms);
-  LogAutofillTypePredictionsAvailable(non_queryable_forms);
-  LogAutofillTypePredictionsAvailable(queryable_forms);
+  LogAutofillTypePredictionsAvailable(log_manager_, non_queryable_forms);
+  LogAutofillTypePredictionsAvailable(log_manager_, queryable_forms);
 
   // Query the server if at least one of the forms was parsed.
   if (!queryable_forms.empty() && download_manager_) {

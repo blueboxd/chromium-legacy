@@ -25,7 +25,6 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -204,8 +203,7 @@ TEST_F(TraceNetLogObserverTest, TracingDisabledDuringOnAddEntry) {
 }
 
 TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_TRUE(entries.empty());
 
   trace_net_log_observer()->WatchForTraceStart(net_log());
@@ -216,7 +214,7 @@ TEST_F(TraceNetLogObserverTest, TraceEventCaptured) {
   net_log_with_source.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB);
   net_log_with_source.EndEvent(NetLogEventType::REQUEST_ALIVE);
 
-  net_log()->GetEntries(&entries);
+  entries = net_log()->GetEntries();
   EXPECT_EQ(3u, entries.size());
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
@@ -271,8 +269,7 @@ TEST_F(TraceNetLogObserverTest, EnableAndDisableTracing) {
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
 
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(2u, trace_events()->GetSize());
   const base::DictionaryValue* item1 = nullptr;
@@ -311,8 +308,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileTracing) {
 
   EndTraceAndFlush();
 
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_EQ(2u, entries.size());
   EXPECT_EQ(1u, trace_events()->GetSize());
 
@@ -340,8 +336,7 @@ TEST_F(TraceNetLogObserverTest, DestroyObserverWhileNotTracing) {
 
   EndTraceAndFlush();
 
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(0u, trace_events()->GetSize());
 }
@@ -358,8 +353,7 @@ TEST_F(TraceNetLogObserverTest, CreateObserverAfterTracingStarts) {
 
   EndTraceAndFlush();
 
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(1u, trace_events()->GetSize());
 }
@@ -379,8 +373,7 @@ TEST_F(TraceNetLogObserverTest,
 
   EndTraceAndFlush();
 
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(0u, trace_events()->GetSize());
 }
@@ -396,8 +389,7 @@ TEST_F(TraceNetLogObserverTest, EventsWithAndWithoutParameters) {
   EndTraceAndFlush();
   trace_net_log_observer()->StopWatchForTraceStart();
 
-  TestNetLogEntry::List entries;
-  net_log()->GetEntries(&entries);
+  auto entries = net_log()->GetEntries();
   EXPECT_EQ(2u, entries.size());
   EXPECT_EQ(2u, trace_events()->GetSize());
   const base::DictionaryValue* item1 = nullptr;

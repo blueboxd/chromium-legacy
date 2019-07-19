@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Nettstedslagring</translation>
 <translation id="2328985652426384049">Kan ikke logge på</translation>
 <translation id="2349710944427398404">Total datamengde som brukes av Chrome, deriblant kontoer, bokmerker og lagrede innstillinger</translation>
-<translation id="2351097562818989364">Oversettelsesinnstillingene dine er tilbakestilt.</translation>
 <translation id="2353636109065292463">Sjekker internettilkoblingen din</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2369533728426058518">åpne faner</translation>
@@ -571,7 +570,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5301954838959518834">Greit</translation>
 <translation id="5304593522240415983">Dette feltet må fylles ut</translation>
 <translation id="5308380583665731573">Koble til</translation>
-<translation id="5308603654685598744">Når denne funksjonen er slått på, blir du spurt om du vil at Chrome skal bruke Google Oversetter til å oversette sider som er skrevet på andre språk.</translation>
 <translation id="5313967007315987356">Legg til et nettsted</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
@@ -660,7 +658,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5865733239029070421">Sender automatisk brukerstatistikk og programstopprapporter til Google</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5902828464777634901">Alle data som er lagret lokalt av dette nettstedet, inkludert informasjonskapsler, blir slettet.</translation>
-<translation id="5911030830365207728">Google Oversetter</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5919204609460789179">Oppdater <ph name="PRODUCT_NAME" /> for å starte synkroniseringen</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> spart</translation>
@@ -805,7 +802,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6963642900430330478">Denne siden er farlig. Informasjon om nettstedet</translation>
 <translation id="6963766334940102469">Slett bokmerker</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Tilbakestill innstillingene for oversetting</translation>
 <translation id="6979737339423435258">Alle datoer</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="6989267951144302301">Kunne ikke laste ned</translation>

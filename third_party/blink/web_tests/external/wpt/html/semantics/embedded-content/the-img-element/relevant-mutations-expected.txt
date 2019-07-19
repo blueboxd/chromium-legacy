@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 81 tests; 60 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 81 tests; 64 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS src set
 PASS src changed
 PASS src removed
@@ -70,12 +70,12 @@ PASS class on previous sibling source set
 PASS inserted/removed children of img
 PASS picture is inserted; img has src
 PASS picture is inserted; img has srcset
-FAIL picture is inserted; img has previous sibling source assert_unreached: update the image data was run Reached unreachable code
-FAIL picture is inserted; img has following sibling source assert_unreached: update the image data was run Reached unreachable code
+PASS picture is inserted; img has previous sibling source
+PASS picture is inserted; img has following sibling source
 PASS picture is removed; img has src
 PASS picture is removed; img has srcset
-FAIL picture is removed; img has previous sibling source assert_unreached: update the image data was run Reached unreachable code
-FAIL picture is removed; img has following sibling source assert_unreached: update the image data was run Reached unreachable code
+PASS picture is removed; img has previous sibling source
+PASS picture is removed; img has following sibling source
 PASS parent is picture, following img inserted
 PASS parent is picture, following img removed
 PASS parent is picture, following img has src set

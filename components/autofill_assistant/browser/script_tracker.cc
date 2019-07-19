@@ -104,7 +104,7 @@ void ScriptTracker::CheckScripts() {
     // There are no runnable scripts, even though we haven't checked the DOM
     // yet. Report it all immediately.
     UpdateRunnableScriptsIfNecessary();
-    listener_->OnNoRunnableScripts();
+    listener_->OnNoRunnableScriptsForPage();
     TerminatePendingChecks();
     return;
   }
@@ -134,6 +134,10 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
       std::move(callback));
   TerminatePendingChecks();
   executor_->Run(std::move(run_script_callback));
+}
+
+void ScriptTracker::StopScript() {
+  executor_.reset();
 }
 
 void ScriptTracker::ClearRunnableScripts() {
@@ -213,8 +217,11 @@ void ScriptTracker::OnCheckDone() {
 }
 
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
-  if (!RunnablesHaveChanged())
+  if (!has_reported_scripts_) {
+    has_reported_scripts_ = true;
+  } else if (!RunnablesHaveChanged()) {
     return;
+  }
 
   runnable_scripts_.clear();
   SortScripts(&pending_runnable_scripts_);

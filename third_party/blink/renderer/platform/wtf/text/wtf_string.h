@@ -332,17 +332,8 @@ class WTF_EXPORT String {
   // for U+212A is 'k'.
   // This function is rarely used to implement web platform features. See
   // crbug.com/627682.
-  // This function is deprecated. We should use LowerASCII() or introduce
-  // LowerUnicode().
+  // This function is deprecated. We should use LowerASCII() or CaseMap.
   String DeprecatedLower() const WARN_UNUSED_RESULT;
-
-  // |locale_identifier| is case-insensitive, and accepts either of "aa_aa" or
-  // "aa-aa". Empty/null |locale_identifier| indicates locale-independent
-  // Unicode case conversion.
-  String LowerUnicode(const AtomicString& locale_identifier) const
-      WARN_UNUSED_RESULT;
-  String UpperUnicode(const AtomicString& locale_identifier) const
-      WARN_UNUSED_RESULT;
 
   // Returns a lowercase version of the string.
   // This function converts ASCII characters only.

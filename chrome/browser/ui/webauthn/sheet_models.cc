@@ -1208,3 +1208,29 @@ base::string16 AttestationPermissionRequestSheetModel::GetCancelButtonLabel()
   // make a change post string freeze and therefore reused this.
   return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
 }
+
+// AuthenticatorQRSheetModel --------------------------------------------------
+
+AuthenticatorQRSheetModel::AuthenticatorQRSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorQRSheetModel::~AuthenticatorQRSheetModel() = default;
+
+const gfx::VectorIcon& AuthenticatorQRSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPermissionDarkIcon
+                                                 : kWebauthnPermissionIcon;
+}
+
+base::string16 AuthenticatorQRSheetModel::GetStepTitle() const {
+  // TODO: this UI is not yet reachable, but will need a translated string
+  // once it is.
+  return base::UTF8ToUTF16("Title");
+}
+
+base::string16 AuthenticatorQRSheetModel::GetStepDescription() const {
+  // TODO: this UI is not yet reachable, but will need a translated string
+  // once it is.
+  return base::UTF8ToUTF16("Description");
+}

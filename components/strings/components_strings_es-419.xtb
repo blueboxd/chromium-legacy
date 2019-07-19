@@ -1484,7 +1484,7 @@ Detalles adicionales:
 <translation id="9076630408993835509">Este navegador no está administrado por una empresa ni por otra organización. Es posible que la actividad en este dispositivo se administre fuera de Chrome. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Se requiere más información</translation>
 <translation id="9080712759204168376">Resumen del pedido</translation>
-<translation id="9089260154716455634">Política Off-Hours:</translation>
+<translation id="9089260154716455634">Política fuera de horario:</translation>
 <translation id="9095388113577226029">Más idiomas…</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco comunes. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="9106062320799175032">Agregar dirección de facturación</translation>

@@ -16,9 +16,6 @@ cr.define('destination_dialog_interactive_test', function() {
     /** @type {?PrintPreviewDestinationDialogElement} */
     let dialog = null;
 
-    /** @type {?print_preview.DestinationStore} */
-    let destinationStore = null;
-
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
 
@@ -29,30 +26,41 @@ cr.define('destination_dialog_interactive_test', function() {
 
     /** @override */
     setup(function() {
+      PolymerTest.clearBody();
+
       // Create destinations.
       nativeLayer = new print_preview.NativeLayerStub();
       print_preview.NativeLayer.setInstance(nativeLayer);
-      destinationStore = print_preview_test_utils.createDestinationStore();
       const localDestinations = [];
       const destinations = print_preview_test_utils.getDestinations(
           nativeLayer, localDestinations);
       const recentDestinations =
           [print_preview.makeRecentDestination(destinations[4])];
-      destinationStore.init(
-          false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
-          '' /* serializedDefaultDestinationSelectionRulesStr */,
-          recentDestinations /* recentDestinations */);
       nativeLayer.setLocalDestinations(localDestinations);
+      cloudPrintInterface = new print_preview.CloudPrintInterfaceStub();
 
-      // Set up dialog
-      dialog = document.createElement('print-preview-destination-dialog');
-      dialog.activeUser = '';
-      dialog.users = [];
-      dialog.destinationStore = destinationStore;
-      dialog.invitationStore = new print_preview.InvitationStore();
-      dialog.recentDestinations = recentDestinations;
-      document.body.appendChild(dialog);
-      return nativeLayer.whenCalled('getPrinterCapabilities');
+      const model = document.createElement('print-preview-model');
+      document.body.appendChild(model);
+
+      // Create destination settings, so  that the user manager is created.
+      const destinationSettings =
+          document.createElement('print-preview-destination-settings');
+      destinationSettings.settings = model.settings;
+      destinationSettings.state = print_preview.State.READY;
+      destinationSettings.disabled = false;
+      test_util.fakeDataBind(model, destinationSettings, 'settings');
+      document.body.appendChild(destinationSettings);
+
+      // Initialize
+      destinationSettings.cloudPrintInterface = cloudPrintInterface;
+      destinationSettings.init(
+          'FooDevice' /* printerName */,
+          '' /* serializedDefaultDestinationSelectionRulesStr */,
+          [] /* userAccounts */, true /* syncAvailable */);
+      return nativeLayer.whenCalled('getPrinterCapabilities').then(() => {
+        // Retrieve a reference to dialog
+        dialog = destinationSettings.$.destinationDialog.get();
+      });
     });
 
     // Tests that the search input text field is automatically focused when the
@@ -61,7 +69,7 @@ cr.define('destination_dialog_interactive_test', function() {
       const searchInput = dialog.$.searchBox.getSearchInput();
       assertTrue(!!searchInput);
       const whenFocusDone = test_util.eventToPromise('focus', searchInput);
-      destinationStore.startLoadAllDestinations();
+      dialog.destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone;
     });
@@ -75,7 +83,7 @@ cr.define('destination_dialog_interactive_test', function() {
       const signInLink = dialog.$$('.sign-in');
       assertTrue(!!signInLink);
       const whenFocusDone = test_util.eventToPromise('focus', searchInput);
-      destinationStore.startLoadAllDestinations();
+      dialog.destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone
           .then(() => {
@@ -93,6 +101,10 @@ cr.define('destination_dialog_interactive_test', function() {
                 test_util.eventToPromise('focus', searchInput);
             signInLink.click();
             return whenSearchFocused;
+          })
+          .then(() => {
+            assertEquals('foo@chromium.org', dialog.activeUser);
+            assertEquals(1, dialog.users.length);
           });
     });
 
@@ -102,7 +114,7 @@ cr.define('destination_dialog_interactive_test', function() {
       const searchInput = dialog.$.searchBox.getSearchInput();
       assertTrue(!!searchInput);
       const whenFocusDone = test_util.eventToPromise('focus', searchInput);
-      destinationStore.startLoadAllDestinations();
+      dialog.destinationStore.startLoadAllDestinations();
       dialog.show();
       return whenFocusDone
           .then(() => {

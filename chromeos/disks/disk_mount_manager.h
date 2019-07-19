@@ -27,6 +27,14 @@ enum MountCondition {
   MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM,
 };
 
+// Possible filesystem types that can be passed to FormatMountedDevice.
+enum class FormatFileSystemType {
+  kUnknown = 0,
+  kVfat = 1,
+  kExfat = 2,
+  kNtfs = 3,
+};
+
 // This class handles the interaction with cros-disks.
 // Other classes can add themselves as observers.
 class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
@@ -178,10 +186,10 @@ class COMPONENT_EXPORT(CHROMEOS_DISKS) DiskMountManager {
   // Formats device mounted at |mount_path| with the given filesystem and label.
   // Also unmounts the device before formatting.
   // Example: mount_path: /media/VOLUME_LABEL
-  //          filesystem: ntfs
+  //          filesystem: FormatFileSystemType::kNtfs
   //          label: MYUSB
   virtual void FormatMountedDevice(const std::string& mount_path,
-                                   const std::string& filesystem,
+                                   FormatFileSystemType filesystem,
                                    const std::string& label) = 0;
 
   // Renames Device given its mount path.

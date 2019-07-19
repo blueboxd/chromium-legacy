@@ -16,9 +16,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -115,7 +115,7 @@ class BlobStorageContextTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<TestSimpleTaskRunner> file_runner_ = new TestSimpleTaskRunner();
 
-  base::MessageLoop fake_io_message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<BlobStorageContext> context_;
 };
 

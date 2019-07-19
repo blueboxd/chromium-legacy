@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">شريط تمرير البحث</translation>
 <translation id="1399648040768741453">لوحة المفاتيح التيلوغوية (صوتية)</translation>
 <translation id="1430915738399379752">طباعة</translation>
+<translation id="1439494416798956626">تم النقل إلى <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">‏لوحة المفاتيح الفيتنامية (Telex)</translation>
 <translation id="1455548678241328678">لوحة المفاتيح النرويجية</translation>
 <translation id="1464724975715666883">خطأ واحد.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">جارٍ فحص جهاز الوسائط...</translation>
 <translation id="3468522857997926824">‏تم نسخ <ph name="FILE_COUNT" /> من الصور احتياطيًا في <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">جارٍ النسخ...</translation>
+<translation id="3473378059788601120">تم النسخ إلى <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">‏جدول بيانات Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> من الأخطاء.</translation>
 <translation id="3519867315646775981">التحويل الصوتي (שלום ← شالوم)</translation>
@@ -260,7 +262,7 @@
 <translation id="418179967336296930">‏لوحة المفاتيح الروسية الصوتية (YaZHert)</translation>
 <translation id="4193154014135846272">‏مستند Google</translation>
 <translation id="4195249722193633765">‏تثبيت التطبيق باستخدام Linux (إصدار تجريبي)</translation>
-<translation id="4197674956721858839">تحديد ملف مضغوط</translation>
+<translation id="4197674956721858839">‏ضغط الملفات المختارة بتنسيق Zip</translation>
 <translation id="421017592316736757">يجب أن تكون متصلاً بالإنترنت للدخول إلى هذا الملف.</translation>
 <translation id="4212740939091998969">المجلَّد الذي يحمل الاسم "<ph name="FOLDER_NAME" />" موجود مسبقًا. يُرجى اختيار اسم آخر.</translation>
 <translation id="4215448920900139318">جارٍ الاحتفاظ بنسخة احتياطية من <ph name="FILE_COUNT" /></translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">الإدخال باللغة اليابانية (للوحة المفاتيح اليابانية)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏يمكنك منح تطبيقات نظام التشغيل Linux الإذن لتعديل الملفات في Google Drive. وستتم مزامنة التغييرات مع الأجهزة الأخرى.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> من العناصر</translation>
 <translation id="5982621672636444458">خيارات التصنيف</translation>
 <translation id="6005282720244019462">لوحة مفاتيح أمريكا اللاتينية</translation>
 <translation id="6007237601604674381">تعذّر النقل. <ph name="ERROR_MESSAGE" /></translation>
@@ -581,7 +584,7 @@
 <translation id="7788080748068240085">لحفظ "<ph name="FILE_NAME" />" بلا إنترنت، يجب توفير مساحة إضافية تبلغ <ph name="TOTAL_FILE_SIZE" />:<ph name="MARKUP_1" />
     <ph name="MARKUP_2" />احرص على إزالة الملفات التي لم تعد بحاجة إلى الدخول إليها بلا إنترنت<ph name="MARKUP_3" />
     <ph name="MARKUP_4" />احذف الملفات من مجلد التنزيلات<ph name="MARKUP_5" /></translation>
-<translation id="7794058097940213561">تنسيق الجهاز</translation>
+<translation id="7794058097940213561">إعداد الجهاز</translation>
 <translation id="7799329977874311193">‏مستند HTML</translation>
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="7821462174190887129">‏تم العثور على <ph name="FILE_COUNT" />.

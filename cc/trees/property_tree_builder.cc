@@ -827,6 +827,14 @@ static inline const base::Optional<gfx::RRectF>& BackdropFilterBounds(
   return layer->test_properties()->backdrop_filter_bounds;
 }
 
+static inline ElementId BackdropMaskElementId(Layer* layer) {
+  return layer->backdrop_mask_element_id();
+}
+
+static inline ElementId BackdropMaskElementId(LayerImpl* layer) {
+  return layer->test_properties()->backdrop_mask_element_id;
+}
+
 static inline float BackdropFilterQuality(Layer* layer) {
   return layer->backdrop_filter_quality();
 }
@@ -1082,6 +1090,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   node->backdrop_filters = BackdropFilters(layer);
   node->backdrop_filter_bounds = BackdropFilterBounds(layer);
   node->backdrop_filter_quality = BackdropFilterQuality(layer);
+  node->backdrop_mask_element_id = BackdropMaskElementId(layer);
   node->filters_origin = FiltersOrigin(layer);
   node->trilinear_filtering = TrilinearFiltering(layer);
   node->has_potential_opacity_animation = has_potential_opacity_animation;

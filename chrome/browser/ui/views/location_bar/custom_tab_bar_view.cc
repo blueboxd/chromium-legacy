@@ -97,32 +97,32 @@ bool ShouldDisplayUrl(content::WebContents* contents) {
 class CustomTabBarTitleOriginView : public views::View {
  public:
   explicit CustomTabBarTitleOriginView(SkColor background_color) {
-    title_label_ = new views::Label(base::string16(), CONTEXT_BODY_TEXT_LARGE,
-                                    views::style::TextStyle::STYLE_PRIMARY);
-    location_label_ = new views::Label(
+    auto title_label = std::make_unique<views::Label>(
+        base::string16(), CONTEXT_BODY_TEXT_LARGE,
+        views::style::TextStyle::STYLE_PRIMARY);
+    auto location_label = std::make_unique<views::Label>(
         base::string16(), CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY,
         gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
 
-    title_label_->SetBackgroundColor(background_color);
-    title_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
-    title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    title_label_->SetProperty(views::kFlexBehaviorKey,
-                              views::FlexSpecification::ForSizeRule(
-                                  views::MinimumFlexSizeRule::kScaleToMinimum,
-                                  views::MaximumFlexSizeRule::kPreferred));
+    title_label->SetBackgroundColor(background_color);
+    title_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
+    title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    title_label->SetProperty(views::kFlexBehaviorKey,
+                             views::FlexSpecification::ForSizeRule(
+                                 views::MinimumFlexSizeRule::kScaleToMinimum,
+                                 views::MaximumFlexSizeRule::kPreferred));
 
-    location_label_->SetBackgroundColor(background_color);
-    location_label_->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
-    location_label_->SetHorizontalAlignment(
+    location_label->SetBackgroundColor(background_color);
+    location_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_HEAD);
+    location_label->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
-    location_label_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification::ForSizeRule(
-            views::MinimumFlexSizeRule::kScaleToMinimum,
-            views::MaximumFlexSizeRule::kPreferred));
+    location_label->SetProperty(views::kFlexBehaviorKey,
+                                views::FlexSpecification::ForSizeRule(
+                                    views::MinimumFlexSizeRule::kScaleToMinimum,
+                                    views::MaximumFlexSizeRule::kPreferred));
 
-    AddChildView(title_label_);
-    AddChildView(location_label_);
+    title_label_ = AddChildView(std::move(title_label));
+    location_label_ = AddChildView(std::move(location_label));
 
     auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kVertical)
@@ -203,15 +203,16 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
 
   close_button_ = AddChildView(CreateCloseButton(this, foreground_color));
 
-  location_icon_view_ = new LocationIconView(font_list, this);
-  AddChildView(location_icon_view_);
+  location_icon_view_ =
+      AddChildView(std::make_unique<LocationIconView>(font_list, this));
 
-  title_origin_view_ = new CustomTabBarTitleOriginView(background_color_);
-  title_origin_view_->SetProperty(
+  auto title_origin_view =
+      std::make_unique<CustomTabBarTitleOriginView>(background_color_);
+  title_origin_view->SetProperty(
       views::kFlexBehaviorKey, views::FlexSpecification::ForSizeRule(
                                    views::MinimumFlexSizeRule::kScaleToMinimum,
                                    views::MaximumFlexSizeRule::kPreferred));
-  AddChildView(title_origin_view_);
+  title_origin_view_ = AddChildView(std::move(title_origin_view));
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kHorizontal)

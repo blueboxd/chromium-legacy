@@ -82,6 +82,12 @@ class KerberosClientImpl : public KerberosClient {
     CallProtoMethod(kerberos::kSetConfigMethod, request, std::move(callback));
   }
 
+  void ValidateConfig(const kerberos::ValidateConfigRequest& request,
+                      ValidateConfigCallback callback) override {
+    CallProtoMethod(kerberos::kValidateConfigMethod, request,
+                    std::move(callback));
+  }
+
   void AcquireKerberosTgt(const kerberos::AcquireKerberosTgtRequest& request,
                           int password_fd,
                           AcquireKerberosTgtCallback callback) override {

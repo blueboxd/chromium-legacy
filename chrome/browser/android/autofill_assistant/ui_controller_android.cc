@@ -127,6 +127,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   client_ = client;
   ui_delegate_ = ui_delegate;
   captured_debug_context_.clear();
+  destroy_timer_.reset();
 
   JNIEnv* env = AttachCurrentThread();
   auto java_web_contents = web_contents->GetJavaWebContents();
@@ -241,11 +242,30 @@ void UiControllerAndroid::SetupForState() {
 
       // make sure user sees the error message.
       ExpandBottomSheet();
+
+      // Keep showing the current UI for a while, without getting updates from
+      // the controller, then shut down the UI portion.
+      //
+      // A controller might still get attached while the timer is running,
+      // canceling the destruction.
+      destroy_timer_ = std::make_unique<base::OneShotTimer>();
+      destroy_timer_->Start(FROM_HERE, kGracefulShutdownDelay,
+                            base::BindOnce(&UiControllerAndroid::DestroySelf,
+                                           weak_ptr_factory_.GetWeakPtr()));
+      Detach();
+      return;
+
+    case AutofillAssistantState::TRACKING:
+      SetOverlayState(OverlayState::HIDDEN);
+      AllowShowingSoftKeyboard(true);
+      SetSpinPoodle(false);
+
+      Java_AssistantModel_setVisible(AttachCurrentThread(), GetModel(), false);
+      DestroySelf();
       return;
 
     case AutofillAssistantState::INACTIVE:
-      // TODO(crbug.com/806868): Add support for switching back to the inactive
-      // state, which is the initial state.
+      // Wait for the state to change.
       return;
   }
   NOTREACHED() << "Unknown state: " << static_cast<int>(state);
@@ -603,31 +623,20 @@ void UiControllerAndroid::OnUserInteractionInsideTouchableArea() {
 }
 
 // Other methods.
+void UiControllerAndroid::CloseCustomTab() {
+  Java_AutofillAssistantUiController_scheduleCloseCustomTab(
+      AttachCurrentThread(), java_object_);
+}
 
-void UiControllerAndroid::WillShutdown(Metrics::DropOutReason reason) {
-  if (reason == Metrics::DropOutReason::CUSTOM_TAB_CLOSED) {
-    Java_AutofillAssistantUiController_scheduleCloseCustomTab(
-        AttachCurrentThread(), java_object_);
-  }
+void UiControllerAndroid::Detach() {
+  if (!ui_delegate_)
+    return;
 
   // Capture the debug context, for including into a feedback possibly sent
-  // later, after the delegate has been possibly destroyed.
-  DCHECK(ui_delegate_);
+  // later.
   captured_debug_context_ = ui_delegate_->GetDebugContext();
-  AutofillAssistantState final_state = ui_delegate_->GetState();
-  ui_delegate_ = nullptr;
 
-  // Get rid of the UI, either immediately, or with a delay, to give time to
-  // users to read any message.
-  if (final_state != AutofillAssistantState::STOPPED) {
-    DestroySelf();
-  } else {
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&UiControllerAndroid::DestroySelf,
-                       weak_ptr_factory_.GetWeakPtr()),
-        kGracefulShutdownDelay);
-  }
+  ui_delegate_ = nullptr;
 }
 
 // Payment request related methods.

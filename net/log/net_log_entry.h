@@ -17,6 +17,8 @@ class Value;
 
 namespace net {
 
+// Represents an event that was sent to a NetLog observer, including the
+// materialized parameters.
 struct NET_EXPORT NetLogEntry {
  public:
   NetLogEntry(NetLogEventType type,
@@ -27,16 +29,25 @@ struct NET_EXPORT NetLogEntry {
 
   ~NetLogEntry();
 
+  // Moveable.
+  NetLogEntry(NetLogEntry&& entry);
+  NetLogEntry& operator=(NetLogEntry&& entry);
+
   // Serializes the specified event to a Value.
   base::Value ToValue() const;
 
-  const NetLogEventType type;
-  const NetLogSource source;
-  const NetLogEventPhase phase;
-  const base::TimeTicks time;
+  // NetLogEntry is not copy constructible, however copying is useful for
+  // unittests.
+  NetLogEntry Clone() const;
 
-  // TODO(eroman): Make this base::Optional instead?
-  const base::Value params;
+  // Returns true if the entry has value for |params|.
+  bool HasParams() const;
+
+  NetLogEventType type;
+  NetLogSource source;
+  NetLogEventPhase phase;
+  base::TimeTicks time;
+  base::Value params;
 };
 
 }  // namespace net

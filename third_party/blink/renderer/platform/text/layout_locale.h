@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 
 #include <unicode/uscript.h>
 
@@ -60,6 +61,14 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
   static const LayoutLocale* LocaleForHan(const LayoutLocale*);
   const char* LocaleForHanForSkFontMgr() const;
 
+  // The normalized locale data to construct |CaseMap| from.
+  const CaseMap::Locale& CaseMapLocale() const {
+    if (case_map_computed_)
+      return locale_for_case_map_;
+    ComputeCaseMapLocale();
+    return locale_for_case_map_;
+  }
+
   Hyphenation* GetHyphenation() const;
 
   AtomicString LocaleWithBreakKeyword(LineBreakIteratorMode) const;
@@ -76,9 +85,11 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
   explicit LayoutLocale(const AtomicString&);
 
   void ComputeScriptForHan() const;
+  void ComputeCaseMapLocale() const;
 
   AtomicString string_;
   mutable std::string string_for_sk_font_mgr_;
+  mutable CaseMap::Locale locale_for_case_map_;
   mutable scoped_refptr<Hyphenation> hyphenation_;
 
   // hb_language_t is defined in hb.h, which not all files can include.
@@ -89,6 +100,7 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 
   mutable unsigned has_script_for_han_ : 1;
   mutable unsigned hyphenation_computed_ : 1;
+  mutable unsigned case_map_computed_ : 1;
 };
 
 }  // namespace blink

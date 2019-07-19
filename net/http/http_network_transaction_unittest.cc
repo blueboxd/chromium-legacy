@@ -77,7 +77,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
@@ -178,17 +177,17 @@ bool IsTransportSocketPoolStalled(HttpNetworkSession* session) {
 
 // Takes in a Value created from a NetLogHttpResponseParameter, and returns
 // a JSONified list of headers as a single string.  Uses single quotes instead
-// of double quotes for easier comparison.  Returns false on failure.
-bool GetHeaders(base::DictionaryValue* params, std::string* headers) {
-  if (!params)
-    return false;
-  base::ListValue* header_list;
-  if (!params->GetList("headers", &header_list))
-    return false;
-  std::string double_quote_headers;
-  base::JSONWriter::Write(*header_list, &double_quote_headers);
-  base::ReplaceChars(double_quote_headers, "\"", "'", headers);
-  return true;
+// of double quotes for easier comparison.
+std::string GetHeaders(const base::Value& params) {
+  if (!params.is_dict())
+    return "";
+  const base::Value* header_list = params.FindListKey("headers");
+  if (!header_list)
+    return "";
+  std::string headers;
+  base::JSONWriter::Write(*header_list, &headers);
+  base::ReplaceChars(headers, "\"", "'", &headers);
+  return headers;
 }
 
 // Tests LoadTimingInfo in the case a socket is reused and no PAC script is
@@ -515,8 +514,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
     rv = ReadTransaction(&trans, &out.response_data);
     EXPECT_THAT(rv, IsOk());
 
-    TestNetLogEntry::List entries;
-    log.GetEntries(&entries);
+    auto entries = log.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
         NetLogEventPhase::NONE);
@@ -524,9 +522,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
         entries, pos, NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
         NetLogEventPhase::NONE);
 
-    std::string line;
-    EXPECT_TRUE(entries[pos].GetStringValue("line", &line));
-    EXPECT_EQ("GET / HTTP/1.1\r\n", line);
+    EXPECT_EQ("GET / HTTP/1.1\r\n",
+              GetStringValueFromParams(entries[pos], "line"));
 
     HttpRequestHeaders request_headers;
     EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
@@ -536,10 +533,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
     EXPECT_TRUE(request_headers.GetHeader("Connection", &value));
     EXPECT_EQ("keep-alive", value);
 
-    std::string response_headers;
-    EXPECT_TRUE(GetHeaders(entries[pos].params.get(), &response_headers));
     EXPECT_EQ("['Host: www.example.org','Connection: keep-alive']",
-              response_headers);
+              GetHeaders(entries[pos].params));
 
     out.total_received_bytes = trans.GetTotalReceivedBytes();
     // The total number of sent bytes should not have changed.
@@ -3365,8 +3360,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -3490,8 +3484,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -3613,8 +3606,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     int rv = trans.Start(&request, callback1.callback(), log.bound());
     EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-    TestNetLogEntry::List entries;
-    log.GetEntries(&entries);
+    auto entries = log.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
         NetLogEventPhase::NONE);
@@ -3724,8 +3716,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     int rv = trans.Start(&request, callback1.callback(), log.bound());
     EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-    TestNetLogEntry::List entries;
-    log.GetEntries(&entries);
+    auto entries = log.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
         NetLogEventPhase::NONE);
@@ -3850,8 +3841,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -4201,8 +4191,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsServerRequestsProxyAuthThroughProxy) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_UNEXPECTED_PROXY_AUTH));
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -9973,8 +9962,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -14836,8 +14824,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGet) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -14917,8 +14904,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -14990,8 +14976,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_EMPTY_RESPONSE));
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -15822,8 +15807,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_RESTART_MISDIRECTED_REQUEST,
       NetLogEventPhase::NONE);

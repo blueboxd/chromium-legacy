@@ -169,6 +169,28 @@ class BrowserActionApiCanvasTest : public BrowserActionApiTest {
   }
 };
 
+// Watches a frame is swapped with a new frame by e.g., navigation.
+class RenderFrameChangedWatcher : public content::WebContentsObserver {
+ public:
+  explicit RenderFrameChangedWatcher(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override {
+    created_frame_ = new_host;
+    run_loop_.Quit();
+  }
+
+  content::RenderFrameHost* WaitAndReturnNewFrame() {
+    run_loop_.Run();
+    return created_frame_;
+  }
+
+ private:
+  base::RunLoop run_loop_;
+  content::RenderFrameHost* created_frame_;
+};
+
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
@@ -837,12 +859,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
 
   // Navigate the popup's iframe to a (cross-site) web page, and wait for that
   // page to send a message, which will ensure that the page has loaded.
+  RenderFrameChangedWatcher watcher(
+      WebContents::FromRenderFrameHost(frame_host));
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/popup_iframe.html"));
   std::string script = "location.href = '" + foo_url.spec() + "'";
-  std::string result;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(frame_host, script, &result));
-  EXPECT_EQ("DONE", result);
+  EXPECT_TRUE(ExecuteScript(frame_host, script));
+
+  frame_host = watcher.WaitAndReturnNewFrame();
+
+  // Confirm that the new page (popup_iframe.html) is actually loaded.
+  content::DOMMessageQueue dom_message_queue(frame_host);
+  std::string json;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&json));
+  EXPECT_EQ("\"DONE\"", json);
 
   EXPECT_TRUE(actions_bar->HidePopup());
 }

@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">网站存储数据</translation>
 <translation id="2328985652426384049">无法登录</translation>
 <translation id="2349710944427398404">Chrome 所使用的数据总量，包括帐号、书签和已保存的设置</translation>
-<translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2353636109065292463">检查互联网连接状况</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2369533728426058518">打开的标签页</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">知道了</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
 <translation id="5308380583665731573">连接</translation>
-<translation id="5308603654685598744">该功能处于开启状态时，Chrome 将使用 Google 翻译对其他语言的网页进行翻译。</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">家长设置</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
-<translation id="5911030830365207728">Google 翻译</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
 <translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">此网页存在危险。网站信息</translation>
 <translation id="6963766334940102469">删除书签</translation>
 <translation id="6965382102122355670">确定</translation>
-<translation id="6978479750597523876">重置翻译设置</translation>
 <translation id="6979737339423435258">时间不限</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="6989267951144302301">无法下载</translation>

@@ -25,6 +25,7 @@ class StubLogManager : public LogManager {
   void LogTextMessage(const std::string& text) const override;
   void LogEntry(base::Value&& entry) const override;
   bool IsLoggingActive() const override;
+  LogBufferSubmitter Log() override;
 
   DISALLOW_COPY_AND_ASSIGN(StubLogManager);
 };

@@ -67,11 +67,11 @@
         min-height: 1px;
       }
 
-      [selectable]:not(cr-radio-group):focus,
-      [selectable]:not(cr-radio-group) > :focus {
+      [selectable]:focus,
+      [selectable] > :focus {
         @apply --cr-selectable-focus;
       }
-      [selectable]:not(cr-radio-group) > * {
+      [selectable] > * {
         cursor: pointer;
       }
 

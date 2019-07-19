@@ -464,7 +464,7 @@ jumbo_component("headless_non_renderer") {
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
       "//components/services/pdf_compositor/public/cpp:manifest",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
       "//gin",
       "//third_party/blink/public:blink",
       "//third_party/blink/public:blink_headers",
@@ -484,7 +484,7 @@ jumbo_component("headless_non_renderer") {
         "//components/printing/browser",
         "//components/printing/renderer",
         "//components/services/pdf_compositor/public/cpp:factory",
-        "//components/services/pdf_compositor/public/interfaces",
+        "//components/services/pdf_compositor/public/mojom",
       ]
     }
   }
@@ -611,7 +611,7 @@ test("headless_unittests") {
     "//base/test:test_support",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/child:child",
     "//content/public/common",
@@ -761,7 +761,7 @@ test("headless_browsertests") {
     "//base",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//content/test:test_support",
     "//services/network/public/mojom",
     "//testing/gmock",
@@ -815,7 +815,7 @@ if (is_win) {
     deps = [
       ":headless_non_renderer",
       "//components/services/pdf_compositor/public/cpp:manifest",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
       "//content:sandbox_helper_win",
       "//content/public/browser",
       "//content/public/common",
@@ -899,7 +899,7 @@ jumbo_static_library("headless_shell_lib") {
     "//components/os_crypt",
     "//components/security_state/content",
     "//components/services/pdf_compositor/public/cpp:manifest",
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/child:child",

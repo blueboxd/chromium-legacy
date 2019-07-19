@@ -57,6 +57,7 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
                            has_content_length && satisfy_min_file_size &&
                            satisfy_connection_type && http_get_method &&
                            partial_response_success;
+  RecordDownloadConnectionInfo(create_info.connection_info);
 
   if (!IsParallelDownloadEnabled())
     return is_parallelizable;
@@ -65,7 +66,6 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
       is_parallelizable
           ? ParallelDownloadCreationEvent::STARTED_PARALLEL_DOWNLOAD
           : ParallelDownloadCreationEvent::FELL_BACK_TO_NORMAL_DOWNLOAD);
-
   if (!has_strong_validator) {
     RecordParallelDownloadCreationEvent(
         ParallelDownloadCreationEvent::FALLBACK_REASON_STRONG_VALIDATORS);

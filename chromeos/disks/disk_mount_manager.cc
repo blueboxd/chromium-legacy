@@ -49,6 +49,21 @@ void OnAllUnmountDeviceRecursively(
   std::move(cb_data->callback).Run(cb_data->error_code);
 }
 
+std::string FormatFileSystemTypeToString(FormatFileSystemType filesystem) {
+  switch (filesystem) {
+    case FormatFileSystemType::kUnknown:
+      return "";
+    case FormatFileSystemType::kVfat:
+      return "vfat";
+    case FormatFileSystemType::kExfat:
+      return "exfat";
+    case FormatFileSystemType::kNtfs:
+      return "ntfs";
+  }
+  NOTREACHED() << "Unknown filesystem type " << static_cast<int>(filesystem);
+  return "";
+}
+
 // The DiskMountManager implementation.
 class DiskMountManagerImpl : public DiskMountManager,
                              public CrosDisksClient::Observer {
@@ -135,8 +150,14 @@ class DiskMountManagerImpl : public DiskMountManager,
 
   // DiskMountManager override.
   void FormatMountedDevice(const std::string& mount_path,
-                           const std::string& filesystem,
+                           FormatFileSystemType filesystem,
                            const std::string& label) override {
+    if (filesystem == FormatFileSystemType::kUnknown) {
+      LOG(ERROR) << "Unknown filesystem passed to FormatMountedDevice";
+      OnFormatCompleted(FORMAT_ERROR_UNSUPPORTED_FILESYSTEM, mount_path);
+      return;
+    }
+
     MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
     if (mount_point == mount_points_.end()) {
       LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
@@ -516,7 +537,7 @@ class DiskMountManagerImpl : public DiskMountManager,
   }
 
   void OnUnmountPathForFormat(const std::string& device_path,
-                              const std::string& filesystem,
+                              FormatFileSystemType filesystem,
                               const std::string& label,
                               MountError error_code) {
     if (error_code == MOUNT_ERROR_NONE &&
@@ -529,15 +550,16 @@ class DiskMountManagerImpl : public DiskMountManager,
 
   // Starts device formatting.
   void FormatUnmountedDevice(const std::string& device_path,
-                             const std::string& filesystem,
+                             FormatFileSystemType filesystem,
                              const std::string& label) {
     DiskMap::const_iterator disk = disks_.find(device_path);
     DCHECK(disk != disks_.end() && disk->second->mount_path().empty());
 
-    pending_format_changes_[device_path] = {filesystem, label};
+    const std::string filesystem_str = FormatFileSystemTypeToString(filesystem);
+    pending_format_changes_[device_path] = {filesystem_str, label};
 
     cros_disks_client_->Format(
-        device_path, filesystem, label,
+        device_path, filesystem_str, label,
         base::BindOnce(&DiskMountManagerImpl::OnFormatStarted,
                        weak_ptr_factory_.GetWeakPtr(), device_path));
   }

@@ -387,17 +387,6 @@ js_library("list_container") {
   ]
 }
 
-js_unittest("list_container_unittest") {
-  deps = [
-    ":list_container",
-    "../../../common/js:util",
-    "//ui/file_manager/base/js:test_error_reporting",
-    "//ui/webui/resources/js:webui_resource_test",
-    "//ui/webui/resources/js/cr/ui:context_menu_handler",
-    "//ui/webui/resources/js/cr/ui:menu",
-  ]
-}
-
 js_library("location_line") {
   deps = [
     "../../../common/js:files_app_entry_types",
@@ -457,6 +446,7 @@ js_library("providers_menu") {
 
 js_library("search_box") {
   deps = [
+    ":autocomplete_list",
     "../../../common/js:file_type",
     "../../../common/js:metrics",
     "../../../common/js:util",
@@ -465,9 +455,16 @@ js_library("search_box") {
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr:ui",
-    "//ui/webui/resources/js/cr/ui:autocomplete_list",
   ]
   externs_list = [ "../../../../externs/search_item.js" ]
+}
+
+js_library("autocomplete_list") {
+  deps = [
+    "//ui/webui/resources/js/cr/ui:list",
+    "//ui/webui/resources/js/cr/ui:list_single_selection_model",
+    "//ui/webui/resources/js/cr/ui:position_util",
+  ]
 }
 
 js_library("suggest_apps_dialog") {
@@ -493,7 +490,6 @@ js_unit_tests("unit_tests") {
     ":file_table_list_unittest",
     ":file_table_unittest",
     ":file_tap_handler_unittest",
-    ":list_container_unittest",
     ":multi_menu_unittest",
   ]
 }

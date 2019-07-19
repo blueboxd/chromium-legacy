@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Penyimpanan situs</translation>
 <translation id="2328985652426384049">Tidak dapat login</translation>
 <translation id="2349710944427398404">Total data yang digunakan oleh Chrome, termasuk akun, bookmark, dan setelan yang tersimpan</translation>
-<translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="2353636109065292463">Memeriksa sambungan internet Anda</translation>
 <translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="2369533728426058518">tab terbuka</translation>
@@ -571,7 +570,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5301954838959518834">Oke, mengerti</translation>
 <translation id="5304593522240415983">Bidang ini tidak boleh kosong</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
-<translation id="5308603654685598744">Ketika fitur ini diaktifkan, Chrome akan menawarkan untuk menerjemahkan halaman yang tertulis dalam bahasa lain menggunakan Google Terjemahan.</translation>
 <translation id="5313967007315987356">Tambahkan situs</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5324858694974489420">Setelan Orang Tua</translation>
@@ -660,7 +658,6 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5865733239029070421">Secara otomatis mengirimkan statistik penggunaan dan laporan kerusakan ke Google</translation>
 <translation id="5869522115854928033">Sandi tersimpan</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
-<translation id="5911030830365207728">Google Terjemahan</translation>
 <translation id="5916664084637901428">Aktif</translation>
 <translation id="5919204609460789179">Perbarui <ph name="PRODUCT_NAME" /> untuk memulai sinkronisasi</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> dihemat</translation>
@@ -805,7 +802,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6963642900430330478">Halaman ini berbahaya. Informasi situs</translation>
 <translation id="6963766334940102469">Hapus bookmark</translation>
 <translation id="6965382102122355670">Oke</translation>
-<translation id="6978479750597523876">Setel ulang setelan terjemahan</translation>
 <translation id="6979737339423435258">Semua</translation>
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6989267951144302301">Tidak dapat mendownload</translation>

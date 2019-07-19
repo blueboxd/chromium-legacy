@@ -72,6 +72,7 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void RecordUma(const std::string& selected_app_package,
                         apps::mojom::AppType app_type,
                         IntentPickerCloseReason close_reason,
+                        Source source,
                         bool should_persist);
 
   static bool IsGoogleRedirectorUrlForTesting(const GURL& url);

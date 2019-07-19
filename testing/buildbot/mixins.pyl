@@ -472,6 +472,14 @@
       },
     },
   },
+  'oreo_fleet': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'OPM1.171019.021',
+        'device_os_flavor': 'google',
+      },
+    },
+  },
   'pie': {
     'swarming': {
       'dimensions': {

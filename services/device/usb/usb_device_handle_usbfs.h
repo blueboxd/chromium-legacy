@@ -47,9 +47,9 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                     ResultCallback callback) override;
   void ResetDevice(ResultCallback callback) override;
   void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
-  void ControlTransfer(UsbTransferDirection direction,
-                       UsbControlTransferType request_type,
-                       UsbControlTransferRecipient recipient,
+  void ControlTransfer(mojom::UsbTransferDirection direction,
+                       mojom::UsbControlTransferType request_type,
+                       mojom::UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -65,7 +65,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
-  void GenericTransfer(UsbTransferDirection direction,
+  void GenericTransfer(mojom::UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
@@ -94,7 +94,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
     uint8_t alternate_setting;
   };
   struct EndpointInfo {
-    UsbTransferType type;
+    mojom::UsbTransferType type;
     const mojom::UsbInterfaceInfo* interface;
   };
 
@@ -114,11 +114,11 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   void ReportIsochronousError(
       const std::vector<uint32_t>& packet_lengths,
       UsbDeviceHandle::IsochronousTransferCallback callback,
-      UsbTransferStatus status);
+      mojom::UsbTransferStatus status);
   void SetUpTimeoutCallback(Transfer* transfer, unsigned int timeout);
   void OnTimeout(Transfer* transfer);
   std::unique_ptr<Transfer> RemoveFromTransferList(Transfer* transfer);
-  void CancelTransfer(Transfer* transfer, UsbTransferStatus status);
+  void CancelTransfer(Transfer* transfer, mojom::UsbTransferStatus status);
   void DiscardUrbBlocking(Transfer* transfer);
   void UrbDiscarded(Transfer* transfer);
 

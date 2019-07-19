@@ -328,6 +328,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">ಫೈಲ್‌ಗೆ ಪ್ರವೇಶವನ್ನು ನಿರಾಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="2653659639078652383">ಸಲ್ಲಿಸು</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{ಒಂದೂ ಇಲ್ಲ}=1{1 ಪಾಸ್‌ವರ್ಡ್ (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು)}=2{2 ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು)}one{# ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು)}other{# ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು)}}</translation>
 <translation id="2666117266261740852">ಇತರ ಟ್ಯಾಬ್‌ಗಳು ಅಥವಾ ಅಪ್ಲಿಕೇಶನ್‍ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="267371737713284912">ರದ್ದುಗೊಳಿಸಲು <ph name="MODIFIER_KEY_DESCRIPTION" /> ಒತ್ತಿರಿ</translation>
 <translation id="2674170444375937751">ನಿಮ್ಮ ಇತಿಹಾಸದಿಂದ ನೀವು ಈ ಪುಟಗಳನ್ನು ಖಚಿತವಾಗಿ ಅಳಿಸಲು ಬಯಸುತ್ತಿದ್ದೀರಾ?</translation>
@@ -655,6 +656,7 @@
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">ಪ್ರಾಕ್ಸಿಯ ಬಳಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ ಆದರೆ ಬಹಿರಂಗ ಪ್ರಾಕ್ಸಿ ಕಾನ್ಫಿಗರೇಶನ್ ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಲಾಗಿದೆ.</translation>
 <translation id="445100540951337728">ಸಮ್ಮತಿಸಲಾದ ಡೆಬಿಟ್ ಕಾರ್ಡ್‌ಗಳು</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> ಅನುಮಾನಾಸ್ಪದ ವರ್ತನೆ</translation>
 <translation id="4466881336512663640">ಫಾರ್ಮ್‌ನಲ್ಲಿ ಮಾಡಿರುವ ಬದಲಾವಣೆಗಳು ಕಳೆದು ಹೋಗುತ್ತವೆ. ನೀವು ಖಂಡಿತವಾಗಿಯೂ ಮುಂದುವರಿಯಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="4477350412780666475">ಮುಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
 <translation id="4482953324121162758">ಈ ಸೈಟ್ ಅನುವಾದಕ್ಕೆ ಒಳಪಡುವುದಿಲ್ಲ.</translation>
@@ -707,6 +709,7 @@
 <translation id="4771973620359291008">ಅಪರಿಚಿತ ದೋಷವೊಂದು ಎದುರಾಗಿದೆ.</translation>
 <translation id="4780900888022378816">ನಿಮ್ಮ ಸಾಧನವನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗುತ್ತಿದೆ ಮತ್ತು ನಿಮ್ಮ ಖಾತೆಯನ್ನು <ph name="ACCOUNT_DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4785689107224900852">ಈ ಟ್ಯಾಬ್‌ಗೆ ಬದಲಾಯಿಸಿ</translation>
+<translation id="4791134497475588553">Linux ಆ್ಯಪ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ ಮತ್ತು ಅವುಗಳನ್ನು ಕೊನೆಯದಾಗಿ ಬಳಸಿದ ಸಮಯ</translation>
 <translation id="4798078619018708837">ನಿಮ್ಮ ಕಾರ್ಡ್‌ ವಿವರಗಳನ್ನು ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು <ph name="CREDIT_CARD" /> ಗೆ ಸಂಬಂಧಿಸಿದ ಅವಧಿ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು CVC ಅನ್ನು ನಮೂದಿಸಿ. ನೀವು ಖಚಿತಪಡಿಸಿದ ನಂತರ, ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿನ ಕಾರ್ಡ್ ವಿವರಗಳನ್ನು ಈ ಸೈಟ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
 <translation id="4800132727771399293">ನಿಮ್ಮ ಮುಕ್ತಾಯದ ದಿನಾಂಕ ಮತ್ತು CVC ಪರಿಶೀಲಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="480334179571489655">ಮೂಲ ಕಾರ್ಯನೀತಿಯ ದೋಷ</translation>
@@ -717,6 +720,7 @@
 <translation id="4850886885716139402">ವೀಕ್ಷಣೆ</translation>
 <translation id="4854362297993841467">ಈ ವಿತರಣೆಯ ವಿಧಾನ ಲಭ್ಯವಿಲ್ಲ. ಬೇರೊಂದು ವಿಧಾನವನ್ನು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4858792381671956233">ಈ ಸೈಟ್ ಅನ್ನು ಭೇಟಿ ಮಾಡಬಹುದು ಎಂದು ನಿಮ್ಮ ಪೋಷಕರಿಗೆ ನೀವು ಕೇಳಿರುವಿರಿ.</translation>
+<translation id="4864052566555297930">ಸುರಕ್ಷತೆಯ ಸಲಹೆ:</translation>
 <translation id="4876188919622883022">ಸರಳೀಕೃತ ವೀಕ್ಷಣೆ</translation>
 <translation id="4876305945144899064">ಯಾವುದೇ ಬಳಕೆದಾರರ ಹೆಸರಿಲ್ಲ</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{ಒಂದೂ ಇಲ್ಲ}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -817,6 +821,7 @@
 <translation id="536296301121032821">ನೀತಿಯ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಂಗ್ರಹಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5371425731340848620">ಕಾರ್ಡ್ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ</translation>
 <translation id="5377026284221673050">"ನಿಮ್ಮ ಗಡಿಯಾರ ಹಿಂದಿದೆ" ಅಥವಾ "ನಿಮ್ಮ ಗಡಿಯಾರ ಮುಂದಿದೆ" ಅಥವಾ "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5377179979757081683">ಈ ಪುಟವು ನಿಮಗೆ ಮೋಸಮಾಡಲು, ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ಕದಿಯಲು ಅಥವಾ ನಿಮ್ಮ ಸಾಧನಕ್ಕೆ ಹಾನಿಯುಂಟು ಮಾಡಲು ಪ್ರಯತ್ನಿಸಬಹುದು. ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ನಮೂದಿಸುವಾಗ ಅಥವಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದ ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯುವಾಗ ಎಚ್ಚರಿಕೆ ವಹಿಸಿ.</translation>
 <translation id="5384855140246857529">ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಬಳಸಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ ಮತ್ತು ಸಿಂಕ್ ಆನ್ ಮಾಡಿ.</translation>
 <translation id="5386426401304769735">ಈ ಸೈಟ್‌ಗೆ ಪ್ರಮಾಣಪತ್ರ ಸರಣಿಯು SHA-1 ಬಳಸಿಕೊಂಡು ಸಹಿ ಮಾಡಲಾದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಒಳಗೊಂಡಿರುತ್ತದೆ.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -980,6 +985,7 @@
 <translation id="6328786501058569169">ಈ ಸೈಟ್ ಮೋಸಗೊಳಿಸುವುದಾಗಿದೆ</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> ಕ್ಕಿಂತ ಕಡಿಮೆ ಇರುವುದನ್ನು ತೆಗೆದುಹಾಕಿ. ನಿಮ್ಮ ನಂತರದ ಭೇಟಿಯ ಸಮಯದಲ್ಲಿ ಕೆಲವು ಸೈಟ್‌ಗಳು ನಿಧಾನವಾಗಿ ಲೋಡ್ ಆಗಬಹುದು.</translation>
 <translation id="6337534724793800597">ಹೆಸರಿನ ಪ್ರಕಾರವಾಗಿ ನೀತಿಗಳನ್ನು ಫಿಲ್ಟರ್ ಮಾಡಿ</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{ಒಂದೂ ಇಲ್ಲ}=1{1 ಪಾಸ್‌ವರ್ಡ್ (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು, ಅದನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}=2{2 ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು, ಅವುಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}one{# ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು, ಅವುಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}other{# ಪಾಸ್‌ವರ್ಡ್‌ಗಳು (<ph name="DOMAIN_LIST" /> ಗೆ ಸಂಬಂಧಿಸಿದ್ದು, ಅವುಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗಿದೆ)}}</translation>
 <translation id="6358450015545214790">ಇವುಗಳ ಅರ್ಥವೇನು?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1158,6 +1164,7 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">ಸಂಯೋಜಿತವಾಗಿದ್ದಾರೆ:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">ಈ ಸೈಟ್‌ ಅನ್ನು ತೊರೆಯಿರಿ</translation>
 <translation id="7353601530677266744">ಕಮಾಂಡ್ ಸಾಲು</translation>
 <translation id="7372973238305370288">ಹುಡುಕಾಟ ಫಲಿತಾಂಶ</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

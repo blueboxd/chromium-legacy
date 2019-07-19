@@ -157,6 +157,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     // default value.
     // TODO(https://crbug.com/972458): Need the test.
     resource_request.credentials_mode = network::mojom::CredentialsMode::kOmit;
+    resource_request.allow_credentials = false;
 
     // |fetch_request_context_type| and |resource_type| roughly correspond to
     // the request's |destination| in the Fetch spec.
@@ -247,9 +248,14 @@ void ServiceWorkerSingleScriptUpdateChecker::OnReceiveResponse(
 void ServiceWorkerSingleScriptUpdateChecker::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
-  // TODO(momohatt): Raise error and terminate the update check here, like
-  // ServiceWorkerNewScriptLoader does.
-  NOTIMPLEMENTED();
+  // Resource requests for the main service worker script should not follow
+  // redirects.
+  // Step 9.5: "Set request's redirect mode to "error"."
+  // https://w3c.github.io/ServiceWorker/#update-algorithm
+  //
+  // TODO(https://crbug.com/889798): Follow redirects for imported scripts.
+  Fail(blink::ServiceWorkerStatusCode::kErrorNetwork,
+       ServiceWorkerConsts::kServiceWorkerRedirectError);
 }
 
 void ServiceWorkerSingleScriptUpdateChecker::OnUploadProgress(

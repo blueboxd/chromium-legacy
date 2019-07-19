@@ -39,10 +39,6 @@ class CC_EXPORT Proxy {
 
   virtual bool IsStarted() const = 0;
 
-  // This function retruns true if the commits go directly to active tree by
-  // skipping commit to pending tree.
-  virtual bool CommitToActiveTree() const = 0;
-
   virtual void SetLayerTreeFrameSink(
       LayerTreeFrameSink* layer_tree_frame_sink) = 0;
   virtual void ReleaseLayerTreeFrameSink() = 0;

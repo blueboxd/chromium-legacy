@@ -23,7 +23,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/connect_job_test_util.h"
@@ -1417,8 +1416,7 @@ TEST_P(SpdyProxyClientSocketTest, NetLog) {
   NetLogSource sock_source = sock_->NetLog().source();
   sock_.reset();
 
-  TestNetLogEntry::List entry_list;
-  net_log_.GetEntriesForSource(sock_source, &entry_list);
+  auto entry_list = net_log_.GetEntriesForSource(sock_source);
 
   ASSERT_EQ(entry_list.size(), 10u);
   EXPECT_TRUE(

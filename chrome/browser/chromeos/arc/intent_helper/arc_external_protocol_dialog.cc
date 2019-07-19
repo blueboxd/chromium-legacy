@@ -442,7 +442,8 @@ void OnIntentPickerClosed(int render_process_host_id,
   }
 
   chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-      selected_app_package, app_type, reason, should_persist);
+      selected_app_package, app_type, reason, apps::Source::kExternalProtocol,
+      should_persist);
 }
 
 // Called when ARC returned activity icons for the |handlers|.
@@ -526,6 +527,7 @@ void OnUrlHandlerList(int render_process_host_id,
       chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
           std::string(), apps::mojom::AppType::kArc,
           apps::IntentPickerCloseReason::PREFERRED_APP_FOUND,
+          apps::Source::kExternalProtocol,
           /*should_persist=*/false);
     }
     return;  // the |url| has been handled.

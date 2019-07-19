@@ -5,6 +5,8 @@
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/test_data_source.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 
@@ -19,6 +21,11 @@ TestChromeWebUIControllerFactory::TestChromeWebUIControllerFactory() {
 }
 
 TestChromeWebUIControllerFactory::~TestChromeWebUIControllerFactory() {
+}
+
+void TestChromeWebUIControllerFactory::set_webui_host(
+    const std::string& webui_host) {
+  webui_host_ = webui_host;
 }
 
 void TestChromeWebUIControllerFactory::AddFactoryOverride(
@@ -37,9 +44,11 @@ WebUI::TypeID TestChromeWebUIControllerFactory::GetWebUIType(
     content::BrowserContext* browser_context,
     const GURL& url) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  WebUIProvider* provider = GetWebUIProvider(profile, url);
-  return provider ? reinterpret_cast<WebUI::TypeID>(provider) :
-      ChromeWebUIControllerFactory::GetWebUIType(profile, url);
+  const GURL& webui_url = TestURLToWebUIURL(url);
+  WebUIProvider* provider = GetWebUIProvider(profile, webui_url);
+  return provider
+             ? reinterpret_cast<WebUI::TypeID>(provider)
+             : ChromeWebUIControllerFactory::GetWebUIType(profile, webui_url);
 }
 
 std::unique_ptr<WebUIController>
@@ -47,15 +56,31 @@ TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
     content::WebUI* web_ui,
     const GURL& url) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  WebUIProvider* provider = GetWebUIProvider(profile, url);
-  return provider ? provider->NewWebUI(web_ui, url)
-                  : ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
-                        web_ui, url);
+  const GURL& webui_url = TestURLToWebUIURL(url);
+  WebUIProvider* provider = GetWebUIProvider(profile, webui_url);
+  auto controller =
+      provider ? provider->NewWebUI(web_ui, webui_url)
+               : ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
+                     web_ui, webui_url);
+  content::URLDataSource::Add(profile, std::make_unique<TestDataSource>());
+  return controller;
 }
 
 TestChromeWebUIControllerFactory::WebUIProvider*
     TestChromeWebUIControllerFactory::GetWebUIProvider(
         Profile* profile, const GURL& url) const {
-  auto found = factory_overrides_.find(url.host());
+  const GURL& webui_url = TestURLToWebUIURL(url);
+  auto found = factory_overrides_.find(webui_url.host());
   return found != factory_overrides_.end() ? found->second : nullptr;
+}
+
+GURL TestChromeWebUIControllerFactory::TestURLToWebUIURL(
+    const GURL& url) const {
+  if (url.host() != "test" || webui_host_.empty())
+    return url;
+
+  GURL webui_url(url);
+  GURL::Replacements replacements;
+  replacements.SetHostStr(webui_host_);
+  return webui_url.ReplaceComponents(replacements);
 }

@@ -50,10 +50,7 @@ AppServiceProxyImpl::InnerIconLoader::LoadIconFromIconKey(
   }
 
   if (host_->app_service_.is_bound() && icon_key) {
-    // TODO(crbug.com/826982): wrap another IconLoader that coalesces multiple
-    // in-flight calls with the same IconLoader::Key, and use it here.
-    //
-    // Possibly related to that, Mojo doesn't guarantee the order of messages,
+    // TODO(crbug.com/826982): Mojo doesn't guarantee the order of messages,
     // so multiple calls to this method might not resolve their callbacks in
     // order. As per khmel@, "you may have race here, assume you publish change
     // for the app and app requested new icon. But new icon is not delivered
@@ -87,7 +84,8 @@ AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile)
 AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile,
                                          service_manager::Connector* connector)
     : inner_icon_loader_(this),
-      outer_icon_loader_(&inner_icon_loader_,
+      icon_coalescer_(&inner_icon_loader_),
+      outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager) {
   if (!profile) {
     return;

@@ -11,7 +11,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,20 +37,19 @@ base::Value NetCaptureModeParams(NetLogCaptureMode capture_mode) {
 
 TEST(NetLogTest, Basic) {
   TestNetLog net_log;
-  TestNetLogEntry::List entries;
-  net_log.GetEntries(&entries);
+  auto entries = net_log.GetEntries();
   EXPECT_EQ(0u, entries.size());
 
   net_log.AddGlobalEntry(NetLogEventType::CANCELLED);
 
-  net_log.GetEntries(&entries);
+  entries = net_log.GetEntries();
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(NetLogEventType::CANCELLED, entries[0].type);
   EXPECT_EQ(NetLogSourceType::NONE, entries[0].source.type);
   EXPECT_NE(NetLogSource::kInvalidId, entries[0].source.id);
   EXPECT_EQ(NetLogEventPhase::NONE, entries[0].phase);
   EXPECT_GE(base::TimeTicks::Now(), entries[0].time);
-  EXPECT_FALSE(entries[0].params);
+  EXPECT_FALSE(entries[0].HasParams());
 }
 
 // Check that the correct CaptureMode is sent to NetLog Value callbacks.
@@ -73,8 +71,7 @@ TEST(NetLogTest, CaptureModes) {
                              return NetCaptureModeParams(capture_mode);
                            });
 
-    TestNetLogEntry::List entries;
-    net_log.GetEntries(&entries);
+    auto entries = net_log.GetEntries();
 
     ASSERT_EQ(1u, entries.size());
     EXPECT_EQ(NetLogEventType::SOCKET_ALIVE, entries[0].type);
@@ -83,10 +80,8 @@ TEST(NetLogTest, CaptureModes) {
     EXPECT_EQ(NetLogEventPhase::NONE, entries[0].phase);
     EXPECT_GE(base::TimeTicks::Now(), entries[0].time);
 
-    int logged_capture_mode;
-    ASSERT_TRUE(
-        entries[0].GetIntegerValue("capture_mode", &logged_capture_mode));
-    EXPECT_EQ(CaptureModeToInt(mode), logged_capture_mode);
+    ASSERT_EQ(CaptureModeToInt(mode),
+              GetIntegerValueFromParams(entries[0], "capture_mode"));
 
     net_log.Clear();
   }

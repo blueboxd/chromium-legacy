@@ -845,8 +845,6 @@ void DownloadDatabase::QueryDownloadSlices(DownloadRowMap* download_row_map) {
     // record.
     auto it = download_row_map->find(info.download_id);
     bool found = (it != download_row_map->end());
-    UMA_HISTOGRAM_BOOLEAN(
-        "Download.DatabaseDownloadExistsForDownloadSlice", found);
     if (!found) {
       RemoveDownloadSlices(info.download_id);
       continue;

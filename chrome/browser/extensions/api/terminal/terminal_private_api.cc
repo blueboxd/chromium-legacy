@@ -79,7 +79,6 @@ bool CommandSupportsArguments(const std::string& name) {
 }
 
 void NotifyProcessOutput(content::BrowserContext* browser_context,
-                         const std::string& extension_id,
                          int tab_id,
                          const std::string& terminal_id,
                          const std::string& output_type,
@@ -87,8 +86,8 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&NotifyProcessOutput, browser_context, extension_id,
-                       tab_id, terminal_id, output_type, output));
+        base::BindOnce(&NotifyProcessOutput, browser_context, tab_id,
+                       terminal_id, output_type, output));
     return;
   }
 
@@ -104,7 +103,7 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::TERMINAL_PRIVATE_ON_PROCESS_OUTPUT,
         terminal_private::OnProcessOutput::kEventName, std::move(args)));
-    event_router->DispatchEventToExtension(extension_id, std::move(event));
+    event_router->BroadcastEvent(std::move(event));
   }
 }
 
@@ -177,14 +176,11 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
       FROM_HERE,
       base::BindOnce(
           &TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner,
-          this,
-          base::Bind(&NotifyProcessOutput, browser_context(), extension_id(),
-                     tab_id),
+          this, base::Bind(&NotifyProcessOutput, browser_context(), tab_id),
           base::Bind(
               &TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
               this),
-          arguments,
-          user_id_hash));
+          arguments, user_id_hash));
   return RespondLater();
 }
 

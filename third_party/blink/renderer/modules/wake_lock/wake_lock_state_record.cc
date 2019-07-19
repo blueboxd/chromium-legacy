@@ -60,15 +60,15 @@ void WakeLockStateRecord::ReleaseWakeLock(ScriptPromiseResolver* resolver) {
   resolver->Reject(MakeGarbageCollected<DOMException>(
       DOMExceptionCode::kAbortError, "Wake Lock released"));
 
-  // 2. If record.[[ActiveLocks]] does not contain lockPromise, abort these
+  // 2. Let document be the responsible document of the current settings object.
+  // 3. Let record be the platform wake lock's state record associated with
+  // document and type.
+  // 4. If record.[[ActiveLocks]] does not contain lockPromise, abort these
   // steps.
   auto iterator = active_locks_.find(resolver);
   if (iterator == active_locks_.end())
     return;
 
-  // 3. Let document be the responsible document of the current settings object.
-  // 4. Let record be the platform wake lock's state record associated with
-  // document and type.
   // 5. Remove lockPromise from record.[[ActiveLocks]].
   active_locks_.erase(iterator);
 

@@ -61,7 +61,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     // Override content verification mode before ExtensionSystemImpl initializes
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(
-        ContentVerifierDelegate::ENFORCE);
+        ChromeContentVerifierDelegate::ENFORCE);
 
     ExtensionBrowserTest::SetUp();
   }

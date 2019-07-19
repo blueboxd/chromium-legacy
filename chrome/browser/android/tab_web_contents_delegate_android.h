@@ -100,6 +100,11 @@ class TabWebContentsDelegateAndroid
                             blink::NavigationBlockedReason reason) override;
   void UpdateUserGestureCarryoverInfo(
       content::WebContents* web_contents) override;
+  content::PictureInPictureResult EnterPictureInPicture(
+      content::WebContents* web_contents,
+      const viz::SurfaceId&,
+      const gfx::Size&) override;
+  void ExitPictureInPicture() override;
   std::unique_ptr<content::WebContents> SwapWebContents(
       content::WebContents* old_contents,
       std::unique_ptr<content::WebContents> new_contents,

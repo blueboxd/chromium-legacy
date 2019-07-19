@@ -103,6 +103,44 @@ class MenuManager {
   }
 
   /**
+   * Reload the menu.
+   * @param {!chrome.automation.AutomationNode} navNode the node for which the
+   * menu is to be displayed.
+   * @private
+   */
+  reloadMenu_(navNode) {
+    const actionNode = this.node_;
+
+    if (!this.menuPanel_) {
+      console.log('Error: Menu panel has not loaded.');
+      return;
+    }
+
+    const actions = this.getActionsForNode_(navNode);
+    if (actions === null) {
+      return;
+    }
+
+    this.inMenu_ = true;
+    if (actions !== this.actions_) {
+      this.actions_ = actions;
+      this.menuPanel_.setActions(this.actions_);
+    }
+
+    if (navNode.location) {
+      chrome.accessibilityPrivate.setSwitchAccessMenuState(
+          true /* show menu */, navNode.location, actions.length);
+    } else {
+      console.log('Unable to show Switch Access menu.');
+    }
+
+    if (actionNode) {
+      this.node_ = actionNode;
+      this.updateFocusRing_();
+    }
+  }
+
+  /**
    * Exits the menu.
    */
   exit() {
@@ -285,7 +323,9 @@ class MenuManager {
         actions.push(SAConstants.MenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
         actions.push(SAConstants.MenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
         actions.push(SAConstants.MenuAction.SELECT_START);
-        actions.push(SAConstants.MenuAction.SELECT_END);
+        if (this.navigationManager_.selectionStarted()) {
+          actions.push(SAConstants.MenuAction.SELECT_END);
+        }
       }
     } else if (actions.length > 0) {
       actions.push(SAConstants.MenuAction.SELECT);
@@ -375,10 +415,13 @@ class MenuManager {
         exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_START:
-        this.navigationManager_.textInputManager().setSelectStart();
+        this.navigationManager_.setSelectStart();
+        this.reloadMenu_(this.navigationManager_.currentNode());
+        exitAfterAction = false;
         break;
       case SAConstants.MenuAction.SELECT_END:
-        this.navigationManager_.textInputManager().setSelectEnd();
+        this.navigationManager_.setSelectEnd();
+        exitAfterAction = false;
         break;
       default:
         this.navigationManager_.performActionOnCurrentNode(action);

@@ -22,7 +22,9 @@ const size_t kLargeMessageSize = 1 * 1024 * 1024;
 
 class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
  public:
-  TestDataSource(const std::string& data_source_name, size_t send_packet_count);
+  static std::unique_ptr<TestDataSource> CreateAndRegisterDataSource(
+      const std::string& data_source_name,
+      size_t send_packet_count);
   ~TestDataSource() override;
 
   void WritePacketBigly();
@@ -47,6 +49,8 @@ class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
   void set_start_tracing_callback(base::OnceClosure start_tracing_callback);
 
  private:
+  TestDataSource(const std::string& data_source_name, size_t send_packet_count);
+
   size_t send_packet_count_;
   perfetto::DataSourceConfig config_;
   base::OnceClosure start_tracing_callback_ = base::OnceClosure();

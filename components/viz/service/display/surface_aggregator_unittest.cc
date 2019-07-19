@@ -379,8 +379,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                          SkBlendMode::kSrcOver, 0);
     auto* quad = pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
-                 gfx::RectF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-                 gfx::RectF(), false, 1.0f);
+                 gfx::RectF(), gfx::Size(), false, gfx::Vector2dF(),
+                 gfx::PointF(), gfx::RectF(), false, 1.0f);
   }
 
   static void AddYUVVideoQuad(RenderPass* pass, const gfx::Rect& output_rect) {
@@ -4397,23 +4397,25 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTest) {
   SurfaceId surface_id(root_sink_->frame_sink_id(), root_local_surface_id_);
 
   CompositorFrame aggregated_frame;
-  aggregator_.SetOutputColorSpace(color_space1, color_space1);
+  aggregator_.SetOutputColorSpace(color_space1);
   aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
 
-  aggregator_.SetOutputColorSpace(color_space2, color_space2);
+  aggregator_.SetOutputColorSpace(color_space2);
   aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(2u, aggregated_frame.render_pass_list.size());
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[0]->color_space);
   EXPECT_EQ(color_space2, aggregated_frame.render_pass_list[1]->color_space);
 
-  aggregator_.SetOutputColorSpace(color_space1, color_space3);
+  aggregator_.SetOutputColorSpace(color_space3);
   aggregated_frame = AggregateFrame(surface_id);
   EXPECT_EQ(3u, aggregated_frame.render_pass_list.size());
-  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[0]->color_space);
-  EXPECT_EQ(color_space1, aggregated_frame.render_pass_list[1]->color_space);
+  EXPECT_EQ(color_space3.GetBlendingColorSpace(),
+            aggregated_frame.render_pass_list[0]->color_space);
+  EXPECT_EQ(color_space3.GetBlendingColorSpace(),
+            aggregated_frame.render_pass_list[1]->color_space);
   EXPECT_EQ(color_space3, aggregated_frame.render_pass_list[2]->color_space);
 }
 

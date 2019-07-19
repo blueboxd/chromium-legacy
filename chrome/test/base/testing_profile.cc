@@ -269,7 +269,8 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(nullptr),
       delegate_(delegate),
-      profile_name_(kTestingProfile) {
+      profile_name_(kTestingProfile),
+      override_policy_connector_is_managed_(base::nullopt) {
   if (profile_path_.empty()) {
     CreateTempProfileDir();
     profile_path_ = temp_dir_.GetPath();
@@ -299,7 +300,8 @@ TestingProfile::TestingProfile(
     std::unique_ptr<policy::UserCloudPolicyManager> policy_manager,
     std::unique_ptr<policy::PolicyService> policy_service,
     TestingFactories testing_factories,
-    const std::string& profile_name)
+    const std::string& profile_name,
+    base::Optional<bool> override_policy_connector_is_managed)
     : start_time_(Time::Now()),
       prefs_(std::move(prefs)),
       testing_prefs_(nullptr),
@@ -320,6 +322,8 @@ TestingProfile::TestingProfile(
       user_cloud_policy_manager_(std::move(policy_manager)),
       delegate_(delegate),
       profile_name_(profile_name),
+      override_policy_connector_is_managed_(
+          override_policy_connector_is_managed),
       policy_service_(std::move(policy_service)) {
   if (parent)
     parent->SetOffTheRecordProfile(std::unique_ptr<Profile>(this));
@@ -858,6 +862,9 @@ void TestingProfile::CreateProfilePolicyConnector() {
   }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
   profile_policy_connector_->InitForTesting(std::move(policy_service_));
+  if (override_policy_connector_is_managed_.has_value())
+    profile_policy_connector_->OverrideIsManagedForTesting(
+        override_policy_connector_is_managed_.value());
 }
 
 PrefService* TestingProfile::GetPrefs() {
@@ -1171,6 +1178,11 @@ void TestingProfile::Builder::SetProfileName(const std::string& profile_name) {
   profile_name_ = profile_name;
 }
 
+void TestingProfile::Builder::OverridePolicyConnectorIsManagedForTesting(
+    bool is_managed) {
+  override_policy_connector_is_managed_ = is_managed;
+}
+
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
     BrowserContextKeyedServiceFactory::TestingFactory testing_factory) {
@@ -1189,7 +1201,8 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
       std::move(pref_service_), nullptr, guest_session_,
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
       std::move(user_cloud_policy_manager_), std::move(policy_service_),
-      std::move(testing_factories_), profile_name_));
+      std::move(testing_factories_), profile_name_,
+      override_policy_connector_is_managed_));
 }
 
 TestingProfile* TestingProfile::Builder::BuildIncognito(
@@ -1207,5 +1220,6 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
       std::move(pref_service_), original_profile, guest_session_,
       allows_browser_windows_, std::move(is_new_profile_), supervised_user_id_,
       std::move(user_cloud_policy_manager_), std::move(policy_service_),
-      std::move(testing_factories_), profile_name_);
+      std::move(testing_factories_), profile_name_,
+      override_policy_connector_is_managed_);
 }

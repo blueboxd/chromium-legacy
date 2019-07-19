@@ -40,7 +40,7 @@
 <translation id="1046635659603195359">Offenbar haben Sie Voice Match bereits auf einem anderen Gerät für Google Assistant eingerichtet. Diese vorherigen Aufnahmen können verwendet werden, um ein Sprachmodell auf diesem Gerät zu erstellen. Dies sollte weniger als eine Minute dauern.</translation>
 <translation id="1047431265488717055">Linkte&amp;xt kopieren</translation>
 <translation id="1047726139967079566">Lesezeichen für diese Seite erstellen</translation>
-<translation id="1048286738600630630">Anzeigen</translation>
+<translation id="1048286738600630630">Bildschirme</translation>
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1049795001945932310">&amp;Spracheinstellungen</translation>
 <translation id="1054153489933238809">&amp;Original in neuem Tab öffnen</translation>
@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">Passwort ändern</translation>
 <translation id="1090126737595388931">Es werden keine Apps im Hintergrund ausgeführt.</translation>
 <translation id="1090290614672149983">Änderungen in Originaldatei speichern?</translation>
-<translation id="1090918500949388876">Bei eingeschaltetem Bildschirm steht Ihnen Google Assistant jederzeit zur Verfügung, wenn Sie "Ok Google" sagen</translation>
 <translation id="1091767800771861448">Drücken Sie die Esc-Taste, um die Aktualisierung zu überspringen (nur inoffizielle Builds).</translation>
 <translation id="1093457606523402488">Sichtbare Netzwerke:</translation>
 <translation id="1094607894174825014">Auf folgendem Gerät wurde ein Lese- oder Schreibvorgang mit ungültiger Abweichung angefordert: "<ph name="DEVICE_NAME" />".</translation>
@@ -168,6 +167,7 @@
 <translation id="1224275271335624810">Schnellste</translation>
 <translation id="1225177025209879837">Ihre Anfrage wird verarbeitet...</translation>
 <translation id="1227507814927581609">Beim Herstellen der Verbindung zu "<ph name="DEVICE_NAME" />" ist ein Authentifizierungsfehler aufgetreten.</translation>
+<translation id="1229246658989055856"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in den Dateien in den unten angegebenen Ordnern speichern. Änderungen können nur dann durch die Website gespeichert werden, wenn dieser Tab geöffnet ist.</translation>
 <translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="1232569758102978740">Unbenannt</translation>
 <translation id="1233497634904001272">Tippen Sie noch einmal auf Ihren Sicherheitsschlüssel, um die Anfrage abzuschließen.</translation>
@@ -225,6 +225,7 @@
 <translation id="1322046419516468189">Gespeicherte Passwörter in Ihrem <ph name="SAVED_PASSWORDS_STORE" /> ansehen und verwalten</translation>
 <translation id="1326317727527857210">Melden Sie sich in Chrome an, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="1327074568633507428">Google Cloud Print-Drucker</translation>
+<translation id="1327272175893960498">Kerberos-Tickets</translation>
 <translation id="1327977588028644528">Gateway</translation>
 <translation id="1329584516321524826">Gerade aktualisiert</translation>
 <translation id="1330145147221172764">Bildschirmtastatur aktivieren</translation>
@@ -250,6 +251,7 @@
 <translation id="1367951781824006909">Datei auswählen</translation>
 <translation id="1370749010280229230">Es gibt ein Problem mit dem Display, das mit dem Dock verbunden ist</translation>
 <translation id="1371301976177520732">Von all Ihren Geräten auf Lesezeichen, Passwörter, den Verlauf und andere Funktionen zugreifen</translation>
+<translation id="1371321359524760420"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in den folgenden Dateien und Ordnern speichern.</translation>
 <translation id="1372841398847029212">Mit meinem Konto synchronisieren</translation>
 <translation id="1374844444528092021">Das vom Netzwerk "<ph name="NETWORK_NAME" />" benötigte Zertifikat ist entweder nicht installiert oder nicht mehr gültig. Bitte fordern Sie ein neues Zertifikat an und versuchen Sie es erneut.</translation>
 <translation id="1375321115329958930">Gespeicherte Passwörter</translation>
@@ -262,6 +264,7 @@
 <translation id="1386387014181100145">Hallo!</translation>
 <translation id="138784436342154190">"Beim Start"-Standardseite wiederherstellen?</translation>
 <translation id="1390548061267426325">In normalem Tab öffnen</translation>
+<translation id="1392975001822614900">Speichern in diesem Ordner nicht möglich</translation>
 <translation id="1393283411312835250">Sonne und Wolken</translation>
 <translation id="1395730723686586365">Updater gestartet</translation>
 <translation id="1396139853388185343">Fehler beim Einrichten des Druckers</translation>
@@ -296,6 +299,7 @@
 <translation id="1433811987160647649">Vor dem Zugriff nachfragen</translation>
 <translation id="1434696352799406980">Mit dieser Funktion werden Ihre "Beim Start"-Seite, Ihre Suchmaschine, die "Neuer Tab"-Seite und angepinnte Tabs zurückgesetzt. Außerdem werden alle Erweiterungen deaktiviert und temporäre Daten wie Cookies gelöscht. Ihre Lesezeichen, der Verlauf und gespeicherte Passwörter werden nicht gelöscht.</translation>
 <translation id="1434886155212424586">Die "Neuer Tab"-Seite ist die Startseite.</translation>
+<translation id="1436390408194692385">Gültig für <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Einrichtung fortsetzen</translation>
 <translation id="1436784010935106834">Entfernt</translation>
 <translation id="1442392616396121389">Routing-Präfix</translation>
@@ -358,6 +362,7 @@
 <translation id="1529891865407786369">Stromquelle</translation>
 <translation id="1530838837447122178">Einstellungen für Maus- und Touchpadgeräte öffnen</translation>
 <translation id="1531004739673299060">Anwendungsfenster</translation>
+<translation id="1531275250079031713">Dialogfeld "Neues WLAN hinzufügen" anzeigen</translation>
 <translation id="1536754031901697553">Verbindung wird getrennt…</translation>
 <translation id="15373452373711364">Großer Cursor</translation>
 <translation id="1540605929960647700">Demomodus aktivieren</translation>
@@ -481,6 +486,7 @@
 <translation id="1708338024780164500">(Inaktiv)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (ID: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (nativ)</translation>
+<translation id="1709217939274742847">Wählen Sie ein Ticket für die Authentifizierung aus. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="1711401317189798723">Sicherung für <ph name="CONTAINER_ID" /> wird gerade ausgeführt</translation>
 <translation id="1712349894969001173">Dieses Passwort auf dem iPhone abrufen</translation>
 <translation id="1712552549805331520"><ph name="URL" /> möchte Daten dauerhaft auf Ihrem lokalen Computer speichern</translation>
@@ -539,7 +545,6 @@
 <translation id="1792619191750875668">Erweiterter Bildschirm</translation>
 <translation id="1794791083288629568">Helfen Sie uns, dieses Problem zu beheben, indem Sie uns Feedback senden.</translation>
 <translation id="1795214765651529549">Klassisches Design verwenden</translation>
-<translation id="1797738254362176886">Stecken Sie Ihren Sicherheitsschlüssel ein und tippen Sie darauf, um die Anmeldedaten aufzurufen.</translation>
 <translation id="1799071797295057738">Die Erweiterung "<ph name="EXTENSION_NAME" />" wurde automatisch deaktiviert.</translation>
 <translation id="1802687198411089702">Die Seite reagiert nicht. Sie können warten, bis sie wieder reagiert, oder sie schließen.</translation>
 <translation id="1802931390041703523">Flash wurde auf dieser Seite blockiert</translation>
@@ -785,7 +790,6 @@
 <translation id="2177950615300672361">Inkognito-Tab: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">Das Plug-in <ph name="PEPPER_PLUGIN_NAME" /> auf <ph name="PEPPER_PLUGIN_DOMAIN" /> möchte auf Ihren Computer zugreifen</translation>
 <translation id="2178614541317717477">Kompromittierung der Zertifizierungsstelle</translation>
-<translation id="2179849162388791084">Es konnten keine Anmeldedaten von Ihrem Sicherheitsschlüssel abgerufen werden.</translation>
 <translation id="218070003709087997">Geben Sie eine Zahl ein, um die Anzahl der zu druckenden Exemplare festzulegen (1 bis 999).</translation>
 <translation id="2184515124301515068">Chrome die Entscheidung überlassen, wann Audioinhalte auf Websites abgespielt werden (empfohlen)</translation>
 <translation id="2187895286714876935">Fehler beim Importieren des Serverzertifikats</translation>
@@ -870,6 +874,7 @@
 <translation id="2288181517385084064">Zum Videorekorder wechseln</translation>
 <translation id="2288735659267887385">Einstellungen für Bedienungshilfen</translation>
 <translation id="2289270750774289114">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte (empfohlen)</translation>
+<translation id="2291093247613531009">Website erlauben, diesen Ordner zu lesen?</translation>
 <translation id="2292848386125228270">Starten Sie <ph name="PRODUCT_NAME" /> als normaler Nutzer. Um Chrome für Entwicklungszwecke als Root auszuführen, müssen Sie den Browser noch einmal mit dem Kennzeichen "--no-sandbox" ausführen.</translation>
 <translation id="2294358108254308676">Möchten Sie <ph name="PRODUCT_NAME" /> installieren?</translation>
 <translation id="2297705863329999812">Drucker suchen</translation>
@@ -975,6 +980,7 @@
 <translation id="2453021845418314664">Erweiterte Synchronisierungseinstellungen</translation>
 <translation id="2453860139492968684">Fertig</translation>
 <translation id="2454247629720664989">Suchkürzel</translation>
+<translation id="245650153866130664">Damit ein Ticket automatisch aktualisiert wird, können Sie das Kästchen für "Passwort speichern" anklicken. Das Passwort wird nur auf Ihrem Gerät gespeichert.</translation>
 <translation id="245661998428026871">Die Wiedergabe des Videos im Bild-im-Bild-Modus wird gestoppt.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> möchte Dateien von <ph name="VOLUME_NAME" /> kopieren.</translation>
 <translation id="2458379781610688953">Konto aktualisieren, <ph name="EMAIL" /></translation>
@@ -1017,6 +1023,7 @@
 <translation id="2505127913256479918">Dieses gemeinsam verwaltete Konto wird bald entfernt</translation>
 <translation id="2505324914378689427">{SCREEN_INDEX,plural, =1{Bildschirm #}other{Bildschirm #}}</translation>
 <translation id="2505402373176859469"><ph name="RECEIVED_AMOUNT" /> von <ph name="TOTAL_SIZE" /></translation>
+<translation id="2507253002925770350">Ticket entfernt</translation>
 <translation id="2508428939232952663">Google Play Store-Konto</translation>
 <translation id="2509495747794740764">Der Wert für die Skalierung muss zwischen 10 und 200 liegen.</translation>
 <translation id="2509566264613697683">8-fach</translation>
@@ -1065,6 +1072,7 @@
 <translation id="2580924999637585241">Gesamt: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="258095186877893873">Lang</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (Plattform <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
+<translation id="2584109212074498965">Kerberos-Ticket konnte nicht abgerufen werden (Fehlercode: <ph name="ERROR_CODE" />). Versuchen Sie es noch einmal oder wenden Sie sich an den Geräteadministrator Ihrer Organisation.</translation>
 <translation id="2585724835339714757">Über diesen Tab wird Ihr Bildschirm freigegeben.</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
 <translation id="2586672484245266891">Geben Sie eine kürzere URL ein</translation>
@@ -1118,6 +1126,7 @@
 <translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="2663302507110284145">Sprache</translation>
 <translation id="2665394472441560184">Neues Wort hinzufügen</translation>
+<translation id="2665647207431876759">Abgelaufen</translation>
 <translation id="2665717534925640469">Diese Seite wird nun im Vollbildmodus angezeigt und hat den Mauszeiger deaktiviert.</translation>
 <translation id="2665919335226618153">Oh nein! Beim Formatieren ist ein Fehler aufgetreten.</translation>
 <translation id="2666990579225592931">Gastfenster öffnen</translation>
@@ -1371,7 +1380,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3022978424994383087">Nicht verstanden.</translation>
 <translation id="3023464535986383522">Vorlesen</translation>
 <translation id="3024374909719388945">24-Stunden-Format verwenden</translation>
-<translation id="30256218463955326">Dock nicht kompatibel</translation>
 <translation id="3031417829280473749">Agentin X</translation>
 <translation id="3031557471081358569">Zu importierende Daten wählen:</translation>
 <translation id="3031601332414921114">Druckvorgang fortsetzen</translation>
@@ -1548,6 +1556,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3319048459796106952">Neues &amp;Inkognito-Fenster</translation>
 <translation id="3323521181261657960">Bonus! Gerätenutzungsdauer verlängert</translation>
 <translation id="3325910708063135066">Kamera und Mikrofon wurden in den Mac-Systemeinstellungen ausgeschaltet</translation>
+<translation id="3328489342742826322">Bei der Wiederherstellung aus einer Sicherung werden bestehende Linux-Anwendungen und -Daten in Ihren Linux-Dateiordnern gelöscht.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">App-Info</translation>
 <translation id="3334632933872291866"><ph name="WINDOW_TITLE" /> – Video wird im Bild-im-Bild-Modus abgespielt</translation>
@@ -1561,7 +1570,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3348038390189153836">Externes Gerät erkannt</translation>
 <translation id="3349933790966648062">Speicherbedarf</translation>
 <translation id="3350117557200012647">In den Pairing-Modus wechseln</translation>
-<translation id="3350263973613584174">Auf diesem Sicherheitsschlüssel sind keine Anmeldedaten gespeichert.</translation>
 <translation id="3355936511340229503">Verbindungsfehler</translation>
 <translation id="3356580349448036450">Fertig</translation>
 <translation id="3359256513598016054">Beschränkungen für Zertifikatrichtlinien</translation>
@@ -1820,6 +1828,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3722108462506185496">Fehler beim Starten des Dienstes für die virtuelle Maschine. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="3725367690636977613">Seiten</translation>
 <translation id="3726137731714254362">Wenn Sie Ordner von hier entfernen, wird die Freigabe beendet, die Dateien werden aber nicht gelöscht.</translation>
+<translation id="3726619284930744244"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in den unten angegebenen Dateien speichern.</translation>
 <translation id="3727148787322499904">Änderungen dieser Einstellung wirken sich auf alle freigegebenen Netzwerke aus</translation>
 <translation id="3727187387656390258">Pop-up prüfen</translation>
 <translation id="372722114124766626">Nur einmal</translation>
@@ -1941,13 +1950,13 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3878840326289104869">Betreuter Nutzer wird erstellt...</translation>
 <translation id="3879748587602334249">Download-Manager</translation>
 <translation id="3888550877729210209">Notizerstellung mit <ph name="LOCK_SCREEN_APP_NAME" /></translation>
-<translation id="388900914234409233">Nutzen Sie zum Laden dieses Chromebooks einen kompatiblen OEM-Akku.</translation>
 <translation id="3892414795099177503">OpenVPN/L2TP hinzufügen…</translation>
 <translation id="3893536212201235195">Einstellungen für Eingabehilfen lesen und ändern</translation>
 <translation id="3893630138897523026">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="3893764153531140319"><ph name="DOWNLOADED_SIZE" />/<ph name="DOWNLOAD_SIZE" /></translation>
 <translation id="3894123633473837029">Letzten Assistant-Verlauf über Sherlog einbeziehen. Darin können Angaben zu Ihrer Identität und Ihrem Standort sowie Informationen zur Fehlerbehebung enthalten sein. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
+<translation id="3895090224522145010">Kerberos-Nutzername</translation>
 <translation id="389589731200570180">Mit Gastnutzern teilen</translation>
 <translation id="389901847090970821">Tastatur auswählen</translation>
 <translation id="3899879303189199559">Seit über einem Jahr offline</translation>
@@ -1960,6 +1969,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3909791450649380159">&amp;Ausschneiden</translation>
 <translation id="3911073280391218446"><ph name="USER_DISPLAY_NAME" /> (auf diesem Gerät verwendeter Name)</translation>
 <translation id="3911824782900911339">"Neuer Tab"-Seite</translation>
+<translation id="3912379726609951682"><ph name="WINDOW_TITLE" /> – darf den Inhalt eines Ordners auf Ihrem Gerät lesen</translation>
 <translation id="3915280005470252504">Sprachsuche verwenden</translation>
 <translation id="3916445069167113093">Dateien dieses Typs können Schäden an Ihrem Computer verursachen. Möchten Sie <ph name="FILE_NAME" /> trotzdem behalten?</translation>
 <translation id="3918972485393593704">Details an Google senden</translation>
@@ -1980,6 +1990,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3937734102568271121"><ph name="LANGUAGE" /> immer übersetzen</translation>
 <translation id="3938128855950761626">Geräte von Anbieter <ph name="VENDOR_ID" /></translation>
 <translation id="3940233957883229251">Automatische Wiederholung aktivieren</translation>
+<translation id="394114064046181471">Diese Website kann auch alle Dateien in den folgenden Ordnern lesen.</translation>
 <translation id="3941357410013254652">Kanal-ID</translation>
 <translation id="3941565636838060942">Der Zugriff auf dieses Programm kann ausgeblendet werden, indem es mithilfe von
 <ph name="CONTROL_PANEL_APPLET_NAME" /> im Steuerfeld deinstalliert wird.
@@ -2132,7 +2143,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4147911968024186208">Bitte versuchen Sie es noch einmal. Wenn dieser Fehler wieder auftritt, wenden Sie sich an Ihren Support-Mitarbeiter.</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Display</translation>
-<translation id="4150234330364554482">Verwenden Sie eine für dieses Chromebook geeignete OEM-Dockingstation.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 Tab}other{# Tabs}}</translation>
 <translation id="4154664944169082762">Fingerabdrücke</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2169,6 +2179,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="42137655013211669">Der Zugriff auf diese Ressource wurde vom Server nicht zugelassen.</translation>
 <translation id="4215350869199060536">Der Name enthält unzulässige Zeichen.</translation>
 <translation id="4225397296022057997">Auf allen Websites</translation>
+<translation id="4232375817808480934">Kerberos konfigurieren</translation>
 <translation id="4235200303672858594">Gesamten Bildschirm</translation>
 <translation id="4235965441080806197">Anmeldung abbrechen</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
@@ -2240,6 +2251,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4345732373643853732">Nutzername ist auf dem Server nicht bekannt</translation>
 <translation id="4348766275249686434">Fehler erfassen</translation>
 <translation id="4350019051035968019">Dieses Gerät kann nicht in der Domain registriert werden, zu der Ihr Konto gehört, weil das Gerät für die Verwaltung in einer anderen Domain gekennzeichnet wurde.</translation>
+<translation id="4351060348582610152"><ph name="ORIGIN" /> möchte nach Bluetooth-Geräten in der Nähe suchen. Die folgenden Geräte wurden gefunden:</translation>
 <translation id="4354344420232759511">Hier finden Sie die von Ihnen besuchten Websites</translation>
 <translation id="435527878592612277">Foto auswählen</translation>
 <translation id="4358313196493694334">Klickposition stabilisieren</translation>
@@ -2268,9 +2280,11 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4389091756366370506">Nutzer <ph name="VALUE" /></translation>
 <translation id="4390000551125140321">{0,plural, =1{Inkognito}other{# offene Inkognitofenster}}</translation>
 <translation id="439266289085815679">Die Bluetooth-Konfiguration wird von <ph name="USER_EMAIL" /> festgelegt.</translation>
+<translation id="4392896746540753732">Konfigurationsdatei bearbeiten</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4400367121200150367">Hier werden Websites angezeigt, für die keine Passwörter gespeichert werden</translation>
 <translation id="4400632832271803360">Halten Sie die Taste "Suche" gedrückt, um die Funktion der Tasten in der obersten Reihe zu ändern</translation>
+<translation id="4403775189117163360">Anderen Ordner wählen</translation>
 <translation id="4405117686468554883">*.jpeg, *.jpg, *.png</translation>
 <translation id="4408599188496843485">&amp;Hilfe</translation>
 <translation id="4409697491990005945">Ränder</translation>
@@ -2279,7 +2293,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4412698727486357573">Hilfe</translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" erlauben, die Liste der angeschlossenen USB-Geräte abzurufen?</translation>
 <translation id="4414232939543644979">Neues &amp;Inkognito-Fenster</translation>
-<translation id="4414386768539506503">Geben Sie die PIN für Ihren Sicherheitsschlüssel ein, um die Anmeldedaten aufzurufen. Falls Sie den PIN nicht kennen, müssen Sie den Sicherheitsschlüssel zurücksetzen.</translation>
 <translation id="4415245286584082850">Keine Geräte gefunden. Durch Klicken wird ein Hilfe-Artikel in einem neuen Tab geöffnet.</translation>
 <translation id="4415276339145661267">Google-Konto verwalten</translation>
 <translation id="4415748029120993980">Elliptische SECG-Kurve secp384r1 (NIST P-384)</translation>
@@ -2326,6 +2339,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ist abgestürzt</translation>
 <translation id="450099669180426158">Ausrufezeichensymbol</translation>
 <translation id="4501530680793980440">Entfernen bestätigen</translation>
+<translation id="4502423230170890588">Von diesem Gerät entfernen</translation>
 <translation id="4504940961672722399">Klicken Sie auf dieses Symbol oder drücken Sie <ph name="EXTENSION_SHORTCUT" />, um diese Erweiterung zu verwenden.</translation>
 <translation id="4508051413094283164">Alle in Inkognitofenster öffnen</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
@@ -2381,7 +2395,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="457386861538956877">Mehr...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Bluetooth-Gerät koppeln</translation>
-<translation id="4578012756826807359">Ihre Anmeldedaten wurden gelöscht.</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> kann nicht gestreamt werden.</translation>
 <translation id="4581774856936278355">Fehler beim Wiederherstellen von Linux</translation>
 <translation id="4582563038311694664">Alle Einstellungen zurücksetzen</translation>
@@ -2406,6 +2419,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4617001782309103936">Zu kurz</translation>
 <translation id="4617270414136722281">Erweiterungsoptionen</translation>
 <translation id="4619615317237390068">Tabs von anderen Geräten</translation>
+<translation id="462021874527520979">Über Ihre Geräte anrufen</translation>
 <translation id="4620809267248568679">Diese Einstellung wird durch eine Erweiterung erzwungen.</translation>
 <translation id="4623189117674524348">Das System konnte den API-Zugriff für dieses Gerät nicht autorisieren.</translation>
 <translation id="4625078469366263107">App aktivieren</translation>
@@ -2470,6 +2484,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4724450788351008910">Zugehörigkeit geändert</translation>
 <translation id="4725511304875193254">Corgi</translation>
 <translation id="4726710629007580002">Beim Versuch, diese Erweiterung zu installieren, wurden Warnungen ausgegeben:</translation>
+<translation id="4726970474000335584"><ph name="ORIGIN" /> kann Ihre Änderungen direkt in den Dateien in den unten angegebenen Ordnern speichern.</translation>
 <translation id="4727847987444062305">Verwaltete Gastsitzung</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4733082559415072992"><ph name="URL" /> möchte den Standort Ihres Geräts nutzen</translation>
@@ -2480,6 +2495,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4737715515457435632">Bitte stellen Sie eine Verbindung zu einem Netzwerk her.</translation>
 <translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4739098340603978916">Größe: <ph name="APP_SIZE" /></translation>
+<translation id="4739639199548674512">Tickets</translation>
 <translation id="4742746985488890273">An Ablage anpinnen</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Hier finden Sie Informationen zum Aktualisieren von Anwendungen<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Stummschaltung für Website aufheben}other{Stummschaltung für Websites aufheben}}</translation>
@@ -2522,6 +2538,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4813136279048157860">Meine Bilder</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4816492930507672669">An Seite anpassen</translation>
+<translation id="4820236583224459650">Als aktives Ticket festlegen</translation>
 <translation id="4821935166599369261">&amp;Profilerstellung aktiviert</translation>
 <translation id="4823484602432206655">Nutzer- und Geräteeinstellungen lesen und ändern</translation>
 <translation id="4824958205181053313">Synchronisierung abbrechen?</translation>
@@ -2693,10 +2710,10 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5072836811783999860">Verwaltete Lesezeichen anzeigen</translation>
 <translation id="5074318175948309511">Damit die neuen Einstellungen wirksam werden, muss die Seite eventuell neu geladen werden.</translation>
 <translation id="5075131525758602494">SIM-PIN eingeben</translation>
-<translation id="507514548843781244">Hiermit können Sie die auf Ihrem Sicherheitsschlüssel gespeicherten Anmeldedaten aufrufen und löschen</translation>
 <translation id="5078638979202084724">Alle Tabs als Lesezeichen speichern</translation>
 <translation id="5078796286268621944">Falsche PIN</translation>
 <translation id="5079950360618752063">Vorgeschlagenes Passwort verwenden</translation>
+<translation id="508059534790499809">Kerberos-Ticket aktualisieren</translation>
 <translation id="5084230410268011727">Verwendung von Bewegungs- und Lichtsensoren für Websites zulassen</translation>
 <translation id="5085162214018721575">Suche nach Updates...</translation>
 <translation id="5086082738160935172">HID</translation>
@@ -2758,6 +2775,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5179127818058486126">{NUM_TABS,plural, =1{Stummschaltung des Tabs aufheben}other{Stummschaltung der Tabs aufheben}}</translation>
 <translation id="5181140330217080051">Download wird ausgeführt...</translation>
 <translation id="5184063094292164363">&amp;JavaScript-Konsole</translation>
+<translation id="5184209580557088469">Ein Ticket mit diesem Nutzernamen ist bereits vorhanden</translation>
 <translation id="5184662919967270437">Ihr Gerät wird aktualisiert</translation>
 <translation id="5185386675596372454">Die aktuelle Version von "<ph name="EXTENSION_NAME" />" wurde deaktiviert, weil sie weitere Berechtigungen erfordert.</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
@@ -2964,7 +2982,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5496587651328244253">Organisieren</translation>
 <translation id="549673810209994709">Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5499313591153584299">Diese Datei könnte schädlich für Ihren Computer sein.</translation>
-<translation id="5500345327355928305">Verwenden Sie ein kompatibles OEM- oder USB Typ-C-Netzteil, um Lade- und Leistungsprobleme zu vermeiden.</translation>
 <translation id="5502500733115278303">Aus Firefox importiert</translation>
 <translation id="5507756662695126555">Zugelassen</translation>
 <translation id="5509693895992845810">Speichern &amp;unter...</translation>
@@ -2991,7 +3008,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5534304873398226603">Foto oder Video verwerfen</translation>
 <translation id="5535941515421698170">Auch vorhandene Daten von diesem Gerät entfernen</translation>
 <translation id="5539221284352502426">Das eingegebene Passwort wurde vom Server zurückgewiesen. Mögliche Ursachen: Das Passwort ist zu kurz. Das Passwort muss Zahlen oder Symbole enthalten. Das Passwort muss sich von vorherigen Passwörtern unterscheiden.</translation>
-<translation id="5541687815721799001">App verwenden</translation>
 <translation id="5542132724887566711">Profil</translation>
 <translation id="5542750926112347543">Cookies von <ph name="DOMAIN" /> blockiert</translation>
 <translation id="5543983818738093899">Status wird überprüft...</translation>
@@ -3164,6 +3180,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5794414402486823030">Immer mit System Viewer öffnen</translation>
 <translation id="5794786537412027208">Alle Chrome-Apps beenden</translation>
 <translation id="5797070761912323120">Anhand Ihres Verlaufs kann Google die Google-Suche, Werbung und andere Google-Dienste personalisieren</translation>
+<translation id="5797948578832622895"><ph name="ORIGIN" /> wird alle Dateien im unten angegebenen Ordner lesen können. Jegliche Änderungen am Ordner können nur dann durch die Website gelesen werden, wenn dieser Tab geöffnet ist.</translation>
 <translation id="579915268381781820">Ihr Sicherheitsschlüssel wurde entfernt.</translation>
 <translation id="5799508265798272974">Virtuelle Maschine für Linux: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">Die Zieldatei wurde seit dem letzen Download gekürzt oder entfernt.</translation>
@@ -3266,6 +3283,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5941153596444580863">Person hinzufügen...</translation>
 <translation id="5941343993301164315">Melden Sie sich in <ph name="TOKEN_NAME" /> an.</translation>
 <translation id="5941711191222866238">Verkleinern</translation>
+<translation id="5944977331672315316"><ph name="ORIGIN" /> kann alle Dateien in den unten angegebenen Ordnern lesen. Änderungen am Ordner können nur dann durch die Website gelesen werden, wenn dieser Tab geöffnet ist.</translation>
 <translation id="5945188205370098537">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="5946591249682680882">Bericht-ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5949544233750246342">Datei kann nicht geparst werden</translation>
@@ -3381,6 +3399,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6106186653986077033">Plugin VM benötigt eine Lizenz</translation>
 <translation id="6107012941649240045">Ausgestellt für</translation>
 <translation id="6112294629795967147">Zum Anpassen der Größe tippen</translation>
+<translation id="6112727384379533756">Ticket hinzufügen</translation>
 <translation id="6112931163620622315">Smartphone prüfen</translation>
 <translation id="6112952769866305444">Person bearbeiten: <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6113942107547980621">Wenn Sie Smart Lock verwenden möchten, wechseln Sie zum Profil des Hauptnutzers Ihres Smartphones</translation>
@@ -3390,7 +3409,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6122081475643980456">Internetverbindung wird kontrolliert</translation>
 <translation id="6122095009389448667">Weiterhin verhindern, dass diese Website die Zwischenablage aufrufen kann</translation>
 <translation id="6122875415561139701">Der Schreibvorgang ist auf folgendem Gerät nicht erlaubt: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="6123292156101652890">Auf diesem Sicherheitsschlüssel können keine Anmeldedaten gespeichert werden.</translation>
 <translation id="6124650939968185064">Die folgenden Erweiterungen hängen von dieser Erweiterung ab:</translation>
 <translation id="6124698108608891449">Diese Website benötigt weitere Berechtigungen.</translation>
 <translation id="6125479973208104919">Sie müssen Ihr Konto dem <ph name="DEVICE_TYPE" /> erneut hinzufügen.</translation>
@@ -4060,7 +4078,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7143092389027215216">Demomodus starten</translation>
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
-<translation id="714687768418476028">Ihr Sicherheitsschlüssel ist nicht durch eine PIN geschützt. Erstellen Sie zuerst eine PIN, um die Anmeldedaten zu verwalten.</translation>
 <translation id="7149893636342594995">Letzte 24 Stunden</translation>
 <translation id="715118844758971915">Klassische Drucker</translation>
 <translation id="7152478047064750137">Diese Erweiterung erfordert keine speziellen Berechtigungen</translation>
@@ -4245,6 +4262,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Hintergrundseite: <ph name="BACKGROUND_PAGE_URL" /></translation>
+<translation id="7427798576651127129">Anruf von <ph name="DEVICE_NAME" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Alle in &amp;neuem Fenster öffnen}=1{In &amp;neuem Fenster öffnen}other{Alle (#) in &amp;neuem Fenster öffnen}}</translation>
 <translation id="7434509671034404296">Entwickler</translation>
 <translation id="7436921188514130341">Oh nein! Beim Umbenennen ist ein Fehler aufgetreten.</translation>
@@ -4355,6 +4373,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7607002721634913082">Angehalten</translation>
 <translation id="7609148976235050828">Stellen Sie eine Internetverbindung her und versuchen Sie es dann noch einmal.</translation>
 <translation id="7611008212562900400">Gerät, Apps, Internet durchsuchen…</translation>
+<translation id="7613156935003315818"><ph name="ORIGIN" /> kann Ihre Änderungen nicht in diesem Ordner speichern, da er Systemdateien enthält.</translation>
 <translation id="7616214729753637086">Gerät wird registriert…</translation>
 <translation id="7617366389578322136">Verbindung zu "<ph name="DEVICE_NAME" />" wird hergestellt</translation>
 <translation id="7621382409404463535">Das System konnte die Gerätekonfiguration nicht speichern.</translation>
@@ -4450,6 +4469,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Bildschirmbegrenzungen anpassen</translation>
 <translation id="7760004034676677601">Ist das Ihre erwartete "Beim Start"-Seite?</translation>
+<translation id="7761380698973548146">Über Ihre Geräte anrufen</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Verschieben</translation>
@@ -4587,6 +4607,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7930294771522048157">Gespeicherte Zahlungsmethoden werden hier angezeigt</translation>
 <translation id="79312157130859720"><ph name="APP_NAME" /> teilt Bildschirm und Audio.</translation>
 <translation id="7931318309563332511">Unbekannt</translation>
+<translation id="793293630927785390">Neues WLAN-Dialogfeld</translation>
 <translation id="7932969338829957666">Freigegebene Ordner sind auf Linux-Geräten unter <ph name="BASE_DIR" /> verfügbar.</translation>
 <translation id="7933314993013528982">{NUM_TABS,plural, =1{Stummschaltung für Website aufheben}other{Stummschaltung für Websites aufheben}}</translation>
 <translation id="7933634003144813719">Freigegebene Ordner verwalten</translation>
@@ -4689,6 +4710,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8054517699425078995">Dateien dieses Typs können Schäden auf Ihrem Gerät verursachen. Möchten Sie <ph name="FILE_NAME" /> dennoch behalten?</translation>
 <translation id="8054563304616131773">Geben Sie eine gültige E-Mail-Adresse ein.</translation>
 <translation id="8054921503121346576">USB-Tastatur angeschlossen</translation>
+<translation id="805836796915198592"><ph name="WINDOW_TITLE" /> – darf in den Originaldateien speichern</translation>
 <translation id="8058655154417507695">Ablaufjahr</translation>
 <translation id="8059417245945632445">&amp;Geräte untersuchen</translation>
 <translation id="8063235345342641131">Grüner Standardavatar</translation>
@@ -4753,6 +4775,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8168435359814927499">Inhalte</translation>
 <translation id="8174047975335711832">Gerätebezogene Informationen</translation>
 <translation id="8174876712881364124">In Google Drive sichern: Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. Diese Sicherung enthält App-Daten. Sicherungen werden bei Google hochgeladen und mit dem Passwort des Google-Kontos Ihres Kindes verschlüsselt. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
+<translation id="8176238094383414357">Änderungen können nur dann durch diese Website gespeichert und gelesen werden, wenn der Tab geöffnet ist.</translation>
 <translation id="8177196903785554304">Netzwerkdetails</translation>
 <translation id="8178208419593390223">Hier können Sie Ihre angemeldeten Google-Konten verwalten. Websites, Apps und Erweiterungen in Chrome und Google Play greifen möglicherweise auf diese Konten zurück, um Ihnen – abhängig von den jeweiligen Berechtigungen – personalisierte Inhalte anzuzeigen.</translation>
 <translation id="8179976553408161302">Enter</translation>
@@ -4925,7 +4948,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8439506636278576865">Übersetzung für Seiten in dieser Sprache anbieten</translation>
 <translation id="8440630305826533614">Linux-Apps</translation>
-<translation id="844241640324986723">Ihre Anmeldedaten konnten nicht gelöscht werden.</translation>
 <translation id="8443338615972234259">Bitte erstellen Sie jetzt ein neues Konto für Ihren betreuten Nutzer.</translation>
 <translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8447409163267621480">Entweder Strg oder Alt integrieren</translation>
@@ -5027,6 +5049,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8602851771975208551">Ein anderes Programm auf Ihrem Computer hat eine App hinzugefügt, die sich möglicherweise auf die Funktionsweise von Chrome auswirkt.</translation>
 <translation id="8605428685123651449">SQLite-Speicher</translation>
 <translation id="8606726445206553943">Ihre MIDI-Geräte verwenden</translation>
+<translation id="8608618451198398104">Kerberos-Ticket hinzufügen</translation>
 <translation id="8609465669617005112">Nach oben</translation>
 <translation id="8610103157987623234">Fehlerhaftes Format. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="8615618338313291042">Anonyme App: <ph name="APP_NAME" /></translation>
@@ -5151,6 +5174,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8770406935328356739">Stammverzeichnis der Erweiterung</translation>
 <translation id="8770507190024617908">Nutzer verwalten</translation>
 <translation id="8771300903067484968">Der Hintergrund der Startseite wurde auf den standardmäßigen Hintergrund zurückgesetzt.</translation>
+<translation id="8774379074441005279">Wiederherstellung bestätigen</translation>
 <translation id="8774934320277480003">Oberer Rand</translation>
 <translation id="8775144690796719618">Ungültige URL</translation>
 <translation id="8777628254805677039">Root-Passwort</translation>
@@ -5365,6 +5389,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9088234649737575428"><ph name="PLUGIN_NAME" /> wurde aufgrund von Unternehmensrichtlinien blockiert</translation>
 <translation id="9088917181875854783">Bitte bestätigen Sie, dass dieser Zugangscode auf "<ph name="DEVICE_NAME" />" angezeigt wird:</translation>
 <translation id="9094033019050270033">Passwort aktualisieren</translation>
+<translation id="9094038138851891550">Nutzername ungültig</translation>
 <translation id="9094982973264386462">Entfernen</translation>
 <translation id="9095253524804455615">Entfernen</translation>
 <translation id="9095388113577226029">Weitere Sprachen...</translation>

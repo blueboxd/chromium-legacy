@@ -31,6 +31,7 @@
 
 #if defined(OS_IOS)
 #include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
+#include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -116,6 +117,9 @@ std::unique_ptr<IdentityManager> BuildIdentityManager(
 #endif
 #if !defined(OS_ANDROID)
           params->delete_signin_cookies_on_exit, params->token_web_data,
+#endif
+#if defined(OS_IOS)
+          std::move(params->device_accounts_provider),
 #endif
 #if defined(OS_WIN)
           params->reauth_callback,

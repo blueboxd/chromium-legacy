@@ -2,11 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Constant to indicate selection index is not set.
+const NO_SELECT_INDEX = -1;
+
 /**
  * Class to handle navigating text. Currently, only
- * navigation of editable text fields is supported.
+ * navigation and selection in editable text fields is supported.
  */
 class TextNavigationManager {
+  /** @param {!NavigationManager} navigationManager */
+  constructor(navigationManager) {
+    /** @private {!NavigationManager} */
+    this.navigationManager_ = navigationManager;
+
+    /** @private {number} */
+    this.selectionStartIndex_ = NO_SELECT_INDEX;
+
+    /** @private {number} */
+    this.selectionEndIndex_ = NO_SELECT_INDEX;
+
+    /** @private {chrome.automation.AutomationNode} */
+    this.selectionStartObject_;
+
+    /** @private {chrome.automation.AutomationNode} */
+    this.selectionEndObject_;
+  }
+
   /**
    * Jumps to the beginning of the text field (does nothing
    * if already at the beginning).
@@ -108,5 +129,90 @@ class TextNavigationManager {
       keyCode: keyCode,
       modifiers: modifiers
     });
+  }
+
+  /**
+   * TODO(rosalindag): Work on text selection functionality below.
+   */
+
+  /**
+   * Get the currently selected node.
+   * @private
+   * @return {!chrome.automation.AutomationNode}
+   */
+  node_() {
+    return this.navigationManager_.currentNode();
+  }
+
+  /**
+   * Sets the selection using the selectionStart and selectionEnd
+   * as the offset input for setDocumentSelection and the parameter
+   * textNode as the object input for setDocumentSelection.
+   * @private
+   */
+  setSelection_() {
+    if (this.selectionStartIndex_ == NO_SELECT_INDEX ||
+        this.selectionEndIndex_ == NO_SELECT_INDEX) {
+      console.log('Selection bounds are not set properly.');
+    } else {
+      chrome.automation.setDocumentSelection({
+        anchorObject: this.selectionStartObject_,
+        anchorOffset: this.selectionStartIndex_,
+        focusObject: this.selectionEndObject_,
+        focusOffset: this.selectionEndIndex_
+      });
+    }
+  }
+
+  /**
+   * Returns the selection start index.
+   * @return {boolean}
+   * @public
+   */
+  isSelStartIndexSet() {
+    return this.selectionStartIndex_ !== NO_SELECT_INDEX;
+  }
+  /**
+   * Returns either the selection start index or the selection end index of the
+   * node based on the getStart param.
+   * @param {!chrome.accessibilityPrivate.SyntheticKeyboardModifiers} node
+   * @param {boolean} getStart
+   * @return {number} selection start if getStart is true otherwise selection
+   * end
+   * @private
+   */
+  getSelectionIndexFromNode_(node, getStart) {
+    let indexFromNode = NO_SELECT_INDEX;
+    if (getStart) {
+      indexFromNode = node.textSelStart;
+    } else {
+      indexFromNode = node.textSelEnd;
+    }
+    if (indexFromNode === undefined) {
+      return NO_SELECT_INDEX;
+    }
+    return indexFromNode;
+  }
+
+  /**
+   * Sets the selectionStart variable based on the selection of the current
+   * node.
+   * @public
+   */
+  setSelectStart() {
+    this.selectionStartObject_ = this.node_();
+    this.selectionStartIndex_ =
+        this.getSelectionIndexFromNode_(this.selectionStartObject_, true);
+  }
+
+  /**
+   * Sets the selectionEnd variable based on the selection of the current node.
+   * @public
+   */
+  setSelectEnd() {
+    this.selectionEndObject_ = this.node_();
+    this.selectionEndIndex_ =
+        this.getSelectionIndexFromNode_(this.selectionEndObject_, false);
+    this.setSelection_();
   }
 }

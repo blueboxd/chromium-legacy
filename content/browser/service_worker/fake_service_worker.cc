@@ -198,6 +198,12 @@ void FakeServiceWorker::DispatchExtendableMessageEventWithCustomTimeout(
   std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
 }
 
+void FakeServiceWorker::DispatchContentDeleteEvent(
+    const std::string& id,
+    DispatchContentDeleteEventCallback callback) {
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
+}
+
 void FakeServiceWorker::Ping(PingCallback callback) {
   std::move(callback).Run();
 }

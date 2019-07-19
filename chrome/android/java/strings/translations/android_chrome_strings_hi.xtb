@@ -181,14 +181,13 @@
 <translation id="2286841657746966508">बिलिंग पता</translation>
 <translation id="2289270750774289114">जब कोई साइट आस-पास के ब्लूटूथ डिवाइस को खोजना चाहे, तो इसके लिए पूछें (सुझाया गया)</translation>
 <translation id="230115972905494466">कोई संगत डिवाइस नहीं मिला</translation>
-<translation id="2315043854645842844">क्लाइंट-साइड प्रमाणपत्र चयन ऑपरेटिंग सिस्टम के द्वारा समर्थित नहीं है.</translation>
+<translation id="2315043854645842844">क्लाइंट-साइड प्रमाणपत्र चुनना ऑपरेटिंग सिस्टम से नहीं किया जा सकता है.</translation>
 <translation id="2318045970523081853">कॉल करने के लिए टैप करें</translation>
 <translation id="2321086116217818302">पासवर्ड तैयार हो रहे हैं…</translation>
 <translation id="2321958826496381788">इस टेक्स्ट को आसानी से पढ़ने लायक बनाने के लिए, स्‍लाइडर को आगे की ओर खींचें. पैराग्राफ़ पर डबल-टैप करने के बाद, टेक्स्ट को इतना बड़ा दिखाई देना चाहिए.</translation>
 <translation id="2323763861024343754">साइट मेमोरी</translation>
 <translation id="2328985652426384049">साइन इन नहीं कर सकते</translation>
 <translation id="2349710944427398404">Chrome द्वारा उपयोग किया गया कुल डेटा, जिसमें खाते, बुकमार्क और सहेजी गईं सेटिंग शामिल हैं</translation>
-<translation id="2351097562818989364">आपकी अनुवाद सेटिंग रीसेट कर दी गई हैं.</translation>
 <translation id="2353636109065292463">आपके इंटरनेट कनेक्शन की जाँच की जा रही है</translation>
 <translation id="2359808026110333948">जारी रखें</translation>
 <translation id="2369533728426058518">खुले टैब</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">ठीक है, समझ लिया</translation>
 <translation id="5304593522240415983">यह फ़ील्‍ड खाली नहीं छोड़ी जा सकती</translation>
 <translation id="5308380583665731573">कनेक्ट करें</translation>
-<translation id="5308603654685598744">जब यह सुविधा चालू होती है तो Chrome, Google अनुवाद का उपयोग करके अन्य भाषाओं में लिखे गए पृष्ठों का अनुवाद करना ऑफ़र करेगा.</translation>
 <translation id="5313967007315987356">साइट जोड़ें</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5324858694974489420">अभिभावकीय सेटिंग</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप भेजती है</translation>
 <translation id="5869522115854928033">सेव किए गए पासवर्ड</translation>
 <translation id="5902828464777634901">कुकी सहित, ऐसा सारा डेटा मिटा दिया जाएगा, जिसे इस वेबसाइट ने सेव किया है.</translation>
-<translation id="5911030830365207728">Google अनुवाद</translation>
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5919204609460789179">सिंक शुरू करने के लिए <ph name="PRODUCT_NAME" /> अपडेट करें</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> सेव किए गए</translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">यह पेज खतरनाक है. साइट की जानकारी</translation>
 <translation id="6963766334940102469">बुकमार्क मिटाएं</translation>
 <translation id="6965382102122355670">ठीक है</translation>
-<translation id="6978479750597523876">अनुवाद सेटिंग रीसेट करें</translation>
 <translation id="6979737339423435258">हमेशा</translation>
 <translation id="6981982820502123353">सुलभता</translation>
 <translation id="6989267951144302301">डाउनलोड नहीं किया जा सका</translation>
@@ -929,7 +925,7 @@
 <translation id="7821588508402923572">बचाया गया डेटा यहां दिखाई देगा</translation>
 <translation id="7837721118676387834">किसी खास साइट पर म्यूट किए गए वीडियो को अपने आप चलाने की अनुमति दें.</translation>
 <translation id="7838340937077326045">क्या आप वाकई फ़ाइल का एक्सटेंशन बदलना चाहते हैं?</translation>
-<translation id="7846076177841592234">चयन हटाएं</translation>
+<translation id="7846076177841592234">चुना गया हटाएं</translation>
 <translation id="784934925303690534">समय सीमा</translation>
 <translation id="7851858861565204677">अन्य डिवाइस</translation>
 <translation id="7875915731392087153">ईमेल बनाएं</translation>

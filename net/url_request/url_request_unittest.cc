@@ -94,7 +94,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -2915,8 +2914,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    TestNetLogEntry::List entries;
-    net_log_.GetEntries(&entries);
+    auto entries = net_log_.GetEntries();
     for (const auto& entry : entries) {
       EXPECT_NE(entry.type,
                 NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE);
@@ -2940,8 +2938,7 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
 
     EXPECT_EQ(1, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    TestNetLogEntry::List entries;
-    net_log_.GetEntries(&entries);
+    auto entries = net_log_.GetEntries();
     ExpectLogContainsSomewhereAfter(
         entries, 0, NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE,
         NetLogEventPhase::NONE);
@@ -2971,8 +2968,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    TestNetLogEntry::List entries;
-    net_log_.GetEntries(&entries);
+    auto entries = net_log_.GetEntries();
     for (const auto& entry : entries) {
       EXPECT_NE(entry.type,
                 NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);
@@ -2994,8 +2990,7 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(2, network_delegate.blocked_set_cookie_count());
-    TestNetLogEntry::List entries;
-    net_log_.GetEntries(&entries);
+    auto entries = net_log_.GetEntries();
     ExpectLogContainsSomewhereAfter(
         entries, 0, NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE,
         NetLogEventPhase::NONE);
@@ -5702,7 +5697,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
   // DELEGATE_INFO NetLog events that an AsyncDelegateLogger should have
   // recorded.  Returns the index of entry after the expected number of
   // events this logged, or entries.size() if there aren't enough entries.
-  static size_t CheckDelegateInfo(const TestNetLogEntry::List& entries,
+  static size_t CheckDelegateInfo(const std::vector<NetLogEntry>& entries,
                                   size_t log_position) {
     // There should be 4 DELEGATE_INFO events: Two begins and two ends.
     if (log_position + 3 >= entries.size()) {
@@ -5712,9 +5707,9 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     std::string delegate_info;
     EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
     EXPECT_EQ(NetLogEventPhase::BEGIN, entries[log_position].phase);
-    EXPECT_TRUE(entries[log_position].GetStringValue("delegate_blocked_by",
-                                                     &delegate_info));
-    EXPECT_EQ(kFirstDelegateInfo, delegate_info);
+    EXPECT_EQ(
+        kFirstDelegateInfo,
+        GetStringValueFromParams(entries[log_position], "delegate_blocked_by"));
 
     ++log_position;
     EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
@@ -5723,9 +5718,9 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     ++log_position;
     EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
     EXPECT_EQ(NetLogEventPhase::BEGIN, entries[log_position].phase);
-    EXPECT_TRUE(entries[log_position].GetStringValue("delegate_blocked_by",
-                                                     &delegate_info));
-    EXPECT_EQ(kSecondDelegateInfo, delegate_info);
+    EXPECT_EQ(
+        kSecondDelegateInfo,
+        GetStringValueFromParams(entries[log_position], "delegate_blocked_by"));
 
     ++log_position;
     EXPECT_EQ(NetLogEventType::DELEGATE_INFO, entries[log_position].type);
@@ -5985,8 +5980,7 @@ TEST_F(URLRequestTestHTTP, DelegateInfoBeforeStart) {
     EXPECT_EQ(OK, request_delegate.request_status());
   }
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   size_t log_position = ExpectLogContainsSomewhereAfter(
       entries, 0, NetLogEventType::DELEGATE_INFO, NetLogEventPhase::BEGIN);
 
@@ -6027,8 +6021,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 
   size_t log_position = 0;
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   static const NetLogEventType kExpectedEvents[] = {
       NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST,
       NetLogEventType::NETWORK_DELEGATE_BEFORE_START_TRANSACTION,
@@ -6082,8 +6075,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 
   size_t log_position = 0;
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   static const NetLogEventType kExpectedEvents[] = {
       NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST,
       NetLogEventType::NETWORK_DELEGATE_BEFORE_START_TRANSACTION,
@@ -6157,8 +6149,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 
   size_t log_position = 0;
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   static const NetLogEventType kExpectedEvents[] = {
       NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST,
       NetLogEventType::NETWORK_DELEGATE_BEFORE_START_TRANSACTION,
@@ -6217,8 +6208,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
     EXPECT_EQ(OK, request_delegate.request_status());
   }
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
 
   size_t log_position = 0;
 
@@ -6271,8 +6261,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
     EXPECT_EQ(OK, request_delegate.request_status());
   }
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
 
   // Delegate info should only have been logged in OnReceivedRedirect and
   // OnResponseStarted.
@@ -6331,8 +6320,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
       base::RunLoop().RunUntilIdle();
     }
 
-    TestNetLogEntry::List entries;
-    net_log.GetEntries(&entries);
+    auto entries = net_log.GetEntries();
 
     // Delegate info is always logged in both OnReceivedRedirect and
     // OnResponseStarted.  In the CANCEL_ON_RECEIVED_REDIRECT, the

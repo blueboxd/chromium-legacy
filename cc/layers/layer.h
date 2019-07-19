@@ -332,6 +332,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.backdrop_filter_bounds;
   }
 
+  const ElementId backdrop_mask_element_id() const {
+    return inputs_.backdrop_mask_element_id;
+  }
+
   void SetBackdropFilterQuality(const float quality);
   float backdrop_filter_quality() const {
     return inputs_.backdrop_filter_quality;
@@ -990,6 +994,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     FilterOperations filters;
     FilterOperations backdrop_filters;
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
+    ElementId backdrop_mask_element_id;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 

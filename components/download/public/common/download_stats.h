@@ -21,6 +21,7 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
+#include "net/http/http_response_info.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -467,6 +468,10 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordResumptionRestartCount(
 // Records that download was resumed.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumed(
     bool has_strong_validators);
+
+// Records connection info of the download.
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionInfo(
+    net::HttpResponseInfo::ConnectionInfo connection_info);
 
 #if defined(OS_ANDROID)
 // Records the download interrupt reason for the first background download.

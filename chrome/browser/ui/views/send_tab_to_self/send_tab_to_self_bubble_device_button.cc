@@ -90,14 +90,13 @@ base::string16 GetLastUpdatedTime(const TargetDeviceInfo& device_info) {
 
 SendTabToSelfBubbleDeviceButton::SendTabToSelfBubbleDeviceButton(
     views::ButtonListener* button_listener,
-    const std::string& device_name,
     const TargetDeviceInfo& device_info,
     int button_tag)
     : HoverButton(button_listener,
                   CreateIconView(device_info.device_type),
-                  base::UTF8ToUTF16(device_name),
+                  base::UTF8ToUTF16(device_info.device_name),
                   GetLastUpdatedTime(device_info)) {
-  device_name_ = device_name;
+  device_name_ = device_info.device_name;
   device_guid_ = device_info.cache_guid;
   device_type_ = device_info.device_type;
   set_tag(button_tag);

@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">비밀번호 변경</translation>
 <translation id="1090126737595388931">실행 중인 백그라운드 앱 없음</translation>
 <translation id="1090290614672149983">원본 파일에 변경사항을 저장하시겠습니까?</translation>
-<translation id="1090918500949388876">화면이 켜져 있을 때 "Ok Google"이라고 말하면 어시스턴트를 사용할 수 있습니다.</translation>
 <translation id="1091767800771861448">건너뛰려면 Esc 키를 누르세요(비공식 빌드만 해당).</translation>
 <translation id="1093457606523402488">표시된 네트워크:</translation>
 <translation id="1094607894174825014">기기(<ph name="DEVICE_NAME" />)에서 잘못된 오프셋으로 읽기 또는 쓰기 작업을 요청했습니다.</translation>
@@ -542,7 +541,6 @@
 <translation id="1792619191750875668">확장 디스플레이</translation>
 <translation id="1794791083288629568">이 문제를 해결하는 데 도움이 되도록 의견 전송</translation>
 <translation id="1795214765651529549">기본 테마 사용</translation>
-<translation id="1797738254362176886">로그인 데이터를 확인하려면 보안 키를 삽입하고 터치하세요.</translation>
 <translation id="1799071797295057738">'<ph name="EXTENSION_NAME" />' 확장 프로그램 자동으로 사용 중지되었습니다.</translation>
 <translation id="1802687198411089702">페이지가 응답하지 않습니다. 페이지가 응답할 때까지 기다리거나 종료할 수 있습니다.</translation>
 <translation id="1802931390041703523">이 페이지에서 플래시가 차단되었습니다</translation>
@@ -788,7 +786,6 @@
 <translation id="2177950615300672361">시크릿 탭: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" />의 <ph name="PEPPER_PLUGIN_NAME" />에서 내 컴퓨터에 액세스하려고 합니다</translation>
 <translation id="2178614541317717477">CA 손상</translation>
-<translation id="2179849162388791084">보안 키에서 로그인 데이터를 수집할 수 없습니다.</translation>
 <translation id="218070003709087997">숫자로 인쇄 부수를 표시하세요(1부터 999까지).</translation>
 <translation id="2184515124301515068">사이트의 소리 재생 여부를 Chrome이 결정(권장)</translation>
 <translation id="2187895286714876935">서버 인증서 가져오기 오류</translation>
@@ -1376,7 +1373,6 @@
 <translation id="3022978424994383087">인식하지 못했습니다.</translation>
 <translation id="3023464535986383522">텍스트 읽어주기</translation>
 <translation id="3024374909719388945">24시간 단위 사용</translation>
-<translation id="30256218463955326">호환되지 않는 도크</translation>
 <translation id="3031417829280473749">X 요원</translation>
 <translation id="3031557471081358569">가져올 항목 선택:</translation>
 <translation id="3031601332414921114">인쇄 계속하기</translation>
@@ -1566,7 +1562,6 @@
 <translation id="3348038390189153836">이동식 기기가 검색됨</translation>
 <translation id="3349933790966648062">메모리 사용량</translation>
 <translation id="3350117557200012647">페어링 모드 시작</translation>
-<translation id="3350263973613584174">이 보안 키에는 로그인 데이터가 저장되어 있지 않습니다.</translation>
 <translation id="3355936511340229503">연결 오류</translation>
 <translation id="3356580349448036450">완료</translation>
 <translation id="3359256513598016054">인증서 정책 제약조건</translation>
@@ -1946,7 +1941,6 @@
 <translation id="3878840326289104869">관리 대상 사용자 만들기</translation>
 <translation id="3879748587602334249">다운로드 관리자</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" />(으)로 메모 작성</translation>
-<translation id="388900914234409233">Chromebook을 충전하려면 호환되는 OEM 배터리를 사용하세요.</translation>
 <translation id="3892414795099177503">OpenVPN/L2TP 추가...</translation>
 <translation id="3893536212201235195">접근성 설정 확인 및 변경</translation>
 <translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
@@ -2135,7 +2129,6 @@
 <translation id="4147911968024186208">다시 시도해 주세요. 이 오류가 다시 표시되면 지원 담당자에게 문의하시기 바랍니다.</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">디스플레이</translation>
-<translation id="4150234330364554482">이 Chromebook과 호환되는 OEM 도킹 스테이션을 사용하세요.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{탭 1개}other{탭 #개}}</translation>
 <translation id="4154664944169082762">지문</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2282,7 +2275,6 @@
 <translation id="4412698727486357573">고객센터</translation>
 <translation id="44141919652824029">'<ph name="APP_NAME" />'이(가) 연결된 USB 기기의 목록을 읽도록 허용하시겠습니까?</translation>
 <translation id="4414232939543644979">새 시크릿 창(&amp;I)</translation>
-<translation id="4414386768539506503">로그인 데이터를 확인하려면 보안 키 PIN을 입력하세요. PIN을 모른다면 보안 키를 재설정해야 합니다.</translation>
 <translation id="4415245286584082850">발견된 기기가 없습니다. 새 탭에서 고객센터 도움말을 엽니다.</translation>
 <translation id="4415276339145661267">Google 계정 관리</translation>
 <translation id="4415748029120993980">SECG 타원 곡선 secp384r1(또는 NIST P-384)</translation>
@@ -2384,7 +2376,6 @@
 <translation id="457386861538956877">더보기...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">블루투스 기기 페어링</translation>
-<translation id="4578012756826807359">로그인 데이터 삭제 완료</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" />을(를) 전송할 수 없습니다.</translation>
 <translation id="4581774856936278355">Linux 복원 중 오류 발생</translation>
 <translation id="4582563038311694664">모든 설정 초기화</translation>
@@ -2696,7 +2687,6 @@
 <translation id="5072836811783999860">관리 북마크 표시</translation>
 <translation id="5074318175948309511">새로운 설정을 적용하기 전에 페이지를 다시 로드해야 할 수도 있습니다.</translation>
 <translation id="5075131525758602494">SIM PIN 입력</translation>
-<translation id="507514548843781244">보안 키에 저장된 로그인 데이터를 확인하고 삭제합니다.</translation>
 <translation id="5078638979202084724">모든 탭 북마크</translation>
 <translation id="5078796286268621944">잘못된 PIN</translation>
 <translation id="5079950360618752063">추천 비밀번호 사용</translation>
@@ -2967,7 +2957,6 @@
 <translation id="5496587651328244253">정리</translation>
 <translation id="549673810209994709">이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5499313591153584299">이 파일은 컴퓨터에 해로울 수 있습니다.</translation>
-<translation id="5500345327355928305">충전 및 성능 문제를 방지하려면 호환되는 OEM 또는 USB 타입-C 전원 어댑터를 사용하세요.</translation>
 <translation id="5502500733115278303">Firefox에서 가져온 북마크</translation>
 <translation id="5507756662695126555">부인 방지</translation>
 <translation id="5509693895992845810">다른 이름으로 저장(&amp;A)...</translation>
@@ -2994,7 +2983,6 @@
 <translation id="5534304873398226603">사진 또는 동영상 삭제</translation>
 <translation id="5535941515421698170">기기에서 기존 데이터도 삭제</translation>
 <translation id="5539221284352502426">입력한 비밀번호가 서버에 의해 거부되었습니다. 가능한 이유는 다음과 같습니다. 비밀번호가 너무 짧습니다. 비밀번호에 숫자 또는 기호가 포함되어야 합니다. 이전 비밀번호와 달라야 합니다.</translation>
-<translation id="5541687815721799001">앱 사용</translation>
 <translation id="5542132724887566711">프로필</translation>
 <translation id="5542750926112347543"><ph name="DOMAIN" />의 쿠키를 차단함</translation>
 <translation id="5543983818738093899">상태 확인 중...</translation>
@@ -3393,7 +3381,6 @@
 <translation id="6122081475643980456">인터넷 연결이 제어되고 있습니다.</translation>
 <translation id="6122095009389448667">이 사이트에서 클립보드를 보지 못하게 계속 차단</translation>
 <translation id="6122875415561139701">기기(<ph name="DEVICE_NAME" />)에서 쓰기 작업이 허용되지 않습니다.</translation>
-<translation id="6123292156101652890">이 보안 키에는 로그인 데이터를 저장할 수 없습니다.</translation>
 <translation id="6124650939968185064">이 확장 프로그램에 종속되는 확장 프로그램:</translation>
 <translation id="6124698108608891449">추가 권한이 필요한 사이트입니다.</translation>
 <translation id="6125479973208104919">이 <ph name="DEVICE_TYPE" />에 계정을 다시 추가해야 합니다.</translation>
@@ -4063,7 +4050,6 @@
 <translation id="7143092389027215216">데모 모드 시작</translation>
 <translation id="7143207342074048698">연결 중</translation>
 <translation id="7144878232160441200">다시 시도</translation>
-<translation id="714687768418476028">보안 키가 PIN으로 보호되어 있지 않습니다. 로그인 데이터를 관리하려면 PIN을 만드세요.</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="715118844758971915">일반 프린터</translation>
 <translation id="7152478047064750137">이 확장 프로그램에는 특별한 권한이 필요하지 않습니다</translation>
@@ -4929,7 +4915,6 @@
 <translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
 <translation id="8439506636278576865">이 언어로 된 페이지에 대한 번역 옵션 제공</translation>
 <translation id="8440630305826533614">Linux 앱</translation>
-<translation id="844241640324986723">로그인 데이터를 삭제하지 못했습니다.</translation>
 <translation id="8443338615972234259">지금 관리 대상 사용자용 계정을 새로 만드세요.</translation>
 <translation id="8446884382197647889">자세히 알아보기</translation>
 <translation id="8447409163267621480">Ctrl 또는 Alt 중 하나를 포함해야 합니다</translation>

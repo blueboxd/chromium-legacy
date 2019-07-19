@@ -259,6 +259,14 @@ class CHROMECAST_EXPORT Gatt {
     // Retrieve the list of services on device |addr|. They will be returned in
     // the callback |OnGetServices|.
     static bool GetServices(const Addr& addr);
+
+    // Clear pending connect request of remote device with |addr|.
+    static bool ClearPendingConnect(const Addr& addr)
+        __attribute__((__weak__));
+
+    // Clear pending disconnect request of remote device with |addr|.
+    static bool ClearPendingDisconnect(const Addr& addr)
+        __attribute__((__weak__));
   };
 
   // GATT Server role. Devices must implement the GATT server role in order to

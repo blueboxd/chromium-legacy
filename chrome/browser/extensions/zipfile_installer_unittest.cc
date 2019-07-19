@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"

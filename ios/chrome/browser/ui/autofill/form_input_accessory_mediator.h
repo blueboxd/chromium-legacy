@@ -14,6 +14,7 @@
 
 @class ChromeCoordinator;
 @protocol FormInputAccessoryConsumer;
+@class FormInputAccessoryMediator;
 @protocol FormInputSuggestionsProvider;
 @class JsSuggestionManager;
 
@@ -27,6 +28,15 @@ class WebState;
 
 class WebStateList;
 
+// Delegate in charge of reacting to accessory mediator events.
+@protocol FormInputAccessoryMediatorDelegate
+
+// The mediator detected that the keyboard was hidden and it is no longer
+// present on the screen.
+- (void)mediatorDidDetectKeyboardHide:(FormInputAccessoryMediator*)mediator;
+
+@end
+
 // This class contains all the logic to get and provide keyboard input accessory
 // views to its consumer. As well as telling the consumer when the default
 // accessory view shoeuld be restored to the system default.
@@ -36,6 +46,7 @@ class WebStateList;
 // the passed consumer. `webSateList` can be nullptr and `consumer` can be nil.
 - (instancetype)
        initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+               delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
            webStateList:(WebStateList*)webStateList
     personalDataManager:(autofill::PersonalDataManager*)personalDataManager
           passwordStore:

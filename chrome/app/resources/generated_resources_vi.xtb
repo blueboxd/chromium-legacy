@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">Thay đổi mật khẩu</translation>
 <translation id="1090126737595388931">Không có ứng dụng nền nào đang chạy</translation>
 <translation id="1090290614672149983">Lưu các thay đổi vào tệp gốc?</translation>
-<translation id="1090918500949388876">Nói "Ok Google" bất cứ lúc nào để sử dụng Trợ lý khi màn hình đang bật</translation>
 <translation id="1091767800771861448">Nhấn ESCAPE để bỏ qua (Chỉ phiên bản không chính thức).</translation>
 <translation id="1093457606523402488">Mạng hiển thị:</translation>
 <translation id="1094607894174825014">Đã yêu cầu tác vụ đọc hoặc ghi với hiệu số không hợp lệ trên: "<ph name="DEVICE_NAME" />".</translation>
@@ -542,7 +541,6 @@
 <translation id="1792619191750875668">Màn hình mở rộng</translation>
 <translation id="1794791083288629568">Gửi phản hồi để giúp chúng tôi khắc phục sự cố này.</translation>
 <translation id="1795214765651529549">Sử dụng chủ đề Cổ điển</translation>
-<translation id="1797738254362176886">Cắm khóa bảo mật của bạn rồi chạm vào khóa để xem dữ liệu đăng nhập.</translation>
 <translation id="1799071797295057738">Tiện ích "<ph name="EXTENSION_NAME" />" đã tự động bị tắt.</translation>
 <translation id="1802687198411089702">Trang không phản hồi. Bạn có thể chờ hoặc thoát khỏi trang này.</translation>
 <translation id="1802931390041703523">Flash bị chặn trên trang này</translation>
@@ -788,7 +786,6 @@
 <translation id="2177950615300672361">Tab ẩn danh: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> trên <ph name="PEPPER_PLUGIN_DOMAIN" /> muốn truy cập vào máy tính của bạn</translation>
 <translation id="2178614541317717477">Lộ CA</translation>
-<translation id="2179849162388791084">Không thu thập được dữ liệu đăng nhập từ khóa bảo mật của bạn.</translation>
 <translation id="218070003709087997">Sử dụng một số để cho biết số bản cần in (1 đến 999).</translation>
 <translation id="2184515124301515068">Cho phép Chrome chọn thời điểm trang web có thể phát âm thanh (khuyên dùng)</translation>
 <translation id="2187895286714876935">Lỗi nhập chứng chỉ máy chủ</translation>
@@ -1376,7 +1373,6 @@
 <translation id="3022978424994383087">Không hiểu được.</translation>
 <translation id="3023464535986383522">Chọn để nói</translation>
 <translation id="3024374909719388945">Sử dụng đồng hồ 24 giờ</translation>
-<translation id="30256218463955326">Đế sạc không tương thích</translation>
 <translation id="3031417829280473749">Đặc vụ X</translation>
 <translation id="3031557471081358569">Chọn các mục cần nhập:</translation>
 <translation id="3031601332414921114">Tiếp tục in</translation>
@@ -1566,7 +1562,6 @@
 <translation id="3348038390189153836">Phát hiện thiết bị di động</translation>
 <translation id="3349933790966648062">Mức sử dụng bộ nhớ</translation>
 <translation id="3350117557200012647">Chuyển sang chế độ ghép nối</translation>
-<translation id="3350263973613584174">Khóa bảo mật này chưa lưu trữ bất kỳ dữ liệu đăng nhập nào.</translation>
 <translation id="3355936511340229503">Lỗi kết nối</translation>
 <translation id="3356580349448036450">Hoàn tất</translation>
 <translation id="3359256513598016054">Giới hạn Chính sách của Chứng chỉ</translation>
@@ -1946,7 +1941,6 @@
 <translation id="3878840326289104869">Tạo người dùng được giám sát</translation>
 <translation id="3879748587602334249">Trình quản lý tải xuống</translation>
 <translation id="3888550877729210209">Ghi chú bằng <ph name="LOCK_SCREEN_APP_NAME" /></translation>
-<translation id="388900914234409233">Để sạc pin cho Chromebook này, hãy dùng một pin chính hãng tương thích.</translation>
 <translation id="3892414795099177503">Thêm OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Đọc và thay đổi cài đặt khả năng truy cập của bạn</translation>
 <translation id="3893630138897523026">ChromeVox (phản hồi bằng giọng nói)</translation>
@@ -2137,7 +2131,6 @@
 <translation id="4147911968024186208">Vui lòng thử lại. Nếu bạn vẫn thấy lỗi này, vui lòng liên hệ với người đại diện hỗ trợ của bạn.</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Hiển thị</translation>
-<translation id="4150234330364554482">Dùng một đế sạc chính hãng có thiết kế tương thích với Chromebook này.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Dấu vân tay</translation>
 <translation id="4157869833395312646">Mã hóa Cổng Máy chủ của Microsoft</translation>
@@ -2284,7 +2277,6 @@
 <translation id="4412698727486357573">Trung tâm trợ giúp</translation>
 <translation id="44141919652824029">Cho phép "<ph name="APP_NAME" />" nhận danh sách các thiết bị USB đính kèm?</translation>
 <translation id="4414232939543644979">Cửa sổ ẩn &amp;danh mới</translation>
-<translation id="4414386768539506503">Nhập mã PIN cho khóa bảo mật của bạn để xem dữ liệu đăng nhập trên khóa đó. Bạn sẽ cần đặt lại khóa bảo mật nếu không biết mã PIN này.</translation>
 <translation id="4415245286584082850">Không tìm thấy thiết bị nào. Hãy mở một bài viết trong trung tâm trợ giúp trên một tab mới.</translation>
 <translation id="4415276339145661267">Quản lý Tài khoản Google của bạn</translation>
 <translation id="4415748029120993980">Đường cong elip SECG secp384r1 (aka NIST P-384)</translation>
@@ -2386,7 +2378,6 @@
 <translation id="457386861538956877">Thêm...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Ghép nối thiết bị Bluetooth</translation>
-<translation id="4578012756826807359">Đã xóa thành công dữ liệu đăng nhập của bạn.</translation>
 <translation id="4579581181964204535">Không thể truyền <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Lỗi khi khôi phục Linux</translation>
 <translation id="4582563038311694664">Đặt lại tất cả cài đặt</translation>
@@ -2698,7 +2689,6 @@
 <translation id="5072836811783999860">Hiển thị dấu trang được quản lý</translation>
 <translation id="5074318175948309511">Có thể cần phải tải lại trang này trước khi cài đặt mới có hiệu lực.</translation>
 <translation id="5075131525758602494">Nhập mã PIN của SIM</translation>
-<translation id="507514548843781244">Xem và xóa dữ liệu đăng nhập lưu trữ trên khóa bảo mật của bạn</translation>
 <translation id="5078638979202084724">Đánh dấu trang tất cả các tab</translation>
 <translation id="5078796286268621944">Mã PIN không chính xác</translation>
 <translation id="5079950360618752063">Sử dụng mật khẩu đề xuất</translation>
@@ -2969,7 +2959,6 @@
 <translation id="5496587651328244253">Tổ chức</translation>
 <translation id="549673810209994709">Không thể dịch trang này.</translation>
 <translation id="5499313591153584299">Tệp này có thể có hại cho máy tính của bạn.</translation>
-<translation id="5500345327355928305">Để tránh gặp phải các vấn đề về hiệu suất và sạc pin, hãy dùng bộ chuyển đổi điện USB Type-C hoặc bộ chuyển đổi điện chính hãng tương thích.</translation>
 <translation id="5502500733115278303">Đã nhập từ Firefox</translation>
 <translation id="5507756662695126555">Không tuân thủ</translation>
 <translation id="5509693895992845810">Lưu &amp;Dưới dạng...</translation>
@@ -2996,7 +2985,6 @@
 <translation id="5534304873398226603">Hủy ảnh hoặc video</translation>
 <translation id="5535941515421698170">Đồng thời, xóa dữ liệu hiện có của bạn khỏi thiết bị này</translation>
 <translation id="5539221284352502426">Mật khẩu bạn nhập đã bị máy chủ từ chối. Các lý do có thể bao gồm: Mật khẩu quá ngắn. Mật khẩu phải chứa chữ số hoặc biểu tượng. Mật khẩu phải khác với mật khẩu cũ.</translation>
-<translation id="5541687815721799001">Sử dụng ứng dụng</translation>
 <translation id="5542132724887566711">Tiểu sử</translation>
 <translation id="5542750926112347543">Đã chặn cookie từ <ph name="DOMAIN" /></translation>
 <translation id="5543983818738093899">Đang kiểm tra trạng thái...</translation>
@@ -3395,7 +3383,6 @@
 <translation id="6122081475643980456">Kết nối Internet của bạn đang bị kiểm soát</translation>
 <translation id="6122095009389448667">Tiếp tục chặn trang web này xem khay nhớ tạm</translation>
 <translation id="6122875415561139701">Tác vụ ghi không được phép trên: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="6123292156101652890">Khóa bảo mật này không thể lưu trữ bất kỳ dữ liệu đăng nhập nào.</translation>
 <translation id="6124650939968185064">Các tiện ích sau phụ thuộc vào tiện ích này:</translation>
 <translation id="6124698108608891449">Trang web này cần các quyền khác.</translation>
 <translation id="6125479973208104919">Rất tiếc, bạn sẽ cần phải thêm lại tài khoản của mình vào <ph name="DEVICE_TYPE" /> này.</translation>
@@ -4065,7 +4052,6 @@
 <translation id="7143092389027215216">Đang khởi động chế độ minh họa</translation>
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7144878232160441200">Thử lại</translation>
-<translation id="714687768418476028">Bạn chưa bảo vệ khóa bảo mật bằng mã PIN. Trước tiên, hãy tạo một mã PIN để quản lý dữ liệu đăng nhập.</translation>
 <translation id="7149893636342594995">24 giờ qua</translation>
 <translation id="715118844758971915">Máy in cổ điển</translation>
 <translation id="7152478047064750137">Tiện ích này không yêu cầu quyền đặc biệt</translation>
@@ -4931,7 +4917,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8438566539970814960">Cải thiện tính năng tìm kiếm và duyệt web</translation>
 <translation id="8439506636278576865">Đề xuất dịch trang bằng ngôn ngữ này</translation>
 <translation id="8440630305826533614">Ứng dụng Linux</translation>
-<translation id="844241640324986723">Không xóa được dữ liệu đăng nhập của bạn.</translation>
 <translation id="8443338615972234259">Vui lòng tạo tài khoản mới cho người dùng được giám sát của bạn ngay bây giờ.</translation>
 <translation id="8446884382197647889">Tìm hiểu thêm</translation>
 <translation id="8447409163267621480">Bao gồm phím Ctrl hoặc phím Alt</translation>

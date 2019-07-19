@@ -243,10 +243,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteJavaScriptInIsolatedWorld(const base::string16& javascript,
                                         JavaScriptResultCallback callback,
                                         int world_id) override;
-  void ExecuteJavaScriptForTests(const base::string16& javascript,
-                                 JavaScriptResultCallback callback) override;
+  void ExecuteJavaScriptForTests(
+      const base::string16& javascript,
+      JavaScriptResultCallback callback,
+      int world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ExecuteJavaScriptWithUserGestureForTests(
-      const base::string16& javascript) override;
+      const base::string16& javascript,
+      int world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ActivateFindInPageResultForAccessibility(int request_id) override;
   void InsertVisualStateCallback(VisualStateCallback callback) override;
   void CopyImageAt(int x, int y) override;

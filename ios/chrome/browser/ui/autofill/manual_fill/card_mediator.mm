@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_card_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -125,7 +126,24 @@ NSString* const ManageCardsAccessibilityIdentifier =
              }];
   manageCreditCardsItem.accessibilityIdentifier =
       manual_fill::ManageCardsAccessibilityIdentifier;
-  [self.consumer presentActions:@[ manageCreditCardsItem ]];
+
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    NSString* addCreditCardsTitle =
+        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD);
+
+    auto addCreditCardsItem = [[ManualFillActionItem alloc]
+        initWithTitle:addCreditCardsTitle
+               action:^{
+                 base::RecordAction(base::UserMetricsAction(
+                     "ManualFallback_CreditCard_OpenAddCreditCard"));
+                 // TODO(crbug.com/984561): Add action to navigate to the add
+                 // credit card details screen here.
+               }];
+    [self.consumer
+        presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];
+  } else {
+    [self.consumer presentActions:@[ manageCreditCardsItem ]];
+  }
 }
 
 #pragma mark - FullCardRequestResultDelegateObserving

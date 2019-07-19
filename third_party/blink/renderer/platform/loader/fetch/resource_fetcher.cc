@@ -1116,7 +1116,14 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
           .Run(static_cast<int>(resource->GetResourceRequest().Priority()));
     }
   }
+
+  // TODO(crbug.com/985459): Remove document_resources_.
   document_resources_.insert(resource);
+
+  if (resource->GetType() == ResourceType::kImage) {
+    image_resources_.insert(resource);
+    not_loaded_image_resources_.insert(resource);
+  }
 
   // Returns with an existing resource if the resource does not need to start
   // loading immediately. If revalidation policy was determined as |Revalidate|,
@@ -1655,9 +1662,9 @@ bool ResourceFetcher::ShouldDeferImageLoad(const KURL& url) const {
 }
 
 void ResourceFetcher::ReloadImagesIfNotDeferred() {
-  for (Resource* resource : document_resources_) {
-    if (resource->GetType() == ResourceType::kImage &&
-        resource->StillNeedsLoad() && !ShouldDeferImageLoad(resource->Url()))
+  for (Resource* resource : not_loaded_image_resources_) {
+    DCHECK_EQ(resource->GetType(), ResourceType::kImage);
+    if (resource->StillNeedsLoad() && !ShouldDeferImageLoad(resource->Url()))
       StartLoad(resource);
   }
 }
@@ -2008,9 +2015,16 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   TRACE_EVENT0(
       "blink",
       "ResourceLoadPriorityOptimizer::updateAllImageResourcePriorities");
-  for (Resource* resource : document_resources_) {
-    if (!resource || resource->GetType() != ResourceType::kImage ||
-        !resource->IsLoading())
+
+  HeapVector<Member<Resource>> to_be_removed;
+  for (Resource* resource : not_loaded_image_resources_) {
+    DCHECK_EQ(resource->GetType(), ResourceType::kImage);
+    if (resource->IsLoaded()) {
+      to_be_removed.push_back(resource);
+      continue;
+    }
+
+    if (!resource->IsLoading())
       continue;
 
     ResourcePriority resource_priority = resource->PriorityFromObservers();
@@ -2037,13 +2051,20 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
         resource->InspectorId(), computed_load_priority,
         resource_priority.intra_priority_value);
   }
+
+  not_loaded_image_resources_.RemoveAll(to_be_removed);
 }
 
 void ResourceFetcher::ReloadLoFiImages() {
-  for (Resource* resource : document_resources_) {
-    if (resource)
-      resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
+  for (Resource* resource : image_resources_) {
+    resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
   }
+
+  // |Resource::ReloadIfLoFiOrPlaceholderImage| can make images pending again,
+  // so we set |not_loaded_image_resources_| to be all the images
+  // conservatively. This isn't expected to cause performance problems as
+  // |ReloadLoFiImages| is relatively rare.
+  not_loaded_image_resources_ = image_resources_;
 }
 
 String ResourceFetcher::GetCacheIdentifier() const {
@@ -2165,6 +2186,8 @@ void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(non_blocking_loaders_);
   visitor->Trace(cached_resources_map_);
   visitor->Trace(document_resources_);
+  visitor->Trace(image_resources_);
+  visitor->Trace(not_loaded_image_resources_);
   visitor->Trace(preloads_);
   visitor->Trace(matched_preloads_);
   visitor->Trace(resource_timing_info_map_);

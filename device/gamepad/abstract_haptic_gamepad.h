@@ -49,8 +49,11 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
       scoped_refptr<base::SequencedTaskRunner> callback_runner);
 
   // Stop vibration effects, run callbacks, and release held resources. Must be
-  // called before the device is destroyed.
+  // called exactly once before the device is destroyed.
   void Shutdown();
+
+  // Returns true if Shutdown() has been called.
+  bool IsShuttingDown() { return is_shutting_down_; }
 
   // Set the vibration magnitude for the strong and weak vibration actuators.
   virtual void SetVibration(double strong_magnitude, double weak_magnitude) = 0;
@@ -78,13 +81,14 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
                       double weak_magnitude);
   void FinishEffect(int sequence_id);
 
-  bool is_shut_down_;
-  int sequence_id_;
+  bool is_shutting_down_ = false;
+  bool is_shut_down_ = false;
+  int sequence_id_ = 0;
   mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback
       playing_effect_callback_;
   scoped_refptr<base::SequencedTaskRunner> callback_runner_;
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<AbstractHapticGamepad> weak_factory_;
+  base::WeakPtrFactory<AbstractHapticGamepad> weak_factory_{this};
 };
 
 }  // namespace device

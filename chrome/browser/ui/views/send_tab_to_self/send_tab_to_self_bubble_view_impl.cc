@@ -129,7 +129,7 @@ void SendTabToSelfBubbleViewImpl::CreateScrollView() {
 }
 
 void SendTabToSelfBubbleViewImpl::PopulateScrollView(
-    const std::map<std::string, TargetDeviceInfo> devices) {
+    const std::vector<TargetDeviceInfo> devices) {
   device_buttons_.clear();
   auto device_list_view = std::make_unique<views::View>();
   device_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -137,7 +137,7 @@ void SendTabToSelfBubbleViewImpl::PopulateScrollView(
   int tag = 0;
   for (const auto& device : devices) {
     auto device_button = std::make_unique<SendTabToSelfBubbleDeviceButton>(
-        this, device.first, device.second,
+        this, device,
         /** button_tag */ tag++);
     device_buttons_.push_back(std::move(device_button));
     device_list_view->AddChildView(device_buttons_.back().get());

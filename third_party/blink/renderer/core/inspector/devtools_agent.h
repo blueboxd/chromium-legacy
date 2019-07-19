@@ -74,7 +74,8 @@ class CORE_EXPORT DevToolsAgent
       mojom::blink::DevToolsSessionHostAssociatedPtrInfo,
       mojom::blink::DevToolsSessionAssociatedRequest main_session,
       mojom::blink::DevToolsSessionRequest io_session,
-      mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state,
+      bool client_expects_binary_responses) override;
   void InspectElement(const WebPoint& point) override;
   void ReportChildWorkers(bool report,
                           bool wait_for_debugger,

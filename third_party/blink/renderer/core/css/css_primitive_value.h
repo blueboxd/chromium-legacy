@@ -195,6 +195,11 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   static bool IsFlex(UnitType unit) { return unit == UnitType::kFraction; }
   bool IsFlex() const;
 
+  // Returns false when |this| is a length or a math function mixing percentage
+  // with length, and relative length units are involved. Returns true in all
+  // other cases.
+  bool IsComputationallyIndependent() const;
+
   // Creates either a |CSSNumericLiteralValue| or a |CSSMathFunctionValue|,
   // depending on whether |value| is calculated or not. We should never create a
   // |CSSPrimitiveValue| that's not of any of its subclasses.

@@ -580,7 +580,6 @@ source_set("builtin_service_manifests") {
     "//extensions/buildflags",
     "//printing/buildflags",
     "//services/preferences/public/cpp:local_state_manifest",
-    "//services/proxy_resolver/public/cpp:manifest",
     "//services/service_manager/public/cpp",
   ]
 

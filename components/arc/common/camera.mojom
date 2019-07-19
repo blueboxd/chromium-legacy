@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 3
+
 module arc.mojom;
+
+import "media/capture/video/chromeos/mojo/cros_camera_service.mojom";
 
 struct CameraDeviceInfo {
   string device_path@0;
@@ -88,11 +92,14 @@ interface CameraService {
   GetCameraDeviceInfos@7() => (array<CameraDeviceInfo> device_infos);
 };
 
-// Next method ID: 1
+// Next method ID: 2
 interface CameraHost {
   // Notifies Chrome that CameraService is requested and returns an interface
-  // pointer bound to a newly created service.
+  // pointer bound to a newly created service. Used by camera HAL v1.
   StartCameraService@0() => (CameraService service);
+
+  // Registers the camera HAL client. Used by camera HAL v3.
+  [MinVersion=2] RegisterCameraHalClient@1(cros.mojom.CameraHalClient client);
 };
 
 // Next method ID: 1

@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Paieškos šliaužiklis</translation>
 <translation id="1399648040768741453">Telugiška klaviatūra (fonetinė)</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
+<translation id="1439494416798956626">Perkelta į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="1441841714100794440">Vietnamietiška klaviatūra (telekso išdėstymas)</translation>
 <translation id="1455548678241328678">Norvegiška klaviatūra</translation>
 <translation id="1464724975715666883">1 klaida.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Nuskaitomas medijos įrenginys...</translation>
 <translation id="3468522857997926824">Sukurta atsarginių nuotraukų kopijų <ph name="BEGIN_LINK" />„Google“ diske<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Kopijuojama...</translation>
+<translation id="3473378059788601120">Nukopijuota į aplanką „<ph name="FOLDER_NAME" />“.</translation>
 <translation id="3475447146579922140">„Google“ skaičiuoklė</translation>
 <translation id="3495304270784461826">Klaidų: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Transliteracija (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Įvestis japonų k. (japonų k. klaviatūrai)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Suteikite „Linux“ programoms leidimą keisti failus „Google“ diske. Pakeitimai bus sinchronizuoti su kitais jūsų įrenginiais.</translation>
+<translation id="5955954492236143329">Elementų: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Rūšiuoti parinktis</translation>
 <translation id="6005282720244019462">Lotynų amerikiečių klaviatūra</translation>
 <translation id="6007237601604674381">Nepavyko perkelti. <ph name="ERROR_MESSAGE" /></translation>

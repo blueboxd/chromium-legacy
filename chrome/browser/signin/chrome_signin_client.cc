@@ -291,7 +291,8 @@ void ChromeSigninClient::VerifySyncToken() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // We only verifiy the token once when Profile is just created.
   if (signin_util::IsForceSigninEnabled() && !force_signin_verifier_)
-    force_signin_verifier_ = std::make_unique<ForceSigninVerifier>(profile_);
+    force_signin_verifier_ = std::make_unique<ForceSigninVerifier>(
+        IdentityManagerFactory::GetForProfile(profile_));
 #endif
 }
 

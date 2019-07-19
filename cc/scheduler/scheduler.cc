@@ -222,7 +222,6 @@ void Scheduler::DidCreateAndInitializeLayerTreeFrameSink() {
 void Scheduler::NotifyBeginMainFrameStarted(
     base::TimeTicks main_thread_start_time) {
   TRACE_EVENT0("cc", "Scheduler::NotifyBeginMainFrameStarted");
-  state_machine_.NotifyBeginMainFrameStarted();
   compositor_timing_history_->BeginMainFrameStarted(main_thread_start_time);
 }
 
@@ -1011,11 +1010,9 @@ bool Scheduler::CanBeginMainFrameAndActivateBeforeDeadline(
   return estimated_draw_time < args.deadline;
 }
 
-bool Scheduler::IsBeginMainFrameSentOrStarted() const {
-  return (state_machine_.begin_main_frame_state() ==
-              SchedulerStateMachine::BeginMainFrameState::SENT ||
-          state_machine_.begin_main_frame_state() ==
-              SchedulerStateMachine::BeginMainFrameState::STARTED);
+bool Scheduler::IsBeginMainFrameSent() const {
+  return state_machine_.begin_main_frame_state() ==
+         SchedulerStateMachine::BeginMainFrameState::SENT;
 }
 
 viz::BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {

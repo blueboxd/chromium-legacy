@@ -300,8 +300,8 @@ void Compositor::SetLayerTreeFrameSink(
   // to match the Compositor's.
   if (context_factory_private_) {
     context_factory_private_->SetDisplayVisible(this, host_->IsVisible());
-    context_factory_private_->SetDisplayColorSpace(this, blending_color_space_,
-                                                   output_color_space_);
+    context_factory_private_->SetDisplayColorSpace(this, output_color_space_,
+                                                   sdr_white_level_);
     context_factory_private_->SetDisplayColorMatrix(this,
                                                     display_color_matrix_);
   }
@@ -419,8 +419,6 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
     // Ensure output color space for HDR is linear if we need alpha blending.
     if (transparent)
       output_color_space = gfx::ColorSpace::CreateSCRGBLinear();
-    output_color_space = output_color_space.GetScaledColorSpace(
-        gfx::ColorSpace::kDefaultSDRWhiteLevel / sdr_white_level);
   }
 #endif  // OS_WIN
 
@@ -430,7 +428,6 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
   }
 
   output_color_space_ = output_color_space;
-  blending_color_space_ = output_color_space_.GetBlendingColorSpace();
   sdr_white_level_ = sdr_white_level;
   host_->SetRasterColorSpace(output_color_space_.GetRasterColorSpace());
   // Always force the ui::Compositor to re-draw all layers, because damage
@@ -443,20 +440,18 @@ void Compositor::SetDisplayColorSpace(const gfx::ColorSpace& color_space,
   // updated then.
   // TODO(fsamuel): Get rid of this.
   if (context_factory_private_) {
-    context_factory_private_->SetDisplayColorSpace(this, blending_color_space_,
-                                                   output_color_space_);
+    context_factory_private_->SetDisplayColorSpace(this, output_color_space_,
+                                                   sdr_white_level_);
   }
 }
 
 void Compositor::SetBackgroundColor(SkColor color) {
   host_->set_background_color(color);
+
   // Update color space based on whether background color is transparent.
-  if (output_color_space_.IsHDR()) {
-    gfx::ColorSpace unscaled_color_space =
-        output_color_space_.GetScaledColorSpace(
-            sdr_white_level_ / gfx::ColorSpace::kDefaultSDRWhiteLevel);
-    SetDisplayColorSpace(unscaled_color_space, sdr_white_level_);
-  }
+  if (output_color_space_.IsHDR())
+    SetDisplayColorSpace(output_color_space_, sdr_white_level_);
+
   ScheduleDraw();
 }
 

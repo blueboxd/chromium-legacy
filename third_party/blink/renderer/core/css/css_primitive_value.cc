@@ -162,6 +162,12 @@ bool CSSPrimitiveValue::IsTime() const {
   return To<CSSMathFunctionValue>(this)->IsTime();
 }
 
+bool CSSPrimitiveValue::IsComputationallyIndependent() const {
+  if (IsNumericLiteralValue())
+    return To<CSSNumericLiteralValue>(this)->IsComputationallyIndependent();
+  return To<CSSMathFunctionValue>(this)->IsComputationallyIndependent();
+}
+
 CSSPrimitiveValue::CSSPrimitiveValue(ClassType class_type)
     : CSSValue(class_type) {}
 

@@ -30,49 +30,9 @@
 namespace arc {
 namespace {
 
-constexpr std::pair<mojom::ChromePage, const char*> kMapping[] = {
-    {mojom::ChromePage::MULTIDEVICE, "multidevice"},
-    {mojom::ChromePage::MAIN, ""},
-    {mojom::ChromePage::POWER, "power"},
-    {mojom::ChromePage::BLUETOOTH, "bluetoothDevices"},
-    {mojom::ChromePage::DATETIME, "dateTime"},
-    {mojom::ChromePage::DISPLAY, "display"},
-    {mojom::ChromePage::WIFI, "networks/?type=WiFi"},
-    {mojom::ChromePage::PRIVACY, "privacy"},
-    {mojom::ChromePage::HELP, "help"},
-    {mojom::ChromePage::ACCOUNTS, "accounts"},
-    {mojom::ChromePage::APPEARANCE, "appearance"},
-    {mojom::ChromePage::AUTOFILL, "autofill"},
-    {mojom::ChromePage::BLUETOOTHDEVICES, "bluetoothDevices"},
-    {mojom::ChromePage::CHANGEPICTURE, "changePicture"},
-    {mojom::ChromePage::CLEARBROWSERDATA, "clearBrowserData"},
-    {mojom::ChromePage::CLOUDPRINTERS, "cloudPrinters"},
-    {mojom::ChromePage::CUPSPRINTERS, "cupsPrinters"},
-    {mojom::ChromePage::DOWNLOADS, "downloads"},
-    {mojom::ChromePage::KEYBOARDOVERLAY, "keyboard-overlay"},
-    {mojom::ChromePage::LANGUAGES, "languages"},
-    {mojom::ChromePage::LOCKSCREEN, "lockScreen"},
-    {mojom::ChromePage::MANAGEACCESSIBILITY, "manageAccessibility"},
-    {mojom::ChromePage::NETWORKSTYPEVPN, "networks?type=VPN"},
-    {mojom::ChromePage::ONSTARTUP, "onStartup"},
-    {mojom::ChromePage::PASSWORDS, "passwords"},
-    {mojom::ChromePage::POINTEROVERLAY, "pointer-overlay"},
-    {mojom::ChromePage::RESET, "reset"},
-    {mojom::ChromePage::SEARCH, "search"},
-    {mojom::ChromePage::STORAGE, "storage"},
-    {mojom::ChromePage::SYNCSETUP, "syncSetup"},
-    {mojom::ChromePage::ABOUTBLANK, url::kAboutBlankURL},
-    {mojom::ChromePage::ABOUTDOWNLOADS, "about:downloads"},
-    {mojom::ChromePage::ABOUTHISTORY, "about:history"}};
-
 constexpr const char* kArcSchemes[] = {url::kHttpScheme, url::kHttpsScheme,
                                        url::kContentScheme, url::kFileScheme,
                                        url::kMailToScheme};
-
-// mojom::ChromePage::LAST returns the ammout of valid entries - 1.
-static_assert(base::size(kMapping) ==
-                  static_cast<size_t>(mojom::ChromePage::LAST) + 1,
-              "kMapping is out of sync");
 
 // Not owned. Must outlive all ArcIntentHelperBridge instances. Typically this
 // is ChromeNewWindowClient in the browser.
@@ -98,9 +58,6 @@ class ArcIntentHelperBridgeFactory
   ArcIntentHelperBridgeFactory() = default;
   ~ArcIntentHelperBridgeFactory() override = default;
 };
-
-// Base URL for the Chrome settings pages.
-constexpr char kSettingsPageBaseUrl[] = "chrome://settings";
 
 // Keep in sync with ArcIntentHelperOpenType enum in
 // //tools/metrics/histograms/enums.xml.
@@ -158,7 +115,6 @@ ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : context_(context),
       arc_bridge_service_(bridge_service),
-      allowed_chrome_pages_map_(std::cbegin(kMapping), std::cend(kMapping)),
       allowed_arc_schemes_(std::cbegin(kArcSchemes), std::cend(kArcSchemes)) {
   arc_bridge_service_->intent_helper()->SetHost(this);
 }
@@ -217,20 +173,8 @@ void ArcIntentHelperBridge::OnOpenCustomTab(const std::string& url,
 void ArcIntentHelperBridge::OnOpenChromePage(mojom::ChromePage page) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RecordOpenType(ArcIntentHelperOpenType::CHROME_PAGE);
-  auto it = allowed_chrome_pages_map_.find(page);
-  if (it == allowed_chrome_pages_map_.end()) {
-    LOG(WARNING) << "The requested ChromePage is invalid: "
-                 << static_cast<int>(page);
-    return;
-  }
 
-  GURL page_gurl(it->second);
-  if (page_gurl.SchemeIs(url::kAboutScheme)) {
-    g_open_url_delegate->OpenUrlFromArc(page_gurl);
-  } else {
-    g_open_url_delegate->OpenUrlFromArc(
-        GURL(kSettingsPageBaseUrl).Resolve(it->second));
-  }
+  g_open_url_delegate->OpenChromePageFromArc(page);
 }
 
 void ArcIntentHelperBridge::FactoryResetArc() {

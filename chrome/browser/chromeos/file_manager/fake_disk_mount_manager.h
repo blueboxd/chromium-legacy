@@ -99,7 +99,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   void RemountAllRemovableDrives(
       chromeos::MountAccessMode access_mode) override;
   void FormatMountedDevice(const std::string& mount_path,
-                           const std::string& filesystem,
+                           chromeos::disks::FormatFileSystemType filesystem,
                            const std::string& label) override;
   void RenameMountedDevice(const std::string& mount_path,
                            const std::string& volume_name) override;

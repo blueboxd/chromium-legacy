@@ -22,7 +22,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_info.h"
@@ -273,8 +272,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_Basic) {
   // on completion, this should have been copied into |log0|.
   // We also have 1 log entry that was emitted by the
   // MultiThreadedProxyResolver.
-  TestNetLogEntry::List entries0;
-  log0.GetEntries(&entries0);
+  auto entries0 = log0.GetEntries();
 
   ASSERT_EQ(2u, entries0.size());
   EXPECT_EQ(NetLogEventType::SUBMITTED_TO_RESOLVER_THREAD, entries0[0].type);
@@ -366,8 +364,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   EXPECT_EQ(0, callback0.WaitForResult());
   EXPECT_EQ("PROXY request0:80", results0.ToPacString());
 
-  TestNetLogEntry::List entries0;
-  log0.GetEntries(&entries0);
+  auto entries0 = log0.GetEntries();
 
   ASSERT_EQ(2u, entries0.size());
   EXPECT_EQ(NetLogEventType::SUBMITTED_TO_RESOLVER_THREAD, entries0[0].type);
@@ -376,8 +373,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   EXPECT_EQ(1, callback1.WaitForResult());
   EXPECT_EQ("PROXY request1:80", results1.ToPacString());
 
-  TestNetLogEntry::List entries1;
-  log1.GetEntries(&entries1);
+  auto entries1 = log1.GetEntries();
 
   ASSERT_EQ(4u, entries1.size());
   EXPECT_TRUE(LogContainsBeginEvent(
@@ -389,8 +385,7 @@ TEST_F(MultiThreadedProxyResolverTest,
   EXPECT_EQ(2, callback2.WaitForResult());
   EXPECT_EQ("PROXY request2:80", results2.ToPacString());
 
-  TestNetLogEntry::List entries2;
-  log2.GetEntries(&entries2);
+  auto entries2 = log2.GetEntries();
 
   ASSERT_EQ(4u, entries2.size());
   EXPECT_TRUE(LogContainsBeginEvent(

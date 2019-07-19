@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Повзунок пошуку</translation>
 <translation id="1399648040768741453">Клавіатура телугу (фонетична)</translation>
 <translation id="1430915738399379752">Друк</translation>
+<translation id="1439494416798956626">Переміщено в папку "<ph name="FOLDER_NAME" />".</translation>
 <translation id="1441841714100794440">В’єтнамська клавіатура (телекс)</translation>
 <translation id="1455548678241328678">Норвезька розкладка</translation>
 <translation id="1464724975715666883">1 помилка.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Сканування носія…</translation>
 <translation id="3468522857997926824">На <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /> імпортовано <ph name="FILE_COUNT" /> фото</translation>
 <translation id="3470502288861289375">Копіювання…</translation>
+<translation id="3473378059788601120">Скопійовано в папку "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3475447146579922140">Таблиці Google</translation>
 <translation id="3495304270784461826">Помилок: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Транслітерація (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Спосіб введення для японської мови (японська клавіатура)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Надайте додаткам Linux дозвіл змінювати файли на Google Диску. Зміни буде синхронізовано на інших ваших пристроях.</translation>
+<translation id="5955954492236143329">Елементів: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Параметри сортування</translation>
 <translation id="6005282720244019462">Латиноамериканська розкладка</translation>
 <translation id="6007237601604674381">Помилка переміщення. <ph name="ERROR_MESSAGE" /></translation>

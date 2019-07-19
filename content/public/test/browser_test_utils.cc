@@ -182,22 +182,20 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          int world_id,
                          std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
-  DOMMessageQueue dom_message_queue(
-      WebContents::FromRenderFrameHost(render_frame_host));
+  DOMMessageQueue dom_message_queue(render_frame_host);
+
   base::string16 script16 = base::UTF8ToUTF16(script);
-  if (world_id == ISOLATED_WORLD_ID_GLOBAL) {
-    if (user_gesture)
-      render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16);
-    else
-      render_frame_host->ExecuteJavaScriptForTests(script16,
-                                                   base::NullCallback());
+  if (world_id == ISOLATED_WORLD_ID_GLOBAL && user_gesture) {
+    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16,
+                                                                world_id);
   } else {
-    // Note that |user_gesture| here is ignored. We allow a value of |true|
-    // because it's the default, but in blink, the execution will occur with
-    // no user gesture.
-    render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-        script16, base::NullCallback(), world_id);
+    // Note that |user_gesture| here is ignored when the world is not main. We
+    // allow a value of |true| because it's the default, but in blink, the
+    // execution will occur with no user gesture.
+    render_frame_host->ExecuteJavaScriptForTests(script16, base::NullCallback(),
+                                                 world_id);
   }
+
   std::string json;
   if (!dom_message_queue.WaitForMessage(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMMessageQueue.";
@@ -2256,6 +2254,11 @@ DOMMessageQueue::DOMMessageQueue(WebContents* web_contents)
                  Source<WebContents>(web_contents));
 }
 
+DOMMessageQueue::DOMMessageQueue(RenderFrameHost* render_frame_host)
+    : DOMMessageQueue(WebContents::FromRenderFrameHost(render_frame_host)) {
+  render_frame_host_ = render_frame_host;
+}
+
 DOMMessageQueue::~DOMMessageQueue() {}
 
 void DOMMessageQueue::Observe(int type,
@@ -2279,6 +2282,15 @@ void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
         std::move(quit_closure_).Run();
       break;
   }
+}
+
+void DOMMessageQueue::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  if (!render_frame_host_)
+    return;
+  if (render_frame_host_ != render_frame_host)
+    return;
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
 }
 
 void DOMMessageQueue::ClearQueue() {

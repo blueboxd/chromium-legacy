@@ -18,6 +18,11 @@ using testing::_;
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+
 namespace {
 
 const uint8_t kExampleBosDescriptor[] = {

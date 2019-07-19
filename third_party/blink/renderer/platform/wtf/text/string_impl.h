@@ -357,8 +357,6 @@ class WTF_EXPORT StringImpl {
   scoped_refptr<StringImpl> LowerASCII();
   scoped_refptr<StringImpl> UpperUnicode();
   scoped_refptr<StringImpl> UpperASCII();
-  scoped_refptr<StringImpl> LowerUnicode(const AtomicString& locale_identifier);
-  scoped_refptr<StringImpl> UpperUnicode(const AtomicString& locale_identifier);
 
   scoped_refptr<StringImpl> Fill(UChar);
   // FIXME: Do we need fill(char) or can we just do the right thing if UChar is
@@ -857,10 +855,6 @@ inline void StringImpl::PrependTo(BufferType& result,
   else
     result.Prepend(Characters16() + start, number_of_characters_to_copy);
 }
-
-// TODO(rob.buis) possibly find a better place for this method.
-// Turns a UChar32 to uppercase based on localeIdentifier.
-WTF_EXPORT UChar32 ToUpper(UChar32, const AtomicString& locale_identifier);
 
 struct StringHash;
 

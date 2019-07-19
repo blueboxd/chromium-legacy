@@ -1666,8 +1666,7 @@ TEST_P(QuicProxyClientSocketTest, NetLog) {
   NetLogSource sock_source = sock_->NetLog().source();
   sock_.reset();
 
-  TestNetLogEntry::List entry_list;
-  net_log_.GetEntriesForSource(sock_source, &entry_list);
+  auto entry_list = net_log_.GetEntriesForSource(sock_source);
 
   ASSERT_EQ(entry_list.size(), 10u);
   EXPECT_TRUE(

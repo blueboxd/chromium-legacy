@@ -73,21 +73,8 @@ static bool ComputationallyIndependent(const CSSValue& value) {
     return true;
   }
 
-  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
-    if (!primitive_value->IsLength() &&
-        !primitive_value->IsCalculatedPercentageWithLength())
-      return true;
-
-    CSSPrimitiveValue::CSSLengthArray length_array;
-    primitive_value->AccumulateLengthArray(length_array);
-    for (size_t i = 0; i < length_array.values.size(); i++) {
-      if (length_array.type_flags[i] &&
-          i != CSSPrimitiveValue::kUnitTypePixels &&
-          i != CSSPrimitiveValue::kUnitTypePercentage)
-        return false;
-    }
-    return true;
-  }
+  if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
+    return primitive_value->IsComputationallyIndependent();
 
   // TODO(timloh): Images values can also contain lengths.
 

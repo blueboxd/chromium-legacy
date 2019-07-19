@@ -18,7 +18,6 @@
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "services/device/usb/mojo/device_impl.h"
-#include "services/device/usb/mojo/type_converters.h"
 #include "services/device/usb/usb_device.h"
 #include "services/device/usb/usb_service.h"
 

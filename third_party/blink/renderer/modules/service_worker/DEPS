@@ -15,6 +15,7 @@ specific_include_rules = {
     "service_worker_global_scope\.cc": [
         "+third_party/blink/renderer/modules/background_fetch",
         "+third_party/blink/renderer/modules/background_sync",
+        "+third_party/blink/renderer/modules/content_index",
         "+third_party/blink/renderer/modules/cookie_store",
         "+third_party/blink/renderer/modules/notifications",
         "+third_party/blink/renderer/modules/payments",

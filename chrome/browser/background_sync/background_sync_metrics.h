@@ -12,6 +12,11 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
+namespace {
+// Exponential bucket spacing for UKM event data.
+constexpr double kUkmEventDataBucketSpacing = 2.0;
+}  // namespace
+
 namespace ukm {
 class UkmBackgroundRecorderService;
 }  // namespace ukm
@@ -29,14 +34,25 @@ class BackgroundSyncMetrics {
       ukm::UkmBackgroundRecorderService* ukm_background_service);
   ~BackgroundSyncMetrics();
 
-  void MaybeRecordRegistrationEvent(const url::Origin& origin,
-                                    bool can_fire,
-                                    bool is_reregistered);
+  void MaybeRecordOneShotSyncRegistrationEvent(const url::Origin& origin,
+                                               bool can_fire,
+                                               bool is_reregistered);
 
-  void MaybeRecordCompletionEvent(const url::Origin& origin,
-                                  blink::ServiceWorkerStatusCode status_code,
-                                  int num_attempts,
-                                  int max_attempts);
+  void MaybeRecordPeriodicSyncRegistrationEvent(const url::Origin& origin,
+                                                int min_interval,
+                                                bool is_reregistered);
+
+  void MaybeRecordOneShotSyncCompletionEvent(
+      const url::Origin& origin,
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts);
+
+  void MaybeRecordPeriodicSyncEventCompletion(
+      const url::Origin& origin,
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts);
 
  private:
   friend class BackgroundSyncMetricsBrowserTest;
@@ -44,14 +60,23 @@ class BackgroundSyncMetrics {
   void DidGetBackgroundSourceId(RecordCallback record_callback,
                                 base::Optional<ukm::SourceId> source_id);
 
-  void RecordRegistrationEvent(bool can_fire,
-                               bool is_reregistered,
-                               ukm::SourceId source_id);
+  void RecordOneShotSyncRegistrationEvent(bool can_fire,
+                                          bool is_reregistered,
+                                          ukm::SourceId source_id);
+  void RecordPeriodicSyncRegistrationEvent(int min_interval,
+                                           bool is_reregistered,
+                                           ukm::SourceId source_id);
 
-  void RecordCompletionEvent(blink::ServiceWorkerStatusCode status_code,
-                             int num_attempts,
-                             int max_attempts,
-                             ukm::SourceId source_id);
+  void RecordOneShotSyncCompletionEvent(
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts,
+      ukm::SourceId source_id);
+  void RecordPeriodicSyncEventCompletion(
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts,
+      ukm::SourceId source_id);
 
   ukm::UkmBackgroundRecorderService* ukm_background_service_;
 

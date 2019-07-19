@@ -5,10 +5,6 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "components/user_manager/known_user.h"
-#endif
-
 namespace {
 
 // Updates |field| with |new_value| if non-empty and different; if |new_value|
@@ -122,17 +118,4 @@ std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account) {
      << ", email: " << account.email << ", adv_prot: " << std::boolalpha
      << account.is_under_advanced_protection;
   return os;
-}
-
-AccountId AccountIdFromAccountInfo(const CoreAccountInfo& account_info) {
-#if defined(OS_CHROMEOS)
-  return user_manager::known_user::GetAccountId(
-      account_info.email, account_info.gaia, AccountType::GOOGLE);
-#else
-  if (account_info.email.empty() || account_info.gaia.empty())
-    return EmptyAccountId();
-
-  return AccountId::FromUserEmailGaiaId(
-      gaia::CanonicalizeEmail(account_info.email), account_info.gaia);
-#endif
 }

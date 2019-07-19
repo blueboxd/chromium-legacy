@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Schieberegler für die Suche</translation>
 <translation id="1399648040768741453">Telugu-Tastatur (phonetisch)</translation>
 <translation id="1430915738399379752">Drucken</translation>
+<translation id="1439494416798956626">Verschoben nach <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamesische Tastatur (Telex)</translation>
 <translation id="1455548678241328678">Norwegische Tastatur</translation>
 <translation id="1464724975715666883">1 Fehler</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Mediengerät wird durchsucht...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> Fotos auf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> gesichert</translation>
 <translation id="3470502288861289375">Wird kopiert...</translation>
+<translation id="3473378059788601120">Kopiert nach <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Google-Tabellendokument</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> Fehler</translation>
 <translation id="3519867315646775981">Transliteration (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Japanische Eingabe (für japanische Tastatur)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Sie geben Linux-Apps die Berechtigung, Dateien in Google Drive zu ändern. Änderungen werden mit Ihren anderen Geräten synchronisiert.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> Elemente</translation>
 <translation id="5982621672636444458">Sortieroptionen</translation>
 <translation id="6005282720244019462">Lateinamerikanische Tastatur</translation>
 <translation id="6007237601604674381">Fehler beim Verschieben. <ph name="ERROR_MESSAGE" /></translation>

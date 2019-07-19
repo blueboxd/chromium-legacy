@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BUBBLE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BUBBLE_CONTROLLER_H_
 
-#include <map>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -40,7 +40,7 @@ class SendTabToSelfBubbleController
   // Returns the title of send tab to self bubble.
   base::string16 GetWindowTitle() const;
   // Returns the valid devices info map.
-  std::map<std::string, TargetDeviceInfo> GetValidDevices() const;
+  std::vector<TargetDeviceInfo> GetValidDevices() const;
   // Returns current profile.
   Profile* GetProfile() const;
 
@@ -68,7 +68,7 @@ class SendTabToSelfBubbleController
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SendTabToSelfBubbleView* send_tab_to_self_bubble_view_ = nullptr;
   // Valid devices data.
-  std::map<std::string, TargetDeviceInfo> valid_devices_;
+  std::vector<TargetDeviceInfo> valid_devices_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

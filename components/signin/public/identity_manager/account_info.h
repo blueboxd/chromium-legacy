@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "components/account_id/account_id.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "ui/gfx/image/image.h"
 
@@ -74,8 +73,5 @@ struct AccountInfo : public CoreAccountInfo {
 bool operator==(const CoreAccountInfo& l, const CoreAccountInfo& r);
 bool operator!=(const CoreAccountInfo& l, const CoreAccountInfo& r);
 std::ostream& operator<<(std::ostream& os, const CoreAccountInfo& account);
-
-// Returns AccountID populated from |account_info|.
-AccountId AccountIdFromAccountInfo(const CoreAccountInfo& account_info);
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNT_INFO_H_

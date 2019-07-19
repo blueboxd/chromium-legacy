@@ -18,7 +18,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//components/services/patch/public/interfaces",
+    "//components/services/patch/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

@@ -57,7 +57,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -659,7 +658,7 @@ class FakeWebSocketHandshakeStreamCreateHelper
 // Returns true if |entry| is not one of the log types paid attention to in this
 // test. Note that HTTP_CACHE_WRITE_INFO and HTTP_CACHE_*_DATA are
 // ignored.
-bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
+bool ShouldIgnoreLogEntry(const NetLogEntry& entry) {
   switch (entry.type) {
     case NetLogEventType::HTTP_CACHE_GET_BACKEND:
     case NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY:
@@ -674,21 +673,18 @@ bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
   }
 }
 
-// Modifies |entries| to only include log entries created by the cache layer and
-// asserted on in these tests.
-void FilterLogEntries(TestNetLogEntry::List* entries) {
-  base::EraseIf(*entries, ShouldIgnoreLogEntry);
+// Gets the entries from |net_log| created by the cache layer and asserted on in
+// these tests.
+std::vector<NetLogEntry> GetFilteredNetLogEntries(
+    const BoundTestNetLog& net_log) {
+  auto entries = net_log.GetEntries();
+  base::EraseIf(entries, ShouldIgnoreLogEntry);
+  return entries;
 }
 
 bool LogContainsEventType(const BoundTestNetLog& log,
                           NetLogEventType expected) {
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  for (size_t i = 0; i < entries.size(); i++) {
-    if (entries[i].type == expected)
-      return true;
-  }
-  return false;
+  return !log.GetEntriesWithType(expected).empty();
 }
 
 }  // namespace
@@ -803,9 +799,7 @@ TEST_F(HttpCacheTest, SimpleGETNoDiskCache) {
 
   // Check that the NetLog was filled as expected.
   // (We attempted to OpenOrCreate entries, but fail).
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  auto entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -972,9 +966,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
                                  log.bound(), &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  auto entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -1002,8 +994,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
                                  &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -1277,9 +1268,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadBypassCache) {
                                  &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  auto entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,

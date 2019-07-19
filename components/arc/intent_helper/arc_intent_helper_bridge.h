@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 #define COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -123,10 +122,6 @@ class ArcIntentHelperBridge
   std::vector<IntentFilter> intent_filters_;
 
   base::ObserverList<ArcIntentHelperObserver>::Unchecked observer_list_;
-
-  // about: and chrome://settings pages assistant requires to launch via
-  // OnOpenChromePage.
-  const std::map<mojom::ChromePage, std::string> allowed_chrome_pages_map_;
 
   // Schemes that ARC is known to send via OnOpenUrl.
   const std::set<std::string> allowed_arc_schemes_;

@@ -398,7 +398,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     // kInternalContentCapture uses BestEffortTaskQueue and is handled
-    // sparately.
+    // separately.
     case TaskType::kInternalContentCapture:
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits();
@@ -445,7 +445,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
-    case TaskType::kDatabaseAccess:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
@@ -453,6 +452,11 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kInternalIntersectionObserver:
     case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits();
+    case TaskType::kDatabaseAccess:
+      if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType))
+        return PausableTaskQueueTraits().SetIsHighPriority(true);
+      else
+        return PausableTaskQueueTraits();
     case TaskType::kInternalFreezableIPC:
       return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:

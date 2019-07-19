@@ -377,6 +377,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
     // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
     return;
   }
+  if (base::ios::IsRunningOnIOS13OrLater() && [ChromeEarlGrey isIPadIdiom]) {
+    // TODO(crbug.com/984977): Support this behavior in iPads again.
+    return;
+  }
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]

@@ -27,6 +27,10 @@ class SigninClient;
 class TokenWebData;
 #endif
 
+#if defined(OS_IOS)
+class DeviceAccountsProvider;
+#endif
+
 namespace image_fetcher {
 class ImageDecoder;
 }
@@ -70,6 +74,10 @@ struct IdentityManagerBuildParams {
 #if defined(OS_CHROMEOS)
   chromeos::AccountManager* account_manager;
   bool is_regular_profile;
+#endif
+
+#if defined(OS_IOS)
+  std::unique_ptr<DeviceAccountsProvider> device_accounts_provider;
 #endif
 
 #if defined(OS_WIN)

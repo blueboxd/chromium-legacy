@@ -136,10 +136,9 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
                                      const SkMatrix44& matrix) = 0;
 
   // Set the output color profile into which this compositor should render.
-  virtual void SetDisplayColorSpace(
-      ui::Compositor* compositor,
-      const gfx::ColorSpace& blending_color_space,
-      const gfx::ColorSpace& output_color_space) = 0;
+  virtual void SetDisplayColorSpace(ui::Compositor* compositor,
+                                    const gfx::ColorSpace& output_color_space,
+                                    float sdr_white_level) = 0;
 
   // Mac path for transporting vsync parameters to the display.  Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
@@ -493,7 +492,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   SkMatrix44 display_color_matrix_;
 
   gfx::ColorSpace output_color_space_;
-  gfx::ColorSpace blending_color_space_;
 
   float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
 

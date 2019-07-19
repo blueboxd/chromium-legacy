@@ -6,6 +6,7 @@
 #define CC_TREES_EFFECT_NODE_H_
 
 #include "cc/cc_export.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -73,6 +74,11 @@ struct CC_EXPORT EffectNode {
   base::Optional<gfx::RRectF> backdrop_filter_bounds;
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
+
+  // The element id corresponding to the mask to apply to the filtered backdrop
+  // image. Note that this is separate from mask_layer_id, which is a layer id,
+  // and is used for masking the "normal" (non-backdrop-filter) content.
+  ElementId backdrop_mask_element_id;
 
   // Bounds of rounded corner rrect in the space of the transform node
   // associated with this effect node.

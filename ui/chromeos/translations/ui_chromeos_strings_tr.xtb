@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Arama kaydırma çubuğu</translation>
 <translation id="1399648040768741453">Telugu dili klavye (Fonetik)</translation>
 <translation id="1430915738399379752">Yazdır</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" /> klasörüne taşındı.</translation>
 <translation id="1441841714100794440">Vietnamca klavye (Teleks)</translation>
 <translation id="1455548678241328678">Norveççe klavye</translation>
 <translation id="1464724975715666883">1 hata.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Medya cihazınız taranıyor...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotoğraf <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />'a yedeklendi</translation>
 <translation id="3470502288861289375">Kopyalanıyor...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" /> klasörüne kopyalandı.</translation>
 <translation id="3475447146579922140">Google e-tablosu</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hata.</translation>
 <translation id="3519867315646775981">Harf çevirisi (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Japonca giriş (Japonca klavye için)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux uygulamalarına Google Drive'ınızdaki dosyaları değiştirme izni verin. Değişiklikler, diğer cihazlarınızla senkronize edilecektir.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> öğe</translation>
 <translation id="5982621672636444458">Sıralama seçenekleri</translation>
 <translation id="6005282720244019462">Latin Amerika klavyesi</translation>
 <translation id="6007237601604674381">Taşıma başarısız oldu. <ph name="ERROR_MESSAGE" /></translation>

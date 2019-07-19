@@ -18,6 +18,7 @@ class ImageDownloaderImpl final
     : public GarbageCollectedFinalized<ImageDownloaderImpl>,
       public ImageDownloaderBase,
       public mojom::blink::ImageDownloader {
+  USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
 
  public:
@@ -50,6 +51,8 @@ class ImageDownloaderImpl final
                         int32_t http_status_code,
                         const WTF::Vector<SkBitmap>& images);
 
+  // USING_PRE_FINALIZER interface.
+  // Called before the object gets garbage collected.
   void Dispose();
 
   mojo::Binding<mojom::blink::ImageDownloader> binding_;

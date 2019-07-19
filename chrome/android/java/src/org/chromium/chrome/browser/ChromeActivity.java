@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
-import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -2189,11 +2188,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 RecordUserAction.record("MobileMenuPrint");
             }
         } else if (id == R.id.add_to_homescreen_id) {
-            // Record whether or not we have finished installability checks for this page when the
-            // user clicks the add to homescren menu item. This will let us determine how effective
-            // an on page-load check will be in speeding up WebAPK installation.
-            AppBannerManager.forTab(currentTab).recordMenuItemAddToHomescreen();
-
             AddToHomescreenManager addToHomescreenManager =
                     new AddToHomescreenManager(this, currentTab);
             addToHomescreenManager.start();

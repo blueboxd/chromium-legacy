@@ -646,12 +646,12 @@ void PropertyTreeManager::CloseCcEffect() {
   DCHECK(effect_stack_.size());
   const auto& previous_state = effect_stack_.back();
 
-  // An effect with exotic blending that is masked by a synthesized clip must
-  // have its blending to the outermost synthesized clip. It is because
-  // blending needs access to the backdrop of the enclosing effect. With
+  // An effect with exotic blending or backdrop-filter that is masked by a
+  // synthesized clip must have its blending to the outermost synthesized clip.
+  // These operations need access to the backdrop of the enclosing effect. With
   // the isolation for a synthesized clip, a blank backdrop will be seen.
-  // Therefore the blending is delegated to the outermost synthesized clip,
-  // thus the clip can't be shared with sibling layers, and must be closed now.
+  // Therefore the blending is delegated to the outermost synthesized clip, thus
+  // the clip can't be shared with sibling layers, and must be closed now.
   bool clear_synthetic_effects =
       !IsCurrentCcEffectSynthetic() &&
       current_.effect->BlendMode() != SkBlendMode::kSrcOver;
@@ -1089,6 +1089,7 @@ void PropertyTreeManager::PopulateCcEffectNode(
     effect_node.backdrop_filters =
         effect.BackdropFilter().AsCcFilterOperations();
     effect_node.backdrop_filter_bounds = effect.BackdropFilterBounds();
+    effect_node.backdrop_mask_element_id = effect.BackdropMaskElementId();
     effect_node.filters_origin = effect.FiltersOrigin();
     effect_node.transform_id =
         EnsureCompositorTransformNode(effect.LocalTransformSpace());

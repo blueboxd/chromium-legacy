@@ -105,6 +105,7 @@ void ChromeOsAppsNavigationThrottle::RecordUma(
     const std::string& selected_app_package,
     apps::mojom::AppType app_type,
     apps::IntentPickerCloseReason close_reason,
+    apps::Source source,
     bool should_persist) {
   if (app_type == apps::mojom::AppType::kArc &&
       (close_reason == apps::IntentPickerCloseReason::PREFERRED_APP_FOUND ||
@@ -113,7 +114,7 @@ void ChromeOsAppsNavigationThrottle::RecordUma(
                               arc::UserInteractionType::APP_STARTED_FROM_LINK);
   }
   apps::AppsNavigationThrottle::RecordUma(selected_app_package, app_type,
-                                          close_reason, should_persist);
+                                          close_reason, source, should_persist);
 }
 
 ChromeOsAppsNavigationThrottle::ChromeOsAppsNavigationThrottle(

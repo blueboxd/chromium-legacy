@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">מחוון חיפוש</translation>
 <translation id="1399648040768741453">מקלדת טלוגו (פונטית)</translation>
 <translation id="1430915738399379752">הדפסה</translation>
+<translation id="1439494416798956626">הועבר אל <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">‏מקלדת וייטנאמית (Telex)</translation>
 <translation id="1455548678241328678">מקלדת נורווגית</translation>
 <translation id="1464724975715666883">שגיאה אחת.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">סורק את מכשיר המדיה...</translation>
 <translation id="3468522857997926824">‏<ph name="FILE_COUNT" /> תמונות גובו ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">מעתיק...</translation>
+<translation id="3473378059788601120">הועתק אל <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">‏גיליון אלקטרוני של Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> שגיאות.</translation>
 <translation id="3519867315646775981">‏תעתוק (שלום ← shalom)</translation>
@@ -438,6 +440,7 @@
 <translation id="5923484009666796948">קלט יפני (למקלדת יפנית)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">‏הענקת הרשאה לאפליקציות Linux לשנות קבצים ב-Google Drive. השינויים יסתנכרנו עם המכשירים האחרים שלך.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> פריטים</translation>
 <translation id="5982621672636444458">אפשרויות מיון</translation>
 <translation id="6005282720244019462">מקלדת של אמריקה הלטינית</translation>
 <translation id="6007237601604674381">ההעברה נכשלה. <ph name="ERROR_MESSAGE" /></translation>

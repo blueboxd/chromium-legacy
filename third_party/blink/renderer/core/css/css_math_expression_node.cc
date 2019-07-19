@@ -255,6 +255,10 @@ CSSPrimitiveValue::UnitType CSSMathExpressionNumericLiteral::ResolvedUnitType()
   return value_->GetType();
 }
 
+bool CSSMathExpressionNumericLiteral::IsComputationallyIndependent() const {
+  return value_->IsComputationallyIndependent();
+}
+
 void CSSMathExpressionNumericLiteral::Trace(blink::Visitor* visitor) {
   visitor->Trace(value_);
   CSSMathExpressionNode::Trace(visitor);
@@ -576,6 +580,13 @@ void CSSMathExpressionBinaryOperation::AccumulateLengthArray(
     default:
       NOTREACHED();
   }
+}
+
+bool CSSMathExpressionBinaryOperation::IsComputationallyIndependent() const {
+  if (Category() != kCalcLength && Category() != kCalcPercentLength)
+    return true;
+  return left_side_->IsComputationallyIndependent() &&
+         right_side_->IsComputationallyIndependent();
 }
 
 // static

@@ -322,6 +322,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Přístup k souboru byl odepřen.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{Žádné}=1{1 heslo (pro <ph name="DOMAIN_LIST" />)}=2{2 hesla (pro <ph name="DOMAIN_LIST" />)}few{# hesla (pro <ph name="DOMAIN_LIST" />)}many{# hesla (pro <ph name="DOMAIN_LIST" />)}other{# hesel (pro <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Zavřete ostatní karty nebo aplikace</translation>
 <translation id="267371737713284912">akci vrátíte zpět stisknutím kombinace kláves <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="2674170444375937751">Jste si jisti, že chcete tyto stránky odstranit ze své historie?</translation>
@@ -648,6 +649,7 @@
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Využití proxy serveru je zakázáno, je však určena explicitní konfigurace proxy serveru.</translation>
 <translation id="445100540951337728">Přijímané debetní karty</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> podezřelé chování</translation>
 <translation id="4466881336512663640">Změny ve formuláři budou ztraceny. Opravdu chcete pokračovat?</translation>
 <translation id="4477350412780666475">Další skladba</translation>
 <translation id="4482953324121162758">Tento web se nebude překládat.</translation>
@@ -700,6 +702,7 @@
 <translation id="4771973620359291008">Došlo k neznámé chybě.</translation>
 <translation id="4780900888022378816">Vaše zařízení spravuje doména <ph name="ENROLLMENT_DOMAIN" /> a váš účet spravuje doména <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Přejít na tuto kartu</translation>
+<translation id="4791134497475588553">Nainstalované aplikace pro Linux a čas jejich posledního použití</translation>
 <translation id="4798078619018708837">Chcete-li aktualizovat údaje o kartě, zadejte datum vypršení platnosti a kód CVC karty <ph name="CREDIT_CARD" />. Po potvrzení budou údaje o kartě z vašeho účtu Google poskytnuty tomuto webu.</translation>
 <translation id="4800132727771399293">Zkontrolujte datum vypršení platnosti a kód CVC a zkuste to znovu.</translation>
 <translation id="480334179571489655">Chyba zásad ohledně původu</translation>
@@ -710,6 +713,7 @@
 <translation id="4850886885716139402">Zobrazit</translation>
 <translation id="4854362297993841467">Tento způsob doručení není k dispozici. Zkuste použít jiný způsob.</translation>
 <translation id="4858792381671956233">Požádal(a) jsi rodiče o povolení návštěvy tohoto webu.</translation>
+<translation id="4864052566555297930">Bezpečnostní tip:</translation>
 <translation id="4876188919622883022">Zjednodušené zobrazení</translation>
 <translation id="4876305945144899064">Žádné uživatelské jméno</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Žádné}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -810,6 +814,7 @@
 <translation id="536296301121032821">Ukládání nastavení zásady se nezdařilo</translation>
 <translation id="5371425731340848620">Aktualizace karty</translation>
 <translation id="5377026284221673050">Vaše hodiny se zpožďují, Vaše hodiny jdou napřed nebo &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
+<translation id="5377179979757081683">Tato stránka by se vás mohla pokusit oklamat, ukrást vám osobní údaje nebo vám poškodit zařízení. Při zadávání osobních údajů a otevírání stažených souborů buďte opatrní.</translation>
 <translation id="5384855140246857529">Chcete-li své karty používat na všech zařízeních, přihlaste se a zapněte synchronizaci.</translation>
 <translation id="5386426401304769735">Řetězec certifikátů tohoto webu obsahuje certifikát podepsaný algoritmem SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -973,6 +978,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6328786501058569169">Tento web je klamavý</translation>
 <translation id="6337133576188860026">Uvolní méně než <ph name="SIZE" />. Je možné, že se některé weby při příští návštěvě budou načítat pomaleji.</translation>
 <translation id="6337534724793800597">Filtrovat zásady podle názvu</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{Žádné}=1{1 heslo (pro <ph name="DOMAIN_LIST" />, synchronizováno)}=2{2 hesla (pro <ph name="DOMAIN_LIST" />, synchronizováno)}few{# hesla (pro <ph name="DOMAIN_LIST" />, synchronizováno)}many{# hesla (pro <ph name="DOMAIN_LIST" />, synchronizováno)}other{# hesel (pro <ph name="DOMAIN_LIST" />, synchronizováno)}}</translation>
 <translation id="6358450015545214790">Nápověda</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1147,6 +1153,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Je přidružený:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">Opustit tento web</translation>
 <translation id="7353601530677266744">Příkazový řádek</translation>
 <translation id="7372973238305370288">výsledek vyhledávání</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

@@ -6,43 +6,27 @@
 
 #include <time.h>
 
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/timezone_settings.h"
+#include "third_party/icu/source/i18n/unicode/gregocal.h"
+#include "third_party/icu/source/i18n/unicode/ucal.h"
 
 namespace policy {
 
-namespace update_checker_internal {
-
-base::Optional<base::Time> IncrementMonthAndSetDayOfMonth(
-    base::Time::Exploded local_exploded_time,
-    int day_of_month) {
-  ++local_exploded_time.month;
-  if (local_exploded_time.month == 13) {
-    local_exploded_time.month = 1;
-    ++local_exploded_time.year;
-  }
-  local_exploded_time.day_of_month = day_of_month;
-  DCHECK(local_exploded_time.HasValidValues());
-
-  // This can fail if there is a concurrent DST or time zone change.
-  base::Time time;
-  if (!base::Time::FromLocalExploded(local_exploded_time, &time))
-    return base::nullopt;
-  return time;
-}
-
-}  // namespace update_checker_internal
-
 namespace {
+
+// Number of minutes in an hour.
+static constexpr int kMinutesInHour = 60;
 
 // The tag associated to register |update_check_timer_|.
 constexpr char kUpdateCheckTimerTag[] = "DeviceScheduledUpdateChecker";
@@ -63,34 +47,177 @@ DeviceScheduledUpdateChecker::Frequency GetFrequency(
   return DeviceScheduledUpdateChecker::Frequency::kMonthly;
 }
 
-// Convert the string day of week to an integer value suitable for
-// |base::Time::Exploded::day_of_week|.
-int StringDayOfWeekToExplodedTimeDayOfWeek(const std::string& day_of_week) {
+// Convert the string day of week to UCalendarDaysOfWeek.
+UCalendarDaysOfWeek StringDayOfWeekToIcuDayOfWeek(
+    const std::string& day_of_week) {
   if (day_of_week == "SUNDAY")
-    return 0;
+    return UCAL_SUNDAY;
   if (day_of_week == "MONDAY")
-    return 1;
+    return UCAL_MONDAY;
   if (day_of_week == "TUESDAY")
-    return 2;
+    return UCAL_TUESDAY;
   if (day_of_week == "WEDNESDAY")
-    return 3;
+    return UCAL_WEDNESDAY;
   if (day_of_week == "THURSDAY")
-    return 4;
+    return UCAL_THURSDAY;
   if (day_of_week == "FRIDAY")
-    return 5;
+    return UCAL_FRIDAY;
   DCHECK_EQ(day_of_week, "SATURDAY");
-  return 6;
+  return UCAL_SATURDAY;
 }
 
-// Parses |value| into a |ScheduledUpdateCheckData|. Returns nullopt if there
-// is any error while parsing |value|.
+// Returns true iff a >= b.
+bool IsCalGreaterThanEqual(const icu::Calendar& a, const icu::Calendar& b) {
+  UErrorCode status = U_ZERO_ERROR;
+  if (a.after(b, status)) {
+    DCHECK(U_SUCCESS(status));
+    return true;
+  }
+
+  if (a.equals(b, status)) {
+    DCHECK(U_SUCCESS(status));
+    return true;
+  }
+
+  return false;
+}
+
+// Calculates the next update check timer delay from |cur_time| in a daily
+// policy.
+base::TimeDelta CalculateNextDailyUpdateCheckTimerDelay(
+    base::Time cur_time,
+    int hour,
+    int minute,
+    const icu::TimeZone& tz) {
+  auto cur_cal = update_checker_internal::ConvertUtcToTzIcuTime(cur_time, tz);
+  if (!cur_cal) {
+    LOG(ERROR) << "Failed to calculate next daily update check time";
+    return base::TimeDelta();
+  }
+
+  // Set the hour and minute in the current date to get the update check time.
+  auto update_check_cal = base::WrapUnique(cur_cal->clone());
+  DCHECK(update_check_cal);
+  update_check_cal->set(UCAL_HOUR_OF_DAY, hour);
+  update_check_cal->set(UCAL_MINUTE, minute);
+  update_check_cal->set(UCAL_SECOND, 0);
+  update_check_cal->set(UCAL_MILLISECOND, 0);
+
+  // If the time has passed for today then set the same time for the next
+  // day.
+  UErrorCode status = U_ZERO_ERROR;
+  if (IsCalGreaterThanEqual(*cur_cal, *update_check_cal)) {
+    update_check_cal->add(UCAL_DAY_OF_MONTH, 1, status);
+    if (U_FAILURE(status))
+      return base::TimeDelta();
+  }
+
+  return base::TimeDelta::FromMillisecondsD(
+      update_checker_internal::GetDiffInMs(*update_check_cal, *cur_cal));
+}
+
+// Calculates the next update check timer delay from |cur_time| in a weekly
+// policy. This function assumes the local time uses |kDaysInAWeek| days in a
+// week.
+base::TimeDelta CalculateNextWeeklyUpdateCheckTimerDelay(
+    base::Time cur_time,
+    int hour,
+    int minute,
+    int day_of_week,
+    const icu::TimeZone& tz) {
+  auto cur_cal = update_checker_internal::ConvertUtcToTzIcuTime(cur_time, tz);
+  if (!cur_cal) {
+    LOG(ERROR) << "Failed to calculate next weekly update check time";
+    return base::TimeDelta();
+  }
+  UErrorCode status = U_ZERO_ERROR;
+  int cur_day_of_week = cur_cal->get(UCAL_DAY_OF_WEEK, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get day of week";
+    return base::TimeDelta();
+  }
+
+  // Calculate days to get to next |day_of_week| by constructing the next update
+  // check time.
+  auto update_check_cal = base::WrapUnique(cur_cal->clone());
+  DCHECK(update_check_cal);
+  update_check_cal->set(UCAL_HOUR_OF_DAY, hour);
+  update_check_cal->set(UCAL_MINUTE, minute);
+  update_check_cal->set(UCAL_SECOND, 0);
+  update_check_cal->set(UCAL_MILLISECOND, 0);
+
+  // Add days required to get to |cur_day_of_week|.
+  int days_to_go;
+  if (day_of_week < cur_day_of_week) {
+    days_to_go =
+        day_of_week + update_checker_internal::kDaysInAWeek - cur_day_of_week;
+  } else {
+    days_to_go = day_of_week - cur_day_of_week;
+  }
+  update_check_cal->add(UCAL_DAY_OF_MONTH, days_to_go, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to add num days: " << days_to_go;
+    return base::TimeDelta();
+  }
+
+  // The greater than case can happen if the update is supposed to happen today
+  // but at an earlier hour i.e today is Sunday 9 AM and the update check is
+  // supposed to happen at Sunday 8 AM. The equal to case can happen when a
+  // policy is set for today at the exact same time or when |UpdateCheck| calls
+  // |StartUpdateCheckTimer|. In both cases advance the time to the next weekly
+  // time.
+  if (IsCalGreaterThanEqual(*cur_cal, *update_check_cal)) {
+    update_check_cal->add(UCAL_DAY_OF_MONTH,
+                          update_checker_internal::kDaysInAWeek, status);
+    if (U_FAILURE(status)) {
+      LOG(ERROR) << "Failed to add num days: "
+                 << update_checker_internal::kDaysInAWeek;
+      return base::TimeDelta();
+    }
+  }
+
+  return base::TimeDelta::FromMillisecondsD(
+      update_checker_internal::GetDiffInMs(*update_check_cal, *cur_cal));
+}
+
+// Calculates the next update check timer delay from |cur_time| in a monthly
+// policy.
+base::TimeDelta CalculateNextMonthlyUpdateCheckTimerDelay(
+    base::Time cur_time,
+    int hour,
+    int minute,
+    int day_of_month,
+    const icu::TimeZone& tz) {
+  // Calculate delay to get to next |day_of_month|.
+  auto cur_cal = update_checker_internal::ConvertUtcToTzIcuTime(cur_time, tz);
+  if (!cur_cal) {
+    LOG(ERROR) << "Failed to calculate next monthly update check time";
+    return base::TimeDelta();
+  }
+
+  auto update_check_cal = base::WrapUnique(cur_cal->clone());
+  DCHECK(update_check_cal);
+  if (!update_checker_internal::SetNextMonthlyDate(hour, minute, day_of_month,
+                                                   update_check_cal.get())) {
+    LOG(ERROR) << "Failed to increment month and set day of month";
+    return base::TimeDelta();
+  }
+
+  return base::TimeDelta::FromMillisecondsD(
+      update_checker_internal::GetDiffInMs(*update_check_cal, *cur_cal));
+}
+
+}  // namespace
+
+namespace update_checker_internal {
+
 base::Optional<DeviceScheduledUpdateChecker::ScheduledUpdateCheckData>
-ParseScheduledUpdate(const base::Value* value) {
+ParseScheduledUpdate(const base::Value& value) {
   DeviceScheduledUpdateChecker::ScheduledUpdateCheckData result;
   // Parse mandatory values first i.e. hour, minute and frequency of update
   // check. These should always be present due to schema validation at higher
   // layers.
-  const base::Value* hour_value = value->FindPathOfType(
+  const base::Value* hour_value = value.FindPathOfType(
       {"update_check_time", "hour"}, base::Value::Type::INTEGER);
   DCHECK(hour_value);
   int hour = hour_value->GetInt();
@@ -98,7 +225,7 @@ ParseScheduledUpdate(const base::Value* value) {
   DCHECK(hour >= 0 && hour <= 23);
   result.hour = hour;
 
-  const base::Value* minute_value = value->FindPathOfType(
+  const base::Value* minute_value = value.FindPathOfType(
       {"update_check_time", "minute"}, base::Value::Type::INTEGER);
   DCHECK(minute_value);
   int minute = minute_value->GetInt();
@@ -107,7 +234,7 @@ ParseScheduledUpdate(const base::Value* value) {
   result.minute = minute;
 
   // Validated by schema validation at higher layers.
-  const std::string* frequency = value->FindStringKey({"frequency"});
+  const std::string* frequency = value.FindStringKey({"frequency"});
   DCHECK(frequency);
   result.frequency = GetFrequency(*frequency);
 
@@ -117,19 +244,19 @@ ParseScheduledUpdate(const base::Value* value) {
       break;
 
     case DeviceScheduledUpdateChecker::Frequency::kWeekly: {
-      const std::string* day_of_week = value->FindStringKey({"day_of_week"});
+      const std::string* day_of_week = value.FindStringKey({"day_of_week"});
       if (!day_of_week) {
         LOG(ERROR) << "Day of week missing";
         return base::nullopt;
       }
 
       // Validated by schema validation at higher layers.
-      result.day_of_week = StringDayOfWeekToExplodedTimeDayOfWeek(*day_of_week);
+      result.day_of_week = StringDayOfWeekToIcuDayOfWeek(*day_of_week);
       break;
     }
 
     case DeviceScheduledUpdateChecker::Frequency::kMonthly: {
-      base::Optional<int> day_of_month = value->FindIntKey({"day_of_month"});
+      base::Optional<int> day_of_month = value.FindIntKey({"day_of_month"});
       if (!day_of_month) {
         LOG(ERROR) << "Day of month missing";
         return base::nullopt;
@@ -139,7 +266,6 @@ ParseScheduledUpdate(const base::Value* value) {
       // TODO(crbug.com/924762): Currently |day_of_month| is restricted to 28 to
       // make month rollover calculations easier. Fix it to be smart enough to
       // handle all 31 days and month and year rollovers.
-      DCHECK_LE(day_of_month.value(), 28);
       result.day_of_month = day_of_month.value();
       break;
     }
@@ -148,110 +274,124 @@ ParseScheduledUpdate(const base::Value* value) {
   return result;
 }
 
-// Calculates the next update check time in a weekly policy. This function
-// assumes the local time uses |kDaysInAWeek| days in a week.
-base::Optional<base::Time> CalculateNextUpdateCheckWeeklyTime(
-    const base::Time cur_time,
-    int hour,
-    int minute,
-    int day_of_week) {
-  // Calculate delay to get to next |day_of_week|.
-  base::Time::Exploded cur_local_exploded_time;
-  cur_time.LocalExplode(&cur_local_exploded_time);
-  base::TimeDelta delay_from_cur;
-  if (day_of_week < cur_local_exploded_time.day_of_week) {
-    delay_from_cur = base::TimeDelta::FromDays(
-        day_of_week + update_checker_internal::kDaysInAWeek -
-        cur_local_exploded_time.day_of_week);
-  } else {
-    delay_from_cur = base::TimeDelta::FromDays(
-        day_of_week - cur_local_exploded_time.day_of_week);
+// Converts an icu::Calendar to base::Time. Assumes |time| is a valid time.
+base::Time IcuToBaseTime(const icu::Calendar& time) {
+  UErrorCode status = U_ZERO_ERROR;
+  UDate seconds_from_epoch = time.getTime(status) / 1000;
+  DCHECK(U_SUCCESS(status));
+  base::Time result = base::Time::FromTimeT(seconds_from_epoch);
+  if (result.is_null())
+    result = base::Time::UnixEpoch();
+  return result;
+}
+
+double GetDiffInMs(const icu::Calendar& a, const icu::Calendar& b) {
+  UErrorCode status = U_ZERO_ERROR;
+  UDate a_ms = a.getTime(status);
+  DCHECK(U_SUCCESS(status));
+  UDate b_ms = b.getTime(status);
+  DCHECK(U_SUCCESS(status));
+  return a_ms - b_ms;
+}
+
+std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
+                                                     const icu::TimeZone& tz) {
+  // Get ms from epoch for |cur_time| and use it to get the new time in |tz|.
+  UErrorCode status = U_ZERO_ERROR;
+  std::unique_ptr<icu::Calendar> cal_tz =
+      std::make_unique<icu::GregorianCalendar>(tz, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Couldn't create calendar";
+    return nullptr;
+  }
+  // Erase current time from the calendar.
+  cal_tz->clear();
+  time_t ms_from_epoch = cur_time.ToTimeT() * 1000;
+  cal_tz->setTime(ms_from_epoch, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Couldn't create calendar";
+    return nullptr;
   }
 
-  base::Time update_check_time = cur_time + delay_from_cur;
-  base::Time::Exploded update_check_local_exploded_time;
-  update_check_time.LocalExplode(&update_check_local_exploded_time);
-  update_check_local_exploded_time.hour = hour;
-  update_check_local_exploded_time.minute = minute;
-  // This can fail if the timezone changed and the exploded time isn't valid
-  // anymore i.e. a time 01:30 is not valid if the local time jumped from
-  // 01:00 to 02:00.
-  if (!base::Time::FromLocalExploded(update_check_local_exploded_time,
-                                     &update_check_time)) {
-    return base::nullopt;
+  return cal_tz;
+}
+
+bool SetNextMonthlyDate(int hour,
+                        int minute,
+                        int day_of_month,
+                        icu::Calendar* time) {
+  DCHECK(time);
+
+  UErrorCode status = U_ZERO_ERROR;
+  int cur_month = time->get(UCAL_MONTH, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get month";
+    return false;
   }
 
-  // The greater than case can happen if the update is supposed to happen today
-  // but at an earlier hour i.e today is Sunday 9 AM and the update check is
-  // supposed to happen at Sunday 8 AM. The equal to case can happen when a
-  // policy is set for today at the exact same time or when |UpdateCheck| calls
-  // |StartUpdateCheckTimer|. In both cases advance the time to the next weekly
-  // time.
+  int cur_day_of_month = time->get(UCAL_DAY_OF_MONTH, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get day of month";
+    return false;
+  }
+
+  int cur_max_days_in_month = time->getActualMaximum(UCAL_DAY_OF_MONTH, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get max days in month";
+    return false;
+  }
+
+  int cur_hour = time->get(UCAL_HOUR_OF_DAY, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get cur hour";
+    return false;
+  }
+
+  int cur_minute = time->get(UCAL_MINUTE, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Failed to get cur minute";
+    return false;
+  }
+
+  int mins_in_day = hour * kMinutesInHour + minute;
+  int cur_mins_in_day = cur_hour * kMinutesInHour + cur_minute;
+
+  // If |day_of_month| is < |cur_day_of_month| then the next time has to be next
+  // month, hence add or roll a month to the current date.
   //
-  // TODO(crbug.com/924762): A DST or TZ change can occur right before the call
-  // to calculate |update_check_time| above which would make this next condition
-  // correct. Add observers for both those changes and then recalculate update
-  // check time again.
-  if (cur_time >= update_check_time)
-    update_check_time +=
-        base::TimeDelta::FromDays(update_checker_internal::kDaysInAWeek);
+  // If its the same day of month and current time has passed |hour|:|month|
+  // even then add or roll a month.
+  //
+  // If |day_of_month| > |cur_day_of_month| then it's definitely in the future
+  // but needs to be capped to |cur_max_days_in_month|.
+  if ((day_of_month < cur_day_of_month) ||
+      ((day_of_month == cur_day_of_month) &&
+       (mins_in_day <= cur_mins_in_day))) {
+    // Roll guarantees that 31st Jan turns into 28th Feb (or 29th Feb in
+    // non-leap years). However, on 31st December 1969 using roll will give 31st
+    // January 1969 whereas 31st Jnauary 1970 was wanted. Hence, add is used
+    // when the month is December.
+    if (cur_month == UCAL_DECEMBER)
+      time->add(UCAL_MONTH, 1, status);
+    else
+      time->roll(UCAL_MONTH, 1, status);
+    if (U_FAILURE(status)) {
+      LOG(ERROR) << "Failed to increment month";
+      return false;
+    }
+  } else if (day_of_month > cur_max_days_in_month) {
+    day_of_month = cur_max_days_in_month;
+  }
+  time->set(UCAL_DAY_OF_MONTH, day_of_month);
+  time->set(UCAL_HOUR_OF_DAY, hour);
+  time->set(UCAL_MINUTE, minute);
+  time->set(UCAL_SECOND, 0);
+  time->set(UCAL_MILLISECOND, 0);
 
-  return update_check_time;
+  return true;
 }
 
-// Calculates the next update check time in a monthly policy.
-base::Optional<base::Time> CalculateNextUpdateCheckMonthlyTime(
-    const base::Time cur_time,
-    int hour,
-    int minute,
-    int day_of_month) {
-  // Calculate delay to get to next |day_of_month|.
-  base::Time::Exploded cur_local_exploded_time;
-  cur_time.LocalExplode(&cur_local_exploded_time);
-
-  base::Time update_check_time;
-  if (day_of_month < cur_local_exploded_time.day_of_month) {
-    base::Optional<base::Time> result =
-        update_checker_internal::IncrementMonthAndSetDayOfMonth(
-            cur_local_exploded_time, day_of_month);
-    if (!result)
-      return base::nullopt;
-    update_check_time = result.value();
-  } else {
-    update_check_time =
-        cur_time + base::TimeDelta::FromDays(
-                       day_of_month - cur_local_exploded_time.day_of_month);
-  }
-
-  // Set hour and minute to get the final update check time.
-  base::Time::Exploded update_check_local_exploded_time;
-  update_check_time.LocalExplode(&update_check_local_exploded_time);
-  update_check_local_exploded_time.hour = hour;
-  update_check_local_exploded_time.minute = minute;
-  if (!base::Time::FromLocalExploded(update_check_local_exploded_time,
-                                     &update_check_time)) {
-    return base::nullopt;
-  }
-
-  // The greater than case can happen if the update is supposed to happen today
-  // but at an earlier hour i.e today is Sunday 9 AM and the update check is
-  // supposed to happen at Sunday 8 AM. The equal to case can happen when a
-  // policy is set for today at the exact same time or when |UpdateCheck| calls
-  // |StartUpdateCheckTimer|. In both cases advance the time to the next monthly
-  // time.
-  if (cur_time >= update_check_time) {
-    base::Optional<base::Time> result =
-        update_checker_internal::IncrementMonthAndSetDayOfMonth(
-            cur_local_exploded_time, day_of_month);
-    if (!result)
-      return base::nullopt;
-    update_check_time = result.value();
-  }
-
-  return update_check_time;
-}
-
-}  // namespace
+}  // namespace update_checker_internal
 
 // |cros_settings_observer_| will be destroyed as part of this object
 // guaranteeing to not run |OnScheduledUpdateCheckDataChanged| after its
@@ -325,7 +465,7 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
   // Keep any old policy timers running if a new policy is ill-formed and can't
   // be used to set a new timer.
   base::Optional<ScheduledUpdateCheckData> scheduled_update_check_data =
-      ParseScheduledUpdate(value);
+      update_checker_internal::ParseScheduledUpdate(*value);
   if (!scheduled_update_check_data) {
     LOG(ERROR) << "Failed to parse policy";
     return;
@@ -336,85 +476,43 @@ void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {
   MaybeStartUpdateCheckTimer();
 }
 
-base::Optional<base::Time>
-DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTime(
+base::TimeDelta
+DeviceScheduledUpdateChecker::CalculateNextUpdateCheckTimerDelay(
     base::Time cur_time) {
   DCHECK(scheduled_update_check_data_);
 
   // In order to calculate the next update check time first get the current
   // time and then modify it based on the policy set.
-  base::Time update_check_time;
   switch (scheduled_update_check_data_->frequency) {
     case DeviceScheduledUpdateChecker::Frequency::kDaily: {
-      base::Time::Exploded update_check_local_exploded_time;
-      cur_time.LocalExplode(&update_check_local_exploded_time);
-      update_check_local_exploded_time.hour =
-          scheduled_update_check_data_->hour;
-      update_check_local_exploded_time.minute =
-          scheduled_update_check_data_->minute;
-      DCHECK(update_check_local_exploded_time.HasValidValues());
-      // This can fail if the timezone changed and the exploded time isn't valid
-      // anymore i.e. a time 01:30 is not valid if the local time jumped from
-      // 01:00 to 02:00.
-      if (!base::Time::FromLocalExploded(update_check_local_exploded_time,
-                                         &update_check_time)) {
-        LOG(ERROR) << "Failed to calculate next daily update check time";
-        return base::nullopt;
-      }
-
-      // If the time has passed for today then set the same time for the next
-      // day.
-      //
-      // TODO(crbug.com/924762): A DST or TZ change can occur right before the
-      // call to calculate |update_check_time| above which would make this next
-      // condition correct. Add observers for both those changes and then
-      // recalculate update check time again.
-      if (cur_time >= update_check_time)
-        update_check_time += base::TimeDelta::FromDays(1);
-
-      break;
+      return CalculateNextDailyUpdateCheckTimerDelay(
+          cur_time, scheduled_update_check_data_->hour,
+          scheduled_update_check_data_->minute, GetTimeZone());
     }
 
     case DeviceScheduledUpdateChecker::Frequency::kWeekly: {
       DCHECK(scheduled_update_check_data_->day_of_week);
-      base::Optional<base::Time> result = CalculateNextUpdateCheckWeeklyTime(
+      return CalculateNextWeeklyUpdateCheckTimerDelay(
           cur_time, scheduled_update_check_data_->hour,
           scheduled_update_check_data_->minute,
-          scheduled_update_check_data_->day_of_week.value());
-      if (!result) {
-        LOG(ERROR) << "Failed to calculate next weekly update check time";
-        return base::nullopt;
-      }
-      update_check_time = result.value();
-
-      break;
+          scheduled_update_check_data_->day_of_week.value(), GetTimeZone());
     }
 
     case DeviceScheduledUpdateChecker::Frequency::kMonthly: {
       DCHECK(scheduled_update_check_data_->day_of_month);
-      base::Optional<base::Time> result = CalculateNextUpdateCheckMonthlyTime(
+      return CalculateNextMonthlyUpdateCheckTimerDelay(
           cur_time, scheduled_update_check_data_->hour,
           scheduled_update_check_data_->minute,
-          scheduled_update_check_data_->day_of_month.value());
-      if (!result) {
-        LOG(ERROR) << "Failed to calculate next monthly update check time";
-        return base::nullopt;
-      }
-      update_check_time = result.value();
-
-      break;
+          scheduled_update_check_data_->day_of_month.value(), GetTimeZone());
     }
   }
-
-  DCHECK_NE(update_check_time, base::Time());
-  return update_check_time;
 }
 
 void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
   DCHECK(scheduled_update_check_data_);
 
-  // For accuracy of the next update check, capture current time as close to the
-  // start of this function as possible.
+  // For accuracy of the next update check, capture current time as close to
+  // the start of this function as possible.
   const base::TimeTicks cur_ticks = GetTicksSinceBoot();
   const base::Time cur_time = GetCurrentTime();
 
@@ -422,14 +520,14 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
   // calculating, due to concurrent DST or Time Zone changes, then reschedule
   // this function and try to schedule the update check again. There should only
   // be one outstanding task to start the timer.
-  base::Optional<base::Time> update_check_time =
-      CalculateNextUpdateCheckTime(cur_time);
-  if (!update_check_time) {
+  base::TimeDelta delay = CalculateNextUpdateCheckTimerDelay(cur_time);
+  if (delay.is_zero()) {
+    LOG(ERROR) << "Failed to calculate next update check time";
     start_update_check_timer_task_executor_.ScheduleRetry();
     return;
   }
   scheduled_update_check_data_->next_update_check_time_ticks =
-      cur_ticks + (update_check_time.value() - cur_time);
+      cur_ticks + delay;
 
   // The timer could be destroyed in |OnScheduledUpdateCheckDataChanged|.
   if (!update_check_timer_) {
@@ -438,8 +536,8 @@ void DeviceScheduledUpdateChecker::StartUpdateCheckTimer() {
   }
 
   // |update_check_timer_| will be destroyed as part of this object and is
-  // guaranteed to not run callbacks after its destruction. Therefore, it's safe
-  // to use "this" while starting the timer.
+  // guaranteed to not run callbacks after its destruction. Therefore, it's
+  // safe to use "this" while starting the timer.
   update_check_timer_->Start(
       scheduled_update_check_data_->next_update_check_time_ticks,
       base::BindOnce(&DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired,
@@ -458,24 +556,24 @@ void DeviceScheduledUpdateChecker::OnTimerStartResult(bool result) {
 }
 
 void DeviceScheduledUpdateChecker::OnStartUpdateCheckTimerRetryFailure() {
-  // Retrying has a limit. In the unlikely scenario this is met, let an existing
-  // lingering update check from a previous iteration finish. Reset all other
-  // state including any callbacks. The next update check can only happen when
-  // a new policy comes in or Chrome is restarted.
+  // Retrying has a limit. In the unlikely scenario this is met, let an
+  // existing lingering update check from a previous iteration finish. Reset
+  // all other state including any callbacks. The next update check can only
+  // happen when a new policy comes in or Chrome is restarted.
   LOG(ERROR) << "Failed to start update check timer after all retries";
   ResetState();
 }
 
 void DeviceScheduledUpdateChecker::MaybeStartUpdateCheckTimer() {
   // No need to start the next update check timer if the policy has been
-  // removed. This can happen if an update check was ongoing, a new policy came
-  // in but failed to start the timer which reset all state in
+  // removed. This can happen if an update check was ongoing, a new policy
+  // came in but failed to start the timer which reset all state in
   // |OnStartUpdateCheckTimerRetryFailure|.
   if (!scheduled_update_check_data_)
     return;
 
-  // Safe to use |this| as |start_update_check_timer_task_executor_| is a member
-  // of |this|.
+  // Safe to use |this| as |start_update_check_timer_task_executor_| is a
+  // member of |this|.
   start_update_check_timer_task_executor_.Start(
       base::BindRepeating(&DeviceScheduledUpdateChecker::StartUpdateCheckTimer,
                           base::Unretained(this)),
@@ -485,8 +583,8 @@ void DeviceScheduledUpdateChecker::MaybeStartUpdateCheckTimer() {
 }
 
 void DeviceScheduledUpdateChecker::OnUpdateCheckCompletion(bool result) {
-  // Start the next update check timer irrespective of the current update check
-  // succeeding or not.
+  // Start the next update check timer irrespective of the current update
+  // check succeeding or not.
   LOG_IF(ERROR, !result) << "Update check failed";
   MaybeStartUpdateCheckTimer();
 }
@@ -506,6 +604,10 @@ base::TimeTicks DeviceScheduledUpdateChecker::GetTicksSinceBoot() {
   int ret = clock_gettime(CLOCK_BOOTTIME, &ts);
   DCHECK_NE(ret, 0);
   return base::TimeTicks() + base::TimeDelta::FromTimeSpec(ts);
+}
+
+const icu::TimeZone& DeviceScheduledUpdateChecker::GetTimeZone() {
+  return chromeos::system::TimezoneSettings::GetInstance()->GetTimezone();
 }
 
 }  // namespace policy

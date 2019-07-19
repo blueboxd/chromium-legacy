@@ -68,10 +68,15 @@ interface DevToolsAgent {
   // relative to anything coming over regular |session|.
   // For example, |session| may be already detached (interface unbound),
   // while commands are still coming to |io_session|, and vice versa.
+  //
+  // |client_expects_binary_response| indicates that responses (and
+  // notifications) sent from this session should use binary (CBOR)
+  // encoding as opposed to JSON encoding.
   AttachDevToolsSession(associated DevToolsSessionHost host,
                         associated DevToolsSession& session,
                         DevToolsSession& io_session,
-                        DevToolsSessionState? reattach_session_state);
+                        DevToolsSessionState? reattach_session_state,
+                        bool client_expects_binary_responses);
 
   // Requests an element at specific position to be inspected in every
   // attached session (or the next attached one if none yet).

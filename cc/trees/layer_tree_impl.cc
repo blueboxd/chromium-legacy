@@ -1453,6 +1453,18 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
   return iter != layer_id_map_.end() ? iter->second : nullptr;
 }
 
+// TODO(masonfreed): If this shows up on profiles, this could use
+// a layer_element_map_ approach similar to LayerById().
+LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
+  auto it = std::find_if(layer_list_.rbegin(), layer_list_.rend(),
+                         [&element_id](LayerImpl* layer_impl) {
+                           return layer_impl->element_id() == element_id;
+                         });
+  if (it == layer_list_.rend())
+    return nullptr;
+  return *it;
+}
+
 LayerImpl* LayerTreeImpl::ScrollableLayerByElementId(
     ElementId element_id) const {
   auto iter = element_id_to_scrollable_layer_.find(element_id);

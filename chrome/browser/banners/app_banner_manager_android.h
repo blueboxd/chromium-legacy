@@ -64,17 +64,6 @@ class AppBannerManagerAndroid
   bool IsRunningForTesting(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj);
 
-  // Informs the InstallableManager for the WebContents we are attached to that
-  // the add to homescreen menu item has been tapped.
-  void RecordMenuItemAddToHomescreen(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj);
-
-  // Informs the InstallableManager for the WebContents we are attached to that
-  // the menu has been opened.
-  void RecordMenuOpen(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& jobj);
-
   // Called when the Java-side has retrieved information for the app.
   // Returns |false| if an icon fetch couldn't be kicked off.
   bool OnAppDetailsRetrieved(

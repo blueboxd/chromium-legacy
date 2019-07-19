@@ -5,10 +5,8 @@
 #ifndef COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BRIDGE_H_
 #define COMPONENTS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BRIDGE_H_
 
-#include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -85,8 +83,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   void MarkEntryOpened(const std::string& guid) override;
   bool IsReady() override;
   bool HasValidTargetDevice() override;
-  std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
-      override;
+  std::vector<TargetDeviceInfo> GetTargetDeviceInfoSortedList() override;
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
@@ -95,7 +92,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // For testing only.
   static std::unique_ptr<syncer::ModelTypeStore> DestroyAndStealStoreForTest(
       std::unique_ptr<SendTabToSelfBridge> bridge);
-  bool ShouldUpdateTargetDeviceNameToCacheInfoMapForTest();
+  bool ShouldUpdateTargetDeviceInfoListForTest();
   void SetLocalDeviceNameForTest(const std::string& local_device_name);
 
  private:
@@ -140,11 +137,11 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // Delete expired entries.
   void DoGarbageCollection();
 
-  // Returns whether the target device name to cache guid map should be updated.
-  bool ShouldUpdateTargetDeviceNameToCacheInfoMap() const;
+  // Returns whether the target device info list should be updated.
+  bool ShouldUpdateTargetDeviceInfoList() const;
 
-  // Sets the target device name to cache guid map.
-  void SetTargetDeviceNameToCacheInfoMap();
+  // Sets the target device info list.
+  void SetTargetDeviceInfoList();
 
   // Remove entry with |guid| from entries, but doesn't call Commit on provided
   // |batch|. This allows multiple for deletions without duplicate batch calls.
@@ -175,8 +172,8 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // A pointer to the most recently used entry used for deduplication.
   const SendTabToSelfEntry* mru_entry_;
 
-  // A map of target devices names to their associated cache information.
-  std::map<std::string, TargetDeviceInfo> target_device_name_to_cache_info_;
+  // A list of target devices and their associated cache information.
+  std::vector<TargetDeviceInfo> target_device_name_to_cache_info_;
 
   // The following two variables are used to determine whether we should update
   // the target device name to cache guid map.

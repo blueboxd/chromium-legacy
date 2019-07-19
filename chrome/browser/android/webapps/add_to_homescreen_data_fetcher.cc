@@ -204,11 +204,6 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
   if (!web_contents())
     return;
 
-  if (is_waiting_for_manifest_)
-    installable_manager_->RecordAddToHomescreenManifestAndIconTimeout();
-  else
-    installable_manager_->RecordAddToHomescreenInstallabilityTimeout();
-
   observer_->OnUserTitleAvailable(shortcut_info_.user_title, shortcut_info_.url,
                                   false);
 
@@ -234,7 +229,6 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
     observer_->OnUserTitleAvailable(shortcut_info_.user_title,
                                     shortcut_info_.url, false);
     StopTimer();
-    installable_manager_->RecordAddToHomescreenNoTimeout();
     FetchFavicon();
     return;
   }
@@ -270,8 +264,6 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   if (!web_contents())
     return;
-
-  installable_manager_->RecordAddToHomescreenNoTimeout();
 
   bool webapk_compatible =
       (data.errors.empty() && data.valid_manifest && data.has_worker &&

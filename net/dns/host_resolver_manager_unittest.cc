@@ -52,6 +52,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/url_request/url_request_context.h"
@@ -2337,23 +2338,13 @@ TEST_F(HostResolverManagerTest, IsIPv6Reachable) {
   EXPECT_EQ(result1, result2);
 
   // Filter reachability check events and verify that there are two of them.
-  TestNetLogEntry::List event_list;
-  test_net_log.GetEntries(&event_list);
-  TestNetLogEntry::List probe_event_list;
-  for (const auto& event : event_list) {
-    if (event.type ==
-        NetLogEventType::HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK) {
-      probe_event_list.push_back(event);
-    }
-  }
+  auto probe_event_list = test_net_log.GetEntriesWithType(
+      NetLogEventType::HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK);
   ASSERT_EQ(2U, probe_event_list.size());
 
   // Verify that the first request was not cached and the second one was.
-  bool cached;
-  EXPECT_TRUE(probe_event_list[0].GetBooleanValue("cached", &cached));
-  EXPECT_FALSE(cached);
-  EXPECT_TRUE(probe_event_list[1].GetBooleanValue("cached", &cached));
-  EXPECT_TRUE(cached);
+  EXPECT_FALSE(GetBooleanValueFromParams(probe_event_list[0], "cached"));
+  EXPECT_TRUE(GetBooleanValueFromParams(probe_event_list[1], "cached"));
 }
 
 TEST_F(HostResolverManagerTest, IncludeCanonicalName) {

@@ -706,7 +706,7 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   // For flags and ID we need to determine all possible flag bits and set them
   // correctly.
   uint32_t flags = 0;
-  base::Optional<uint32_t> id;
+  base::Optional<uint64_t> id;
   switch (event.id_case()) {
     case TrackEvent::LegacyEvent::kUnscopedId:
       flags |= TRACE_EVENT_FLAG_HAS_ID;

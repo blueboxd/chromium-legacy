@@ -104,7 +104,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue
           can_be_paused(false),
           can_be_frozen(false),
           can_run_in_background(true),
-          should_use_virtual_time(true) {}
+          should_use_virtual_time(true),
+          is_high_priority(false) {}
 
     QueueTraits(const QueueTraits&) = default;
 
@@ -138,13 +139,19 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       return *this;
     }
 
+    QueueTraits SetIsHighPriority(bool value) {
+      is_high_priority = value;
+      return *this;
+    }
+
     bool operator==(const QueueTraits& other) const {
       return can_be_deferred == other.can_be_deferred &&
              can_be_throttled == other.can_be_throttled &&
              can_be_paused == other.can_be_paused &&
              can_be_frozen == other.can_be_frozen &&
              can_run_in_background == other.can_run_in_background &&
-             should_use_virtual_time == other.should_use_virtual_time;
+             should_use_virtual_time == other.should_use_virtual_time &&
+             is_high_priority == other.is_high_priority;
     }
 
     // Return a key suitable for WTF::HashMap.
@@ -157,6 +164,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       key |= can_be_frozen << 4;
       key |= can_run_in_background << 5;
       key |= should_use_virtual_time << 6;
+      key |= is_high_priority << 7;
       return key;
     }
 
@@ -166,6 +174,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
     bool can_be_frozen : 1;
     bool can_run_in_background : 1;
     bool should_use_virtual_time : 1;
+    bool is_high_priority : 1;
   };
 
   struct QueueCreationParams {

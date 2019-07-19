@@ -285,6 +285,9 @@ function testAddAndRemoveVolumes() {
  * 3. keeps MTP/Archive/Removable volumes on the original order.
  */
 function testOrderAndNestItems() {
+  // Enable My files.
+  loadTimeData.data_['MY_FILES_VOLUME_ENABLED'] = true;
+
   const volumeManager = new MockVolumeManager();
 
   const shortcutListModel = new MockFolderShortcutDataModel([

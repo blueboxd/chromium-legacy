@@ -23,6 +23,7 @@ class LogManagerImpl : public LogManager {
   void LogTextMessage(const std::string& text) const override;
   void LogEntry(base::Value&& entry) const override;
   bool IsLoggingActive() const override;
+  LogBufferSubmitter Log() override;
 
  private:
   // A LogRouter instance obtained on construction. May be null.
@@ -88,6 +89,10 @@ void LogManagerImpl::LogEntry(base::Value&& entry) const {
 
 bool LogManagerImpl::IsLoggingActive() const {
   return can_use_log_router_ && !is_suspended_;
+}
+
+LogBufferSubmitter LogManagerImpl::Log() {
+  return LogBufferSubmitter(log_router_, IsLoggingActive());
 }
 
 }  // namespace

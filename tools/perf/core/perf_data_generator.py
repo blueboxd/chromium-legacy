@@ -357,7 +357,7 @@ BUILDERS = {
         'extra_args': [
             '--test-shard-map-filename=android-go_webview-perf_map.json',
         ],
-        'num_shards': 25
+        'num_shards': 13
       }
     ],
     'platform': 'android-webview-google',

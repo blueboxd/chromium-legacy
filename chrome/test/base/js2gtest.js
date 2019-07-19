@@ -386,6 +386,7 @@ function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
   var testShouldFail = this[testFixture].prototype.testShouldFail;
   var testPredicate = testShouldFail ? 'ASSERT_FALSE' : 'ASSERT_TRUE';
   var loaderFile = this[testFixture].prototype.loaderFile;
+  var webuiHost = this[testFixture].prototype.webuiHost;
   var extraLibraries = genIncludes.concat(
       this[testFixture].prototype.extraLibraries.map(includeFileToPath),
       resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps),
@@ -528,6 +529,10 @@ for (var i = 0; i < extraLibraries.length; i++) {
   if (loaderFile) {
     output(`
   set_loader_file("${loaderFile}");`);
+  }
+  if (webuiHost) {
+    output(`
+  set_webui_host("${webuiHost}");`);
   }
   if (testGenPreamble)
     testGenPreamble(testFixture, testFunction);

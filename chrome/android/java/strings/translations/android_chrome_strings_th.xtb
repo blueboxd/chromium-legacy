@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">พื้นที่เก็บข้อมูลเว็บไซต์</translation>
 <translation id="2328985652426384049">ลงชื่อเข้าใช้ไม่ได้</translation>
 <translation id="2349710944427398404">ข้อมูลทั้งหมดที่ Chrome ใช้ รวมถึงบัญชี บุ๊กมาร์ก และการตั้งค่าที่บันทึกไว้</translation>
-<translation id="2351097562818989364">รีเซ็ตการตั้งค่าการแปลภาษาของคุณแล้ว</translation>
 <translation id="2353636109065292463">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
 <translation id="2369533728426058518">แท็บที่เปิดอยู่</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
 <translation id="5304593522240415983">ต้องกรอกข้อมูลในช่องนี้</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
-<translation id="5308603654685598744">เมื่อเปิดฟีเจอร์นี้ Chrome จะเสนอที่จะแปลหน้าเว็บที่เขียนในภาษาอื่นๆ โดยใช้ Google แปลภาษา</translation>
 <translation id="5313967007315987356">เพิ่มเว็บไซต์</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5324858694974489420">การตั้งค่าของผู้ปกครอง</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">ส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google โดยอัตโนมัติ</translation>
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5902828464777634901">ระบบจะลบข้อมูลในเครื่องทั้งหมดที่เว็บไซต์นี้จัดเก็บ รวมถึงคุกกี้</translation>
-<translation id="5911030830365207728">Google แปลภาษา</translation>
 <translation id="5916664084637901428">เปิด</translation>
 <translation id="5919204609460789179">อัปเดต <ph name="PRODUCT_NAME" /> เพื่อเริ่มซิงค์</translation>
 <translation id="5937580074298050696">ประหยัดได้ <ph name="AMOUNT" /></translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">หน้านี้อันตราย ข้อมูลเว็บไซต์</translation>
 <translation id="6963766334940102469">ลบบุ๊กมาร์ก</translation>
 <translation id="6965382102122355670">ตกลง</translation>
-<translation id="6978479750597523876">รีเซ็ตการตั้งค่าการแปล</translation>
 <translation id="6979737339423435258">ตั้งแต่ต้น</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="6989267951144302301">ดาวน์โหลดไม่ได้</translation>

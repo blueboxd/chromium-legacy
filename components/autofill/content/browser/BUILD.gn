@@ -7,6 +7,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 jumbo_static_library("browser") {
   sources = [
+    "autofill_internals_service_factory.cc",
+    "autofill_internals_service_factory.h",
     "content_autofill_driver.cc",
     "content_autofill_driver.h",
     "content_autofill_driver_factory.cc",
@@ -22,6 +24,7 @@ jumbo_static_library("browser") {
     "//components/autofill/content/common:mojo_interfaces",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/keyed_service/content",
     "//skia",
   ]
   deps = [
@@ -65,6 +68,7 @@ proto_library("risk_proto") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "autofill_internals_service_factory_unittest.cc",
     "content_autofill_driver_unittest.cc",
     "key_press_handler_manager_unittest.cc",
   ]

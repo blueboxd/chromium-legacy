@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -35,6 +36,7 @@
     AutofillSecurityAlertPresenter,
     AddressCoordinatorDelegate,
     CardCoordinatorDelegate,
+    FormInputAccessoryMediatorDelegate,
     ManualFillAccessoryViewControllerDelegate,
     PasswordCoordinatorDelegate>
 
@@ -89,6 +91,7 @@
 
     _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
            initWithConsumer:self.formInputAccessoryViewController
+                   delegate:self
                webStateList:webStateList
         personalDataManager:personalDataManager
               passwordStore:passwordStore];
@@ -165,6 +168,18 @@
   }
 
   [self.childCoordinators addObject:addressCoordinator];
+}
+
+#pragma mark - FormInputAccessoryMediatorDelegate
+
+- (void)mediatorDidDetectKeyboardHide:(FormInputAccessoryMediator*)mediator {
+  // On iOS 13, beta 3, the popover is not dismissed when the keyboard hides.
+  // This explicitly dismiss any popover.
+  if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
+    [self stopChildren];
+    [self.formInputAccessoryMediator enableSuggestions];
+    [self.formInputAccessoryViewController resetManualFallbackIcons];
+  }
 }
 
 #pragma mark - ManualFillAccessoryViewControllerDelegate

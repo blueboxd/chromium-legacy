@@ -856,6 +856,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-assistant-routines",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-async-dns",
     "owners": [ "ericorth", "net-dev" ],
     "expiry_milestone": 81
@@ -1312,6 +1317,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-defer-all-script-without-optimization-hints",
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-layout-ng",
     "owners": [ "layout-dev@chromium.org" ],
     "expiry_milestone": 80
@@ -1594,11 +1604,6 @@
     "name": "enable-send-tab-to-self-broadcast",
     "owners": [ "//components/send_tab_to_self/OWNERS" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "enable-send-tab-to-self-history",
-    "owners": [ "//components/send_tab_to_self/OWNERS" ],
-    "expiry_milestone": 78
   },
   {
     "name": "enable-send-tab-to-self-show-sending-ui",

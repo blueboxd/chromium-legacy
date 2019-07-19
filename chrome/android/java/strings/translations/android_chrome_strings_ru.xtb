@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Данные сайтов</translation>
 <translation id="2328985652426384049">Не удается войти</translation>
 <translation id="2349710944427398404">Общее количество данных Chrome, включая аккаунты, закладки и сохраненные настройки</translation>
-<translation id="2351097562818989364">Настройки перевода сброшены</translation>
 <translation id="2353636109065292463">Проверка подключения к Интернету</translation>
 <translation id="2359808026110333948">Продолжить</translation>
 <translation id="2369533728426058518">открыть вкладки</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Осталось <ph name="SECONDS" /> сек.</translation>
 <translation id="2779651927720337254">ошибка</translation>
 <translation id="2781151931089541271">Осталась 1 сек.</translation>
+<translation id="2796941233371040292">Данных нет</translation>
 <translation id="2801022321632964776">Чтобы читать веб-страницы на своем языке, обновите Chrome до последней версии.</translation>
 <translation id="2810645512293415242">Страница была открыта в упрощенном виде, чтобы уменьшить объем трафика и время загрузки.</translation>
 <translation id="281504910091592009">Просматривать сохраненные пароли и управлять ими можно на странице <ph name="BEGIN_LINK" />Аккаунт Google<ph name="END_LINK" />.</translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">О браузере Chrome</translation>
 <translation id="2891154217021530873">Остановить загрузку страницы</translation>
 <translation id="2893180576842394309">Google может использовать вашу историю, чтобы персонализировать Поиск и другие сервисы.</translation>
+<translation id="2898264748040935573">Изменение сохраненного пароля.</translation>
 <translation id="2900528713135656174">Создать мероприятие</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
 <translation id="290376772003165898">Язык страницы не <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@
 <translation id="4913169188695071480">Остановить обновление</translation>
 <translation id="4915549754973153784">Поиск устройств… <ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# страница}one{# страница}few{# страницы}many{# страниц}other{# страницы}}</translation>
+<translation id="4932247056774066048">Вы выходите из аккаунта, которым управляет администратор домена <ph name="DOMAIN_NAME" />. Все данные Chrome будут удалены с этого устройства, но сохранятся в аккаунте Google.</translation>
 <translation id="4943703118917034429">Виртуальная реальность</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="4958708863221495346">Сайту <ph name="URL_OF_THE_CURRENT_TAB" /> предоставлен доступ к вашему экрану</translation>
@@ -562,6 +564,7 @@
 <translation id="5210286577605176222">Перейти к предыдущей вкладке</translation>
 <translation id="5210365745912300556">Закрыть вкладку</translation>
 <translation id="5224771365102442243">Есть видео</translation>
+<translation id="5230560987958996918">Сайт <ph name="SITE" /> ищет устройства Bluetooth поблизости. Обнаружены следующие устройства:</translation>
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="526421993248218238">Не удалось загрузить страницу</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
@@ -571,7 +574,6 @@
 <translation id="5301954838959518834">ОК</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
 <translation id="5308380583665731573">Подключение</translation>
-<translation id="5308603654685598744">Если включить эту функцию, Chrome будет предлагать перевести страницы на другие языки с помощью приложения "Google Переводчик".</translation>
 <translation id="5313967007315987356">Добавить сайт</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5324858694974489420">Родительские настройки</translation>
@@ -586,6 +588,7 @@
 <translation id="5414836363063783498">Проверка…</translation>
 <translation id="5423934151118863508">Здесь появятся страницы, которые вы чаще всего просматриваете.</translation>
 <translation id="5424588387303617268">Доступно: <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="543338862236136125">Изменить пароль</translation>
 <translation id="5433691172869980887">Имя пользователя скопировано</translation>
 <translation id="543509235395288790">Скачивание файлов: <ph name="COUNT" /> (<ph name="MEGABYTES" /> МБ).</translation>
 <translation id="5441522332038954058">Перейти к адресной строке</translation>
@@ -660,7 +663,6 @@
 <translation id="5865733239029070421">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
 <translation id="5902828464777634901">Все данные этого веб-сайта, включая файлы cookie, будут удалены.</translation>
-<translation id="5911030830365207728">Google Переводчик</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5919204609460789179">Обновите <ph name="PRODUCT_NAME" />, чтобы начать синхронизацию</translation>
 <translation id="5937580074298050696">Сохранено: <ph name="AMOUNT" /></translation>
@@ -805,7 +807,6 @@
 <translation id="6963642900430330478">Эта страница представляет опасность. Информация о сайте</translation>
 <translation id="6963766334940102469">Удалить закладки</translation>
 <translation id="6965382102122355670">ОК</translation>
-<translation id="6978479750597523876">Сбросить настройки перевода</translation>
 <translation id="6979737339423435258">Все время</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="6989267951144302301">Не удалось скачать</translation>

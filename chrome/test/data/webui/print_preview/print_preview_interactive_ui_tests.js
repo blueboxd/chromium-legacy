@@ -113,15 +113,15 @@ var PrintPreviewDestinationDialogInteractiveTest =
     class extends PrintPreviewInteractiveUITest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/ui/destination_dialog.html';
+    return 'chrome://print/ui/destination_settings.html';
   }
 
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//chrome/test/data/webui/settings/test_util.js',
-      '//ui/webui/resources/js/web_ui_listener_behavior.js',
       '../test_browser_proxy.js',
+      'cloud_print_interface_stub.js',
       'native_layer_stub.js',
       'print_preview_test_utils.js',
       'destination_dialog_interactive_test.js',

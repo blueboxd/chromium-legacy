@@ -1,0 +1,26 @@
+diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
+index 2e1a254fd..8a2693e1f 100644
+--- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
++++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
+@@ -161,8 +161,8 @@ public class InternalOptions {
+
+   // Optimization-related flags. These should conform to -dontoptimize and disableAllOptimizations.
+   public boolean enableDynamicTypeOptimization = true;
+-  public boolean enableHorizontalClassMerging = true;
+-  public boolean enableVerticalClassMerging = true;
++  public boolean enableHorizontalClassMerging = false;
++  public boolean enableVerticalClassMerging = false;
+   public boolean enableArgumentRemoval = true;
+   public boolean enableUnusedArgumentRemoval = true;
+   public boolean enableUnusedInterfaceRemoval = true;
+@@ -173,9 +173,7 @@ public class InternalOptions {
+   public boolean enableInliningOfInvokesWithDefinitelyNullReceivers =
+       System.getProperty("com.android.tools.r8.disableInliningOfInvokesWithDefinitelyNullReceivers")
+           == null;
+-  public boolean enableInliningOfInvokesWithNullableReceivers =
+-      System.getProperty("com.android.tools.r8.disableInliningOfInvokesWithNullableReceivers")
+-          == null;
++  public boolean enableInliningOfInvokesWithNullableReceivers = false;
+   public boolean enableClassInlining = true;
+   public boolean enableClassStaticizer = true;
+   public boolean enableInitializedClassesAnalysis = true;

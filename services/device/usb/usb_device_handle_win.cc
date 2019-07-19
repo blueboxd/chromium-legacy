@@ -36,6 +36,11 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+
 namespace {
 
 uint8_t BuildRequestFlags(UsbTransferDirection direction,
@@ -702,14 +707,15 @@ void UsbDeviceHandleWin::ReportIsochronousError(
     const std::vector<uint32_t>& packet_lengths,
     IsochronousTransferCallback callback,
     UsbTransferStatus status) {
-  std::vector<IsochronousPacket> packets(packet_lengths.size());
+  std::vector<mojom::UsbIsochronousPacketPtr> packets(packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = packet_lengths[i];
+    packets[i]->transferred_length = 0;
+    packets[i]->status = status;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), nullptr, packets));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr,
+                                                   std::move(packets)));
 }
 
 }  // namespace device

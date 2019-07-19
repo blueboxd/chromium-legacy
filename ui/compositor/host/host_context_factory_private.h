@@ -75,8 +75,8 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
   void SetDisplayColorMatrix(Compositor* compositor,
                              const SkMatrix44& matrix) override;
   void SetDisplayColorSpace(Compositor* compositor,
-                            const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& output_color_space) override;
+                            const gfx::ColorSpace& output_color_space,
+                            float sdr_white_level) override;
   void SetDisplayVSyncParameters(Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override;

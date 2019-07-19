@@ -526,6 +526,13 @@ const char kEnableDeferAllScriptName[] = "DeferAllScript previews";
 const char kEnableDeferAllScriptDescription[] =
     "Enable deferring synchronous script on slow pages.";
 
+const char kEnableDeferAllScriptWithoutOptimizationHintsName[] =
+    "Skip checking optimization hints for Defer Script previews";
+const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[] =
+    "Skips checking optimization hints for Defer Script previews and assumes "
+    "that the ECT trigger threshold is set to 4G (which is otherwise provided "
+    "by the optimization hints). Rest of the checks are still executed.";
+
 const char kEnableSaveDataName[] = "Enables save data feature";
 const char kEnableSaveDataDescription[] =
     "Enables save data feature. May cause user's traffic to be proxied via "
@@ -1649,12 +1656,6 @@ const char kSendTabToSelfBroadcastName[] = "Send tab to self broadcast";
 const char kSendTabToSelfBroadcastDescription[] =
     "Allows users to broadcast the tab they send to all of their devices "
     "instead of targetting only one device.";
-
-const char kSendTabToSelfHistoryName[] = "Send tab to self history";
-const char kSendTabToSelfHistoryDescription[] =
-    "Allows users to view tabs that were sent to other synced devices by "
-    "accessing these tabs through a landing page either in history or in "
-    "recent tabs. Requires Send tab to self to also be enabled";
 
 const char kSendTabToSelfShowSendingUIName[] =
     "Send tab to self show sending UI";
@@ -3126,6 +3127,9 @@ const char kEnableAssistantMediaSessionIntegrationName[] =
     "Assistant Media Session integration";
 const char kEnableAssistantMediaSessionIntegrationDescription[] =
     "Enable Assistant Media Session Integration.";
+
+const char kEnableAssistantRoutinesName[] = "Assistant Routines";
+const char kEnableAssistantRoutinesDescription[] = "Enable Assistant Routines.";
 
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =

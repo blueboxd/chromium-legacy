@@ -13,6 +13,7 @@
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/json_web_token_util.h"
 #include "components/gcm_driver/crypto/p256_key_util.h"
+#include "components/gcm_driver/web_push_metrics.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -143,6 +144,7 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
       GetAuthHeader(vapid_key, message.time_to_live);
   if (!auth_header) {
     LOG(ERROR) << "Failed to create JWT";
+    LogSendWebPushMessageResult(SendWebPushMessageResult::kCreateJWTFailed);
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -164,6 +166,7 @@ void WebPushSender::OnMessageSent(
   int net_error = url_loader->NetError();
   if (net_error != net::OK) {
     LOG(ERROR) << "Network Error: " << net_error;
+    LogSendWebPushMessageResult(SendWebPushMessageResult::kNetworkError);
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -172,6 +175,7 @@ void WebPushSender::OnMessageSent(
       url_loader->ResponseInfo()->headers;
   if (!url_loader->ResponseInfo() || !response_headers) {
     LOG(ERROR) << "Response info not found";
+    LogSendWebPushMessageResult(SendWebPushMessageResult::kServerError);
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -179,6 +183,7 @@ void WebPushSender::OnMessageSent(
   int response_code = response_headers->response_code();
   if (!network::cors::IsOkStatus(response_code)) {
     LOG(ERROR) << "HTTP Error: " << response_code;
+    LogSendWebPushMessageResult(SendWebPushMessageResult::kServerError);
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -186,6 +191,7 @@ void WebPushSender::OnMessageSent(
   std::string location;
   if (!response_headers->EnumerateHeader(nullptr, "location", &location)) {
     LOG(ERROR) << "Failed to get location header from response";
+    LogSendWebPushMessageResult(SendWebPushMessageResult::kParseResponseFailed);
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -193,10 +199,12 @@ void WebPushSender::OnMessageSent(
   size_t slash_pos = location.rfind("/");
   if (slash_pos == std::string::npos) {
     LOG(ERROR) << "Failed to parse message_id from location header";
+    LogSendWebPushMessageResult(SendWebPushMessageResult::kParseResponseFailed);
     std::move(callback).Run(base::nullopt);
     return;
   }
 
+  LogSendWebPushMessageResult(SendWebPushMessageResult::kSuccessful);
   std::move(callback).Run(base::make_optional(location.substr(slash_pos + 1)));
 }
 

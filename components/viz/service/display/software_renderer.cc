@@ -521,7 +521,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
                                       &content_mat);
   }
 
-  if (quad->mask_resource_id()) {
+  if (!quad->mask_applies_to_backdrop && quad->mask_resource_id()) {
     DisplayResourceProvider::ScopedReadLockSkImage mask_lock(
         resource_provider_, quad->mask_resource_id());
     if (!mask_lock.valid())

@@ -20,8 +20,8 @@
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
 #include "components/services/patch/patch_service.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -38,8 +38,8 @@
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "chrome/utility/importer/profile_import_service.h"
 #include "services/network/url_request_context_builder_mojo.h"
-#include "services/proxy_resolver/proxy_resolver_service.h"  // nogncheck
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"  // nogncheck
+#include "services/proxy_resolver/proxy_resolver_factory_impl.h"  // nogncheck
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -82,7 +82,7 @@
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"  // nogncheck
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
@@ -125,31 +125,6 @@ void RunServiceAsyncThenTerminateProcess(
       std::move(service),
       base::BindOnce([] { content::UtilityThread::Get()->ReleaseProcess(); }));
 }
-
-#if !defined(OS_ANDROID)
-std::unique_ptr<service_manager::Service> CreateProxyResolverService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<proxy_resolver::ProxyResolverService>(
-      std::move(request));
-}
-
-using ServiceFactory =
-    base::OnceCallback<std::unique_ptr<service_manager::Service>()>;
-void RunServiceOnIOThread(ServiceFactory factory) {
-  base::OnceClosure terminate_process = base::BindOnce(
-      base::IgnoreResult(&base::SequencedTaskRunner::PostTask),
-      base::SequencedTaskRunnerHandle::Get(), FROM_HERE,
-      base::BindOnce([] { content::UtilityThread::Get()->ReleaseProcess(); }));
-  content::ChildThread::Get()->GetIOTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](ServiceFactory factory, base::OnceClosure terminate_process) {
-            service_manager::Service::RunAsyncUntilTermination(
-                std::move(factory).Run(), std::move(terminate_process));
-          },
-          std::move(factory), std::move(terminate_process)));
-}
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -220,14 +195,6 @@ bool ChromeContentUtilityClient::HandleServiceRequest(
 
     return false;
   }
-
-#if !defined(OS_ANDROID)
-  if (service_name == proxy_resolver::mojom::kProxyResolverServiceName) {
-    RunServiceOnIOThread(
-        base::BindOnce(&CreateProxyResolverService, std::move(request)));
-    return true;
-  }
-#endif  // !defined(OS_ANDROID)
 
   auto service = MaybeCreateMainThreadService(service_name, std::move(request));
   if (service) {
@@ -353,6 +320,18 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   if (g_network_binder_creation_callback.Get())
     g_network_binder_creation_callback.Get().Run(registry);
+}
+
+void ChromeContentUtilityClient::RunIOThreadService(
+    mojo::GenericPendingReceiver* receiver) {
+#if !defined(OS_ANDROID)
+  if (auto factory_receiver =
+          receiver->As<proxy_resolver::mojom::ProxyResolverFactory>()) {
+    static base::NoDestructor<proxy_resolver::ProxyResolverFactoryImpl> factory(
+        std::move(factory_receiver));
+    return;
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 // static

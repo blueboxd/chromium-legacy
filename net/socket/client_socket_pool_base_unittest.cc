@@ -42,7 +42,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -730,8 +729,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(5u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -769,8 +767,7 @@ TEST_F(ClientSocketPoolBaseTest, InitConnectionFailure) {
   EXPECT_FALSE(handle.ssl_cert_request_info());
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -2015,8 +2012,7 @@ TEST_F(ClientSocketPoolBaseTest, BasicAsynchronous) {
   handle.Reset();
   TestLoadTimingInfoNotConnected(handle);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(5u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -2055,8 +2051,7 @@ TEST_F(ClientSocketPoolBaseTest,
   EXPECT_FALSE(handle.is_ssl_error());
   EXPECT_FALSE(handle.ssl_cert_request_info());
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsEvent(
@@ -2539,8 +2534,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   EXPECT_EQ(0u, pool_->IdleSocketCountInGroup(TestGroupId("a")));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_TRUE(LogContainsEvent(
       entries, 0, NetLogEventType::TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
       NetLogEventPhase::NONE));
@@ -2618,8 +2612,7 @@ TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsNoReuse) {
   EXPECT_EQ(0u, pool_->IdleSocketCountInGroup(TestGroupId("a")));
   EXPECT_EQ(1, pool_->NumActiveSocketsInGroupForTesting(TestGroupId("a")));
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_FALSE(LogContainsEntryWithType(
       entries, 1, NetLogEventType::SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }

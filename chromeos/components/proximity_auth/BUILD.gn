@@ -53,7 +53,7 @@ static_library("proximity_auth") {
     "//base",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice/logging",
-    "//chromeos/components/proximity_auth/public/interfaces",
+    "//chromeos/components/proximity_auth/public/mojom",
     "//chromeos/constants",
     "//chromeos/dbus/power",
     "//chromeos/dbus/session_manager",

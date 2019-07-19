@@ -322,6 +322,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Access to the file was denied</translation>
 <translation id="2653659639078652383">Submit</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />)}=2{2 passwords (for <ph name="DOMAIN_LIST" />)}other{# passwords (for <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Close other tabs or apps</translation>
 <translation id="267371737713284912">press <ph name="MODIFIER_KEY_DESCRIPTION" /> to undo</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
@@ -652,6 +653,7 @@
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
 <translation id="445100540951337728">Accepted debit cards</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> suspicious behaviour</translation>
 <translation id="4466881336512663640">Form changes will be lost. Are you sure that you want to continue?</translation>
 <translation id="4477350412780666475">Next track</translation>
 <translation id="4482953324121162758">This site will not be translated.</translation>
@@ -704,6 +706,7 @@
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="4780900888022378816">Your device is managed by <ph name="ENROLLMENT_DOMAIN" /> and your account is managed by <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Switch to this tab</translation>
+<translation id="4791134497475588553">Linux apps installed and when they were last used</translation>
 <translation id="4798078619018708837">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. Once you confirm, card details from your Google Account will be shared with this site.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
 <translation id="480334179571489655">Origin Policy Error</translation>
@@ -714,6 +717,7 @@
 <translation id="4850886885716139402">View</translation>
 <translation id="4854362297993841467">This delivery method isn’t available. Try a different method.</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
+<translation id="4864052566555297930">Safety tip:</translation>
 <translation id="4876188919622883022">Simplified view</translation>
 <translation id="4876305945144899064">No username</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{None}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -814,6 +818,7 @@
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5371425731340848620">Update card</translation>
 <translation id="5377026284221673050">'Your clock is behind' or 'Your clock is ahead' or "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5377179979757081683">This page might try to trick you, steal personal information or harm your device. Be cautious when entering personal information or opening downloaded files.</translation>
 <translation id="5384855140246857529">To get your cards on all devices, sign in and turn on sync.</translation>
 <translation id="5386426401304769735">The certificate chain for this site contains a certificate signed using SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -978,6 +983,7 @@
 <translation id="6328786501058569169">This site is deceptive</translation>
 <translation id="6337133576188860026">Frees up less than <ph name="SIZE" />. Some sites may load more slowly on your next visit.</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{None}=1{1 password (for <ph name="DOMAIN_LIST" />, synced)}=2{2 passwords (for <ph name="DOMAIN_LIST" />, synced)}other{# passwords (for <ph name="DOMAIN_LIST" />, synced)}}</translation>
 <translation id="6358450015545214790">What do these mean?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1153,6 +1159,7 @@ Additional details:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Is affiliated:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">Leave this site</translation>
 <translation id="7353601530677266744">Command Line</translation>
 <translation id="7372973238305370288">search result</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

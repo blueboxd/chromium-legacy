@@ -13,10 +13,10 @@ namespace views {
 constexpr base::TimeDelta InstallableInkDropAnimator::kAnimationDuration;
 
 InstallableInkDropAnimator::InstallableInkDropAnimator(
-    InstallableInkDropPainter* painter,
+    InstallableInkDropPainter::State* visual_state,
     gfx::AnimationContainer* animation_container,
     base::RepeatingClosure repaint_callback)
-    : painter_(painter),
+    : visual_state_(visual_state),
       repaint_callback_(repaint_callback),
       highlight_animation_(this) {
   highlight_animation_.SetContainer(animation_container);
@@ -35,23 +35,23 @@ void InstallableInkDropAnimator::AnimateToState(InkDropState target_state) {
     case InkDropState::HIDDEN:
     case InkDropState::DEACTIVATED:
       target_state_ = InkDropState::HIDDEN;
-      painter_->set_activated(false);
+      visual_state_->activated = false;
       break;
     case InkDropState::ACTION_PENDING:
     case InkDropState::ALTERNATE_ACTION_PENDING:
     case InkDropState::ACTIVATED:
       target_state_ = target_state;
-      painter_->set_activated(true);
+      visual_state_->activated = true;
       break;
     case InkDropState::ACTION_TRIGGERED:
     case InkDropState::ALTERNATE_ACTION_TRIGGERED:
       if (last_state == InkDropState::ACTION_PENDING ||
           last_state == InkDropState::ALTERNATE_ACTION_PENDING) {
         target_state_ = InkDropState::HIDDEN;
-        painter_->set_activated(false);
+        visual_state_->activated = false;
       } else {
         target_state_ = target_state;
-        painter_->set_activated(true);
+        visual_state_->activated = true;
         transition_delay_timer_.Start(
             FROM_HERE, kAnimationDuration,
             base::Bind(&InstallableInkDropAnimator::AnimateToState,
@@ -73,7 +73,7 @@ void InstallableInkDropAnimator::AnimateHighlight(bool fade_in) {
 
 void InstallableInkDropAnimator::AnimationProgressed(
     const gfx::Animation* animation) {
-  painter_->set_highlighted_ratio(highlight_animation_.GetCurrentValue());
+  visual_state_->highlighted_ratio = highlight_animation_.GetCurrentValue();
   repaint_callback_.Run();
 }
 

@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

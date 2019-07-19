@@ -86,17 +86,6 @@ bool AppBannerManagerAndroid::IsRunningForTesting(
   return IsRunning();
 }
 
-void AppBannerManagerAndroid::RecordMenuOpen(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
-  manager()->RecordMenuOpenHistogram();
-}
-
-void AppBannerManagerAndroid::RecordMenuItemAddToHomescreen(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  manager()->RecordMenuItemAddToHomescreenHistogram();
-}
-
 bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

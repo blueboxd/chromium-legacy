@@ -20,7 +20,6 @@ class FakeProxy : public Proxy {
   void SetLayerTreeHost(LayerTreeHost* host);
 
   bool IsStarted() const override;
-  bool CommitToActiveTree() const override;
   void SetLayerTreeFrameSink(
       LayerTreeFrameSink* layer_tree_frame_sink) override {}
   void ReleaseLayerTreeFrameSink() override {}

@@ -960,7 +960,11 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
         !this.containsReadOnlyEntry_(entries, fileManager) &&
         !fileManager.directoryModel.isReadOnly() &&
         CommandUtil.hasCapability(entries, 'canDelete');
-    event.command.setHidden(false);
+
+    // Hide if there isn't anything selected, meaning user clicked in an empty
+    // space in the file list.
+    const noEntries = entries.length === 0;
+    event.command.setHidden(noEntries);
   }
 
   /**
@@ -1623,7 +1627,11 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
       return;
     }
 
-    event.command.setHidden(false);
+    // Hide if there isn't anything selected, meaning user clicked in an empty
+    // space in the file list.
+    const noEntries = selection.entries.length === 0;
+    event.command.setHidden(noEntries);
+
     const isOnEligibleLocation =
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ ?
         true :

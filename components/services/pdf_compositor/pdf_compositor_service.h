@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"

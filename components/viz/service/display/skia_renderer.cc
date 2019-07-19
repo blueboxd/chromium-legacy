@@ -1555,9 +1555,12 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   DrawRPDQParams rpdq_params(params->visible_rect);
 
   // Prepare mask.
-  ScopedSkImageBuilder mask_image_builder(this, quad->mask_resource_id());
+  ResourceId mask_resource_id = quad->mask_applies_to_backdrop
+                                    ? kInvalidResourceId
+                                    : quad->mask_resource_id();
+  ScopedSkImageBuilder mask_image_builder(this, mask_resource_id);
   const SkImage* mask_image = mask_image_builder.sk_image();
-  DCHECK_EQ(!!quad->mask_resource_id(), !!mask_image);
+  DCHECK_EQ(!!mask_resource_id, !!mask_image);
   if (mask_image) {
     rpdq_params.mask_image = sk_ref_sp(mask_image);
 

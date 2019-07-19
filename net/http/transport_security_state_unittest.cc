@@ -34,12 +34,15 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
+#include "net/extras/preload_data/decoder.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/tools/huffman_trie/bit_writer.h"
+#include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -3157,6 +3160,44 @@ TEST_F(TransportSecurityStateStaticTest, UMAOnHPKPReportingFailure) {
   histograms.ExpectTotalCount(histogram_name, 1);
   histograms.ExpectBucketCount(histogram_name, -mock_report_sender.net_error(),
                                1);
+}
+
+TEST_F(TransportSecurityStateTest, WriteSizeDecodeSize) {
+  for (size_t i = 0; i < 300; ++i) {
+    SCOPED_TRACE(i);
+    huffman_trie::TrieBitBuffer buffer;
+    buffer.WriteSize(i);
+    huffman_trie::BitWriter writer;
+    buffer.WriteToBitWriter(&writer);
+    size_t position = writer.position();
+    writer.Flush();
+    ASSERT_NE(writer.bytes().data(), nullptr);
+    extras::PreloadDecoder::BitReader reader(writer.bytes().data(), position);
+    size_t decoded_size;
+    EXPECT_TRUE(reader.DecodeSize(&decoded_size));
+    EXPECT_EQ(i, decoded_size);
+  }
+}
+
+TEST_F(TransportSecurityStateTest, DecodeSizeFour) {
+  // Test that BitReader::DecodeSize properly handles the number 4, including
+  // not over-reading input bytes. BitReader::Next only fails if there's not
+  // another byte to read from; if it reads past the number of bits in the
+  // buffer but is still in the last byte it will still succeed. For this
+  // reason, this test puts the encoding of 4 at the end of the byte to check
+  // that DecodeSize doesn't over-read.
+  //
+  // 4 is encoded as 0b010. Shifted right to fill one byte, it is 0x02, with 5
+  // bits of padding.
+  uint8_t encoded = 0x02;
+  extras::PreloadDecoder::BitReader reader(&encoded, 8);
+  for (size_t i = 0; i < 5; ++i) {
+    bool unused;
+    ASSERT_TRUE(reader.Next(&unused));
+  }
+  size_t decoded_size;
+  EXPECT_TRUE(reader.DecodeSize(&decoded_size));
+  EXPECT_EQ(4u, decoded_size);
 }
 
 #endif  // BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)

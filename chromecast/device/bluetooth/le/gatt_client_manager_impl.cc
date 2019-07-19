@@ -443,6 +443,8 @@ void GattClientManagerImpl::RunQueuedConnectRequest() {
           return;
         } else {
           LOG(ERROR) << "Connect failed";
+          // Clear pending connect request to avoid device be in a bad state.
+          gatt_client_->ClearPendingConnect(addr);
         }
       } else {
         LOG(ERROR) << "GATT client not connectable";
@@ -460,6 +462,8 @@ void GattClientManagerImpl::RunQueuedConnectRequest() {
         return;
       }
       LOG(ERROR) << "Disconnect failed";
+      // Clear pending disconnect request to avoid device be in a bad state.
+      gatt_client_->ClearPendingDisconnect(addr);
       DisconnectAllComplete(false);
     }
 
@@ -524,6 +528,7 @@ void GattClientManagerImpl::OnConnectTimeout(
     gatt_client_->Disconnect(addr);
   } else {
     // Connect times out before OnConnectChanged is received.
+    gatt_client_->ClearPendingConnect(addr);
     RUN_ON_IO_THREAD(OnConnectChanged, addr, false /* status */,
                      false /* connected */);
   }
@@ -538,6 +543,7 @@ void GattClientManagerImpl::OnDisconnectTimeout(
   LOG(ERROR) << "Disconnect (" << addr_str << ")"
              << " timed out.";
 
+  gatt_client_->ClearPendingDisconnect(addr);
   DisconnectAllComplete(false);
 
   // Treat device as disconnected for this unknown case.

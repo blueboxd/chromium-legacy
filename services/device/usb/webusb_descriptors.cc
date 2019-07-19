@@ -14,6 +14,11 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+
 namespace {
 
 // These constants are defined by the Universal Serial Device 3.0 Specification

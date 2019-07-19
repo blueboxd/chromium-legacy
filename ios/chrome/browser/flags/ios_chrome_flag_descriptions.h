@@ -300,11 +300,6 @@ extern const char kSendTabToSelfDescription[];
 extern const char kSendTabToSelfBroadcastName[];
 extern const char kSendTabToSelfBroadcastDescription[];
 
-// Title and description for the flag to enable the send tab to self history
-// feature.
-extern const char kSendTabToSelfHistoryName[];
-extern const char kSendTabToSelfHistoryDescription[];
-
 // Title and description for the flag to enable the send tab to self sending UI.
 extern const char kSendTabToSelfShowSendingUIName[];
 extern const char kSendTabToSelfShowSendingUIDescription[];

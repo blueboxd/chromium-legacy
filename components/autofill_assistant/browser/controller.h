@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/client.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/client_settings.h"
@@ -56,16 +57,33 @@ class Controller : public ScriptExecutorDelegate,
              const base::TickClock* tick_clock);
   ~Controller() override;
 
-  // Returns true if the controller is in a state where UI is necessary.
-  bool NeedsUI() const;
+  // Let the controller know it should keep tracking script availability for the
+  // current domain, to be ready to report any scripts as action.
+  //
+  // Activates the controller, if needed and runs it in the background, without
+  // showing any UI until a script is started or Start() is called.
+  //
+  // Only the context of the first call to Track() is taken into account.
+  //
+  // If non-null |on_first_check_done| is called once the result of the first
+  // check of script availability are in - whether they're positive or negative.
+  void Track(std::unique_ptr<TriggerContext> trigger_context,
+             base::OnceCallback<void()> on_first_check_done);
 
-  // Called when autofill assistant can start executing scripts.
+  // Called when autofill assistant should start.
+  //
+  // This shows a UI, containing a progress bar, and executes the first
+  // available autostartable script. Starts checking for scripts, if necessary.
+  //
+  // Start() does nothing if called more than once or if a script is already
+  // running.
+  //
+  // Start() will overwrite any context previously set by Track().
   void Start(const GURL& deeplink_url,
              std::unique_ptr<TriggerContext> trigger_context);
 
-  // Lets the controller know it's about to be deleted. This is normally called
-  // from the client.
-  void WillShutdown(Metrics::DropOutReason reason);
+  // Returns true if the controller is in a state where UI is necessary.
+  bool NeedsUI() const;
 
   // Overrides ScriptExecutorDelegate:
   const ClientSettings& GetSettings() override;
@@ -103,6 +121,8 @@ class Controller : public ScriptExecutorDelegate,
   void EnterState(AutofillAssistantState state) override;
   void SetPaymentRequestOptions(
       std::unique_ptr<PaymentRequestOptions> options) override;
+  void OnScriptError(const std::string& error_message,
+                     Metrics::DropOutReason reason);
 
   // Overrides autofill_assistant::UiDelegate:
   AutofillAssistantState GetState() override;
@@ -134,6 +154,8 @@ class Controller : public ScriptExecutorDelegate,
   void GetVisualViewport(RectF* visual_viewport) const override;
   void OnFatalError(const std::string& error_message,
                     Metrics::DropOutReason reason) override;
+  void PerformDelayedShutdownIfNecessary();
+  void MaybeReportFirstCheckDone();
   bool GetResizeViewport() override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
   void GetOverlayColors(OverlayColors* colors) const override;
@@ -150,7 +172,17 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<WebController> web_controller,
       std::unique_ptr<Service> service);
 
+  // Called when the committed URL has or might have changed.
+  void OnUrlChange();
+
+  // Returns true if the controller should keep checking for scripts according
+  // to the current state.
+  bool ShouldCheckScripts();
+
+  // If the controller's state requires scripts to be checked, check them
+  // once right now and schedule regular checks. Otherwise, do nothing.
   void GetOrCheckScripts();
+
   void OnGetScripts(const GURL& url, bool result, const std::string& response);
 
   // Execute |script_path| and, if execution succeeds, enter |end_state| and
@@ -187,7 +219,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnPaymentRequestContinueButtonClicked();
 
   // Overrides ScriptTracker::Listener:
-  void OnNoRunnableScripts() override;
+  void OnNoRunnableScriptsForPage() override;
   void OnRunnableScriptsChanged(
       const std::vector<ScriptHandle>& runnable_scripts) override;
 
@@ -216,6 +248,7 @@ class Controller : public ScriptExecutorDelegate,
 
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
+  bool allow_autostart() { return state_ == AutofillAssistantState::STARTING; }
 
   ClientSettings settings_;
   Client* const client_;
@@ -242,7 +275,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Domain of the last URL the controller requested scripts from.
   std::string script_domain_;
-  bool allow_autostart_ = true;
 
   // Whether a task for periodic checks is scheduled.
   bool periodic_script_check_scheduled_ = false;
@@ -297,12 +329,6 @@ class Controller : public ScriptExecutorDelegate,
 
   std::unique_ptr<OverlayColors> overlay_colors_;
 
-  // Flag indicates whether it is ready to fetch and execute scripts.
-  bool started_ = false;
-
-  // True once UiController::WillShutdown has been called.
-  bool will_shutdown_ = false;
-
   std::unique_ptr<PaymentRequestOptions> payment_request_options_;
   std::unique_ptr<PaymentInformation> payment_request_info_;
 
@@ -323,6 +349,31 @@ class Controller : public ScriptExecutorDelegate,
   // actions.
   // Lazily instantiate in script_tracker().
   std::unique_ptr<ScriptTracker> script_tracker_;
+
+  // If true, the controller is supposed to stay up and running in the
+  // background even without UI, keeping track of scripts.
+  //
+  // This has two main effects:
+  // - the controllers stays alive even after a fatal error, just so it can
+  // immediately report that no actions are available on that website.
+  // - scripts error are not considered fatal errors. The controller reverts
+  // to TRACKING mode.
+  //
+  // This is set by Track().
+  bool tracking_ = false;
+
+  // True once the controller has run the first set of scripts and have either
+  // declared it invalid - and entered stopped state - or have processed its
+  // result - and updated the state and set of available actions.
+  bool has_run_first_check_ = false;
+
+  // Callbacks to call when |has_run_first_check_| becomes true.
+  std::vector<base::OnceCallback<void()>> on_has_run_first_check_;
+
+  // If set, the controller entered the STOPPED state but shutdown was delayed
+  // until the browser has left the |script_domain_| for which the decision was
+  // taken.
+  base::Optional<Metrics::DropOutReason> delayed_shutdown_reason_;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_;
 

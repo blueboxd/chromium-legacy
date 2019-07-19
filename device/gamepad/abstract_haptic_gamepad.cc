@@ -12,8 +12,7 @@ namespace {
 constexpr double kMaxDurationMillis = 5000.0;  // 5 seconds
 }  // namespace
 
-AbstractHapticGamepad::AbstractHapticGamepad()
-    : is_shut_down_(false), sequence_id_(0), weak_factory_(this) {}
+AbstractHapticGamepad::AbstractHapticGamepad() = default;
 
 AbstractHapticGamepad::~AbstractHapticGamepad() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -24,8 +23,11 @@ AbstractHapticGamepad::~AbstractHapticGamepad() {
 
 void AbstractHapticGamepad::Shutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (is_shut_down_)
-    return;
+  DCHECK(!is_shutting_down_);
+  is_shutting_down_ = true;
+
+  // If an effect is still playing, try to stop vibration. This may fail if the
+  // gamepad is already disconnected.
   if (playing_effect_callback_) {
     sequence_id_++;
     SetZeroVibration();
@@ -34,6 +36,8 @@ void AbstractHapticGamepad::Shutdown() {
         mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
   }
   DoShutdown();
+
+  // No vibration effects may be played once shutdown is complete.
   is_shut_down_ = true;
 }
 

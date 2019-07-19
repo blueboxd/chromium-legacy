@@ -37,12 +37,14 @@ class ShellNaClBrowserDelegate : public NaClBrowserDelegate {
       content::BrowserPpapiHost* ppapi_host) override;
   bool MapUrlToLocalFilePath(const GURL& url,
                              bool is_blocking,
-                             const base::FilePath& profile_directory,
+                             extensions::ExtensionSystem* extension_system,
                              base::FilePath* file_path) override;
   void SetDebugPatterns(const std::string& debug_patterns) override;
   bool URLMatchesDebugPatterns(const GURL& manifest_url) override;
-  bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
+  bool IsNonSfiModeAllowed(extensions::ExtensionSystem* extension_system,
                            const GURL& manifest_url) override;
+  extensions::ExtensionSystem* GetExtensionSystem(
+      const base::FilePath& profile_directory) override;
 
  private:
   content::BrowserContext* browser_context_;  // Not owned.

@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/send_tab_to_self/target_device_info.h"
+#include "components/vector_icons/vector_icons.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
@@ -108,8 +109,10 @@ class ClickToCallDialogViewTest : public ChromeViewsTestBase {
 
   std::vector<ClickToCallSharingDialogController::App> SetUpApps() {
     std::vector<ClickToCallSharingDialogController::App> apps;
-    apps.emplace_back(std::string(), base::UTF8ToUTF16("app_1"), std::string());
-    apps.emplace_back(std::string(), base::UTF8ToUTF16("app_2"), std::string());
+    apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_1"),
+                      std::string());
+    apps.emplace_back(vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_2"),
+                      std::string());
     return apps;
   }
 
@@ -160,7 +163,7 @@ TEST_F(ClickToCallDialogViewTest, DevicePressed) {
 
 TEST_F(ClickToCallDialogViewTest, AppPressed) {
   ClickToCallSharingDialogController::App app(
-      std::string(), base::UTF8ToUTF16("app_1"), std::string());
+      vector_icons::kOpenInNewIcon, base::UTF8ToUTF16("app_1"), std::string());
   EXPECT_CALL(*controller_.get(), GetSyncedDevices())
       .WillOnce(Return(ByMove(std::move(devices_))));
   EXPECT_CALL(*controller_.get(), GetApps())

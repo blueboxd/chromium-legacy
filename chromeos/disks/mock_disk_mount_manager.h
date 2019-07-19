@@ -50,7 +50,7 @@ class MockDiskMountManager : public DiskMountManager {
   MOCK_METHOD1(RemountAllRemovableDrives, void(MountAccessMode));
   MOCK_METHOD3(FormatMountedDevice,
                void(const std::string&,
-                    const std::string&,
+                    FormatFileSystemType,
                     const std::string&));
   MOCK_METHOD2(RenameMountedDevice,
                void(const std::string&, const std::string&));

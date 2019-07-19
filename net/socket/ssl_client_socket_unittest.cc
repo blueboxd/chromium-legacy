@@ -54,7 +54,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
@@ -1489,14 +1488,13 @@ TEST_F(SSLClientSocketTest, Connect) {
 
   rv = sock->Connect(callback.callback());
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLogEventType::SSL_CONNECT));
   if (rv == ERR_IO_PENDING)
     rv = callback.WaitForResult();
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock->IsConnected());
-  log.GetEntries(&entries);
+  entries = log.GetEntries();
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 
   sock->Disconnect();
@@ -1527,8 +1525,7 @@ TEST_F(SSLClientSocketTest, ConnectExpired) {
   // test that the handshake has finished. This is because it may be
   // desirable to disconnect the socket before showing a user prompt, since
   // the user may take indefinitely long to respond.
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 }
 
@@ -1589,8 +1586,7 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
   // test that the handshake has finished. This is because it may be
   // desirable to disconnect the socket before showing a user prompt, since
   // the user may take indefinitely long to respond.
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 }
 
@@ -1636,8 +1632,7 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_CLIENT_AUTH_CERT_NEEDED));
 
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
   EXPECT_FALSE(sock_->IsConnected());
 }
@@ -2411,8 +2406,7 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
                   callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_EQ(static_cast<int>(base::size(request_text) - 1), rv);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t last_index = ExpectLogContainsSomewhereAfter(
       entries, 5, NetLogEventType::SSL_SOCKET_BYTES_SENT,
       NetLogEventPhase::NONE);
@@ -2424,7 +2418,7 @@ TEST_P(SSLClientSocketReadTest, Read_FullLogging) {
     if (rv <= 0)
       break;
 
-    log.GetEntries(&entries);
+    entries = log.GetEntries();
     last_index = ExpectLogContainsSomewhereAfter(
         entries, last_index + 1, NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
         NetLogEventPhase::NONE);
@@ -2692,8 +2686,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(sock_->IsConnected());
 
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLogEventType::SSL_CONNECT));
 
   SSLInfo ssl_info;

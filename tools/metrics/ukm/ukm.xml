@@ -5823,6 +5823,74 @@ be describing additional metrics about the same event.
   </summary>
 </event>
 
+<event name="PeriodicBackgroundSyncEventCompleted">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    A website can register to periodically update itself in the background using
+    a service worker. Updates can be done in response to the periodicsync event.
+    Logged when a periodicsync event completes and returns a status. We collect
+    information about retries of this event.
+  </summary>
+  <metric name="MaxAttempts">
+    <summary>
+      Integer value of the maximum number of allowed retries.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="NumAttempts">
+    <summary>
+      Integer value of the number of retries / sync events dispatched.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Status" enum="ServiceWorkerEventStatus">
+    <summary>
+      The enum value of the completion status, defined in
+      blink::ServiceWorkerStatusCode.
+    </summary>
+  </metric>
+</event>
+
+<event name="PeriodicBackgroundSyncRegistered">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    A website can register to periodically update itself in the background using
+    a service worker. Updates can be done in response to the periodicsync event
+    after a periodic Background Sync registration has been created. Logged when
+    a periodic Background Sync registration is created. We collect information
+    about this registration request.
+  </summary>
+  <metric name="IsReregistered" enum="Boolean">
+    <summary>
+      Boolean for whether a registration with this tag has already been created.
+    </summary>
+  </metric>
+  <metric name="MinIntervalMs">
+    <summary>
+      Integer value of the minimum interval, in milliseconds, of periodicsync
+      events requested by the origin for this registration. This number is
+      exponentially bucketed and uses the UKM GetExponentialBucketMin method
+      with a value of 2.0 for spacing.
+    </summary>
+  </metric>
+</event>
+
 <event name="Permission">
   <owner>timloh@chromium.org</owner>
   <summary>

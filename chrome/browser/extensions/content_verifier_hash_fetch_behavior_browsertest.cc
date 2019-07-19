@@ -62,8 +62,9 @@ class ContentVerifierHashTest
     // Override content verification mode before ExtensionSystemImpl initializes
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(
-        uses_enforce_strict_mode() ? ContentVerifierDelegate::ENFORCE_STRICT
-                                   : ContentVerifierDelegate::ENFORCE);
+        uses_enforce_strict_mode()
+            ? ChromeContentVerifierDelegate::ENFORCE_STRICT
+            : ChromeContentVerifierDelegate::ENFORCE);
 
     ExtensionBrowserTest::SetUp();
   }

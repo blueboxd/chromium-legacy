@@ -2435,6 +2435,10 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
     if (!mask_layer_) {
       mask_layer_ = CreateGraphicsLayer(CompositingReason::kLayerForMask);
       mask_layer_->SetPaintingPhase(kGraphicsLayerPaintMask);
+      CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
+          owning_layer_.GetLayoutObject().UniqueId(),
+          CompositorElementIdNamespace::kEffectMask);
+      mask_layer_->SetElementId(element_id);
       layer_changed = true;
     }
   } else if (mask_layer_) {

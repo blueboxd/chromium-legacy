@@ -98,6 +98,15 @@ public class HostInfo {
         }
     }
 
+    /**
+     *
+     * @return true if the host is incomplete, meaning the host may be newly registered and doesn't
+     * have some required fields.
+     */
+    public boolean isIncomplete() {
+        return ftlId.isEmpty() || publicKey.isEmpty();
+    }
+
     public String getHostOfflineReasonText(Context context) {
         if (TextUtils.isEmpty(hostOfflineReason)) {
             return context.getString(R.string.host_offline_tooltip);

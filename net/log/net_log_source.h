@@ -39,7 +39,7 @@ struct NET_EXPORT NetLogSource {
   // true and writes the result to |source| on success.  Returns false and
   // makes |source| an invalid source on failure.
   // TODO(mmenke):  Long term, we want to remove this.
-  static bool FromEventParameters(base::Value* event_params,
+  static bool FromEventParameters(const base::Value* event_params,
                                   NetLogSource* source);
 
   NetLogSourceType type;

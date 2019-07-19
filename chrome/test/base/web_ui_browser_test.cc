@@ -375,6 +375,10 @@ void BaseWebUIBrowserTest::set_loader_file(const std::string& loader_file) {
   loader_file_ = loader_file;
 }
 
+void BaseWebUIBrowserTest::set_webui_host(const std::string& webui_host) {
+  test_factory_->set_webui_host(webui_host);
+}
+
 namespace {
 
 // DataSource for the dummy URL.  If no data source is provided then an error

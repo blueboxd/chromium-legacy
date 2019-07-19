@@ -20,6 +20,19 @@
 
 namespace device {
 
+using mojom::UsbAlternateInterfaceInfoPtr;
+using mojom::UsbConfigurationInfoPtr;
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbDeviceInfoPtr;
+using mojom::UsbEndpointInfoPtr;
+using mojom::UsbInterfaceInfoPtr;
+using mojom::UsbSynchronizationType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+using mojom::UsbUsageType;
+
 namespace {
 
 using IndexMap = std::map<uint8_t, base::string16>;

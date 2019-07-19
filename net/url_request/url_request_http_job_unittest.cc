@@ -27,7 +27,6 @@
 #include "net/http/http_transaction_test_util.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/net_buildflags.h"
 #include "net/socket/next_proto.h"
@@ -1381,16 +1380,11 @@ TEST_F(URLRequestHttpJobTest, HSTSInternalRedirectTest) {
     d.RunUntilComplete();
 
     if (test.upgrade_expected) {
-      net::TestNetLogEntry::List entries;
-      net_log_.GetEntries(&entries);
-      int redirects = 0;
+      auto entries = net_log_.GetEntriesWithType(
+          net::NetLogEventType::URL_REQUEST_REDIRECT_JOB);
+      int redirects = entries.size();
       for (const auto& entry : entries) {
-        if (entry.type == net::NetLogEventType::URL_REQUEST_REDIRECT_JOB) {
-          redirects++;
-          std::string value;
-          EXPECT_TRUE(entry.GetStringValue("reason", &value));
-          EXPECT_EQ("HSTS", value);
-        }
+        EXPECT_EQ("HSTS", GetStringValueFromParams(entry, "reason"));
       }
       EXPECT_EQ(1, redirects);
       EXPECT_EQ(1, d.received_redirect_count());

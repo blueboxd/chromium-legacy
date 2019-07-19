@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Saidi salvestusruum</translation>
 <translation id="2328985652426384049">Ei saa sisse logida</translation>
 <translation id="2349710944427398404">Chrome'i kasutatav andmemaht kokku, sh kontod, järjehoidjad ja salvestatud seaded</translation>
-<translation id="2351097562818989364">Teie tõlkeseaded on lähtestatud.</translation>
 <translation id="2353636109065292463">Interneti-ühenduse kontrollimine</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2369533728426058518">avatud vahelehed</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Jäänud on <ph name="SECONDS" /> sekundit</translation>
 <translation id="2779651927720337254">ebaõnnestus</translation>
 <translation id="2781151931089541271">Jäänud on 1 sekund</translation>
+<translation id="2796941233371040292">Siin ei ole salvestusruumi andmeid</translation>
 <translation id="2801022321632964776">Oma keele kasutamiseks värskendage Chrome uusimale versioonile</translation>
 <translation id="2810645512293415242">Lihtsustatud leht andmemahu säästmiseks ja laadimise kiirendamiseks.</translation>
 <translation id="281504910091592009">Vaadake ja hallake salvestatud paroole oma <ph name="BEGIN_LINK" />Google'i kontol<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Teave Chrome'i kohta</translation>
 <translation id="2891154217021530873">Peata lehe laadimine</translation>
 <translation id="2893180576842394309">Google võib kasutada teie ajalugu otsingu ja muude Google'i teenuste isikupärastamiseks</translation>
+<translation id="2898264748040935573">Salvestatud parooli muutmine</translation>
 <translation id="2900528713135656174">Looge sündmus</translation>
 <translation id="2902702728133930130">Käivitamisel ilmnes Chrome'is ootamatu viga.</translation>
 <translation id="290376772003165898">Kas leht ei ole <ph name="LANGUAGE" /> keeles?</translation>
@@ -520,6 +521,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="4913169188695071480">Peata värskendamine</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hankige abi<ph name="END_LINK" />, kuni seadmeid otsitakse …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# leht}other{# lehte}}</translation>
+<translation id="4932247056774066048">Kuna logite välja kontolt, mida haldab <ph name="DOMAIN_NAME" />, kustutatakse sellest seadmest teie Chrome'i andmed. Need jäävad alles teie Google'i kontole.</translation>
 <translation id="4943703118917034429">Virtuaalreaalsus</translation>
 <translation id="4943872375798546930">Tulemusi pole</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> jagab teie ekraani</translation>
@@ -562,6 +564,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5210286577605176222">Eelmisele vahelehele liikumine</translation>
 <translation id="5210365745912300556">Sule vaheleht</translation>
 <translation id="5224771365102442243">Videoga</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> soovib otsida läheduses olevaid Bluetooth-seadmeid. Leiti järgmised seadmed:</translation>
 <translation id="5233638681132016545">Uus vaheleht</translation>
 <translation id="526421993248218238">Seda lehte ei saa laadida</translation>
 <translation id="5271967389191913893">Seade ei saa allalaaditavat sisu avada.</translation>
@@ -571,7 +574,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5301954838959518834">Selge, sain aru</translation>
 <translation id="5304593522240415983">See väli ei tohi olla tühi</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
-<translation id="5308603654685598744">Kui see funktsioon on sisse lülitatud, siis pakub Chrome võimalust tõlkida teistes keeltes kirjutatud lehti, kasutades teenust Google'i tõlge.</translation>
 <translation id="5313967007315987356">Lisa sait</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5324858694974489420">Vanemlikud seaded</translation>
@@ -586,6 +588,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5414836363063783498">Kinnitamine ...</translation>
 <translation id="5423934151118863508">Teie enim külastatud lehed ilmuvad siin</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB saadaval</translation>
+<translation id="543338862236136125">Muuda parooli</translation>
 <translation id="5433691172869980887">Kasutajanimi on kopeeritud</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> faili allalaadimine (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Aadressiribale liikumine</translation>
@@ -660,7 +663,6 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5865733239029070421">Google'ile saadetakse automaatselt kasutusstatistikat ja krahhiaruandeid</translation>
 <translation id="5869522115854928033">Salvestatud paroolid</translation>
 <translation id="5902828464777634901">Kõik veebisaidi salvestatud kohalikud andmed (sh küpsised) kustutatakse.</translation>
-<translation id="5911030830365207728">Google'i tõlge</translation>
 <translation id="5916664084637901428">Sees</translation>
 <translation id="5919204609460789179">Sünkroonimise alustamiseks värskendage teenust <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> on säästetud</translation>
@@ -805,7 +807,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6963642900430330478">See leht on ohtlik. Saidi teave</translation>
 <translation id="6963766334940102469">Kustuta järjehoidjad</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Tõlkimisseadete lähtestamine</translation>
 <translation id="6979737339423435258">Algusest</translation>
 <translation id="6981982820502123353">Juurdepääsetavus</translation>
 <translation id="6989267951144302301">Ei saanud alla laadida</translation>

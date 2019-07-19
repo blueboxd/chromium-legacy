@@ -10,8 +10,6 @@ module proxy_resolver.mojom;
 import "services/network/public/mojom/ip_address.mojom";
 import "url/mojom/url.mojom";
 
-const string kProxyResolverServiceName = "proxy_resolver";
-
 // Mirror of net::ProxyResolveDnsOperation.
 enum HostResolveOperation {
   DNS_RESOLVE,

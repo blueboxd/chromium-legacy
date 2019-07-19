@@ -764,8 +764,8 @@ void UDPSocketPosix::LogRead(int result,
 
     IPEndPoint address;
     bool is_address_valid = address.FromSockAddr(addr, addr_len);
-    NetLogUDPDataTranfer(net_log_, NetLogEventType::UDP_BYTES_RECEIVED, result,
-                         bytes, is_address_valid ? &address : nullptr);
+    NetLogUDPDataTransfer(net_log_, NetLogEventType::UDP_BYTES_RECEIVED, result,
+                          bytes, is_address_valid ? &address : nullptr);
   }
 
   received_activity_monitor_.Increment(result);
@@ -793,8 +793,8 @@ void UDPSocketPosix::LogWrite(int result,
   }
 
   if (net_log_.IsCapturing()) {
-    NetLogUDPDataTranfer(net_log_, NetLogEventType::UDP_BYTES_SENT, result,
-                         bytes, address);
+    NetLogUDPDataTransfer(net_log_, NetLogEventType::UDP_BYTES_SENT, result,
+                          bytes, address);
   }
 
   sent_activity_monitor_.Increment(result);

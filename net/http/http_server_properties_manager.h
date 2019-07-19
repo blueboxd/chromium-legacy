@@ -80,10 +80,6 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
 
   ~HttpServerPropertiesManager() override;
 
-  // Helper function for unit tests to set the version in the dictionary.
-  static void SetVersion(base::DictionaryValue* http_server_properties_dict,
-                         int version_number);
-
   // ----------------------------------
   // HttpServerProperties methods:
   // ----------------------------------
@@ -211,8 +207,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   bool AddServersData(const base::DictionaryValue& server_dict,
                       SpdyServersMap* spdy_servers_map,
                       AlternativeServiceMap* alternative_service_map,
-                      ServerNetworkStatsMap* network_stats_map,
-                      int version);
+                      ServerNetworkStatsMap* network_stats_map);
   // Helper method used for parsing an alternative service from JSON.
   // |dict| is the JSON dictionary to be parsed. It should contain fields
   // corresponding to members of AlternativeService.

@@ -131,6 +131,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1152117524387175066">Consente di indicare lo stato dello switch dev del dispositivo all'avvio. Se la norma viene impostata su False, lo stato dello switch dev non viene indicato.</translation>
 <translation id="1160479894929412407">Consenti protocollo QUIC</translation>
 <translation id="1160939557934457296">Disattiva procedendo dalla pagina di avviso Navigazione sicura</translation>
+<translation id="117059611145966538">Server di stampa esterni</translation>
 <translation id="1189817621108632689">Questa norma consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita la visualizzazione di immagini.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultImagesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -215,7 +216,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       Se questa norma non è impostata, il codice di networking potrebbe essere eseguito al di fuori del processo di browser, a seconda delle prove sul campo dell'esperimento NetworkService.</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
-<translation id="1384653327213929024">Consenti agli utenti di gestire i certificati installati.</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
 <translation id="1404043648050567997">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
@@ -259,6 +259,12 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
+<translation id="1455804070656338445">Consente di configurare l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL dopo la visualizzazione di un avviso nel browser per modificare la loro password.
+      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che tale pagina rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
+      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccount.google.com per modificare la loro password.
+      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" />, così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="1456822151187621582">Windows (client <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1458547592473993238">Questa norma è obsoleta. Usa <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> per controllare la disponibilità del plug-in Flash e <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> per controllare se si deve utilizzare il visualizzatore PDF integrato per aprire i file PDF.
 
@@ -376,6 +382,7 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
           Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
 
           Se questa norma non è impostata, all'inizio la lente di ingrandimento viene disattivata ma l'utente può attivarla in qualsiasi momento.</translation>
+<translation id="1654087023995670109">Applica modalità ospite del browser</translation>
 <translation id="1655229863189977773">Imposta le dimensioni della cache su disco in byte</translation>
 <translation id="166427968280387991">Server proxy</translation>
 <translation id="1668836044817793277">Consente o meno all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" />.
@@ -1094,15 +1101,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Quando questa norma non viene impostata, il comportamento delle norme più specifiche rimane invariato.</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
-<translation id="2990018289267778247">Se questo criterio è impostato su true, le opzioni di accessibilità vengono visualizzate sempre nel menu della barra delle applicazioni.
-
-          Se questo criterio è impostato su false, le opzioni di accessibilità non vengono mai visualizzate nel menu della barra delle applicazioni.
-
-          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
-
-          Se questo criterio non viene impostato, le opzioni di accessibilità non verranno visualizzate nel menu della barra delle applicazioni, ma l'utente potrà attivarne la visualizzazione tramite la pagina Impostazioni.
-
-          Quando vengono attivate le funzioni di accessibilità (in altri modi, ad esempio con una combinazione di tasti), le opzioni di accessibilità verranno sempre visualizzate nel menu della barra delle applicazioni.</translation>
 <translation id="3011301228198307065">Consente di configurare l'URL della home page predefinita di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificarlo.
 
           La home page è la pagina che viene aperta facendo clic sul pulsante Home. Le pagine che si aprono all'avvio vengono stabilite dalle norme RestoreOnStartup.
@@ -1398,6 +1396,15 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3583230441447348508">Consente di specificare un elenco di condivisioni di file di rete preconfigurate.
 
       Ogni voce della norma è un oggetto con due componenti: "share_url" e "mode". "share_url" deve essere l'URL della condivisione e "mode" deve essere "drop_down" o "pre_mount". La modalità "drop_down" indica che il valore "share_url" verrà aggiunto al menu a discesa per il rilevamento delle condivisioni. La modalità "pre_mount" indica che il valore "share_url" verrà montato.</translation>
+<translation id="3585177699591644295">Consente di attivare la funzione di accessibilità Seleziona per ascoltare.
+
+          Se questo criterio viene impostato su true, la funzione Seleziona per ascoltare sarà sempre attiva.
+
+          Se questo criterio viene impostato su false, la funzione Seleziona per ascoltare sarà sempre disattivata.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente la funzione Seleziona per ascoltare è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3591527072193107424">Attiva la funzionalità Supporto dei browser precedenti.</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
@@ -1920,6 +1927,20 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 <translation id="4604931264910482931">Configura lista nera di messaggi nativi</translation>
 <translation id="4617338332148204752">Salta il controllo dei metatag in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configura la whitelist per l'installazione delle estensioni</translation>
+<translation id="4627884124191169977">Consente di specificare le configurazioni dei server di stampa disponibili.
+
+      Questo criterio consente di specificare le configurazioni dei server di stampa esterni sui dispositivi <ph name="PRODUCT_OS_NAME" /> come file JSON.
+
+      Le dimensioni del file non devono superare 1 MB e il file deve contenere un array di record (oggetti JSON). Ogni record deve contenere i campi "url" e "display_name".
+
+      Il file viene scaricato e memorizzato nella cache. L'hash di crittografia viene utilizzato per verificare l'integrità del download. Il file verrà scaricato nuovamente ogni volta che l'URL o l'hash cambiano.
+
+      Se viene impostato un valore corretto per questo criterio, i dispositivi proveranno a inviare query ai server di stampa specificati per le stampanti disponibili che utilizzano il protocollo IPP.
+
+      Se questo criterio non viene impostato o viene impostato un valore sbagliato, agli utenti non sarà visibile nessun server di stampa.
+
+      Attualmente, il numero di server di stampa è limitato a 16. Solo ai primi 16 server di stampa dell'elenco verranno inviate query.
+      </translation>
 <translation id="4632343302005518762">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i tipi di contenuti elencati</translation>
 <translation id="4632566332417930481">Non consentire l'utilizzo degli Strumenti per sviluppatori per le estensioni installate in base a norme aziendali; consenti l'utilizzo degli Strumenti per sviluppatori in altri contesti</translation>
 <translation id="4633786464238689684">Consente di modificare il comportamento predefinito dei tasti della fila superiore in tasti funzione.
@@ -1971,10 +1992,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> non delegherà le credenziali utente, anche se viene rilevato un server sulla Intranet.</translation>
 <translation id="4752880493649142945">Certificato client per la connessione a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4757671984625088193">Se questa norma viene impostata su true o non viene impostata, <ph name="PRODUCT_NAME" /> ti suggerirà pagine correlate alla pagina corrente.
-      Questi suggerimenti vengono recuperati da remoto dai server di Google.
-
-      Se la norma è impostata su false, non verranno recuperati o mostrati suggerimenti.</translation>
 <translation id="4759650396863318477">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
 
       Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
@@ -2377,6 +2394,9 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Tieni presente che devono essere esclusi sia il nome del plug-in che il nome del gruppo del plug-in. Ciascun gruppo di plug-in viene mostrato in una sezione separata di about:plugins; ciascuna sezione può contenere uno o più plug-in. Ad esempio, il plug-in "Shockwave Flash" appartiene al gruppo "Adobe Flash Player" ed entrambi i nomi devono avere una corrispondenza nell'elenco di eccezioni se il plug-in in questione deve essere escluso dalla lista nera.
 
       Se questa norma non viene impostata, qualsiasi plug-in corrispondente ai pattern in "DisabledPlugins" verrà disattivato e bloccato e l'utente non potrà attivarlo.</translation>
+<translation id="5498045818698736356">Consente di specificare un elenco di siti web che vengono installati automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallati o disattivati dall'utente.
+
+      Ogni voce dell'elenco del criterio è un oggetto con un componente obbligatorio "url" e due componenti facoltativi: "default_launch_container" e "create_desktop_shortcut". "url" deve essere l'URL dell'applicazione web da installare, "launch_container" deve essere "finestra" o "scheda" per indicare in che modo l'applicazione web verrà aperta una volta installata e "create_desktop_shortcut" deve essere "true" se è necessario creare un collegamento sul desktop su Linux e Windows. Se "default_launch_container" viene omesso, l'applicazione si aprirà in una scheda per impostazione predefinita. A prescindere dal valore di "default_launch_container", gli utenti possono modificare il contenitore in cui si aprirà l'applicazione. Se "create_desktop_shortcuts" viene omesso, non verranno creati collegamenti sul desktop. Vedi il criterio <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> per bloccare app sulla shelf di Chrome OS.</translation>
 <translation id="5499375345075963939">Questa norma è attiva soltanto in modalità retail.
 
       Quando il valore di questa norma è impostato e non è 0, l'utente Demo correntemente connesso verrà disconnesso automaticamente dopo che sarà trascorso il tempo di inattività della durata specificata.
@@ -2495,6 +2515,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
           Nelle versioni precedenti alla 75, l'utilizzo di diversi ID estensione separati da virgole non è supportato e verrà ignorato. Il resto del criterio continuerà a essere applicato.</translation>
 <translation id="5645779841392247734">Consenti i cookie in questi siti</translation>
+<translation id="5666457529647159548">Consenti agli utenti di gestire i certificati client installati.</translation>
 <translation id="5689430183304951538">Dimensioni predefinite delle pagine di stampa</translation>
 <translation id="5693469654327063861">Consenti migrazione dei dati</translation>
 <translation id="5694594914843889579">Quando questa norma è impostata su true, la memoria esterna non sarà disponibile nei file che è possibile sfogliare.
@@ -2902,13 +2923,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           Se questa norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando la tastiera sullo schermo. Tuttavia, la scelta dell'utente non è permanente e l'impostazione predefinita viene ripristinata ogni volta che viene visualizzata la schermata di accesso o se l'utente rimane inattivo sulla schermata di acceso per un minuto.
 
           Se questa norma non viene impostata, la tastiera sullo schermo è disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento e il relativo stato sulla schermata di accesso viene mantenuto tra utenti differenti.</translation>
-<translation id="6570691255874112762">Questa norma controlla se l'utente è in grado di importare e rimuovere certificati tramite Gestione certificati.
-
-      Se la norma è impostata su "Consenti agli utenti di gestire tutti i certificati" o se non è impostata, gli utenti potranno gestire i certificati.
-
-      Se la norma è impostata su "Consenti agli utenti di gestire i certificati utente", gli utenti potranno gestire i certificati utente, ma non i certificati a livello di dispositivo.
-
-      Se la norma è impostata su "Non consentire più agli utenti di gestire i certificati", gli utenti non potranno gestire i certificati, ma solo visualizzarli.</translation>
 <translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
 <translation id="6583851521569686409">Consente di configurare un elenco di stampanti.
 
@@ -2966,6 +2980,12 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
 <translation id="6698632841807204978">Attiva la stampa monocromatica</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
+<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> garantisce la sicurezza degli aggiornamenti e dell'installazione delle estensioni. Tuttavia, i contenuti di alcune estensioni ospitate al di fuori del Chrome Web Store potrebbero essere protetti solo dagli accessi non sicuri o da algoritmi di hashing, ad esempio SHA1. Quando questo criterio è disattivato, la nuova installazione o gli aggiornamenti di tali estensioni non verranno consentiti da Chrome (finché gli sviluppatori delle estensioni non ricreano le estensioni con algoritmi più efficaci). Se questo criterio viene attivato, l'installazione e gli aggiornamenti di queste estensioni saranno concessi.
+
+          Se il criterio non è impostato, viene applicato per impostazione predefinita il comportamento previsto dal criterio attivo.
+          A partire dalla versione 76 di <ph name="PRODUCT_NAME" />, qualora il criterio non sia impostato, viene invece applicato per impostazione predefinita il comportamento previsto in caso di criterio disattivato.
+
+          A partire dalla versione 78 di <ph name="PRODUCT_NAME" />, questo criterio viene ignorato e considerato come disattivato.</translation>
 <translation id="6731757988219967594">Filtra i siti di contenuti per adulti di primo livello (ma non gli iframe incorporati)</translation>
 <translation id="6734521799274931721">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
@@ -3072,6 +3092,9 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
       Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Attiva la stampa fronte/retro su lato lungo</translation>
 <translation id="6931242315485576290">Disattiva la sincronizzazione dei dati con Google</translation>
+<translation id="6932419914671987652">Se questo criterio è impostato come attivo, <ph name="PRODUCT_NAME" /> applicherà le sessioni ospiti ed eviterà gli accessi ai profili. Gli accessi ospite sono profili <ph name="PRODUCT_NAME" /> in cui tutte le finestre sono nella modalità di navigazione in incognito.
+
+      Se questo criterio è impostato come disattivato o non è impostato oppure la modalità ospite del browser è disattivata dal criterio <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> consentirà l'utilizzo di profili nuovi ed esistenti.</translation>
 <translation id="6936894225179401731">Consente di specificare il numero massimo di connessioni simultanee al server proxy.
 
       Alcuni server proxy non sono in grado di gestire un numero elevato di connessioni simultanee per client e questo problema può essere risolto impostando un valore inferiore per questa norma.
@@ -3277,6 +3300,13 @@ Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attiva
 
 Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare l'ingrandimento dello schermo in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="7249828445670652637">Attiva i certificati CA <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
+<translation id="7251652588006515288">Questo criterio consente di stabilire se l'utente può o meno importare e rimuovere certificati client tramite Gestione certificati.
+
+      Se il criterio viene impostato su "Consenti agli utenti di gestire tutti i certificati" o se non viene impostato, gli utenti potranno gestire i certificati.
+
+      Se il criterio viene impostato su "Consenti agli utenti di gestire i certificati utente", gli utenti potranno gestire i certificati utente, ma non i certificati a livello di dispositivo.
+
+      Se il criterio viene impostato su "Non consentire più agli utenti di gestire i certificati", gli utenti non potranno gestire i certificati, ma solo visualizzarli.</translation>
 <translation id="7252681704926980614">Invia nome utente e nome file al server delle stampanti native per ogni processo di stampa. L'impostazione predefinita non prevede l'invio.
 
       Se imposti questa norma su true disattivi le stampanti che usano protocolli diversi da IPPS, USB o IPP-over-USB poiché il nome utente e il nome file non devono essere inviati nella rete in modo esplicito.</translation>
@@ -3966,6 +3996,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
 
           Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8656110680728938054">Attiva Seleziona per ascoltare</translation>
 <translation id="8661297125441579970">Non consentire migrazione dei dati e ARC.</translation>
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
@@ -4008,6 +4039,13 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
 <translation id="8764477907716150749">Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
+<translation id="877773134585155834">Consente di elencare gli ID delle applicazioni da visualizzare in <ph name="PRODUCT_OS_NAME" /> sotto forma di app bloccate nella barra Avvio app.
+
+      Le app di Chrome vengono specificate in base al relativo ID, ad esempio "pjkljhegncpnkpknbcohdijeoejaedia", le app Android in base al nome del pacchetto, ad esempio "com.google.android.gm", e le applicazioni web in base all'URL usato nel criterio WebAppInstallForceList, ad esempio "https://google.com/maps".
+
+      Se questo criterio viene configurato, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
+
+      Se questo criterio non viene impostato, gli utenti possono modificare l'elenco di app bloccate in Avvio app.</translation>
 <translation id="8798099450830957504">Predefinito</translation>
 <translation id="8800453707696044281">Imposta il valore percentuale personalizzato raggiunto il quale viene interrotta la ricarica della batteria</translation>
 <translation id="8801680448782904838">Invia a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo

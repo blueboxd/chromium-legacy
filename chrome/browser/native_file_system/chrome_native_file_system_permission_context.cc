@@ -574,6 +574,7 @@ void ChromeNativeFileSystemPermissionContext::RevokeDirectoryReadGrants(
     const url::Origin& origin,
     int process_id,
     int frame_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto origin_it = origins_.find(origin);
   if (origin_it == origins_.end()) {
     // No grants for origin, return directly.
@@ -591,6 +592,57 @@ void ChromeNativeFileSystemPermissionContext::RevokeDirectoryReadGrants(
   grant_it->second->RevokePermission();
   // And remove grant from map so future handles will get a new grant.
   origin_state.directory_read_grants.erase(grant_it);
+}
+
+void ChromeNativeFileSystemPermissionContext::RevokeWriteGrants(
+    const url::Origin& origin,
+    int process_id,
+    int frame_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto origin_it = origins_.find(origin);
+  if (origin_it == origins_.end()) {
+    // No grants for origin, return directly.
+    return;
+  }
+  OriginState& origin_state = origin_it->second;
+  // Grants are ordered first by process_id and frame_id, and only within that
+  // by path. As a result lower_bound on a key with an empty path returns the
+  // first grant to remove (if any), and all other grants to remove are
+  // immediately after it.
+  auto grant_it = origin_state.grants.lower_bound(
+      PermissionGrantImpl::Key{base::FilePath(), process_id, frame_id});
+  while (grant_it != origin_state.grants.end() &&
+         grant_it->first.process_id == process_id &&
+         grant_it->first.frame_id == frame_id) {
+    grant_it->second->SetStatus(PermissionStatus::ASK);
+    ++grant_it;
+  }
+}
+
+// static
+void ChromeNativeFileSystemPermissionContext::
+    RevokeGrantsForOriginAndTabFromUIThread(
+        content::BrowserContext* browser_context,
+        const url::Origin& origin,
+        int process_id,
+        int frame_id) {
+  auto permission_context =
+      NativeFileSystemPermissionContextFactory::GetForProfileIfExists(
+          browser_context);
+  if (!permission_context) {
+    // With no context there is nothing to revoke.
+    return;
+  }
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(
+          [](const scoped_refptr<ChromeNativeFileSystemPermissionContext>&
+                 context,
+             const url::Origin& origin, int process_id, int frame_id) {
+            context->RevokeDirectoryReadGrants(origin, process_id, frame_id);
+            context->RevokeWriteGrants(origin, process_id, frame_id);
+          },
+          std::move(permission_context), origin, process_id, frame_id));
 }
 
 void ChromeNativeFileSystemPermissionContext::ShutdownOnUIThread() {}

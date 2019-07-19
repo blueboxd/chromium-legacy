@@ -53,6 +53,8 @@ class MockGattClient : public GattClient {
   MOCK_METHOD5(ConnectionParameterUpdate,
                bool(const Addr&, int, int, int, int));
   MOCK_METHOD1(GetServices, bool(const Addr&));
+  MOCK_METHOD1(ClearPendingConnect, bool(const Addr&));
+  MOCK_METHOD1(ClearPendingDisconnect, bool(const Addr&));
 
   Gatt::Client::Delegate* delegate() const { return delegate_; }
 

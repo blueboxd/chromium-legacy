@@ -31,11 +31,11 @@ template("ar_module_tmpl") {
     target_sdk_version = android_sdk_version
     deps = [
       "//chrome/browser/android/vr:ar_java",
-      "//third_party/android_deps:com_google_ar_core_java",
+      "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
     ]
 
-    loadable_modules_if_32_bit = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
-    loadable_modules_if_64_bit = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/arm64-v8a/libarcore_sdk_c.so" ]
+    loadable_modules_if_32_bit = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+    loadable_modules_if_64_bit = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/arm64-v8a/libarcore_sdk_c.so" ]
 
     uncompress_shared_libraries = true
 

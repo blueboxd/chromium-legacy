@@ -57,7 +57,7 @@ public class SessionConnector implements ConnectionListener, DirectoryService.Ho
         mAuthenticator = authenticator;
         mFlags = flags;
 
-        if (hostIncomplete(host)) {
+        if (host.isIncomplete()) {
             // These keys might not be present in a newly-registered host, so treat this as a
             // connection failure and reload the host list.
             reloadHostListAndConnect();
@@ -71,10 +71,6 @@ public class SessionConnector implements ConnectionListener, DirectoryService.Ho
         mClient.connectToHost(mAccountName, mAuthToken, mHost.jabberId, mHost.ftlId, mHost.id,
                 mHost.publicKey, mAuthenticator, mFlags, mHost.hostVersion, mHost.hostOs,
                 mHost.hostOsVersion, this);
-    }
-
-    private static boolean hostIncomplete(HostInfo host) {
-        return host.jabberId.isEmpty() || host.publicKey.isEmpty();
     }
 
     private void reloadHostListAndConnect() {
@@ -119,9 +115,8 @@ public class SessionConnector implements ConnectionListener, DirectoryService.Ho
             }
         }
 
-        if (foundHost == null || foundHost.jabberId.equals(mHost.jabberId)
-                || hostIncomplete(foundHost)) {
-            // Cannot reconnect to this host, or there's no point in trying because the JID is
+        if (foundHost == null || foundHost.ftlId.equals(mHost.ftlId) || foundHost.isIncomplete()) {
+            // Cannot reconnect to this host, or there's no point in trying because the FtlId is
             // unchanged, so report connection error to the client.
             mConnectionListener.onConnectionState(ConnectionListener.State.FAILED,
                     ConnectionListener.Error.PEER_IS_OFFLINE);

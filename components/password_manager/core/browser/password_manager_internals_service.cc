@@ -6,10 +6,7 @@
 
 namespace password_manager {
 
-PasswordManagerInternalsService::PasswordManagerInternalsService() {
-}
-
-PasswordManagerInternalsService::~PasswordManagerInternalsService() {
-}
+PasswordManagerInternalsService::PasswordManagerInternalsService() = default;
+PasswordManagerInternalsService::~PasswordManagerInternalsService() = default;
 
 }  // namespace password_manager

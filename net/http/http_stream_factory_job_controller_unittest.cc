@@ -31,7 +31,6 @@
 #include "net/http/http_stream_factory_test_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
@@ -2472,10 +2471,9 @@ TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
   base::RunLoop().RunUntilIdle();
   requests.clear();
   EXPECT_TRUE(HttpStreamFactoryPeer::IsJobControllerDeleted(factory_));
-  TestNetLogEntry::List entries;
+  auto entries = net_log_.GetEntries();
   size_t log_position = 0;
   for (int i = 0; i < kNumRequests - 1; ++i) {
-    net_log_.GetEntries(&entries);
     log_position = ExpectLogContainsSomewhereAfter(
         entries, log_position, NetLogEventType::HTTP_STREAM_JOB_THROTTLED,
         NetLogEventPhase::NONE);
@@ -2774,9 +2772,8 @@ TEST_F(JobControllerLimitMultipleH2Requests, QuicJobNotThrottled) {
   EXPECT_TRUE(job_controller->alternative_job());
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, _));
   base::RunLoop().RunUntilIdle();
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
-  for (auto entry : entries) {
+  auto entries = net_log_.GetEntries();
+  for (const auto& entry : entries) {
     ASSERT_NE(NetLogEventType::HTTP_STREAM_JOB_THROTTLED, entry.type);
   }
 }

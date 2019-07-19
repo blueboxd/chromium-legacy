@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">變更密碼</translation>
 <translation id="1090126737595388931">沒有執行中的背景應用程式</translation>
 <translation id="1090290614672149983">要將變更儲存至原始檔案嗎？</translation>
-<translation id="1090918500949388876">只要在螢幕開啟狀態下說出「Ok Google」，就能隨時存取 Google 助理</translation>
 <translation id="1091767800771861448">按下 ESCAPE 鍵可略過 (僅限非官方版本)。</translation>
 <translation id="1093457606523402488">可偵測到的網路：</translation>
 <translation id="1094607894174825014">在以下裝置上要求的讀取或寫入作業使用了無效的偏移：「<ph name="DEVICE_NAME" />」。</translation>
@@ -542,7 +541,6 @@
 <translation id="1792619191750875668">擴充顯示畫面</translation>
 <translation id="1794791083288629568">提供意見，協助我們修正這個問題。</translation>
 <translation id="1795214765651529549">使用傳統版</translation>
-<translation id="1797738254362176886">請插入並輕觸安全金鑰，即可查看其中的登入資料。</translation>
 <translation id="1799071797295057738">系統已自動停用「<ph name="EXTENSION_NAME" />」擴充功能。</translation>
 <translation id="1802687198411089702">網頁無回應。你可以等待網頁回應，也可以離開網頁。</translation>
 <translation id="1802931390041703523">這個網頁的 Flash 已遭封鎖</translation>
@@ -788,7 +786,6 @@
 <translation id="2177950615300672361">無痕式分頁：<ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 的「<ph name="PEPPER_PLUGIN_NAME" />」要求存取你的電腦</translation>
 <translation id="2178614541317717477">CA 洩露</translation>
-<translation id="2179849162388791084">無法取得安全金鑰中的登入資料。</translation>
 <translation id="218070003709087997">使用數字指定列印份數 (1 至 999)。</translation>
 <translation id="2184515124301515068">讓 Chrome 自行判斷何時允許網站播放音訊 (建議使用)</translation>
 <translation id="2187895286714876935">伺服器憑證匯入錯誤</translation>
@@ -1375,7 +1372,6 @@
 <translation id="3022978424994383087">無法辨識語音內容。</translation>
 <translation id="3023464535986383522">隨選朗讀</translation>
 <translation id="3024374909719388945">使用 24 小時制時鐘</translation>
-<translation id="30256218463955326">座架不相容</translation>
 <translation id="3031417829280473749">特務 X</translation>
 <translation id="3031557471081358569">選取要匯入的項目：</translation>
 <translation id="3031601332414921114">繼續列印</translation>
@@ -1565,7 +1561,6 @@
 <translation id="3348038390189153836">偵測到卸除式裝置</translation>
 <translation id="3349933790966648062">記憶體使用量</translation>
 <translation id="3350117557200012647">進入配對模式</translation>
-<translation id="3350263973613584174">此安全金鑰未儲存任何登入資料。</translation>
 <translation id="3355936511340229503">連線錯誤</translation>
 <translation id="3356580349448036450">完成</translation>
 <translation id="3359256513598016054">憑證原則限制</translation>
@@ -1945,7 +1940,6 @@
 <translation id="3878840326289104869">正在建立受監管的使用者</translation>
 <translation id="3879748587602334249">下載管理員</translation>
 <translation id="3888550877729210209">使用「<ph name="LOCK_SCREEN_APP_NAME" />」寫筆記</translation>
-<translation id="388900914234409233">如要為這部 Chromebook 充電，請使用相容的原始設備製造商 (OEM) 電池。</translation>
 <translation id="3892414795099177503">新增 OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">讀取及變更你的無障礙設定</translation>
 <translation id="3893630138897523026">ChromeVox (互動朗讀)</translation>
@@ -2135,7 +2129,6 @@
 <translation id="4147911968024186208">請再試一次。如果這個錯誤再次發生，請與你的產品支援代表聯絡。</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">顯示設定</translation>
-<translation id="4150234330364554482">請使用原始設備製造商 (OEM) 專為這部 Chromebook 設計的座架。</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2282,7 +2275,6 @@
 <translation id="4412698727486357573">說明中心</translation>
 <translation id="44141919652824029">要允許「<ph name="APP_NAME" />」取得已連結 USB 裝置的清單嗎？</translation>
 <translation id="4414232939543644979">新增無痕式視窗(&amp;I)</translation>
-<translation id="4414386768539506503">請輸入安全金鑰的 PIN 碼，即可查看其中的登入資料。如果你不知道 PIN 碼，則必須重設安全金鑰。</translation>
 <translation id="4415245286584082850">找不到裝置。您可以在新分頁中開啟說明中心文章。</translation>
 <translation id="4415276339145661267">管理你的 Google 帳戶</translation>
 <translation id="4415748029120993980">SECG 橢圓曲線 secp384r1 (亦稱為 NIST P-384)</translation>
@@ -2384,7 +2376,6 @@
 <translation id="457386861538956877">更多…</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">配對藍牙裝置</translation>
-<translation id="4578012756826807359">已成功刪除你的登入資料。</translation>
 <translation id="4579581181964204535">無法投放 <ph name="HOST_NAME" />。</translation>
 <translation id="4581774856936278355">還原 Linux 時發生錯誤</translation>
 <translation id="4582563038311694664">重設所有設定</translation>
@@ -2696,7 +2687,6 @@
 <translation id="5072836811783999860">顯示受管理書籤</translation>
 <translation id="5074318175948309511">你可能需要重新載入這個網頁，新設定才會生效。</translation>
 <translation id="5075131525758602494">輸入 SIM 卡的 PIN 碼</translation>
-<translation id="507514548843781244">查看並清除在安全金鑰上儲存的登入資料</translation>
 <translation id="5078638979202084724">將所有分頁加入書籤</translation>
 <translation id="5078796286268621944">PIN 不正確</translation>
 <translation id="5079950360618752063">使用建議的密碼</translation>
@@ -2967,7 +2957,6 @@
 <translation id="5496587651328244253">整理</translation>
 <translation id="549673810209994709">系統無法翻譯這個網頁的內容。</translation>
 <translation id="5499313591153584299">這個檔案可能對你的電腦有害。</translation>
-<translation id="5500345327355928305">為避免發生充電和效能的問題，請使用相容的原始設備製造商 (OEM) 或 USB Type-C 電源變壓器。</translation>
 <translation id="5502500733115278303">從 Firefox 匯入的書籤</translation>
 <translation id="5507756662695126555">不可否認性</translation>
 <translation id="5509693895992845810">另存為(&amp;A)...</translation>
@@ -2994,7 +2983,6 @@
 <translation id="5534304873398226603">捨棄相片或影片</translation>
 <translation id="5535941515421698170">將你現有的資料從這個裝置上一併移除</translation>
 <translation id="5539221284352502426">輸入的密碼遭到伺服器拒絕。可能的原因包括：密碼長度不足、密碼必須包含數字或符號、新舊密碼必須有所不同。</translation>
-<translation id="5541687815721799001">使用應用程式</translation>
 <translation id="5542132724887566711">設定檔</translation>
 <translation id="5542750926112347543">系統已封鎖 <ph name="DOMAIN" /> 的 Cookie</translation>
 <translation id="5543983818738093899">正在檢查狀態...</translation>
@@ -3393,7 +3381,6 @@
 <translation id="6122081475643980456">你的網際網路連線目前受到控制</translation>
 <translation id="6122095009389448667">繼續禁止這個網站讀取剪貼簿</translation>
 <translation id="6122875415561139701">無法在以下裝置上執行寫入作業：「<ph name="DEVICE_NAME" />」。</translation>
-<translation id="6123292156101652890">此安全金鑰無法儲存任何登入資料。</translation>
 <translation id="6124650939968185064">下列擴充功能與這個擴充功能之間有相依關係：</translation>
 <translation id="6124698108608891449">這個網站需要更多權限。</translation>
 <translation id="6125479973208104919">很抱歉，你需要重新在 <ph name="DEVICE_TYPE" /> 上新增帳戶。</translation>
@@ -4063,7 +4050,6 @@
 <translation id="7143092389027215216">正在啟動示範模式</translation>
 <translation id="7143207342074048698">連線中</translation>
 <translation id="7144878232160441200">重試</translation>
-<translation id="714687768418476028">你的安全金鑰未受 PIN 碼保護，請先建立 PIN 碼，才能管理登入資料。</translation>
 <translation id="7149893636342594995">過去 24 小時</translation>
 <translation id="715118844758971915">傳統印表機</translation>
 <translation id="7152478047064750137">這個擴充功能不需要特殊權限</translation>
@@ -4927,7 +4913,6 @@
 <translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
 <translation id="8439506636278576865">翻譯這個語言的網頁</translation>
 <translation id="8440630305826533614">Linux 應用程式</translation>
-<translation id="844241640324986723">無法刪除你的登入資料。</translation>
 <translation id="8443338615972234259">請立即為你的受監管使用者建立新帳戶。</translation>
 <translation id="8446884382197647889">瞭解詳情</translation>
 <translation id="8447409163267621480">必須包含 Ctrl 或 Alt 鍵</translation>

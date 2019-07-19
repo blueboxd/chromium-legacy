@@ -985,8 +985,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   display_private_->SetDisplayVisible(true);
   display_private_->Resize(size_);
-  display_private_->SetDisplayColorSpace(display_color_space_,
-                                         display_color_space_);
+  display_private_->SetDisplayColorSpace(
+      display_color_space_, gfx::ColorSpace::kDefaultSDRWhiteLevel);
   display_private_->SetVSyncPaused(vsync_paused_);
   display_private_->SetSupportedRefreshRates(
       root_window_->GetSupportedRefreshRates());

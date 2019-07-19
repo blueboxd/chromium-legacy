@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace content {
 
@@ -39,10 +38,8 @@ class TestMojoProxyResolverFactory
       override;
 
  private:
-  service_manager::ServiceKeepalive service_keepalive_;
-  proxy_resolver::ProxyResolverFactoryImpl proxy_resolver_factory_impl_;
-
   mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> factory_;
+  proxy_resolver::ProxyResolverFactoryImpl proxy_resolver_factory_impl_;
 
   mojo::Receiver<ProxyResolverFactory> receiver_{this};
 

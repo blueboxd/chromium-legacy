@@ -53,12 +53,10 @@ TestLayerTreeFrameSink::TestLayerTreeFrameSink(
 TestLayerTreeFrameSink::~TestLayerTreeFrameSink() = default;
 
 void TestLayerTreeFrameSink::SetDisplayColorSpace(
-    const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
-  blending_color_space_ = blending_color_space;
   output_color_space_ = output_color_space;
   if (display_)
-    display_->SetColorSpace(blending_color_space_, output_color_space_);
+    display_->SetColorSpace(output_color_space_);
 }
 
 bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
@@ -121,7 +119,7 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   display_->Initialize(this, frame_sink_manager_->surface_manager());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
-  display_->SetColorSpace(blending_color_space_, output_color_space_);
+  display_->SetColorSpace(output_color_space_);
   display_->SetVisible(true);
   return true;
 }

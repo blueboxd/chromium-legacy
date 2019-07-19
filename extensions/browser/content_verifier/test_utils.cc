@@ -133,9 +133,8 @@ void TestContentVerifyJobObserver::JobFinished(
 MockContentVerifierDelegate::MockContentVerifierDelegate() = default;
 MockContentVerifierDelegate::~MockContentVerifierDelegate() = default;
 
-ContentVerifierDelegate::Mode MockContentVerifierDelegate::ShouldBeVerified(
-    const Extension& extension) {
-  return ContentVerifierDelegate::ENFORCE_STRICT;
+bool MockContentVerifierDelegate::ShouldBeVerified(const Extension& extension) {
+  return true;
 }
 
 ContentVerifierKey MockContentVerifierDelegate::GetPublicKey() {

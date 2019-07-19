@@ -69,6 +69,8 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.h"
 #include "third_party/blink/renderer/modules/background_sync/periodic_sync_event.h"
 #include "third_party/blink/renderer/modules/background_sync/sync_event.h"
+#include "third_party/blink/renderer/modules/content_index/content_index_event.h"
+#include "third_party/blink/renderer/modules/content_index/content_index_event_init.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -1206,6 +1208,19 @@ void ServiceWorkerGlobalScope::DidHandleCookieChangeEvent(
                    event_id, status);
 }
 
+void ServiceWorkerGlobalScope::DidHandleContentDeleteEvent(
+    int event_id,
+    mojom::ServiceWorkerEventStatus status) {
+  DCHECK(IsContextThread());
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerGlobalScope::DidHandleContentDeleteEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
+                          TRACE_ID_LOCAL(event_id)),
+      TRACE_EVENT_FLAG_FLOW_IN, "status", MojoEnumToString(status));
+  RunEventCallback(&content_delete_callbacks_, timeout_timer_.get(), event_id,
+                   status);
+}
+
 void ServiceWorkerGlobalScope::SetIsInstalling(bool is_installing) {
   is_installing_ = is_installing;
   if (is_installing)
@@ -1931,6 +1946,31 @@ void ServiceWorkerGlobalScope::DispatchCookieChangeEvent(
   //               (changed.IsEmpty() && deleted.IsEmpty()).
 
   // TODO(pwnall): Investigate dispatching this on cookieStore.
+  DispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScope::DispatchContentDeleteEvent(
+    const String& id,
+    DispatchContentDeleteEventCallback callback) {
+  DCHECK(IsContextThread());
+  int event_id = timeout_timer_->StartEvent(
+      CreateAbortCallback(&content_delete_callbacks_));
+  content_delete_callbacks_.Set(event_id, std::move(callback));
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerGlobalScope::DispatchContentDeleteEvent",
+      TRACE_ID_WITH_SCOPE(kServiceWorkerGlobalScopeTraceScope,
+                          TRACE_ID_LOCAL(event_id)),
+      TRACE_EVENT_FLAG_FLOW_OUT);
+
+  WaitUntilObserver* observer = WaitUntilObserver::Create(
+      this, WaitUntilObserver::kContentDelete, event_id);
+
+  auto* init = ContentIndexEventInit::Create();
+  init->setId(id);
+
+  auto* event = MakeGarbageCollected<ContentIndexEvent>(
+      event_type_names::kContentdelete, init, observer);
+
   DispatchExtendableEvent(event, observer);
 }
 

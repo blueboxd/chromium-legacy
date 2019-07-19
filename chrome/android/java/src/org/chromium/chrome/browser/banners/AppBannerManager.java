@@ -184,16 +184,6 @@ public class AppBannerManager extends EmptyTabObserver {
         return nativeIsRunningForTesting(mNativePointer);
     }
 
-    /** Signal to native that the add to homescreen menu item was tapped for metrics purposes. */
-    public void recordMenuItemAddToHomescreen() {
-        nativeRecordMenuItemAddToHomescreen(mNativePointer);
-    }
-
-    /** Signal to native that the menu was opened for metrics purposes. */
-    public void recordMenuOpen() {
-        nativeRecordMenuOpen(mNativePointer);
-    }
-
     /** Sets constants (in days) the banner should be blocked for after dismissing and ignoring. */
     @VisibleForTesting
     static void setDaysAfterDismissAndIgnoreForTesting(int dismissDays, int ignoreDays) {
@@ -218,8 +208,6 @@ public class AppBannerManager extends EmptyTabObserver {
     }
 
     private static native int nativeGetHomescreenLanguageOption();
-    private native void nativeRecordMenuItemAddToHomescreen(long nativeAppBannerManagerAndroid);
-    private native void nativeRecordMenuOpen(long nativeAppBannerManagerAndroid);
     private static native AppBannerManager nativeGetJavaBannerManagerForWebContents(
             WebContents webContents);
     private native boolean nativeOnAppDetailsRetrieved(long nativeAppBannerManagerAndroid,

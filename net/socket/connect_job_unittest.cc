@@ -184,8 +184,7 @@ TEST_F(ConnectJobTest, TimedOut) {
   // Have to delete the job for it to log the end event.
   job.reset();
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::CONNECT_JOB));

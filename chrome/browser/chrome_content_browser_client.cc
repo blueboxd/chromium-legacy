@@ -255,10 +255,10 @@
 #include "components/services/heap_profiling/heap_profiling_service.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/mojom/constants.mojom.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "components/services/quarantine/quarantine_service.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
@@ -341,7 +341,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
@@ -454,7 +453,6 @@
 #include "components/crash/content/browser/crash_memory_metrics_collector_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
-#include "services/proxy_resolver/proxy_resolver_service.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
@@ -589,7 +587,7 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/printing_message_filter.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
@@ -4123,15 +4121,6 @@ void ChromeContentBrowserClient::RunServiceInstanceOnIOThread(
     return;
   }
 
-#if defined(OS_ANDROID)
-  if (identity.name() == proxy_resolver::mojom::kProxyResolverServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<proxy_resolver::ProxyResolverService>(
-            std::move(*receiver)));
-    return;
-  }
-#endif
-
   if (identity.name() == heap_profiling::mojom::kServiceName) {
     heap_profiling::HeapProfilingService::GetServiceFactory().Run(
         std::move(*receiver));
@@ -5401,8 +5390,6 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
 std::unique_ptr<content::OverlayWindow>
 ChromeContentBrowserClient::CreateWindowForPictureInPicture(
     content::PictureInPictureWindowController* controller) {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
   // Note: content::OverlayWindow::Create() is defined by platform-specific
   // implementation in chrome/browser/ui/views. This layering hack, which goes
   // through //content and ContentBrowserClient, allows us to work around the
@@ -5410,9 +5397,6 @@ ChromeContentBrowserClient::CreateWindowForPictureInPicture(
   // chrome/browser/ui/views code either from here or from other code in
   // chrome/browser.
   return content::OverlayWindow::Create(controller);
-#else
-  return nullptr;
-#endif
 }
 
 bool ChromeContentBrowserClient::IsSafeRedirectTargetOnIO(

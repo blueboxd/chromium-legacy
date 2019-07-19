@@ -373,11 +373,8 @@ class NET_EXPORT ProxyResolutionService
   std::unique_ptr<ProxyConfigService> config_service_;
   std::unique_ptr<ProxyResolverFactory> resolver_factory_;
 
-  // If non-null, the initialized ProxyResolver to use for requests, and a
-  // boolean indicating whether it was initialized using an auto-detected
-  // script.
+  // If non-null, the initialized ProxyResolver to use for requests.
   std::unique_ptr<ProxyResolver> resolver_;
-  bool resolver_using_auto_detected_script_;
 
   // We store the proxy configuration that was last fetched from the
   // ProxyConfigService, as well as the resulting "effective" configuration.

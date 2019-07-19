@@ -35,8 +35,9 @@ InstallableInkDrop::InstallableInkDrop(View* view)
     : view_(view),
       layer_(std::make_unique<ui::Layer>()),
       event_handler_(view_, this),
+      painter_(&visual_state_),
       animation_container_(base::MakeRefCounted<gfx::AnimationContainer>()),
-      animator_(&painter_,
+      animator_(&visual_state_,
                 animation_container_.get(),
                 base::Bind(&InstallableInkDrop::SchedulePaint,
                            base::Unretained(this))) {

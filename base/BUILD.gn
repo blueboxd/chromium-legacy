@@ -1549,7 +1549,6 @@ jumbo_component("base") {
       "synchronization/waitable_event_posix.cc",
       "synchronization/waitable_event_watcher_posix.cc",
       "system/sys_info_fuchsia.cc",
-      "system/sys_info_posix.cc",
       "task/thread_pool/task_tracker_posix.cc",
       "task/thread_pool/task_tracker_posix.h",
       "threading/platform_thread_fuchsia.cc",

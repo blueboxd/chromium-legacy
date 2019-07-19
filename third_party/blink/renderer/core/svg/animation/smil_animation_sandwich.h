@@ -64,7 +64,7 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
 
   void UpdateTiming(double elapsed, bool seek_to_time);
   void SendEvents(double elapsed, bool seek_to_time);
-  SVGSMILElement* UpdateAnimationValues();
+  SVGSMILElement* ApplyAnimationValues();
 
   SMILTime GetNextFireTime();
 

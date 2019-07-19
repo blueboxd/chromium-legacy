@@ -1811,6 +1811,30 @@
     <message name="IDS_SETTINGS_KERBEROS_ERROR_GENERAL" desc="Fallback error message displayed in the 'Add a Kerberos ticket' dialog.">
       Couldn't get Kerberos ticket. Try again, or contact your organization's device admin. (Error code <ph name="ERROR_CODE">$1<ex>123</ex></ph>).
     </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_NESTED_IN_GROUP" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that has a section (some text in angular braces) inside a group (some text in curly braces), e.g. 'someOption = { [someSection] }'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Section nested in group: <ph name="ERROR_LINE">$1<ex>[realms] (inside a block of curly braces '{ ... })</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_SYNTAX" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a malformed section, e.g. '[someSection'. Sections must have opening and closing angular braces. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Section syntax error: <ph name="ERROR_LINE">$1<ex>[realms</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_EXPECTED_OPENING_CURLY_BRACE" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that is missing a curly brace somewhere. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Expected opening curly brace: <ph name="ERROR_LINE">$1<ex>ticket_lifetime = 1d (in the line after 'EXAMPLE.COM = )'</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_EXTRA_CURLY_BRACE" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that has a closing curly brace '}' that cannot be matched with an opening curly brace '{'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Extra curly brace: <ph name="ERROR_LINE">$1<ex>} (without having a corresponding opening curly brace '{')</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_RELATION_SYNTAX_ERROR" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a malformed relation. A relation is 'key = value'. A malformed relation would be e.g. 'key : value' instead of 'key = value'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Relation syntax error: <ph name="ERROR_LINE">$1<ex>ticket_lifetime : 1d</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_KEY_NOT_SUPPORTED" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a configuration option that we do not support, e.g. '[libdefaults] ccache_type = 1'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Configuration option not supported: <ph name="ERROR_LINE">$1<ex>ccache_type = 1</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_SECTION_NOT_SUPPORTED" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that contains a section that we do not support, e.g. '[appdefaults]'. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Section not supported: <ph name="ERROR_LINE">$1<ex>[appdefaults]</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_KERBEROS_CONFIG_ERROR_KRB5_FAILED_TO_PARSE" desc="Error message displayed in the Kerberos configuration dialog when the user tries to save a configuration that cannot be parsed by the underlying Kerberos library for unknown reasons. See https://web.mit.edu/kerberos/krb5-1.12/doc/admin/conf_files/krb5_conf.html.">
+      Failed to parse configuration
+    </message>
   </if>
 
   <!-- Date/Time Page -->

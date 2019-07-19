@@ -6,8 +6,8 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
-#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
+#include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 

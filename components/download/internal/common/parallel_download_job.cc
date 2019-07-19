@@ -187,10 +187,6 @@ void ParallelDownloadJob::BuildParallelRequests() {
     int64_t remaining_bytes =
         download_item_->GetTotalBytes() - download_item_->GetReceivedBytes();
 
-    int64_t remaining_time = remaining_bytes / current_bytes_per_second;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Download.ParallelDownload.RemainingTimeWhenBuildingRequests",
-        remaining_time, 0, base::TimeDelta::FromDays(1).InSeconds(), 50);
     if (remaining_bytes / current_bytes_per_second >
         GetMinRemainingTimeInSeconds()) {
       // Fork more requests to accelerate, only if one slice is left to download

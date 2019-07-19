@@ -986,6 +986,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         OnClearClip(properties_->ClearMaskClip());
       }
 
+      CompositorElementId mask_compositor_element_id;
+      if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
+          (mask_clip || has_spv1_composited_clip_path)) {
+        mask_compositor_element_id = CompositorElementIdFromUniqueObjectId(
+            object_.UniqueId(), CompositorElementIdNamespace::kEffectMask);
+      }
+
       EffectPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
       state.output_clip = output_clip;
@@ -1005,6 +1012,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
           layer->UpdateCompositorFilterOperationsForBackdropFilter(
               state.backdrop_filter, &state.backdrop_filter_bounds);
           layer->ClearBackdropFilterOnEffectNodeDirty();
+          if (!state.backdrop_filter.IsEmpty()) {
+            state.backdrop_mask_element_id = mask_compositor_element_id;
+          }
         }
       }
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
@@ -1073,10 +1083,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
         mask_state.blend_mode = SkBlendMode::kDstIn;
         if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
             RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-          mask_state.compositor_element_id =
-              CompositorElementIdFromUniqueObjectId(
-                  object_.UniqueId(),
-                  CompositorElementIdNamespace::kEffectMask);
+          mask_state.compositor_element_id = mask_compositor_element_id;
         }
         OnUpdate(properties_->UpdateMask(*properties_->Effect(),
                                          std::move(mask_state)));
@@ -1727,6 +1734,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     if (!content_to_parent_space.IsIdentity()) {
       TransformPaintPropertyNode::State state{
           TransformationMatrix(content_to_parent_space)};
+      state.flattens_inherited_transform =
+          context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform, std::move(state)));
     } else {
@@ -1744,6 +1753,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
     // replaced object fit.
     if (properties_->ReplacedContentTransform()) {
       context_.current.transform = properties_->ReplacedContentTransform();
+      // TODO(pdr): SVG does not support 3D transforms so this should be
+      // should_flatten_inherited_transform = true.
       context_.current.should_flatten_inherited_transform = false;
       context_.current.rendering_context_id = 0;
     }
@@ -1826,6 +1837,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
 
       state.scrolls_outer_viewport = box.IsGlobalRootScroller();
 
+      // TODO(bokan): We probably don't need to pass ancestor reasons down the
+      // scroll tree. On the compositor, in
+      // LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint, we walk up
+      // the scroll tree looking at all the ancestor MainThreadScrollingReasons.
+      // https://crbug.com/985127.
       auto ancestor_reasons =
           context_.current.scroll->GetMainThreadScrollingReasons();
       state.main_thread_scrolling_reasons =
@@ -1968,14 +1984,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
 
   if (object_.IsLayoutView()) {
     const auto* initial_fixed_transform = context_.fixed_position.transform;
-    const auto* initial_fixed_scroll = context_.fixed_position.scroll;
 
     context_.fixed_position = context_.current;
     context_.fixed_position.fixed_position_children_fixed_to_root = true;
 
-    // Fixed position transform and scroll nodes should not be affected.
+    // Fixed position transform should not be affected.
     context_.fixed_position.transform = initial_fixed_transform;
-    context_.fixed_position.scroll = initial_fixed_scroll;
+
+    // Scrolling in a fixed position element should chain up through the
+    // LayoutView.
+    if (properties_->Scroll())
+      context_.fixed_position.scroll = properties_->Scroll();
     if (properties_->ScrollTranslation()) {
       // Also undo the ScrollOrigin part in paint offset that was added when
       // ScrollTranslation was updated.

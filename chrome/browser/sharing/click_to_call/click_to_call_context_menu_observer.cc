@@ -139,6 +139,9 @@ void ClickToCallContextMenuObserver::SendClickToCallMessage(
   if (chosen_device_index >= static_cast<int>(devices_.size()))
     return;
 
+  LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiContextMenu,
+                                    chosen_device_index);
+
   SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
       url_.GetContent());

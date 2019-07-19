@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/logging/log_buffer_submitter.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -112,6 +113,9 @@ class MockLogManager : public autofill::LogManager {
   // Methods not important for testing.
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override {}
   void SetSuspended(bool suspended) override {}
+  autofill::LogBufferSubmitter Log() override {
+    return autofill::LogBufferSubmitter(nullptr, false);
+  }
 };
 
 // Creates PasswordController with the given |web_state| and a mock client
@@ -231,6 +235,7 @@ class PasswordControllerTest : public ChromeWebTest {
                  providers:@[ [passwordController_ suggestionProvider] ]];
       accessoryMediator_ =
           [[FormInputAccessoryMediator alloc] initWithConsumer:nil
+                                                      delegate:nil
                                                   webStateList:NULL
                                            personalDataManager:NULL
                                                  passwordStore:NULL];

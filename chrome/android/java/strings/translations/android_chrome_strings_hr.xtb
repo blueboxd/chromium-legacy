@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Pohrana web-lokacije</translation>
 <translation id="2328985652426384049">Prijava nije moguća</translation>
 <translation id="2349710944427398404">Ukupna količina podataka koju Chrome upotrebljava, uključujući račune, oznake i spremljene postavke.</translation>
-<translation id="2351097562818989364">Vaše su postavke prevođenja vraćene na zadano.</translation>
 <translation id="2353636109065292463">Provjera vaše internetske veze</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2369533728426058518">otvorene kartice</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Preostalo sekundi: <ph name="SECONDS" /></translation>
 <translation id="2779651927720337254">nije uspjelo</translation>
 <translation id="2781151931089541271">Još 1 s</translation>
+<translation id="2796941233371040292">Ovdje nema podataka o pohrani</translation>
 <translation id="2801022321632964776">Ažurirajte Chrome na najnoviju verziju za prikaz na vašem jeziku</translation>
 <translation id="2810645512293415242">Pojednostavljena stranica štedi podatke i učitava se brže.</translation>
 <translation id="281504910091592009">Spremljene zaporke možete pregledati i upravljati njima na svojem <ph name="BEGIN_LINK" />Google računu<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">O Chromeu</translation>
 <translation id="2891154217021530873">Zaustavljanje učitavanja stranice</translation>
 <translation id="2893180576842394309">Google može upotrebljavati vašu povijest za prilagodbu Pretraživanja i drugih Googleovih usluga</translation>
+<translation id="2898264748040935573">Uredite pohranjenu zaporku</translation>
 <translation id="2900528713135656174">Stvori događaj</translation>
 <translation id="2902702728133930130">Chrome se nije pokrenuo zbog neočekivane pogreške.</translation>
 <translation id="290376772003165898">Ovo nije <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4913169188695071480">Zaustavi osvježavanje</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /> tijekom traženja uređaja…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stranica}one{# stranica}few{# stranice}other{# stranica}}</translation>
+<translation id="4932247056774066048">Budući da se odjavljujete s računa kojim upravlja <ph name="DOMAIN_NAME" />, vaši podaci s Chromea izbrisat će se s ovog uređaja. Ostat će na vašem Google računu.</translation>
 <translation id="4943703118917034429">Virtualna stvarnost</translation>
 <translation id="4943872375798546930">Nema rezultata</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dijeli vaš zaslon</translation>
@@ -562,6 +564,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5210286577605176222">Preskakanje na prethodnu karticu</translation>
 <translation id="5210365745912300556">Zatvori karticu</translation>
 <translation id="5224771365102442243">S videozapisom</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> želi potražiti Bluetooth uređaje u blizini. Pronađeni su sljedeći uređaji:</translation>
 <translation id="5233638681132016545">Nova kartica</translation>
 <translation id="526421993248218238">Učitavanje stranice nije uspjelo</translation>
 <translation id="5271967389191913893">Uređaj ne može otvoriti sadržaj za preuzimanje.</translation>
@@ -571,7 +574,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5301954838959518834">U redu, shvaćam</translation>
 <translation id="5304593522240415983">To polje ne može biti prazno</translation>
 <translation id="5308380583665731573">Povežite se</translation>
-<translation id="5308603654685598744">Kada je ta značajka uključena, Chrome će nuditi prevođenje stranica napisanih na drugim jezicima Google prevoditeljem.</translation>
 <translation id="5313967007315987356">Dodaj web-lokaciju</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5324858694974489420">Postavke nadređenog računa</translation>
@@ -586,6 +588,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5414836363063783498">Potvrđivanje…</translation>
 <translation id="5423934151118863508">Najposjećenije stranice prikazivat će se ovdje</translation>
 <translation id="5424588387303617268">Dostupno: <ph name="GIGABYTES" /> GB</translation>
+<translation id="543338862236136125">Uredite zaporku</translation>
 <translation id="5433691172869980887">Korisničko je ime kopirano</translation>
 <translation id="543509235395288790">Preuzimanje ovoliko datoteka: <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Preskakanje na adresnu traku</translation>
@@ -660,7 +663,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5865733239029070421">Automatski šalje Googleu statistiku upotrebe i izvješća o rušenju</translation>
 <translation id="5869522115854928033">Spremljene zaporke</translation>
 <translation id="5902828464777634901">Izbrisat će se svi lokalni podaci koje pohranjuje ova web-lokacija, uključujući kolačiće.</translation>
-<translation id="5911030830365207728">Google prevoditelj</translation>
 <translation id="5916664084637901428">Uključi</translation>
 <translation id="5919204609460789179">Ažurirajte <ph name="PRODUCT_NAME" /> za pokretanje sinkronizacije</translation>
 <translation id="5937580074298050696">Spremljeno <ph name="AMOUNT" /></translation>
@@ -805,7 +807,6 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6963642900430330478">Ta je stranica opasna. Informacije o web-lokaciji</translation>
 <translation id="6963766334940102469">Brisanje oznaka</translation>
 <translation id="6965382102122355670">U redu</translation>
-<translation id="6978479750597523876">Poništavanje postavki prevođenja</translation>
 <translation id="6979737339423435258">Cijelo vrijeme</translation>
 <translation id="6981982820502123353">Pristupačnost</translation>
 <translation id="6989267951144302301">Preuzimanje nije moguće</translation>

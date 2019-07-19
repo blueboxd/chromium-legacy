@@ -37,6 +37,8 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   using ResultCallback = base::OnceCallback<void(kerberos::ErrorType)>;
   using ListAccountsCallback =
       base::OnceCallback<void(const kerberos::ListAccountsResponse&)>;
+  using ValidateConfigCallback =
+      base::OnceCallback<void(const kerberos::ValidateConfigResponse&)>;
 
   class Observer : public base::CheckedObserver {
    public:
@@ -121,6 +123,13 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
                  const std::string& krb5_conf,
                  ResultCallback callback);
 
+  // Verifies that only whitelisted configuration options are used in the
+  // Kerberos configuration |krb5_conf|. The Kerberos daemon does not allow all
+  // options for security reasons. Also performs basic syntax checks. Returns
+  // useful error information.
+  void ValidateConfig(const std::string& krb5_conf,
+                      ValidateConfigCallback callback);
+
   // Gets a Kerberos ticket-granting-ticket for the account with given
   // |principal_name|.
   void AcquireKerberosTgt(std::string principal_name,
@@ -161,6 +170,10 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Callback for SetConfig().
   void OnSetConfig(ResultCallback callback,
                    const kerberos::SetConfigResponse& response);
+
+  // Callback for ValidateConfig().
+  void OnValidateConfig(ValidateConfigCallback callback,
+                        const kerberos::ValidateConfigResponse& response);
 
   // Callback for AcquireKerberosTgt().
   void OnAcquireKerberosTgt(

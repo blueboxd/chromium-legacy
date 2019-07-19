@@ -139,6 +139,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wird die Richtlinie auf "False" gesetzt, wird der Status des Entwicklerschalters nicht gemeldet.</translation>
 <translation id="1160479894929412407">QUIC-Protokoll zulassen</translation>
 <translation id="1160939557934457296">Fortfahren von der Safe Browsing-Hinweisseite deaktivieren</translation>
+<translation id="117059611145966538">Externe Druckserver</translation>
 <translation id="1189817621108632689">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Bildern nicht gestattet ist.
 
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultImagesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
@@ -225,7 +226,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Wenn die Richtlinie nicht konfiguriert ist, kann der Netzwerkcode – je nach Abhängigkeit der Feldtests des NetworkService-Tests – außerhalb des Browserprozesses ausgeführt werden.</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
-<translation id="1384653327213929024">Nutzern erlauben, installierte Zertifikate zu verwalten.</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
 <translation id="1404043648050567997">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Wenn diese Einstellung aktiviert ist, können Nutzer die schädliche Website nicht von der Hinweisseite aus besuchen.
@@ -270,6 +270,12 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
 <translation id="1438739959477268107">Standardeinstellung für die Schlüsselgenerierung</translation>
 <translation id="1454846751303307294">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung von JavaScript untersagt ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultJavaScriptSetting", falls konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
+<translation id="1455804070656338445">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
+      Ihre Passwortänderungsseite muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
+
+      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, in deren Browser eine Warnung angezeigt wurde, an diese URL weiter, damit sie ihr Passwort ändern können.
+      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccount.google.com weiter, damit sie ihr Passwort ändern können.
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, bei denen zur Geräteverwaltung eine Anmeldung vorgenommen wurde.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" />-Clients):</translation>
 <translation id="1458547592473993238">Diese Richtlinie wurde eingestellt. Sie können mit "<ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />" die Verfügbarkeit des Flash-Plug-ins definieren und über "<ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />" steuern, ob der integrierte PDF-Viewer zum Öffnen von PDF-Dateien verwendet werden soll.
 
@@ -395,6 +401,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, so ist die Lupe anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
+<translation id="1654087023995670109">Gastmodus im Browser erzwingen</translation>
 <translation id="1655229863189977773">Cache-Größe für Datenträger in Byte festlegen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1668836044817793277">Gibt an, ob der automatisch verzögerungsfrei gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet werden soll.
@@ -1122,15 +1129,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           Ist die Richtlinie nicht konfiguriert, bleibt das Verhalten der spezifischeren Richtlinien unverändert.</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
-<translation id="2990018289267778247">Ist diese Richtlinie auf "true" gesetzt, werden die Optionen für Bedienungshilfen immer im Taskleistenmenü angezeigt.
-
-          Wenn die Richtlinie auf "false" gesetzt ist, werden die Optionen für Bedienungshilfen nie im Taskleistenmenü angezeigt.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Ist diese Richtlinie nicht konfiguriert, erscheinen keine Optionen für Bedienungshilfen im Taskleistenmenü, der Nutzer kann deren Anzeige jedoch auf der Seite "Einstellungen" aktivieren.
-
-          Werden Bedienungshilfen anderweitig aktiviert, z. B. über eine Tastenkombination, erscheinen die Optionen für Bedienungshilfen immer im Taskleistenmenü.</translation>
 <translation id="3011301228198307065">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
 
           Die Startseite wird über die Schaltfläche "Startseite" geöffnet. Die Seiten, die beim Hochfahren geöffnet werden, werden über die Richtlinien "RestoreOnStartup" kontrolliert.
@@ -1426,6 +1424,15 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3583230441447348508">Gibt eine Liste mit vorkonfigurierten Netzwerkfreigaben an.
 
       Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "share_url" und "mode". Bei "share_url" handelt es sich um die URL der Freigabe. "mode" sollte entweder "drop_down" oder "pre_mount" sein. Der "drop_down"-Modus gibt an, dass "share_url" dem Drop-Down der Freigabeerkennung hinzugefügt wird. Der "pre_mount"-Modus gibt an, dass "share_url" verwendet wird.</translation>
+<translation id="3585177699591644295">Damit wird die Bedienungshilfe "Vorlesen" aktiviert.
+
+          Wird die Richtlinie auf "true" gesetzt, ist die Funktion "Vorlesen" immer aktiviert.
+
+          Falls sie auf "false" gesetzt wurde, ist "Vorlesen" immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird sie nicht konfiguriert, so ist die Funktion "Vorlesen" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="3591527072193107424">Funktion für die Unterstützung älterer Browser aktivieren.</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
@@ -1954,6 +1961,20 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4604931264910482931">Schwarze Liste für natives Messaging konfigurieren</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
+<translation id="4627884124191169977">Mit dieser Richtlinie können Konfigurationen verfügbarer Druckserver bereitgestellt werden.
+
+      Sie haben damit die Möglichkeit, <ph name="PRODUCT_OS_NAME" />-Geräten Konfigurationen externer Druckserver als JSON-Datei zur Verfügung zu stellen.
+
+      Die Datei darf nicht größer als 1 MB sein und muss ein Array an Datensätzen enthalten (JSON-Objekte). Jeder Datensatz muss die Felder "url" und "display_name" enthalten.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Mithilfe des kryptografischen Hashs wird die Integrität des Downloads verifiziert. Sobald sich die URL oder der Hash ändert, wird die Datei noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie auf den richtigen Wert gesetzt ist, versuchen Geräte, über das Internet Printing Protocol (IPP) bei den angegebenen Druckservern die verfügbaren Drucker abzufragen.
+
+      Wird die Richtlinie nicht konfiguriert oder auf einen falschen Wert gesetzt, werden Nutzern keine Serverdrucker angezeigt.
+
+      Momentan ist die Zahl der Druckserver auf 16 begrenzt. Nur die ersten 16 Druckserver in der Liste werden abgefragt.
+      </translation>
 <translation id="4632343302005518762">Verarbeitung der gelisteten Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
 <translation id="4632566332417930481">Nutzung der Entwicklertools für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, nicht zulassen und Nutzung der Entwicklertools in anderen Kontexten zulassen</translation>
 <translation id="4633786464238689684">Ändert das Standardverhalten der Tasten in der obersten Reihe zu Funktionstastenverhalten
@@ -2005,10 +2026,6 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 
           Wenn Sie diese Richtlinie nicht konfigurieren, leitet <ph name="PRODUCT_NAME" /> keine Anmeldedaten von Nutzern weiter, auch nicht an Server innerhalb des Intranets.</translation>
 <translation id="4752880493649142945">Clientzertifikat zur Herstellung einer Verbindung zu RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4757671984625088193">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, schlägt <ph name="PRODUCT_NAME" /> Seiten vor, die der aktuellen ähnlich sind.
-      Diese Vorschläge werden per Fernzugriff von den Google-Servern abgerufen.
-
-      Falls diese Einstellung auf "false" gesetzt ist, werden keine Vorschläge abgerufen oder angezeigt.</translation>
 <translation id="4759650396863318477">Hiermit kann der Zeitraum in Millisekunden festgelegt werden, in dem Nutzer benachrichtigt werden, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss.
 
       Während dieses Zeitraums werden Nutzer wiederholt über die Notwendigkeit eines Updates informiert. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint entsprechend der Richtlinie "<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />" eine Neustartbenachrichtigung in der Taskleiste. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums abgelaufen ist, um zu zeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Wenn der ganze Zeitraum abgelaufen ist, ändert sich die Farbe erneut. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
@@ -2415,6 +2432,9 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Beachten Sie, dass sowohl der Plug-in-Name als auch der Plug-in-Gruppenname ausgenommen werden müssen. Jede Plug-in-Gruppe wird in einem separaten Abschnitt unter "about:plugins" angezeigt, wobei jeder Abschnitt ein oder mehrere Plug-ins enthalten kann. So gehört beispielsweise das Plug-in "Shockwave Flash" der Gruppe "Adobe Flash Player" an. Wenn dieses Plug-in von der schwarzen Liste ausgenommen werden soll, muss in der Ausnahmeliste für beide Namen eine Übereinstimmung vorhanden sein.
 
       Ist diese Richtlinie nicht konfiguriert, werden alle Plug-ins, die mit den Mustern in "DisabledPlugins" übereinstimmen, als deaktiviert gesperrt. Sie können dann nicht vom Nutzer aktiviert werden.</translation>
+<translation id="5498045818698736356">Hierdurch wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
+
+      Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen Komponente "url" und den beiden optionalen Komponenten "default_launch_container" und "create_desktop_shortcut" besteht. Unter "url" wird die URL der Web-App angegeben, die installiert werden soll. "launch_container" sollte entweder ein Fenster oder ein Tab sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird. Für "create_desktop_shortcut" sollte "true" festgelegt sein, wenn unter Linux und Windows eine Desktopverknüpfung erstellt werden soll. Wenn "default_launch_container" weggelassen wird, wird die App standardmäßig in einem Tab geöffnet. Unabhängig vom Wert von "default_launch_container" können Nutzer ändern, in welchem Container die App geöffnet wird. Wird "create_desktop_shortcuts" weggelassen, werden keine Desktopverknüpfungen erstellt. In der Richtlinie "<ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" />" wird beschrieben, wie Sie Apps an die Chrome OS-Ablage pinnen können.</translation>
 <translation id="5499375345075963939">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Wenn für diese Richtlinie ein Wert festgelegt wurde und dieser Wert nicht "0" ist, wird der aktuell angemeldete Demo-Nutzer nach der angegebenen Inaktivitätsdauer automatisch abgemeldet.
@@ -2534,6 +2554,7 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 
           Vor Version 75 wird die Angabe mehrerer durch Kommas getrennter Erweiterungs-IDs nicht unterstützt und wird deswegen übersprungen. Der verbleibende Teil der Richtlinie wird trotzdem angewendet.</translation>
 <translation id="5645779841392247734">Cookies auf diesen Websites zulassen</translation>
+<translation id="5666457529647159548">Nutzern erlauben, Clientzertifikate zu verwalten.</translation>
 <translation id="5689430183304951538">Standardmäßige Druckseitengröße</translation>
 <translation id="5693469654327063861">Datenmigration zulassen</translation>
 <translation id="5694594914843889579">Wenn diese Einstellung auf "true" gesetzt ist, ist im Datei-Browser kein externer Speicher verfügbar.
@@ -2930,13 +2951,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
           Wenn Sie diese Richtlinie konfigurieren, kann diese von Nutzern vorübergehend außer Kraft gesetzt werden, indem sie die Bildschirmtastatur aktivieren oder deaktivieren. Die Wahl des Nutzers ist jedoch nicht dauerhaft. Deshalb wird die Standardeinstellung wiederhergestellt, wenn die Anmeldeseite erneut aufgerufen wird oder der Nutzer innerhalb von einer Minute keine Eingabe auf der Anmeldeseite macht.
 
           Wird diese Richtlinie nicht konfiguriert, ist die Bildschirmtastatur beim erstmaligen Aufrufen der Anmeldeseite deaktiviert. Nutzer können die Bildschirmtastatur jederzeit aktivieren oder deaktivieren, wobei ihr Status auf der Anmeldeseite bei einem Nutzerwechsel erhalten bleibt.</translation>
-<translation id="6570691255874112762">Mit dieser Richtlinie wird festgelegt, ob Nutzer Zertifikate über den Zertifikat-Manager importieren und entfernen können.
-
-      Wenn diese Richtlinie auf "Nutzern erlauben, alle Zertifikate zu verwalten" gesetzt oder nicht konfiguriert ist, können Nutzer Zertifikate verwalten.
-
-      Falls für diese Richtlinie "Nutzern erlauben, Nutzerzertifikate zu verwalten" festgelegt ist, können Nutzer Nutzerzertifikate, aber keine Zertifikate für das gesamte Gerät verwalten.
-
-      Ist diese Richtlinie auf "Nutzern nicht erlauben, Zertifikate zu verwalten" gesetzt, so können Nutzer keine Zertifikate verwalten, sondern sie nur aufrufen.</translation>
 <translation id="6573305661369899995">Eine externe Quelle für URL-Einschränkungen festlegen</translation>
 <translation id="6583851521569686409">Hiermit wird eine Liste von Druckern konfiguriert.
 
@@ -2994,6 +3008,12 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698632841807204978">Schwarz-Weiß-Druck aktivieren</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts aktivieren</translation>
+<translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> bietet eine sichere Aktualisierung und Installation von Erweiterungen. Der Inhalt einiger Erweiterungen wird jedoch außerhalb des Chrome Web Store gehostet und kann nur durch unsichere Signatur- oder Hash-Algorithmen wie SHA1 geschützt werden. Wenn diese Richtlinie deaktiviert ist, wird eine Neuinstallation und Aktualisierung solcher Erweiterungen von Chrome nicht erlaubt (bis die Entwickler der Erweiterung diese mit stärkeren Algorithmen neu erstellen). Wenn diese Richtlinie aktiviert ist, ist die Installation und Aktualisierung solcher Erweiterungen zulässig.
+
+          Ist diese Richtlinie nicht konfiguriert, wird sie standardmäßig aktiviert.
+          Ist diese Richtlinie ab <ph name="PRODUCT_NAME" /> 76 nicht konfiguriert, wird sie standardmäßig deaktiviert.
+
+          Ab <ph name="PRODUCT_NAME" /> 78 wird diese Richtlinie ignoriert und als deaktiviert eingestuft.</translation>
 <translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) mit Inhalten nur für Erwachsene filtern</translation>
 <translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
@@ -3099,6 +3119,9 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Aktuell werden die folgenden Sprachen unterstützt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6926703471186170050">Duplexdruck (lange Kante) aktivieren</translation>
 <translation id="6931242315485576290">Synchronisierung der Daten mit Google deaktivieren</translation>
+<translation id="6932419914671987652">Wenn diese Richtlinie aktiviert ist, erzwingt <ph name="PRODUCT_NAME" /> Gastsitzungen und verhindert Profilanmeldungen. Gastanmeldungen sind <ph name="PRODUCT_NAME" />-Profile, bei denen sich alle Fenster im Inkognitomodus befinden.
+
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist oder der Gastmodus im Browser durch die <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" />-Richtlinie deaktiviert ist, erlaubt <ph name="PRODUCT_NAME" /> die Nutzung neuer oder existierender Profile.</translation>
 <translation id="6936894225179401731">Legt die maximale Anzahl gleichzeitiger Verbindungen zum Proxyserver fest.
 
       Einige Proxyserver können eine hohe Anzahl gleichzeitiger Verbindungen pro Client nicht verarbeiten. Dieses Problem kann umgangen werden, indem für diese Richtlinie ein niedrigerer Wert festgelegt wird.
@@ -3305,6 +3328,13 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Falls diese Richtlinie nicht konfiguriert wird, ist die Lupe deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können die Lupe jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
 <translation id="7249828445670652637"><ph name="PRODUCT_OS_NAME" />-CA-Zertifikate für ARC-Apps aktivieren</translation>
+<translation id="7251652588006515288">Mit dieser Richtlinie wird festgelegt, ob Nutzer Clientzertifikate über den Zertifikat-Manager importieren und entfernen können.
+
+      Wenn sie auf "Nutzern erlauben, alle Zertifikate zu verwalten" gesetzt oder nicht konfiguriert ist, können Nutzer Zertifikate verwalten.
+
+      Falls für diese Richtlinie "Nutzern erlauben, Nutzerzertifikate zu verwalten" festgelegt ist, können Nutzer Nutzerzertifikate, aber keine Zertifikate für das gesamte Gerät verwalten.
+
+      Ist sie auf "Nutzern nicht erlauben, Zertifikate zu verwalten" gesetzt, so können Nutzer keine Zertifikate verwalten, sondern sie nur aufrufen.</translation>
 <translation id="7252681704926980614">Damit werden Nutzer- und Dateiname bei jedem Druckauftrag an den nativen Druckerserver gesendet. Standardmäßig werden die Namen nicht gesendet.
 
       Wenn diese Richtlinie auf "true" gesetzt ist, werden Drucker deaktiviert, die andere Protokolle als IPPS, USB oder IPP über USB verwenden. Dies liegt daran, dass Nutzername und Dateiname nicht offen über das Netzwerk gesendet werden sollten.</translation>
@@ -3996,6 +4026,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Fügen Sie zwischen den verschiedenen Servernamen ein Komma als Trennzeichen ein. Platzhalter (*) sind zulässig.
 
           Wenn Sie diese Richtlinie nicht konfigurieren, versucht <ph name="PRODUCT_NAME" /> zu ermitteln, ob der fragliche Server sich im Intranet befindet, und reagiert nur dann auf IWA-Anfragen. Wenn der Server sich dagegen im Internet befindet, werden dessen IWA-Anfragen von <ph name="PRODUCT_NAME" /> ignoriert.</translation>
+<translation id="8656110680728938054">"Vorlesen" aktivieren</translation>
 <translation id="8661297125441579970">Datenmigration und ARC nicht zulassen.</translation>
 <translation id="8672321184841719703">Automatische Aktualisierung auf Zielversion</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
@@ -4038,6 +4069,13 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8759829385824155666">Erlaubte Kerberos-Verschlüsselungstypen</translation>
 <translation id="8764119899999036911">Gibt an, ob der generierte Kerberos-SPN auf dem kanonischen DNS-Namen oder dem ursprünglich eingegebenen Namen basiert. Wenn Sie diese Einstellung aktivieren, wird die CNAME-Suche übersprungen und der Servername so wie eingegeben verwendet. Sollten Sie die Einstellung deaktivieren oder nicht konfigurieren, wird der kanonische Name des Servers per CNAME-Suche ermittelt.</translation>
 <translation id="8764477907716150749">Diese Richtlinie ist zur internen Nutzung in <ph name="PRODUCT_NAME" /> vorgesehen.</translation>
+<translation id="877773134585155834">Listet die App-IDs auf, die unter <ph name="PRODUCT_OS_NAME" /> in der Launcher-Leiste als angepinnte Apps erscheinen.
+
+      Chrome-Apps sind durch ihrer IDs erkennbar, z. B. "pjkljhegncpnkpknbcohdijeoejaedia", Android-Apps durch ihren Paketnamen, z. B. "com.google.android.gm" und Web-Apps durch die URL, die in "WebAppInstallForceList" angegeben wird, z. B. "https://google.com/maps".
+
+      Wenn diese Richtlinie konfiguriert ist, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
+
+      Ist diese Richtlinie nicht konfiguriert, können Nutzer die Liste der im Launcher angepinnten Apps ändern.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>

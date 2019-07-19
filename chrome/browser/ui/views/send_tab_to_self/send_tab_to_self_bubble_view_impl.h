@@ -88,8 +88,7 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   void CreateScrollView();
 
   // Populates the scroll view containing valid devices.
-  void PopulateScrollView(
-      const std::map<std::string, TargetDeviceInfo> devices);
+  void PopulateScrollView(const std::vector<TargetDeviceInfo> devices);
 
   // Handles the action when a target device has been pressed.
   void DevicePressed(size_t index);

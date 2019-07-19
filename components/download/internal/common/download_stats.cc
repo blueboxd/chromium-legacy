@@ -1180,10 +1180,6 @@ void RecordParallelizableDownloadStats(
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.EstimatedTimeSavedWithParallelDownload",
         time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Download.EstimatedTimeWastedWithParallelDownload",
-        -time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
   }
 }
 
@@ -1335,6 +1331,13 @@ void RecordResumptionRestartCount(ResumptionRestartCountTypes type) {
 void RecordDownloadResumed(bool has_strong_validators) {
   base::UmaHistogramBoolean("Download.ResumptionStart.HasStrongValidators",
                             has_strong_validators);
+}
+
+void RecordDownloadConnectionInfo(
+    net::HttpResponseInfo::ConnectionInfo connection_info) {
+  base::UmaHistogramEnumeration(
+      "Download.ConnectionInfo", connection_info,
+      net::HttpResponseInfo::ConnectionInfo::NUM_OF_CONNECTION_INFOS);
 }
 
 #if defined(OS_ANDROID)

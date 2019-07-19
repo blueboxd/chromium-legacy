@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">เปลี่ยนรหัสผ่าน</translation>
 <translation id="1090126737595388931">ไม่มีแอปพลิเคชันทำงานในพื้นหลัง</translation>
 <translation id="1090290614672149983">บันทึกการเปลี่ยนแปลงลงในไฟล์ต้นฉบับไหม</translation>
-<translation id="1090918500949388876">เข้าถึง Assistant ได้ทุกเมื่อเพียงพูดว่า "Ok Google" เมื่อหน้าจอเปิดอยู่</translation>
 <translation id="1091767800771861448">กด ESCAPE เพื่อยกเลิก (รุ่นที่ไม่เป็นทางการเท่านั้น)</translation>
 <translation id="1093457606523402488">เครือข่ายที่แสดงตัว:</translation>
 <translation id="1094607894174825014">ได้รับคำขอการอ่านหรือเขียนที่มีออฟเซ็ตไม่ถูกต้องใน "<ph name="DEVICE_NAME" />"</translation>
@@ -542,7 +541,6 @@
 <translation id="1792619191750875668">การแสดงผลแบบขยาย</translation>
 <translation id="1794791083288629568">ส่งความคิดเห็นเพื่อช่วยเราแก้ไขปัญหานี้</translation>
 <translation id="1795214765651529549">ใช้แบบคลาสสิก</translation>
-<translation id="1797738254362176886">เสียบคีย์ความปลอดภัยและแตะคีย์เพื่อดูข้อมูลการลงชื่อเข้าใช้</translation>
 <translation id="1799071797295057738">ระบบจะปิดใช้งานส่วนขยาย "<ph name="EXTENSION_NAME" />" โดยอัตโนมัติ</translation>
 <translation id="1802687198411089702">หน้านี้ไม่ตอบสนอง คุณจะรอหรือออกก็ได้</translation>
 <translation id="1802931390041703523">หน้านี้บล็อก Flash</translation>
@@ -788,7 +786,6 @@
 <translation id="2177950615300672361">แท็บไม่ระบุตัวตน: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> ใน <ph name="PEPPER_PLUGIN_DOMAIN" /> ต้องการเข้าถึงคอมพิวเตอร์ของคุณ</translation>
 <translation id="2178614541317717477">ผู้มีสิทธิ์ออกใบรับรองไม่สมบูรณ์</translation>
-<translation id="2179849162388791084">การรวบรวมข้อมูลการลงชื่อเข้าใช้จากคีย์ความปลอดภัยล้มเหลว</translation>
 <translation id="218070003709087997">ใช้ตัวเลขเพื่อระบุจำนวนสำเนาที่ต้องการพิมพ์ (1 ถึง 999)</translation>
 <translation id="2184515124301515068">ให้ Chrome เลือกว่าเว็บไซต์จะเล่นเสียงได้เมื่อใด (แนะนำ)</translation>
 <translation id="2187895286714876935">ข้อผิดพลาดในการนำเข้าใบรับรองเซิร์ฟเวอร์</translation>
@@ -1376,7 +1373,6 @@
 <translation id="3022978424994383087">ฟังไม่เข้าใจ</translation>
 <translation id="3023464535986383522">เลือกเพื่อให้อ่าน</translation>
 <translation id="3024374909719388945">ใช้เวลารูปแบบ 24 ชั่วโมง</translation>
-<translation id="30256218463955326">ใช้งานร่วมกับแท่นชาร์จนี้ไม่ได้</translation>
 <translation id="3031417829280473749">เอเจนต์เอ็กซ์</translation>
 <translation id="3031557471081358569">เลือกรายการที่จะนำเข้าต่อไปนี้:</translation>
 <translation id="3031601332414921114">พิมพ์ต่อ</translation>
@@ -1566,7 +1562,6 @@
 <translation id="3348038390189153836">พบอุปกรณ์แบบถอดออกได้</translation>
 <translation id="3349933790966648062">หน่วยความจำที่ใช้</translation>
 <translation id="3350117557200012647">เข้าสู่โหมดการจับคู่</translation>
-<translation id="3350263973613584174">คีย์ความปลอดภัยนี้ไม่ได้เก็บข้อมูลการลงชื่อเข้าใช้ไว้</translation>
 <translation id="3355936511340229503">ข้อผิดพลาดในการเชื่อมต่อ</translation>
 <translation id="3356580349448036450">เสร็จสมบูรณ์</translation>
 <translation id="3359256513598016054">ข้อจำกัดนโยบายใบรับรอง</translation>
@@ -1946,7 +1941,6 @@
 <translation id="3878840326289104869">กำลังสร้างผู้ใช้ภายใต้การดูแล</translation>
 <translation id="3879748587602334249">Download Manager</translation>
 <translation id="3888550877729210209">จดโน้ตด้วย <ph name="LOCK_SCREEN_APP_NAME" /></translation>
-<translation id="388900914234409233">ใช้แบตเตอรี่ OEM ที่เข้ากันได้เพื่อชาร์จ Chromebook เครื่องนี้</translation>
 <translation id="3892414795099177503">เพิ่ม OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">อ่านและเปลี่ยนการตั้งค่าการเข้าถึง</translation>
 <translation id="3893630138897523026">ChromeVox (การตอบสนองด้วยเสียง)</translation>
@@ -2137,7 +2131,6 @@
 <translation id="4147911968024186208">โปรดลองอีกครั้ง หากพบข้อผิดพลาดนี้อีก ให้ติดต่อตัวแทนฝ่ายสนับสนุน</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">การแสดงผล</translation>
-<translation id="4150234330364554482">ใช้แท่นชาร์จ OEM ที่ออกแบบมาให้ใช้งานกับ Chromebook นี้</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 แท็บ}other{# แท็บ}}</translation>
 <translation id="4154664944169082762">ลายนิ้วมือ</translation>
 <translation id="4157869833395312646">วิธีการเข้ารหัสแบบ Server Gated ของ Microsoft</translation>
@@ -2284,7 +2277,6 @@
 <translation id="4412698727486357573">ศูนย์ช่วยเหลือ</translation>
 <translation id="44141919652824029">อนุญาตให้ "<ph name="APP_NAME" />" เรียกรายการอุปกรณ์ USB ที่เชื่อมต่ออยู่ใช่ไหม</translation>
 <translation id="4414232939543644979">หน้าต่างใหม่&amp;ที่ไม่ระบุตัวตน</translation>
-<translation id="4414386768539506503">ป้อน PIN ของคีย์ความปลอดภัยเพื่อดูข้อมูลการลงชื่อเข้าใช้ หากไม่ทราบ PIN คุณจะต้องรีเซ็ตคีย์ความปลอดภัย</translation>
 <translation id="4415245286584082850">ไม่พบอุปกรณ์ โปรดเปิดบทความในศูนย์ช่วยเหลือในแท็บใหม่</translation>
 <translation id="4415276339145661267">จัดการบัญชี Google</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (เรียกอีกอย่างว่า NIST P-384)</translation>
@@ -2386,7 +2378,6 @@
 <translation id="457386861538956877">เพิ่มเติม...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">จับคู่อุปกรณ์บลูทูธ</translation>
-<translation id="4578012756826807359">ลบข้อมูลการลงชื่อเข้าใช้ของคุณเรียบร้อยแล้ว</translation>
 <translation id="4579581181964204535">ไม่สามารถแคสต์ <ph name="HOST_NAME" /></translation>
 <translation id="4581774856936278355">เกิดข้อผิดพลาดขณะคืนค่า Linux</translation>
 <translation id="4582563038311694664">รีเซ็ตการตั้งค่าทั้งหมด</translation>
@@ -2698,7 +2689,6 @@
 <translation id="5072836811783999860">แสดงบุ๊กมาร์กที่มีการจัดการ</translation>
 <translation id="5074318175948309511">อาจต้องโหลดหน้านี้ซ้ำก่อนที่การตั้งค่าใหม่จะมีผล</translation>
 <translation id="5075131525758602494">ป้อน PIN ของซิม</translation>
-<translation id="507514548843781244">ดูและลบข้อมูลการลงชื่อเข้าใช้ที่เก็บไว้ในคีย์ความปลอดภัย</translation>
 <translation id="5078638979202084724">บุ๊กมาร์กแท็บทั้งหมด</translation>
 <translation id="5078796286268621944">PIN ไม่ถูกต้อง</translation>
 <translation id="5079950360618752063">ใช้รหัสผ่านที่แนะนำ</translation>
@@ -2969,7 +2959,6 @@
 <translation id="5496587651328244253">จัดระเบียบ</translation>
 <translation id="549673810209994709">หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="5499313591153584299">ไฟล์นี้อาจเป็นอันตรายต่อคอมพิวเตอร์</translation>
-<translation id="5500345327355928305">โปรดใช้อะแดปเตอร์ OEM หรือ USB Type-C เพื่อหลีกเลี่ยงปัญหาด้านการชาร์จและด้านประสิทธิภาพ</translation>
 <translation id="5502500733115278303">นำเข้าจาก Firefox</translation>
 <translation id="5507756662695126555">การป้องกันการปฏิเสธความรับผิดชอบต่อข้อมูล</translation>
 <translation id="5509693895992845810">บันทึกเ&amp;ป็น...</translation>
@@ -2996,7 +2985,6 @@
 <translation id="5534304873398226603">ทิ้งรูปภาพหรือวิดีโอ</translation>
 <translation id="5535941515421698170">นำข้อมูลที่มีอยู่ของคุณออกจากอุปกรณ์นี้ด้วย</translation>
 <translation id="5539221284352502426">เซิร์ฟเวอร์ปฏิเสธรหัสผ่านที่คุณป้อน สาเหตุที่เป็นไปได้คือรหัสผ่านสั้นเกินไป ทั้งนี้รหัสผ่านต้องมีตัวเลขหรือสัญลักษณ์อยู่ด้วย และต้องแตกต่างจากรหัสผ่านที่เคยใช้</translation>
-<translation id="5541687815721799001">ใช้แอป</translation>
 <translation id="5542132724887566711">โปรไฟล์</translation>
 <translation id="5542750926112347543">บล็อกคุกกี้จาก <ph name="DOMAIN" /></translation>
 <translation id="5543983818738093899">กำลังตรวจสอบสถานะ...</translation>
@@ -3395,7 +3383,6 @@
 <translation id="6122081475643980456">กำลังมีการควบคุมการเชื่อมต่ออินเทอร์เน็ตของคุณ</translation>
 <translation id="6122095009389448667">บล็อกเว็บไซต์ไม่ให้เห็นคลิปบอร์ดต่อไป</translation>
 <translation id="6122875415561139701">ไม่อนุญาตให้เขียนใน "<ph name="DEVICE_NAME" />"</translation>
-<translation id="6123292156101652890">คีย์ความปลอดภัยนี้เก็บข้อมูลการลงชื่อเข้าใช้ไม่ได้</translation>
 <translation id="6124650939968185064">ส่วนขยายต่อไปนี้ต้องพึ่งพาส่วนขยายนี้:</translation>
 <translation id="6124698108608891449">เว็บไซต์นี้ต้องการสิทธิ์เพิ่มเติม</translation>
 <translation id="6125479973208104919">ขออภัย คุณจะต้องเพิ่มบัญชีของคุณลงใน <ph name="DEVICE_TYPE" /> นี้อีกครั้ง</translation>
@@ -4065,7 +4052,6 @@
 <translation id="7143092389027215216">กำลังเริ่มโหมดสาธิต</translation>
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
-<translation id="714687768418476028">คีย์ความปลอดภัยไม่มีการป้องกันด้วย PIN สร้าง PIN ก่อนเพื่อจัดการข้อมูลการลงชื่อเข้าใช้</translation>
 <translation id="7149893636342594995">24 ชั่วโมงที่แล้ว</translation>
 <translation id="715118844758971915">เครื่องพิมพ์แบบเดิม</translation>
 <translation id="7152478047064750137">ส่วนขยายนี้ไม่จำเป็นต้องมีสิทธิ์พิเศษ</translation>
@@ -4931,7 +4917,6 @@
 <translation id="8438566539970814960">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>
 <translation id="8439506636278576865">เสนอที่จะแปลหน้าต่างๆ ที่เป็นภาษานี้</translation>
 <translation id="8440630305826533614">แอป Linux</translation>
-<translation id="844241640324986723">การลบข้อมูลการลงชื่อเข้าใช้ของคุณล้มเหลว</translation>
 <translation id="8443338615972234259">โปรดสร้างบัญชีใหม่ให้ผู้ใช้ภายใต้การควบคุมดูแลตอนนี้เลย</translation>
 <translation id="8446884382197647889">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="8447409163267621480">รวมปุ่ม Ctrl หรือ Alt</translation>

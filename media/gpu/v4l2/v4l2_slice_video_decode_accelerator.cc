@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/media.h>
 #include <linux/videodev2.h>
 #include <poll.h>
 #include <string.h>
@@ -463,6 +464,27 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     VLOGF(1) << "Could not allocate enough output buffers";
     return false;
   }
+
+  // Open media device if we are discovering that we support requests.
+  supports_requests_ =
+      static_cast<bool>(reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS);
+  if (supports_requests_) {
+    VLOGF(2) << "Using request API";
+    DCHECK(!media_fd_.is_valid());
+    // Let's try to open the media device
+    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
+    // integration.
+    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
+    if (media_fd < 0) {
+      VPLOGF(1) << "Failed to open media device: ";
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+    }
+    media_fd_ = base::ScopedFD(media_fd);
+
+  } else {
+    VLOGF(2) << "Using config store";
+  }
+
   input_buffer_map_.resize(reqbufs.count);
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
     free_input_buffers_.push_back(i);
@@ -489,6 +511,19 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     }
     input_buffer_map_[i].address = address;
     input_buffer_map_[i].length = buffer.m.planes[0].length;
+
+    if (supports_requests_) {
+      int request_fd;
+
+      DCHECK(media_fd_.is_valid());
+      int ret = HANDLE_EINTR(
+          ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+      if (ret < 0) {
+        VPLOGF(1) << "Failed to create request: ";
+        return false;
+      }
+      input_buffer_map_[i].request_fd = base::ScopedFD(request_fd);
+    }
   }
 
   return true;
@@ -582,6 +617,8 @@ void V4L2SliceVideoDecodeAccelerator::DestroyInputBuffers() {
 
   input_buffer_map_.clear();
   free_input_buffers_.clear();
+
+  media_fd_.reset();
 }
 
 void V4L2SliceVideoDecodeAccelerator::DismissPictures(
@@ -2017,11 +2054,24 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_current_bitstream_buffer_ != nullptr);
   input_record.input_id = decoder_current_bitstream_buffer_->input_id;
 
-  scoped_refptr<V4L2DecodeSurface> dec_surface =
-      new V4L2ConfigStoreDecodeSurface(
-          input, output,
-          base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
-                         base::Unretained(this), output));
+  scoped_refptr<V4L2DecodeSurface> dec_surface;
+
+  if (supports_requests_) {
+    auto ret = V4L2RequestDecodeSurface::Create(
+        input, output, input_record.request_fd.get(),
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
+                       base::Unretained(this), output));
+
+    if (!ret)
+      return nullptr;
+
+    dec_surface = std::move(ret).value();
+  } else {
+    dec_surface = new V4L2ConfigStoreDecodeSurface(
+        input, output,
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
+                       base::Unretained(this), output));
+  }
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;
   return dec_surface;

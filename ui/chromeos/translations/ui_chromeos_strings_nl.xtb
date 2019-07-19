@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Zoekbalk</translation>
 <translation id="1399648040768741453">Telugu toetsenbord (fonetisch)</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
+<translation id="1439494416798956626">Verplaatst naar <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamees toetsenbord (Telex)</translation>
 <translation id="1455548678241328678">Noors toetsenbord</translation>
 <translation id="1464724975715666883">1 fout.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Je media-apparaat scannen...</translation>
 <translation id="3468522857997926824">Er is een back-up van <ph name="FILE_COUNT" /> foto's gemaakt in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopiëren...</translation>
+<translation id="3473378059788601120">Gekopieerd naar <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Google-spreadsheet</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fouten.</translation>
 <translation id="3519867315646775981">Transliteratie (shalom ← שלום)</translation>
@@ -438,6 +440,7 @@
 <translation id="5923484009666796948">Japanse invoer (voor Japans toetsenbord)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux-apps toestaan om bestanden in je Google Drive te wijzigen. Wijzigingen worden gesynchroniseerd met je andere apparaten.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> items</translation>
 <translation id="5982621672636444458">Sorteeropties</translation>
 <translation id="6005282720244019462">Latijns-Amerikaans toetsenbord</translation>
 <translation id="6007237601604674381">Verplaatsen mislukt. <ph name="ERROR_MESSAGE" /></translation>

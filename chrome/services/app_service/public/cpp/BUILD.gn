@@ -31,6 +31,8 @@ source_set("icon_loader") {
   sources = [
     "icon_cache.cc",
     "icon_cache.h",
+    "icon_coalescer.cc",
+    "icon_coalescer.h",
     "icon_loader.cc",
     "icon_loader.h",
   ]
@@ -72,10 +74,12 @@ source_set("unit_tests") {
     "app_registry_cache_unittest.cc",
     "app_update_unittest.cc",
     "icon_cache_unittest.cc",
+    "icon_coalescer_unittest.cc",
   ]
 
   deps = [
     ":app_update",
+    ":icon_loader",
     "//testing/gtest",
   ]
 }

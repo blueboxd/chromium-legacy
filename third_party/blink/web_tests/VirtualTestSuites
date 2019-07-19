@@ -531,16 +531,6 @@
     "args": ["--enable-features=ScrollbarInjectScrollGestures"]
   },
   {
-    "prefix": "fractional_scrolling_threaded",
-    "base": "fast/scrolling",
-    "args": ["--enable-blink-features=FractionalScrollOffsets", "--enable-threaded-compositing"]
-  },
-  {
-    "prefix": "fractional_scrolling",
-    "base": "fast/scrolling",
-    "args": ["--enable-blink-features=FractionalScrollOffsets"]
-  },
-  {
     "prefix": "speech-with-unified-autoplay",
     "base": "external/wpt/speech-api",
     "args": ["--autoplay-policy=document-user-activation-required"]

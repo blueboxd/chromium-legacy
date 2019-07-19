@@ -37,6 +37,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
 
     // Called when the set of runnable scripts have changed. |runnable_scripts|
     // are the new runnable scripts. Runnable scripts are ordered by priority.
+    //
+    // The result of the first check is always reported, even if the set of
+    // scripts that were found is empty.
     virtual void OnRunnableScriptsChanged(
         const std::vector<ScriptHandle>& runnable_scripts) = 0;
 
@@ -47,7 +50,7 @@ class ScriptTracker : public ScriptExecutor::Listener {
     //
     // This is only called when there are scripts. That is, SetScripts was last
     // passed a non-empty vector.
-    virtual void OnNoRunnableScripts() = 0;
+    virtual void OnNoRunnableScriptsForPage() = 0;
   };
 
   // |delegate| and |listener| should outlive this object and should not be
@@ -81,6 +84,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
   void ExecuteScript(const std::string& path,
                      std::unique_ptr<TriggerContext> context,
                      ScriptExecutor::RunScriptCallback callback);
+
+  // Stops a script, if one is running.
+  void StopScript();
 
   // Clears the set of scripts that could be run.
   //
@@ -128,6 +134,10 @@ class ScriptTracker : public ScriptExecutor::Listener {
 
   ScriptExecutorDelegate* const delegate_;
   ScriptTracker::Listener* const listener_;
+
+  // If true, a set of script has already been reported to
+  // Listener::OnRunnableScriptsChanged.
+  bool has_reported_scripts_ = false;
 
   // Paths and names of scripts known to be runnable (they pass the
   // preconditions).

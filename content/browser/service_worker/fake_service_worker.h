@@ -113,6 +113,9 @@ class FakeServiceWorker : public blink::mojom::ServiceWorker {
       base::TimeDelta timeout,
       DispatchExtendableMessageEventWithCustomTimeoutCallback callback)
       override;
+  void DispatchContentDeleteEvent(
+      const std::string& id,
+      DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
   void SetIdleTimerDelayToZero() override;
 

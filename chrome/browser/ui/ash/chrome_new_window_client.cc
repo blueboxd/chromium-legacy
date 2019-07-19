@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 
-#include <string>
 #include <utility>
 
 #include "ash/public/cpp/arc_custom_tab.h"
@@ -68,7 +67,56 @@
 #include "ui/gfx/native_widget_types.h"
 #include "url/url_constants.h"
 
+using arc::mojom::ChromePage;
+
 namespace {
+
+constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
+    {{ChromePage::MULTIDEVICE, chrome::kMultideviceSubPage},
+     {ChromePage::MAIN, ""},
+     {ChromePage::POWER, chrome::kPowerSubPage},
+     {ChromePage::BLUETOOTH, chrome::kBluetoothSubPage},
+     {ChromePage::DATETIME, chrome::kDateTimeSubPage},
+     {ChromePage::DISPLAY, chrome::kDisplaySubPage},
+     {ChromePage::WIFI, chrome::kWiFiSettingsSubPage},
+     {ChromePage::HELP, chrome::kHelpSubPage},
+     {ChromePage::ACCOUNTS, chrome::kAccountSubPage},
+     {ChromePage::BLUETOOTHDEVICES, chrome::kBluetoothSubPage},
+     {ChromePage::CHANGEPICTURE, chrome::kChangePictureSubPage},
+     {ChromePage::CUPSPRINTERS, chrome::kNativePrintingSettingsSubPage},
+     {ChromePage::KEYBOARDOVERLAY, chrome::kKeyboardOverlaySubPage},
+     {ChromePage::LANGUAGES, chrome::kLanguageOptionsSubPage},
+     {ChromePage::LOCKSCREEN, chrome::kLockScreenSubPage},
+     {ChromePage::MANAGEACCESSIBILITY, chrome::kManageAccessibilitySubPage},
+     {ChromePage::NETWORKSTYPEVPN, chrome::kVPNSettingsSubPage},
+     {ChromePage::POINTEROVERLAY, chrome::kPointerOverlaySubPage},
+     {ChromePage::RESET, chrome::kResetSubPage},
+     {ChromePage::STORAGE, chrome::kStorageSubPage},
+     {ChromePage::SYNCSETUP, chrome::kSyncSetupSubPage}};
+
+constexpr std::pair<arc::mojom::ChromePage, const char*>
+    kBrowserSettingsMapping[] = {
+        {ChromePage::APPEARANCE, chrome::kAppearanceSubPage},
+        {ChromePage::AUTOFILL, chrome::kAutofillSubPage},
+        {ChromePage::CLEARBROWSERDATA, chrome::kClearBrowserDataSubPage},
+        {ChromePage::CLOUDPRINTERS, chrome::kCloudPrintersSubPage},
+        {ChromePage::DOWNLOADS, chrome::kDownloadsSubPage},
+        {ChromePage::ONSTARTUP, chrome::kOnStartupSubPage},
+        {ChromePage::PASSWORDS, chrome::kPasswordManagerSubPage},
+        {ChromePage::PRIVACY, chrome::kPrivacySubPage},
+        {ChromePage::SEARCH, chrome::kSearchSubPage}};
+
+constexpr std::pair<arc::mojom::ChromePage, const char*> kAboutPagesMapping[] =
+    {{ChromePage::ABOUTBLANK, url::kAboutBlankURL},
+     {ChromePage::ABOUTDOWNLOADS, "about:downloads"},
+     {ChromePage::ABOUTHISTORY, "about:history"}};
+
+// mojom::ChromePage::LAST returns the amount of valid entries - 1.
+static_assert(base::size(kOSSettingsMapping) +
+                      base::size(kBrowserSettingsMapping) +
+                      base::size(kAboutPagesMapping) ==
+                  static_cast<size_t>(arc::mojom::ChromePage::LAST) + 1,
+              "ChromePage mapping is out of sync");
 
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =
@@ -256,7 +304,13 @@ class CustomTabSessionImpl
 
 }  // namespace
 
-ChromeNewWindowClient::ChromeNewWindowClient() {
+ChromeNewWindowClient::ChromeNewWindowClient()
+    : os_settings_pages_(std::cbegin(kOSSettingsMapping),
+                         std::cend(kOSSettingsMapping)),
+      browser_settings_pages_(std::cbegin(kBrowserSettingsMapping),
+                              std::cend(kBrowserSettingsMapping)),
+      about_pages_(std::cbegin(kAboutPagesMapping),
+                   std::cend(kAboutPagesMapping)) {
   arc::ArcIntentHelperBridge::SetOpenUrlDelegate(this);
 }
 
@@ -547,4 +601,28 @@ content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
         navigate_params.browser->window()->GetNativeWindow());
   }
   return navigate_params.navigated_or_inserted_contents;
+}
+
+void ChromeNewWindowClient::OpenChromePageFromArc(ChromePage page) {
+  auto it = os_settings_pages_.find(page);
+  if (it != os_settings_pages_.end()) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
+                                                                 it->second);
+    return;
+  }
+
+  it = browser_settings_pages_.find(page);
+  if (it != browser_settings_pages_.end()) {
+    OpenUrlFromArc(GURL(chrome::kChromeUISettingsURL).Resolve(it->second));
+    return;
+  }
+
+  it = about_pages_.find(page);
+  if (it != about_pages_.end()) {
+    OpenUrlFromArc(GURL(it->second));
+    return;
+  }
+
+  NOTREACHED();
 }

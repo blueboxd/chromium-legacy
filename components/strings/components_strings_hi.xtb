@@ -218,7 +218,7 @@
 <translation id="2064691555167957331">{COUNT,plural, =1{1 सुझाव}one{# सुझाव}other{# सुझाव}}</translation>
 <translation id="2068663545051464999">अपलोड की गई खराबी रिपोर्ट आईडी <ph name="CRASH_ID" /> (स्थानीय संदर्भ : <ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
-<translation id="20817612488360358">सिस्‍टम प्रॉक्‍सी सेटिंग उपयोग किए जाने के लिए सेट हैं लेकिन कोई स्पष्‍ट प्रॉक्‍सी कॉन्फ़िगरेशन भी निर्दिष्ट है.</translation>
+<translation id="20817612488360358">सिस्‍टम प्रॉक्‍सी सेटिंग उपयोग किए जाने के लिए सेट हैं लेकिन कोई स्पष्‍ट प्रॉक्‍सी कॉन्फ़िगरेशन भी मौजूद है.</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> में से <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2091887806945687916">आवाज़</translation>
 <translation id="2094505752054353250">डोमेन का गलत-मिलान</translation>
@@ -656,7 +656,7 @@
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ने आपका लॉगिन प्रमाणपत्र स्वीकार नहीं किया है या हो सकता है कि प्रमाणपत्र उपलब्ध नहीं कराया गया हो.</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="4435702339979719576">पोस्टकार्ड)</translation>
-<translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन निर्दिष्ट किया गया है.</translation>
+<translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन दर्ज किया गया है.</translation>
 <translation id="445100540951337728">स्वीकृत डेबिट कार्ड</translation>
 <translation id="4466881336512663640">फ़ॉर्म में किए गए बदलाव हटा दिए जाएँगे. क्या आप वाकई जारी रखना चाहते हैं?</translation>
 <translation id="4477350412780666475">अगला ट्रैक</translation>
@@ -731,7 +731,7 @@
 <translation id="4914479371620770914">{URL_count,plural, =1{1 और वेब पेज}one{# और वेब पेज}other{# और वेब पेज}}</translation>
 <translation id="4923417429809017348">इस पेज का एक अज्ञात भाषा से <ph name="LANGUAGE_LANGUAGE" /> में अनुवाद किया गया है</translation>
 <translation id="4923459931733593730">भुगतान</translation>
-<translation id="4926049483395192435">निर्दिष्ट किया जाना चाहिए.</translation>
+<translation id="4926049483395192435">बताया जाना चाहिए.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> का कहना है कि</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
@@ -1401,7 +1401,7 @@
 <translation id="8571890674111243710">पेज का अनुवाद <ph name="LANGUAGE" /> में कर रहा है...</translation>
 <translation id="858637041960032120">फ़ोन नंबर जोड़ें
 </translation>
-<translation id="859285277496340001">प्रमाणपत्र यह जांचने के लिए कोई तरीका निर्दिष्‍ट नहीं करता कि इसे रद्द कर दिया गया है या नहीं.</translation>
+<translation id="859285277496340001">प्रमाणपत्र यह जांचने के लिए कोई तरीका नहीं बताता कि इसे रद्द कर दिया गया है या नहीं.</translation>
 <translation id="860043288473659153">कार्डधारक का नाम</translation>
 <translation id="861775596732816396">आकार 4</translation>
 <translation id="8620436878122366504">आपके अभिभावकों ने अभी तक इसकी अनुमति नहीं दी है</translation>

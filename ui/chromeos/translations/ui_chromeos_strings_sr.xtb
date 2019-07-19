@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Клизач за тражење</translation>
 <translation id="1399648040768741453">Телугу тастатура (фонетска)</translation>
 <translation id="1430915738399379752">Штампај</translation>
+<translation id="1439494416798956626">Премештено у: <ph name="FOLDER_NAME" /></translation>
 <translation id="1441841714100794440">Вијетнамска тастатура (Telex)</translation>
 <translation id="1455548678241328678">Језик тастатуре: норвешки</translation>
 <translation id="1464724975715666883">1 грешка.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Медијски уређај се скенира...</translation>
 <translation id="3468522857997926824">Резервна копија слика (<ph name="FILE_COUNT" />) је направљена на <ph name="BEGIN_LINK" />Google диску<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Копирање...</translation>
+<translation id="3473378059788601120">Копирано је у: <ph name="FOLDER_NAME" /></translation>
 <translation id="3475447146579922140">Google табела</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешака.</translation>
 <translation id="3519867315646775981">Транслитерација (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Унос за јапански (за јапанску тастатуру)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Дозволите да Linux апликације мењају датотеке на Google диску. Промене ће се синхронизовати са другим уређајима.</translation>
+<translation id="5955954492236143329">Ставки: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Опције сортирања</translation>
 <translation id="6005282720244019462">Латиноамеричка тастатура</translation>
 <translation id="6007237601604674381">Премештање није успело. <ph name="ERROR_MESSAGE" /></translation>

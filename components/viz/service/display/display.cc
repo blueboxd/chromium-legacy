@@ -309,13 +309,12 @@ void Display::SetColorMatrix(const SkMatrix44& matrix) {
   }
 }
 
-void Display::SetColorSpace(const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& device_color_space) {
-  blending_color_space_ = blending_color_space;
+void Display::SetColorSpace(const gfx::ColorSpace& device_color_space,
+                            float sdr_white_level) {
   device_color_space_ = device_color_space;
-  if (aggregator_) {
-    aggregator_->SetOutputColorSpace(blending_color_space, device_color_space_);
-  }
+  sdr_white_level_ = sdr_white_level;
+  if (aggregator_)
+    aggregator_->SetOutputColorSpace(device_color_space_);
 }
 
 void Display::SetOutputIsSecure(bool secure) {
@@ -377,7 +376,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       surface_manager_, resource_provider_.get(), output_partial_list,
       needs_surface_occluding_damage_rect));
   aggregator_->set_output_is_secure(output_is_secure_);
-  aggregator_->SetOutputColorSpace(blending_color_space_, device_color_space_);
+  aggregator_->SetOutputColorSpace(device_color_space_);
 }
 
 void Display::UpdateRootFrameMissing() {
@@ -516,7 +515,7 @@ bool Display::DrawAndSwap() {
     draw_timer.emplace();
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         current_surface_size);
+                         current_surface_size, sdr_white_level_);
     if (software_renderer_) {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.Software.DrawFrameUs",
                               draw_timer->Elapsed().InMicroseconds());

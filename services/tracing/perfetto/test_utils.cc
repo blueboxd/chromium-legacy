@@ -19,10 +19,19 @@
 
 namespace tracing {
 
+// static
+std::unique_ptr<TestDataSource> TestDataSource::CreateAndRegisterDataSource(
+    const std::string& data_source_name,
+    size_t send_packet_count) {
+  auto data_source = std::unique_ptr<TestDataSource>(
+      new TestDataSource(data_source_name, send_packet_count));
+  PerfettoTracedProcess::Get()->AddDataSource(data_source.get());
+  return data_source;
+}
+
 TestDataSource::TestDataSource(const std::string& data_source_name,
                                size_t send_packet_count)
     : DataSourceBase(data_source_name), send_packet_count_(send_packet_count) {
-  PerfettoTracedProcess::Get()->AddDataSource(this);
 }
 
 TestDataSource::~TestDataSource() = default;
@@ -277,8 +286,8 @@ MockProducer::MockProducer(const std::string& producer_name,
   // construct the data source the TestDataSource can not race.
   producer_client_ = std::make_unique<MockProducerClient>(
       /* num_data_sources = */ 1, std::move(on_tracing_started));
-  data_source_ =
-      std::make_unique<TestDataSource>(data_source_name, num_packets);
+  data_source_ = TestDataSource::CreateAndRegisterDataSource(data_source_name,
+                                                             num_packets);
 
   producer_host_ = std::make_unique<MockProducerHost>(
       producer_name, data_source_name, service, producer_client_.get(),

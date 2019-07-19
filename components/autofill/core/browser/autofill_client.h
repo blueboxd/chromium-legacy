@@ -58,6 +58,7 @@ class CardUnmaskDelegate;
 class CreditCard;
 class FormDataImporter;
 class FormStructure;
+class LogManager;
 class MigratableCreditCard;
 class PersonalDataManager;
 class StrikeDatabase;
@@ -406,6 +407,10 @@ class AutofillClient : public RiskDataLoader {
 
   // Handles simple actions for the autofill popups.
   virtual void ExecuteCommand(int id) = 0;
+
+  // Returns a LogManager instance. May be null for platforms that don't support
+  // this.
+  virtual LogManager* GetLogManager() const;
 };
 
 }  // namespace autofill

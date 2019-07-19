@@ -31,4 +31,14 @@ ServiceProcessHost::Options& ServiceProcessHost::Options::WithDisplayName(
   return *this;
 }
 
+ServiceProcessHost::Options& ServiceProcessHost::Options::WithChildFlags(
+    int flags) {
+  child_flags = flags;
+  return *this;
+}
+
+ServiceProcessHost::Options ServiceProcessHost::Options::Pass() {
+  return std::move(*this);
+}
+
 }  // namespace content

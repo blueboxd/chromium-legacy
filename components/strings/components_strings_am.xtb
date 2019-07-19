@@ -324,6 +324,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />፣ <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">የፋይሉ መዳረሻ ተከልክሏል</translation>
 <translation id="2653659639078652383">አስገባ</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{ምንም}=1{1 የይለፍ ቃል (ለ<ph name="DOMAIN_LIST" />)}=2{2 የይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />)}one{# የይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />)}other{# የይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">ሌሎች ትሮችን ወይም መተግበሪያዎችን ይዝጉ</translation>
 <translation id="267371737713284912">ለመቀልበስ <ph name="MODIFIER_KEY_DESCRIPTION" />ን ይጫኑ</translation>
 <translation id="2674170444375937751">እርግጠኛ ነዎት እነዚህን ገጾች ከታሪክዎ መሰረዝ ይፈልጋሉ?</translation>
@@ -653,6 +654,7 @@
 <translation id="4435702339979719576">የፖስታ ካርድ)</translation>
 <translation id="443673843213245140">የተኪ መጠቀም ተሰናክሏል ግን ግልጽ የሆነ የተኪ ውቅር ተገልጿል።</translation>
 <translation id="445100540951337728">ተቀባይነት ያላቸው ዴቢት ካርዶች</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> አጠራጣሪ ባህሪ</translation>
 <translation id="4466881336512663640">የቅጽ ለውጦች ይጠፋሉ። እርግጠኛ ነዎት መቀጠል ይፈልጋሉ?</translation>
 <translation id="4477350412780666475">ቀጣይ ትራክ</translation>
 <translation id="4482953324121162758">ይህ ጣቢያ አይተረጎምም።</translation>
@@ -705,6 +707,7 @@
 <translation id="4771973620359291008">ያልታወቀ ስህተት ተከስቷል።</translation>
 <translation id="4780900888022378816">የእርስዎ መሣሪያ የሚተዳደረው በ<ph name="ENROLLMENT_DOMAIN" /> ሲሆን መለያዎ የሚተዳደረው በ<ph name="ACCOUNT_DOMAIN" /> ነው።</translation>
 <translation id="4785689107224900852">ወደዚህ ትር ቀይር</translation>
+<translation id="4791134497475588553">የተጫኑ የLinux መተግበሪያዎች እና መቼ መጨረሻ ስራ ላይ እንደዋሉ</translation>
 <translation id="4798078619018708837">የካርድ ዝርዝሮችዎን ለማዘመን የ<ph name="CREDIT_CARD" /> ማብቂያ ቀን እና CVC ያስገቡ። ካረጋገጡ በኋላ የGoogle መለያ ካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራል።</translation>
 <translation id="4800132727771399293">የእርስዎን የአገልግሎት ማብቂያ ቀን እና CVC ይፈትሹ እና እንደገና ይሞክሩ</translation>
 <translation id="480334179571489655">የምንጭ መመሪያ ስህተት</translation>
@@ -715,6 +718,7 @@
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="4854362297993841467">የማድረሻ ዘዴው አይገኝም። የተለየ ዘዴ ይሞክሩ።</translation>
 <translation id="4858792381671956233">ይህን ገጽ መጎብኘት ችግር ካለው ወላጆችዎንጠይቀዋል</translation>
+<translation id="4864052566555297930">ጠቃሚ የጥንቃቄ ምክር፦</translation>
 <translation id="4876188919622883022">የተቃለለ እይታ</translation>
 <translation id="4876305945144899064">ምንም የተጠቃሚ ስም የለም</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{ምንም}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />፣ <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />፣ <ph name="EXAMPLE_DOMAIN_2" />፣ <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />፣ <ph name="EXAMPLE_DOMAIN_2" />፣ <ph name="AND_MORE" />}}</translation>
@@ -815,6 +819,7 @@
 <translation id="536296301121032821">የመምሪያ ቅንብሮችን ማከማቸት አልተሳካም</translation>
 <translation id="5371425731340848620">ካርድ ያዘምኑ</translation>
 <translation id="5377026284221673050">«የእርስዎ ሰዓት ቀርቷል» ወይም «የእርስዎ ሰዓት ቀድሟል» ወይም «&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;»</translation>
+<translation id="5377179979757081683">ይህ ገጽ እርስዎን ለማታለል፣ የግል መረጃን ለመስረቅ ወይም መሣሪያዎን ለመጉዳት ሊሞክር ይችላል። የግል መረጃ ሲያስገቡ ወይም የወረዱ ፋይሎችን ሲከፍቱ ይጠንቀቁ።</translation>
 <translation id="5384855140246857529">ካርዶችዎን በሁሉም መሣሪያዎችዎ ላይ ለመጠቀም በመለያ ይግቡና ስምረትን ያብሩ።</translation>
 <translation id="5386426401304769735">የዚህ ጣቢያ የዕውቅና ማረጋገጫ ሰንሰለቱ SHA-1 በመጠቀም የተፈረመ የዕውቅና ማረጋገጫን ያካትታል።</translation>
 <translation id="538659543871111977">A4-ትር</translation>
@@ -979,6 +984,7 @@
 <translation id="6328786501058569169">ይህ ጣቢያ አታላይ ነው</translation>
 <translation id="6337133576188860026">ከ<ph name="SIZE" /> ያነሰ ቦታ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
 <translation id="6337534724793800597">መምሪያዎችን በስም አጣራ</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{ምንም}=1{1 ይለፍ ቃል (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}=2{2 ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}one{# ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}other{# ይለፍ ቃላት (ለ<ph name="DOMAIN_LIST" />፣ ሰምሯል)}}</translation>
 <translation id="6358450015545214790">እነዚህ ምን ማለት ናቸው?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1154,6 +1160,7 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">ከዚህ ጋር ግንኙነት አለው፦</translation>
 <translation id="7349430561505560861">A4-ተጨማሪ</translation>
+<translation id="7352902249897488700">ከዚህ ጣቢያ ውጣ</translation>
 <translation id="7353601530677266744">የትእዛዝ መስመር</translation>
 <translation id="7372973238305370288">የፍለጋ ውጤት</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

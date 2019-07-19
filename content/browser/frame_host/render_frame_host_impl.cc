@@ -1350,22 +1350,25 @@ void RenderFrameHostImpl::ExecuteJavaScriptInIsolatedWorld(
 
 void RenderFrameHostImpl::ExecuteJavaScriptForTests(
     const base::string16& javascript,
-    JavaScriptResultCallback callback) {
+    JavaScriptResultCallback callback,
+    int world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool has_user_gesture = false;
   const bool wants_result = !callback.is_null();
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
-      javascript, wants_result, has_user_gesture, std::move(callback));
+      javascript, wants_result, has_user_gesture, world_id,
+      std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
-    const base::string16& javascript) {
+    const base::string16& javascript,
+    int world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const bool has_user_gesture = true;
   GetNavigationControl()->JavaScriptExecuteRequestForTests(
-      javascript, false, has_user_gesture, base::NullCallback());
+      javascript, false, has_user_gesture, world_id, base::NullCallback());
 }
 
 void RenderFrameHostImpl::CopyImageAt(int x, int y) {

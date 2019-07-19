@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Websitespeicher</translation>
 <translation id="2328985652426384049">Anmeldung nicht möglich</translation>
 <translation id="2349710944427398404">Gesamtdaten, die von Chrome verwendet werden, wie Konten, Lesezeichen und gespeicherte Einstellungen</translation>
-<translation id="2351097562818989364">Übersetzungseinstellungen zurückgesetzt</translation>
 <translation id="2353636109065292463">Internetverbindung überprüfen</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2369533728426058518">Tabs öffnen</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> Sekunden übrig</translation>
 <translation id="2779651927720337254">fehlgeschlagen</translation>
 <translation id="2781151931089541271">1 Sekunde übrig</translation>
+<translation id="2796941233371040292">Keine Speicherdaten vorhanden</translation>
 <translation id="2801022321632964776">Chrome jetzt aktualisieren und das Internet in Ihrer Sprache entdecken</translation>
 <translation id="2810645512293415242">Vereinfachte Seite für einen geringeren Datenverbrauch und schnelleres Laden.</translation>
 <translation id="281504910091592009">Gespeicherte Passwörter in Ihrem <ph name="BEGIN_LINK" />Google-Konto<ph name="END_LINK" /> ansehen und verwalten</translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Über Google Chrome</translation>
 <translation id="2891154217021530873">Laden der Seite anhalten</translation>
 <translation id="2893180576842394309">Anhand Ihres Verlaufs kann Google die Google-Suche und andere Google-Dienste personalisieren</translation>
+<translation id="2898264748040935573">Gespeichertes Passwort bearbeiten</translation>
 <translation id="2900528713135656174">Termin erstellen</translation>
 <translation id="2902702728133930130">Während des Startvorgangs ist in Chrome ein unerwarteter Fehler aufgetreten.</translation>
 <translation id="290376772003165898">Diese Seite ist nicht auf <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4913169188695071480">Aktualisierung anhalten</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" />, während nach Geräten gesucht wird…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Seite}other{# Seiten}}</translation>
+<translation id="4932247056774066048">Da Sie sich von einem Konto abmelden, das von <ph name="DOMAIN_NAME" /> verwaltet wird, werden Ihre Chrome-Daten auf diesem Gerät gelöscht. Die Daten bleiben jedoch in Ihrem Google-Konto.</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">Keine Ergebnisse</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> hat Ihren Bildschirm freigegeben</translation>
@@ -562,6 +564,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5210286577605176222">Zum vorherigen Tab wechseln</translation>
 <translation id="5210365745912300556">Schließen</translation>
 <translation id="5224771365102442243">Mit Video</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> möchte nach Bluetooth-Geräten in der Nähe suchen. Die folgenden Geräte wurden gefunden:</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
 <translation id="526421993248218238">Fehler beim Laden der Seite</translation>
 <translation id="5271967389191913893">Das Gerät kann den Inhalt, der heruntergeladen werden soll, nicht öffnen.</translation>
@@ -571,7 +574,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
 <translation id="5308380583665731573">Verbinden</translation>
-<translation id="5308603654685598744">Wenn diese Funktion aktiviert ist, bietet Chrome eine Übersetzung von Seiten in anderen Sprachen durch Google Übersetzer an.</translation>
 <translation id="5313967007315987356">Website hinzufügen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
@@ -586,6 +588,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5414836363063783498">Überprüfung...</translation>
 <translation id="5423934151118863508">Hier werden Ihre am meisten aufgerufenen Seiten angezeigt.</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB verfügbar</translation>
+<translation id="543338862236136125">Passwort ändern</translation>
 <translation id="5433691172869980887">Nutzername kopiert</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> Dateien (<ph name="MEGABYTES" /> MB) werden heruntergeladen.</translation>
 <translation id="5441522332038954058">Zur Adressleiste wechseln</translation>
@@ -660,7 +663,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5865733239029070421">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
-<translation id="5911030830365207728">Google Übersetzer</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5919204609460789179">Zur Synchronisierung müssen Sie <ph name="PRODUCT_NAME" /> aktualisieren</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> gespeichert</translation>
@@ -805,7 +807,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6963642900430330478">Diese Seite ist gefährlich. Websiteinformationen</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6965382102122355670">Ok</translation>
-<translation id="6978479750597523876">Übersetzungseinstellungen zurücksetzen</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6989267951144302301">Fehler beim Download</translation>
@@ -952,7 +953,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="7999064672810608036">Möchten Sie wirklich alle lokalen Daten einschließlich Cookies löschen und alle Berechtigungen für diese Website zurücksetzen?</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
-<translation id="8013372441983637696">Auch meine Chrome-Daten von diesem Gerät löschen</translation>
+<translation id="8013372441983637696">Meine Chrome-Daten auch von diesem Gerät löschen</translation>
 <translation id="8015452622527143194">Gesamten Seiteninhalt auf Standardgröße zurücksetzen</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>

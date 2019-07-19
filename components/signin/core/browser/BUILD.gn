@@ -56,7 +56,6 @@ static_library("browser") {
 
   public_deps = [
     "//base",
-    "//components/account_id",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/keyed_service/core",

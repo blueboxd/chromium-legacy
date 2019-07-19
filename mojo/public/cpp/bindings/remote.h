@@ -152,6 +152,17 @@ class Remote {
         std::move(handler));
   }
 
+  // A convenient helper that resets this Remote on disconnect. Note that this
+  // replaces any previously set disconnection handler.
+  void reset_on_disconnect() {
+    if (!is_connected()) {
+      reset();
+      return;
+    }
+    set_disconnect_handler(
+        base::BindOnce(&Remote::reset, base::Unretained(this)));
+  }
+
   // Sets a Closure to be invoked if the receiving endpoint reports itself as
   // idle and there are no in-flight messages it has yet to acknowledge, and
   // this state occurs continuously for a duration of at least |timeout|. The
@@ -180,6 +191,13 @@ class Remote {
   void set_idle_handler(base::TimeDelta timeout,
                         base::RepeatingClosure handler) {
     internal_state_.set_idle_handler(timeout, std::move(handler));
+  }
+
+  // A convenient helper for common idle timeout behavior. This is equivalent to
+  // calling |set_idle_handler| with a handler that only resets this Remote.
+  void reset_on_idle_timeout(base::TimeDelta timeout) {
+    set_idle_handler(
+        timeout, base::BindRepeating(&Remote::reset, base::Unretained(this)));
   }
 
   // Resets this Remote to an unbound state. To reset the Remote and recover an

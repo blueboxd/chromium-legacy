@@ -330,6 +330,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Tiedoston käyttöoikeus evättiin</translation>
 <translation id="2653659639078652383">Lähetä</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{Ei mitään}=1{1 salasana (<ph name="DOMAIN_LIST" />)}=2{2 salasanaa (<ph name="DOMAIN_LIST" />)}other{# salasanaa (<ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Sulje muita välilehtiä tai sovelluksia.</translation>
 <translation id="267371737713284912">kumoa painamalla <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="2674170444375937751">Haluatko varmasti poistaa nämä sivut historiastasi?</translation>
@@ -661,6 +662,7 @@
 <translation id="4435702339979719576">Postikortti</translation>
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
 <translation id="445100540951337728">Hyväksytyt maksukortit</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" />: epäilyttävää toimintaa</translation>
 <translation id="4466881336512663640">Lomakkeen muutokset menetetään. Haluatko varmasti jatkaa?</translation>
 <translation id="4477350412780666475">Seuraava kappale</translation>
 <translation id="4482953324121162758">Tätä sivustoa ei käännetä.</translation>
@@ -713,6 +715,7 @@
 <translation id="4771973620359291008">Tapahtui tuntematon virhe.</translation>
 <translation id="4780900888022378816"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää laitettasi ja <ph name="ACCOUNT_DOMAIN" /> tiliäsi.</translation>
 <translation id="4785689107224900852">Siirry tälle välilehdelle</translation>
+<translation id="4791134497475588553">Asennetut Linux-sovellukset ja niiden edellinen käyttökerta</translation>
 <translation id="4798078619018708837">Päivitä <ph name="CREDIT_CARD" /> ‑tiedot antamalla sen viimeinen voimassaolopäivä ja CVC. Vahvistamisen jälkeen korttitiedot Google-tililtäsi jaetaan tämän sivuston kanssa.</translation>
 <translation id="4800132727771399293">Tarkista vanhenemispäivä ja CVC ja yritä uudelleen.</translation>
 <translation id="480334179571489655">Käytännön alkuperävirhe</translation>
@@ -723,6 +726,7 @@
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="4854362297993841467">Tämä toimitustapa ei ole käytettävissä. Kokeile toista tapaa.</translation>
 <translation id="4858792381671956233">Pyysit vanhemmiltasi lupaa käydä tällä sivustolla.</translation>
+<translation id="4864052566555297930">Turvallisuusvinkki:</translation>
 <translation id="4876188919622883022">Yksinkertaistettu näkymä</translation>
 <translation id="4876305945144899064">Ei käyttäjänimeä</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Ei mitään}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -823,6 +827,7 @@
 <translation id="536296301121032821">Käytännön asetuksien tallentaminen epäonnistui</translation>
 <translation id="5371425731340848620">Päivitä kortti</translation>
 <translation id="5377026284221673050">"Kellosi jätättää", "Kellosi edistää" tai "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5377179979757081683">Tämä sivu voi yrittää huijata sinua, varastaa henkilökohtaisia tietojasi tai vahingoittaa laitettasi. Ole varovainen, kun lisäät henkilökohtaisia tietoja tai avaat ladattuja tiedostoja.</translation>
 <translation id="5384855140246857529">Jos haluat käyttää kortteja kaikilla laitteillasi, kirjaudu sisään ja ota synkronointi käyttöön.</translation>
 <translation id="5386426401304769735">Tämän sivuston varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
 <translation id="538659543871111977">A4-välilehti</translation>
@@ -987,6 +992,7 @@
 <translation id="6328786501058569169">Tämä sivusto on petollinen</translation>
 <translation id="6337133576188860026">Vapauttaa alle <ph name="SIZE" />. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{Ei mitään}=1{1 salasana: (<ph name="DOMAIN_LIST" />, synkronoitu)}=2{2 salasanaa (<ph name="DOMAIN_LIST" />, synkronoitu)}other{# salasanaa (<ph name="DOMAIN_LIST" />, synkronoitu)}}</translation>
 <translation id="6358450015545214790">Mitä nämä tarkoittavat?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1165,6 +1171,7 @@ Lisätietoja:
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">On yhdistetty:</translation>
 <translation id="7349430561505560861">A4-ekstra</translation>
+<translation id="7352902249897488700">Poistu tältä sivustolta</translation>
 <translation id="7353601530677266744">Komentorivi</translation>
 <translation id="7372973238305370288">hakutulos</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

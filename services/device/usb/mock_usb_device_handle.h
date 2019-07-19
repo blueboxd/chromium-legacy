@@ -67,9 +67,9 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   MOCK_METHOD2(ClearHaltInternal,
                void(uint8_t endpoint, ResultCallback& callback));
 
-  void ControlTransfer(UsbTransferDirection direction,
-                       UsbControlTransferType request_type,
-                       UsbControlTransferRecipient recipient,
+  void ControlTransfer(mojom::UsbTransferDirection direction,
+                       mojom::UsbControlTransferType request_type,
+                       mojom::UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -80,9 +80,9 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                             index, buffer, timeout, callback);
   }
   MOCK_METHOD9(ControlTransferInternal,
-               void(UsbTransferDirection direction,
-                    UsbControlTransferType request_type,
-                    UsbControlTransferRecipient recipient,
+               void(mojom::UsbTransferDirection direction,
+                    mojom::UsbControlTransferType request_type,
+                    mojom::UsbControlTransferRecipient recipient,
                     uint8_t request,
                     uint16_t value,
                     uint16_t index,
@@ -117,7 +117,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                     unsigned int timeout,
                     IsochronousTransferCallback& callback));
 
-  void GenericTransfer(UsbTransferDirection direction,
+  void GenericTransfer(mojom::UsbTransferDirection direction,
                        uint8_t endpoint,
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
@@ -125,7 +125,7 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     GenericTransferInternal(direction, endpoint, buffer, timeout, callback);
   }
   MOCK_METHOD5(GenericTransferInternal,
-               void(UsbTransferDirection direction,
+               void(mojom::UsbTransferDirection direction,
                     uint8_t endpoint,
                     scoped_refptr<base::RefCountedBytes> buffer,
                     unsigned int timeout,

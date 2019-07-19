@@ -11,14 +11,13 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/animation/installable_ink_drop_painter.h"
 
 namespace gfx {
 class AnimationContainer;
 }
 
 namespace views {
-
-class InstallableInkDropPainter;
 
 // Manages animating the ink drop's visual state. This class is essentially a
 // state machine, using the current and target InkDropStates to affect the
@@ -33,7 +32,7 @@ class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
   // |views::CompositorAnimationRunner| to be used for more efficient and less
   // janky animations, and it enables easier unit testing.
   explicit InstallableInkDropAnimator(
-      InstallableInkDropPainter* painter,
+      InstallableInkDropPainter::State* visual_state,
       gfx::AnimationContainer* animation_container,
       base::RepeatingClosure repaint_callback);
   ~InstallableInkDropAnimator() override;
@@ -51,10 +50,10 @@ class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // The painter whose state we are controlling.
-  InstallableInkDropPainter* const painter_;
+  // The visual state we are controlling.
+  InstallableInkDropPainter::State* const visual_state_;
 
-  // Called when |painter_| is modified so that the owner can repaint it.
+  // Called when |visual_state_| changes so the user can repaint.
   base::RepeatingClosure repaint_callback_;
 
   InkDropState target_state_ = InkDropState::HIDDEN;

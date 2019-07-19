@@ -51,7 +51,7 @@
 // src="../../../../webui/resources/js/cr/ui/list_selection_controller.js">
 // <include src="../../../../webui/resources/js/cr/ui/list.js">
 // <include src="../../../../webui/resources/js/cr/ui/tree.js">
-// <include src="../../../../webui/resources/js/cr/ui/autocomplete_list.js">
+// <include src="ui/autocomplete_list.js">
 
 // <include src="../../../../webui/resources/js/cr/ui/splitter.js">
 // <include src="ui/table/table_splitter.js">

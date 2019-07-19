@@ -61,9 +61,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order);
-  void DrawFrame(RenderPassList* render_passes_in_draw_order,
-                 float device_scale_factor,
-                 const gfx::Size& device_viewport_size);
+  void DrawFrame(
+      RenderPassList* render_passes_in_draw_order,
+      float device_scale_factor,
+      const gfx::Size& device_viewport_size,
+      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Public interface implemented by subclasses.
   virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) = 0;
@@ -83,6 +85,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
     gfx::Size device_viewport_size;
+    float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel;
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;

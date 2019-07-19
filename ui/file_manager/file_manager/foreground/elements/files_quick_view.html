@@ -64,7 +64,7 @@
                 <div class="no-preview">[[noPlaybackText]]</div>
               </template>
               <template is="dom-if" if="[[contentUrl]]">
-                <files-safe-media tabindex="0" type="video" class="content no-close-on-click" controls autoplay="[[autoplay]]" src="[[contentUrl]]" poster="[[videoPoster]]"></files-safe-media>
+                <files-safe-media id="videoSafeMedia" tabindex="0" type="video" class="content no-close-on-click" controls autoplay="[[autoplay]]" src="[[contentUrl]]" poster="[[videoPoster]]"></files-safe-media>
               </template>
             </template>
             <!-- Audio -->

@@ -297,13 +297,6 @@ class ListContainer {
    * @private
    */
   onContextMenu_(e) {
-    // Inhibit the context menu being shown if it only hosts
-    // disabled items https://crbug.com/917975
-    if (this.contextMenuHasActions_() === false) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
     if (!this.allowContextMenuByTouch_ && e.sourceCapabilities &&
         e.sourceCapabilities.firesTouchEvents) {
       this.focus();

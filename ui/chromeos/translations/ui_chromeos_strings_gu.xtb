@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">સ્લાઇડર શોધો</translation>
 <translation id="1399648040768741453">તેલુગુ કીબોર્ડ (ધ્વન્યાત્મક)</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
+<translation id="1439494416798956626"><ph name="FOLDER_NAME" />માં ખસેડ્યું.</translation>
 <translation id="1441841714100794440">વિયેતનામીસ કીબોર્ડ (Telex)</translation>
 <translation id="1455548678241328678">નોર્વેજીયન કીબોર્ડ</translation>
 <translation id="1464724975715666883">1 ભૂલ.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">તમારા મીડિયા ઉપકરણને સ્કેન કરી રહ્યું છે...</translation>
 <translation id="3468522857997926824"><ph name="BEGIN_LINK" />Google ડ્રાઇવ<ph name="END_LINK" /> પર <ph name="FILE_COUNT" /> ફોટાનો બેક અપ લેવાયો</translation>
 <translation id="3470502288861289375">કૉપિ કરી રહ્યું છે...</translation>
+<translation id="3473378059788601120"><ph name="FOLDER_NAME" />માં કૉપિ કર્યા.</translation>
 <translation id="3475447146579922140">Google સ્પ્રેડશીટ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ભૂલો.</translation>
 <translation id="3519867315646775981">લિવ્યંતરણ (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">જાપાનીઝ ઇનપુટ (જાપાનીઝ કીબોર્ડ માટે)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Linux ઍપને તમારી Google ડ્રાઇવમાં ફાઇલોને સંશોધિત કરવાની પરવાનગી આપો. ફેરફારો તમારા બીજા ડિવાઇસ સાથે સિંક થશે.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> આઇટમ</translation>
 <translation id="5982621672636444458">સૉર્ટ કરવા માટેના વિકલ્પો</translation>
 <translation id="6005282720244019462">લેટિન અમેરિકન કીબોર્ડ</translation>
 <translation id="6007237601604674381">ખસેડવું નિષ્ફળ થયું. <ph name="ERROR_MESSAGE" /></translation>

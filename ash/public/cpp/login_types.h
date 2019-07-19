@@ -9,7 +9,7 @@
 #include "ash/public/cpp/session/user_info.h"
 #include "base/time/time.h"
 #include "base/token.h"
-#include "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h"
+#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
 
 namespace ash {
 

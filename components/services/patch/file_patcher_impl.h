@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
+#include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace patch {

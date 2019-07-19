@@ -11,6 +11,7 @@
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/shell_integration.h"
 #include "components/sync_device_info/device_info.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -30,8 +31,8 @@ ClickToCallSharingDialogController::ClickToCallSharingDialogController(
 ClickToCallSharingDialogController::~ClickToCallSharingDialogController() =
     default;
 
-std::string ClickToCallSharingDialogController::GetTitle() {
-  return l10n_util::GetStringUTF8(
+base::string16 ClickToCallSharingDialogController::GetTitle() {
+  return l10n_util::GetStringUTF16(
       IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL);
 }
 
@@ -47,8 +48,8 @@ std::vector<App> ClickToCallSharingDialogController::GetApps() {
 
   std::vector<App> apps;
   if (!app_name.empty()) {
-    // TODO: Get the icon and ID and test
-    apps.emplace_back(std::string(), std::move(app_name), std::string());
+    apps.emplace_back(vector_icons::kOpenInNewIcon, std::move(app_name),
+                      std::string());
   }
   return apps;
 }

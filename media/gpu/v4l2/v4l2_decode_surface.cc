@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
+
+#include <linux/media.h>
 #include <linux/videodev2.h>
+#include <sys/ioctl.h>
 
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/stringprintf.h"
 #include "media/gpu/macros.h"
 
@@ -127,6 +131,65 @@ bool V4L2ConfigStoreDecodeSurface::Submit() const {
 
   // There is nothing extra to submit when using the config store
   return true;
+}
+
+V4L2RequestDecodeSurface::V4L2RequestDecodeSurface(int input_record,
+                                                   int output_record,
+                                                   int request_fd,
+                                                   base::OnceClosure release_cb)
+    : V4L2DecodeSurface(input_record, output_record, std::move(release_cb)),
+      request_fd_(request_fd) {}
+
+// static
+base::Optional<scoped_refptr<V4L2RequestDecodeSurface>>
+V4L2RequestDecodeSurface::Create(int input_record,
+                                 int output_record,
+                                 int request_fd,
+                                 base::OnceClosure release_cb) {
+  // First reinit the request to make sure we can use it for a new submission.
+  int ret = HANDLE_EINTR(ioctl(request_fd, MEDIA_REQUEST_IOC_REINIT));
+  if (ret < 0) {
+    VPLOGF(1) << "Failed to reinit request: ";
+    return base::nullopt;
+  }
+
+  return new V4L2RequestDecodeSurface(input_record, output_record, request_fd,
+                                      std::move(release_cb));
+}
+
+void V4L2RequestDecodeSurface::PrepareSetCtrls(
+    struct v4l2_ext_controls* ctrls) const {
+  DCHECK_NE(ctrls, nullptr);
+  DCHECK_GE(request_fd_, 0);
+
+  ctrls->which = V4L2_CTRL_WHICH_REQUEST_VAL;
+  ctrls->request_fd = request_fd_;
+}
+
+void V4L2RequestDecodeSurface::PrepareQueueBuffer(
+    struct v4l2_buffer* buffer) const {
+  DCHECK_NE(buffer, nullptr);
+  DCHECK_GE(request_fd_, 0);
+
+  buffer->request_fd = request_fd_;
+  buffer->flags |= V4L2_BUF_FLAG_REQUEST_FD;
+  // Copy the buffer index as the timestamp.
+  DCHECK_EQ(static_cast<int>(buffer->index), input_record());
+  buffer->timestamp.tv_sec = 0;
+  buffer->timestamp.tv_usec = buffer->index;
+}
+
+uint64_t V4L2RequestDecodeSurface::GetReferenceID() const {
+  // Convert the input buffer ID to what the internal representation of
+  // the timestamp we submitted will be (tv_usec * 1000).
+  return input_record() * 1000;
+}
+
+bool V4L2RequestDecodeSurface::Submit() const {
+  DCHECK_GE(request_fd_, 0);
+
+  int ret = HANDLE_EINTR(ioctl(request_fd_, MEDIA_REQUEST_IOC_QUEUE));
+  return ret == 0;
 }
 
 }  // namespace media

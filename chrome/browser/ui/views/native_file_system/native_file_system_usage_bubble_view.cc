@@ -7,6 +7,7 @@
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,6 +20,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/listformatter.h"
@@ -27,6 +31,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_view.h"
@@ -375,4 +380,24 @@ void NativeFileSystemUsageBubbleView::ChildPreferredSizeChanged(
     views::View* child) {
   LocationBarBubbleDelegateView::ChildPreferredSizeChanged(child);
   SizeToContents();
+}
+
+std::unique_ptr<views::View>
+NativeFileSystemUsageBubbleView::CreateExtraView() {
+  return views::MdTextButton::CreateSecondaryUiButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
+}
+
+void NativeFileSystemUsageBubbleView::ButtonPressed(views::Button* sender,
+                                                    const ui::Event& event) {
+  if (!web_contents())
+    return;
+
+  content::BrowserContext* profile = web_contents()->GetBrowserContext();
+  ChromeNativeFileSystemPermissionContext::
+      RevokeGrantsForOriginAndTabFromUIThread(
+          profile, origin_,
+          web_contents()->GetMainFrame()->GetProcess()->GetID(),
+          web_contents()->GetMainFrame()->GetRoutingID());
 }

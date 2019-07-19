@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace unzip {

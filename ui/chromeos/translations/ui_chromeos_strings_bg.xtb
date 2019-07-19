@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Плъзгач за търсене</translation>
 <translation id="1399648040768741453">Телугу клавиатура (фонетична)</translation>
 <translation id="1430915738399379752">Печат</translation>
+<translation id="1439494416798956626">Преместено във: <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Виетнамска клавиатура (телекс)</translation>
 <translation id="1455548678241328678">Норвежка клавиатура</translation>
 <translation id="1464724975715666883">1 грешка.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Мултимедийното ви устройство се сканира...</translation>
 <translation id="3468522857997926824">На <ph name="FILE_COUNT" /> снимки бяха създадени резервни копия в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Копира се...</translation>
+<translation id="3473378059788601120">Копирано във: <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Електронна таблица в Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
 <translation id="3519867315646775981">Транслитерация (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Въвеждане на японски (за японска клавиатура)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Разрешете на приложенията под Linux да променят файловете в профила ви в Google Диск. Промените ще се синхронизират с другите ви устройства.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> елемента</translation>
 <translation id="5982621672636444458">Опции за сортиране</translation>
 <translation id="6005282720244019462">Латиноамериканска клавиатура</translation>
 <translation id="6007237601604674381">Преместването не бе успешно. <ph name="ERROR_MESSAGE" /></translation>

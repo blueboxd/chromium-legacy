@@ -151,9 +151,10 @@ void FakeDiskMountManager::FailUnmountRequest(const std::string& mount_path,
   unmount_errors_[mount_path] = error_code;
 }
 
-void FakeDiskMountManager::FormatMountedDevice(const std::string& mount_path,
-                                               const std::string& filesystem,
-                                               const std::string& label) {}
+void FakeDiskMountManager::FormatMountedDevice(
+    const std::string& mount_path,
+    chromeos::disks::FormatFileSystemType filesystem,
+    const std::string& label) {}
 
 void FakeDiskMountManager::RenameMountedDevice(const std::string& mount_path,
                                                const std::string& volume_name) {

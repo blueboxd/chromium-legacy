@@ -45,8 +45,8 @@ namespace extensions {
 
 namespace {
 
-base::Optional<ContentVerifierDelegate::Mode>& GetModeForTesting() {
-  static base::NoDestructor<base::Optional<ContentVerifierDelegate::Mode>>
+base::Optional<ChromeContentVerifierDelegate::Mode>& GetModeForTesting() {
+  static base::NoDestructor<base::Optional<ChromeContentVerifierDelegate::Mode>>
       testing_mode;
   return *testing_mode;
 }
@@ -57,7 +57,8 @@ const char kContentVerificationExperimentName[] =
 }  // namespace
 
 // static
-ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
+ChromeContentVerifierDelegate::Mode
+ChromeContentVerifierDelegate::GetDefaultMode() {
   if (GetModeForTesting())
     return *GetModeForTesting();
 
@@ -65,20 +66,20 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
 
   Mode experiment_value;
 #if defined(GOOGLE_CHROME_BUILD)
-  experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
+  experiment_value = ENFORCE_STRICT;
 #else
-  experiment_value = ContentVerifierDelegate::NONE;
+  experiment_value = NONE;
 #endif
   const std::string group =
       base::FieldTrialList::FindFullName(kContentVerificationExperimentName);
   if (group == "EnforceStrict")
-    experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
+    experiment_value = ENFORCE_STRICT;
   else if (group == "Enforce")
-    experiment_value = ContentVerifierDelegate::ENFORCE;
+    experiment_value = ENFORCE;
   else if (group == "Bootstrap")
-    experiment_value = ContentVerifierDelegate::BOOTSTRAP;
+    experiment_value = BOOTSTRAP;
   else if (group == "None")
-    experiment_value = ContentVerifierDelegate::NONE;
+    experiment_value = NONE;
 
   // The field trial value that normally comes from the server can be
   // overridden on the command line, which we don't want to allow since
@@ -91,7 +92,7 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
         command_line->GetSwitchValueASCII(::switches::kForceFieldTrials);
     if (forced_trials.find(kContentVerificationExperimentName) !=
         std::string::npos)
-      experiment_value = ContentVerifierDelegate::ENFORCE_STRICT;
+      experiment_value = ChromeContentVerifierDelegate::ENFORCE_STRICT;
   }
 
   Mode cmdline_value = NONE;
@@ -99,15 +100,15 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
     std::string switch_value = command_line->GetSwitchValueASCII(
         ::switches::kExtensionContentVerification);
     if (switch_value == ::switches::kExtensionContentVerificationBootstrap)
-      cmdline_value = ContentVerifierDelegate::BOOTSTRAP;
+      cmdline_value = BOOTSTRAP;
     else if (switch_value == ::switches::kExtensionContentVerificationEnforce)
-      cmdline_value = ContentVerifierDelegate::ENFORCE;
+      cmdline_value = ENFORCE;
     else if (switch_value ==
              ::switches::kExtensionContentVerificationEnforceStrict)
-      cmdline_value = ContentVerifierDelegate::ENFORCE_STRICT;
+      cmdline_value = ENFORCE_STRICT;
     else
       // If no value was provided (or the wrong one), just default to enforce.
-      cmdline_value = ContentVerifierDelegate::ENFORCE;
+      cmdline_value = ENFORCE;
   }
 
   // We don't want to allow the command-line flags to eg disable enforcement
@@ -134,32 +135,9 @@ ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }
 
-ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::ShouldBeVerified(
+bool ChromeContentVerifierDelegate::ShouldBeVerified(
     const Extension& extension) {
-#if defined(OS_CHROMEOS)
-  if (ExtensionAssetsManagerChromeOS::IsSharedInstall(&extension))
-    return ContentVerifierDelegate::ENFORCE_STRICT;
-#endif
-
-  if (!extension.is_extension() && !extension.is_legacy_packaged_app())
-    return ContentVerifierDelegate::NONE;
-  if (!Manifest::IsAutoUpdateableLocation(extension.location()))
-    return ContentVerifierDelegate::NONE;
-
-  // Use the InstallVerifier's |IsFromStore| method to avoid discrepancies
-  // between which extensions are considered in-store.
-  // See https://crbug.com/766806 for details.
-  if (!InstallVerifier::IsFromStore(extension)) {
-    // It's possible that the webstore update url was overridden for testing
-    // so also consider extensions with the default (production) update url
-    // to be from the store as well.
-    if (ManifestURL::GetUpdateURL(&extension) !=
-        extension_urls::GetDefaultWebstoreUpdateUrl()) {
-      return ContentVerifierDelegate::NONE;
-    }
-  }
-
-  return default_mode_;
+  return GetVerifyMode(extension) != NONE;
 }
 
 ContentVerifierKey ChromeContentVerifierDelegate::GetPublicKey() {
@@ -200,11 +178,11 @@ void ChromeContentVerifierDelegate::VerifyFailed(
   if (!extension)
     return;
 
-  Mode mode = ShouldBeVerified(*extension);
+  Mode mode = GetVerifyMode(*extension);
   // If the failure was due to hashes missing, only "enforce_strict" would
   // disable the extension, but not "enforce".
   if (reason == ContentVerifyJob::MISSING_ALL_HASHES &&
-      mode != ContentVerifierDelegate::ENFORCE_STRICT) {
+      mode != ENFORCE_STRICT) {
     return;
   }
 
@@ -215,7 +193,7 @@ void ChromeContentVerifierDelegate::VerifyFailed(
     return;
   }
   ExtensionService* service = system->extension_service();
-  if (mode >= ContentVerifierDelegate::ENFORCE) {
+  if (mode >= ENFORCE) {
     if (system->management_policy()->ShouldRepairIfCorrupted(extension)) {
       PendingExtensionManager* pending_manager =
           service->pending_extension_manager();
@@ -252,6 +230,34 @@ void ChromeContentVerifierDelegate::Shutdown() {
   // can be destroyed through InfoMap on IO thread, we do not want to destroy
   // |policy_extension_reinstaller_| there.
   policy_extension_reinstaller_.reset();
+}
+
+ChromeContentVerifierDelegate::Mode
+ChromeContentVerifierDelegate::GetVerifyMode(const Extension& extension) {
+#if defined(OS_CHROMEOS)
+  if (ExtensionAssetsManagerChromeOS::IsSharedInstall(&extension))
+    return ENFORCE_STRICT;
+#endif
+
+  if (!extension.is_extension() && !extension.is_legacy_packaged_app())
+    return NONE;
+  if (!Manifest::IsAutoUpdateableLocation(extension.location()))
+    return NONE;
+
+  // Use the InstallVerifier's |IsFromStore| method to avoid discrepancies
+  // between which extensions are considered in-store.
+  // See https://crbug.com/766806 for details.
+  if (!InstallVerifier::IsFromStore(extension)) {
+    // It's possible that the webstore update url was overridden for testing
+    // so also consider extensions with the default (production) update url
+    // to be from the store as well.
+    if (ManifestURL::GetUpdateURL(&extension) !=
+        extension_urls::GetDefaultWebstoreUpdateUrl()) {
+      return NONE;
+    }
+  }
+
+  return default_mode_;
 }
 
 }  // namespace extensions

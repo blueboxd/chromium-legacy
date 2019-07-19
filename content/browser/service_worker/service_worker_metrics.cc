@@ -126,6 +126,8 @@ const char* EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_BACKGROUND_FETCH_SUCCESS";
     case ServiceWorkerMetrics::EventType::PERIODIC_SYNC:
       return "_PERIODIC_SYNC";
+    case ServiceWorkerMetrics::EventType::CONTENT_DELETE:
+      return "_CONTENT_DELETE";
   }
   return "_UNKNOWN";
 }
@@ -193,6 +195,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Background Fetch Success";
     case EventType::PERIODIC_SYNC:
       return "Periodic Sync";
+    case EventType::CONTENT_DELETE:
+      return "Content Delete";
   }
   NOTREACHED() << "Got unexpected event type: " << static_cast<int>(event_type);
   return "error";
@@ -486,6 +490,9 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::PERIODIC_SYNC:
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "ServiceWorker.PeriodicBackgroundSyncEvent.Time", time);
+      break;
+    case EventType::CONTENT_DELETE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ContentDeleteEvent.Time", time);
       break;
 
     case EventType::NAVIGATION_HINT:

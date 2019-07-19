@@ -118,7 +118,7 @@ void ClientAndroid::Start(JNIEnv* env,
 
   // If an overlay is already shown, then show the rest of the UI.
   if (joverlay_coordinator) {
-    CreateUI(joverlay_coordinator);
+    AttachUI(joverlay_coordinator);
   }
 
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
@@ -159,7 +159,8 @@ void ClientAndroid::TransferUITo(
   if (!other_client || !other_client->NeedsUI())
     return;
 
-  other_client->SetUI(std::move(ui_ptr));
+  other_client->ui_controller_android_ = std::move(ui_ptr);
+  other_client->AttachUI();
 }
 
 base::android::ScopedJavaLocalRef<jstring> ClientAndroid::GetPrimaryAccountName(
@@ -182,24 +183,28 @@ void ClientAndroid::OnAccessToken(JNIEnv* env,
   }
 }
 
-void ClientAndroid::ShowUI() {
-  if (!controller_) {
-    CreateController();
-    // TODO(crbug.com/806868): allow delaying controller creation, for
-    // onboarding.
-  }
-  if (!ui_controller_android_) {
-    CreateUI(nullptr);
-  }
+void ClientAndroid::AttachUI() {
+  AttachUI(nullptr);
 }
 
-void ClientAndroid::CreateUI(
+void ClientAndroid::AttachUI(
     const JavaParamRef<jobject>& joverlay_coordinator) {
-  std::unique_ptr<UiControllerAndroid> ui_ptr =
-      UiControllerAndroid::CreateFromWebContents(web_contents_,
-                                                 joverlay_coordinator);
-  if (ui_ptr)
-    SetUI(std::move(ui_ptr));
+  if (!ui_controller_android_) {
+    ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
+        web_contents_, joverlay_coordinator);
+    if (!ui_controller_android_) {
+      // The activity is not or not yet in a mode where attaching the UI is
+      // possible.
+      return;
+    }
+  }
+
+  if (!ui_controller_android_->IsAttached()) {
+    if (!controller_)
+      CreateController();
+
+    ui_controller_android_->Attach(web_contents_, this, controller_.get());
+  }
 }
 
 void ClientAndroid::DestroyUI() {
@@ -241,7 +246,7 @@ std::string ClientAndroid::GetServerUrl() {
 }
 
 UiController* ClientAndroid::GetUiController() {
-  if (ui_controller_android_)
+  if (ui_controller_android_ && ui_controller_android_->IsAttached())
     return ui_controller_android_.get();
 
   static base::NoDestructor<UiController> noop_controller_;
@@ -262,10 +267,8 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;
 
-  // Lets the controller and the ui controller know shutdown is about to happen.
-  // TODO(b/128300038): Replace Controller::WillShutdown with a Detach call on
-  // ui_controller_android_.
-  controller_->WillShutdown(reason);
+  if (ui_controller_android_ && ui_controller_android_->IsAttached())
+    DestroyUI();
 
   Metrics::RecordDropOut(reason);
 
@@ -306,12 +309,6 @@ void ClientAndroid::DestroyController() {
 
 bool ClientAndroid::NeedsUI() {
   return !ui_controller_android_ && controller_ && controller_->NeedsUI();
-}
-
-void ClientAndroid::SetUI(
-    std::unique_ptr<UiControllerAndroid> ui_controller_android) {
-  ui_controller_android_ = std::move(ui_controller_android);
-  ui_controller_android_->Attach(web_contents_, this, controller_.get());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClientAndroid)

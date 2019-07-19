@@ -11,6 +11,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_mobile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_id_from_account_info.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/google/core/common/google_util.h"
 #include "components/policy/core/browser/browser_policy_connector.h"

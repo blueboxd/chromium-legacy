@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/protected_memory.h"
 #include "base/optional.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -67,10 +68,11 @@ struct AX_EXPORT AtkTableCellInterface {
                                        gint* row_span,
                                        gint* col_span);
 
-  GetTypeFunc GetType = nullptr;
-  GetColumnHeaderCellsFunc GetColumnHeaderCells = nullptr;
-  GetRowHeaderCellsFunc GetRowHeaderCells = nullptr;
-  GetRowColumnSpanFunc GetRowColumnSpan = nullptr;
+  base::ProtectedMemory<GetTypeFunc>* GetType = nullptr;
+  base::ProtectedMemory<GetColumnHeaderCellsFunc>* GetColumnHeaderCells =
+      nullptr;
+  base::ProtectedMemory<GetRowHeaderCellsFunc>* GetRowHeaderCells = nullptr;
+  base::ProtectedMemory<GetRowColumnSpanFunc>* GetRowColumnSpan = nullptr;
   bool initialized = false;
 
   static base::Optional<AtkTableCellInterface> Get();

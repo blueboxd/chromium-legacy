@@ -693,7 +693,7 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
                     context_provider_wrapper_->ContextProvider()
                         ->GetCapabilities())
               : GL_TEXTURE_2D),
-      owning_thread_id_(Thread::Current()->ThreadId()),
+      owning_thread_id_(base::PlatformThread::CurrentId()),
       owning_thread_task_runner_(Thread::Current()->GetTaskRunner()) {
   if (!context_provider_wrapper_)
     return;

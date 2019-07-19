@@ -83,6 +83,7 @@
     "controllerchange",
     "cookiechange",
     "copy",
+    "contentdelete",
     "crossoriginmessage",
     "cuechange",
     "cut",

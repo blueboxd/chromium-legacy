@@ -6,7 +6,7 @@
 
 namespace content {
 
-void MockBackgroundSyncController::NotifyBackgroundSyncRegistered(
+void MockBackgroundSyncController::NotifyOneShotBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
     bool is_reregistered) {
@@ -28,32 +28,28 @@ void MockBackgroundSyncController::GetParameterOverrides(
   *parameters = background_sync_parameters_;
 }
 
-// |origin| can be used to potentially suspend or penalize registrations based
-// on the level of user engagement. That logic isn't tested here, and |origin|
-// remains unused.
 base::TimeDelta MockBackgroundSyncController::GetNextEventDelay(
-    const url::Origin& origin,
-    int64_t min_interval,
-    int num_attempts,
-    blink::mojom::BackgroundSyncType sync_type,
+    const BackgroundSyncRegistration& registration,
     BackgroundSyncParameters* parameters) {
   DCHECK(parameters);
 
+  int num_attempts = registration.num_attempts();
+
   if (!num_attempts) {
     // First attempt.
-    switch (sync_type) {
+    switch (registration.sync_type()) {
       case blink::mojom::BackgroundSyncType::ONE_SHOT:
         return base::TimeDelta();
       case blink::mojom::BackgroundSyncType::PERIODIC:
         int64_t effective_gap_ms =
             parameters->min_periodic_sync_events_interval.InMilliseconds();
         return base::TimeDelta::FromMilliseconds(
-            std::max(min_interval, effective_gap_ms));
+            std::max(registration.options()->min_interval, effective_gap_ms));
     }
   }
 
   // After a sync event has been fired.
-  DCHECK_LE(num_attempts, parameters->max_sync_attempts);
+  DCHECK_LT(num_attempts, parameters->max_sync_attempts);
   return parameters->initial_retry_delay *
          pow(parameters->retry_delay_factor, num_attempts - 1);
 }

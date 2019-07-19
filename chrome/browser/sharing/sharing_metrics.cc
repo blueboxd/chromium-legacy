@@ -5,6 +5,7 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
 
 namespace {
 
@@ -48,4 +49,20 @@ void LogClickToCallDevicesToShow(int count) {
 void LogClickToCallAppsToShow(int count) {
   base::UmaHistogramExactLinear("Sharing.ClickToCallAppsToShow", count,
                                 /*value_max=*/20);
+}
+
+void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix,
+                                       int index) {
+  base::UmaHistogramExactLinear(
+      base::StrCat(
+          {"Sharing.ClickToCallSelectedDeviceIndex.", histogram_suffix}),
+      index,
+      /*value_max=*/20);
+}
+
+void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index) {
+  base::UmaHistogramExactLinear(
+      base::StrCat({"Sharing.ClickToCallSelectedAppIndex.", histogram_suffix}),
+      index,
+      /*value_max=*/20);
 }

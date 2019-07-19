@@ -93,6 +93,9 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'doc_feature_can_be_mandatory': {
             'text': '_test_feature_mandatory'
         },
+        'doc_banner': {
+            'text': '_test_banner'
+        },
         'doc_intro': {
             'text': '_test_intro'
         },
@@ -162,6 +165,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     self.writer.BeginTemplate()
     self.assertEquals(
         self.writer._main_div.toxml(), '<div>'
+        '<div style="style_div.banner;"><p>_test_banner</p></div>'
         '<div>'
         '<a name="top"/><br/><p>_test_intro</p><br/><br/><br/>'
         '<table style="style_table;">'
@@ -186,6 +190,7 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     self.assertEquals(
         self.writer._main_div.toxml(), '<div>'
         '<!--test_product version: 39.0.0.0-->'
+        '<div style="style_div.banner;"><p>_test_banner</p></div>'
         '<div>'
         '<a name="top"/><br/><p>_test_intro</p><br/><br/><br/>'
         '<table style="style_table;">'

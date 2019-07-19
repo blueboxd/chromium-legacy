@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/network/proxy_service_mojo.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -21,7 +23,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
@@ -29,7 +31,6 @@
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/proxy_service_mojo.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,7 +85,7 @@ void TestNetworkDelegate::OnPACScriptError(int line_number,
               std::string::npos);
 }
 
-void CheckCapturedNetLogEntries(const net::TestNetLogEntry::List& entries) {
+void CheckCapturedNetLogEntries(const std::vector<net::NetLogEntry>& entries) {
   ASSERT_GT(entries.size(), 2u);
   size_t i = 0;
   // ProxyResolutionService records its own NetLog entries, so skip forward
@@ -94,21 +95,17 @@ void CheckCapturedNetLogEntries(const net::TestNetLogEntry::List& entries) {
     i++;
   }
   ASSERT_LT(i, entries.size());
-  std::string message;
-  ASSERT_TRUE(entries[i].GetStringValue("message", &message));
-  EXPECT_EQ("alert: foo", message);
-  ASSERT_FALSE(entries[i].params->HasKey("line_number"));
+  EXPECT_EQ("alert: foo", net::GetStringValueFromParams(entries[i], "message"));
+  ASSERT_FALSE(entries[i].params.FindKey("line_number"));
 
   while (i < entries.size() &&
          entries[i].type != net::NetLogEventType::PAC_JAVASCRIPT_ERROR) {
     i++;
   }
-  message.clear();
-  ASSERT_TRUE(entries[i].GetStringValue("message", &message));
-  EXPECT_THAT(message, testing::HasSubstr("error: http://foo"));
-  int line_number = 0;
-  ASSERT_TRUE(entries[i].GetIntegerValue("line_number", &line_number));
-  EXPECT_EQ(3, line_number);
+  ASSERT_LT(i, entries.size());
+  EXPECT_THAT(net::GetStringValueFromParams(entries[i], "message"),
+              testing::HasSubstr("error: http://foo"));
+  EXPECT_EQ(3, net::GetIntegerValueFromParams(entries[i], "line_number"));
 }
 
 }  // namespace
@@ -208,12 +205,8 @@ TEST_F(ProxyServiceMojoTest, Error) {
   EXPECT_EQ("DIRECT", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
 
-  net::TestNetLogEntry::List entries;
-  test_net_log.GetEntries(&entries);
-  CheckCapturedNetLogEntries(entries);
-  entries.clear();
-  net_log_.GetEntries(&entries);
-  CheckCapturedNetLogEntries(entries);
+  CheckCapturedNetLogEntries(test_net_log.GetEntries());
+  CheckCapturedNetLogEntries(net_log_.GetEntries());
 }
 
 TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
@@ -238,9 +231,7 @@ TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   EXPECT_EQ("DIRECT", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
 
-  net::TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
-  CheckCapturedNetLogEntries(entries);
+  CheckCapturedNetLogEntries(net_log_.GetEntries());
 }
 
 }  // namespace content

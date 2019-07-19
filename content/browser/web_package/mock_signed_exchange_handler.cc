@@ -55,6 +55,7 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
     for (const auto& header : params.response_headers)
       head.headers->AddHeader(header);
     head.is_signed_exchange_inner_response = true;
+    head.content_length = head.headers->GetContentLength();
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

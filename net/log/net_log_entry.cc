@@ -21,6 +21,9 @@ NetLogEntry::NetLogEntry(NetLogEventType type,
 
 NetLogEntry::~NetLogEntry() = default;
 
+NetLogEntry::NetLogEntry(NetLogEntry&& entry) = default;
+NetLogEntry& NetLogEntry::operator=(NetLogEntry&& entry) = default;
+
 base::Value NetLogEntry::ToValue() const {
   base::DictionaryValue entry_dict;
 
@@ -41,6 +44,14 @@ base::Value NetLogEntry::ToValue() const {
     entry_dict.SetKey("params", params.Clone());
 
   return std::move(entry_dict);
+}
+
+NetLogEntry NetLogEntry::Clone() const {
+  return NetLogEntry(type, source, phase, time, params.Clone());
+}
+
+bool NetLogEntry::HasParams() const {
+  return !params.is_none();
 }
 
 }  // namespace net

@@ -909,7 +909,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableDriveFs(),
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
         TestCase("openFileDialogDefaultFilter").WithBrowser(),
-        TestCase("saveFileDialogDefaultFilter").WithBrowser()));
+        TestCase("saveFileDialogDefaultFilter").WithBrowser(),
+        TestCase("openFileDialogFileListShowContextMenu").WithBrowser()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CopyBetweenWindows, /* copy_between_windows.js */

@@ -25,9 +25,7 @@ class ProxyResolverFactoryImpl::Job {
       const scoped_refptr<net::PacFileData>& pac_script,
       net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
       mojo::PendingReceiver<mojom::ProxyResolver> receiver,
-      mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client,
-      std::unique_ptr<service_manager::ServiceKeepaliveRef>
-          service_keepalive_ref);
+      mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client);
   ~Job();
 
  private:
@@ -40,7 +38,6 @@ class ProxyResolverFactoryImpl::Job {
   net::ProxyResolverV8TracingFactory* factory_;
   std::unique_ptr<net::ProxyResolverFactory::Request> request_;
   mojo::Remote<mojom::ProxyResolverFactoryRequestClient> remote_client_;
-  std::unique_ptr<service_manager::ServiceKeepaliveRef> service_keepalive_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -50,13 +47,11 @@ ProxyResolverFactoryImpl::Job::Job(
     const scoped_refptr<net::PacFileData>& pac_script,
     net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
     mojo::PendingReceiver<mojom::ProxyResolver> receiver,
-    mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client,
-    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_keepalive_ref)
+    mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client)
     : parent_(factory),
       proxy_receiver_(std::move(receiver)),
       factory_(proxy_resolver_factory),
-      remote_client_(std::move(client)),
-      service_keepalive_ref_(std::move(service_keepalive_ref)) {
+      remote_client_(std::move(client)) {
   remote_client_.set_disconnect_handler(base::BindOnce(
       &ProxyResolverFactoryImpl::Job::OnDisconnect, base::Unretained(this)));
   factory_->CreateProxyResolverV8Tracing(
@@ -79,29 +74,17 @@ void ProxyResolverFactoryImpl::Job::OnDisconnect() {
 void ProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
   if (error == net::OK) {
     parent_->AddResolver(
-        std::make_unique<ProxyResolverImpl>(std::move(proxy_resolver_impl_),
-                                            std::move(service_keepalive_ref_)),
+        std::make_unique<ProxyResolverImpl>(std::move(proxy_resolver_impl_)),
         std::move(proxy_receiver_));
   }
   remote_client_->ReportResult(error);
   parent_->RemoveJob(this);
 }
 
-ProxyResolverFactoryImpl::ProxyResolverFactoryImpl()
-    : ProxyResolverFactoryImpl(
-          net::ProxyResolverV8TracingFactory::Create()) {}
-
-void ProxyResolverFactoryImpl::BindReceiver(
-    mojo::PendingReceiver<proxy_resolver::mojom::ProxyResolverFactory> receiver,
-    service_manager::ServiceKeepalive* service_keepalive) {
-  if (receivers_.empty()) {
-    DCHECK(!service_keepalive_ref_);
-    service_keepalive_ref_ = service_keepalive->CreateRef();
-  }
-
-  DCHECK(service_keepalive_ref_.get());
-  receivers_.Add(this, std::move(receiver));
-}
+ProxyResolverFactoryImpl::ProxyResolverFactoryImpl(
+    mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver)
+    : ProxyResolverFactoryImpl(std::move(receiver),
+                               net::ProxyResolverV8TracingFactory::Create()) {}
 
 void ProxyResolverFactoryImpl::AddResolver(
     std::unique_ptr<mojom::ProxyResolver> resolver,
@@ -110,11 +93,10 @@ void ProxyResolverFactoryImpl::AddResolver(
 }
 
 ProxyResolverFactoryImpl::ProxyResolverFactoryImpl(
+    mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver,
     std::unique_ptr<net::ProxyResolverV8TracingFactory> proxy_resolver_factory)
-    : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)) {
-  receivers_.set_disconnect_handler(base::BindRepeating(
-      &ProxyResolverFactoryImpl::OnDisconnect, base::Unretained(this)));
-}
+    : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)),
+      receiver_(this, std::move(receiver)) {}
 
 ProxyResolverFactoryImpl::~ProxyResolverFactoryImpl() = default;
 
@@ -122,14 +104,12 @@ void ProxyResolverFactoryImpl::CreateResolver(
     const std::string& pac_script,
     mojo::PendingReceiver<mojom::ProxyResolver> receiver,
     mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client) {
-  DCHECK(service_keepalive_ref_);
-
   // The Job will call RemoveJob on |this| when either the create request
   // finishes or |receiver| or |client| encounters a connection error.
-  std::unique_ptr<Job> job = std::make_unique<Job>(
-      this, net::PacFileData::FromUTF8(pac_script),
-      proxy_resolver_impl_factory_.get(), std::move(receiver),
-      std::move(client), service_keepalive_ref_->Clone());
+  std::unique_ptr<Job> job =
+      std::make_unique<Job>(this, net::PacFileData::FromUTF8(pac_script),
+                            proxy_resolver_impl_factory_.get(),
+                            std::move(receiver), std::move(client));
   Job* job_ptr = job.get();
   jobs_[job_ptr] = std::move(job);
 }
@@ -137,12 +117,6 @@ void ProxyResolverFactoryImpl::CreateResolver(
 void ProxyResolverFactoryImpl::RemoveJob(Job* job) {
   size_t erased_count = jobs_.erase(job);
   DCHECK_EQ(1U, erased_count);
-}
-
-void ProxyResolverFactoryImpl::OnDisconnect() {
-  DCHECK(service_keepalive_ref_);
-  if (receivers_.empty())
-    service_keepalive_ref_.reset();
 }
 
 }  // namespace proxy_resolver

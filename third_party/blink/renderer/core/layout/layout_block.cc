@@ -1965,6 +1965,8 @@ LayoutRect LayoutBlock::LocalCaretRect(
 void LayoutBlock::AddOutlineRects(Vector<PhysicalRect>& rects,
                                   const PhysicalOffset& additional_offset,
                                   NGOutlineType include_block_overflows) const {
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
     rects.emplace_back(additional_offset, Size());
 

@@ -67,6 +67,7 @@ if (is_chromeos) {
     public_deps = [
       ":media",
       ":notifications",
+      "//media/capture/video/chromeos/mojo:cros_camera",
       "//mojo/public/mojom/base",
       "//services/device/public/mojom:usb",
       "//services/media_session/public/mojom",
@@ -115,6 +116,20 @@ if (is_chromeos) {
     deps = [
       ":common",
       "//ui/base/ime:text_input_types",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "video_accelerator_struct_traits_unittest.cc",
+    ]
+
+    deps = [
+      ":common",
+      "//media",
+      "//mojo/public/cpp/test_support:test_utils",
+      "//testing/gtest",
     ]
   }
 }

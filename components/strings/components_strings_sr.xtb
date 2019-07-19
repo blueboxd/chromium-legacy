@@ -330,6 +330,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Приступ датотеци је одбијен</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{Ниједна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />)}=2{2 лозинке (за <ph name="DOMAIN_LIST" />)}one{# лозинка (за <ph name="DOMAIN_LIST" />)}few{# лозинке (за <ph name="DOMAIN_LIST" />)}other{# лозинки (за <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Затворите друге картице или апликације</translation>
 <translation id="267371737713284912">притисните <ph name="MODIFIER_KEY_DESCRIPTION" /> да бисте опозвали</translation>
 <translation id="2674170444375937751">Желите ли стварно да избришете ове странице из историје?</translation>
@@ -660,6 +661,7 @@
 <translation id="4435702339979719576">разгледница)</translation>
 <translation id="443673843213245140">Коришћење проксија је онемогућено, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="445100540951337728">Дебитне картице које се прихватају</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> за сумњиво понашање</translation>
 <translation id="4466881336512663640">Промене обрасца се неће сачувати. Желите ли стварно да наставите?</translation>
 <translation id="4477350412780666475">Следећа песма</translation>
 <translation id="4482953324121162758">Овај сајт неће бити преведен.</translation>
@@ -712,6 +714,7 @@
 <translation id="4771973620359291008">Дошло је до непознате грешке.</translation>
 <translation id="4780900888022378816">Уређајем управља <ph name="ENROLLMENT_DOMAIN" />, а налогом <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Пређите на ову картицу</translation>
+<translation id="4791134497475588553">Инсталиране Linux апликације и када су последњи пут коришћене</translation>
 <translation id="4798078619018708837">Унесите рок трајања и CVC за картицу <ph name="CREDIT_CARD" /> да бисте ажурирали податке о картици. Када будете потврдили, подаци о картици са Google налога ће се делити са овим сајтом.</translation>
 <translation id="4800132727771399293">Проверите датум истека и CVC и покушајте поново</translation>
 <translation id="480334179571489655">Грешка са пореклом смерница</translation>
@@ -722,6 +725,7 @@
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4854362297993841467">Овај начин испоруке није доступан. Испробајте неки други начин.</translation>
 <translation id="4858792381671956233">Питао/ла си родитеље да ли смеш да посетиш овај сајт</translation>
+<translation id="4864052566555297930">Безбедносни савет:</translation>
 <translation id="4876188919622883022">Поједностављени приказ</translation>
 <translation id="4876305945144899064">Нема корисничког имена</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Ниједна}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -822,6 +826,7 @@
 <translation id="536296301121032821">Складиштење подешавања смерница није успело</translation>
 <translation id="5371425731340848620">Ажурирајте картицу</translation>
 <translation id="5377026284221673050">„Сат касни“ или „Сат жури“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
+<translation id="5377179979757081683">Ова страница може да покуша да вас превари, украде личне податке или нашкоди уређају. Будите опрезни када уносите личне податке или отварате преузете датотеке.</translation>
 <translation id="5384855140246857529">Да бисте користили картице на свим уређајима, пријавите се и укључите синхронизацију.</translation>
 <translation id="5386426401304769735">Ланац сертификата за овај сајт садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -985,6 +990,7 @@
 <translation id="6328786501058569169">Овај сајт је обмањујућ</translation>
 <translation id="6337133576188860026">Ослобађа мање од <ph name="SIZE" />. Неки сајтови ће се можда спорије учитавати кад их следећи пут посетите.</translation>
 <translation id="6337534724793800597">Филтрирај смернице према називу</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{Ниједна}=1{1 лозинка (за <ph name="DOMAIN_LIST" />, синхронизовано)}=2{2 лозинке (за <ph name="DOMAIN_LIST" />, синхронизовано)}one{# лозинка (за <ph name="DOMAIN_LIST" />, синхронизовано)}few{# лозинке (за <ph name="DOMAIN_LIST" />, синхронизовано)}other{# лозинки (за <ph name="DOMAIN_LIST" />, синхронизовано)}}</translation>
 <translation id="6358450015545214790">Шта ово значи?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1163,6 +1169,7 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Повезан је:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">Напусти овај сајт</translation>
 <translation id="7353601530677266744">Командна линија</translation>
 <translation id="7372973238305370288">резултат претраге</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -1482,7 +1489,7 @@
 <translation id="9076630408993835509">Овим прегледачем не управља компанија или нека друга организација. Активностима на овом уређају се можда управља ван Chrome-а. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="9078964945751709336">Потребно је више информација</translation>
 <translation id="9080712759204168376">Резиме поруџбине</translation>
-<translation id="9089260154716455634">Смернице за интервале ван радног времена:</translation>
+<translation id="9089260154716455634">Смернице са временским распоредом:</translation>
 <translation id="9095388113577226029">Још језика...</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="9106062320799175032">Додајте адресу за обрачун</translation>

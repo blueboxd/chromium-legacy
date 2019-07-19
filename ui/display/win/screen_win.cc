@@ -724,8 +724,10 @@ void ScreenWin::OnWndProc(HWND hwnd,
                           WPARAM wparam,
                           LPARAM lparam) {
   if (message != WM_DISPLAYCHANGE &&
-    !(message == WM_SETTINGCHANGE && wparam == SPI_SETWORKAREA))
+      !(message == WM_ACTIVATEAPP && wparam == TRUE) &&
+      !(message == WM_SETTINGCHANGE && wparam == SPI_SETWORKAREA)) {
     return;
+  }
 
   color_profile_reader_->UpdateIfNeeded();
   if (request_hdr_status_callback_)

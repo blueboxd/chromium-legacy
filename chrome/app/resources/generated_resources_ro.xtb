@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">Schimbă parola</translation>
 <translation id="1090126737595388931">Nu rulează aplicații în fundal</translation>
 <translation id="1090290614672149983">Salvezi modificările în fișierul inițial?</translation>
-<translation id="1090918500949388876">Accesează Asistentul rostind „Ok Google” când ecranul este pornit</translation>
 <translation id="1091767800771861448">Apăsați pe ESCAPE pentru a ignora (numai versiunile neoficiale).</translation>
 <translation id="1093457606523402488">Rețele vizibile:</translation>
 <translation id="1094607894174825014">Operațiunea de citire sau de scriere a fost solicitată cu un decalaj nevalid pe: „<ph name="DEVICE_NAME" />”.</translation>
@@ -542,7 +541,6 @@
 <translation id="1792619191750875668">Afișare extinsă</translation>
 <translation id="1794791083288629568">Trimite feedback pentru a contribui la remedierea problemei.</translation>
 <translation id="1795214765651529549">Folosește tema clasică</translation>
-<translation id="1797738254362176886">Introdu și atinge cheia de securitate pentru a vedea datele de conectare asociate.</translation>
 <translation id="1799071797295057738">Extensia „<ph name="EXTENSION_NAME" />” a fost dezactivată automat.</translation>
 <translation id="1802687198411089702">Pagina nu răspunde. Poți aștepta să răspundă sau o poți închide.</translation>
 <translation id="1802931390041703523">Flash a fost blocat pe această pagină</translation>
@@ -690,7 +688,7 @@
 <translation id="2016430552235416146">Tradițională</translation>
 <translation id="2017334798163366053">Dezactivați culegerea datelor privind performanța</translation>
 <translation id="2017836877785168846">Șterge istoricul și completările automate din bara de adrese.</translation>
-<translation id="2018352199541442911">Ne pare rău, dispozitivul dvs. de stocare externă nu este acceptat în prezent.</translation>
+<translation id="2018352199541442911">Ne pare rău, dispozitivul de stocare extern nu este acceptat momentan.</translation>
 <translation id="2019718679933488176">&amp;Deschide conținutul audio într-o filă nouă</translation>
 <translation id="2020183425253392403">Afișează setările adresei de rețea</translation>
 <translation id="2023167225947895179">Este posibil ca PIN-ul să fie ușor de ghicit</translation>
@@ -788,7 +786,6 @@
 <translation id="2177950615300672361">Fila Incognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">Pluginul <ph name="PEPPER_PLUGIN_NAME" /> de pe <ph name="PEPPER_PLUGIN_DOMAIN" /> dorește să acceseze computerul</translation>
 <translation id="2178614541317717477">Compromitere CA</translation>
-<translation id="2179849162388791084">Nu s-au colectat datele de conectare ale cheii de securitate.</translation>
 <translation id="218070003709087997">Precizează un număr de exemplare pentru printare (de la 1 la 999).</translation>
 <translation id="2184515124301515068">Permite Chrome să aleagă când site-urile pot reda sunet (recomandat)</translation>
 <translation id="2187895286714876935">Eroare de import a certificatului serverului</translation>
@@ -1376,7 +1373,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3022978424994383087">Nu am înțeles.</translation>
 <translation id="3023464535986383522">Selectează și ascultă</translation>
 <translation id="3024374909719388945">Utilizează formatul de 24 de ore</translation>
-<translation id="30256218463955326">Dispozitivul de andocare nu este compatibil</translation>
 <translation id="3031417829280473749">Agenta X</translation>
 <translation id="3031557471081358569">Selectează elementele de importat:</translation>
 <translation id="3031601332414921114">Reia printarea</translation>
@@ -1566,7 +1562,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3348038390189153836">S-a detectat un dispozitiv detașabil</translation>
 <translation id="3349933790966648062">Memorie utilizată</translation>
 <translation id="3350117557200012647">Intră în modul de asociere</translation>
-<translation id="3350263973613584174">Cheia de securitate nu are date de conectare stocate.</translation>
 <translation id="3355936511340229503">Eroare de conexiune</translation>
 <translation id="3356580349448036450">Finalizat</translation>
 <translation id="3359256513598016054">Limitări ale politicii pentru certificate</translation>
@@ -1946,7 +1941,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3878840326289104869">Se creează utilizatorul monitorizat</translation>
 <translation id="3879748587602334249">Manager de descărcări</translation>
 <translation id="3888550877729210209">Scriere de notițe cu <ph name="LOCK_SCREEN_APP_NAME" /></translation>
-<translation id="388900914234409233">Pentru a încărca Chromebookul, folosește o baterie OEM compatibilă.</translation>
 <translation id="3892414795099177503">Adaugă OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Citește și modifică setările de accesibilitate</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
@@ -2137,7 +2131,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4147911968024186208">Reîncearcă. Dacă vezi această eroare din nou, contactează reprezentantul de asistență.</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Ecran</translation>
-<translation id="4150234330364554482">Folosește o stație de andocare OEM proiectată să funcționeze cu acest Chromebook.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{O filă}few{# file}other{# de file}}</translation>
 <translation id="4154664944169082762">Amprente digitale</translation>
 <translation id="4157869833395312646">Criptografie Microsoft bazată pe server</translation>
@@ -2284,7 +2277,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4412698727486357573">Centrul de ajutor</translation>
 <translation id="44141919652824029">Permiți ca „<ph name="APP_NAME" />” să obțină lista dispozitivelor USB atașate?</translation>
 <translation id="4414232939543644979">Fereastră nouă &amp;incognito</translation>
-<translation id="4414386768539506503">Introdu codul PIN al cheii de securitate pentru a vedea datele de conectare asociate. Dacă nu știi codul PIN, va trebui să resetezi cheia de securitate.</translation>
 <translation id="4415245286584082850">Nu s-au găsit dispozitive. Deschide într-o nouă filă un articol din centrul de ajutor.</translation>
 <translation id="4415276339145661267">Gestionează-ți Contul Google</translation>
 <translation id="4415748029120993980">Curbură eliptică SECG secp384r1 (cunoscută și sub numele de NIST P-384)</translation>
@@ -2386,7 +2378,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="457386861538956877">Mai multe...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Asociază dispozitivul Bluetooth</translation>
-<translation id="4578012756826807359">Datele de conectare s-au șters.</translation>
 <translation id="4579581181964204535">Nu se poate proiecta <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Eroare la restabilirea Linux</translation>
 <translation id="4582563038311694664">Restabilește toate setările</translation>
@@ -2698,7 +2689,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5072836811783999860">Vezi marcajele gestionate</translation>
 <translation id="5074318175948309511">Este posibil să fie necesară reîncărcarea acestei pagini înainte ca noile setări să se aplice.</translation>
 <translation id="5075131525758602494">Introdu codul PIN al cardului SIM</translation>
-<translation id="507514548843781244">Consultă și șterge datele de conectare stocate pe cheia de securitate</translation>
 <translation id="5078638979202084724">Marchează toate filele</translation>
 <translation id="5078796286268621944">Cod PIN incorect</translation>
 <translation id="5079950360618752063">Folosește parola sugerată</translation>
@@ -2969,7 +2959,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5496587651328244253">Organizați</translation>
 <translation id="549673810209994709">Această pagină nu a putut fi tradusă.</translation>
 <translation id="5499313591153584299">Este posibil ca acest fișier să fie dăunător pentru computer.</translation>
-<translation id="5500345327355928305">Pentru a evita problemele legate de încărcare și performanță, folosește un adaptor de curent OEM sau USB Type-C compatibil.</translation>
 <translation id="5502500733115278303">Importate din Firefox</translation>
 <translation id="5507756662695126555">Non-repudiere</translation>
 <translation id="5509693895992845810">Salvează c&amp;a...</translation>
@@ -2996,7 +2985,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5534304873398226603">Șterge fotografia sau videoclipul</translation>
 <translation id="5535941515421698170">De asemenea, elimină datele existente de pe acest dispozitiv</translation>
 <translation id="5539221284352502426">Parola pe care ai introdus-o a fost respinsă de server. Motivele posibile includ: parola este prea scurtă; parola trebuie să includă cifre sau simboluri; parola trebuie să fie diferită de parolele anterioare.</translation>
-<translation id="5541687815721799001">Folosește aplicația</translation>
 <translation id="5542132724887566711">Profil</translation>
 <translation id="5542750926112347543">Cookie-urile de la <ph name="DOMAIN" /> au fost blocate</translation>
 <translation id="5543983818738093899">Se verifică starea...</translation>
@@ -3395,7 +3383,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6122081475643980456">Conexiunea la internet este controlată</translation>
 <translation id="6122095009389448667">Blochează în continuare accesul la clipboard pentru acest site</translation>
 <translation id="6122875415561139701">Operațiunea de scriere nu este permisă pe: „<ph name="DEVICE_NAME" />”.</translation>
-<translation id="6123292156101652890">Cheia de securitate nu poate stoca date de conectare.</translation>
 <translation id="6124650939968185064">De această extensie depind următoarele extensii:</translation>
 <translation id="6124698108608891449">Acest site are nevoie de mai multe permisiuni.</translation>
 <translation id="6125479973208104919">Din păcate, va trebui să îți adaugi din nou contul pe acest dispozitiv <ph name="DEVICE_TYPE" />.</translation>
@@ -4065,7 +4052,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7143092389027215216">Se pornește modul demonstrativ</translation>
 <translation id="7143207342074048698">Se conectează</translation>
 <translation id="7144878232160441200">Reîncearcă</translation>
-<translation id="714687768418476028">Cheia de securitate nu este protejată printr-un cod PIN. Creează mai întâi un cod PIN pentru a gestiona datele de conectare.</translation>
 <translation id="7149893636342594995">Ultimele 24 de ore</translation>
 <translation id="715118844758971915">Imprimante clasice</translation>
 <translation id="7152478047064750137">Această extensie nu necesită permisiuni speciale</translation>
@@ -4931,7 +4917,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8438566539970814960">Îmbunătățește căutările și navigarea</translation>
 <translation id="8439506636278576865">Oferă-te să traduci paginile în această limbă</translation>
 <translation id="8440630305826533614">Aplicații Linux</translation>
-<translation id="844241640324986723">Nu s-au șters datele de conectare.</translation>
 <translation id="8443338615972234259">Creează acum un cont nou pentru utilizatorul monitorizat.</translation>
 <translation id="8446884382197647889">Află mai multe</translation>
 <translation id="8447409163267621480">Include Ctrl sau Alt</translation>

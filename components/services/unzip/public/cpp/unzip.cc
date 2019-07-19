@@ -18,8 +18,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/services/filesystem/directory_impl.h"
 #include "components/services/filesystem/lock_table.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
-#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
+#include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 

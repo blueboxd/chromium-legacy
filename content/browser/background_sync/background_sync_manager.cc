@@ -142,7 +142,7 @@ SyncAndNotificationPermissions GetBackgroundSyncPermissionOnUIThread(
   return {sync_permission, notification_permission};
 }
 
-void NotifyBackgroundSyncRegisteredOnUIThread(
+void NotifyOneShotBackgroundSyncRegisteredOnUIThread(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const url::Origin& origin,
     bool can_fire,
@@ -155,11 +155,27 @@ void NotifyBackgroundSyncRegisteredOnUIThread(
   if (!background_sync_controller)
     return;
 
-  background_sync_controller->NotifyBackgroundSyncRegistered(origin, can_fire,
-                                                             is_reregistered);
+  background_sync_controller->NotifyOneShotBackgroundSyncRegistered(
+      origin, can_fire, is_reregistered);
 }
 
-void NotifyBackgroundSyncCompletedOnUIThread(
+void NotifyPeriodicBackgroundSyncRegisteredOnUIThread(
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
+    const url::Origin& origin,
+    int min_interval,
+    bool is_reregistered) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BackgroundSyncController* background_sync_controller =
+      GetBackgroundSyncControllerOnUIThread(std::move(sw_context_wrapper));
+
+  if (!background_sync_controller)
+    return;
+
+  background_sync_controller->NotifyPeriodicBackgroundSyncRegistered(
+      origin, min_interval, is_reregistered);
+}
+
+void NotifyOneShotBackgroundSyncCompletedOnUIThread(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const url::Origin& origin,
     blink::ServiceWorkerStatusCode status_code,
@@ -173,7 +189,25 @@ void NotifyBackgroundSyncCompletedOnUIThread(
   if (!background_sync_controller)
     return;
 
-  background_sync_controller->NotifyBackgroundSyncCompleted(
+  background_sync_controller->NotifyOneShotBackgroundSyncCompleted(
+      origin, status_code, num_attempts, max_attempts);
+}
+
+void NotifyPeriodicBackgroundSyncCompletedOnUIThread(
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BackgroundSyncController* background_sync_controller =
+      GetBackgroundSyncControllerOnUIThread(std::move(sw_context_wrapper));
+
+  if (!background_sync_controller)
+    return;
+
+  background_sync_controller->NotifyPeriodicBackgroundSyncCompleted(
       origin, status_code, num_attempts, max_attempts);
 }
 
@@ -199,7 +233,6 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
 base::TimeDelta GetNextEventDelay(
     scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const BackgroundSyncRegistration& registration,
-    const url::Origin& origin,
     std::unique_ptr<BackgroundSyncParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -209,9 +242,8 @@ base::TimeDelta GetNextEventDelay(
   if (!background_sync_controller)
     return base::TimeDelta::Max();
 
-  return background_sync_controller->GetNextEventDelay(
-      origin, registration.options()->min_interval, registration.num_attempts(),
-      registration.sync_type(), parameters.get());
+  return background_sync_controller->GetNextEventDelay(registration,
+                                                       parameters.get());
 }
 
 void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
@@ -478,7 +510,7 @@ void BackgroundSyncManager::EmulateServiceWorkerOffline(
   if (emulated_offline_sw_[service_worker_id] > 0)
     return;
   emulated_offline_sw_.erase(service_worker_id);
-  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once());
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
@@ -613,8 +645,8 @@ void BackgroundSyncManager::InitDidGetDataFromBackend(
     }
   }
 
-  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
-  FireReadyEvents(BackgroundSyncType::PERIODIC, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once());
+  FireReadyEvents(BackgroundSyncType::PERIODIC, base::DoNothing::Once());
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
@@ -721,16 +753,23 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
   url::Origin origin =
       url::Origin::Create(sw_registration->scope().GetOrigin());
 
-  // TODO(crbug.com/925297): Record Periodic Sync metrics.
   if (GetBackgroundSyncType(options) ==
       blink::mojom::BackgroundSyncType::ONE_SHOT) {
     bool is_reregistered =
         existing_registration && existing_registration->IsFiring();
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&NotifyOneShotBackgroundSyncRegisteredOnUIThread,
+                       service_worker_context_, origin,
+                       /* can_fire= */ AreOptionConditionsMet(),
+                       is_reregistered));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &NotifyBackgroundSyncRegisteredOnUIThread, service_worker_context_,
-            origin, /* can_fire= */ AreOptionConditionsMet(), is_reregistered));
+            &NotifyPeriodicBackgroundSyncRegisteredOnUIThread,
+            service_worker_context_, origin, options.min_interval,
+            /* is_reregistered= */ static_cast<bool>(existing_registration)));
   }
 
   if (existing_registration) {
@@ -763,6 +802,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
 
   BackgroundSyncRegistration registration;
 
+  registration.set_origin(origin);
   *registration.options() = std::move(options);
 
   // TODO(crbug.com/963487): This section below is really confusing. Add a
@@ -776,7 +816,7 @@ void BackgroundSyncManager::RegisterDidAskForPermission(
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &GetNextEventDelay, service_worker_context_, registration, origin,
+            &GetNextEventDelay, service_worker_context_, registration,
             std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::RegisterDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
@@ -1043,7 +1083,7 @@ void BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive(
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion(),
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once(),
                   std::move(keepalive));
   op_scheduler_.CompleteOperationAndRunNext();
 }
@@ -1207,7 +1247,7 @@ void BackgroundSyncManager::ResetAndScheduleDelayedSyncTask(
 
   auto fire_events_callback = base::BindOnce(
       &BackgroundSyncManager::FireReadyEvents, weak_ptr_factory_.GetWeakPtr(),
-      sync_type, MakeEmptyCompletion(), /* keepalive= */ nullptr);
+      sync_type, base::DoNothing::Once(), /* keepalive= */ nullptr);
 
   get_delayed_task(sync_type).Reset(std::move(fire_events_callback));
   ScheduleDelayedTask(sync_type, soonest_wakeup_delta);
@@ -1369,7 +1409,8 @@ void BackgroundSyncManager::FireReadyEvents(
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
                      weak_ptr_factory_.GetWeakPtr(), sync_type,
-                     std::move(callback), std::move(keepalive)));
+                     op_scheduler_.WrapCallbackToRunNext(std::move(callback)),
+                     std::move(keepalive)));
 }
 
 void BackgroundSyncManager::FireReadyEventsImpl(
@@ -1610,7 +1651,7 @@ void BackgroundSyncManager::EventCompleteImpl(
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
-            &GetNextEventDelay, service_worker_context_, *registration, origin,
+            &GetNextEventDelay, service_worker_context_, *registration,
             std::make_unique<BackgroundSyncParameters>(*parameters_)),
         base::BindOnce(&BackgroundSyncManager::EventCompleteDidGetDelay,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -1693,7 +1734,14 @@ void BackgroundSyncManager::EventCompleteDidGetDelay(
         blink::mojom::BackgroundSyncType::ONE_SHOT) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&NotifyBackgroundSyncCompletedOnUIThread,
+          base::BindOnce(&NotifyOneShotBackgroundSyncCompletedOnUIThread,
+                         service_worker_context_, origin, status_code,
+                         registration->num_attempts(),
+                         registration->max_attempts()));
+    } else {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&NotifyPeriodicBackgroundSyncCompletedOnUIThread,
                          service_worker_context_, origin, status_code,
                          registration->num_attempts(),
                          registration->max_attempts()));
@@ -1730,8 +1778,8 @@ void BackgroundSyncManager::EventCompleteDidStore(
   }
 
   // Fire any ready events and call RunInBackground if anything is waiting.
-  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
-  FireReadyEvents(BackgroundSyncType::PERIODIC, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once());
+  FireReadyEvents(BackgroundSyncType::PERIODIC, base::DoNothing::Once());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
@@ -1767,8 +1815,8 @@ void BackgroundSyncManager::OnStorageWipedImpl(base::OnceClosure callback) {
 void BackgroundSyncManager::OnNetworkChanged() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  FireReadyEvents(BackgroundSyncType::ONE_SHOT, MakeEmptyCompletion());
-  FireReadyEvents(BackgroundSyncType::PERIODIC, MakeEmptyCompletion());
+  FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once());
+  FireReadyEvents(BackgroundSyncType::PERIODIC, base::DoNothing::Once());
 }
 
 void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,

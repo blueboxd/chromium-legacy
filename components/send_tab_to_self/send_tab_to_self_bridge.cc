@@ -512,16 +512,16 @@ bool SendTabToSelfBridge::IsReady() {
 }
 
 bool SendTabToSelfBridge::HasValidTargetDevice() {
-  if (ShouldUpdateTargetDeviceNameToCacheInfoMap()) {
-    SetTargetDeviceNameToCacheInfoMap();
+  if (ShouldUpdateTargetDeviceInfoList()) {
+    SetTargetDeviceInfoList();
   }
   return target_device_name_to_cache_info_.size() > 0;
 }
 
-std::map<std::string, TargetDeviceInfo>
-SendTabToSelfBridge::GetTargetDeviceNameToCacheInfoMap() {
-  if (ShouldUpdateTargetDeviceNameToCacheInfoMap()) {
-    SetTargetDeviceNameToCacheInfoMap();
+std::vector<TargetDeviceInfo>
+SendTabToSelfBridge::GetTargetDeviceInfoSortedList() {
+  if (ShouldUpdateTargetDeviceInfoList()) {
+    SetTargetDeviceInfoList();
   }
   return target_device_name_to_cache_info_;
 }
@@ -533,8 +533,8 @@ SendTabToSelfBridge::DestroyAndStealStoreForTest(
   return std::move(bridge->store_);
 }
 
-bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheInfoMapForTest() {
-  return ShouldUpdateTargetDeviceNameToCacheInfoMap();
+bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoListForTest() {
+  return ShouldUpdateTargetDeviceInfoList();
 }
 
 void SendTabToSelfBridge::SetLocalDeviceNameForTest(
@@ -698,11 +698,11 @@ void SendTabToSelfBridge::DoGarbageCollection() {
   NotifyRemoteSendTabToSelfEntryDeleted(removed);
 }
 
-bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheInfoMap() const {
-  // The map should be updated if any of these is true:
-  //   * The map is empty.
+bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
+  // The vector should be updated if any of these is true:
+  //   * The vector is empty.
   //   * The number of total devices changed.
-  //   * The oldest non-expired entry in the map is now expired.
+  //   * The oldest non-expired entry in the vector is now expired.
   return target_device_name_to_cache_info_.empty() ||
          device_info_tracker_->GetAllDeviceInfo().size() !=
              number_of_devices_ ||
@@ -710,7 +710,7 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceNameToCacheInfoMap() const {
              kDeviceExpiration;
 }
 
-void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
+void SendTabToSelfBridge::SetTargetDeviceInfoList() {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
   number_of_devices_ = all_devices.size();
@@ -724,6 +724,7 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
                    });
 
   target_device_name_to_cache_info_.clear();
+  std::set<std::string> unique_device_names;
   for (const auto& device : all_devices) {
     // If the current device is considered expired for our purposes, stop here
     // since the next devices in the vector are at least as expired than this
@@ -749,11 +750,13 @@ void SendTabToSelfBridge::SetTargetDeviceNameToCacheInfoMap() {
 
     // Only keep one device per device name. We only keep the first occurrence
     // which is the most recent.
-    TargetDeviceInfo target_device_info(device->guid(), device->device_type(),
-                                        device->last_updated_timestamp());
-    target_device_name_to_cache_info_.emplace(device->client_name(),
-                                              target_device_info);
-    oldest_non_expired_device_timestamp_ = device->last_updated_timestamp();
+    if (unique_device_names.insert(device->client_name()).second) {
+      TargetDeviceInfo target_device_info(device->client_name(), device->guid(),
+                                          device->device_type(),
+                                          device->last_updated_timestamp());
+      target_device_name_to_cache_info_.push_back(target_device_info);
+      oldest_non_expired_device_timestamp_ = device->last_updated_timestamp();
+    }
   }
 }
 

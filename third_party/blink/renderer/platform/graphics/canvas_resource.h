@@ -364,7 +364,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   }
   void WillDraw();
   bool is_cross_thread() const {
-    return Thread::Current()->ThreadId() != owning_thread_id_;
+    return base::PlatformThread::CurrentId() != owning_thread_id_;
   }
   bool has_read_access() const {
     return owning_thread_data().bitmap_image_read_refs > 0u;
@@ -413,11 +413,11 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   void SetGLFilterIfNeeded();
 
   OwningThreadData& owning_thread_data() {
-    DCHECK_EQ(Thread::Current()->ThreadId(), owning_thread_id_);
+    DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);
     return owning_thread_data_;
   }
   const OwningThreadData& owning_thread_data() const {
-    DCHECK_EQ(Thread::Current()->ThreadId(), owning_thread_id_);
+    DCHECK_EQ(base::PlatformThread::CurrentId(), owning_thread_id_);
     return owning_thread_data_;
   }
 
@@ -445,7 +445,7 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
   const IntSize size_;
   const bool is_origin_top_left_;
   const GLenum texture_target_;
-  const PlatformThreadId owning_thread_id_;
+  const base::PlatformThreadId owning_thread_id_;
   const scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner_;
 
   OwningThreadData owning_thread_data_;

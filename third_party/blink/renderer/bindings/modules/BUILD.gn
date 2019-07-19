@@ -23,6 +23,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.idl",
     "//third_party/blink/renderer/modules/background_sync/periodic_sync_event.idl",
     "//third_party/blink/renderer/modules/background_sync/sync_event.idl",
+    "//third_party/blink/renderer/modules/content_index/content_index_event.idl",
     "//third_party/blink/renderer/modules/cookie_store/cookie_change_event.idl",
     "//third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.idl",
     "//third_party/blink/renderer/modules/device_orientation/device_motion_event.idl",

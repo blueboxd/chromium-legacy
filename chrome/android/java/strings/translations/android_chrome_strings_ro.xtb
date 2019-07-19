@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Stocarea site-urilor</translation>
 <translation id="2328985652426384049">Nu se poate conecta</translation>
 <translation id="2349710944427398404">Totalul datelor folosite de Chrome, inclusiv conturile, marcajele și setările salvate</translation>
-<translation id="2351097562818989364">Setările de traducere au fost resetate.</translation>
 <translation id="2353636109065292463">Se verifică conexiunea la internet</translation>
 <translation id="2359808026110333948">Continuă</translation>
 <translation id="2369533728426058518">file deschise</translation>
@@ -571,7 +570,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5301954838959518834">OK, am înțeles</translation>
 <translation id="5304593522240415983">Acest câmp trebuie completat</translation>
 <translation id="5308380583665731573">Conectează-te</translation>
-<translation id="5308603654685598744">Când această funcție este activată, Chrome se va oferi să traducă paginile scrise în alte limbi folosind Google Traducere.</translation>
 <translation id="5313967007315987356">Adaugă un site</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5324858694974489420">Setări parentale</translation>
@@ -660,7 +658,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5865733239029070421">Trimite automat statistici de utilizare și rapoarte de blocare la Google</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
 <translation id="5902828464777634901">Toate datele stocate de site, inclusiv cookie-urile vor fi șterse.</translation>
-<translation id="5911030830365207728">Google Traducere</translation>
 <translation id="5916664084637901428">Activat</translation>
 <translation id="5919204609460789179">Actualizează <ph name="PRODUCT_NAME" /> pentru a începe sincronizarea</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> salvați</translation>
@@ -805,7 +802,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6963642900430330478">Această pagină este periculoasă. Informații despre site</translation>
 <translation id="6963766334940102469">Șterge marcaje</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Resetează setările pentru traducere</translation>
 <translation id="6979737339423435258">Dintotdeauna</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="6989267951144302301">Nu s-a putut descărca</translation>

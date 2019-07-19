@@ -216,16 +216,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
           ->GetSendTabToSelfModel())
       ->SetLocalDeviceNameForTest("device2");
 
-  std::map<std::string, send_tab_to_self::TargetDeviceInfo>
-      profile1_target_device_map =
-          SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
-              ->GetSendTabToSelfModel()
-              ->GetTargetDeviceNameToCacheInfoMap();
-  std::map<std::string, send_tab_to_self::TargetDeviceInfo>
-      profile2_target_device_map =
-          SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1))
-              ->GetSendTabToSelfModel()
-              ->GetTargetDeviceNameToCacheInfoMap();
+  std::vector<send_tab_to_self::TargetDeviceInfo> profile1_target_device_map =
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
+          ->GetSendTabToSelfModel()
+          ->GetTargetDeviceInfoSortedList();
+  std::vector<send_tab_to_self::TargetDeviceInfo> profile2_target_device_map =
+      SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(1))
+          ->GetSendTabToSelfModel()
+          ->GetTargetDeviceInfoSortedList();
 
   EXPECT_EQ(1u, profile1_target_device_map.size());
   EXPECT_EQ(1u, profile2_target_device_map.size());

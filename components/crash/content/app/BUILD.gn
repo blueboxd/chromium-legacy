@@ -24,6 +24,21 @@ source_set("lib") {
   ]
 }
 
+source_set("crashpad_handler_main") {
+  sources = [
+    "crashpad_handler_main.cc",
+  ]
+
+  deps = [
+    "//components/gwp_asan/buildflags",
+    "//third_party/crashpad/crashpad/handler:handler",
+  ]
+
+  if (enable_gwp_asan) {
+    deps += [ "//components/gwp_asan/crash_handler" ]
+  }
+}
+
 static_library("app") {
   sources = [
     "crash_export_thunks.h",
@@ -65,9 +80,9 @@ static_library("app") {
 
   if (is_android) {
     deps += [
+      ":crashpad_handler_main",
       "//components/crash/android:jni_headers",
       "//third_party/crashpad/crashpad/handler",
-      "//third_party/crashpad/crashpad/handler:crashpad_handler_main",
       "//third_party/crashpad/crashpad/snapshot",
     ]
   }

@@ -170,7 +170,7 @@ ANDROID_GO = PerfPlatform(
     19, 'android')
 ANDROID_GO_WEBVIEW = PerfPlatform(
     'android-go_webview-perf', 'Android OPM1.171019.021 (gobo)',
-    _ANDROID_GO_WEBVIEW_BENCHMARK_NAMES, 25, 'android')
+    _ANDROID_GO_WEBVIEW_BENCHMARK_NAMES, 13, 'android')
 ANDROID_NEXUS_5 = PerfPlatform(
     'Android Nexus5 Perf', 'Android KOT49H', _ANDROID_NEXUS_5_BENCHMARK_NAMES,
     16, 'android')

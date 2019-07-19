@@ -10,8 +10,6 @@ source_set("mojo") {
     "device_manager_impl.h",
     "device_manager_test.cc",
     "device_manager_test.h",
-    "type_converters.cc",
-    "type_converters.h",
   ]
 
   deps = [

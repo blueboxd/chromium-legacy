@@ -224,12 +224,12 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // load any extensions.
   {
     InstallVerifier::Get(profile_)->Init();
-    ContentVerifierDelegate::Mode mode =
+    ChromeContentVerifierDelegate::Mode mode =
         ChromeContentVerifierDelegate::GetDefaultMode();
 #if defined(OS_CHROMEOS)
-    mode = std::max(mode, ContentVerifierDelegate::BOOTSTRAP);
+    mode = std::max(mode, ChromeContentVerifierDelegate::BOOTSTRAP);
 #endif  // defined(OS_CHROMEOS)
-    if (mode >= ContentVerifierDelegate::BOOTSTRAP)
+    if (mode >= ChromeContentVerifierDelegate::BOOTSTRAP)
       content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());
 #if defined(OS_CHROMEOS)

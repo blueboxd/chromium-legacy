@@ -13,7 +13,7 @@
 #include "base/memory/discardable_memory.h"
 #include "build/build_config.h"
 #include "components/services/pdf_compositor/pdf_compositor_impl.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

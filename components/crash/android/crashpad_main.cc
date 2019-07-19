@@ -19,7 +19,7 @@ static void JNI_CrashpadMain_CrashpadMain(
 
   std::vector<const char*> argv;
   StringVectorToCStringVector(argv_strings, &argv);
-  HandlerMain(argv.size() - 1, const_cast<char**>(argv.data()), nullptr);
+  CrashpadHandlerMain(argv.size() - 1, const_cast<char**>(argv.data()));
 }
 
 }  // namespace crashpad

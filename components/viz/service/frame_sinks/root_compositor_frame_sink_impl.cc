@@ -169,9 +169,9 @@ void RootCompositorFrameSinkImpl::SetDisplayColorMatrix(
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
-    const gfx::ColorSpace& blending_color_space,
-    const gfx::ColorSpace& device_color_space) {
-  display_->SetColorSpace(blending_color_space, device_color_space);
+    const gfx::ColorSpace& device_color_space,
+    float sdr_white_level) {
+  display_->SetColorSpace(device_color_space, sdr_white_level);
 }
 
 void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {

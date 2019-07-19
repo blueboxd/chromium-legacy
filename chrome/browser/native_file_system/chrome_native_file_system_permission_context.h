@@ -95,6 +95,18 @@ class ChromeNativeFileSystemPermissionContext
   void RevokeDirectoryReadGrants(const url::Origin& origin,
                                  int process_id,
                                  int frame_id);
+  // Revokes write access for the given origin in the given tab.
+  void RevokeWriteGrants(const url::Origin& origin,
+                         int process_id,
+                         int frame_id);
+
+  // Revokes write access and directory read access for the given origin in the
+  // given tab.
+  static void RevokeGrantsForOriginAndTabFromUIThread(
+      content::BrowserContext* browser_context,
+      const url::Origin& origin,
+      int process_id,
+      int frame_id);
 
   // RefcountedKeyedService:
   void ShutdownOnUIThread() override;

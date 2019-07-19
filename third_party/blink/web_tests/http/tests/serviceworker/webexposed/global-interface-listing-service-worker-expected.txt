@@ -147,6 +147,10 @@ interface ContentIndex
     method constructor
     method delete
     method getDescriptions
+interface ContentIndexEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter id
+    method constructor
 interface CookieStore : EventTarget
     attribute @@toStringTag
     method constructor
@@ -3677,6 +3681,7 @@ interface WritableStreamDefaultWriter
     getter onbackgroundfetchfail
     getter onbackgroundfetchsuccess
     getter oncanmakepayment
+    getter oncontentdelete
     getter oncookiechange
     getter onfetch
     getter oninstall
@@ -3700,6 +3705,7 @@ interface WritableStreamDefaultWriter
     setter onbackgroundfetchfail
     setter onbackgroundfetchsuccess
     setter oncanmakepayment
+    setter oncontentdelete
     setter oncookiechange
     setter onfetch
     setter oninstall

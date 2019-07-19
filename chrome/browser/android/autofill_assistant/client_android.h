@@ -61,7 +61,7 @@ class ClientAndroid : public Client,
                      const base::android::JavaParamRef<jstring>& access_token);
 
   // Overrides Client
-  void ShowUI() override;
+  void AttachUI() override;
   void DestroyUI() override;
   std::string GetApiKey() override;
   std::string GetAccountEmailAddress() override;
@@ -84,10 +84,9 @@ class ClientAndroid : public Client,
   explicit ClientAndroid(content::WebContents* web_contents);
   void CreateController();
   void DestroyController();
-  void CreateUI(
+  void AttachUI(
       const base::android::JavaParamRef<jobject>& joverlay_coordinator);
   bool NeedsUI();
-  void SetUI(std::unique_ptr<UiControllerAndroid> ui_controller_android);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
@@ -95,7 +94,9 @@ class ClientAndroid : public Client,
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
+
   std::unique_ptr<UiControllerAndroid> ui_controller_android_;
+
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;
   std::string server_url_;

@@ -61,6 +61,11 @@ var FilesQuickView = Polymer({
     this.audioArtwork = '';
     this.autoplay = false;
     this.browsable = false;
+    const video = this.$.contentPanel.querySelector('#videoSafeMedia');
+    if (video) {
+      video.src = '';
+      video.fire('src-changed');
+    }
   },
 
   /** @return {boolean} */

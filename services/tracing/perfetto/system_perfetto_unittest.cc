@@ -29,6 +29,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/ipc/default_socket.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace.pb.h"
 
@@ -56,8 +57,10 @@ class SystemPerfettoTest : public testing::Test {
     // Ensure system tracing is enabled for all tests.
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
-    // Construct the process global object and clear data sources between tests.
-    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
+    PerfettoTracedProcess::ResetTaskRunnerForTesting();
+    // To ensure we have a fully clean PerfettoTracedProcess reconstruct it at
+    // the beginning of each test.
+    PerfettoTracedProcess::ReconstructForTesting(perfetto::GetProducerSocket());
 
     EXPECT_TRUE(tmp_dir_.CreateUniqueTempDir());
     // We need to set TMPDIR environment variable because when a new producer
@@ -70,7 +73,6 @@ class SystemPerfettoTest : public testing::Test {
     // hermetic.
     old_tmp_dir_ = getenv("TMPDIR");
     setenv("TMPDIR", tmp_dir_.GetPath().value().c_str(), true);
-
     // Set up the system socket locations in a valid tmp directory.
     producer_socket_ =
         tmp_dir_.GetPath().Append(FILE_PATH_LITERAL("producer")).value();
@@ -80,11 +82,11 @@ class SystemPerfettoTest : public testing::Test {
     // Construct three default TestDataSources which write out different amount
     // of packets to make it easy to verify which data source has written
     // packets.
-    data_sources_.push_back(
-        std::make_unique<TestDataSource>(kPerfettoTestDataSourceName, 1));
-    data_sources_.push_back(std::make_unique<TestDataSource>(
+    data_sources_.push_back(TestDataSource::CreateAndRegisterDataSource(
+        kPerfettoTestDataSourceName, 1));
+    data_sources_.push_back(TestDataSource::CreateAndRegisterDataSource(
         base::StrCat({kPerfettoTestDataSourceName, "1"}), 3));
-    data_sources_.push_back(std::make_unique<TestDataSource>(
+    data_sources_.push_back(TestDataSource::CreateAndRegisterDataSource(
         base::StrCat({kPerfettoTestDataSourceName, "2"}), 7));
 
     // Construct the service and wait for it to completely set up.
@@ -133,6 +135,17 @@ class SystemPerfettoTest : public testing::Test {
   }
 
   ~SystemPerfettoTest() override {
+    // The real "AndroidSystemProducer" must be destroyed on the correct
+    // sequence however that sequence is tied to the |scoped_task_environment_|
+    // which is being deleted now. Therefore to prevent it crashing a future
+    // test we destroy it now.
+    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce([]() {
+          PerfettoTracedProcess::Get()
+              ->SetSystemProducerForTesting(std::make_unique<DummyProducer>(
+                  PerfettoTracedProcess::GetTaskRunner()))
+              .reset();
+        }));
     RunUntilIdle();
     if (old_tmp_dir_) {
       // Restore the old value back to its initial value.
@@ -202,8 +215,7 @@ class SystemPerfettoTest : public testing::Test {
   const char* old_tmp_dir_ = nullptr;
 };
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEnd) {
+TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   auto system_service = CreateMockSystemService();
 
   // Set up the producer to talk to the system.
@@ -279,8 +291,7 @@ TEST_F(SystemPerfettoTest, DISABLED_SystemTraceEndToEndRealService) {
   EXPECT_EQ(0, remove(path.c_str()));
 }
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, DISABLED_OneSystemSourceWithMultipleLocalSources) {
+TEST_F(SystemPerfettoTest, OneSystemSourceWithMultipleLocalSources) {
   auto system_service = CreateMockSystemService();
 
   // Start a trace using the system Perfetto service.
@@ -368,9 +379,7 @@ TEST_F(SystemPerfettoTest, DISABLED_OneSystemSourceWithMultipleLocalSources) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest,
-       DISABLED_MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
+TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   auto system_service = CreateMockSystemService();
 
   base::RunLoop local_no_more_packets_runloop;
@@ -465,8 +474,7 @@ TEST_F(SystemPerfettoTest,
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSources) {
+TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSources) {
   auto system_service = CreateMockSystemService();
 
   // Start a trace using the system Perfetto service.
@@ -557,8 +565,7 @@ TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSources) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSourcesLocalFirst) {
+TEST_F(SystemPerfettoTest, MultipleSystemAndLocalSourcesLocalFirst) {
   auto system_service = CreateMockSystemService();
 
   // We construct it up front so it connects to the service before the local
@@ -645,8 +652,7 @@ TEST_F(SystemPerfettoTest, DISABLED_MultipleSystemAndLocalSourcesLocalFirst) {
   PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
 }
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, DISABLED_SystemToLowAPILevel) {
+TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
     LOG(INFO) << "Skipping SystemToLowAPILevel test, this phone supports the "
@@ -696,8 +702,7 @@ TEST_F(SystemPerfettoTest, DISABLED_SystemToLowAPILevel) {
   EXPECT_EQ(0u, run_test(/* check_sdk_level = */ true));
 }
 
-// TODO(crbug.com/983509): test is flaky.
-TEST_F(SystemPerfettoTest, DISABLED_RespectsFeatureList) {
+TEST_F(SystemPerfettoTest, RespectsFeatureList) {
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);

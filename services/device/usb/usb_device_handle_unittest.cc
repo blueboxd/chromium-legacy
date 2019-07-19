@@ -21,6 +21,11 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+
 namespace {
 
 class UsbDeviceHandleTest : public ::testing::Test {

@@ -114,7 +114,7 @@ void SMILAnimationSandwich::SendEvents(double elapsed, bool seek_to_time) {
   }
 }
 
-SVGSMILElement* SMILAnimationSandwich::UpdateAnimationValues() {
+SVGSMILElement* SMILAnimationSandwich::ApplyAnimationValues() {
   if (active_.IsEmpty())
     return nullptr;
   // Results are accumulated to the first animation that animates and
@@ -142,6 +142,8 @@ SVGSMILElement* SMILAnimationSandwich::UpdateAnimationValues() {
     (*sandwich_it)->UpdateAnimatedValue(result_element);
   }
   active_.Shrink(0);
+
+  result_element->ApplyResultsToTarget();
 
   return result_element;
 }

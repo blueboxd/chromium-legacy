@@ -18,4 +18,8 @@ bool StubLogManager::IsLoggingActive() const {
   return false;
 }
 
+LogBufferSubmitter StubLogManager::Log() {
+  return LogBufferSubmitter(nullptr, false);
+}
+
 }  // namespace autofill

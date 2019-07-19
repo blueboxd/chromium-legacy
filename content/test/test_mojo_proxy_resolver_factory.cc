@@ -11,11 +11,7 @@
 namespace content {
 
 TestMojoProxyResolverFactory::TestMojoProxyResolverFactory()
-    : service_keepalive_(static_cast<service_manager::ServiceBinding*>(nullptr),
-                         base::nullopt) {
-  proxy_resolver_factory_impl_.BindReceiver(
-      factory_.BindNewPipeAndPassReceiver(), &service_keepalive_);
-}
+    : proxy_resolver_factory_impl_(factory_.BindNewPipeAndPassReceiver()) {}
 
 TestMojoProxyResolverFactory::~TestMojoProxyResolverFactory() = default;
 

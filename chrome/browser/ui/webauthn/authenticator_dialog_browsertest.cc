@@ -152,6 +152,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           base::Bind([](device::AuthenticatorGetAssertionResponse) {}));
     } else if (name == "request_attestation_permission") {
       model->RequestAttestationPermission(base::DoNothing());
+    } else if (name == "qr_code") {
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kQRCode);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -297,5 +299,9 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_account_select) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_request_attestation_permission) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_qr_code) {
   ShowAndVerifyUi();
 }

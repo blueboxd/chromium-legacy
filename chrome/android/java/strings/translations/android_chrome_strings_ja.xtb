@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">サイトのストレージ</translation>
 <translation id="2328985652426384049">ログインできません</translation>
 <translation id="2349710944427398404">Chrome が使用するデータ全体（アカウント、ブックマーク、保存済みの設定など）</translation>
-<translation id="2351097562818989364">翻訳設定をリセットしました。</translation>
 <translation id="2353636109065292463">インターネット接続を確認しています</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2369533728426058518">開いているタブ</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">この項目は必須です</translation>
 <translation id="5308380583665731573">接続</translation>
-<translation id="5308603654685598744">この機能を有効にすると、外国語のページで翻訳ツールが表示されます。</translation>
 <translation id="5313967007315987356">サイトを追加</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">保護者設定</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="5902828464777634901">このウェブサイトで保存したすべてのローカルデータ（Cookie を含む）を削除します。</translation>
-<translation id="5911030830365207728">Google 翻訳</translation>
 <translation id="5916664084637901428">オン</translation>
 <translation id="5919204609460789179">同期を開始するには <ph name="PRODUCT_NAME" /> を更新してください</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 節約</translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">このページは危険です。サイト情報</translation>
 <translation id="6963766334940102469">ブックマークを削除</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">翻訳設定をリセット</translation>
 <translation id="6979737339423435258">全期間</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="6989267951144302301">ダウンロードできませんでした</translation>

@@ -29,6 +29,10 @@ class OpenUrlDelegate {
       int32_t surface_id,
       int32_t top_margin,
       mojom::IntentHelperHost::OnOpenCustomTabCallback callback) = 0;
+
+  // Opens the requested |chrome_page|. If |chrome_page| is a settings page,
+  // this will open the settings window.
+  virtual void OpenChromePageFromArc(mojom::ChromePage chrome_page) = 0;
 };
 
 }  // namespace arc

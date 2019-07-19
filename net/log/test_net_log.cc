@@ -22,19 +22,34 @@ TestNetLog::~TestNetLog() {
   RemoveObserver(this);
 }
 
-void TestNetLog::GetEntries(TestNetLogEntry::List* entry_list) const {
+std::vector<NetLogEntry> TestNetLog::GetEntries() const {
   base::AutoLock lock(lock_);
-  *entry_list = entry_list_;
+  std::vector<NetLogEntry> result;
+  for (const auto& entry : entry_list_)
+    result.push_back(entry.Clone());
+  return result;
 }
 
-void TestNetLog::GetEntriesForSource(NetLogSource source,
-                                     TestNetLogEntry::List* entry_list) const {
+std::vector<NetLogEntry> TestNetLog::GetEntriesForSource(
+    NetLogSource source) const {
   base::AutoLock lock(lock_);
-  entry_list->clear();
+  std::vector<NetLogEntry> result;
   for (const auto& entry : entry_list_) {
     if (entry.source.id == source.id)
-      entry_list->push_back(entry);
+      result.push_back(entry.Clone());
   }
+  return result;
+}
+
+std::vector<NetLogEntry> TestNetLog::GetEntriesWithType(
+    NetLogEventType type) const {
+  base::AutoLock lock(lock_);
+  std::vector<NetLogEntry> result;
+  for (const auto& entry : entry_list_) {
+    if (entry.type == type)
+      result.push_back(entry.Clone());
+  }
+  return result;
 }
 
 size_t TestNetLog::GetSize() const {
@@ -48,17 +63,13 @@ void TestNetLog::Clear() {
 }
 
 void TestNetLog::OnAddEntry(const NetLogEntry& entry) {
-  // Using Dictionaries instead of Values makes checking values a little
-  // simpler.
-  std::unique_ptr<base::DictionaryValue> param_dict =
-      base::DictionaryValue::From(
-          base::Value::ToUniquePtrValue(entry.params.Clone()));
+  base::Value params = entry.params.Clone();
+  auto time = base::TimeTicks::Now();
 
   // Only need to acquire the lock when accessing class variables.
   base::AutoLock lock(lock_);
-  entry_list_.push_back(TestNetLogEntry(entry.type, base::TimeTicks::Now(),
-                                        entry.source, entry.phase,
-                                        std::move(param_dict)));
+  entry_list_.emplace_back(entry.type, entry.source, entry.phase, time,
+                           std::move(params));
 }
 
 NetLog::ThreadSafeObserver* TestNetLog::GetObserver() {
@@ -76,14 +87,18 @@ BoundTestNetLog::BoundTestNetLog()
 
 BoundTestNetLog::~BoundTestNetLog() = default;
 
-void BoundTestNetLog::GetEntries(TestNetLogEntry::List* entry_list) const {
-  test_net_log_.GetEntries(entry_list);
+std::vector<NetLogEntry> BoundTestNetLog::GetEntries() const {
+  return test_net_log_.GetEntries();
 }
 
-void BoundTestNetLog::GetEntriesForSource(
-    NetLogSource source,
-    TestNetLogEntry::List* entry_list) const {
-  test_net_log_.GetEntriesForSource(source, entry_list);
+std::vector<NetLogEntry> BoundTestNetLog::GetEntriesForSource(
+    NetLogSource source) const {
+  return test_net_log_.GetEntriesForSource(source);
+}
+
+std::vector<NetLogEntry> BoundTestNetLog::GetEntriesWithType(
+    NetLogEventType type) const {
+  return test_net_log_.GetEntriesWithType(type);
 }
 
 size_t BoundTestNetLog::GetSize() const {

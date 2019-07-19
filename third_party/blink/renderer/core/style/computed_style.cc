@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 
 namespace blink {
 
@@ -1530,12 +1531,18 @@ void ComputedStyle::ApplyTextTransform(String* text,
     case ETextTransform::kCapitalize:
       *text = Capitalize(*text, previous_character);
       return;
-    case ETextTransform::kUppercase:
-      *text = DisableNewGeorgianCapitalLetters(text->UpperUnicode(Locale()));
+    case ETextTransform::kUppercase: {
+      const LayoutLocale* locale = GetFontDescription().Locale();
+      CaseMap case_map(locale ? locale->CaseMapLocale() : CaseMap::Locale());
+      *text = DisableNewGeorgianCapitalLetters(case_map.ToUpper(*text));
       return;
-    case ETextTransform::kLowercase:
-      *text = text->LowerUnicode(Locale());
+    }
+    case ETextTransform::kLowercase: {
+      const LayoutLocale* locale = GetFontDescription().Locale();
+      CaseMap case_map(locale ? locale->CaseMapLocale() : CaseMap::Locale());
+      *text = case_map.ToLower(*text);
       return;
+    }
   }
   NOTREACHED();
 }

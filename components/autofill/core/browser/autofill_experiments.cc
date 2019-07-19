@@ -12,12 +12,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_internals_logging.h"
+#include "components/autofill/core/browser/autofill_internals_service.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -37,13 +39,15 @@ namespace autofill {
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email,
-                               const AutofillSyncSigninState sync_state) {
+                               const AutofillSyncSigninState sync_state,
+                               LogManager* log_manager) {
   if (!sync_service) {
     // If credit card sync is not active, we're not offering to upload cards.
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::SYNC_SERVICE_NULL,
         sync_state);
-    AutofillInternalsLogging::Log("SYNC_SERVICE_NULL");
+    if (log_manager)
+      log_manager->Log() << LoggingScope::kContext << "SYNC_SERVICE_NULL";
     return false;
   }
 
@@ -52,7 +56,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             SYNC_SERVICE_PERSISTENT_AUTH_ERROR,
         sync_state);
-    AutofillInternalsLogging::Log("SYNC_SERVICE_PERSISTENT_ERROR");
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kContext
+                         << "SYNC_SERVICE_PERSISTENT_ERROR";
+    }
     return false;
   }
 
@@ -61,8 +68,11 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             SYNC_SERVICE_MISSING_AUTOFILL_WALLET_DATA_ACTIVE_TYPE,
         sync_state);
-    AutofillInternalsLogging::Log(
-        "SYNC_SERVICE_MISSING_AUTOFILL_WALLET_ACTIVE_DATA_TYPE");
+    if (log_manager) {
+      log_manager->Log()
+          << LoggingScope::kContext
+          << "SYNC_SERVICE_MISSING_AUTOFILL_WALLET_ACTIVE_DATA_TYPE";
+    }
     return false;
   }
 
@@ -74,8 +84,11 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
           AutofillMetrics::CardUploadEnabledMetric::
               SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_TYPE,
           sync_state);
-      AutofillInternalsLogging::Log(
-          "SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_DATA_TYPE");
+      if (log_manager) {
+        log_manager->Log()
+            << LoggingScope::kContext
+            << "SYNC_SERVICE_MISSING_AUTOFILL_PROFILE_ACTIVE_DATA_TYPE";
+      }
       return false;
     }
   } else {
@@ -91,7 +104,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
           AutofillMetrics::CardUploadEnabledMetric::
               ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED,
           sync_state);
-      AutofillInternalsLogging::Log("ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED");
+      if (log_manager) {
+        log_manager->Log() << LoggingScope::kContext
+                           << "ACCOUNT_WALLET_STORAGE_UPLOAD_DISABLED";
+      }
       return false;
     }
   }
@@ -105,7 +121,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
         AutofillMetrics::CardUploadEnabledMetric::
             USING_SECONDARY_SYNC_PASSPHRASE,
         sync_state);
-    AutofillInternalsLogging::Log("USER_HAS_SECONDARY_SYNC_PASSPHRASE");
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kContext
+                         << "USER_HAS_SECONDARY_SYNC_PASSPHRASE";
+    }
     return false;
   }
 
@@ -115,7 +134,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::LOCAL_SYNC_ENABLED,
         sync_state);
-    AutofillInternalsLogging::Log("USER_ONLY_SYNCING_LOCALLY");
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kContext
+                         << "USER_ONLY_SYNCING_LOCALLY";
+    }
     return false;
   }
 
@@ -124,7 +146,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::PAYMENTS_INTEGRATION_DISABLED,
         sync_state);
-    AutofillInternalsLogging::Log("PAYMENTS_INTEGRATION_DISABLED");
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kContext
+                         << "PAYMENTS_INTEGRATION_DISABLED";
+    }
     return false;
   }
 
@@ -132,7 +157,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   if (user_email.empty()) {
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::EMAIL_EMPTY, sync_state);
-    AutofillInternalsLogging::Log("USER_EMAIL_EMPTY");
+    if (log_manager)
+      log_manager->Log() << LoggingScope::kContext << "USER_EMAIL_EMPTY";
     return false;
   }
 
@@ -150,7 +176,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::EMAIL_DOMAIN_NOT_SUPPORTED,
         sync_state);
-    AutofillInternalsLogging::Log("USER_EMAIL_DOMAIN_NOT_SUPPORTED");
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kContext
+                         << "USER_EMAIL_DOMAIN_NOT_SUPPORTED";
+    }
     return false;
   }
 
@@ -158,7 +187,10 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     AutofillMetrics::LogCardUploadEnabledMetric(
         AutofillMetrics::CardUploadEnabledMetric::AUTOFILL_UPSTREAM_DISABLED,
         sync_state);
-    AutofillInternalsLogging::Log("AUTOFILL_UPSTREAM_NOT_ENABLED");
+    if (log_manager) {
+      log_manager->Log() << LoggingScope::kContext
+                         << "AUTOFILL_UPSTREAM_NOT_ENABLED";
+    }
     return false;
   }
 
@@ -171,7 +203,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
 bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
                                   PrefService* pref_service,
                                   syncer::SyncService* sync_service,
-                                  bool is_test_mode) {
+                                  bool is_test_mode,
+                                  LogManager* log_manager) {
   // If |is_test_mode| is set, assume we are in a browsertest and
   // credit card upload should be enabled by default to fix flaky
   // local card migration browsertests.
@@ -179,7 +212,7 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
       !IsCreditCardUploadEnabled(
           pref_service, sync_service,
           personal_data_manager->GetAccountInfoForPaymentsServer().email,
-          personal_data_manager->GetSyncSigninState())) {
+          personal_data_manager->GetSyncSigninState(), log_manager)) {
     return false;
   }
 

@@ -6,9 +6,9 @@
 
 #include "base/no_destructor.h"
 #include "components/services/patch/public/cpp/manifest.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/cpp/manifest.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "services/identity/public/cpp/manifest.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"

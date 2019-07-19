@@ -240,7 +240,7 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
 
   void ClearHistory();
 
-  bool IsBeginMainFrameSentOrStarted() const;
+  bool IsBeginMainFrameSent() const;
 
  protected:
   // Virtual for testing.

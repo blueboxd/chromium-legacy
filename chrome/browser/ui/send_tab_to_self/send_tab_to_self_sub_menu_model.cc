@@ -137,15 +137,15 @@ void SendTabToSelfSubMenuModel::Build(Profile* profile) {
   DCHECK(service);
   SendTabToSelfModel* model = service->GetSendTabToSelfModel();
   DCHECK(model);
-  std::map<std::string, TargetDeviceInfo> map =
-      model->GetTargetDeviceNameToCacheInfoMap();
-  if (!map.empty()) {
+  std::vector<TargetDeviceInfo> devices =
+      model->GetTargetDeviceInfoSortedList();
+  if (!devices.empty()) {
     int index = 0;
-    for (const auto& item : map) {
+    for (const auto& item : devices) {
       if (index == kMaxDevicesShown) {
         return;
       }
-      BuildDeviceItem(item.first, item.second.cache_guid, index++);
+      BuildDeviceItem(item.device_name, item.cache_guid, index++);
     }
   }
   return;

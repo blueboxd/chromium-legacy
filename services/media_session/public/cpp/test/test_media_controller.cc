@@ -11,12 +11,9 @@ TestMediaControllerImageObserver::TestMediaControllerImageObserver(
     mojom::MediaControllerPtr& controller,
     int minimum_size_px,
     int desired_size_px) {
-  mojo::PendingRemote<mojom::MediaControllerImageObserver> remote;
-  receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
-
   controller->ObserveImages(mojom::MediaSessionImageType::kArtwork,
                             minimum_size_px, desired_size_px,
-                            std::move(remote));
+                            receiver_.BindNewPipeAndPassRemote());
   controller.FlushForTesting();
 }
 

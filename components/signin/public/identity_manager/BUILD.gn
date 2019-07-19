@@ -34,7 +34,6 @@ source_set("identity_manager") {
 
   public_deps = [
     "//base",
-    "//components/account_id",
     "//components/keyed_service/core",
     "//components/signin/public/base",
     "//components/signin/public/base:signin_buildflags",
@@ -53,6 +52,10 @@ source_set("identity_manager") {
 
   if (is_chromeos) {
     deps += [ "//components/user_manager" ]
+  }
+
+  if (is_ios) {
+    deps += [ "ios" ]
   }
 
   allow_circular_includes_from = [

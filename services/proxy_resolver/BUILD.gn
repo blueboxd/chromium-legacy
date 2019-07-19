@@ -11,8 +11,6 @@ source_set("lib") {
     "proxy_resolver_factory_impl.h",
     "proxy_resolver_impl.cc",
     "proxy_resolver_impl.h",
-    "proxy_resolver_service.cc",
-    "proxy_resolver_service.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -40,7 +38,6 @@ source_set("tests") {
     "mojo_proxy_resolver_v8_tracing_bindings_unittest.cc",
     "proxy_resolver_factory_impl_unittest.cc",
     "proxy_resolver_impl_unittest.cc",
-    "proxy_resolver_service_unittest.cc",
   ]
 
   deps = [

@@ -79,8 +79,6 @@ const char* SchedulerStateMachine::BeginMainFrameStateToString(
       return "BeginMainFrameState::IDLE";
     case BeginMainFrameState::SENT:
       return "BeginMainFrameState::SENT";
-    case BeginMainFrameState::STARTED:
-      return "BeginMainFrameState::STARTED";
     case BeginMainFrameState::READY_TO_COMMIT:
       return "BeginMainFrameState::READY_TO_COMMIT";
   }
@@ -719,8 +717,7 @@ bool SchedulerStateMachine::ShouldDeferInvalidatingForMainFrame() const {
     return true;
 
   // If the main frame was already sent, wait for the main thread to respond.
-  if (begin_main_frame_state_ == BeginMainFrameState::SENT ||
-      begin_main_frame_state_ == BeginMainFrameState::STARTED)
+  if (begin_main_frame_state_ == BeginMainFrameState::SENT)
     return true;
 
   // If the main thread committed during the last frame, i.e. it was not
@@ -1147,8 +1144,7 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   main_thread_missed_last_deadline_ =
       CommitPending() || has_pending_tree_ || active_tree_needs_first_draw_;
   main_thread_failed_to_respond_last_deadline_ =
-      begin_main_frame_state_ == BeginMainFrameState::SENT ||
-      begin_main_frame_state_ == BeginMainFrameState::STARTED;
+      begin_main_frame_state_ == BeginMainFrameState::SENT;
 
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.
@@ -1377,7 +1373,7 @@ void SchedulerStateMachine::SetNeedsOneBeginImplFrame() {
 }
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
-  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::STARTED)
+  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::SENT)
       << AsValue()->ToString();
   begin_main_frame_state_ = BeginMainFrameState::READY_TO_COMMIT;
   // In commit_to_active_tree mode, commit should happen right after BeginFrame,
@@ -1387,7 +1383,7 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
 }
 
 void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
-  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::STARTED);
+  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::SENT);
 
   // If the main thread aborted, it doesn't matter if the  main thread missed
   // the last deadline since it didn't have an update anyway.
@@ -1491,11 +1487,6 @@ void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {
   pending_submit_frames_ = 0;
   submit_frames_with_current_layer_tree_frame_sink_ = 0;
   main_thread_missed_last_deadline_ = false;
-}
-
-void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
-  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::SENT);
-  begin_main_frame_state_ = BeginMainFrameState::STARTED;
 }
 
 bool SchedulerStateMachine::HasInitializedLayerTreeFrameSink() const {

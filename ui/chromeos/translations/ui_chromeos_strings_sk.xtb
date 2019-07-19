@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Posúvač hľadania</translation>
 <translation id="1399648040768741453">Telugská klávesnica (fonetický prepis)</translation>
 <translation id="1430915738399379752">Tlačiť</translation>
+<translation id="1439494416798956626">Presunuté do priečinka: <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamská klávesnica (Telex)</translation>
 <translation id="1455548678241328678">nórska klávesnica</translation>
 <translation id="1464724975715666883">1 chyba.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Prehľadáva sa mediálne zariadenie...</translation>
 <translation id="3468522857997926824">Počet fotiek zálohovaných na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Prebieha kopírovanie...</translation>
+<translation id="3473378059788601120">Skopírované do priečinka: <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Tabuľka Google</translation>
 <translation id="3495304270784461826">Počet chýb: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Prepis (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5923484009666796948">Zadávanie japončiny (japonská klávesnica)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Udeľte aplikáciám pre systém Linux povolenie meniť súbory na Disku Google. Zmeny sa budú synchronizovať do vašich ďalších zariadení.</translation>
+<translation id="5955954492236143329">Počet položiek: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Usporiadať možnosti</translation>
 <translation id="6005282720244019462">latinskoamerická klávesnica</translation>
 <translation id="6007237601604674381">Presun zlyhal. <ph name="ERROR_MESSAGE" /></translation>

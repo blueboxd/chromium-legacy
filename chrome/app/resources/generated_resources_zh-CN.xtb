@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">更改密码</translation>
 <translation id="1090126737595388931">没有任何后台应用在运行</translation>
 <translation id="1090290614672149983">要将更改保存到原始文件吗？</translation>
-<translation id="1090918500949388876">当屏幕处于开启状态时，您可以随时访问自己的 Google 助理，只需说“Ok Google”即可</translation>
 <translation id="1091767800771861448">按 ESC 键可跳过更新（仅限非官方版本）。</translation>
 <translation id="1093457606523402488">可见网络：</translation>
 <translation id="1094607894174825014">有人使用无效偏移值在“<ph name="DEVICE_NAME" />”上请求了读取或写入操作。</translation>
@@ -539,7 +538,6 @@
 <translation id="1792619191750875668">扩展显示屏</translation>
 <translation id="1794791083288629568">发送反馈，以协助我们解决此问题。</translation>
 <translation id="1795214765651529549">使用经典主题背景</translation>
-<translation id="1797738254362176886">只需插入并轻触您的安全密钥，即可查看其中存储的登录数据。</translation>
 <translation id="1799071797295057738">扩展程序“<ph name="EXTENSION_NAME" />”已被自动停用。</translation>
 <translation id="1802687198411089702">该页面没有响应。您可以继续等待，也可以退出。</translation>
 <translation id="1802931390041703523">已禁止在此网页上运行 Flash</translation>
@@ -785,7 +783,6 @@
 <translation id="2177950615300672361">隐身标签页：<ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的“<ph name="PEPPER_PLUGIN_NAME" />”想访问您的计算机</translation>
 <translation id="2178614541317717477">CA 泄漏</translation>
-<translation id="2179849162388791084">未能从您的安全密钥中获取登录数据。</translation>
 <translation id="218070003709087997">用数字表示要打印多少份（1 到 999 份）。</translation>
 <translation id="2184515124301515068">让 Chrome 选择何时允许网站播放声音（推荐）</translation>
 <translation id="2187895286714876935">服务器证书导入错误</translation>
@@ -1371,7 +1368,6 @@
 <translation id="3022978424994383087">无法解析您所说的内容。</translation>
 <translation id="3023464535986383522">随选朗读</translation>
 <translation id="3024374909719388945">使用24小时制</translation>
-<translation id="30256218463955326">基座不兼容</translation>
 <translation id="3031417829280473749">女特工</translation>
 <translation id="3031557471081358569">选择要导入的内容：</translation>
 <translation id="3031601332414921114">继续打印</translation>
@@ -1559,7 +1555,6 @@
 <translation id="3348038390189153836">检测到可移除的设备</translation>
 <translation id="3349933790966648062">内存占用空间</translation>
 <translation id="3350117557200012647">进入配对模式</translation>
-<translation id="3350263973613584174">此安全密钥未存储任何登录数据。</translation>
 <translation id="3355936511340229503">连接出错</translation>
 <translation id="3356580349448036450">已完成</translation>
 <translation id="3359256513598016054">证书政策约束</translation>
@@ -1939,7 +1934,6 @@
 <translation id="3878840326289104869">正在创建受监管用户</translation>
 <translation id="3879748587602334249">下载管理器</translation>
 <translation id="3888550877729210209">使用“<ph name="LOCK_SCREEN_APP_NAME" />”创建记事</translation>
-<translation id="388900914234409233">要为此 Chromebook 充电，请使用兼容的 OEM 电池。</translation>
 <translation id="3892414795099177503">添加 OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">读取和更改您的无障碍设置</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
@@ -2129,7 +2123,6 @@
 <translation id="4147911968024186208">请重试。如果系统仍提示此错误，请与您的支持代表联系。</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">显示</translation>
-<translation id="4150234330364554482">请改用与此 Chromebook 兼容的 OEM 基座。</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 个标签页}other{# 个标签页}}</translation>
 <translation id="4154664944169082762">指纹</translation>
 <translation id="4157869833395312646">Microsoft 服务器网关加密</translation>
@@ -2276,7 +2269,6 @@
 <translation id="4412698727486357573">帮助中心</translation>
 <translation id="44141919652824029">允许“<ph name="APP_NAME" />”获取您所连接的 USB 设备的列表？</translation>
 <translation id="4414232939543644979">打开新的无痕窗口(&amp;I)</translation>
-<translation id="4414386768539506503">请输入安全密钥的 PIN 码以查看其中存储的登录数据。如果您不知道 PIN 码，则需要重置此安全密钥。</translation>
 <translation id="4415245286584082850">找不到设备。请在新的标签页中打开帮助中心文章。</translation>
 <translation id="4415276339145661267">管理您的 Google 帐号</translation>
 <translation id="4415748029120993980">SECG 椭圆曲线 secp384r1（又称 NIST P-384）</translation>
@@ -2378,7 +2370,6 @@
 <translation id="457386861538956877">更多...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">配对蓝牙设备</translation>
-<translation id="4578012756826807359">已成功删除您的登录数据。</translation>
 <translation id="4579581181964204535">无法投射 <ph name="HOST_NAME" />。</translation>
 <translation id="4581774856936278355">恢复 Linux 容器时出错</translation>
 <translation id="4582563038311694664">重置所有设置</translation>
@@ -2690,7 +2681,6 @@
 <translation id="5072836811783999860">显示托管书签</translation>
 <translation id="5074318175948309511">您可能需要重新加载此页面，才能使新设置生效。</translation>
 <translation id="5075131525758602494">输入 SIM 卡 PIN 码</translation>
-<translation id="507514548843781244">查看和清空您的安全密钥中存储的登录数据</translation>
 <translation id="5078638979202084724">为所有标签页添加书签</translation>
 <translation id="5078796286268621944">PIN 不正确</translation>
 <translation id="5079950360618752063">使用建议的密码</translation>
@@ -2961,7 +2951,6 @@
 <translation id="5496587651328244253">整理</translation>
 <translation id="549673810209994709">无法翻译此网页内容。</translation>
 <translation id="5499313591153584299">此文件可能对您的计算机有害。</translation>
-<translation id="5500345327355928305">为避免遇到充电/性能方面的问题，请使用兼容的 OEM 或 USB C 型电源适配器。</translation>
 <translation id="5502500733115278303">从 Firefox 导入</translation>
 <translation id="5507756662695126555">不可否认</translation>
 <translation id="5509693895992845810">存储为(&amp;A)...</translation>
@@ -2988,7 +2977,6 @@
 <translation id="5534304873398226603">舍弃照片或视频</translation>
 <translation id="5535941515421698170">一并从这台设备中移除您的现有数据</translation>
 <translation id="5539221284352502426">您输入的密码被服务器拒绝了。可能的原因包括：此密码太短。此密码必须包含数字或符号，且必须不同于旧密码。</translation>
-<translation id="5541687815721799001">使用应用</translation>
 <translation id="5542132724887566711">个人资料</translation>
 <translation id="5542750926112347543">已拦截来自 <ph name="DOMAIN" /> 的 Cookie</translation>
 <translation id="5543983818738093899">正在检查状态…</translation>
@@ -3387,7 +3375,6 @@
 <translation id="6122081475643980456">您的互联网连接受到控制</translation>
 <translation id="6122095009389448667">继续禁止此网站查看剪贴板</translation>
 <translation id="6122875415561139701">禁止在“<ph name="DEVICE_NAME" />”上执行写入操作。</translation>
-<translation id="6123292156101652890">此安全密钥无法存储任何登录数据。</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
 <translation id="6124698108608891449">此网站需要更多权限。</translation>
 <translation id="6125479973208104919">抱歉，您需要再次向此 <ph name="DEVICE_TYPE" /> 添加您的帐号。</translation>
@@ -4057,7 +4044,6 @@
 <translation id="7143092389027215216">正在启动演示模式</translation>
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7144878232160441200">重试</translation>
-<translation id="714687768418476028">您尚未设置 PIN 码来保护您的安全密钥。要管理登录数据，请先创建 PIN 码。</translation>
 <translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="715118844758971915">传统打印机</translation>
 <translation id="7152478047064750137">此扩展程序无需任何特殊权限</translation>
@@ -4920,7 +4906,6 @@
 <translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8439506636278576865">询问是否翻译此语言的网页</translation>
 <translation id="8440630305826533614">Linux 应用</translation>
-<translation id="844241640324986723">未能删除您的登录数据。</translation>
 <translation id="8443338615972234259">请立即为您的受监管用户创建一个新帐号。</translation>
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8447409163267621480">必须以 Ctrl 键或 Alt 键开头</translation>

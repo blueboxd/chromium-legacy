@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/services/patch/patch_service.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/patch/patch_impl.h"

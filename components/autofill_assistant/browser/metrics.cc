@@ -19,6 +19,8 @@ const char kPaymentRequestAutofillInfoChangedName[] =
 // static
 void Metrics::RecordDropOut(DropOutReason reason) {
   DCHECK_LE(reason, DropOutReason::kMaxValue);
+  DVLOG_IF(3, reason != DropOutReason::AA_START)
+      << "Drop out with reason: " << reason;
   base::UmaHistogramEnumeration(kDropOutEnumName, reason);
 }
 

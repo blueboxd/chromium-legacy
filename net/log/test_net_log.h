@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
-#include "net/log/test_net_log_entry.h"
 
 namespace net {
 
@@ -37,15 +36,18 @@ class TestNetLog : public NetLog, public NetLog::ThreadSafeObserver {
   void OnAddEntry(const NetLogEntry& entry) override;
 
   // Returns the list of all observed NetLog entries.
-  void GetEntries(TestNetLogEntry::List* entry_list) const;
+  std::vector<NetLogEntry> GetEntries() const;
 
-  // Fills |entry_list| with all entries in the log from the specified Source.
-  void GetEntriesForSource(NetLogSource source,
-                           TestNetLogEntry::List* entry_list) const;
+  // Returns all entries in the log from the specified Source.
+  std::vector<NetLogEntry> GetEntriesForSource(NetLogSource source) const;
+
+  // Returns all captured entries with the specified type.
+  std::vector<NetLogEntry> GetEntriesWithType(NetLogEventType type) const;
 
   // Returns the number of entries in the log.
   size_t GetSize() const;
 
+  // Clears the captured entry list.
   void Clear();
 
   // Returns the NetLog observer responsible for recording the NetLog event
@@ -55,7 +57,7 @@ class TestNetLog : public NetLog, public NetLog::ThreadSafeObserver {
 
  private:
   mutable base::Lock lock_;
-  TestNetLogEntry::List entry_list_;
+  std::vector<NetLogEntry> entry_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetLog);
 };
@@ -73,12 +75,14 @@ class BoundTestNetLog {
   // The returned NetLogWithSource is only valid while |this| is alive.
   NetLogWithSource bound() const { return net_log_; }
 
-  // Fills |entry_list| with all entries in the log.
-  void GetEntries(TestNetLogEntry::List* entry_list) const;
+  // Returns all captured entries.
+  std::vector<NetLogEntry> GetEntries() const;
 
-  // Fills |entry_list| with all entries in the log from the specified Source.
-  void GetEntriesForSource(NetLogSource source,
-                           TestNetLogEntry::List* entry_list) const;
+  // Returns all captured entries for the specified Source.
+  std::vector<NetLogEntry> GetEntriesForSource(NetLogSource source) const;
+
+  // Returns all captured entries with the specified type.
+  std::vector<NetLogEntry> GetEntriesWithType(NetLogEventType type) const;
 
   // Returns number of entries in the log.
   size_t GetSize() const;

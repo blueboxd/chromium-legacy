@@ -65,7 +65,7 @@ class DocAtomicGroupsWriter(doc_writer.DocWriter):
     self._AddPolicyRow(self._summary_tbody, policy)
 
   def BeginTemplate(self):
-    self._BeginTemplate('group_intro')
+    self._BeginTemplate('group_intro', 'banner')
 
   def WriteTemplate(self, template):
     '''Writes the given template definition.

@@ -74,7 +74,7 @@ void SingleThreadProxy::Start() {
   host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
   if (settings.single_thread_proxy_scheduler && !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
-    scheduler_settings.commit_to_active_tree = CommitToActiveTree();
+    scheduler_settings.commit_to_active_tree = true;
 
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
         new CompositorTimingHistory(
@@ -99,12 +99,6 @@ SingleThreadProxy::~SingleThreadProxy() {
 bool SingleThreadProxy::IsStarted() const {
   DCHECK(task_runner_provider_->IsMainThread());
   return !!host_impl_;
-}
-
-bool SingleThreadProxy::CommitToActiveTree() const {
-  // With SingleThreadProxy we skip the pending tree and commit directly to the
-  // active tree.
-  return true;
 }
 
 void SingleThreadProxy::SetVisible(bool visible) {

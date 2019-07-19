@@ -85,6 +85,12 @@ class AppServiceProxyImplTest : public testing::Test {
 };
 
 TEST_F(AppServiceProxyImplTest, IconCache) {
+  // This is mostly a sanity check. For an isolated, comprehensive unit test of
+  // the IconCache code, see icon_cache_unittest.cc.
+  //
+  // This tests an AppServiceProxyImpl as a 'black box', which uses an
+  // IconCache but also other IconLoader filters, such as an IconCoalescer.
+
   apps::AppServiceProxyImpl proxy(nullptr);
   FakeIconLoader fake;
   OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
@@ -124,5 +130,55 @@ TEST_F(AppServiceProxyImplTest, IconCache) {
   EXPECT_EQ(3, NumOuterFinishedCallbacks());
 }
 
-// TODO(crbug.com/826982): test coalescing multiple in-flight calls with the
-// same IconLoader::Key.
+TEST_F(AppServiceProxyImplTest, IconCoalescer) {
+  // This is mostly a sanity check. For an isolated, comprehensive unit test of
+  // the IconCoalescer code, see icon_coalescer_unittest.cc.
+  //
+  // This tests an AppServiceProxyImpl as a 'black box', which uses an
+  // IconCoalescer but also other IconLoader filters, such as an IconCache.
+
+  apps::AppServiceProxyImpl proxy(nullptr);
+  FakeIconLoader fake;
+  OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
+
+  // Issue 4 LoadIcon requests, 2 after de-duplication.
+  UniqueReleaser a0 = LoadIcon(&proxy, "avocet");
+  UniqueReleaser a1 = LoadIcon(&proxy, "avocet");
+  UniqueReleaser b2 = LoadIcon(&proxy, "brolga");
+  UniqueReleaser a3 = LoadIcon(&proxy, "avocet");
+  EXPECT_EQ(2, fake.NumPendingCallbacks());
+  EXPECT_EQ(0, fake.NumInnerFinishedCallbacks());
+  EXPECT_EQ(0, NumOuterFinishedCallbacks());
+
+  // Resolve their responses.
+  fake.FlushPendingCallbacks();
+  EXPECT_EQ(0, fake.NumPendingCallbacks());
+  EXPECT_EQ(2, fake.NumInnerFinishedCallbacks());
+  EXPECT_EQ(4, NumOuterFinishedCallbacks());
+
+  // Issue another request, that triggers neither IconCache nor IconCoalescer.
+  UniqueReleaser c4 = LoadIcon(&proxy, "curlew");
+  EXPECT_EQ(1, fake.NumPendingCallbacks());
+  EXPECT_EQ(2, fake.NumInnerFinishedCallbacks());
+  EXPECT_EQ(4, NumOuterFinishedCallbacks());
+
+  // Destroying the IconLoader::Releaser shouldn't affect the fact that there's
+  // an in-flight "curlew" request to the FakeIconLoader.
+  c4.reset();
+  EXPECT_EQ(1, fake.NumPendingCallbacks());
+  EXPECT_EQ(2, fake.NumInnerFinishedCallbacks());
+  EXPECT_EQ(4, NumOuterFinishedCallbacks());
+
+  // Issuing another "curlew" request should coalesce with the in-flight one.
+  UniqueReleaser c5 = LoadIcon(&proxy, "curlew");
+  EXPECT_EQ(1, fake.NumPendingCallbacks());
+  EXPECT_EQ(2, fake.NumInnerFinishedCallbacks());
+  EXPECT_EQ(4, NumOuterFinishedCallbacks());
+
+  // Resolving the in-flight request to the inner IconLoader, |fake|, should
+  // resolve the two coalesced requests to the outer IconLoader, |proxy|.
+  fake.FlushPendingCallbacks();
+  EXPECT_EQ(0, fake.NumPendingCallbacks());
+  EXPECT_EQ(3, fake.NumInnerFinishedCallbacks());
+  EXPECT_EQ(6, NumOuterFinishedCallbacks());
+}

@@ -40,11 +40,9 @@ class UiController {
   // Report that the bubble / tooltip message has changed.
   virtual void OnBubbleMessageChanged(const std::string& message);
 
-  // Autofill Assistant is about to be shut down for this tab.
-  //
-  // Pointer to UIDelegate will become invalid as soon as this method has
-  // returned.
-  virtual void WillShutdown(Metrics::DropOutReason reason);
+  // If the current chrome activity is a custom tab activity, close it.
+  // Otherwise, do nothing.
+  virtual void CloseCustomTab();
 
   // Report that the set of user actions has changed.
   virtual void OnUserActionsChanged(

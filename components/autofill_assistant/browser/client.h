@@ -23,10 +23,13 @@ class Client {
  public:
   virtual ~Client() = default;
 
-  // Show the UI, creates one if necessary.
-  virtual void ShowUI() = 0;
+  // Attaches the controller to the UI.
+  //
+  // This method does whatever is necessary to guarantee that, at the end of the
+  // call, there is a Controller associated with a UI.
+  virtual void AttachUI() = 0;
 
-  // Destroys the UI, but keep the controller, if any exists.
+  // Destroys the UI immediately.
   virtual void DestroyUI() = 0;
 
   // Returns the API key to be used for requests to the backend.

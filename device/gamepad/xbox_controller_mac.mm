@@ -764,7 +764,8 @@ void XboxControllerMac::QueueRead() {
 }
 
 void XboxControllerMac::IOError() {
-  if (delegate_)
+  // Ignore errors that occur while the controller is being shut down.
+  if (delegate_ && !IsShuttingDown())
     delegate_->XboxControllerError(this);
 }
 

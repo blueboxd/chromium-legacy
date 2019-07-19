@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Storan tapak</translation>
 <translation id="2328985652426384049">Tidak dapat log masuk</translation>
 <translation id="2349710944427398404">Jumlah data yang digunakan oleh Chrome, termasuk akaun, penanda halaman dan tetapan yang disimpan</translation>
-<translation id="2351097562818989364">Tetapan terjemahan anda telah ditetapkan semula.</translation>
 <translation id="2353636109065292463">Memeriksa sambungan Internet anda</translation>
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2369533728426058518">tab terbuka</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> saat lagi</translation>
 <translation id="2779651927720337254">gagal</translation>
 <translation id="2781151931089541271">1 saat lagi</translation>
+<translation id="2796941233371040292">Tiada data storan di sini</translation>
 <translation id="2801022321632964776">Kemas kini untuk mendapatkan bahasa anda dalam versi terkini Chrome</translation>
 <translation id="2810645512293415242">Halaman diringkaskan untuk menjimatkan data dan memuatkan dengan lebih cepat.</translation>
 <translation id="281504910091592009">Lihat dan urus kata laluan yang disimpan dalam <ph name="BEGIN_LINK" />Akaun Google<ph name="END_LINK" /> anda</translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Perihal Chrome</translation>
 <translation id="2891154217021530873">Hentikan pemuatan halaman</translation>
 <translation id="2893180576842394309">Google boleh menggunakan sejarah anda untuk memperibadikan Carian dan perkhidmatan Google yang lain</translation>
+<translation id="2898264748040935573">Edit kata laluan yang disimpan</translation>
 <translation id="2900528713135656174">Buat acara</translation>
 <translation id="2902702728133930130">Chrome gagal semasa permulaan dengan ralat yang tidak dijangka.</translation>
 <translation id="290376772003165898">Halaman bukan dalam <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4913169188695071480">Berhenti memuat semula</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /> semasa mengimbas peranti…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Halaman}other{# Halaman}}</translation>
+<translation id="4932247056774066048">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="DOMAIN_NAME" />, data Chrome anda akan dipadamkan daripada peranti ini. Data tersebut akan kekal dalam Akaun Google anda.</translation>
 <translation id="4943703118917034429">Realiti Maya</translation>
 <translation id="4943872375798546930">Tiada hasil carian</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> berkongsi skrin anda</translation>
@@ -562,6 +564,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5210286577605176222">Lompat ke halaman sebelumnya</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5224771365102442243">Dengan video</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> mahu mengimbas untuk mengesan peranti Bluetooth berdekatan. Peranti berikut telah dijumpai:</translation>
 <translation id="5233638681132016545">Tab baharu</translation>
 <translation id="526421993248218238">Tidak dapat memuatkan halaman ini</translation>
 <translation id="5271967389191913893">Peranti tidak dapat membuka kandungan yang hendak dimuat turun.</translation>
@@ -571,7 +574,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5301954838959518834">OK, faham</translation>
 <translation id="5304593522240415983">Medan ini tidak boleh kosong</translation>
 <translation id="5308380583665731573">Sambung</translation>
-<translation id="5308603654685598744">Apabila ciri ini dihidupkan, Chrome akan menawarkan untuk menterjemahkan halaman yang ditulis dalam bahasa lain dengan menggunakan Google Terjemah.</translation>
 <translation id="5313967007315987356">Tambahkan tapak</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5324858694974489420">Tetapan Ibu Bapa</translation>
@@ -586,6 +588,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5414836363063783498">Mengesahkan…</translation>
 <translation id="5423934151118863508">Halaman yang paling kerap anda kunjungi akan muncul di sini</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tersedia</translation>
+<translation id="543338862236136125">Edit kata laluan</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="543509235395288790">Memuat turun <ph name="COUNT" /> fail (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Lompat ke bar alamat</translation>
@@ -660,7 +663,6 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5865733239029070421">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google</translation>
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
 <translation id="5902828464777634901">Semua data setempat yang disimpan oleh tapak web ini, termasuk kuki, akan dipadamkan.</translation>
-<translation id="5911030830365207728">Google Terjemah</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5919204609460789179">Kemas kini <ph name="PRODUCT_NAME" /> untuk memulakan penyegerakan</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> disimpan</translation>
@@ -805,7 +807,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6963642900430330478">Halaman ini berbahaya. Maklumat tapak</translation>
 <translation id="6963766334940102469">Padamkan penanda halaman</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Tetapkan semula tetapan terjemahan</translation>
 <translation id="6979737339423435258">Sepanjang masa</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
 <translation id="6989267951144302301">Tidak dapat memuat turun</translation>

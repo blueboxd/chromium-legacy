@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Úložiště webů</translation>
 <translation id="2328985652426384049">Přihlášení se nezdařilo</translation>
 <translation id="2349710944427398404">Celkové množství dat využívané prohlížečem Chrome, včetně účtů, záložek a uložených nastavení</translation>
-<translation id="2351097562818989364">Nastavení překladů bylo resetováno.</translation>
 <translation id="2353636109065292463">Kontrola připojení k internetu</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
 <translation id="2369533728426058518">otevřené karty</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Zbývá: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">nezdařilo se</translation>
 <translation id="2781151931089541271">Zbývá: 1 s</translation>
+<translation id="2796941233371040292">Žádná data tady uložená nejsou</translation>
 <translation id="2801022321632964776">Chcete-li si obsah prohlížet ve svém jazyce, aktualizujte na nejnovější verzi Chromu</translation>
 <translation id="2810645512293415242">Stránka byla zjednodušena s cílem ušetřit data a zrychlit načtení.</translation>
 <translation id="281504910091592009">Zobrazit a spravovat uložená hesla v <ph name="BEGIN_LINK" />účtu Google<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">O aplikaci Chrome</translation>
 <translation id="2891154217021530873">Zastavit načítání stránky</translation>
 <translation id="2893180576842394309">Google vaši historii může používat k personalizaci Vyhledávání a dalších služeb Google</translation>
+<translation id="2898264748040935573">Upravit uložené heslo</translation>
 <translation id="2900528713135656174">Vytvořit událost</translation>
 <translation id="2902702728133930130">Spuštění Chromu se nezdařilo kvůli neočekávané chybě.</translation>
 <translation id="290376772003165898">Stránka není v jazyce <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4913169188695071480">Zastavit obnovování</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Nápověda<ph name="END_LINK" /> k vyhledávání zařízení…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stránka}few{# stránky}many{# stránky}other{# stránek}}</translation>
+<translation id="4932247056774066048">Protože se odhlašujete z účtu spravovaného doménou <ph name="DOMAIN_NAME" />, vaše data prohlížeče Chrome z tohoto zařízení budou smazána. Ve vašem účtu Google zůstanou.</translation>
 <translation id="4943703118917034429">Virtuální realita</translation>
 <translation id="4943872375798546930">Žádné výsledky</translation>
 <translation id="4958708863221495346">Stránka <ph name="URL_OF_THE_CURRENT_TAB" /> sdílí vaši obrazovku</translation>
@@ -562,6 +564,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5210286577605176222">Přejít na předchozí kartu</translation>
 <translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="5224771365102442243">S videem</translation>
+<translation id="5230560987958996918">Web <ph name="SITE" /> chce vyhledat zařízení Bluetooth v okolí. Byla nalezena následující zařízení:</translation>
 <translation id="5233638681132016545">Nová karta</translation>
 <translation id="526421993248218238">Stránku nelze načíst</translation>
 <translation id="5271967389191913893">Zařízení obsah ke stažení nemůže otevřít.</translation>
@@ -571,7 +574,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5301954838959518834">Dobře, rozumím</translation>
 <translation id="5304593522240415983">Toto pole nesmí být prázdné</translation>
 <translation id="5308380583665731573">Připojení</translation>
-<translation id="5308603654685598744">Pokud je tato funkce zapnutá, bude Chrome nabízet překlad stránek v jiných jazycích pomocí Překladače Google.</translation>
 <translation id="5313967007315987356">Přidat web</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5324858694974489420">Rodičovská nastavení</translation>
@@ -586,6 +588,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5414836363063783498">Ověřování…</translation>
 <translation id="5423934151118863508">Zde se zobrazí vaše nejnavštěvovanější stránky.</translation>
 <translation id="5424588387303617268">K dispozici: <ph name="GIGABYTES" /> GB</translation>
+<translation id="543338862236136125">Upravit heslo</translation>
 <translation id="5433691172869980887">Uživatelské jméno bylo zkopírováno</translation>
 <translation id="543509235395288790">Stahování <ph name="COUNT" /> souborů (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Přejít na adresní řádek</translation>
@@ -660,7 +663,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5865733239029070421">Automaticky odesílá statistiky využití a zprávy o selhání do Googlu</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
 <translation id="5902828464777634901">Všechna místní data uložená tímto webem, včetně souborů cookie, budou smazána.</translation>
-<translation id="5911030830365207728">Překladač Google</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
 <translation id="5919204609460789179">Chcete-li zahájit synchronizaci, aktualizujte aplikaci <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696">Uspořeno: <ph name="AMOUNT" /></translation>
@@ -805,7 +807,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6963642900430330478">Tato stránka je nebezpečná. Informace o webu</translation>
 <translation id="6963766334940102469">Smazat záložky</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Obnovit nastavení překladače</translation>
 <translation id="6979737339423435258">Od počátku věků</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="6989267951144302301">Stažení se nezdařilo</translation>

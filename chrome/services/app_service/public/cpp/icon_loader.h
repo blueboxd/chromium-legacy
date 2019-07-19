@@ -62,7 +62,8 @@ class IconLoader {
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback) = 0;
 
-  // Convenience method that calls LoadIconFromIconKey(GetIconKey(app_id), etc).
+  // Convenience method that calls "LoadIconFromIconKey(app_type, app_id,
+  // GetIconKey(app_id), etc)".
   std::unique_ptr<Releaser> LoadIcon(
       apps::mojom::AppType app_type,
       const std::string& app_id,

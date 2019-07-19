@@ -37,6 +37,7 @@ ShouldUpdateDownloadDBResult ShouldUpdateDownloadDB(
     previous_info = previous->download_info->in_progress_info;
   base::FilePath previous_path =
       previous_info ? previous_info->current_path : base::FilePath();
+  bool previous_paused = previous_info ? previous_info->paused : false;
 
   base::Optional<InProgressInfo> current_info;
   if (current.download_info)
@@ -45,10 +46,12 @@ ShouldUpdateDownloadDBResult ShouldUpdateDownloadDB(
   base::FilePath current_path =
       current_info ? current_info->current_path : base::FilePath();
 
+  bool paused = current_info ? current_info->paused : false;
+
   // When download path is determined, Chrome should commit the history
   // immediately. Otherwise the file will be left permanently on the external
   // storage if Chrome crashes right away.
-  if (current_path != previous_path)
+  if (current_path != previous_path || paused != previous_paused)
     return ShouldUpdateDownloadDBResult::UPDATE_IMMEDIATELY;
 
   if (previous.value() == current)

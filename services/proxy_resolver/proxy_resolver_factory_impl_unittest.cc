@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -19,7 +21,6 @@
 #include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -100,36 +101,31 @@ class TestProxyResolverFactory : public net::ProxyResolverV8TracingFactory {
 
 class TestProxyResolverFactoryImpl : public ProxyResolverFactoryImpl {
  public:
-  explicit TestProxyResolverFactoryImpl(
-      std::unique_ptr<net::ProxyResolverV8TracingFactory>
-          proxy_resolver_factory)
-      : ProxyResolverFactoryImpl(std::move(proxy_resolver_factory)) {}
+  TestProxyResolverFactoryImpl(
+      mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver,
+      std::unique_ptr<net::ProxyResolverV8TracingFactory> factory)
+      : ProxyResolverFactoryImpl(std::move(receiver), std::move(factory)) {}
 };
 
 }  // namespace
 
 class ProxyResolverFactoryImplTest
     : public testing::Test,
-      public mojom::ProxyResolverFactoryRequestClient,
-      public service_manager::ServiceKeepalive::Observer {
+      public mojom::ProxyResolverFactoryRequestClient {
  public:
-  ProxyResolverFactoryImplTest()
-      : service_keepalive_(
-            static_cast<service_manager::ServiceBinding*>(nullptr),
-            base::TimeDelta()) {
-    service_keepalive_.AddObserver(this);
+  ProxyResolverFactoryImplTest() {
     std::unique_ptr<TestProxyResolverFactory> test_factory =
         std::make_unique<TestProxyResolverFactory>(&waiter_);
     mock_factory_ = test_factory.get();
-    mock_factory_impl_ =
-        std::make_unique<TestProxyResolverFactoryImpl>(std::move(test_factory));
-    mock_factory_impl_->BindReceiver(factory_.BindNewPipeAndPassReceiver(),
-                                     &service_keepalive_);
+    mock_factory_impl_ = std::make_unique<TestProxyResolverFactoryImpl>(
+        factory_.BindNewPipeAndPassReceiver(), std::move(test_factory));
+    factory_.set_idle_handler(
+        base::TimeDelta(),
+        base::BindRepeating(&ProxyResolverFactoryImplTest::OnFactoryIdle,
+                            base::Unretained(this)));
   }
 
-  ~ProxyResolverFactoryImplTest() override {
-    service_keepalive_.RemoveObserver(this);
-  }
+  ~ProxyResolverFactoryImplTest() override = default;
 
   void OnDisconnect() { waiter_.NotifyEvent(CONNECTION_ERROR); }
 
@@ -151,24 +147,14 @@ class ProxyResolverFactoryImplTest
       net::ProxyResolveDnsOperation operation,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {}
 
-  void WaitForNoServiceRefs() {
-    DCHECK(!service_keepalive_ref_run_loop_);
-
-    if (service_keepalive_.HasNoRefs())
-      return;
-
-    service_keepalive_ref_run_loop_ = std::make_unique<base::RunLoop>();
-    service_keepalive_ref_run_loop_->Run();
-    service_keepalive_ref_run_loop_.reset();
-
-    EXPECT_TRUE(service_keepalive_.HasNoRefs());
+  void set_idle_callback(base::OnceClosure callback) {
+    idle_callback_ = std::move(callback);
   }
 
  protected:
-  // service_manager::ServiceKeepalive::Observer:
-  void OnIdleTimeout() override {
-    if (service_keepalive_ref_run_loop_)
-      service_keepalive_ref_run_loop_->Quit();
+  void OnFactoryIdle() {
+    if (idle_callback_)
+      std::move(idle_callback_).Run();
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -176,11 +162,10 @@ class ProxyResolverFactoryImplTest
   TestProxyResolverFactory* mock_factory_;
   mojo::Remote<mojom::ProxyResolverFactory> factory_;
 
-  service_manager::ServiceKeepalive service_keepalive_;
-  std::unique_ptr<base::RunLoop> service_keepalive_ref_run_loop_;
-
   int instances_destroyed_ = 0;
   net::CompletionOnceCallback create_callback_;
+
+  base::OnceClosure idle_callback_;
 
   net::EventWaiter<Event> waiter_;
 };
@@ -207,18 +192,15 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
           base::Unretained(this)));
   std::move(mock_factory_->pending_request()->callback).Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+
+  base::RunLoop wait_for_idle_loop;
+  set_idle_callback(wait_for_idle_loop.QuitClosure());
 
   proxy_resolver.reset();
   waiter_.WaitForEvent(RESOLVER_DESTROYED);
   EXPECT_EQ(1, instances_destroyed_);
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
 
-  task_environment_.RunUntilIdle();
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
-
-  factory_.reset();
-  WaitForNoServiceRefs();
+  wait_for_idle_loop.Run();
 }
 
 // Same as above, but disconnect the factory right after the CreateResolver
@@ -231,7 +213,7 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverFactory) {
   factory_->CreateResolver(kScriptData,
                            proxy_resolver.BindNewPipeAndPassReceiver(),
                            std::move(client));
-  factory_.reset();
+
   proxy_resolver.set_disconnect_handler(base::BindOnce(
       &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
@@ -246,16 +228,15 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverFactory) {
           base::Unretained(this)));
   std::move(mock_factory_->pending_request()->callback).Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
 
-  task_environment_.RunUntilIdle();
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
+  base::RunLoop wait_for_idle_loop;
+  set_idle_callback(wait_for_idle_loop.QuitClosure());
 
   proxy_resolver.reset();
   waiter_.WaitForEvent(RESOLVER_DESTROYED);
   EXPECT_EQ(1, instances_destroyed_);
 
-  WaitForNoServiceRefs();
+  wait_for_idle_loop.Run();
 }
 
 TEST_F(ProxyResolverFactoryImplTest, Error) {
@@ -266,7 +247,6 @@ TEST_F(ProxyResolverFactoryImplTest, Error) {
   factory_->CreateResolver(kScriptData,
                            proxy_resolver.BindNewPipeAndPassReceiver(),
                            std::move(client));
-  factory_.reset();
   proxy_resolver.set_disconnect_handler(base::BindOnce(
       &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
@@ -289,7 +269,6 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectClientDuringResolverCreation) {
   factory_->CreateResolver(kScriptData,
                            proxy_resolver.BindNewPipeAndPassReceiver(),
                            std::move(client));
-  factory_.reset();
   proxy_resolver.set_disconnect_handler(base::BindOnce(
       &ProxyResolverFactoryImplTest::OnDisconnect, base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
@@ -297,36 +276,6 @@ TEST_F(ProxyResolverFactoryImplTest, DisconnectClientDuringResolverCreation) {
   ASSERT_EQ(1u, mock_factory_->requests_handled());
   client_receiver.reset();
   waiter_.WaitForEvent(CONNECTION_ERROR);
-}
-
-TEST_F(ProxyResolverFactoryImplTest, MultipleFactories) {
-  // Creating |factory_| should have resulted in an outstanding service
-  // reference.
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
-
-  // Creating another shouldn't change that.
-  mojo::Remote<mojom::ProxyResolverFactory> factory2;
-  mock_factory_impl_->BindReceiver(factory2.BindNewPipeAndPassReceiver(),
-                                   &service_keepalive_);
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
-
-  // Destroying one factory while keeping the other around should not release
-  // the reference.
-  factory_.reset();
-  task_environment_.RunUntilIdle();
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
-
-  // Destroying the second factory should release the reference.
-  factory2.reset();
-  WaitForNoServiceRefs();
-
-  // Test that creating and then destroying a new factory gets and releases a
-  // reference again.
-  mock_factory_impl_->BindReceiver(factory2.BindNewPipeAndPassReceiver(),
-                                   &service_keepalive_);
-  EXPECT_FALSE(service_keepalive_.HasNoRefs());
-  factory2.reset();
-  WaitForNoServiceRefs();
 }
 
 }  // namespace proxy_resolver

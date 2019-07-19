@@ -143,23 +143,18 @@ TEST_F(SessionCleanupCookieStoreTest, TestNetLogIncludeCookies) {
       }));
   DestroyStore();
 
-  net::TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   size_t pos = net::ExpectLogContainsSomewhere(
       entries, 0, net::NetLogEventType::COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED,
       net::NetLogEventPhase::NONE);
-  std::string cookie_origin;
-  bool cookie_is_https = true;
-  EXPECT_TRUE(entries[pos].GetStringValue("origin", &cookie_origin));
-  EXPECT_TRUE(entries[pos].GetBooleanValue("is_https", &cookie_is_https));
-  EXPECT_EQ("nonpersistent.com", cookie_origin);
-  EXPECT_EQ(false, cookie_is_https);
+  EXPECT_EQ("nonpersistent.com",
+            net::GetStringValueFromParams(entries[pos], "origin"));
+  EXPECT_FALSE(net::GetBooleanValueFromParams(entries[pos], "is_https"));
   pos = net::ExpectLogContainsSomewhere(
       entries, pos, net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
       net::NetLogEventPhase::NONE);
-  std::string event_type;
-  EXPECT_TRUE(entries[pos].GetStringValue("type", &event_type));
-  EXPECT_EQ("SessionCleanupCookieStore", event_type);
+  EXPECT_EQ("SessionCleanupCookieStore",
+            net::GetStringValueFromParams(entries[pos], "type"));
 }
 
 TEST_F(SessionCleanupCookieStoreTest, TestNetLogDoNotIncludeCookies) {
@@ -175,21 +170,18 @@ TEST_F(SessionCleanupCookieStoreTest, TestNetLogDoNotIncludeCookies) {
       }));
   DestroyStore();
 
-  net::TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   size_t pos = net::ExpectLogContainsSomewhere(
       entries, 0, net::NetLogEventType::COOKIE_PERSISTENT_STORE_ORIGIN_FILTERED,
       net::NetLogEventPhase::NONE);
-  std::string cookie_origin;
-  bool cookie_is_https = true;
-  EXPECT_FALSE(entries[pos].GetStringValue("origin", &cookie_origin));
-  EXPECT_FALSE(entries[pos].GetBooleanValue("is_https", &cookie_is_https));
+  EXPECT_FALSE(net::GetOptionalStringValueFromParams(entries[pos], "origin"));
+  EXPECT_FALSE(
+      net::GetOptionalBooleanValueFromParams(entries[pos], "is_https"));
   pos = net::ExpectLogContainsSomewhere(
       entries, pos, net::NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
       net::NetLogEventPhase::NONE);
-  std::string event_type;
-  EXPECT_TRUE(entries[pos].GetStringValue("type", &event_type));
-  EXPECT_EQ("SessionCleanupCookieStore", event_type);
+  EXPECT_EQ("SessionCleanupCookieStore",
+            net::GetStringValueFromParams(entries[pos], "type"));
 }
 
 TEST_F(SessionCleanupCookieStoreTest, TestDeleteSessionCookies) {

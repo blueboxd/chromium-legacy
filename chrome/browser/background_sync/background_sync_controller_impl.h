@@ -16,6 +16,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
@@ -68,20 +69,26 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // content::BackgroundSyncController overrides.
   void GetParameterOverrides(
       content::BackgroundSyncParameters* parameters) override;
-  void NotifyBackgroundSyncRegistered(const url::Origin& origin,
-                                      bool can_fire,
-                                      bool is_reregistered) override;
-  void NotifyBackgroundSyncCompleted(const url::Origin& origin,
-                                     blink::ServiceWorkerStatusCode status_code,
-                                     int num_attempts,
-                                     int max_attempts) override;
+  void NotifyOneShotBackgroundSyncRegistered(const url::Origin& origin,
+                                             bool can_fire,
+                                             bool is_reregistered) override;
+  void NotifyPeriodicBackgroundSyncRegistered(const url::Origin& origin,
+                                              int min_interval,
+                                              bool is_reregistered) override;
+  void NotifyOneShotBackgroundSyncCompleted(
+      const url::Origin& origin,
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts) override;
+  void NotifyPeriodicBackgroundSyncCompleted(
+      const url::Origin& origin,
+      blink::ServiceWorkerStatusCode status_code,
+      int num_attempts,
+      int max_attempts) override;
   void ScheduleBrowserWakeUp(
       blink::mojom::BackgroundSyncType sync_type) override;
   base::TimeDelta GetNextEventDelay(
-      const url::Origin& origin,
-      int64_t min_interval,
-      int num_attempts,
-      blink::mojom::BackgroundSyncType sync_type,
+      const content::BackgroundSyncRegistration& registration,
       content::BackgroundSyncParameters* parameters) override;
   std::unique_ptr<BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;
@@ -93,6 +100,12 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // Returns kEngagementLevelNonePenalty if the engagement level is
   // blink::mojom::EngagementLevel::NONE.
   int GetSiteEngagementPenalty(const GURL& url) const;
+
+  // Once we've identified the minimum number of hours between each periodicsync
+  // event for an origin, every delay calculated for the origin should be a
+  // multiple of the same.
+  base::TimeDelta SnapToMaxOriginFrequency(int64_t min_interval,
+                                           int64_t min_gap_for_origin);
 
   Profile* profile_;  // This object is owned by profile_.
 

@@ -4,7 +4,10 @@
 
 package org.chromium.components.module_installer;
 
+import org.chromium.base.annotations.MainDex;
+
 /** Dummy fallback of ModuleInstaller for APK builds. */
+@MainDex
 public class ModuleInstallerImpl implements ModuleInstaller {
     /** A valid singleton instance is necessary for tests to swap it out. */
     private static ModuleInstaller sInstance = new ModuleInstallerImpl();

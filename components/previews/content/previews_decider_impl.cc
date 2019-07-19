@@ -452,6 +452,15 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
          type == PreviewsType::RESOURCE_LOADING_HINTS ||
          type == PreviewsType::DEFER_ALL_SCRIPT);
 
+  // If kEnableDeferAllScriptWithoutOptimizationHints switch is provided, then
+  // DEFER_ALL_SCRIPT is triggered on all pages irrespective of hints provided
+  // by optimization hints guide.
+  if (type == PreviewsType::DEFER_ALL_SCRIPT &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDeferAllScriptWithoutOptimizationHints)) {
+    return PreviewsEligibilityReason::ALLOWED;
+  }
+
   if (!previews_opt_guide_ || !previews_opt_guide_->has_hints())
     return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
   passed_reasons->push_back(

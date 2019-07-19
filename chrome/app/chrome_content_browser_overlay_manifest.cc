@@ -148,7 +148,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("preferences", "pref_client")
         .RequireCapability("preferences", "pref_control")
         .RequireCapability("profile_import", "import")
-        .RequireCapability("proxy_resolver", "factory")
         .RequireCapability(quarantine::mojom::kServiceName,
                            quarantine::mojom::kQuarantineFileCapability)
         .RequireCapability("removable_storage_writer",

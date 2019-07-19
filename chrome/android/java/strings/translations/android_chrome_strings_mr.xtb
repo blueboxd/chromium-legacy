@@ -182,12 +182,12 @@
 <translation id="2289270750774289114">साइटला केव्हा जवळपासचे ब्लूटूथ डिव्हाइस शोधायचे आहे हे विचारा (शिफारस केलेले)</translation>
 <translation id="230115972905494466">कोणतीही कंपॅटिबल डिव्हाइस आढळली नाहीत</translation>
 <translation id="2315043854645842844">क्लायंट साइड प्रमाणपत्र निवडीला ऑपरेटिंग सिस्टमचा सपोर्ट नाही.</translation>
+<translation id="2318045970523081853">कॉल करण्यासाठी टॅप करा</translation>
 <translation id="2321086116217818302">पासवर्ड तयार करत आहे…</translation>
 <translation id="2321958826496381788">तुम्ही हे व्यवस्थित वाचू शकण्यापार्यंत स्लायडर ड्रॅग करा. परिच्छेदावर डबल-टॅपिंग केल्यानंतर मजकूर कमीत कमी यापेक्षा मोठा दिसावा.</translation>
 <translation id="2323763861024343754">साइट स्टोरेज</translation>
 <translation id="2328985652426384049">साइन इन करू शकत नाही</translation>
 <translation id="2349710944427398404">खाती, बुकमार्क आणि सेव्ह केलेल्या सेटिंग्जसह, Chrome ने वापरलेला एकूण डेटा</translation>
-<translation id="2351097562818989364">आपल्या भाषांतर सेटिंग्ज रीसेट करण्यात आल्या आहेत.</translation>
 <translation id="2353636109065292463">तुमचे इंटरनेट कनेक्शन तपासत आहे</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2369533728426058518">खुले टॅब</translation>
@@ -334,6 +334,7 @@
 <translation id="3513704683820682405">ऑगमेंटेड रिअ‍ॅलिटी</translation>
 <translation id="3518985090088779359">स्वीकारा आणि सुरु ठेवा</translation>
 <translation id="3522247891732774234">अपडेट उपलब्ध आहे. आणखी पर्याय</translation>
+<translation id="3524138585025253783">डेव्हलपर UI</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> KB उपलब्ध</translation>
 <translation id="3549657413697417275">तुमचा इतिहास शोधा</translation>
@@ -569,7 +570,6 @@
 <translation id="5301954838959518834">ठीक आहे, समजले</translation>
 <translation id="5304593522240415983">हे फील्ड रिक्त ठेवता येणार नाही</translation>
 <translation id="5308380583665731573">कनेक्‍ट करा</translation>
-<translation id="5308603654685598744">हे वैशिष्‍ट्य चालू असते तेव्‍हा, Google भाषांतर चा वापर करून इतर भाषांमध्‍ये लिहिलेल्‍या पृष्‍ठांचे भाषांतर करण्‍याची ऑफर Chrome देईल.</translation>
 <translation id="5313967007315987356">साइट जोडा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5324858694974489420">पालक सेटिंग्ज</translation>
@@ -658,7 +658,6 @@
 <translation id="5865733239029070421">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवते</translation>
 <translation id="5869522115854928033">सेव्ह केलेले पासवर्ड</translation>
 <translation id="5902828464777634901">कुकीजसह, या वेबसाइटवर संचयित केलेला डेटा, हटवला जाईल.</translation>
-<translation id="5911030830365207728">Google भाषांतर</translation>
 <translation id="5916664084637901428">चालू</translation>
 <translation id="5919204609460789179">सिंक सुरू करण्यासाठी <ph name="PRODUCT_NAME" /> अपडेट करा</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> वाचवला</translation>
@@ -803,7 +802,6 @@
 <translation id="6963642900430330478">हे पेज धोकादायक आहे. साइट माहिती</translation>
 <translation id="6963766334940102469">बुकमार्क हटवा</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
-<translation id="6978479750597523876">भाषांतर सेटिंग्‍ज रीसेट करा</translation>
 <translation id="6979737339423435258">पूर्णवेळ</translation>
 <translation id="6981982820502123353">अॅक्सेसिबिलिटी</translation>
 <translation id="6989267951144302301">डाउनलोड करता आले नाही</translation>
@@ -950,6 +948,7 @@
 <translation id="7999064672810608036">तुम्ही कुकीजसह, सर्व स्थानिक डेटा साफ करू इच्छिता आणि या वेबसाइटसाठी सर्व परवानग्या रीसेट करू इच्छिता?</translation>
 <translation id="8004582292198964060">ब्राउझर</translation>
 <translation id="8007176423574883786">या डिव्हाइससाठी बंद करा</translation>
+<translation id="8013372441983637696">तुमचा या डिव्हाइसवरील Chrome देखील डेटा साफ करा</translation>
 <translation id="8015452622527143194">पेजवरील प्रत्येक गोष्ट डीफॉल्ट आकारमानावर परत करा</translation>
 <translation id="802154636333426148">डाउनलोड अयशस्वी झाले</translation>
 <translation id="8026334261755873520">ब्राउझिंग डेटा साफ करा</translation>

@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/unzip/public/cpp/test_unzip_service.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"

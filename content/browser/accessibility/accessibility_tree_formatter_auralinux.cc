@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -438,15 +439,19 @@ void AccessibilityTreeFormatterAuraLinux::AddTableCellProperties(
   auto cell_interface = ui::AtkTableCellInterface::Get();
   if (cell_interface.has_value()) {
     AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
-        (atk_object), cell_interface->GetType(), AtkTableCell);
+        (atk_object), base::UnsanitizedCfiCall(*cell_interface->GetType)(),
+        AtkTableCell);
 
-    cell_interface->GetRowColumnSpan(cell, &row, &col, &row_span, &col_span);
+    base::UnsanitizedCfiCall (*cell_interface->GetRowColumnSpan)(
+        cell, &row, &col, &row_span, &col_span);
 
-    GPtrArray* column_headers = cell_interface->GetColumnHeaderCells(cell);
+    GPtrArray* column_headers =
+        base::UnsanitizedCfiCall(*cell_interface->GetColumnHeaderCells)(cell);
     n_column_headers = column_headers->len;
     g_ptr_array_unref(column_headers);
 
-    GPtrArray* row_headers = cell_interface->GetRowHeaderCells(cell);
+    GPtrArray* row_headers =
+        base::UnsanitizedCfiCall(*cell_interface->GetRowHeaderCells)(cell);
     n_row_headers = row_headers->len;
     g_ptr_array_unref(row_headers);
   } else {

@@ -1235,7 +1235,8 @@ inline Element* Node::parentElement() const {
 
 inline bool Element::FastHasAttribute(const QualifiedName& name) const {
 #if DCHECK_IS_ON()
-  DCHECK(FastAttributeLookupAllowed(name));
+  DCHECK(FastAttributeLookupAllowed(name))
+      << TagQName().ToString().Utf8() << "/@" << name.ToString().Utf8();
 #endif
   return GetElementData() &&
          GetElementData()->Attributes().FindIndex(name) != kNotFound;
@@ -1244,7 +1245,8 @@ inline bool Element::FastHasAttribute(const QualifiedName& name) const {
 inline const AtomicString& Element::FastGetAttribute(
     const QualifiedName& name) const {
 #if DCHECK_IS_ON()
-  DCHECK(FastAttributeLookupAllowed(name));
+  DCHECK(FastAttributeLookupAllowed(name))
+      << TagQName().ToString().Utf8() << "/@" << name.ToString().Utf8();
 #endif
   if (GetElementData()) {
     if (const Attribute* attribute = GetElementData()->Attributes().Find(name))

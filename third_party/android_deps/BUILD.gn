@@ -532,14 +532,6 @@ android_aar_prebuilt("google_play_services_vision_common_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("com_google_ar_core_java") {
-  aar_path = "libs/com_google_ar_core/core-1.8.0.aar"
-  info_path = "libs/com_google_ar_core/com_google_ar_core.info"
-  extract_native_libraries = true
-  split_compat_class_names = [ "com/google/ar/core/InstallActivity" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("com_google_dagger_dagger_java") {
   jar_path = "libs/com_google_dagger_dagger/dagger-2.17.jar"
   output_name = "com_google_dagger_dagger"

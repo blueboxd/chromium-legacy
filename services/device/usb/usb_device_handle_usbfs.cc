@@ -28,6 +28,13 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+
 namespace {
 
 uint8_t ConvertEndpointDirection(UsbTransferDirection direction) {
@@ -172,7 +179,7 @@ struct UsbDeviceHandleUsbfs::Transfer {
 
   void* operator new(std::size_t size, size_t number_of_iso_packets);
   void RunCallback(UsbTransferStatus status, size_t bytes_transferred);
-  void RunIsochronousCallback(const std::vector<IsochronousPacket>& packets);
+  void RunIsochronousCallback(std::vector<UsbIsochronousPacketPtr> packets);
 
   scoped_refptr<base::RefCountedBytes> control_transfer_buffer;
   scoped_refptr<base::RefCountedBytes> buffer;
@@ -406,10 +413,10 @@ void UsbDeviceHandleUsbfs::Transfer::RunCallback(UsbTransferStatus status,
 }
 
 void UsbDeviceHandleUsbfs::Transfer::RunIsochronousCallback(
-    const std::vector<IsochronousPacket>& packets) {
+    std::vector<UsbIsochronousPacketPtr> packets) {
   DCHECK_EQ(urb.type, USBDEVFS_URB_TYPE_ISO);
   DCHECK(isoc_callback);
-  std::move(isoc_callback).Run(buffer, packets);
+  std::move(isoc_callback).Run(buffer, std::move(packets));
 }
 
 UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
@@ -833,17 +840,19 @@ void UsbDeviceHandleUsbfs::TransferComplete(
   transfer->timeout_closure.Cancel();
 
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
-    std::vector<IsochronousPacket> packets(transfer->urb.number_of_packets);
+    std::vector<UsbIsochronousPacketPtr> packets(
+        transfer->urb.number_of_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
-      packets[i].length = transfer->urb.iso_frame_desc[i].length;
-      packets[i].transferred_length =
+      packets[i] = mojom::UsbIsochronousPacket::New();
+      packets[i]->length = transfer->urb.iso_frame_desc[i].length;
+      packets[i]->transferred_length =
           transfer->urb.iso_frame_desc[i].actual_length;
-      packets[i].status = ConvertTransferResult(
+      packets[i]->status = ConvertTransferResult(
           transfer->urb.status == 0 ? transfer->urb.iso_frame_desc[i].status
                                     : transfer->urb.status);
     }
 
-    transfer->RunIsochronousCallback(packets);
+    transfer->RunIsochronousCallback(std::move(packets));
   } else {
     if (transfer->urb.status == 0 &&
         transfer->urb.type == USBDEVFS_URB_TYPE_CONTROL) {
@@ -887,15 +896,15 @@ void UsbDeviceHandleUsbfs::ReportIsochronousError(
     UsbDeviceHandle::IsochronousTransferCallback callback,
     UsbTransferStatus status) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  std::vector<UsbDeviceHandle::IsochronousPacket> packets(
-      packet_lengths.size());
+  std::vector<UsbIsochronousPacketPtr> packets(packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = packet_lengths[i];
+    packets[i]->transferred_length = 0;
+    packets[i]->status = status;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), nullptr, packets));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr,
+                                                   std::move(packets)));
 }
 
 void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
@@ -951,13 +960,15 @@ void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
   transfer->timeout_closure.Cancel();
 
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
-    std::vector<IsochronousPacket> packets(transfer->urb.number_of_packets);
+    std::vector<UsbIsochronousPacketPtr> packets(
+        transfer->urb.number_of_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
-      packets[i].length = transfer->urb.iso_frame_desc[i].length;
-      packets[i].transferred_length = 0;
-      packets[i].status = status;
+      packets[i] = mojom::UsbIsochronousPacket::New();
+      packets[i]->length = transfer->urb.iso_frame_desc[i].length;
+      packets[i]->transferred_length = 0;
+      packets[i]->status = status;
     }
-    transfer->RunIsochronousCallback(packets);
+    transfer->RunIsochronousCallback(std::move(packets));
   } else {
     transfer->RunCallback(status, 0);
   }

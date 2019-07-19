@@ -66,6 +66,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -968,9 +969,42 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     surface->getCanvas()->resetMatrix();
   }
 
-  // Now paint the pre-filtered image onto the canvas.
+  // Apply the mask image, if present, to filtered backdrop content. Note that
+  // this needs to be performed here, in addition to elsewhere, because of the
+  // order of operations:
+  //   1. Render the child render pass (containing backdrop-filtered element),
+  //      including any masks, typically built as child DstIn layers.
+  //   2. Render the parent render pass (containing the "backdrop image" to be
+  //      filtered).
+  //   3. Run this code, to filter, and possibly mask, the backdrop image.
+  SkPaint paint;
+  const SkImage* mask_image = nullptr;
+  base::Optional<DisplayResourceProvider::ScopedReadLockSkImage>
+      backdrop_image_lock;
+  if (quad->mask_applies_to_backdrop && quad->mask_resource_id()) {
+    backdrop_image_lock.emplace(resource_provider_, quad->mask_resource_id(),
+                                kPremul_SkAlphaType, kTopLeft_GrSurfaceOrigin);
+    // TODO(984766): This will be null on Mac, so masks will not be applied.
+    mask_image = backdrop_image_lock->sk_image();
+  }
+  if (mask_image) {
+    // Scale normalized uv rect into absolute texel coordinates.
+    SkRect mask_rect = gfx::RectFToSkRect(
+        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
+                       quad->mask_texture_size.height()));
+    // Map to full quad rect so that mask coordinates don't change with
+    // clipping.
+    SkMatrix mask_to_quad_matrix = SkMatrix::MakeRectToRect(
+        mask_rect, gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
+    paint.setMaskFilter(
+        SkShaderMaskFilter::Make(mask_image->makeShader(&mask_to_quad_matrix)));
+    DCHECK(paint.getMaskFilter());
+  }
+
+  // Now paint the pre-filtered image onto the canvas (possibly with mask
+  // applied).
   surface->getCanvas()->drawImageRect(filtered_image, subset, dest_rect,
-                                      nullptr);
+                                      &paint);
 
   if (backdrop_filter_bounds.has_value()) {
     surface->getCanvas()->restore();
@@ -1165,8 +1199,9 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         }
       }
       if (params->background_image_id) {
-        // Reset original background texture if there is not any mask.
-        if (!quad->mask_resource_id()) {
+        // Reset original background texture if there is not any mask, or if the
+        // mask was used for backdrop filter only.
+        if (!quad->mask_resource_id() || quad->mask_applies_to_backdrop) {
           gl_->DeleteTextures(1, &params->background_texture);
           params->background_texture = 0;
         }
@@ -1194,6 +1229,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   if (params->background_texture && params->background_image_id) {
     DCHECK(params->mask_for_background);
     DCHECK(quad->mask_resource_id());
+    DCHECK(!quad->mask_applies_to_backdrop);
   }
 
   DCHECK_EQ(params->background_texture || params->background_image_id,
@@ -1294,7 +1330,8 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
 
 void GLRenderer::UpdateRPDQTexturesForSampling(
     DrawRenderPassDrawQuadParams* params) {
-  if (params->quad->mask_resource_id()) {
+  if (!params->quad->mask_applies_to_backdrop &&
+      params->quad->mask_resource_id()) {
     params->mask_resource_lock.reset(
         new DisplayResourceProvider::ScopedSamplerGL(
             resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,
@@ -3108,9 +3145,17 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& dst_color_space) {
   DCHECK(dst_color_space.IsValid());
 
+  gfx::ColorSpace adjusted_color_space = src_color_space;
+  float sdr_white_level = current_frame()->sdr_white_level;
+  if (src_color_space.IsValid() && !src_color_space.IsHDR() &&
+      sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+    adjusted_color_space = src_color_space.GetScaledColorSpace(
+        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  }
+
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
-      GetColorTransform(src_color_space, dst_color_space);
+      GetColorTransform(adjusted_color_space, dst_color_space);
   program_key.SetColorTransform(color_transform);
 
   const bool is_root_render_pass =

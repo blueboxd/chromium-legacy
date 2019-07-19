@@ -2758,8 +2758,6 @@ static_library("test_support") {
     "http/transport_security_state_test_util.h",
     "log/test_net_log.cc",
     "log/test_net_log.h",
-    "log/test_net_log_entry.cc",
-    "log/test_net_log_entry.h",
     "log/test_net_log_util.cc",
     "log/test_net_log_util.h",
     "nqe/network_quality_estimator_test_util.cc",
@@ -5710,6 +5708,7 @@ test("net_unittests") {
 
   deps = [
     ":net",
+    ":preload_decoder",
     ":quic_test_tools",
     ":quiche_test_tools",
     ":simple_quic_tools",
@@ -5725,6 +5724,7 @@ test("net_unittests") {
     "//net/dns/public:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
+    "//net/tools/huffman_trie:huffman_trie_generator_sources",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",

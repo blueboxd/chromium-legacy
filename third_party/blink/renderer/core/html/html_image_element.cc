@@ -435,12 +435,14 @@ Node::InsertionNotificationRequest HTMLImageElement::InsertedInto(
     ResetFormOwner();
   if (listener_)
     GetDocument().GetMediaQueryMatcher().AddViewportListener(listener_);
-  Node* parent = parentNode();
-  if (parent && IsHTMLPictureElement(*parent))
-    ToHTMLPictureElement(parent)->AddListenerToSourceChildren();
+  bool was_added_to_picture_parent = false;
+  if (auto* picture_parent = ToHTMLPictureElementOrNull(parentNode())) {
+    picture_parent->AddListenerToSourceChildren();
+    was_added_to_picture_parent = picture_parent == insertion_point;
+  }
 
   bool image_was_modified = false;
-  if (GetDocument().IsActive()) {
+  if (GetDocument().IsActive() && was_added_to_picture_parent) {
     ImageCandidate candidate = FindBestFitImageFromPictureParent();
     if (!candidate.IsEmpty()) {
       SetBestFitURLAndDPRFromImageCandidate(candidate);
@@ -462,9 +464,8 @@ void HTMLImageElement::RemovedFrom(ContainerNode& insertion_point) {
     ResetFormOwner();
   if (listener_) {
     GetDocument().GetMediaQueryMatcher().RemoveViewportListener(listener_);
-    Node* parent = parentNode();
-    if (parent && IsHTMLPictureElement(*parent))
-      ToHTMLPictureElement(parent)->RemoveListenerFromSourceChildren();
+    if (auto* picture_parent = ToHTMLPictureElementOrNull(parentNode()))
+      picture_parent->RemoveListenerFromSourceChildren();
   }
   HTMLElement::RemovedFrom(insertion_point);
 }

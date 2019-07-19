@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Suwak wyszukiwania</translation>
 <translation id="1399648040768741453">Klawiatura telugu (fonetyczna)</translation>
 <translation id="1430915738399379752">Drukuj</translation>
+<translation id="1439494416798956626">Przeniesiono do: <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Klawiatura wietnamska (teleks)</translation>
 <translation id="1455548678241328678">Klawiatura norweska</translation>
 <translation id="1464724975715666883">1 błąd.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Skanuję nośnik danych...</translation>
 <translation id="3468522857997926824">Kopie zapasowe <ph name="FILE_COUNT" /> zdjęć zostały utworzone na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Kopiuję...</translation>
+<translation id="3473378059788601120">Skopiowano do: <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Arkusz kalkulacyjny Google</translation>
 <translation id="3495304270784461826">Błędy: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Transliteracja (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Wprowadzanie tekstu po japońsku (na klawiaturze japońskiej)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Przyznaj aplikacjom na Linuksa uprawnienia do modyfikowania plików na Dysku Google. Zmiany będą synchronizowane z innymi urządzeniami.</translation>
+<translation id="5955954492236143329">Elementy: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Opcje sortowania</translation>
 <translation id="6005282720244019462">Klawiatura latynoamerykańska</translation>
 <translation id="6007237601604674381">Przenoszenie nie powiodło się. <ph name="ERROR_MESSAGE" /></translation>

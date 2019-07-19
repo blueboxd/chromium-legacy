@@ -20,6 +20,14 @@ using testing::_;
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbSynchronizationType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+using mojom::UsbUsageType;
+
 namespace {
 
 ACTION_P2(InvokeCallback, data, length) {

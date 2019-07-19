@@ -582,6 +582,7 @@ class NavigationListModel extends cr.EventTarget {
           myFilesModel = new NavigationModelFakeItem(
               str('MY_FILES_ROOT_LABEL'), NavigationModelItemType.ENTRY_LIST,
               myFilesEntry);
+          myFilesModel.section = NavigationSection.MY_FILES;
           this.myFilesModel_ = myFilesModel;
         } else {
           // When MyFilesVolume isn't available we create a empty EntryList to
@@ -593,6 +594,7 @@ class NavigationListModel extends cr.EventTarget {
           myFilesModel = new NavigationModelFakeItem(
               myFilesEntry.label, NavigationModelItemType.ENTRY_LIST,
               myFilesEntry);
+          myFilesModel.section = NavigationSection.MY_FILES;
         }
       } else {
         // Here is the initial version for MyFiles, which is only an entry in JS

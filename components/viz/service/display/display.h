@@ -118,8 +118,9 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // display. This is only supported for GPU compositing.
   void SetColorMatrix(const SkMatrix44& matrix);
 
-  void SetColorSpace(const gfx::ColorSpace& blending_color_space,
-                     const gfx::ColorSpace& device_color_space);
+  void SetColorSpace(
+      const gfx::ColorSpace& device_color_space,
+      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
   void SetOutputIsSecure(bool secure);
 
   const SurfaceId& CurrentSurfaceId();
@@ -190,8 +191,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
-  gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
   gfx::ColorSpace device_color_space_ = gfx::ColorSpace::CreateSRGB();
+  float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
   bool visible_ = false;
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;

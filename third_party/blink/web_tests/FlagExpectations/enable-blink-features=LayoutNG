@@ -361,7 +361,6 @@ crbug.com/591099 virtual/composite-after-paint/paint/invalidation/box/margin.htm
 crbug.com/591099 virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure Pass ]
 Bug(none) virtual/disable-blink-gen-property-trees/ [ Skip ]
 crbug.com/591099 virtual/exotic-color-space/ [ Skip ]
-crbug.com/591099 virtual/fractional_scrolling_threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Failure Pass ]
 crbug.com/591099 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass ]
 crbug.com/591099 virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass ]
 crbug.com/591099 virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Pass ]

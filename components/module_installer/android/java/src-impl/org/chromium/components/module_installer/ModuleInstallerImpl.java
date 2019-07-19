@@ -18,6 +18,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.components.crash.CrashKeyIndex;
 import org.chromium.components.crash.CrashKeys;
 
@@ -30,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /** Installs dynamic feature modules (DFMs). */
+@MainDex
 public class ModuleInstallerImpl implements ModuleInstaller {
     /** Command line switch for activating the fake backend.  */
     private static final String FAKE_FEATURE_MODULE_INSTALL = "fake-feature-module-install";

@@ -151,7 +151,6 @@ InstallableManager::IconProperty& InstallableManager::IconProperty::operator=(
 
 InstallableManager::InstallableManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      metrics_(std::make_unique<InstallableMetrics>()),
       eligibility_(std::make_unique<EligiblityProperty>()),
       manifest_(std::make_unique<ManifestProperty>()),
       valid_manifest_(std::make_unique<ValidManifestProperty>()),
@@ -221,7 +220,6 @@ void InstallableManager::GetData(const InstallableParams& params,
   if (was_active)
     return;
 
-  metrics_->Start();
   WorkOnTask();
 }
 
@@ -237,38 +235,6 @@ void InstallableManager::GetAllErrors(
   params.is_debug_mode = true;
   GetData(params,
           base::BindOnce(OnDidCompleteGetAllErrors, std::move(callback)));
-}
-
-void InstallableManager::RecordMenuOpenHistogram() {
-  metrics_->RecordMenuOpen();
-}
-
-void InstallableManager::RecordMenuItemAddToHomescreenHistogram() {
-  metrics_->RecordMenuItemAddToHomescreen();
-}
-
-void InstallableManager::RecordAddToHomescreenNoTimeout() {
-  metrics_->RecordAddToHomescreenNoTimeout();
-}
-
-void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
-  metrics_->RecordAddToHomescreenManifestAndIconTimeout();
-
-  // If needed, explicitly trigger GetData() with a no-op callback to complete
-  // the installability check. This is so we can accurately record whether or
-  // not a site is a PWA, assuming that the check finishes prior to resetting.
-  if (!has_pwa_check_) {
-    InstallableParams params;
-    params.valid_manifest = true;
-    params.has_worker = true;
-    params.valid_primary_icon = true;
-    params.wait_for_worker = true;
-    GetData(params, base::DoNothing());
-  }
-}
-
-void InstallableManager::RecordAddToHomescreenInstallabilityTimeout() {
-  metrics_->RecordAddToHomescreenInstallabilityTimeout();
 }
 
 bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {
@@ -399,29 +365,15 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          (!params.valid_badge_icon || IsIconFetched(IconPurpose::BADGE));
 }
 
-void InstallableManager::ResolveMetrics(const InstallableParams& params,
-                                        bool check_passed) {
-  // Don't do anything if we passed the check AND it was not for the full PWA
-  // params. We don't yet know if the site is installable. However, if the check
-  // didn't pass, we know for sure the site isn't installable, regardless of how
-  // much we checked.
-  if (check_passed && !IsParamsForPwaCheck(params))
-    return;
-
-  metrics_->Resolve(check_passed);
-}
-
 void InstallableManager::Reset() {
   // Prevent any outstanding callbacks to or from this object from being called.
   weak_factory_.InvalidateWeakPtrs();
   icons_.clear();
 
   // If we have paused tasks, we are waiting for a service worker.
-  metrics_->Flush(task_queue_.HasPaused());
   task_queue_.Reset();
   has_pwa_check_ = false;
 
-  metrics_ = std::make_unique<InstallableMetrics>();
   eligibility_ = std::make_unique<EligiblityProperty>();
   manifest_ = std::make_unique<ManifestProperty>();
   valid_manifest_ = std::make_unique<ValidManifestProperty>();
@@ -475,7 +427,6 @@ void InstallableManager::WorkOnTask() {
   bool check_passed = errors.empty();
   if ((!check_passed && !params.is_debug_mode) || IsComplete(params)) {
     auto task = std::move(task_queue_.Current());
-    ResolveMetrics(params, check_passed);
     RunCallback(std::move(task), std::move(errors));
 
     // Sites can always register a service worker after we finish checking, so

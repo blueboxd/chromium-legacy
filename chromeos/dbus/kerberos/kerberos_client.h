@@ -32,6 +32,8 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
       base::OnceCallback<void(const kerberos::ListAccountsResponse& response)>;
   using SetConfigCallback =
       base::OnceCallback<void(const kerberos::SetConfigResponse& response)>;
+  using ValidateConfigCallback = base::OnceCallback<void(
+      const kerberos::ValidateConfigResponse& response)>;
   using AcquireKerberosTgtCallback = base::OnceCallback<void(
       const kerberos::AcquireKerberosTgtResponse& response)>;
   using GetKerberosFilesCallback = base::OnceCallback<void(
@@ -70,6 +72,9 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
 
   virtual void SetConfig(const kerberos::SetConfigRequest& request,
                          SetConfigCallback callback) = 0;
+
+  virtual void ValidateConfig(const kerberos::ValidateConfigRequest& request,
+                              ValidateConfigCallback callback) = 0;
 
   virtual void AcquireKerberosTgt(
       const kerberos::AcquireKerberosTgtRequest& request,

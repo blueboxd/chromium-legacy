@@ -55,11 +55,18 @@ class KerberosAccountsHandler : public ::settings::SettingsPageUIHandler,
   void OnRemoveAccount(const std::string& callback_id,
                        kerberos::ErrorType error);
 
+  // WebUI "validateKerberosConfig" message callback.
+  void HandleValidateKerberosConfig(const base::ListValue* args);
+
+  // Callback for the credential manager's ValidateConfig method.
+  void OnValidateConfig(const std::string& callback_id,
+                        const kerberos::ValidateConfigResponse& response);
+
   // WebUI "setAsActiveKerberosAccount" message callback.
   void HandleSetAsActiveKerberosAccount(const base::ListValue* args);
 
   // Callback for the credential manager's ListAccounts method.
-  void OnListAccounts(base::Value callback_id,
+  void OnListAccounts(const std::string& callback_id,
                       const kerberos::ListAccountsResponse& response);
 
   // Fires the "kerberos-accounts-changed" event, which refreshes the Kerberos

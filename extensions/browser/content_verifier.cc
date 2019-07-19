@@ -523,8 +523,7 @@ void ContentVerifier::OnExtensionLoaded(
   if (shutdown_on_ui_)
     return;
 
-  ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
-  if (mode != ContentVerifierDelegate::NONE) {
+  if (delegate_->ShouldBeVerified(*extension)) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&ContentVerifier::OnExtensionLoadedOnIO, this,

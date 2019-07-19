@@ -103,8 +103,9 @@ class ServiceWorkerMetrics {
     LONG_RUNNING_MESSAGE = 31,
     BACKGROUND_FETCH_SUCCESS = 32,
     PERIODIC_SYNC = 33,
+    CONTENT_DELETE = 34,
     // Add new events to record here.
-    kMaxValue = PERIODIC_SYNC,
+    kMaxValue = CONTENT_DELETE,
   };
 
   // Used for UMA. Append only.

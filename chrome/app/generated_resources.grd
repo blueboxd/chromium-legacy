@@ -9534,6 +9534,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE" desc="Tooltip for and name of a button that hides (collapses) a detailed list of files and directories">
       Collapse...
     </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS" desc="Text of button in the bubble showing what files and directories an origin can currently access that removes all such access">
+      Remove access
+    </message>
 
 
     <!-- Native File System restricted directory dialog. -->

@@ -25,16 +25,17 @@ gfx::Size InstallableInkDropPainter::GetMinimumSize() const {
 
 void InstallableInkDropPainter::Paint(gfx::Canvas* canvas,
                                       const gfx::Size& size) {
-  if (activated_) {
+  if (state_->activated) {
     canvas->FillRect(
         gfx::Rect(size),
         SkColorSetA(kInstallableInkDropBaseColor,
                     kInstallableInkDropActivatedOpacity * SK_AlphaOPAQUE));
-  } else if (highlighted_ratio_ > 0.0f) {
-    canvas->FillRect(gfx::Rect(size),
-                     SkColorSetA(kInstallableInkDropBaseColor,
-                                 kInstallableInkDropHighlightedOpacity *
-                                     highlighted_ratio_ * SK_AlphaOPAQUE));
+  } else if (state_->highlighted_ratio > 0.0f) {
+    canvas->FillRect(
+        gfx::Rect(size),
+        SkColorSetA(kInstallableInkDropBaseColor,
+                    kInstallableInkDropHighlightedOpacity *
+                        state_->highlighted_ratio * SK_AlphaOPAQUE));
   }
 }
 

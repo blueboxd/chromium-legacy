@@ -99,6 +99,8 @@ class CORE_EXPORT CSSMathExpressionNode
     return category_ == other.category_ && is_integer_ == other.is_integer_;
   }
 
+  virtual bool IsComputationallyIndependent() const = 0;
+
   CalculationCategory Category() const { return category_; }
 
   // Returns the unit type of the math expression *without doing any type
@@ -149,6 +151,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
+  bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
   void Trace(blink::Visitor* visitor) final;
@@ -199,6 +202,7 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
       const CSSToLengthConversionData& conversion_data) const final;
   void AccumulateLengthArray(CSSLengthArray& length_array,
                              double multiplier) const final;
+  bool IsComputationallyIndependent() const final;
   String CustomCSSText() const final;
   bool operator==(const CSSMathExpressionNode& exp) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;

@@ -24,7 +24,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/ct_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -65,25 +65,23 @@ class MultiLogCTVerifierTest : public ::testing::Test {
   }
 
   bool CheckForEmbeddedSCTInNetLog(const TestNetLog& net_log) {
-    TestNetLogEntry::List entries;
-    net_log.GetEntries(&entries);
+    auto entries = net_log.GetEntries();
     if (entries.size() != 2)
       return false;
 
-    const TestNetLogEntry& received = entries[0];
-    std::string embedded_scts;
-    if (!received.GetStringValue("embedded_scts", &embedded_scts))
-      return false;
-    if (embedded_scts.empty())
+    auto embedded_scts =
+        GetOptionalStringValueFromParams(entries[0], "embedded_scts");
+    if (!embedded_scts || embedded_scts->empty())
       return false;
 
-    const TestNetLogEntry& parsed = entries[1];
-    base::ListValue* scts;
-    if (!parsed.GetListValue("scts", &scts) || scts->GetSize() != 1) {
+    const NetLogEntry& parsed = entries[1];
+    const base::ListValue* scts;
+    if (!GetListValueFromParams(parsed, "scts", &scts) ||
+        scts->GetSize() != 1) {
       return false;
     }
 
-    base::DictionaryValue* the_sct;
+    const base::DictionaryValue* the_sct;
     if (!scts->GetDictionary(0, &the_sct))
       return false;
 

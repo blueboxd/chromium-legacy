@@ -466,6 +466,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                 style:UIBarButtonItemStylePlain
                target:self
                action:nil];
+    // TODO(crbug.com/984561): Add action to navigate to the add credit card
+    // details screen here.
   }
   return _addPaymentMethodButton;
 }

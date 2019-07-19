@@ -224,19 +224,12 @@
         'os_type': 'android',
       },
       'Android WebView O (dbg)': {
+        'mixins': [
+          'oreo_fleet',
+          'walleye',
+        ],
         'test_suites': {
           'gtest_tests': 'webview_bot_gtests',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPM1.171019.021',
-              'device_os_flavor': 'google',
-              'device_os_type': 'userdebug',
-              'device_type': 'walleye',
-              'os': 'Android',
-            },
-          ],
         },
         'use_swarming': True,
         'os_type': 'android',
@@ -560,6 +553,17 @@
           'gtest_tests': 'chromium_android_gtests',
           'isolated_scripts': 'marshmallow_isolated_scripts',
         },
+        'os_type': 'android',
+      },
+      'android-oreo-arm64-rel': {
+        'mixins': [
+          'oreo_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'webview_bot_gtests',
+        },
+        'use_swarming': True,
         'os_type': 'android',
       },
       'android-pie-arm64-dbg': {

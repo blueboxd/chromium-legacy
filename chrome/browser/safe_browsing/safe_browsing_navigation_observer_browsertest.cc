@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -165,7 +166,8 @@ class TestNavigationObserverManager
       content::WebContents* dest_content = tab.contents;
       DCHECK(dest_content);
       observer_list_.push_back(
-          new SafeBrowsingNavigationObserver(dest_content, this));
+          std::make_unique<SafeBrowsingNavigationObserver>(dest_content, this));
+      DCHECK(observer_list_.back());
     }
   }
 
@@ -174,7 +176,7 @@ class TestNavigationObserverManager
 
  private:
   ScopedObserver<TabStripModel, TabStripModelObserver> observer_{this};
-  std::vector<SafeBrowsingNavigationObserver*> observer_list_;
+  std::vector<std::unique_ptr<SafeBrowsingNavigationObserver>> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserverManager);
 };

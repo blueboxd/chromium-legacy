@@ -37,8 +37,11 @@ const char kReadOnlyDeviceMountPath[] = "/device/read_only_mount_path";
 const char kReadOnlyDeviceSourcePath[] = "/device/read_only_source_path";
 const char kFileSystemType1[] = "ntfs";
 const char kFileSystemType2[] = "exfat";
-const char kFormatFileSystemType1[] = "vfat";
-const char kFormatFileSystemType2[] = "exfat";
+const FormatFileSystemType kFormatFileSystemType1 = FormatFileSystemType::kVfat;
+const FormatFileSystemType kFormatFileSystemType2 =
+    FormatFileSystemType::kExfat;
+const char kFormatFileSystemType1String[] = "vfat";
+const char kFormatFileSystemType2String[] = "exfat";
 const char kFormatLabel1[] = "UNTITLED";
 const char kFormatLabel2[] = "TESTUSB";
 
@@ -694,7 +697,7 @@ TEST_F(DiskMountManagerTest, Format_FormatFailsToStart) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ(kFormatFileSystemType1,
+  EXPECT_EQ(kFormatFileSystemType1String,
             fake_cros_disks_client_->last_format_filesystem());
   EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
@@ -752,7 +755,7 @@ TEST_F(DiskMountManagerTest, Format_ConcurrentFormatCalls) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ(kFormatFileSystemType1,
+  EXPECT_EQ(kFormatFileSystemType1String,
             fake_cros_disks_client_->last_format_filesystem());
   EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
@@ -791,7 +794,7 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ(kFormatFileSystemType1,
+  EXPECT_EQ(kFormatFileSystemType1String,
             fake_cros_disks_client_->last_format_filesystem());
   EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
@@ -843,7 +846,7 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ(kFormatFileSystemType1,
+  EXPECT_EQ(kFormatFileSystemType1String,
             fake_cros_disks_client_->last_format_filesystem());
   EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
@@ -867,7 +870,7 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
             observer_->GetFormatEvent(2));
 
   // Disk should have new values for file system type and device label name
-  EXPECT_EQ(kFormatFileSystemType1,
+  EXPECT_EQ(kFormatFileSystemType1String,
             disks.find(kDevice1SourcePath)->second->file_system_type());
   EXPECT_EQ(kFormatLabel1,
             disks.find(kDevice1SourcePath)->second->device_label());
@@ -894,7 +897,7 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ(1, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ(kFormatFileSystemType1,
+  EXPECT_EQ(kFormatFileSystemType1String,
             fake_cros_disks_client_->last_format_filesystem());
   EXPECT_EQ(kFormatLabel1, fake_cros_disks_client_->last_format_label());
 
@@ -927,7 +930,7 @@ TEST_F(DiskMountManagerTest, Format_ConsecutiveFormatCalls) {
   EXPECT_EQ(2, fake_cros_disks_client_->format_call_count());
   EXPECT_EQ(kDevice1SourcePath,
             fake_cros_disks_client_->last_format_device_path());
-  EXPECT_EQ(kFormatFileSystemType2,
+  EXPECT_EQ(kFormatFileSystemType2String,
             fake_cros_disks_client_->last_format_filesystem());
   EXPECT_EQ(kFormatLabel2, fake_cros_disks_client_->last_format_label());
 

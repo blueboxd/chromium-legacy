@@ -19,10 +19,6 @@ bool FakeProxy::RequestedAnimatePending() {
 
 bool FakeProxy::IsStarted() const { return true; }
 
-bool FakeProxy::CommitToActiveTree() const {
-  return false;
-}
-
 bool FakeProxy::CommitRequested() const { return false; }
 
 void FakeProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {}

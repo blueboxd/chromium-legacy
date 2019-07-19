@@ -9,30 +9,34 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/sharing_service.h"
 
 class SharingDeviceInfo;
+
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
 
 // The controller for desktop dialog with the list of synced devices and apps.
 class SharingDialogController {
  public:
   struct App {
-    App(std::string icon, base::string16 name, std::string identifier);
+    App(const gfx::VectorIcon& icon,
+        base::string16 name,
+        std::string identifier);
     App(App&& other);
     ~App();
-    std::string icon;
+
+    const gfx::VectorIcon& icon;
     base::string16 name;
     std::string identifier;
-
-    DISALLOW_COPY_AND_ASSIGN(App);
   };
 
   SharingDialogController() = default;
   virtual ~SharingDialogController() = default;
 
   // Title of the dialog.
-  virtual std::string GetTitle() = 0;
+  virtual base::string16 GetTitle() = 0;
 
   // Returns filtered list of synced devices for the feature.
   virtual std::vector<SharingDeviceInfo> GetSyncedDevices() = 0;
@@ -46,8 +50,6 @@ class SharingDialogController {
 
   // Called when user chooses a local app to complete the task.
   virtual void OnAppChosen(const App& app) = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SharingDialogController);
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_DIALOG_CONTROLLER_H_

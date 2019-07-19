@@ -383,7 +383,7 @@ void NaClProcessHost::Launch(
 #if defined(OS_CHROMEOS) && \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
     nonsfi_mode_allowed = NaClBrowser::GetDelegate()->IsNonSfiModeAllowed(
-        nacl_host_message_filter->profile_directory(), manifest_url_);
+        nacl_host_message_filter->extension_system(), manifest_url_);
 #endif
 #endif
     bool nonsfi_mode_enabled =

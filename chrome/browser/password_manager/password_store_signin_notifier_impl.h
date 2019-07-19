@@ -6,11 +6,8 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_SIGNIN_NOTIFIER_IMPL_H_
 
 #include "base/macros.h"
-
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-
-class Profile;
 
 namespace password_manager {
 
@@ -20,7 +17,8 @@ class PasswordStoreSigninNotifierImpl
     : public PasswordStoreSigninNotifier,
       public identity::IdentityManager::Observer {
  public:
-  explicit PasswordStoreSigninNotifierImpl(Profile* profile);
+  explicit PasswordStoreSigninNotifierImpl(
+      identity::IdentityManager* identity_manager);
   ~PasswordStoreSigninNotifierImpl() override;
 
   // PasswordStoreSigninNotifier implementations.
@@ -32,7 +30,7 @@ class PasswordStoreSigninNotifierImpl
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
  private:
-  Profile* const profile_;
+  identity::IdentityManager* identity_manager_ = nullptr;
 };
 
 }  // namespace password_manager

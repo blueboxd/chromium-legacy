@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Tafuta Kitelezi</translation>
 <translation id="1399648040768741453">Kibodi ya Kitelugu (Fonetiki)</translation>
 <translation id="1430915738399379752">Chapisha</translation>
+<translation id="1439494416798956626">Imehamishiwa kwenye <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Kibodi ya Kivietnamu (Telex)</translation>
 <translation id="1455548678241328678">Kibodi ya Kinorwe</translation>
 <translation id="1464724975715666883">Hitilafu 1.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Inachaganua kifaa chako cha kuhifadhia data...</translation>
 <translation id="3468522857997926824">Picha <ph name="FILE_COUNT" /> zimehifadhiwa nakala rudufu kwenye <ph name="BEGIN_LINK" />Hifadhi ya Google<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Inanakili...</translation>
+<translation id="3473378059788601120">Imenakiliwa kwenye <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Lahajedwali ya Google</translation>
 <translation id="3495304270784461826">Hitilafu <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Unukuzi wa mfumo wa kuandika (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Mbinu ya kuchapa maandishi ya Kijapani (kwenye kibodi ya Kijapani)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Ruhusu programu za Linux zibadilishe faili kwenye Hifadhi yako ya Google. Mabadiliko utakayofanya yatasawazishwa kwenye vifaa vyako vingine.</translation>
+<translation id="5955954492236143329">Faili <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Chaguo za kupanga</translation>
 <translation id="6005282720244019462">Kibodi ya Amerika Kusini</translation>
 <translation id="6007237601604674381">Kusogezwa kumeshindika. <ph name="ERROR_MESSAGE" /></translation>

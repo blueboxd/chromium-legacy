@@ -287,7 +287,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
 void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
-                               const gfx::Size& device_viewport_size) {
+                               const gfx::Size& device_viewport_size,
+                               float sdr_white_level) {
   DCHECK(visible_);
   TRACE_EVENT0("viz,benchmark", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS_1M(
@@ -322,6 +323,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       overlay_processor_->GetAndResetOverlayDamage());
   current_frame()->root_damage_rect.Intersect(gfx::Rect(device_viewport_size));
   current_frame()->device_viewport_size = device_viewport_size;
+  current_frame()->sdr_white_level = sdr_white_level;
 
   // Only reshape when we know we are going to draw. Otherwise, the reshape
   // can leave the window at the wrong size if we never draw and the proper

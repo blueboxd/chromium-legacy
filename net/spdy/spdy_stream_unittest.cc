@@ -23,7 +23,6 @@
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
@@ -449,17 +448,15 @@ TEST_F(SpdyStreamTest, StreamError) {
   EXPECT_TRUE(data.AllWriteDataConsumed());
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_STREAM_ERROR correctly.
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_STREAM_ERROR, NetLogEventPhase::NONE);
 
-  int stream_id2;
-  ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &stream_id2));
-  EXPECT_EQ(static_cast<int>(stream_id), stream_id2);
+  EXPECT_EQ(static_cast<int>(stream_id),
+            GetIntegerValueFromParams(entries[pos], "stream_id"));
 }
 
 // Make sure that large blocks of data are properly split up into frame-sized

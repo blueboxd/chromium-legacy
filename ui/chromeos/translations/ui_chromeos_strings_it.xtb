@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Dispositivo di scorrimento</translation>
 <translation id="1399648040768741453">Tastiera Telugu (fonetica)</translation>
 <translation id="1430915738399379752">Stampa</translation>
+<translation id="1439494416798956626">Spostamento in <ph name="FOLDER_NAME" /> eseguito.</translation>
 <translation id="1441841714100794440">Tastiera Vietnamita (Telex)</translation>
 <translation id="1455548678241328678">Tastiera norvegese</translation>
 <translation id="1464724975715666883">Un errore.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Scansione del dispositivo multimediale...</translation>
 <translation id="3468522857997926824">Backup di <ph name="FILE_COUNT" /> foto su <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> completato</translation>
 <translation id="3470502288861289375">Copia...</translation>
+<translation id="3473378059788601120">Copia in <ph name="FOLDER_NAME" /> eseguita.</translation>
 <translation id="3475447146579922140">Foglio di calcolo Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errori.</translation>
 <translation id="3519867315646775981">Traslitterazione (shalom ← שלום)</translation>
@@ -436,6 +438,7 @@
 <translation id="5923484009666796948">Japanese Input (per tastiera giapponese)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Concedi a Linux l'autorizzazione per modificare i file nel tuo Google Drive. Le modifiche verranno sincronizzate con i tuoi altri dispositivi.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elementi</translation>
 <translation id="5982621672636444458">Opzioni ordinamento</translation>
 <translation id="6005282720244019462">Tastiera latinoamericana</translation>
 <translation id="6007237601604674381">Spostamento non riuscito. <ph name="ERROR_MESSAGE" /></translation>

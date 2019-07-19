@@ -4,12 +4,10 @@
 
 #include "chrome/browser/sharing/sharing_dialog_controller.h"
 
-SharingDialogController::App::App(std::string icon,
+SharingDialogController::App::App(const gfx::VectorIcon& icon,
                                   base::string16 name,
                                   std::string identifier)
-    : icon(std::move(icon)),
-      name(std::move(name)),
-      identifier(std::move(identifier)) {}
+    : icon(icon), name(std::move(name)), identifier(std::move(identifier)) {}
 
 SharingDialogController::App::App(App&& other) = default;
 

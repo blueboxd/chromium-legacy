@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Site storage</translation>
 <translation id="2328985652426384049">Can’t sign in</translation>
 <translation id="2349710944427398404">Total data used by Chrome, including accounts, bookmarks and saved settings</translation>
-<translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2353636109065292463">Checking your Internet connection</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2369533728426058518">open tabs</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> secs left</translation>
 <translation id="2779651927720337254">failed</translation>
 <translation id="2781151931089541271">1 sec left</translation>
+<translation id="2796941233371040292">No storage data here</translation>
 <translation id="2801022321632964776">Update to get your language in the latest version of Chrome</translation>
 <translation id="2810645512293415242">Simplified page to save data and load faster.</translation>
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
 <translation id="2893180576842394309">Google may use your history to personalise Search and other Google services</translation>
+<translation id="2898264748040935573">Edit stored password</translation>
 <translation id="2900528713135656174">Create event</translation>
 <translation id="2902702728133930130">Chrome failed during start-up with an unexpected error.</translation>
 <translation id="290376772003165898">Page is not in <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4913169188695071480">Stop refreshing</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Page}other{# Pages}}</translation>
+<translation id="4932247056774066048">Because you're signing out of an account managed by <ph name="DOMAIN_NAME" />, your Chrome data will be deleted from this device. It will remain in your Google account.</translation>
 <translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> is sharing your screen</translation>
@@ -562,6 +564,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5210286577605176222">Jump to the previous tab</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="5224771365102442243">With video</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> wants to scan for nearby Bluetooth devices. The following devices have been found:</translation>
 <translation id="5233638681132016545">New tab</translation>
 <translation id="526421993248218238">Can't load this page</translation>
 <translation id="5271967389191913893">Device cannot open the content to be downloaded.</translation>
@@ -571,7 +574,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5301954838959518834">OK, got it</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
 <translation id="5308380583665731573">Connect</translation>
-<translation id="5308603654685598744">When this feature is turned on, Chrome will offer to translate pages written in other languages using Google Translate.</translation>
 <translation id="5313967007315987356">Add site</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5324858694974489420">Parental Settings</translation>
@@ -586,6 +588,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5414836363063783498">Verifying…</translation>
 <translation id="5423934151118863508">Your most visited pages will appear here</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB available</translation>
+<translation id="543338862236136125">Edit password</translation>
 <translation id="5433691172869980887">Username copied</translation>
 <translation id="543509235395288790">Downloading <ph name="COUNT" /> files (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Jump to the address bar</translation>
@@ -660,7 +663,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5865733239029070421">Automatically sends usage statistics and crash reports to Google</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
-<translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5919204609460789179">Update <ph name="PRODUCT_NAME" /> to start sync</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> saved</translation>
@@ -805,7 +807,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6963642900430330478">This page is dangerous. Site information</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Reset translate settings</translation>
 <translation id="6979737339423435258">All time</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6989267951144302301">Couldn’t download</translation>

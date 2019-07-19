@@ -57,6 +57,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          filters == other.filters &&
          backdrop_filters == other.backdrop_filters &&
          backdrop_filter_bounds == other.backdrop_filter_bounds &&
+         backdrop_mask_element_id == other.backdrop_mask_element_id &&
          filters_origin == other.filters_origin &&
          rounded_corner_bounds == other.rounded_corner_bounds &&
          is_fast_rounded_corner == other.is_fast_rounded_corner &&
@@ -142,6 +143,8 @@ const char* RenderSurfaceReasonToString(RenderSurfaceReason reason) {
 }
 
 void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
+  value->SetInteger("backdrop_mask_element_id",
+                    backdrop_mask_element_id.GetInternalValue());
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
   value->SetInteger("stable_id", stable_id);

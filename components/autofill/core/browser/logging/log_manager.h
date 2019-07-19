@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/autofill/core/browser/logging/log_buffer_submitter.h"
 
 namespace base {
 class Value;
@@ -53,6 +54,9 @@ class LogManager {
   static std::unique_ptr<LogManager> Create(
       LogRouter* log_router,
       base::Closure notification_callback);
+
+  // This is the preferred way to submitting log entries.
+  virtual LogBufferSubmitter Log() = 0;
 };
 
 }  // namespace autofill

@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Meklēšanas slīdnis</translation>
 <translation id="1399648040768741453">Telugu valodas tastatūra (fonētiskā)</translation>
 <translation id="1430915738399379752">Drukāt</translation>
+<translation id="1439494416798956626">Pārvietots uz mapi “<ph name="FOLDER_NAME" />”.</translation>
 <translation id="1441841714100794440">Vjetnamiešu valodas tastatūra (telekss)</translation>
 <translation id="1455548678241328678">Norvēģu valodas tastatūra</translation>
 <translation id="1464724975715666883">1 kļūda.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Notiek multivides ierīces skenēšana...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotoattēli dublēti <ph name="BEGIN_LINK" />Google diskā<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Notiek kopēšana...</translation>
+<translation id="3473378059788601120">Nokopēts uz mapi <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Google izklājlapa</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> kļūdas.</translation>
 <translation id="3519867315646775981">Transliterācija (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Japāņu valodas ievade (japāņu valodas tastatūrai)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Piešķiriet Linux lietotnēm atļauju pārveidot failus jūsu Google diskā. Izmaiņas tiks sinhronizētas ar citām jūsu ierīcēm.</translation>
+<translation id="5955954492236143329">Vienumu skaits: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Kārtošanas iespējas</translation>
 <translation id="6005282720244019462">Latīņamerikāņu tastatūra</translation>
 <translation id="6007237601604674381">Pārvietošana neizdevās. <ph name="ERROR_MESSAGE" /></translation>

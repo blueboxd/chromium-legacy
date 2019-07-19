@@ -282,6 +282,11 @@ void IncrementCounter(int* counter) {
   ++*counter;
 }
 
+void ExpectAndIncrementCounter(int expected, int* actual) {
+  EXPECT_EQ(expected, *actual);
+  IncrementCounter(actual);
+}
+
 void RecordQueueName(String name, Vector<String>* tasks) {
   tasks->push_back(std::move(name));
 }
@@ -1903,6 +1908,86 @@ TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
       task_queue->GetQueueTraits(),
       MainThreadTaskQueue::QueueTraits().SetCanBeDeferred(true).SetCanBePaused(
           true));
+}
+
+class FrameSchedulerImplDatabaseAccessWithoutHighPriority
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplDatabaseAccessWithoutHighPriority()
+      : FrameSchedulerImplTest({}, {kHighPriorityDatabaseTaskType}) {}
+};
+
+TEST_F(FrameSchedulerImplDatabaseAccessWithoutHighPriority, QueueTraits) {
+  // These tests will start to fail if the default task queues or queue traits
+  // change for these task types.
+
+  int counter = 0;
+
+  auto loading_queue = GetTaskQueue(TaskType::kInternalContinueScriptLoading);
+  EXPECT_EQ(loading_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kVeryHighPriority);
+  loading_queue->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 0,
+                                base::Unretained(&counter)));
+
+  auto da_queue = GetTaskQueue(TaskType::kDatabaseAccess);
+  EXPECT_EQ(da_queue->GetQueueTraits().is_high_priority, false);
+  EXPECT_EQ(da_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  da_queue->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 1,
+                                base::Unretained(&counter)));
+
+  auto content_queue = GetTaskQueue(TaskType::kInternalContentCapture);
+  EXPECT_EQ(content_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kBestEffortPriority);
+  content_queue->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 2,
+                                base::Unretained(&counter)));
+
+  EXPECT_EQ(0, counter);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, counter);
+}
+
+class FrameSchedulerImplDatabaseAccessWithHighPriority
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplDatabaseAccessWithHighPriority()
+      : FrameSchedulerImplTest({kHighPriorityDatabaseTaskType}, {}) {}
+};
+
+TEST_F(FrameSchedulerImplDatabaseAccessWithHighPriority, QueueTraits) {
+  // These tests will start to fail if the default task queues or queue traits
+  // change for these task types.
+
+  int counter = 0;
+
+  auto loading_queue = GetTaskQueue(TaskType::kInternalContinueScriptLoading);
+  EXPECT_EQ(loading_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kVeryHighPriority);
+  loading_queue->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 0,
+                                base::Unretained(&counter)));
+
+  auto da_queue = GetTaskQueue(TaskType::kDatabaseAccess);
+  EXPECT_EQ(da_queue->GetQueueTraits().is_high_priority, true);
+  EXPECT_EQ(da_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighPriority);
+  da_queue->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 1,
+                                base::Unretained(&counter)));
+
+  auto pausable_queue = PausableTaskQueue();
+  EXPECT_EQ(pausable_queue->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  pausable_queue->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExpectAndIncrementCounter, 2,
+                                base::Unretained(&counter)));
+
+  EXPECT_EQ(0, counter);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3, counter);
 }
 
 TEST_F(FrameSchedulerImplTest, ContentCaptureHasIdleTaskQueue) {

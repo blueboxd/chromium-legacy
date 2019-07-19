@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
@@ -60,8 +61,18 @@ class CONTENT_EXPORT ServiceProcessHost {
     Options& WithDisplayName(const base::string16& name);
     Options& WithDisplayName(int resource_id);
 
+    // Specifies additional flags to configure the launched process. See
+    // ChildProcessHost for flag definitions.
+    Options& WithChildFlags(int flags);
+
+    // Passes the contents of this Options object to a newly returned Options
+    // value. This must be called when moving a built Options object into a call
+    // to |Launch()|.
+    Options Pass();
+
     SandboxType sandbox_type = service_manager::SANDBOX_TYPE_UTILITY;
     base::string16 display_name;
+    base::Optional<int> child_flags;
   };
 
   // An interface which can be implemented and registered/unregistered with

@@ -20,11 +20,11 @@ class IPEndPoint;
 // Emits a NetLog event with parameters describing a UDP receive/send event.
 // |bytes| are only logged when byte logging is enabled.  |address| may be
 // nullptr.
-void NetLogUDPDataTranfer(const NetLogWithSource& net_log,
-                          NetLogEventType type,
-                          int byte_count,
-                          const char* bytes,
-                          const IPEndPoint* address);
+void NetLogUDPDataTransfer(const NetLogWithSource& net_log,
+                           NetLogEventType type,
+                           int byte_count,
+                           const char* bytes,
+                           const IPEndPoint* address);
 
 // Creates NetLog parameters describing a UDP connect event.
 base::Value CreateNetLogUDPConnectParams(

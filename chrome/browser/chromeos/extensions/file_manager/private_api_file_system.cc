@@ -339,6 +339,22 @@ std::vector<std::pair<base::FilePath, bool>> SearchByPattern(
   return prefix_matches;
 }
 
+chromeos::disks::FormatFileSystemType ApiFormatFileSystemToChromeEnum(
+    api::file_manager_private::FormatFileSystemType filesystem) {
+  switch (filesystem) {
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_NONE:
+      return chromeos::disks::FormatFileSystemType::kUnknown;
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_VFAT:
+      return chromeos::disks::FormatFileSystemType::kVfat;
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_EXFAT:
+      return chromeos::disks::FormatFileSystemType::kExfat;
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_NTFS:
+      return chromeos::disks::FormatFileSystemType::kNtfs;
+  }
+  NOTREACHED() << "Unknown format filesystem " << filesystem;
+  return chromeos::disks::FormatFileSystemType::kUnknown;
+}
+
 }  // namespace
 
 ExtensionFunction::ResponseAction
@@ -707,7 +723,7 @@ FileManagerPrivateFormatVolumeFunction::Run() {
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
       volume->mount_path().AsUTF8Unsafe(),
-      api::file_manager_private::ToString(params->filesystem),
+      ApiFormatFileSystemToChromeEnum(params->filesystem),
       params->volume_label);
   return RespondNow(NoArguments());
 }

@@ -585,13 +585,14 @@
     'breve': {
       'filepath': 'chrome/browser/net/spdyproxy|'\
                   'chrome_proxy|'\
-                  'client_hints|'
-                  'chrome/browser/predictors|'
+                  'client_hints|'\
+                  'chrome/browser/predictors|'\
                   'components/blacklist|'\
                   'components/data_use|'\
                   'data_reduction_proxy|'\
                   'data_use_measurement|'\
-                  'lazy_load|'
+                  'lazy_load|'\
+                  'interventions_internals|'\
                   'navigation_predictor|'\
                   'net/nqe|'\
                   'optimization_guide|'\

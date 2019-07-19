@@ -30,8 +30,9 @@ class InstallableInkDropAnimatorTest : public ::testing::Test {
 };
 
 TEST_F(InstallableInkDropAnimatorTest, UpdatesTargetState) {
-  InstallableInkDropPainter painter;
-  InstallableInkDropAnimator animator(&painter, nullptr, base::DoNothing());
+  InstallableInkDropPainter::State visual_state;
+  InstallableInkDropAnimator animator(&visual_state, nullptr,
+                                      base::DoNothing());
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
 
   animator.AnimateToState(InkDropState::ACTIVATED);
@@ -39,55 +40,55 @@ TEST_F(InstallableInkDropAnimatorTest, UpdatesTargetState) {
 }
 
 TEST_F(InstallableInkDropAnimatorTest, InstantAnimationsFinishImmediately) {
-  InstallableInkDropPainter painter;
+  InstallableInkDropPainter::State visual_state;
 
   bool callback_called = false;
   base::RepeatingClosure callback = base::Bind(
       [](bool* callback_called) { *callback_called = true; }, &callback_called);
-  InstallableInkDropAnimator animator(&painter, nullptr, callback);
+  InstallableInkDropAnimator animator(&visual_state, nullptr, callback);
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
-  EXPECT_FALSE(painter.activated());
+  EXPECT_FALSE(visual_state.activated);
   EXPECT_FALSE(callback_called);
 
   animator.AnimateToState(InkDropState::ACTION_PENDING);
   EXPECT_EQ(InkDropState::ACTION_PENDING, animator.target_state());
-  EXPECT_TRUE(painter.activated());
+  EXPECT_TRUE(visual_state.activated);
   EXPECT_TRUE(callback_called);
 
   callback_called = false;
   animator.AnimateToState(InkDropState::ACTION_TRIGGERED);
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
-  EXPECT_FALSE(painter.activated());
+  EXPECT_FALSE(visual_state.activated);
   EXPECT_TRUE(callback_called);
 
   callback_called = false;
   animator.AnimateToState(InkDropState::ACTIVATED);
   EXPECT_EQ(InkDropState::ACTIVATED, animator.target_state());
-  EXPECT_TRUE(painter.activated());
+  EXPECT_TRUE(visual_state.activated);
   EXPECT_TRUE(callback_called);
 
   callback_called = false;
   animator.AnimateToState(InkDropState::DEACTIVATED);
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
-  EXPECT_FALSE(painter.activated());
+  EXPECT_FALSE(visual_state.activated);
   EXPECT_TRUE(callback_called);
 }
 
 TEST_F(InstallableInkDropAnimatorTest,
        TriggeredAnimationDelaysTransitionToHidden) {
-  InstallableInkDropPainter painter;
+  InstallableInkDropPainter::State visual_state;
 
   bool callback_called = false;
   base::RepeatingClosure callback = base::Bind(
       [](bool* callback_called) { *callback_called = true; }, &callback_called);
-  InstallableInkDropAnimator animator(&painter, nullptr, callback);
+  InstallableInkDropAnimator animator(&visual_state, nullptr, callback);
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
-  EXPECT_FALSE(painter.activated());
+  EXPECT_FALSE(visual_state.activated);
   EXPECT_FALSE(callback_called);
 
   animator.AnimateToState(InkDropState::ACTION_TRIGGERED);
   EXPECT_EQ(InkDropState::ACTION_TRIGGERED, animator.target_state());
-  EXPECT_TRUE(painter.activated());
+  EXPECT_TRUE(visual_state.activated);
   EXPECT_TRUE(callback_called);
 
   callback_called = false;
@@ -95,12 +96,12 @@ TEST_F(InstallableInkDropAnimatorTest,
       InstallableInkDropAnimator::kAnimationDuration);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(InkDropState::HIDDEN, animator.target_state());
-  EXPECT_FALSE(painter.activated());
+  EXPECT_FALSE(visual_state.activated);
   EXPECT_TRUE(callback_called);
 }
 
 TEST_F(InstallableInkDropAnimatorTest, HighlightAnimationFadesInAndOut) {
-  InstallableInkDropPainter painter;
+  InstallableInkDropPainter::State visual_state;
 
   auto animation_container = base::MakeRefCounted<gfx::AnimationContainer>();
   gfx::AnimationContainerTestApi animation_test_api(animation_container.get());
@@ -108,29 +109,29 @@ TEST_F(InstallableInkDropAnimatorTest, HighlightAnimationFadesInAndOut) {
   bool callback_called = false;
   base::RepeatingClosure callback = base::Bind(
       [](bool* callback_called) { *callback_called = true; }, &callback_called);
-  InstallableInkDropAnimator animator(&painter, animation_container.get(),
+  InstallableInkDropAnimator animator(&visual_state, animation_container.get(),
                                       callback);
-  EXPECT_EQ(0.0f, painter.highlighted_ratio());
+  EXPECT_EQ(0.0f, visual_state.highlighted_ratio);
   EXPECT_FALSE(callback_called);
 
   animator.AnimateHighlight(true);
-  EXPECT_EQ(0.0f, painter.highlighted_ratio());
+  EXPECT_EQ(0.0f, visual_state.highlighted_ratio);
 
   callback_called = false;
   animation_test_api.IncrementTime(
       InstallableInkDropAnimator::kAnimationDuration);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1.0f, painter.highlighted_ratio());
+  EXPECT_EQ(1.0f, visual_state.highlighted_ratio);
   EXPECT_TRUE(callback_called);
 
   animator.AnimateHighlight(false);
-  EXPECT_EQ(1.0f, painter.highlighted_ratio());
+  EXPECT_EQ(1.0f, visual_state.highlighted_ratio);
 
   callback_called = false;
   animation_test_api.IncrementTime(
       InstallableInkDropAnimator::kAnimationDuration);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0.0f, painter.highlighted_ratio());
+  EXPECT_EQ(0.0f, visual_state.highlighted_ratio);
   EXPECT_TRUE(callback_called);
 }
 

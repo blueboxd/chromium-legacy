@@ -296,7 +296,6 @@ class TracingConsumerTest : public testing::Test,
                             public mojo::DataPipeDrainer::Client {
  public:
   void SetUp() override {
-    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
     PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
     threaded_service_ = std::make_unique<ThreadedPerfettoService>();

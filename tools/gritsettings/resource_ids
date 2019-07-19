@@ -83,15 +83,22 @@
     "includes": [11000],
     "structures": [11850],
   },
+  "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
+    "includes": [11930],
+    "structures": [11990],
+  },
+  "chrome/browser/resources/chromeos/camera/strings/camera_strings.grd": {
+    "messages": [12030],
+  },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [11940],
+    "structures": [12100],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [11945],
+    "structures": [12110],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12000],
-    "structures": [12250],
+    "includes": [12120],
+    "structures": [12260],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
     "includes": [12300],

@@ -441,3 +441,52 @@ testcase.saveFileDialogDefaultFilter = async () => {
   chrome.test.assertEq('0', selectedFilter.value);
   chrome.test.assertEq('All files', selectedFilter.text);
 };
+
+/**
+ * Tests that context menu on File List for file picker dialog.
+ * File picker dialog displays fewer menu options than full Files app. For
+ * example copy/paste commands are disabled. Right-click on a file/folder should
+ * show context menu, whereas right-clicking on the blank parts of file list
+ * should NOT display the context menu.
+ *
+ * crbug.com/917975 crbug.com/983507.
+ */
+testcase.openFileDialogFileListShowContextMenu = async () => {
+  // Add entries to Downloads.
+  await addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
+
+  // Open file picker dialog.
+  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait for files to be displayed.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Right-click "photos" folder to show context menu.
+  await remoteCall.waitAndRightClick(appId, '#file-list [file-name="photos"]');
+
+  // Wait until the context menu appears.
+  const menuVisible = '#file-context-menu:not([hidden])';
+  await remoteCall.waitForElement(appId, menuVisible);
+
+  // Dismiss context menu.
+  const escKey = ['Escape', false, false, false];
+  await remoteCall.fakeKeyDown(appId, menuVisible, ...escKey);
+  await remoteCall.waitForElementLost(appId, menuVisible);
+
+  // Right-click 100px inside of #file-list (in an empty space).
+  const offsetBottom = -100;
+  const offsetRight = -100;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'rightClickOffset', appId, ['#file-list', offsetBottom, offsetRight]),
+      'right click failed');
+
+  // Check that context menu is NOT displayed because there is no visible menu
+  // items.
+  await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
+};

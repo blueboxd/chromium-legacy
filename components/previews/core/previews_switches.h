@@ -19,6 +19,7 @@ extern const char kLitePageServerPreviewHost[];
 extern const char kIgnoreLitePageRedirectOptimizationBlacklist[];
 extern const char kClearLitePageRedirectLocalBlacklist[];
 extern const char kLitePageRedirectOverridesPageHints[];
+extern const char kEnableDeferAllScriptWithoutOptimizationHints[];
 
 }  // namespace switches
 }  // namespace previews

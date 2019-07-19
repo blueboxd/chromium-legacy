@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Websitelagerplads</translation>
 <translation id="2328985652426384049">Det er ikke muligt at logge ind</translation>
 <translation id="2349710944427398404">Samlet mængde data, som Chrome anvender, herunder konti, bogmærker og gemte indstillinger</translation>
-<translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
 <translation id="2353636109065292463">Tjekker din internetforbindelse</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2369533728426058518">åbne faner</translation>
@@ -571,7 +570,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5301954838959518834">OK, det er forstået</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
-<translation id="5308603654685598744">Når denne funktion er slået til, vil Chrome tilbyde at oversætte sider, som er skrevet på andre sprog, ved hjælp af Google Oversæt.</translation>
 <translation id="5313967007315987356">Tilføj website</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5324858694974489420">Indstillinger for børnesikring</translation>
@@ -660,7 +658,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5865733239029070421">Sender automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
 <translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
-<translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5916664084637901428">Til</translation>
 <translation id="5919204609460789179">Opdater <ph name="PRODUCT_NAME" /> for at starte synkroniseringen</translation>
 <translation id="5937580074298050696">Du har sparet <ph name="AMOUNT" /></translation>
@@ -805,7 +802,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6963642900430330478">Denne side er farlig. Websiteoplysninger</translation>
 <translation id="6963766334940102469">Slet bogmærker</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Nulstil oversættelsesindstillingerne</translation>
 <translation id="6979737339423435258">Altid</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="6989267951144302301">Der kan ikke downloades</translation>

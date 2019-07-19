@@ -135,17 +135,6 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
   UpdatePrefsFromCache(base::OnceClosure());
 }
 
-// static
-void HttpServerPropertiesManager::SetVersion(
-    base::DictionaryValue* http_server_properties_dict,
-    int version_number) {
-  if (version_number < 0)
-    version_number = kVersionNumber;
-  DCHECK_LE(version_number, kVersionNumber);
-  if (version_number <= kVersionNumber)
-    http_server_properties_dict->SetInteger(kVersionKey, version_number);
-}
-
 void HttpServerPropertiesManager::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -463,64 +452,34 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
   bool detected_corrupted_prefs = false;
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_CACHE,
                     [&] { return http_server_properties_dict->Clone(); });
-  int version = kMissingVersion;
-  if (!http_server_properties_dict->GetIntegerWithoutPathExpansion(kVersionKey,
-                                                                   &version)) {
-    DVLOG(1) << "Missing version. Clearing all properties.";
+  int version_number = kMissingVersion;
+  if (!http_server_properties_dict->GetIntegerWithoutPathExpansion(
+          kVersionKey, &version_number) ||
+      version_number != kVersionNumber) {
+    DVLOG(1) << "Missing or unsupported. Clearing all properties. "
+             << version_number;
     return;
   }
 
   const base::DictionaryValue* servers_dict = nullptr;
   const base::ListValue* servers_list = nullptr;
-  if (version < 4) {
-    // The properties for a given server is in
-    // http_server_properties_dict["servers"][server].
-    // Before Version 4, server data was stored in the following format in
-    // alphabetical order.
-    //
-    //   "http_server_properties": {
-    //      "servers": {
-    //         "0-edge-chat.facebook.com:443" : {...},
-    //         "0.client-channel.google.com:443" : {...},
-    //         "yt3.ggpht.com:80" : {...},
-    //         ...
-    //      }, ...
-    // },
-    if (!http_server_properties_dict->GetDictionaryWithoutPathExpansion(
-            kServersKey, &servers_dict)) {
-      DVLOG(1) << "Malformed http_server_properties for servers.";
-      return;
-    }
-  } else {
-    // For Version 4, data was stored in the following format.
-    // |servers| are saved in MRU order.
-    //
-    // "http_server_properties": {
-    //      "servers": [
-    //          {"yt3.ggpht.com:443" : {...}},
-    //          {"0.client-channel.google.com:443" : {...}},
-    //          {"0-edge-chat.facebook.com:80" : {...}},
-    //          ...
-    //      ], ...
-    // },
-    // For Version 5, data was stored in the following format.
-    // |servers| are saved in MRU order. |servers| are in the format flattened
-    // representation of (scheme/host/port) where port might be ignored if is
-    // default with scheme.
-    //
-    // "http_server_properties": {
-    //      "servers": [
-    //          {"https://yt3.ggpht.com" : {...}},
-    //          {"http://0.client-channel.google.com:443" : {...}},
-    //          {"http://0-edge-chat.facebook.com" : {...}},
-    //          ...
-    //      ], ...
-    // },
-    if (!http_server_properties_dict->GetListWithoutPathExpansion(
-            kServersKey, &servers_list)) {
-      DVLOG(1) << "Malformed http_server_properties for servers list.";
-      return;
-    }
+  // For Version 5, data is stored in the following format.
+  // |servers| are saved in MRU order. |servers| are in the format flattened
+  // representation of (scheme/host/port) where port might be ignored if is
+  // default with scheme.
+  //
+  // "http_server_properties": {
+  //      "servers": [
+  //          {"https://yt3.ggpht.com" : {...}},
+  //          {"http://0.client-channel.google.com:443" : {...}},
+  //          {"http://0-edge-chat.facebook.com" : {...}},
+  //          ...
+  //      ], ...
+  // },
+  if (!http_server_properties_dict->GetListWithoutPathExpansion(
+          kServersKey, &servers_list)) {
+    DVLOG(1) << "Malformed http_server_properties for servers list.";
+    return;
   }
 
   std::unique_ptr<IPAddress> addr = std::make_unique<IPAddress>();
@@ -537,28 +496,20 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
       std::make_unique<QuicServerInfoMap>(
           max_server_configs_stored_in_properties());
 
-  if (version < 4) {
+  // Iterate servers list in reverse MRU order so that entries are inserted
+  // into |spdy_servers_map|, |alternative_service_map|, and
+  // |server_network_stats_map| from oldest to newest.
+  for (auto it = servers_list->end(); it != servers_list->begin();) {
+    --it;
+    if (!it->GetAsDictionary(&servers_dict)) {
+      DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
+      detected_corrupted_prefs = true;
+      continue;
+    }
     if (!AddServersData(*servers_dict, spdy_servers_map.get(),
                         alternative_service_map.get(),
-                        server_network_stats_map.get(), version)) {
+                        server_network_stats_map.get())) {
       detected_corrupted_prefs = true;
-    }
-  } else {
-    // Iterate servers list in reverse MRU order so that entries are inserted
-    // into |spdy_servers_map|, |alternative_service_map|, and
-    // |server_network_stats_map| from oldest to newest.
-    for (auto it = servers_list->end(); it != servers_list->begin();) {
-      --it;
-      if (!it->GetAsDictionary(&servers_dict)) {
-        DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
-        detected_corrupted_prefs = true;
-        continue;
-      }
-      if (!AddServersData(*servers_dict, spdy_servers_map.get(),
-                          alternative_service_map.get(),
-                          server_network_stats_map.get(), version)) {
-        detected_corrupted_prefs = true;
-      }
     }
   }
 
@@ -708,17 +659,12 @@ bool HttpServerPropertiesManager::AddServersData(
     const base::DictionaryValue& servers_dict,
     SpdyServersMap* spdy_servers_map,
     AlternativeServiceMap* alternative_service_map,
-    ServerNetworkStatsMap* network_stats_map,
-    int version) {
+    ServerNetworkStatsMap* network_stats_map) {
   for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get server's scheme/host/pair.
     const std::string& server_str = it.key();
     std::string spdy_server_url = server_str;
-    if (version < 5) {
-      // For old version disk data, always use HTTPS as the scheme.
-      spdy_server_url.insert(0, "https://");
-    }
     url::SchemeHostPort spdy_server((GURL(spdy_server_url)));
     if (spdy_server.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
@@ -1122,7 +1068,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache(
   http_server_properties_dict.SetWithoutPathExpansion(kServersKey,
                                                       std::move(servers_list));
 
-  SetVersion(&http_server_properties_dict, kVersionNumber);
+  http_server_properties_dict.SetInteger(kVersionKey, kVersionNumber);
 
   IPAddress last_quic_addr;
   if (http_server_properties_impl_->GetSupportsQuic(&last_quic_addr)) {

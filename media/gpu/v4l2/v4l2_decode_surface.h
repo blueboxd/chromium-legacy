@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "ui/gfx/geometry/rect.h"
@@ -147,6 +148,37 @@ class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
 
   // The configuration store of the input buffer.
   uint32_t config_store_;
+};
+
+// An implementation of V4L2DecodeSurface that uses requests to associate
+// controls/buffers to frames
+class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
+ public:
+  // Constructor method for V4L2RequestDecodeSurface. It will return
+  // base::nullopt if a runtime error occurred when creating the decode surface.
+  //
+  // request_fd is the FD of the request to use for decoding this frame.
+  // Note that it will not be closed after the request is submitted - the caller
+  // is responsible for managing its lifetime.
+  static base::Optional<scoped_refptr<V4L2RequestDecodeSurface>> Create(
+      int input_record,
+      int output_record,
+      int request_fd,
+      base::OnceClosure release_cb);
+
+  void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
+  void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;
+  uint64_t GetReferenceID() const override;
+  bool Submit() const override;
+
+ private:
+  // FD of the request to use.
+  const int request_fd_;
+
+  V4L2RequestDecodeSurface(int input_record,
+                           int output_record,
+                           int request_fd,
+                           base::OnceClosure release_cb);
 };
 
 }  // namespace media

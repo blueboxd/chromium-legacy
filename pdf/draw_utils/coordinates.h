@@ -30,7 +30,7 @@ struct PageInsetSizes {
 void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
 
 // Given |page_rect| in document coordinates, |inset_sizes|, and
-// |vertical_separator|, return a pp::Rect object representing the gap on the
+// |bottom_separator|, return a pp::Rect object representing the gap on the
 // left side of the page created by insetting the page. I.e. the difference,
 // on the left side, between the initial |page_rect| and the |page_rect| inset
 // with |inset_sizes| (current value of |page_rect|).
@@ -38,7 +38,7 @@ void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
 // |inset_sizes.left|.
 pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
                          const PageInsetSizes& inset_sizes,
-                         int vertical_separator);
+                         int bottom_separator);
 
 // Same as GetLeftFillRect(), but for the right side of |page_rect| and also
 // depends on the |doc_width|. Additionally, |doc_width| must be greater than or
@@ -46,12 +46,12 @@ pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
 pp::Rect GetRightFillRect(const pp::Rect& page_rect,
                           const PageInsetSizes& inset_sizes,
                           int doc_width,
-                          int vertical_separator);
+                          int bottom_separator);
 
 // Same as GetLeftFillRect(), but for the bottom side of |page_rect|.
 pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
                            const PageInsetSizes& inset_sizes,
-                           int vertical_separator);
+                           int bottom_separator);
 
 // Given |rect| in document coordinates, a |position| in screen coordinates,
 // and a |zoom| factor, returns the rectangle in screen coordinates (i.e.

@@ -11,7 +11,7 @@ source_set("cpp") {
   ]
 
   public_deps = [
-    "//components/services/patch/public/interfaces",
+    "//components/services/patch/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -24,7 +24,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
-    "//components/services/patch/public/interfaces",
+    "//components/services/patch/public/mojom",
     "//components/strings",
     "//services/service_manager/public/cpp",
   ]

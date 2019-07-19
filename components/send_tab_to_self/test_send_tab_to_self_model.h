@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SEND_TAB_TO_SELF_TEST_SEND_TAB_TO_SELF_MODEL_H_
 #define COMPONENTS_SEND_TAB_TO_SELF_TEST_SEND_TAB_TO_SELF_MODEL_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -37,8 +36,7 @@ class TestSendTabToSelfModel : public SendTabToSelfModel {
 
   bool IsReady() override;
   bool HasValidTargetDevice() override;
-  std::map<std::string, TargetDeviceInfo> GetTargetDeviceNameToCacheInfoMap()
-      override;
+  std::vector<TargetDeviceInfo> GetTargetDeviceInfoSortedList() override;
 };
 
 }  // namespace send_tab_to_self

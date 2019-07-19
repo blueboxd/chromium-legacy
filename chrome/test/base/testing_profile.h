@@ -145,6 +145,8 @@ class TestingProfile : public Profile {
     // Sets the UserProfileName to be used by this profile.
     void SetProfileName(const std::string& profile_name);
 
+    void OverridePolicyConnectorIsManagedForTesting(bool is_managed);
+
     // Creates the TestingProfile using previously-set settings.
     std::unique_ptr<TestingProfile> Build();
 
@@ -172,6 +174,7 @@ class TestingProfile : public Profile {
     std::unique_ptr<policy::PolicyService> policy_service_;
     TestingFactories testing_factories_;
     std::string profile_name_;
+    base::Optional<bool> override_policy_connector_is_managed_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
   };
@@ -205,7 +208,8 @@ class TestingProfile : public Profile {
                  std::unique_ptr<policy::UserCloudPolicyManager> policy_manager,
                  std::unique_ptr<policy::PolicyService> policy_service,
                  TestingFactories testing_factories,
-                 const std::string& profile_name);
+                 const std::string& profile_name,
+                 base::Optional<bool> override_policy_connector_is_managed);
 
   ~TestingProfile() override;
 
@@ -479,6 +483,8 @@ class TestingProfile : public Profile {
   Delegate* delegate_;
 
   std::string profile_name_;
+
+  base::Optional<bool> override_policy_connector_is_managed_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::ScopedCrosSettingsTestHelper>

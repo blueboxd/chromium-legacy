@@ -739,6 +739,8 @@ enum EvalJsOptions {
 //    other callers of domAutomationController.send() -- script results carry
 //    a GUID.
 //  - Lists, dicts, null values, etc. can be returned as base::Values.
+//
+// It is guaranteed that EvalJs works even when the target frame is frozen.
 EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options = EXECUTE_SCRIPT_DEFAULT_OPTIONS,
@@ -1039,6 +1041,10 @@ class DOMMessageQueue : public NotificationObserver,
   // sent from a particular |web_contents|.
   explicit DOMMessageQueue(WebContents* web_contents);
 
+  // Same as the constructor with a WebContents, but observes the
+  // RenderFrameHost deletion.
+  explicit DOMMessageQueue(RenderFrameHost* render_frame_host);
+
   ~DOMMessageQueue() override;
 
   // Removes all messages in the message queue.
@@ -1059,12 +1065,14 @@ class DOMMessageQueue : public NotificationObserver,
 
   // Overridden WebContentsObserver methods.
   void RenderProcessGone(base::TerminationStatus status) override;
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
  private:
   NotificationRegistrar registrar_;
   base::queue<std::string> message_queue_;
   base::OnceClosure quit_closure_;
   bool renderer_crashed_ = false;
+  RenderFrameHost* render_frame_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DOMMessageQueue);
 };

@@ -93,12 +93,19 @@ PerfettoTracedProcess::PerfettoTracedProcess(const char* system_socket)
                      weak_ptr_factory_.GetWeakPtr(), system_socket));
 }
 
-PerfettoTracedProcess::~PerfettoTracedProcess() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+PerfettoTracedProcess::~PerfettoTracedProcess() {}
 
 void PerfettoTracedProcess::ClearDataSourcesForTesting() {
-  data_sources_.clear();
+  base::RunLoop source_cleared;
+  GetTaskRunner()->GetOrCreateTaskRunner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(
+          [](PerfettoTracedProcess* traced_process) {
+            traced_process->data_sources_.clear();
+          },
+          base::Unretained(this)),
+      source_cleared.QuitClosure());
+  source_cleared.Run();
 }
 
 std::unique_ptr<ProducerClient>

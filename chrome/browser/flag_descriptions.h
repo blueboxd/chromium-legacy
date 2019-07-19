@@ -325,6 +325,9 @@ extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 extern const char kEnableDeferAllScriptName[];
 extern const char kEnableDeferAllScriptDescription[];
 
+extern const char kEnableDeferAllScriptWithoutOptimizationHintsName[];
+extern const char kEnableDeferAllScriptWithoutOptimizationHintsDescription[];
+
 extern const char kEnableSaveDataName[];
 extern const char kEnableSaveDataDescription[];
 
@@ -983,9 +986,6 @@ extern const char kSendTabToSelfDescription[];
 
 extern const char kSendTabToSelfBroadcastName[];
 extern const char kSendTabToSelfBroadcastDescription[];
-
-extern const char kSendTabToSelfHistoryName[];
-extern const char kSendTabToSelfHistoryDescription[];
 
 extern const char kSendTabToSelfShowSendingUIName[];
 extern const char kSendTabToSelfShowSendingUIDescription[];
@@ -1871,6 +1871,9 @@ extern const char kEnableAssistantLauncherIntegrationDescription[];
 
 extern const char kEnableAssistantMediaSessionIntegrationName[];
 extern const char kEnableAssistantMediaSessionIntegrationDescription[];
+
+extern const char kEnableAssistantRoutinesName[];
+extern const char kEnableAssistantRoutinesDescription[];
 
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];

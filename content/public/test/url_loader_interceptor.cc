@@ -53,7 +53,8 @@ static std::string ReadFile(const base::FilePath& path) {
 // Part of URLLoaderInterceptor which lives on the IO thread. Outlives
 // URLLoaderInterceptor.
 class URLLoaderInterceptor::IOState
-    : public base::RefCountedThreadSafe<URLLoaderInterceptor::IOState> {
+    : public base::RefCountedThreadSafe<URLLoaderInterceptor::IOState,
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   explicit IOState(URLLoaderInterceptor* parent) : parent_(parent) {}
   void Initialize(
@@ -165,7 +166,9 @@ class URLLoaderInterceptor::IOState
   }
 
  private:
-  friend class base::RefCountedThreadSafe<IOState>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::DeleteHelper<IOState>;
+
   ~IOState() {}
 
   // This lock guarantees that when URLLoaderInterceptor is destroyed,

@@ -158,7 +158,7 @@ bool ThemePainter::Paint(const LayoutObject& o,
         DEPRECATE_APPEARANCE(doc, ButtonForSelect);
       } else {
         const AtomicString& type =
-            To<Element>(node)->FastGetAttribute(html_names::kTypeAttr);
+            To<Element>(node)->getAttribute(html_names::kTypeAttr);
         // https://github.com/twbs/bootstrap/pull/29053
         if (type == "button" || type == "reset" || type == "submit") {
           COUNT_APPEARANCE(doc, ButtonForBootstrapLooseSelector);

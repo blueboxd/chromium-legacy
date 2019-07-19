@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Webbplatslagring</translation>
 <translation id="2328985652426384049">Det gick inte att logga in</translation>
 <translation id="2349710944427398404">Total data som används av Chrome, inklusive konton, bokmärken och sparade inställningar</translation>
-<translation id="2351097562818989364">Översättningsinställningarna har återställts.</translation>
 <translation id="2353636109065292463">Kontrollera internetanslutningen</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
 <translation id="2369533728426058518">öppna flikar</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekunder kvar</translation>
 <translation id="2779651927720337254">misslyckades</translation>
 <translation id="2781151931089541271">1 sekund kvar</translation>
+<translation id="2796941233371040292">Ingen data om lagring här</translation>
 <translation id="2801022321632964776">Uppdatera och få ditt språk i den senaste versionen av Chrome</translation>
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Avbryt inläsningen av sidan</translation>
 <translation id="2893180576842394309">Google kan anpassa Sök och andra Google-tjänster utifrån historiken</translation>
+<translation id="2898264748040935573">Redigera sparat lösenord</translation>
 <translation id="2900528713135656174">Skapa händelse</translation>
 <translation id="2902702728133930130">Ett oväntat fel uppstod när Chrome skulle startas.</translation>
 <translation id="290376772003165898">Är sidan inte på <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4913169188695071480">Sluta uppdatera</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /> under sökningen efter enheter …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# sida}other{# sidor}}</translation>
+<translation id="4932247056774066048">Eftersom du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" /> raderas din Chrome-data från den här enheten. Den finns kvar på ditt Google-konto.</translation>
 <translation id="4943703118917034429">Virtuell verklighet</translation>
 <translation id="4943872375798546930">Inga resultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> delar skärmen</translation>
@@ -562,6 +564,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5210286577605176222">Hoppa till föregående flik</translation>
 <translation id="5210365745912300556">Stäng flik</translation>
 <translation id="5224771365102442243">Med video</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> vill söka efter Bluetooth-enheter i närheten. Följande enheter har hittats:</translation>
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="526421993248218238">Det går inte att läsa in den här sidan</translation>
 <translation id="5271967389191913893">Innehållet som skulle laddas ned gick inte att öppna på enheten.</translation>
@@ -571,7 +574,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5301954838959518834">Ok, jag förstår</translation>
 <translation id="5304593522240415983">Fältet får inte vara tomt</translation>
 <translation id="5308380583665731573">Ansluta</translation>
-<translation id="5308603654685598744">När den här funktionen är aktiverad blir du tillfrågad om Chrome ska översätta sidor på andra språk med hjälp av Google Översätt.</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
@@ -586,6 +588,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5414836363063783498">Verifierar ...</translation>
 <translation id="5423934151118863508">Dina mest besökta sidor visas här</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tillgängligt</translation>
+<translation id="543338862236136125">Redigera lösenord</translation>
 <translation id="5433691172869980887">Användarnamnet har kopierats</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> filer (<ph name="MEGABYTES" />) laddas ned.</translation>
 <translation id="5441522332038954058">Hoppa till adressfältet</translation>
@@ -660,7 +663,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
 <translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
-<translation id="5911030830365207728">Google Översätt</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5919204609460789179">Uppdatera <ph name="PRODUCT_NAME" /> för att starta synkronisering</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> har sparats</translation>
@@ -805,7 +807,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6963642900430330478">Sidan är farlig. Webbplatsinformation</translation>
 <translation id="6963766334940102469">Radera bokmärken</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Återställ översättningsinställningar</translation>
 <translation id="6979737339423435258">Genom tiderna</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="6989267951144302301">Nedladdning misslyckades</translation>

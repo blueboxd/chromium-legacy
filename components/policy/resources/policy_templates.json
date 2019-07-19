@@ -16339,6 +16339,10 @@
       'desc': '''Caption text of the field 'windows (Chrome OS clients)' in the summary chart of a policy in the generated documentation''',
       'text': '''Windows (<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> clients):'''
     },
+    'doc_banner': {
+      'desc': '''A banner shown at the top of the policy documentation''',
+      'text': '''The Chrome Enterprise policy list is moving! Please update your bookmarks to <ph name="POLICY_DOCUMENTATION_URL">https://cloud.google.com/docs/chrome-enterprise/policies/<ex>https://cloud.google.com/docs/chrome-enterprise/policies/</ex></ph>.'''
+    },
     'doc_intro': {
       'desc': '''Introduction text for the generated policy documentation''',
       'text': '''Both Chromium and Google Chrome support the same set of policies. Please note that this document may include unreleased policies (i.e. their 'Supported on' entry refers to a not-yet released version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>) which are subject to change or removal without notice and for which no guarantees of any kind are provided, including no guarantees with respect to their security and privacy properties.

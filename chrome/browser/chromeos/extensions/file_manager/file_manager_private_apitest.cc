@@ -48,6 +48,7 @@ using ::testing::ReturnRef;
 
 using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
+using chromeos::disks::FormatFileSystemType;
 
 namespace {
 
@@ -430,21 +431,21 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, FormatVolume) {
                   chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
                       .AppendASCII("mount_path1")
                       .AsUTF8Unsafe(),
-                  "vfat", "NEWLABEL1"))
+                  FormatFileSystemType::kVfat, "NEWLABEL1"))
       .Times(1);
   EXPECT_CALL(*disk_mount_manager_mock_,
               FormatMountedDevice(
                   chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
                       .AppendASCII("mount_path2")
                       .AsUTF8Unsafe(),
-                  "exfat", "NEWLABEL2"))
+                  FormatFileSystemType::kExfat, "NEWLABEL2"))
       .Times(1);
   EXPECT_CALL(*disk_mount_manager_mock_,
               FormatMountedDevice(
                   chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
                       .AppendASCII("mount_path3")
                       .AsUTF8Unsafe(),
-                  "ntfs", "NEWLABEL3"))
+                  FormatFileSystemType::kNtfs, "NEWLABEL3"))
       .Times(1);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/format_test"));

@@ -35,7 +35,8 @@ class CORE_EXPORT DevToolsSession
       mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
       mojom::blink::DevToolsSessionAssociatedRequest main_request,
       mojom::blink::DevToolsSessionRequest io_request,
-      mojom::blink::DevToolsSessionStatePtr reattach_session_state);
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state,
+      bool client_expects_binary_responses);
   ~DevToolsSession() override;
 
   void ConnectToV8(v8_inspector::V8Inspector*, int context_group_id);
@@ -95,6 +96,7 @@ class CORE_EXPORT DevToolsSession
   HeapVector<Member<InspectorAgent>> agents_;
   class Notification;
   Vector<std::unique_ptr<Notification>> notification_queue_;
+  const bool client_expects_binary_responses_;
   InspectorAgentState v8_session_state_;
   InspectorAgentState::Bytes v8_session_state_cbor_;
 

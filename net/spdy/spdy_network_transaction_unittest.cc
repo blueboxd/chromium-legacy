@@ -41,7 +41,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
@@ -4702,8 +4701,7 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
   // This test is intentionally non-specific about the exact ordering of the
   // log; instead we just check to make sure that certain events exist, and that
   // they are in the right order.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_LT(0u, entries.size());
   int pos = 0;
@@ -4731,8 +4729,8 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
                                    NetLogEventType::HTTP2_SESSION_SEND_HEADERS,
                                    NetLogEventPhase::NONE);
 
-  ASSERT_TRUE(entries[pos].params);
-  auto* header_list = entries[pos].params->FindKey("headers");
+  ASSERT_TRUE(entries[pos].HasParams());
+  auto* header_list = entries[pos].params.FindKey("headers");
   ASSERT_TRUE(header_list);
   ASSERT_TRUE(header_list->is_list());
   ASSERT_EQ(5u, header_list->GetList().size());

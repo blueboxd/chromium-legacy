@@ -15,7 +15,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,8 +52,7 @@ TEST(HttpAuthHandlerTest, NetLog) {
 
       mock_handler.HandleAnotherChallenge(&tokenizer);
 
-      TestNetLogEntry::List entries;
-      test_net_log.GetEntries(&entries);
+      auto entries = test_net_log.GetEntries();
 
       ASSERT_EQ(5u, entries.size());
       EXPECT_TRUE(LogContainsBeginEvent(entries, 0,

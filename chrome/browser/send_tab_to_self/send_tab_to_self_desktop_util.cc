@@ -65,11 +65,11 @@ void CreateNewEntry(content::WebContents* tab,
 void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(GetValidDeviceCount(profile) == 1);
-  std::map<std::string, TargetDeviceInfo> map =
+  std::vector<TargetDeviceInfo> devices =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel()
-          ->GetTargetDeviceNameToCacheInfoMap();
-  CreateNewEntry(tab, map.begin()->first, map.begin()->second.cache_guid,
+          ->GetTargetDeviceInfoSortedList();
+  CreateNewEntry(tab, devices.begin()->device_name, devices.begin()->cache_guid,
                  link_url);
 }
 
@@ -100,18 +100,18 @@ int GetValidDeviceCount(Profile* profile) {
   DCHECK(service);
   SendTabToSelfModel* model = service->GetSendTabToSelfModel();
   DCHECK(model);
-  std::map<std::string, TargetDeviceInfo> map =
-      model->GetTargetDeviceNameToCacheInfoMap();
-  return map.size();
+  std::vector<TargetDeviceInfo> devices =
+      model->GetTargetDeviceInfoSortedList();
+  return devices.size();
 }
 
 std::string GetSingleTargetDeviceName(Profile* profile) {
   DCHECK(GetValidDeviceCount(profile) == 1);
   return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
       ->GetSendTabToSelfModel()
-      ->GetTargetDeviceNameToCacheInfoMap()
+      ->GetTargetDeviceInfoSortedList()
       .begin()
-      ->first;
+      ->device_name;
 }
 
 }  // namespace send_tab_to_self

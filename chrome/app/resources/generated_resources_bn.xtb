@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">পাসওয়ার্ড পরিবর্তন করুন</translation>
 <translation id="1090126737595388931">কোনো পৃষ্ঠভূমি অ্যাপ্লিকেশান চলছে না</translation>
 <translation id="1090290614672149983">আসল ফাইলে সেভ করতে চান?</translation>
-<translation id="1090918500949388876">আপনার স্ক্রিন চালু থাকাকালীন "হ্যালো Google" বলে যেকোনও সময়ে আপনার অ্যাসিস্ট্যান্ট ব্যবহার করুন</translation>
 <translation id="1091767800771861448">ছেড়ে যেতে ESCAPE টিপুন (কেবল নন-অফিশিয়াল বিল্ড)৷</translation>
 <translation id="1093457606523402488">দৃশ্যমান নেটওয়ার্কগুলি</translation>
 <translation id="1094607894174825014">এখানে একটি ভুল অফসেট সহ পড়া বা লেখার ক্রিয়াকলাপের অনুরোধ করা হয়েছিল:: "<ph name="DEVICE_NAME" />".</translation>
@@ -541,7 +540,6 @@
 <translation id="1792619191750875668">প্রসারিত প্রদর্শন</translation>
 <translation id="1794791083288629568">এই সমস্যা সমাধানে আমাদের সাহায্য করতে প্রতিবার্তা পাঠান।</translation>
 <translation id="1795214765651529549">ক্লাসিক ব্যবহার করুন</translation>
-<translation id="1797738254362176886">আপনার নিরাপত্তা কীয়ের সাইন-ইন ডেটা দেখতে সেটি ঢোকান এবং চালু করার বোতামে টাচ করুন।</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" এক্সটেনশনটি অটোমেটিক বন্ধ করা হয়েছে।</translation>
 <translation id="1802687198411089702">পৃষ্ঠাটি সাড়া দিচ্ছে না। আপনি অপেক্ষা করতে পারেন অথবা পৃষ্ঠা ছেড়ে যেতে পারেন।</translation>
 <translation id="1802931390041703523">এই পৃষ্ঠাতে ফ্ল্যাশ ব্লক করা হয়েছে</translation>
@@ -787,7 +785,6 @@
 <translation id="2177950615300672361">ছদ্মবেশী ট্যাব: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> এ <ph name="PEPPER_PLUGIN_NAME" /> আপনার কম্পিউটার অ্যাক্সেস করতে চায়</translation>
 <translation id="2178614541317717477">CA আপোস</translation>
-<translation id="2179849162388791084">আপনার নিরাপত্তা কী থেকে সাইন-ইন ডেটা সংগ্রহ করা যায়নি।</translation>
 <translation id="218070003709087997">কতগুলি কপি প্রিন্ট হবে তা নির্দিষ্ট করতে একটি সংখ্যা ব্যবহার করুন (১ থেকে ৯৯৯)।</translation>
 <translation id="2184515124301515068">সাইটটি কখন সাউন্ড চালাতে পারবে তা Chrome-কে বেছে নিতে দিন (প্রস্তাবিত)</translation>
 <translation id="2187895286714876935">সার্ভার সার্টিফিকেট আমদানি করতে সমস্যা</translation>
@@ -1375,7 +1372,6 @@
 <translation id="3022978424994383087">বুঝতে পারিনি।</translation>
 <translation id="3023464535986383522">বাছুন ও শুনুন</translation>
 <translation id="3024374909719388945">24-ঘন্টার ঘড়ি ব্যবহার করুন</translation>
-<translation id="30256218463955326">ডক মানানসই নয়</translation>
 <translation id="3031417829280473749">এজেন্ট X</translation>
 <translation id="3031557471081358569">আমদানির জন্য আইটেম বেছে নিন:</translation>
 <translation id="3031601332414921114">প্রিন্ট আবার শুরু করুন</translation>
@@ -1562,7 +1558,6 @@
 <translation id="3348038390189153836">সরানোযোগ্য ডিভাইস শনাক্ত করা হয়েছে</translation>
 <translation id="3349933790966648062">মেমরি ফুটপ্রিন্ট</translation>
 <translation id="3350117557200012647">যুক্ত করার মোডে যান</translation>
-<translation id="3350263973613584174">এই নিরাপত্তা কীয়ে কোনও সাইন-ইন ডেটা সেভ করা নেই।</translation>
 <translation id="3355936511340229503">সংযোগ ত্রুটি</translation>
 <translation id="3356580349448036450">সম্পূর্ণ</translation>
 <translation id="3359256513598016054">সার্টিফিকেট নীতি বাধ্যবাধকতা</translation>
@@ -1942,7 +1937,6 @@
 <translation id="3878840326289104869">তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করা হচ্ছে</translation>
 <translation id="3879748587602334249">ডাউনলোড ম্যানেজার</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ব্যবহার করে নোট নেওয়া হচ্ছে</translation>
-<translation id="388900914234409233">এই Chromebook চার্জ করতে, একটি মানানসই OEM ব্যাটারি ব্যবহার করুন।</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP যোগ করুন...</translation>
 <translation id="3893536212201235195">আপনার অ্যাক্সেসিবিলিটি সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিবার্তা)</translation>
@@ -2132,7 +2126,6 @@
 <translation id="4147911968024186208">আবার চেষ্টা করুন। সমস্যাটি আবার হলে, কাস্টমার সাপোর্টের সাথে যোগাযোগ করুন।</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">প্রদর্শন</translation>
-<translation id="4150234330364554482">এই Chromebook-এর সাথে মানানসই OEM ডকিং স্টেশন ব্যবহার করুন।</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{১টি ট্যাব}one{#টি ট্যাব}other{#টি ট্যাব}}</translation>
 <translation id="4154664944169082762">আঙ্গুলের ছাপ</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2279,7 +2272,6 @@
 <translation id="4412698727486357573">সহায়তা কেন্দ্র</translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" অ্যাপকে কানেক্ট করা ইউএসবি ডিভাইসগুলির তালিকা নিয়ে আসতে দেবেন?</translation>
 <translation id="4414232939543644979">নতুন &amp;ছদ্মবেশী উইন্ডো</translation>
-<translation id="4414386768539506503">আপনার নিরাপত্তা কীয়ের সাইন-ইন ডেটা দেখতে সেটির পিন লিখুন। আপনি পিন না জানলে, আপনাকে নিরাপত্তা কী রিসেট করতে হবে।</translation>
 <translation id="4415245286584082850">কোনও ডিভাইস খুঁজে পাওয়া যায় নি। একটি নতুন ট্যাবে সহায়তা কেন্দ্রের একটি নিবন্ধ খুলুন।</translation>
 <translation id="4415276339145661267">আপনার Google অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="4415748029120993980">SECG এলিপ্টিক কার্ভ secp384r1 (ওরফে NIST P-384)</translation>
@@ -2381,7 +2373,6 @@
 <translation id="457386861538956877">আরও...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">ব্লুটুথ ডিভাইস যুক্ত করুন</translation>
-<translation id="4578012756826807359">আপনার সাইন-ইন ডেটা মুছে দেওয়া হয়েছে।</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> কাস্ট করতে ব্যর্থ হয়েছে।</translation>
 <translation id="4581774856936278355">Linux ফিরিয়ে আনার সময় সমস্যা হয়েছে</translation>
 <translation id="4582563038311694664">সব সেটিংস রিসেট করুন</translation>
@@ -2693,7 +2684,6 @@
 <translation id="5072836811783999860">পরিচালিত বুকমার্কগুলি দেখান</translation>
 <translation id="5074318175948309511">নতুন সেটিংস কার্যকর করার আগে এই পৃষ্ঠাটি পুনরায় লোড করার প্রয়োজন হতে পারে৷</translation>
 <translation id="5075131525758602494">সিম পিন লিখুন</translation>
-<translation id="507514548843781244">আপনার নিরাপত্তা কীয়ে সেভ করা সাইন-ইন ডেটা দেখুন ও মুছুন</translation>
 <translation id="5078638979202084724">সকল ট্যাব বুকমার্ক করুন</translation>
 <translation id="5078796286268621944">ভুল পিন</translation>
 <translation id="5079950360618752063">প্রস্তাবিত পাসওয়ার্ড ব্যবহার করুন</translation>
@@ -2964,7 +2954,6 @@
 <translation id="5496587651328244253">সংগঠিত করুন</translation>
 <translation id="549673810209994709">এই পৃষ্ঠাটির অনুবাদ করা যাবে না৷</translation>
 <translation id="5499313591153584299">এই ফাইলটি আপনার কম্পিউটারের জন্য ক্ষতিকারক হতে পারে৷</translation>
-<translation id="5500345327355928305">চার্জ করা ও পারফর্ম্যান্স সংক্রান্ত সমস্যা এড়াতে মানানসই OEM বা ইউএসবি টাইপ-সি পাওয়ার অ্যাডাপ্টার ব্যবহার করুন।</translation>
 <translation id="5502500733115278303">Firefox থেকে আমদানি করা</translation>
 <translation id="5507756662695126555">অ-অস্বীকৃতি</translation>
 <translation id="5509693895992845810">এই &amp;রূপে সেভ করুন...</translation>
@@ -2991,7 +2980,6 @@
 <translation id="5534304873398226603">ফটো ভিডিও বাতিল করুন</translation>
 <translation id="5535941515421698170">এছাড়াও এই ডিভাইস থেকে আপনার বিদ্যমান ডেটা মুছুন</translation>
 <translation id="5539221284352502426">আপনার দেওয়া পাসওয়ার্ডটি সার্ভার থেকে প্রত্যাখ্যান করা হয়েছে। সম্ভাব্য কারণ: পাসওয়ার্ডটি অনেক ছোট। পাসওয়ার্ডে অক্ষর বা সিম্বল থাকতে হবে। এই পাসওয়ার্ডটি আগের পাসওয়ার্ডগুলি থেকে অবশ্যই আলাদা হবে।</translation>
-<translation id="5541687815721799001">অ্যাপ ব্যবহার করুন</translation>
 <translation id="5542132724887566711">প্রোফাইল</translation>
 <translation id="5542750926112347543"><ph name="DOMAIN" /> এর থেকে কুকিজ ব্লক করা হয়েছে</translation>
 <translation id="5543983818738093899">স্থিতি চেক করা হচ্ছে...</translation>
@@ -3391,7 +3379,6 @@
 <translation id="6122081475643980456">আপনার ইন্টারনেট সংযোগ নিয়ন্ত্রিত হচ্ছে</translation>
 <translation id="6122095009389448667">ক্লিপবোর্ড দেখা থেকে সাইটটিকে ব্লক করে রাখুন</translation>
 <translation id="6122875415561139701">"<ph name="DEVICE_NAME" />" এ লেখার ক্রিয়াকলাপ অনুমোদিত নয়।</translation>
-<translation id="6123292156101652890">এই নিরাপত্তা কীয়ে কোনও সাইন-ইন ডেটা সেভ করা যায় না।</translation>
 <translation id="6124650939968185064">নিম্নলিখিত এক্সটেনশনগুলি এই এক্সটেনশনটির উপর নির্ভর করে:</translation>
 <translation id="6124698108608891449">এই সাইটকে আরও অনুমতি দিতে হবে।</translation>
 <translation id="6125479973208104919">দুর্ভাগ্যবশত, আপনাকে এই <ph name="DEVICE_TYPE" />এ আবার অ্যাকাউন্ট তৈরি করতে হবে।</translation>
@@ -4062,7 +4049,6 @@
 <translation id="7143092389027215216">ডেমো মোড শুরু করা হচ্ছে</translation>
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7144878232160441200">আবার চেষ্টা করুন</translation>
-<translation id="714687768418476028">আপনার নিরাপত্তা কী কোনও পিন দ্বারা সুরক্ষিত নেই। সাইন-ইন ডেটা ম্যানেজ করতে প্রথমে একটি পিন তৈরি করুন।</translation>
 <translation id="7149893636342594995">গত ২৪ ঘণ্টা</translation>
 <translation id="715118844758971915">ক্লাসিক মুদ্রকগুলি</translation>
 <translation id="7152478047064750137">এই এক্সটেনশনটির জন্য কোনও বিশেষ অনুমতির প্রয়োজন নেই</translation>
@@ -4926,7 +4912,6 @@
 <translation id="8438566539970814960">সার্চ এবং ব্রাউজিং অভিজ্ঞতা আরও উন্নত করুন</translation>
 <translation id="8439506636278576865">এই ভাষাতে পৃষ্ঠাগুলি অনুবাদ করার প্রস্তাব করে</translation>
 <translation id="8440630305826533614">Linux অ্যাপ</translation>
-<translation id="844241640324986723">আপনার সাইন-ইন ডেটা মোছা যায়নি।</translation>
 <translation id="8443338615972234259">আপনার তত্ত্বাবধানে থাকা ব্যবহারকারীর জন্য একটি অ্যাকাউন্ট এখন তৈরি করুন।</translation>
 <translation id="8446884382197647889">আরও জানুন</translation>
 <translation id="8447409163267621480">Ctrl অথবা Alt ব্যবহার করতে হবে</translation>

@@ -21,7 +21,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -138,29 +138,29 @@ TEST(HttpAuthControllerTest, Logging) {
 
   RunSingleRoundAuthTest(RUN_HANDLER_SYNC, OK, OK, SCHEME_IS_ENABLED,
                          net_log.bound());
-  TestNetLogEntry::List entries;
-  net_log.GetEntries(&entries);
+  auto entries = net_log.GetEntries();
 
   // There should be at least two events.
   ASSERT_GE(entries.size(), 2u);
 
-  auto begin = std::find_if(entries.begin(), entries.end(),
-                            [](const TestNetLogEntry& e) -> bool {
-                              std::string target, url;
-                              if (e.type != NetLogEventType::AUTH_CONTROLLER ||
-                                  e.phase != NetLogEventPhase::BEGIN ||
-                                  !e.GetStringValue("target", &target) ||
-                                  !e.GetStringValue("url", &url)) {
-                                return false;
-                              }
+  auto begin = std::find_if(
+      entries.begin(), entries.end(), [](const NetLogEntry& e) -> bool {
+        if (e.type != NetLogEventType::AUTH_CONTROLLER ||
+            e.phase != NetLogEventPhase::BEGIN)
+          return false;
 
-                              EXPECT_EQ("proxy", target);
-                              EXPECT_EQ("http://example.com/", url);
-                              return true;
-                            });
+        auto target = GetOptionalStringValueFromParams(e, "target");
+        auto url = GetOptionalStringValueFromParams(e, "url");
+        if (!target || !url)
+          return false;
+
+        EXPECT_EQ("proxy", *target);
+        EXPECT_EQ("http://example.com/", *url);
+        return true;
+      });
   EXPECT_TRUE(begin != entries.end());
   auto end = std::find_if(++begin, entries.end(),
-                          [](const TestNetLogEntry& e) -> bool {
+                          [](const NetLogEntry& e) -> bool {
                             return e.type == NetLogEventType::AUTH_CONTROLLER &&
                                    e.phase == NetLogEventPhase::END;
                           });

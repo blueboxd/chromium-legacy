@@ -91,9 +91,12 @@ Status SendKeysToElement(Session* session,
                          const base::ListValue* key_list) {
   // If we were previously focused, we don't need to focus again.
   // But also, later we don't move the carat if we were already in focus.
+  // However, non-text elements such as contenteditable elements needs to be
+  // focused to ensure the keys will end up being sent to the correct place.
+  // So in the case of non-text elements, we still focusToElement.
   bool wasPreviouslyFocused = false;
   IsElementFocused(session, web_view, element_id, &wasPreviouslyFocused);
-  if (!wasPreviouslyFocused) {
+  if (!wasPreviouslyFocused || !is_text) {
     Status status = FocusToElement(session, web_view, element_id);
     if (status.IsError())
       return Status(kElementNotInteractable);
@@ -481,8 +484,16 @@ Status ExecuteSendKeysToElement(Session* session,
                                key_list);
     }
     // If element_type is in textControlTypes, sendKeys should append
-    bool is_text = is_input && textControlTypes.find(element_type) !=
-                                   textControlTypes.end();
+    bool is_textControlType = is_input && textControlTypes.find(element_type) !=
+                                              textControlTypes.end();
+    // If the element is a textarea, sendKeys should also append
+    bool is_textarea = false;
+    status = IsElementAttributeEqualToIgnoreCase(
+        session, web_view, element_id, "tagName", "textarea", &is_textarea);
+    if (status.IsError())
+      return status;
+    bool is_text = is_textControlType || is_textarea;
+
     return SendKeysToElement(session, web_view, element_id, is_text, key_list);
   }
 }

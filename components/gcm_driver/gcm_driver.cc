@@ -15,6 +15,7 @@
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_result.h"
 #include "components/gcm_driver/gcm_app_handler.h"
+#include "components/gcm_driver/web_push_metrics.h"
 
 namespace gcm {
 
@@ -361,7 +362,7 @@ void GCMDriver::OnMessageEncrypted(const std::string& fcm_token,
     case GCMEncryptionResult::NO_KEYS:
     case GCMEncryptionResult::INVALID_SHARED_SECRET:
     case GCMEncryptionResult::ENCRYPTION_FAILED: {
-      LOG(ERROR) << "Webpush message encryption failed";
+      LogSendWebPushMessageResult(SendWebPushMessageResult::kEncryptionFailed);
       std::move(callback).Run(base::nullopt);
       return;
     }

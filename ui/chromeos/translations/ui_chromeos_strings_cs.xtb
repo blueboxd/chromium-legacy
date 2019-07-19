@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Posuvník přehrávání</translation>
 <translation id="1399648040768741453">Telugská klávesnice (fonetická)</translation>
 <translation id="1430915738399379752">Tisk</translation>
+<translation id="1439494416798956626">Přesunuto do složky <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnamská klávesnice (Telex)</translation>
 <translation id="1455548678241328678">Norská klávesnice</translation>
 <translation id="1464724975715666883">1 chyba.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Prohledávání mediálního zařízení...</translation>
 <translation id="3468522857997926824">Počet fotek, které byly zálohovány na <ph name="BEGIN_LINK" />Disk Google<ph name="END_LINK" />: <ph name="FILE_COUNT" /></translation>
 <translation id="3470502288861289375">Kopírování...</translation>
+<translation id="3473378059788601120">Zkopírováno do složky <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Tabulka Google</translation>
 <translation id="3495304270784461826">Chyby: <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Přepis (shalom ← שלום)</translation>
@@ -436,6 +438,7 @@
 <translation id="5923484009666796948">Zadávání v japonštině (pro japonskou klávesnici)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Udělujete linuxovým aplikacím oprávnění otevírat soubory ve vašem Disku Google. Změny se budou synchronizovat do vašich ostatních zařízení.</translation>
+<translation id="5955954492236143329">Počet položek: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Možnosti řazení</translation>
 <translation id="6005282720244019462">Latinskoamerická klávesnice</translation>
 <translation id="6007237601604674381">Přesun se nezdařil. <ph name="ERROR_MESSAGE" /></translation>

@@ -112,6 +112,7 @@ static_library("arc") {
     "//content/public/common",
     "//device/bluetooth",
     "//google_apis",
+    "//media/capture:capture_lib",
     "//services/device/public/mojom",
     "//skia",
     "//third_party/re2:re2",

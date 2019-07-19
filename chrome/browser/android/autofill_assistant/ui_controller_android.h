@@ -11,6 +11,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
@@ -52,16 +53,23 @@ class UiControllerAndroid : public UiController {
   // instance or until Attach() is called again, with different pointers.
   //
   // |ui_delegate| must remain valid for the lifetime of this instance or until
-  // either Attach() or WillShutdown() are called.
+  // either Attach() or Detach() are called.
   void Attach(content::WebContents* web_contents,
               Client* client,
               UiDelegate* ui_delegate);
+
+  // Detaches the UI from the its delegate. This guarantees the delegate is not
+  // called anymore after the call.
+  void Detach();
+
+  // Returns true if the UI is attached to a delegate.
+  bool IsAttached() { return ui_delegate_; }
 
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
   void OnBubbleMessageChanged(const std::string& message) override;
-  void WillShutdown(Metrics::DropOutReason reason) override;
+  void CloseCustomTab() override;
   void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnPaymentRequestOptionsChanged(
       const PaymentRequestOptions* options) override;
@@ -179,6 +187,10 @@ class UiControllerAndroid : public UiController {
 
   // Makes the whole of AA invisible or visible again.
   void SetVisible(bool visible);
+
+  // Timer started when reaching the STOPPED state. It allows keeping the UI up
+  // for a few seconds before it destroys itself.
+  std::unique_ptr<base::OneShotTimer> destroy_timer_;
 
   // Debug context captured previously. If non-empty, GetDebugContext() returns
   // this context.

@@ -837,6 +837,15 @@
       </intent-filter>
     </activity>
     <activity
+        android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+        android:excludeFromRecents="true"
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.media.PictureInPictureActivity"
+        android:noHistory="true"
+        android:resizeableActivity="true"
+        android:supportsPictureInPicture="true"
+        android:theme="@style/Theme.Chromium.Activity"/>
+    <activity
         android:enableVrMode="@string/gvr_vr_mode_component"
         android:excludeFromRecents="true"
         android:exported="false"
@@ -1175,7 +1184,7 @@
         android:name="com.google.android.gms.version"
         android:value="@integer/google_play_services_version"/>
     <meta-data android:name="com.google.ar.core" android:value="optional"/>
-    <meta-data android:name="com.google.ar.core.min_apk_version" android:value="190310000"/>
+    <meta-data android:name="com.google.ar.core.min_apk_version" android:value="190531000"/>
     <meta-data android:name="com.samsung.android.sdk.multiwindow.enable" android:value="true"/>
     <meta-data
         android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"

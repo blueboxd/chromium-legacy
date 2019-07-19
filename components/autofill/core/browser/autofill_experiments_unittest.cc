@@ -7,6 +7,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -26,6 +27,7 @@ class AutofillExperimentsTest : public testing::Test {
   void SetUp() override {
     pref_service_.registry()->RegisterBooleanPref(
         prefs::kAutofillWalletImportEnabled, true);
+    log_manager_ = LogManager::Create(nullptr, base::Closure());
   }
 
   bool IsCreditCardUploadEnabled(const AutofillSyncSigninState sync_state) {
@@ -35,13 +37,15 @@ class AutofillExperimentsTest : public testing::Test {
   bool IsCreditCardUploadEnabled(const std::string& user_email,
                                  const AutofillSyncSigninState sync_state) {
     return autofill::IsCreditCardUploadEnabled(&pref_service_, &sync_service_,
-                                               user_email, sync_state);
+                                               user_email, sync_state,
+                                               log_manager_.get());
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingPrefServiceSimple pref_service_;
   syncer::TestSyncService sync_service_;
   base::HistogramTester histogram_tester;
+  std::unique_ptr<LogManager> log_manager_;
 };
 
 // Testing each scenario, followed by logging the metrics for various

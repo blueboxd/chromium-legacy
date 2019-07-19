@@ -15,7 +15,7 @@ UiController::~UiController() = default;
 void UiController::OnStateChanged(AutofillAssistantState new_state) {}
 void UiController::OnStatusMessageChanged(const std::string& message) {}
 void UiController::OnBubbleMessageChanged(const std::string& message) {}
-void UiController::WillShutdown(Metrics::DropOutReason reason) {}
+void UiController::CloseCustomTab() {}
 void UiController::OnUserActionsChanged(
     const std::vector<UserAction>& user_actions) {}
 void UiController::OnPaymentRequestOptionsChanged(

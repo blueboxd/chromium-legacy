@@ -381,9 +381,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
   // Flag Default app in Profile 1.
-  extensions::ExtensionPrefs::Get(GetProfile(1))
-      ->UpdateExtensionPref(default_app_id, "was_installed_by_default",
-                            std::make_unique<base::Value>(true));
+  using ALSS = app_list::AppListSyncableService;
+  EXPECT_FALSE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
+  ALSS::SetAppIsDefaultForTest(GetProfile(1), default_app_id);
+  EXPECT_TRUE(ALSS::AppIsDefaultForTest(GetProfile(1), default_app_id));
 
   // Remove the default app in Profile 0 and verifier, ensure it was removed
   // in Profile 1.
@@ -392,8 +393,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   ASSERT_TRUE(AllProfilesHaveSameAppList());
 
   // Ensure that a REMOVE_DEFAULT_APP SyncItem entry exists in Profile 1.
-  const app_list::AppListSyncableService::SyncItem* sync_item =
-      GetSyncItem(GetProfile(1), default_app_id);
+  const ALSS::SyncItem* sync_item = GetSyncItem(GetProfile(1), default_app_id);
   ASSERT_TRUE(sync_item);
   ASSERT_EQ(sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP,
             sync_item->item_type);

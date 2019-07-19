@@ -2468,6 +2468,28 @@
             ]
         }
     ],
+    "HeapProfilerReporting": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "sampling-rate": "1000000"
+                    },
+                    "enable_features": [
+                        "HeapProfilerReporting"
+                    ]
+                }
+            ]
+        }
+    ],
     "HomePageButtonForceEnabled": [
         {
             "platforms": [

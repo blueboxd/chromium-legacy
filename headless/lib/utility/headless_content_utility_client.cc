@@ -11,7 +11,7 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "components/services/pdf_compositor/public/cpp/pdf_compositor_service_factory.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #endif
 
 namespace headless {

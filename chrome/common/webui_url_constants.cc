@@ -29,6 +29,7 @@ const char kChromeUIAutofillInternalsHost[] = "autofill-internals";
 const char kChromeUIBluetoothInternalsHost[] = "bluetooth-internals";
 const char kChromeUIBookmarksHost[] = "bookmarks";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
+const char kChromeUICameraHost[] = "camera";
 const char kChromeUICertificateViewerHost[] = "view-cert";
 const char kChromeUICertificateViewerURL[] = "chrome://view-cert/";
 const char kChromeUIChromeSigninHost[] = "chrome-signin";
@@ -342,14 +343,18 @@ const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 // AutocompleteProvider.
 
 const char kAddressesSubPage[] = "addresses";
+const char kAppearanceSubPage[] = "appearance";
 const char kAutofillSubPage[] = "autofill";
 const char kClearBrowserDataSubPage[] = "clearBrowserData";
+const char kCloudPrintersSubPage[] = "cloudPrinters";
 const char kContentSettingsSubPage[] = "content";
 const char kCookieSettingsSubPage[] = "cookies";
 const char kDeprecatedExtensionsSubPage[] = "extensions";
+const char kDownloadsSubPage[] = "downloads";
 const char kHandlerSettingsSubPage[] = "handlers";
 const char kImportDataSubPage[] = "importData";
 const char kLanguageOptionsSubPage[] = "languages";
+const char kOnStartupSubPage[] = "onStartup";
 const char kPasswordManagerSubPage[] = "passwords";
 const char kPaymentsSubPage[] = "payments";
 const char kPrintingSettingsSubPage[] = "printing";
@@ -366,9 +371,11 @@ const char kTriggeredResetProfileSettingsSubPage[] =
 // NOTE: Add new OS settings to IsOSSettingsSubPage() below.
 const char kAccessibilitySubPage[] = "accessibility";
 const char kAccountManagerSubPage[] = "accountManager";
+const char kAccountSubPage[] = "accounts";
 const char kAndroidAppsDetailsSubPage[] = "androidApps/details";
 const char kAssistantSubPage[] = "googleAssistant";
 const char kBluetoothSubPage[] = "bluetoothDevices";
+const char kChangePictureSubPage[] = "changePicture";
 // 'multidevice/features' is a child of the 'multidevice' route
 const char kConnectedDevicesSubPage[] = "multidevice/features";
 const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
@@ -376,44 +383,67 @@ const char kDateTimeSubPage[] = "dateTime";
 const char kDisplaySubPage[] = "display";
 const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
-const char kLockScreenSubPage[] = "lockScreen";
 const char kKerberosAccountsSubPage[] = "kerberosAccounts";
+const char kKeyboardOverlaySubPage[] = "keyboard-overlay";
+const char kLockScreenSubPage[] = "lockScreen";
+const char kManageAccessibilitySubPage[] = "manageAccessibility";
+const char kMultideviceSubPage[] = "multidevice";
 const char kNativePrintingSettingsSubPage[] = "cupsPrinters";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kNetworksSubPage[] = "networks";
 const char kPluginVmDetailsSubPage[] = "pluginVm/details";
 const char kPluginVmSharedPathSubPage[] = "pluginVm/sharedPath";
+const char kPointerOverlaySubPage[] = "pointer-overlay";
 const char kPowerSubPage[] = "power";
+const char kResetSubPage[] = "reset";
 const char kSmartLockSettingsSubPage[] = "multidevice/features/smartLock";
 const char kSmbSharesSubPage[] = "smbShares";
 const char kStorageSubPage[] = "storage";
 const char kStylusSubPage[] = "stylus";
 // Tether is a child of the 'networks' route.
 const char kTetherSettingsSubPage[] = "networks?type=Tether";
+const char kVPNSettingsSubPage[] = "networks?type=VPN";
+const char kWiFiSettingsSubPage[] = "networks?type=WiFi";
 
+// Any changes here need to be kept in sync with chrome_new_window_client.cc
 bool IsOSSettingsSubPage(const std::string& sub_page) {
-  static const char* const kSubPages[] = {kAccessibilitySubPage,
-                                          kAccountManagerSubPage,
-                                          kAndroidAppsDetailsSubPage,
-                                          kAssistantSubPage,
-                                          kBluetoothSubPage,
-                                          kConnectedDevicesSubPage,
-                                          kCrostiniSharedUsbDevicesSubPage,
-                                          kDateTimeSubPage,
-                                          kDisplaySubPage,
-                                          kHelpSubPage,
-                                          kInternetSubPage,
-                                          kKerberosAccountsSubPage,
-                                          kLanguageOptionsSubPage,
-                                          kLockScreenSubPage,
-                                          kNetworkDetailSubPage,
-                                          kNetworksSubPage,
-                                          kPowerSubPage,
-                                          kSmartLockSettingsSubPage,
-                                          kSmbSharesSubPage,
-                                          kStorageSubPage,
-                                          kStylusSubPage,
-                                          kSyncSetupSubPage};
+  static const char* const kSubPages[] = {
+      kAccessibilitySubPage,
+      kAccountManagerSubPage,
+      kAccountSubPage,
+      kAndroidAppsDetailsSubPage,
+      kAssistantSubPage,
+      kBluetoothSubPage,
+      kChangePictureSubPage,
+      kConnectedDevicesSubPage,
+      kCrostiniSharedUsbDevicesSubPage,
+      kDateTimeSubPage,
+      kDisplaySubPage,
+      kHelpSubPage,
+      kInternetSubPage,
+      kKerberosAccountsSubPage,
+      kKeyboardOverlaySubPage,
+      // language is both an OS and browser sub page, but prefer the OS version
+      kLanguageOptionsSubPage,
+      kLockScreenSubPage,
+      kManageAccessibilitySubPage,
+      kMultideviceSubPage,
+      kNativePrintingSettingsSubPage,
+      kNetworkDetailSubPage,
+      kNetworksSubPage,
+      kPointerOverlaySubPage,
+      kPowerSubPage,
+      // reset is both an OS and browser sub page, but prefer the OS version
+      kResetSubPage,
+      kSmartLockSettingsSubPage,
+      kSmbSharesSubPage,
+      kStorageSubPage,
+      kStylusSubPage,
+      // sync is both an OS and browser sub page, but prefer the OS version
+      kSyncSetupSubPage,
+      kVPNSettingsSubPage,
+      kWiFiSettingsSubPage,
+  };
   // Sub-pages may have query parameters, e.g. networkDetail?guid=123456.
   std::string sub_page_without_query = sub_page;
   std::string::size_type index = sub_page.find('?');

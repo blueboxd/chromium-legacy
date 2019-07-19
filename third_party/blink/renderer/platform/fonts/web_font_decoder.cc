@@ -195,7 +195,7 @@ sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
   // Most web fonts are compressed, so the result can be much larger than
   // the original.
   ots::ExpandingMemoryStream output(buffer->size(), kMaxWebFontSize);
-  double start = CurrentTime();
+  base::ElapsedTimer timer;
   BlinkOTSContext ots_context;
   SharedBuffer::DeprecatedFlatData flattened_buffer(buffer);
   const char* data = flattened_buffer.Data();
@@ -211,7 +211,7 @@ sk_sp<SkTypeface> WebFontDecoder::Decode(SharedBuffer* buffer) {
   }
 
   const size_t decoded_length = SafeCast<size_t>(output.Tell());
-  RecordDecodeSpeedHistogram(data, buffer->size(), CurrentTime() - start,
+  RecordDecodeSpeedHistogram(data, buffer->size(), timer.Elapsed().InSecondsF(),
                              decoded_length);
 
   sk_sp<SkData> sk_data = SkData::MakeWithCopy(output.get(), decoded_length);

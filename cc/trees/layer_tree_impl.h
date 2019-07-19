@@ -457,6 +457,7 @@ class CC_EXPORT LayerTreeImpl {
   gfx::Rect RootScrollLayerDeviceViewportBounds() const;
 
   LayerImpl* LayerById(int id) const;
+  LayerImpl* LayerByElementId(ElementId element_id) const;
   LayerImpl* ScrollableLayerByElementId(ElementId element_id) const;
 
   bool IsElementInPropertyTree(ElementId element_id) const;

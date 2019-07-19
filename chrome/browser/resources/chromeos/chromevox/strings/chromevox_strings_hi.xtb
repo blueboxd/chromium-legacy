@@ -324,7 +324,7 @@
 <translation id="3286372614333682499">पोर्ट्रेट</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
-<translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चयन वगैरह शामिल हैं.</translation>
+<translation id="3300348286427369683">रिच टेक्स्ट के साथ काम करता है. अब ChromeVox रिच टेक्स्ट वाली फ़ील्ड के साथ काम करता है जिसमें कहीं भी सीधे पहुंचाने के निर्देश, ब्रेल कर्सर की रूटिंग, चुनना वगैरह शामिल हैं.</translation>
 <translation id="3307886118343381874">टेबल के अंत में जाएं</translation>
 <translation id="3311969765485641742">अलर्ट की समीक्षा करने के लिए Alt+Shift+A दबाएं</translation>
 <translation id="3312997241656799641">देखा गया अगला लिंक</translation>
@@ -582,7 +582,7 @@
 <translation id="5050015258024679800">पिछला लेवल 4 का शीर्षक</translation>
 <translation id="5054047268577924192">पिछला सूची आइटम</translation>
 <translation id="5075936896689244141">अगला कीमैप</translation>
-<translation id="5078661581131202757">फ़ाइल चयन</translation>
+<translation id="5078661581131202757">फ़ाइल चुनें</translation>
 <translation id="5080758118274074384">डबल क्लिक किया गया</translation>
 <translation id="5085453135206054947">हल्का बैंगनी लाल</translation>
 <translation id="5087864757604726239">वापस जाएं</translation>
@@ -845,7 +845,7 @@
 <translation id="7031651751836475482">lstitm</translation>
 <translation id="7037042857287298941">पिछली सूची</translation>
 <translation id="7039555289296502784">हल्का जैतूनी</translation>
-<translation id="7041173719775863268">चयन खत्म करें</translation>
+<translation id="7041173719775863268">चुनना खत्म करें</translation>
 <translation id="7043850226734279132">गहरा खाकी</translation>
 <translation id="7048792632163898198">अगले कुछ शॉर्टकट ChromeVox के निर्देश नहीं हैं लेकिन फिर भी Chrome का ज़्यादा से ज़्यादा फ़ायदा उठाने के लिए वे बहुत उपयोगी हैं.
 बटन और लिंक जैसे कार्रवाई आइटम से आगे जाने के लिए Tab बटन दबाएं. पीछे जाने के लिए, Shift+Tab दबाएं.
@@ -976,7 +976,7 @@
 <translation id="7895896691902835279">अज्ञात लिंक</translation>
 <translation id="7927711904086083099">चयनित नहीं</translation>
 <translation id="7935627501098484003">समय नियंत्रण</translation>
-<translation id="7939428177581522200">चयन में जोड़े गए</translation>
+<translation id="7939428177581522200">चुनने में जोड़े गए</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{ऐट}one{# ऐट चिह्न}other{# ऐट चिह्न}}</translation>
 <translation id="7942349550061667556">लाल</translation>
 <translation id="7965147473449754028">मेन्यू बंद किया गया</translation>
@@ -1095,7 +1095,7 @@
 <translation id="820417203470636242">खाली सेल.</translation>
 <translation id="820469951249669083">अगली पंक्ति पर जाएं</translation>
 <translation id="8205922869661890178">डेवलपर लॉग पेज खोलें</translation>
-<translation id="8215202828671303819">एकाधिक चयन</translation>
+<translation id="8215202828671303819">एक से ज़्यादा चुनें</translation>
 <translation id="8249864170673238087"><ph name="COLOR" />, <ph name="OPACITY_PERCENTAGE" />% अपारदर्शिता.</translation>
 <translation id="826825447994856889">परिचय</translation>
 <translation id="827422111966801947">गहरा नीला</translation>
@@ -1129,7 +1129,7 @@
 <translation id="8542271685829952264">सभी ChromeVox निर्देश और शॉर्टकट एक्सप्लोर करने के लिए, Search + Period दबाएं, फिर मेन्यू पर नेविगेट करने के लिए तीर के निशान वाले बटन का इस्तेमाल करें और किसी निर्देश को चालू करने के लिए Enter का इस्तेमाल करें. Search+o फिर t दबाकर यहां वापस लौटें.</translation>
 <translation id="8548973727659841685">अक्षर</translation>
 <translation id="8561322612995434619">पॉप अप है</translation>
-<translation id="8571096049907249734">एकाधिक चयन</translation>
+<translation id="8571096049907249734">एक से ज़्यादा चुनें</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">अगला सूची आइटम</translation>
 <translation id="860150890330522909"><ph name="NAME" />, चेकबॉक्‍स चेक किया गया</translation>
@@ -1148,7 +1148,7 @@
 <translation id="867187640362843212">शीर्षक 5</translation>
 <translation id="8696284982970258155">खरबूजा</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}one{# लम्बवत पाइप}other{# लम्बवत पाइप}}</translation>
-<translation id="8735450637152821465">चयन प्रारंभ करें</translation>
+<translation id="8735450637152821465">चुनना शुरू करें</translation>
 <translation id="8743786158317878347">संरचित सामग्री, जैसे तालिकाएं डालें</translation>
 <translation id="8747966237988593539">क्रमित सूची</translation>
 <translation id="8749988712346667988">चांदी जैसा रंग</translation>
@@ -1188,7 +1188,7 @@
 <translation id="9065283790526219006">+popup</translation>
 <translation id="9066023754636984703">ज़्यादा जानकारी के लिए Search+A, J दबाएं.</translation>
 <translation id="9067522039955793016">नया पेज</translation>
-<translation id="9077213568694924680">चयन से निकाले गए</translation>
+<translation id="9077213568694924680">चुने जाने से निकाले गए</translation>
 <translation id="9077305471618729969">हल्का समुद्री हरा</translation>
 <translation id="9082874451376019682">कोई पिछला स्लाइडर नहीं.</translation>
 <translation id="9087707351856729768">शब्दों को अपने आप पूरा करने के लिए लिखें.</translation>
@@ -1213,7 +1213,7 @@
 <translation id="9220679313820249046">नारंगी लाल रंग</translation>
 <translation id="9223032053830369045">गहरा लाल</translation>
 <translation id="923331726185079994">ChromeVox अपडेट किया गया</translation>
-<translation id="930275611743429116">चयन प्रारंभ या खत्म करें.</translation>
+<translation id="930275611743429116">चुनना शुरू या खत्म करें.</translation>
 <translation id="93384979447910801">गहरा समुद्री हरा</translation>
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="958854023026327378">एक उंगली से नीचे स्वाइप करें</translation>

@@ -959,8 +959,7 @@ TEST_P(QuicHttpStreamTest, GetRequestWithTrailers) {
                                  +spdy_trailers_frame_length),
             stream_->GetTotalReceivedBytes());
   // Check that NetLog was filled as expected.
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, /*min_offset=*/0,
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,

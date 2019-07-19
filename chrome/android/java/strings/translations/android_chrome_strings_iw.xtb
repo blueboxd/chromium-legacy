@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">נתוני אתר מאוחסנים</translation>
 <translation id="2328985652426384049">אי אפשר להיכנס לחשבון</translation>
 <translation id="2349710944427398404">‏סך כל הנתונים שבהם משתמש Chrome, כולל חשבונות, סימניות והגדרות שמורות</translation>
-<translation id="2351097562818989364">הגדרות התרגום שלך אופסו.</translation>
 <translation id="2353636109065292463">בדיקת חיבור האינטרנט</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2369533728426058518">כרטיסיות פתוחות</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">נותרו <ph name="SECONDS" /> שניות</translation>
 <translation id="2779651927720337254">נכשל</translation>
 <translation id="2781151931089541271">נותרה שניה אחת</translation>
+<translation id="2796941233371040292">אין כאן נתוני אחסון</translation>
 <translation id="2801022321632964776">‏עדכון לגרסה האחרונה של Chrome יאפשר לך לקרוא בשפה שלך</translation>
 <translation id="2810645512293415242">דף פשוט יותר שחוסך בנתונים ונטען מהר יותר.</translation>
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">‏מידע כללי על Chrome</translation>
 <translation id="2891154217021530873">הפסק את טעינת הדף</translation>
 <translation id="2893180576842394309">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של החיפוש ושירותי Google אחרים</translation>
+<translation id="2898264748040935573">עריכת הסיסמה השמורה</translation>
 <translation id="2900528713135656174">צור אירוע</translation>
 <translation id="2902702728133930130">‏שגיאה בלתי צפויה גרמה לכשל של Chrome בעת ההפעלה.</translation>
 <translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@
 <translation id="4913169188695071480">הפסק לרענן</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /> בזמן חיפוש התקנים…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{דף אחד (#)}two{# דפים}many{# דפים}other{# דפים}}</translation>
+<translation id="4932247056774066048">‏מכיוון שבחרת לצאת מחשבון שמנוהל על ידי <ph name="DOMAIN_NAME" />, נתוני Chrome שלך יימחקו מהמכשיר הזה. הם יישמרו בחשבון Google שלך.</translation>
 <translation id="4943703118917034429">מציאות מדומה</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> משתף את המסך שלך</translation>
@@ -562,6 +564,7 @@
 <translation id="5210286577605176222">חזרה לכרטיסייה הקודמת</translation>
 <translation id="5210365745912300556">סגור כרטיסייה</translation>
 <translation id="5224771365102442243">כולל סרטון</translation>
+<translation id="5230560987958996918">‏<ph name="SITE" /> מבקש לבצע סריקה כדי לאתר מכשירי Bluetooth בקרבת מקום. המכשירים הבאים נמצאו:</translation>
 <translation id="5233638681132016545">כרטיסייה חדשה</translation>
 <translation id="526421993248218238">לא ניתן לטעון את הדף</translation>
 <translation id="5271967389191913893">המכשיר לא מצליח לפתוח את התוכן להורדה.</translation>
@@ -571,7 +574,6 @@
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
 <translation id="5304593522240415983">שדה זה לא יכול להיות ריק</translation>
 <translation id="5308380583665731573">התחברות</translation>
-<translation id="5308603654685598744">‏כשהתכונה הזו פועלת, Chrome יציע לתרגם באמצעות Google Translate דפים הכתובים בשפות אחרות.</translation>
 <translation id="5313967007315987356">הוסף אתר</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
@@ -586,6 +588,7 @@
 <translation id="5414836363063783498">מאמת…</translation>
 <translation id="5423934151118863508">הדפים שבהם אתה מבקר בתדירות הגבוהה ביותר יופיעו כאן</translation>
 <translation id="5424588387303617268">‏‎<ph name="GIGABYTES" /> GB זמינים</translation>
+<translation id="543338862236136125">עריכת סיסמה</translation>
 <translation id="5433691172869980887">שם המשתמש הועתק</translation>
 <translation id="543509235395288790">מתבצעת הורדה של <ph name="COUNT" /> קבצים (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">מעבר לשורת כתובת האתר</translation>
@@ -660,7 +663,6 @@
 <translation id="5865733239029070421">‏שליחת דוחות קריסה וסטטיסטיקת שימוש אל Google באופן אוטומטי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
-<translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
 <translation id="5919204609460789179">יש לעדכן את <ph name="PRODUCT_NAME" /> כדי להתחיל סנכרון</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> נחסכו</translation>
@@ -805,7 +807,6 @@
 <translation id="6963642900430330478">הדף הזה מסוכן. פרטי האתר</translation>
 <translation id="6963766334940102469">מחק סימניות</translation>
 <translation id="6965382102122355670">אישור</translation>
-<translation id="6978479750597523876">‏אפס את הגדרות Google Translate</translation>
 <translation id="6979737339423435258">משחר ההיסטוריה</translation>
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="6989267951144302301">ההורדה נכשלה</translation>
@@ -952,7 +953,7 @@
 <translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
 <translation id="8004582292198964060">דפדפן</translation>
 <translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
-<translation id="8013372441983637696">‏יש גם לנקות את נתוני Chrome מהמכשיר הזה</translation>
+<translation id="8013372441983637696">‏יש לנקות גם את נתוני Chrome מהמכשיר הזה</translation>
 <translation id="8015452622527143194">החזר את כל מה שמופיע בדף לגודל ברירת המחדל</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8026334261755873520">ניקוי נתוני גלישה</translation>

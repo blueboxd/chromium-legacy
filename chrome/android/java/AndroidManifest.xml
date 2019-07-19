@@ -185,7 +185,7 @@ by a child template that "extends" this file.
              the module installation will not automatically bring in DFM's
              manifest entries. -->
         <meta-data android:name="com.google.ar.core.min_apk_version"
-            android:value="190310000"/>
+            android:value="190531000"/>
         <activity
             android:name="com.google.ar.core.InstallActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -341,6 +341,16 @@ by a child template that "extends" this file.
                 <data android:scheme="file" />
                 <data android:scheme="content" />
             </intent-filter>
+        </activity>
+
+        <activity android:name="org.chromium.chrome.browser.media.PictureInPictureActivity"
+                  android:exported="false"
+                  android:noHistory="true"
+                  android:theme="@style/Theme.Chromium.Activity"
+                  android:excludeFromRecents="true"
+                  android:configChanges=
+                       "screenSize|smallestScreenSize|screenLayout|orientation"
+                  {{ self.supports_video_persistence() }}>
         </activity>
 
         <!-- We have a separate activity-alias for audio so that we can disable audio handling

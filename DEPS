@@ -140,7 +140,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling sfntly
   # and whatever else without interference from each other.
-  'sfntly_revision': 'e24c73130c663c9f329e78f5ca3fd5bd83b02622',
+  'sfntly_revision': '48312c98332a4608572459dc71584c2a9dbb1792',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
@@ -148,7 +148,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '24ba8447ece030578190768908dad59f3f4cd7ed',
+  'v8_revision': '1c967e1fcf136946aa3bd9e0c811d2ba728fa150',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -156,7 +156,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '3d4dfa671d077ed294f4e7f78a399ac0d380b7d1',
+  'angle_revision': '3c4cfad19f14a9ac41ce0c8de0cd59e194ba26b5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'a41edbef7e5cf0f76a94330586af1b97d91cea38',
+  'catapult_revision': '5651a8c3364dacbc7a6e4f157840e623b0922dfd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -263,7 +263,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'aa9e8f538041db3055ea443080e0ccc315fa114f',
+  'spv_tools_revision': '76b75c40a1e27939957e6a598292e9f32b4e98d4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -275,11 +275,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': 'ef2b7a6d5aedd2dec30e77d8c97499ce5ab0564c',
+  'shaderc_revision': '8f36a0dbeb56aa169a9c3834b762e149f5c92113',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '91ec571d17df9f837cf2b51878efb79f40ce1369',
+  'dawn_revision': '49aae0f3bde201d10f1b17d362b0d5b8f85dceb4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -808,7 +808,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd10b29d3e26764c726f49a593c314405fb6eb112',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9997cc020c16adacc2c9b482530ab22e27492508',
       'condition': 'checkout_linux',
   },
 
@@ -823,7 +823,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '0dba4afcf273aa8002a935278b41164d7fb04eb6',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '7fce758d67707de0c1dd99c72663999c2978ae97',
       'condition': 'checkout_linux',
   },
 
@@ -833,7 +833,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6ab53d93e90c81d2192866d33bb0b54996a9da3b',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'f4e0cc69eed38336e8e6e741c7b6ad02e9cab731',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -893,7 +893,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/harfbuzz/harfbuzz.git' + '@' + Var('harfbuzz_revision'),
 
   'src/third_party/emoji-segmenter/src':
-    Var('chromium_git') + '/external/github.com/googlei18n/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
+    Var('chromium_git') + '/external/github.com/google/emoji-segmenter.git' + '@' + Var('emoji_segmenter_revision'),
 
   # Chrome OS touchpad gestures library.
   'src/third_party/gestures/gestures': {
@@ -962,8 +962,20 @@ deps = {
   },
 
   'src/third_party/arcore-android-sdk/src': {
-      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '5b67d88f0b33edbfbe4902141ca44e750df9b6c2',
+      'url': Var('chromium_git') + '/external/github.com/google-ar/arcore-android-sdk.git' + '@' + '765ca36d1d03e8d97bcb4d48d407277c3b503f21',
       'condition': 'checkout_android',
+  },
+
+  'src/third_party/arcore-android-sdk-client': {
+      'packages': [
+        {
+          'package': 'chromium/third_party/arcore-android-sdk-client',
+          'version': 'Ki3Nxeov-cyGeHGIxrhG1teX7zYstsUtg1k-SAQ8CpAC',
+        },
+      ],
+
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
   },
 
   'src/third_party/hamcrest': {
@@ -1194,7 +1206,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' +  'edd4fc045ba2949f5a206cb66d84e0ec7d31bc39',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' +  '3616447f3f5fbae7183384049b4662a93e0a4230',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1264,7 +1276,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': '6xVKWv-ssICwyU5FC1osaRpeZio2kM4Tko33I_SIK-EC',
+              'version': '-ZVn1C00lIdjTSJqwdg9GyT_jqzY8RmSrZ7NGfQFeZ4C',
           },
       ],
       'condition': 'checkout_android',
@@ -1304,7 +1316,7 @@ deps = {
   },
 
   'src/third_party/sfntly/src':
-    Var('chromium_git') + '/external/github.com/googlei18n/sfntly.git' + '@' + Var('sfntly_revision'),
+    Var('chromium_git') + '/external/github.com/googlefonts/sfntly.git' + '@' + Var('sfntly_revision'),
 
   'src/third_party/skia':
     Var('skia_git') + '/skia.git' + '@' +  Var('skia_revision'),
@@ -1362,7 +1374,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '284c30224c2fb49580d0d702e7dec720f6ad08c2',
+    Var('webrtc_git') + '/src.git' + '@' + '1a49c1338830b222bc6b22b4e0690615bcd6fa52',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1403,7 +1415,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@91d2c3938fa5c95e67742b9187bc8c39bd1fd226',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8bf64083d000c5222151542573a4df00c3b76394',
     'condition': 'checkout_src_internal',
   },
 
@@ -2008,17 +2020,6 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_google_android_gms_play_services_vision_common',
               'version': 'version:15.0.1-cr0',
-          },
-      ],
-      'condition': 'checkout_android',
-      'dep_type': 'cipd',
-  },
-
-  'src/third_party/android_deps/libs/com_google_ar_core': {
-      'packages': [
-          {
-              'package': 'chromium/third_party/android_deps/libs/com_google_ar_core',
-              'version': '4_5y1Cw_L1MHu3UedmkavqbZ7H7sYPBTdpcAOJQvlXkC',
           },
       ],
       'condition': 'checkout_android',

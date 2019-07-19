@@ -40,6 +40,11 @@ void KerberosAccountsHandler::RegisterMessages() {
       base::BindRepeating(&KerberosAccountsHandler::HandleRemoveKerberosAccount,
                           weak_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
+      "validateKerberosConfig",
+      base::BindRepeating(
+          &KerberosAccountsHandler::HandleValidateKerberosConfig,
+          weak_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
       "setAsActiveKerberosAccount",
       base::BindRepeating(
           &KerberosAccountsHandler::HandleSetAsActiveKerberosAccount,
@@ -51,15 +56,15 @@ void KerberosAccountsHandler::HandleGetKerberosAccounts(
   AllowJavascript();
 
   CHECK_EQ(1U, args->GetSize());
-  base::Value callback_id = args->GetList()[0].Clone();
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   KerberosCredentialsManager::Get().ListAccounts(
       base::BindOnce(&KerberosAccountsHandler::OnListAccounts,
-                     weak_factory_.GetWeakPtr(), std::move(callback_id)));
+                     weak_factory_.GetWeakPtr(), callback_id));
 }
 
 void KerberosAccountsHandler::OnListAccounts(
-    base::Value callback_id,
+    const std::string& callback_id,
     const kerberos::ListAccountsResponse& response) {
   base::ListValue accounts;
 
@@ -98,7 +103,7 @@ void KerberosAccountsHandler::OnListAccounts(
     accounts.GetList().push_back(std::move(account_dict));
   }
 
-  ResolveJavascriptCallback(callback_id, accounts);
+  ResolveJavascriptCallback(base::Value(callback_id), accounts);
 }
 
 void KerberosAccountsHandler::HandleAddKerberosAccount(
@@ -148,6 +153,35 @@ void KerberosAccountsHandler::OnRemoveAccount(const std::string& callback_id,
                                               kerberos::ErrorType error) {
   ResolveJavascriptCallback(base::Value(callback_id),
                             base::Value(static_cast<int>(error)));
+}
+
+void KerberosAccountsHandler::HandleValidateKerberosConfig(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(2U, args->GetSize());
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const std::string& krb5conf = args->GetList()[1].GetString();
+
+  KerberosCredentialsManager::Get().ValidateConfig(
+      krb5conf, base::BindOnce(&KerberosAccountsHandler::OnValidateConfig,
+                               weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void KerberosAccountsHandler::OnValidateConfig(
+    const std::string& callback_id,
+    const kerberos::ValidateConfigResponse& response) {
+  base::Value error_info(base::Value::Type::DICTIONARY);
+  error_info.SetKey("code", base::Value(response.error_info().code()));
+  if (response.error_info().has_line_index()) {
+    error_info.SetKey("lineIndex",
+                      base::Value(response.error_info().line_index()));
+  }
+
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetKey("error", base::Value(static_cast<int>(response.error())));
+  value.SetKey("errorInfo", std::move(error_info));
+  ResolveJavascriptCallback(base::Value(callback_id), std::move(value));
 }
 
 void KerberosAccountsHandler::HandleSetAsActiveKerberosAccount(

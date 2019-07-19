@@ -112,9 +112,8 @@ bool ShellNaClBrowserDelegate::URLMatchesDebugPatterns(
 bool ShellNaClBrowserDelegate::MapUrlToLocalFilePath(
     const GURL& file_url,
     bool use_blocking_api,
-    const base::FilePath& profile_directory,
+    extensions::ExtensionSystem* extension_system,
     base::FilePath* file_path) {
-  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
   DCHECK(extension_system);
 
   // Check that the URL is recognized by the extension system.
@@ -153,9 +152,14 @@ bool ShellNaClBrowserDelegate::MapUrlToLocalFilePath(
 }
 
 bool ShellNaClBrowserDelegate::IsNonSfiModeAllowed(
-    const base::FilePath& profile_directory,
+    extensions::ExtensionSystem* extension_system,
     const GURL& manifest_url) {
   return false;
+}
+
+extensions::ExtensionSystem* ShellNaClBrowserDelegate::GetExtensionSystem(
+    const base::FilePath& profile_directory) {
+  return ExtensionSystem::Get(browser_context_);
 }
 
 }  // namespace extensions

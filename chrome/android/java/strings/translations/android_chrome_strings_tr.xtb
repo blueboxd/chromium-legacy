@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Site depolama alanı</translation>
 <translation id="2328985652426384049">Oturum açılamıyor</translation>
 <translation id="2349710944427398404">Hesaplar, yer işaretleri ve kayıtlı ayarlar da dahil olmak üzere Chrome tarafından kullanılan tüm veriler</translation>
-<translation id="2351097562818989364">Çeviri ayarlarınız sıfırlandı.</translation>
 <translation id="2353636109065292463">İnternet bağlantınızı kontrol etme</translation>
 <translation id="2359808026110333948">Devam et</translation>
 <translation id="2369533728426058518">sekmeleri aç</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
 <translation id="2779651927720337254">başarısız</translation>
 <translation id="2781151931089541271">1 sn. kaldı</translation>
+<translation id="2796941233371040292">Burada depolama verisi yok</translation>
 <translation id="2801022321632964776">Chrome'un en son sürümünü kendi dilinizde kullanmak için güncelleyin</translation>
 <translation id="2810645512293415242">Veriden tasarruf etmek ve daha hızlı yüklemek için basitleştirilmiş sayfa.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google Hesabınızdaki<ph name="END_LINK" /> kayıtlı şifrelerinizi görüntüleyin ve yönetin.</translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Chrome hakkında</translation>
 <translation id="2891154217021530873">Sayfa yüklemeyi durdur</translation>
 <translation id="2893180576842394309">Google; Arama ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir</translation>
+<translation id="2898264748040935573">Saklı şifreyi düzenleyin</translation>
 <translation id="2900528713135656174">Etkinlik oluştur</translation>
 <translation id="2902702728133930130">Chrome başlatılırken beklenmeyen bir hata yüzünden başarısız oldu.</translation>
 <translation id="290376772003165898">Sayfa <ph name="LANGUAGE" /> dilinde değil mi?</translation>
@@ -520,6 +521,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4913169188695071480">Yenilemeyi durdur</translation>
 <translation id="4915549754973153784">Cihazlar taranırken <ph name="BEGIN_LINK" />yardım alın<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# Sayfa}other{# Sayfa}}</translation>
+<translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesabın oturumunu kapattığınız için Chrome verileriniz bu cihazdan silinecektir. Google Hesabınızda kalacaktır.</translation>
 <translation id="4943703118917034429">Sanal Gerçeklik</translation>
 <translation id="4943872375798546930">Sonuç yok</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşıyor</translation>
@@ -562,6 +564,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5210286577605176222">Önceki sekmeye gider</translation>
 <translation id="5210365745912300556">Sekmeyi kapat</translation>
 <translation id="5224771365102442243">Videolu</translation>
+<translation id="5230560987958996918"><ph name="SITE" />, yakındaki Bluetooth cihazlarını taramak istiyor. Şu cihazlar bulundu:</translation>
 <translation id="5233638681132016545">Yeni sekme</translation>
 <translation id="526421993248218238">Bu sayfa yüklenemiyor</translation>
 <translation id="5271967389191913893">Cihaz, indirilecek içeriği açamıyor.</translation>
@@ -571,7 +574,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5301954838959518834">Tamam, anladım</translation>
 <translation id="5304593522240415983">Bu alan boş olamaz</translation>
 <translation id="5308380583665731573">Bağlan</translation>
-<translation id="5308603654685598744">Bu özellik açıldığında, Chrome, başka dilde yazılmış sayfaları Google Çeviri'yi kullanarak çevirmeyi önerir.</translation>
 <translation id="5313967007315987356">Site ekle</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5324858694974489420">Ebeveyn Ayarları</translation>
@@ -586,6 +588,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5414836363063783498">Doğrulanıyor…</translation>
 <translation id="5423934151118863508">En çok ziyaret ettiğiniz sayfalar burada görünecektir</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB kullanılabilir</translation>
+<translation id="543338862236136125">Şifreyi düzenle</translation>
 <translation id="5433691172869980887">Kullanıcı adı kopyalandı</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> dosya indiriliyor (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Adres çubuğuna gider</translation>
@@ -660,7 +663,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5865733239029070421">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
 <translation id="5902828464777634901">Çerezler dahil bu web sitesinin depoladığı tüm yerel veriler silinecek.</translation>
-<translation id="5911030830365207728">Google Çeviri</translation>
 <translation id="5916664084637901428">Açık</translation>
 <translation id="5919204609460789179">Senkronizasyonu başlatmak için <ph name="PRODUCT_NAME" /> adlı uygulamayı güncelleyin</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> tasarruf edildi</translation>
@@ -805,7 +807,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6963642900430330478">Bu sayfa tehlikeli. Site bilgileri</translation>
 <translation id="6963766334940102469">Yer işaretlerini silme</translation>
 <translation id="6965382102122355670">Tamam</translation>
-<translation id="6978479750597523876">Çeviri ayarlarını sıfırla</translation>
 <translation id="6979737339423435258">Tüm zamanlar</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="6989267951144302301">İndirilemedi</translation>

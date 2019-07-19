@@ -18,9 +18,9 @@ namespace {
 // Matcher for the back button on screens presented from the Showcase home
 // screen.
 id<GREYMatcher> BackButton() {
-  return grey_allOf(grey_accessibilityLabel(@"SC"),
-                    grey_accessibilityTrait(UIAccessibilityTraitButton),
-                    grey_userInteractionEnabled(), nil);
+  return grey_allOf(grey_kindOfClass([UIButton class]),
+                    grey_ancestor(grey_kindOfClass([UINavigationBar class])),
+                    grey_accessibilityLabel(@"SC"), nil);
 }
 
 // Matcher for the Showcase home screen view.

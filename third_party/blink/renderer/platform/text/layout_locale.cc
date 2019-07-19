@@ -139,13 +139,20 @@ const char* LayoutLocale::LocaleForHanForSkFontMgr() const {
   return locale;
 }
 
+void LayoutLocale::ComputeCaseMapLocale() const {
+  DCHECK(!case_map_computed_);
+  case_map_computed_ = true;
+  locale_for_case_map_ = CaseMap::Locale(LocaleString());
+}
+
 LayoutLocale::LayoutLocale(const AtomicString& locale)
     : string_(locale),
       harfbuzz_language_(ToHarfbuzLanguage(locale)),
       script_(LocaleToScriptCodeForFontSelection(locale)),
       script_for_han_(USCRIPT_COMMON),
       has_script_for_han_(false),
-      hyphenation_computed_(false) {}
+      hyphenation_computed_(false),
+      case_map_computed_(false) {}
 
 // static
 const LayoutLocale* LayoutLocale::Get(const AtomicString& locale) {

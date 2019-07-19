@@ -258,6 +258,8 @@ interface ServiceWorker {
           => (ServiceWorkerEventStatus status);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
       => (ServiceWorkerEventStatus status);
+  // Ref: https://github.com/rknoll/content-index
+  DispatchContentDeleteEvent(string id) => (ServiceWorkerEventStatus status);
 
   // TODO(crbug.com/869714): Remove this code for long living service workers
   // when Android Messages no longer requires it.

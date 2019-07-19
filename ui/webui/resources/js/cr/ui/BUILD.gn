@@ -14,7 +14,6 @@ group("closure_compile") {
 js_type_check("ui_resources") {
   deps = [
     ":array_data_model",
-    ":autocomplete_list",
     ":command",
     ":context_menu_handler",
     ":dialogs",
@@ -52,14 +51,6 @@ js_library("array_data_model") {
   deps = [
     "..:event_target",
     "../..:cr",
-  ]
-}
-
-js_library("autocomplete_list") {
-  deps = [
-    ":list",
-    ":list_single_selection_model",
-    ":position_util",
   ]
 }
 

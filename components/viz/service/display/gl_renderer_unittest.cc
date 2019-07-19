@@ -46,6 +46,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "ui/gfx/color_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/latency/latency_info.h"
 
@@ -159,25 +160,49 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
       const DirectRenderer::DrawingFrame& drawing_frame,
       bool validate_output_color_matrix) {
     renderer()->SetCurrentFrameForTesting(drawing_frame);
-    const size_t kNumSrcColorSpaces = 4;
+    const size_t kNumSrcColorSpaces = 5;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
         gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
                         gfx::ColorSpace::TransferID::GAMMA28),
-        gfx::ColorSpace::CreateREC709(), gfx::ColorSpace::CreateExtendedSRGB(),
+        gfx::ColorSpace::CreateREC709(),
+        gfx::ColorSpace::CreateExtendedSRGB(),
+        gfx::ColorSpace::CreateSCRGBLinear(),
     };
-    const size_t kNumDstColorSpaces = 3;
+    const size_t kNumDstColorSpaces = 4;
     gfx::ColorSpace dst_color_spaces[kNumDstColorSpaces] = {
         gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
                         gfx::ColorSpace::TransferID::GAMMA18),
+        gfx::ColorSpace::CreateExtendedSRGB(),
         gfx::ColorSpace::CreateSCRGBLinear(),
     };
     for (size_t i = 0; i < kNumDstColorSpaces; ++i) {
       for (size_t j = 0; j < kNumSrcColorSpaces; ++j) {
-        renderer()->SetUseProgram(program_key, src_color_spaces[j],
-                                  dst_color_spaces[i]);
+        const auto& src_color_space = src_color_spaces[j];
+        const auto& dst_color_space = dst_color_spaces[i];
+
+        renderer()->SetUseProgram(program_key, src_color_space,
+                                  dst_color_space);
         EXPECT_TRUE(renderer()->current_program_->initialized());
+
+        if (src_color_space != dst_color_space) {
+          const float sdr_white_level = drawing_frame.sdr_white_level;
+          auto adjusted_color_space = src_color_space;
+          if (!src_color_space.IsHDR() &&
+              sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+            adjusted_color_space = src_color_space.GetScaledColorSpace(
+                sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+          }
+          auto color_transform = gfx::ColorTransform::NewColorTransform(
+              adjusted_color_space, dst_color_space,
+              gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+          EXPECT_EQ(color_transform->GetShaderSource(),
+                    renderer()
+                        ->current_program_->color_transform_for_testing()
+                        ->GetShaderSource());
+        }
+
         if (validate_output_color_matrix) {
           EXPECT_NE(
               -1, renderer()->current_program_->output_color_matrix_location());
@@ -215,20 +240,34 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     TestShaderWithDrawingFrame(program_key, frame, true);
   }
 
+  void TestShadersWithSDRWhiteLevel(const ProgramKey& program_key,
+                                    float sdr_white_level) {
+    GLRenderer::DrawingFrame frame;
+    frame.sdr_white_level = sdr_white_level;
+    TestShaderWithDrawingFrame(program_key, frame, false);
+  }
+
   void TestBasicShaders() {
     TestShader(ProgramKey::DebugBorder());
     TestShader(ProgramKey::SolidColor(NO_AA, false, false));
     TestShader(ProgramKey::SolidColor(USE_AA, false, false));
+    TestShader(ProgramKey::SolidColor(NO_AA, true, false));
 
     TestShadersWithOutputColorMatrix(ProgramKey::DebugBorder());
     TestShadersWithOutputColorMatrix(
         ProgramKey::SolidColor(NO_AA, false, false));
     TestShadersWithOutputColorMatrix(
         ProgramKey::SolidColor(USE_AA, false, false));
-
-    TestShader(ProgramKey::SolidColor(NO_AA, true, false));
     TestShadersWithOutputColorMatrix(
         ProgramKey::SolidColor(NO_AA, true, false));
+
+    TestShadersWithSDRWhiteLevel(ProgramKey::DebugBorder(), 200.f);
+    TestShadersWithSDRWhiteLevel(ProgramKey::SolidColor(NO_AA, false, false),
+                                 200.f);
+    TestShadersWithSDRWhiteLevel(ProgramKey::SolidColor(USE_AA, false, false),
+                                 200.f);
+    TestShadersWithSDRWhiteLevel(ProgramKey::SolidColor(NO_AA, true, false),
+                                 200.f);
   }
 
   void TestColorShaders() {
@@ -359,7 +398,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
 
 namespace {
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
+#if !defined(OS_ANDROID)
 static const TexCoordPrecision kPrecisionList[] = {TEX_COORD_PRECISION_MEDIUM,
                                                    TEX_COORD_PRECISION_HIGH};
 

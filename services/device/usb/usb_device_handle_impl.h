@@ -54,9 +54,9 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void ResetDevice(ResultCallback callback) override;
   void ClearHalt(uint8_t endpoint, ResultCallback callback) override;
 
-  void ControlTransfer(UsbTransferDirection direction,
-                       UsbControlTransferType request_type,
-                       UsbControlTransferRecipient recipient,
+  void ControlTransfer(mojom::UsbTransferDirection direction,
+                       mojom::UsbControlTransferType request_type,
+                       mojom::UsbControlTransferRecipient recipient,
                        uint8_t request,
                        uint16_t value,
                        uint16_t index,
@@ -75,7 +75,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
 
-  void GenericTransfer(UsbTransferDirection direction,
+  void GenericTransfer(mojom::UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
                        unsigned int timeout,
@@ -128,7 +128,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void ReportIsochronousTransferError(
       UsbDeviceHandle::IsochronousTransferCallback callback,
       const std::vector<uint32_t> packet_lengths,
-      UsbTransferStatus status);
+      mojom::UsbTransferStatus status);
 
   // Submits a transfer and starts tracking it. Retains the buffer and copies
   // the completion callback until the transfer finishes, whereupon it invokes

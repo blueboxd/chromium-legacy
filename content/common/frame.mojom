@@ -210,7 +210,8 @@ interface FrameNavigationControl {
   JavaScriptExecuteRequestForTests(
       mojo_base.mojom.String16 javascript,
       bool wants_result,
-      bool has_user_gesture)
+      bool has_user_gesture,
+      int32 world_id)
       => (mojo_base.mojom.Value result);
 
   // Same as JavaScriptExecuteRequest above except the script is run in the

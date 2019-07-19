@@ -130,7 +130,6 @@ Bug(none) transforms/3d/general/background-visibility-layers.html [ Failure ]
 # Loading an image in a subframe.
 crbug.com/959936 http/tests/images/image-decode-in-frame.html [ Failure ]
 
-crbug.com/959941 virtual/fractional_scrolling_threaded/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
 crbug.com/959941 virtual/threaded/fast/scrolling/mouse-scrolling-over-standard-scrollbar.html [ Failure ]
 
 crbug.com/907601 virtual/threaded/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
@@ -392,6 +391,7 @@ crbug.com/923429 css3/filters/backdrop-filter-rendering-no-background.html [ Fai
 crbug.com/923429 css3/filters/backdrop-filter-transform.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-edge-pixels.html [ Failure ]
 crbug.com/923429 css3/filters/backdrop-filter-clip-radius-zoom.html [ Failure ]
+crbug.com/923429 css3/filters/backdrop-filter-plus-mask.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-background-color.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/923429 external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
@@ -420,6 +420,7 @@ crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-rendering-n
 crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-transform.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-clip-radius-zoom.html [ Failure ]
+crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-background-color.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic.html [ Failure ]
@@ -439,7 +440,6 @@ crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop
 crbug.com/923429 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filters-sepia.html [ Failure ]
 crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-edge-clipping-2.html [ Failure ]
 
-crbug.com/940033 virtual/fractional_scrolling_threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 crbug.com/940033 virtual/threaded/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Failure ]
 
 crbug.com/979389 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
@@ -501,25 +501,6 @@ crbug.com/979369 svg/masking/mask-type-luminance.svg [ Failure ]
 crbug.com/979369 svg/masking/mask-type-not-set.svg [ Failure ]
 
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-document.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/hover-during-scroll.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/no-hover-during-scroll.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-position-fixed-scrolled-document.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-position-fixed-scroller-scrolled-document.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-position-fixed-scroller.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-root-scroller.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/reset-scroll-in-onscroll.html [ Timeout ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/scroll-non-composited-scroller.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/scroll-then-composite.html [ Failure ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/events/overscroll-event-fired-to-document.html [ Timeout ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/events/overscroll-event-fired-to-scrolled-element.html [ Timeout ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/events/overscroll-event-fired-to-window.html [ Timeout ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-to-document.html [ Timeout ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-to-scrolled-element.html [ Timeout ]
-crbug.com/966981 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Timeout ]
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-main-frame-manual.tentative.html [ Failure ]
 crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
@@ -551,6 +532,6 @@ crbug.com/985388 fast/scrolling/fractional-scroll-offset-iframe-fixed-position.h
 crbug.com/985388 virtual/scroll_customization/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
 crbug.com/985388 virtual/threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
 
-# Added to land BGPT-fix
-crbug.com/979002 virtual/fractional_scrolling_threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
+# Added to land BGPT-fixes
 crbug.com/979002 virtual/threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
+crbug.com/981749 virtual/threaded/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]

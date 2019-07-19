@@ -284,8 +284,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   if (gl_initialized && use_swiftshader &&
       gl::GetGLImplementation() != gl::kGLImplementationSwiftShaderGL) {
+#if defined(OS_LINUX)
+    VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
+            << "on Linux";
+    return false;
+#else
     gl::init::ShutdownGL(true);
     gl_initialized = false;
+#endif  // OS_LINUX
   }
   if (!gl_initialized)
     gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
@@ -311,12 +317,18 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
+#if defined(OS_LINUX)
+      VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
+              << "on Linux";
+      return false;
+#else
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff()) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
                 << "failed";
         return false;
       }
+#endif  // OS_LINUX
     }
   }
 
@@ -359,12 +371,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
-      gl::init::ShutdownGL(true);
-      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
-        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
-                << "failed";
-        return false;
-      }
+      VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
+              << "on Linux";
+      return false;
     }
   }
 #endif  // defined(OS_LINUX)

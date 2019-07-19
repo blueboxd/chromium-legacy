@@ -305,6 +305,8 @@ void XRCompositorCommon::StartPendingFrame() {
     pending_frame_->waiting_for_webxr_ = webxr_visible_;
     pending_frame_->waiting_for_overlay_ = overlay_visible_;
     pending_frame_->frame_data_ = GetNextFrameData();
+    // pending_frame_->frame_data_ should never be null
+    DCHECK(pending_frame_->frame_data_);
   }
 }
 

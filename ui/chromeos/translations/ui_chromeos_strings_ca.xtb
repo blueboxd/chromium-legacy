@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Control lliscant de reproducció</translation>
 <translation id="1399648040768741453">Teclat telugu (fonètic)</translation>
 <translation id="1430915738399379752">Imprimeix</translation>
+<translation id="1439494416798956626">S'ha mogut a <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Teclat vietnamita (Telex)</translation>
 <translation id="1455548678241328678">Teclat noruec</translation>
 <translation id="1464724975715666883">1 error.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">S'està analitzant el dispositiu multimèdia...</translation>
 <translation id="3468522857997926824">S'ha creat una còpia de seguretat de <ph name="FILE_COUNT" /> fotos a <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">S'està copiant...</translation>
+<translation id="3473378059788601120">S'ha copiat a la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Full de càlcul de Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
 <translation id="3519867315646775981">Transliteració (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Introducció de japonès (per a teclat japonès)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Dona permís a les aplicacions de Linux per modificar fitxers a Google Drive. Els canvis se sincronitzaran amb els altres dispositius.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elements</translation>
 <translation id="5982621672636444458">Ordena les opcions</translation>
 <translation id="6005282720244019462">Teclat llatinoamericà</translation>
 <translation id="6007237601604674381">El trasllat ha fallat. <ph name="ERROR_MESSAGE" /></translation>

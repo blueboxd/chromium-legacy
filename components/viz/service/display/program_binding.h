@@ -334,6 +334,10 @@ class VIZ_SERVICE_EXPORT Program : public ProgramBindingBase {
     return fragment_shader_.rounded_corner_radius_location_;
   }
 
+  const gfx::ColorTransform* color_transform_for_testing() const {
+    return fragment_shader_.color_transform_;
+  }
+
  private:
   void InitializeDebugBorderProgram() {
     // Initialize fragment program.

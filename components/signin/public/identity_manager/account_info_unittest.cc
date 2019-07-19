@@ -130,14 +130,3 @@ TEST_F(AccountInfoTest, UpdateWithDefaultValuesNoOverride) {
   EXPECT_EQ("test_domain", info.hosted_domain);
   EXPECT_EQ("test_url", info.picture_url);
 }
-
-// Tests that AccountIdFromAccountInfo() passes along a canonicalized email to
-// AccountId.
-TEST_F(AccountInfoTest, AccountIdFromAccountInfo_CanonicalizesRawEmail) {
-  AccountInfo info;
-  info.email = "test.email@gmail.com";
-  info.gaia = "test_id";
-
-  EXPECT_EQ("testemail@gmail.com",
-            AccountIdFromAccountInfo(info).GetUserEmail());
-}

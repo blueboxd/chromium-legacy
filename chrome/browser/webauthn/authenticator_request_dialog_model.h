@@ -104,6 +104,9 @@ class AuthenticatorRequestDialogModel {
 
     // Attestation permission request.
     kAttestationPermissionRequest,
+
+    // Display QR code for phone pairing.
+    kQRCode,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels

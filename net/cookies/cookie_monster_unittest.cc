@@ -2463,8 +2463,7 @@ TEST_F(CookieMonsterTest, SetAllCookies) {
   EXPECT_EQ("Z", it->Value());
 
   cm = nullptr;
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_STORE_ALIVE, NetLogEventPhase::BEGIN);
   pos = ExpectLogContainsSomewhere(
@@ -2491,8 +2490,7 @@ TEST_F(CookieMonsterTest, DeleteAll) {
   EXPECT_EQ(1, store->flush_count());
 
   cm = nullptr;
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_STORE_ALIVE, NetLogEventPhase::BEGIN);
   pos = ExpectLogContainsSomewhere(
@@ -2771,8 +2769,7 @@ TEST_F(CookieMonsterTest, CookieDeleteEquivalentHistogramTest) {
       cookie_source_histogram,
       CookieMonster::COOKIE_DELETE_EQUIVALENT_WOULD_HAVE_DELETED, 1);
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_SECURE,
       NetLogEventPhase::NONE);
@@ -2967,8 +2964,7 @@ TEST_F(CookieMonsterTest, SetSecureCookies) {
   EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY,
             SetCookieReturnStatus(cm.get(), https_url, "C=E; Secure"));
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_STORE_COOKIE_REJECTED_HTTPONLY,
       NetLogEventPhase::NONE);

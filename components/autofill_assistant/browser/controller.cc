@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
@@ -76,17 +77,6 @@ Service* Controller::GetService() {
 }
 
 UiController* Controller::GetUiController() {
-  if (will_shutdown_) {
-    // Never call the UI controller after having announced a shutdown, no matter
-    // what happens; this is part of the contract of UIDelegate.
-    //
-    // TODO(crbug/925947): Once UIController has become observer, clear list of
-    // observers instead.
-    if (!noop_ui_controller_) {
-      noop_ui_controller_ = std::make_unique<UiController>();
-    }
-    return noop_ui_controller_.get();
-  }
   return client_->GetUiController();
 }
 
@@ -401,6 +391,9 @@ void Controller::ReportNavigationStateChanged() {
 }
 
 void Controller::EnterStoppedState() {
+  if (script_tracker_)
+    script_tracker_->StopScript();
+
   ClearInfoBox();
   SetDetails(nullptr);
   SetUserActions(nullptr);
@@ -409,15 +402,29 @@ void Controller::EnterStoppedState() {
 }
 
 void Controller::EnterState(AutofillAssistantState state) {
-  if (state_ == state || state_ == AutofillAssistantState::STOPPED)
+  if (state_ == state)
     return;
-  // TODO(b/128300038): Forbid transition out of stopped again instead of
-  // ignoring it once shutdown sequence is less complex.
 
   DVLOG(2) << __func__ << ": " << state_ << " -> " << state;
 
+  // The only valid way of leaving the STOPPED state is to go back to tracking
+  // mode.
+  DCHECK(state_ != AutofillAssistantState::STOPPED ||
+         (state == AutofillAssistantState::TRACKING && tracking_));
+
+  bool old_needs_ui = NeedsUI();
   state_ = state;
+
   GetUiController()->OnStateChanged(state);
+
+  if (!old_needs_ui && NeedsUI())
+    client_->AttachUI();
+
+  if (ShouldCheckScripts()) {
+    GetOrCheckScripts();
+  } else {
+    StopPeriodicScriptChecks();
+  }
 }
 
 void Controller::SetWebControllerAndServiceForTest(
@@ -427,10 +434,26 @@ void Controller::SetWebControllerAndServiceForTest(
   service_ = std::move(service);
 }
 
-void Controller::GetOrCheckScripts() {
-  if (!started_ || script_tracker()->running()) {
+void Controller::OnUrlChange() {
+  if (state_ == AutofillAssistantState::STOPPED) {
+    PerformDelayedShutdownIfNecessary();
     return;
   }
+
+  GetOrCheckScripts();
+}
+
+bool Controller::ShouldCheckScripts() {
+  return state_ == AutofillAssistantState::TRACKING ||
+         state_ == AutofillAssistantState::STARTING ||
+         state_ == AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT ||
+         (state_ == AutofillAssistantState::PROMPT &&
+          (!script_tracker_ || !script_tracker_->running()));
+}
+
+void Controller::GetOrCheckScripts() {
+  if (!ShouldCheckScripts())
+    return;
 
   const GURL& url = GetCurrentURL();
   if (script_domain_ != url.host()) {
@@ -469,13 +492,13 @@ void Controller::OnPeriodicScriptCheck() {
     periodic_script_check_count_--;
   }
 
-  if (periodic_script_check_count_ <= 0 && !allow_autostart_) {
+  if (periodic_script_check_count_ <= 0 && !allow_autostart()) {
     DCHECK_EQ(0, periodic_script_check_count_);
     periodic_script_check_scheduled_ = false;
     return;
   }
 
-  if (allow_autostart_ && !autostart_timeout_script_path_.empty() &&
+  if (allow_autostart() && !autostart_timeout_script_path_.empty() &&
       tick_clock_->NowTicks() >= absolute_autostart_timeout_) {
     DVLOG(1) << __func__ << " giving up waiting on autostart.";
     std::string script_path = autostart_timeout_script_path_;
@@ -526,18 +549,13 @@ void Controller::OnGetScripts(const GURL& url,
   for (const auto& script_proto : response_proto.scripts()) {
     ProtocolUtils::AddScript(script_proto, &scripts);
   }
-  if (scripts.empty()) {
-    OnNoRunnableScripts();
-    return;
-  }
 
-  if (allow_autostart_) {
-    autostart_timeout_script_path_ =
-        response_proto.script_timeout_error().script_path();
-    autostart_timeout_ = base::TimeDelta::FromMilliseconds(
-        response_proto.script_timeout_error().timeout_ms());
+  autostart_timeout_script_path_ =
+      response_proto.script_timeout_error().script_path();
+  autostart_timeout_ = base::TimeDelta::FromMilliseconds(
+      response_proto.script_timeout_error().timeout_ms());
+  if (allow_autostart())
     absolute_autostart_timeout_ = tick_clock_->NowTicks() + autostart_timeout_;
-  }
 
   DVLOG(2) << __func__ << " from " << script_domain_ << " returned "
            << scripts.size() << " scripts";
@@ -552,9 +570,21 @@ void Controller::OnGetScripts(const GURL& url,
       }
     }
   }
+
+  if (scripts.empty()) {
+    script_tracker()->SetScripts({});
+
+    if (state_ == AutofillAssistantState::TRACKING) {
+      OnFatalError(
+          l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+          Metrics::DropOutReason::NO_SCRIPTS);
+      return;
+    }
+    OnNoRunnableScriptsForPage();
+  }
+
   script_tracker()->SetScripts(std::move(scripts));
-  script_tracker()->CheckScripts();
-  StartPeriodicScriptChecks();
+  GetOrCheckScripts();
 }
 
 void Controller::ExecuteScript(const std::string& script_path,
@@ -565,7 +595,6 @@ void Controller::ExecuteScript(const std::string& script_path,
 
   touchable_element_area()->Clear();
 
-  StopPeriodicScriptChecks();
   // Runnable scripts will be checked and reported if necessary after executing
   // the script.
   script_tracker_->ClearRunnableScripts();
@@ -584,8 +613,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
                                   const ScriptExecutor::Result& result) {
   if (!result.success) {
     DVLOG(1) << "Failed to execute script " << script_path;
-    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::DropOutReason::SCRIPT_FAILED);
+    OnScriptError(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+        Metrics::DropOutReason::SCRIPT_FAILED);
     return;
   }
 
@@ -595,16 +625,29 @@ void Controller::OnScriptExecuted(const std::string& script_path,
 
   switch (result.at_end) {
     case ScriptExecutor::SHUTDOWN:
-      client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
-      return;
+      if (!tracking_) {
+        client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
+        return;
+      }
+      end_state = AutofillAssistantState::TRACKING;
+      break;
 
     case ScriptExecutor::SHUTDOWN_GRACEFULLY:
-      EnterStoppedState();
-      client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
-      return;
+      if (!tracking_) {
+        EnterStoppedState();
+        client_->Shutdown(Metrics::DropOutReason::SCRIPT_SHUTDOWN);
+        return;
+      }
+      end_state = AutofillAssistantState::TRACKING;
+      break;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
-      client_->Shutdown(Metrics::DropOutReason::CUSTOM_TAB_CLOSED);
+      GetUiController()->CloseCustomTab();
+      if (!tracking_) {
+        client_->Shutdown(Metrics::DropOutReason::CUSTOM_TAB_CLOSED);
+        return;
+      }
+      end_state = AutofillAssistantState::TRACKING;
       return;
 
     case ScriptExecutor::RESTART:
@@ -621,7 +664,6 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       break;
   }
   EnterState(end_state);
-  GetOrCheckScripts();
 }
 
 bool Controller::MaybeAutostartScript(
@@ -630,7 +672,7 @@ bool Controller::MaybeAutostartScript(
   // without first displaying it. This is meant to work only at the very
   // beginning, when no scripts have run, and only if there's exactly one
   // autostartable script.
-  if (!allow_autostart_)
+  if (!allow_autostart())
     return false;
 
   int autostart_count = 0;
@@ -642,17 +684,11 @@ bool Controller::MaybeAutostartScript(
     }
   }
   if (autostart_count == 1) {
-    DisableAutostart();
     ExecuteScript(autostart_path, TriggerContext::CreateEmpty(),
                   AutofillAssistantState::PROMPT);
     return true;
   }
   return false;
-}
-
-void Controller::DisableAutostart() {
-  allow_autostart_ = false;
-  autostart_timeout_script_path_.clear();
 }
 
 void Controller::InitFromParameters() {
@@ -680,50 +716,62 @@ void Controller::InitFromParameters() {
   }
 }
 
+void Controller::Track(std::unique_ptr<TriggerContext> trigger_context,
+                       base::OnceCallback<void()> on_first_check_done) {
+  tracking_ = true;
+
+  if (state_ == AutofillAssistantState::INACTIVE) {
+    trigger_context_ = std::move(trigger_context);
+    InitFromParameters();
+    EnterState(AutofillAssistantState::TRACKING);
+  }
+
+  if (on_first_check_done) {
+    if (has_run_first_check_) {
+      std::move(on_first_check_done).Run();
+    } else {
+      on_has_run_first_check_.emplace_back(std::move(on_first_check_done));
+    }
+  }
+}
+
 bool Controller::NeedsUI() const {
   return state_ != AutofillAssistantState::INACTIVE &&
+         state_ != AutofillAssistantState::TRACKING &&
          state_ != AutofillAssistantState::STOPPED;
 }
 
 void Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
-  if (state_ != AutofillAssistantState::INACTIVE) {
-    NOTREACHED();
+  if (state_ != AutofillAssistantState::INACTIVE &&
+      state_ != AutofillAssistantState::TRACKING)
     return;
-  }
+
   trigger_context_ = std::move(trigger_context);
   InitFromParameters();
   deeplink_url_ = deeplink_url;
+
+  // Force a re-evaluation of the script, to get a chance to autostart.
+  if (state_ == AutofillAssistantState::TRACKING)
+    script_tracker_->ClearRunnableScripts();
+
+  SetStatusMessage(l10n_util::GetStringFUTF8(
+      IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(deeplink_url_.host())));
+  SetProgress(kAutostartInitialProgress);
   EnterState(AutofillAssistantState::STARTING);
-  client_->ShowUI();
-  started_ = true;
-  if (allow_autostart_) {
-    SetStatusMessage(
-        l10n_util::GetStringFUTF8(IDS_AUTOFILL_ASSISTANT_LOADING,
-                                  base::UTF8ToUTF16(deeplink_url_.host())));
-    SetProgress(kAutostartInitialProgress);
-  }
-  GetOrCheckScripts();
 }
 
 AutofillAssistantState Controller::GetState() {
   return state_;
 }
 
-void Controller::WillShutdown(Metrics::DropOutReason reason) {
-  StopPeriodicScriptChecks();
-  if (!will_shutdown_) {
-    UiController* ui_controller = GetUiController();
-    will_shutdown_ = true;
-    ui_controller->WillShutdown(reason);
-  }
-}
-
 void Controller::OnScriptSelected(const std::string& script_path,
                                   std::unique_ptr<TriggerContext> context) {
   DCHECK(!script_path.empty());
   ExecuteScript(script_path, std::move(context),
-                AutofillAssistantState::PROMPT);
+                state_ == AutofillAssistantState::TRACKING
+                    ? AutofillAssistantState::TRACKING
+                    : AutofillAssistantState::PROMPT);
 }
 
 void Controller::UpdateTouchableArea() {
@@ -731,8 +779,7 @@ void Controller::UpdateTouchableArea() {
 }
 
 void Controller::OnUserInteractionInsideTouchableArea() {
-  script_tracker()->CheckScripts();
-  StartPeriodicScriptChecks();
+  GetOrCheckScripts();
 }
 
 std::string Controller::GetDebugContext() {
@@ -899,41 +946,110 @@ void Controller::GetVisualViewport(RectF* visual_viewport) const {
     touchable_element_area_->GetVisualViewport(visual_viewport);
 }
 
+void Controller::OnScriptError(const std::string& error_message,
+                               Metrics::DropOutReason reason) {
+  if (state_ == AutofillAssistantState::STOPPED)
+    return;
+
+  SetStatusMessage(error_message);
+  EnterStoppedState();
+
+  if (tracking_) {
+    EnterState(AutofillAssistantState::TRACKING);
+    return;
+  }
+
+  client_->Shutdown(reason);
+}
+
 void Controller::OnFatalError(const std::string& error_message,
                               Metrics::DropOutReason reason) {
-  LOG(ERROR) << "Autofill Assistant has encountered an error and is shutting "
-                "down, reason="
+  LOG(ERROR) << "Autofill Assistant has encountered a fatal error and is "
+                "shutting down, reason="
              << reason;
   if (state_ == AutofillAssistantState::STOPPED)
     return;
 
-  StopPeriodicScriptChecks();
   SetStatusMessage(error_message);
   EnterStoppedState();
-  client_->Shutdown(reason);
-}
 
-void Controller::OnNoRunnableScripts() {
-  if (script_tracker()->running())
-    return;
+  // If we haven't managed to check the set of scripts yet at this point, we
+  // never will.
+  MaybeReportFirstCheckDone();
 
-  if (state_ == AutofillAssistantState::STARTING) {
-    // We're still waiting for the set of initial scripts, but either didn't get
-    // any scripts or didn't get scripts that could possibly become runnable
-    // with a DOM change.
-    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
-                 Metrics::DropOutReason::NO_INITIAL_SCRIPTS);
+  if (tracking_ && script_domain_ == GetCurrentURL().host()) {
+    // When tracking the controller should stays until the browser has navigated
+    // away from the last domain that was checked to be able to tell callers
+    // that the set of user actions is empty.
+    delayed_shutdown_reason_ = reason;
     return;
   }
 
-  // We're navigated to a page that has no scripts or the scripts have reached a
-  // state from which they cannot recover through a DOM change.
-  OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-               Metrics::DropOutReason::NO_SCRIPTS);
+  client_->Shutdown(reason);
+}
+
+void Controller::PerformDelayedShutdownIfNecessary() {
+  if (delayed_shutdown_reason_ && script_domain_ != GetCurrentURL().host()) {
+    Metrics::DropOutReason reason = delayed_shutdown_reason_.value();
+    delayed_shutdown_reason_ = base::nullopt;
+    client_->Shutdown(reason);
+  }
+}
+
+void Controller::MaybeReportFirstCheckDone() {
+  if (has_run_first_check_)
+    return;
+
+  has_run_first_check_ = true;
+
+  while (!on_has_run_first_check_.empty()) {
+    std::move(on_has_run_first_check_.back()).Run();
+    on_has_run_first_check_.pop_back();
+  }
+}
+
+void Controller::OnNoRunnableScriptsForPage() {
+  if (script_tracker()->running())
+    return;
+
+  switch (state_) {
+    case AutofillAssistantState::STARTING:
+      // We're still waiting for the set of initial scripts, but either didn't
+      // get any scripts or didn't get scripts that could possibly become
+      // runnable with a DOM change.
+      OnScriptError(
+          l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DEFAULT_ERROR),
+          Metrics::DropOutReason::NO_INITIAL_SCRIPTS);
+      break;
+
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+      // The user has navigated to a page that has no scripts or the scripts
+      // have reached a state from which they cannot recover through a DOM
+      // change.
+      OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
+                    Metrics::DropOutReason::NO_SCRIPTS);
+      break;
+
+    default:
+      // Always having a set of scripts to potentially run is not required in
+      // other states.
+      break;
+  }
 }
 
 void Controller::OnRunnableScriptsChanged(
     const std::vector<ScriptHandle>& runnable_scripts) {
+  base::ScopedClosureRunner report_first_check;
+  if (!has_run_first_check_) {
+    // Only report first check done once we're done processing the given set of
+    // scripts - whatever the outcome - so callers can see that outcome in the
+    // state of the controller.
+    report_first_check.ReplaceClosure(
+        base::BindOnce(&Controller::MaybeReportFirstCheckDone,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   // Script selection is disabled when a script is already running. We will
   // check again and maybe update when the current script has finished.
   if (script_tracker()->running() || state_ == AutofillAssistantState::STOPPED)
@@ -952,7 +1068,7 @@ void Controller::OnRunnableScriptsChanged(
     }
   }
 
-  // Update the set of scripts in the UI.
+  // Update the set of user actions to report.
   auto user_actions = std::make_unique<std::vector<UserAction>>();
   for (const auto& script : runnable_scripts) {
     UserAction user_action;
@@ -967,18 +1083,22 @@ void Controller::OnRunnableScriptsChanged(
     user_actions->emplace_back(std::move(user_action));
   }
 
-  if (user_actions->empty() && state_ == AutofillAssistantState::STARTING) {
-    // Continue waiting
-    return;
-  }
+  // Change state, if necessary.
+  switch (state_) {
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::PROMPT:
+      // Don't change state
+      break;
 
-  if (allow_autostart_ ||
-      state_ == AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT) {
-    // Autostart was expected, but only non-autostartable scripts were found.
-    DisableAutostart();
-    EnterState(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT);
-  } else {
-    EnterState(AutofillAssistantState::PROMPT);
+    case AutofillAssistantState::STARTING:
+      if (!user_actions->empty())
+        EnterState(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT);
+      break;
+
+    default:
+      if (!user_actions->empty())
+        EnterState(AutofillAssistantState::PROMPT);
   }
   SetUserActions(std::move(user_actions));
 }
@@ -991,7 +1111,7 @@ void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                                const GURL& validated_url) {
   // validated_url might not be the page URL. Ignore it and always check the
   // last committed url.
-  GetOrCheckScripts();
+  OnUrlChange();
 }
 
 void Controller::DidStartNavigation(
@@ -1024,8 +1144,8 @@ void Controller::DidStartNavigation(
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
       !navigation_handle->IsRendererInitiated()) {
-    OnFatalError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
-                 Metrics::DropOutReason::NAVIGATION);
+    OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
+                  Metrics::DropOutReason::NAVIGATION);
   }
 }
 
@@ -1047,11 +1167,11 @@ void Controller::DidFinishNavigation(
   ReportNavigationStateChanged();
 
   if (is_successful)
-    GetOrCheckScripts();
+    OnUrlChange();
 }
 
 void Controller::DocumentAvailableInMainFrame() {
-  GetOrCheckScripts();
+  OnUrlChange();
 }
 
 void Controller::RenderProcessGone(base::TerminationStatus status) {
@@ -1064,7 +1184,7 @@ void Controller::OnWebContentsFocused(
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry)) {
     // Show UI again when re-focused in case the web contents moved activity.
     // This is only enabled when tab-switching is enabled.
-    client_->ShowUI();
+    client_->AttachUI();
   }
 }
 

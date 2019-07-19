@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "components/services/pdf_compositor/public/cpp/manifest.h"
-#include "components/services/pdf_compositor/public/interfaces/pdf_compositor.mojom.h"
+#include "components/services/pdf_compositor/public/mojom/pdf_compositor.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace headless {

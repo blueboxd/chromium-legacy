@@ -13,6 +13,7 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/effect_node.h"
@@ -123,6 +124,13 @@ float RenderSurfaceImpl::GetDebugBorderWidth() const {
 LayerImpl* RenderSurfaceImpl::MaskLayer() {
   int mask_layer_id = OwningEffectNode()->mask_layer_id;
   return layer_tree_impl_->LayerById(mask_layer_id);
+}
+
+LayerImpl* RenderSurfaceImpl::BackdropMaskLayer() const {
+  ElementId mask_element_id = OwningEffectNode()->backdrop_mask_element_id;
+  if (!mask_element_id)
+    return nullptr;
+  return layer_tree_impl_->LayerByElementId(mask_element_id);
 }
 
 bool RenderSurfaceImpl::HasMask() const {
@@ -415,12 +423,19 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
                               GetDebugBorderWidth());
   }
 
+  DCHECK(!(MaskLayer() && BackdropMaskLayer()))
+      << "Can't support both a mask_layer and a backdrop_mask_layer";
+  bool mask_applies_to_backdrop = BackdropMaskLayer();
+  PictureLayerImpl* mask_layer =
+      mask_applies_to_backdrop
+          ? static_cast<PictureLayerImpl*>(BackdropMaskLayer())
+          : static_cast<PictureLayerImpl*>(MaskLayer());
+
   viz::ResourceId mask_resource_id = 0;
   gfx::Size mask_texture_size;
   gfx::RectF mask_uv_rect;
   gfx::Vector2dF surface_contents_scale =
       OwningEffectNode()->surface_contents_scale;
-  PictureLayerImpl* mask_layer = static_cast<PictureLayerImpl*>(MaskLayer());
   // Resourceless mode does not support masks.
   if (draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE && mask_layer &&
       mask_layer->DrawsContent() && !mask_layer->bounds().IsEmpty()) {
@@ -452,7 +467,8 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, content_rect(), unoccluded_content_rect, id(),
                mask_resource_id, mask_uv_rect, mask_texture_size,
-               surface_contents_scale, FiltersOrigin(), tex_coord_rect,
+               mask_applies_to_backdrop, surface_contents_scale,
+               FiltersOrigin(), tex_coord_rect,
                !layer_tree_impl_->settings().enable_edge_anti_aliasing,
                OwningEffectNode()->backdrop_filter_quality);
 }

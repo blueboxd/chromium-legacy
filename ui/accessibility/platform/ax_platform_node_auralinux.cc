@@ -16,6 +16,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
@@ -1965,25 +1966,58 @@ void Detach(AXPlatformNodeAuraLinuxObject* atk_object) {
 
 }  //  namespace atk_object
 
+static PROTECTED_MEMORY_SECTION
+    base::ProtectedMemory<AtkTableCellInterface::GetTypeFunc>
+        g_atk_table_cell_get_type;
+
+static PROTECTED_MEMORY_SECTION
+    base::ProtectedMemory<AtkTableCellInterface::GetColumnHeaderCellsFunc>
+        g_atk_table_cell_get_column_header_cells;
+
+static PROTECTED_MEMORY_SECTION
+    base::ProtectedMemory<AtkTableCellInterface::GetRowHeaderCellsFunc>
+        g_atk_table_cell_get_row_header_cells;
+
+static PROTECTED_MEMORY_SECTION
+    base::ProtectedMemory<AtkTableCellInterface::GetRowColumnSpanFunc>
+        g_atk_table_cell_get_row_column_span;
+
 }  // namespace
 
 // static
 base::Optional<AtkTableCellInterface> AtkTableCellInterface::Get() {
   static base::Optional<AtkTableCellInterface> interface = base::nullopt;
+  static base::ProtectedMemory<GetTypeFunc>::Initializer
+      init_atk_table_cell_get_type(
+          &g_atk_table_cell_get_type,
+          reinterpret_cast<GetTypeFunc>(
+              dlsym(RTLD_DEFAULT, "atk_table_cell_get_type")));
+  static base::ProtectedMemory<GetColumnHeaderCellsFunc>::Initializer
+      init_atk_table_cell_get_column_header_cells(
+          &g_atk_table_cell_get_column_header_cells,
+          reinterpret_cast<GetColumnHeaderCellsFunc>(
+              dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells")));
+  static base::ProtectedMemory<GetRowHeaderCellsFunc>::Initializer
+      init_atk_table_cell_get_row_header_cells(
+          &g_atk_table_cell_get_row_header_cells,
+          reinterpret_cast<GetRowHeaderCellsFunc>(
+              dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells")));
+  static base::ProtectedMemory<GetRowColumnSpanFunc>::Initializer
+      init_atk_table_cell_get_row_column_span(
+          &g_atk_table_cell_get_row_column_span,
+          reinterpret_cast<GetRowColumnSpanFunc>(
+              dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span")));
+
   if (interface.has_value())
-    return interface->GetType ? interface : base::nullopt;
+    return **interface->GetType ? interface : base::nullopt;
 
   interface.emplace();
-  interface->GetType = reinterpret_cast<GetTypeFunc>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_type"));
-  interface->GetColumnHeaderCells = reinterpret_cast<GetColumnHeaderCellsFunc>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_column_header_cells"));
-  interface->GetRowHeaderCells = reinterpret_cast<GetRowHeaderCellsFunc>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_header_cells"));
-  interface->GetRowColumnSpan = reinterpret_cast<GetRowColumnSpanFunc>(
-      dlsym(RTLD_DEFAULT, "atk_table_cell_get_row_column_span"));
+  interface->GetType = &g_atk_table_cell_get_type;
+  interface->GetColumnHeaderCells = &g_atk_table_cell_get_column_header_cells;
+  interface->GetRowHeaderCells = &g_atk_table_cell_get_row_header_cells;
+  interface->GetRowColumnSpan = &g_atk_table_cell_get_row_column_span;
   interface->initialized = true;
-  return interface->GetType ? interface : base::nullopt;
+  return **interface->GetType ? interface : base::nullopt;
 }
 
 void AXPlatformNodeAuraLinux::EnsureGTypeInit() {
@@ -2106,8 +2140,9 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     // Run-time check to ensure AtkTableCell is supported (requires ATK 2.12).
     auto interface = AtkTableCellInterface::Get();
     if (interface.has_value()) {
-      g_type_add_interface_static(type, interface->GetType(),
-                                  &atk_table_cell::Info);
+      g_type_add_interface_static(
+          type, base::UnsanitizedCfiCall(*interface->GetType)(),
+          &atk_table_cell::Info);
     }
   }
 

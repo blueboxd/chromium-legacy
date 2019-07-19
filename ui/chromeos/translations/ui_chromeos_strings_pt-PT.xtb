@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Controlo de deslize da procura</translation>
 <translation id="1399648040768741453">Teclado telugu (fonético)</translation>
 <translation id="1430915738399379752">Imprimir</translation>
+<translation id="1439494416798956626">Movido para <ph name="FOLDER_NAME" /></translation>
 <translation id="1441841714100794440">Teclado vietnamita (telex)</translation>
 <translation id="1455548678241328678">Teclado norueguês</translation>
 <translation id="1464724975715666883">1 erro.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">A analisar o dispositivo multimédia...</translation>
 <translation id="3468522857997926824">Foi feita uma cópia de segurança de <ph name="FILE_COUNT" /> fotos no <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">A copiar...</translation>
+<translation id="3473378059788601120">Copiado para <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Folha de cálculo do Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> erros.</translation>
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Introdução em japonês (para teclado japonês)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Conceda autorização às aplicações Linux para modificar ficheiros no seu Google Drive. As alterações serão sincronizadas com os seus outros dispositivos.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> itens</translation>
 <translation id="5982621672636444458">Opções de ordenação</translation>
 <translation id="6005282720244019462">Teclado da América Latina</translation>
 <translation id="6007237601604674381">Falha ao mover. <ph name="ERROR_MESSAGE" /></translation>

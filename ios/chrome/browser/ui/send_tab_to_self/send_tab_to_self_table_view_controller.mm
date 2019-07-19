@@ -69,9 +69,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 };
 
 @interface SendTabToSelfTableViewController () {
-  // The mapping of device names to their releveant cache_guids, device types,
+  // The list of devices with thier names, cache_guids, device types,
   // and active times.
-  std::map<std::string, send_tab_to_self::TargetDeviceInfo> _target_device_map;
+  std::vector<send_tab_to_self::TargetDeviceInfo> _target_device_list;
 }
 // Item that holds the currently selected device.
 @property(nonatomic, strong) SendTabToSelfImageDetailTextItem* selectedItem;
@@ -92,8 +92,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
 
   if (self) {
-    _target_device_map =
-        sendTabToSelfModel->GetTargetDeviceNameToCacheInfoMap();
+    _target_device_list = sendTabToSelfModel->GetTargetDeviceInfoSortedList();
     _delegate = delegate;
   }
   return self;
@@ -132,17 +131,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierDevicesToSend];
-  for (auto iter = _target_device_map.begin(); iter != _target_device_map.end();
-       ++iter) {
+  for (auto iter = _target_device_list.begin();
+       iter != _target_device_list.end(); ++iter) {
     int daysSinceLastUpdate =
-        (base::Time::Now() - iter->second.last_updated_timestamp).InDays();
+        (base::Time::Now() - iter->last_updated_timestamp).InDays();
 
     SendTabToSelfImageDetailTextItem* deviceItem =
         [[SendTabToSelfImageDetailTextItem alloc] initWithType:ItemTypeDevice];
-    deviceItem.text = base::SysUTF8ToNSString(iter->first);
+    deviceItem.text = base::SysUTF8ToNSString(iter->device_name);
     deviceItem.detailText =
         [self sendTabToSelfdaysSinceLastUpdate:daysSinceLastUpdate];
-    switch (iter->second.device_type) {
+    switch (iter->device_type) {
       case sync_pb::SyncEnums::TYPE_TABLET:
         deviceItem.iconImageName = @"send_tab_to_self_tablet";
         break;
@@ -159,12 +158,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
         deviceItem.iconImageName = @"send_tab_to_self_devices";
     }
 
-    if (iter == _target_device_map.begin()) {
+    if (iter == _target_device_list.begin()) {
       deviceItem.selected = YES;
       self.selectedItem = deviceItem;
     }
 
-    deviceItem.cacheGuid = base::SysUTF8ToNSString(iter->second.cache_guid);
+    deviceItem.cacheGuid = base::SysUTF8ToNSString(iter->cache_guid);
 
     [model addItem:deviceItem
         toSectionWithIdentifier:SectionIdentifierDevicesToSend];
@@ -189,7 +188,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::UmaHistogramEnumeration(kClickResultHistogramName,
                                 SendTabToSelfClickResult::kShowDeviceList);
   base::UmaHistogramCounts100(kDeviceCountHistogramName,
-                              _target_device_map.size());
+                              _target_device_list.size());
 }
 
 #pragma mark - UITableViewDataSource

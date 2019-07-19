@@ -47,6 +47,10 @@ class CORE_EXPORT CSSNumericLiteralValue : public CSSPrimitiveValue {
 
   bool IsZero() const { return !DoubleValue(); }
 
+  bool IsComputationallyIndependent() const {
+    return !IsLength() || !IsRelativeUnit(GetType());
+  }
+
   double DoubleValue() const { return num_; }
   double ComputeSeconds() const;
   double ComputeDegrees() const;

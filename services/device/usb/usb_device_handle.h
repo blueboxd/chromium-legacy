@@ -26,25 +26,17 @@ namespace device {
 
 class UsbDevice;
 
-using UsbTransferStatus = mojom::UsbTransferStatus;
-using UsbControlTransferType = mojom::UsbControlTransferType;
-using UsbControlTransferRecipient = mojom::UsbControlTransferRecipient;
-
 // UsbDeviceHandle class provides basic I/O related functionalities.
 class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
  public:
-  struct IsochronousPacket {
-    uint32_t length;
-    uint32_t transferred_length;
-    UsbTransferStatus status;
-  };
-
   using ResultCallback = base::OnceCallback<void(bool)>;
-  using TransferCallback = base::OnceCallback<
-      void(UsbTransferStatus, scoped_refptr<base::RefCountedBytes>, size_t)>;
-  using IsochronousTransferCallback =
-      base::OnceCallback<void(scoped_refptr<base::RefCountedBytes>,
-                              const std::vector<IsochronousPacket>& packets)>;
+  using TransferCallback =
+      base::OnceCallback<void(mojom::UsbTransferStatus,
+                              scoped_refptr<base::RefCountedBytes>,
+                              size_t)>;
+  using IsochronousTransferCallback = base::OnceCallback<void(
+      scoped_refptr<base::RefCountedBytes>,
+      std::vector<mojom::UsbIsochronousPacketPtr> packets)>;
 
   virtual scoped_refptr<UsbDevice> GetDevice() const = 0;
 
@@ -68,9 +60,9 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   virtual void ResetDevice(ResultCallback callback) = 0;
   virtual void ClearHalt(uint8_t endpoint, ResultCallback callback) = 0;
 
-  virtual void ControlTransfer(UsbTransferDirection direction,
-                               UsbControlTransferType request_type,
-                               UsbControlTransferRecipient recipient,
+  virtual void ControlTransfer(mojom::UsbTransferDirection direction,
+                               mojom::UsbControlTransferType request_type,
+                               mojom::UsbControlTransferRecipient recipient,
                                uint8_t request,
                                uint16_t value,
                                uint16_t index,
@@ -91,7 +83,7 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
       unsigned int timeout,
       IsochronousTransferCallback callback) = 0;
 
-  virtual void GenericTransfer(UsbTransferDirection direction,
+  virtual void GenericTransfer(mojom::UsbTransferDirection direction,
                                uint8_t endpoint_number,
                                scoped_refptr<base::RefCountedBytes> buffer,
                                unsigned int timeout,

@@ -1642,6 +1642,8 @@ void LayoutInline::AddOutlineRects(
     Vector<PhysicalRect>& rects,
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
+  DCHECK_GE(GetDocument().Lifecycle().GetState(),
+            DocumentLifecycle::kAfterPerformLayout);
   CollectLineBoxRects([&rects, &additional_offset](const PhysicalRect& r) {
     auto rect = r;
     rect.Move(additional_offset);

@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Données de site stockées</translation>
 <translation id="2328985652426384049">Impossible de se connecter</translation>
 <translation id="2349710944427398404">Espace de stockage utilisé pour l'ensemble des données Chrome, y compris les comptes, favoris et paramètres enregistrés</translation>
-<translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2353636109065292463">Vérifier votre connexion Internet</translation>
 <translation id="2359808026110333948">Continuer</translation>
 <translation id="2369533728426058518">onglets ouverts</translation>
@@ -196,7 +195,7 @@
 <translation id="2394602618534698961">Les fichiers que vous téléchargez sont affichés ici</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> Mo</translation>
 <translation id="2410754283952462441">Sélectionner un compte</translation>
-<translation id="2414886740292270097">Foncé</translation>
+<translation id="2414886740292270097">Sombre</translation>
 <translation id="2416359993254398973">Chrome a besoin de votre autorisation pour accéder à votre appareil photo pour ce site.</translation>
 <translation id="2426805022920575512">Sélectionner un autre compte</translation>
 <translation id="2433507940547922241">Apparence</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> secondes restantes</translation>
 <translation id="2779651927720337254">échec</translation>
 <translation id="2781151931089541271">1 seconde restante</translation>
+<translation id="2796941233371040292">Aucune donnée de stockage</translation>
 <translation id="2801022321632964776">Lancez la mise à jour pour obtenir votre langue dans la dernière version de Chrome</translation>
 <translation id="2810645512293415242">Page simplifiée pour économiser des données et accélérer le chargement.</translation>
 <translation id="281504910091592009">Afficher et gérer les mots de passe enregistrés dans votre <ph name="BEGIN_LINK" />compte Google<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">À propos de Chrome</translation>
 <translation id="2891154217021530873">Arrêter le chargement de la page</translation>
 <translation id="2893180576842394309">Google peut utiliser votre historique pour personnaliser la recherche et d'autres services Google</translation>
+<translation id="2898264748040935573">Modifier le mot de passe enregistré</translation>
 <translation id="2900528713135656174">Créer un événement</translation>
 <translation id="2902702728133930130">Échec du démarrage de Chrome, en raison d'une erreur inattendue.</translation>
 <translation id="290376772003165898">La page n'est pas en <ph name="LANGUAGE" /> ?</translation>
@@ -335,7 +336,7 @@
 <translation id="3513704683820682405">Réalité augmentée</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
 <translation id="3522247891732774234">Mise à jour disponible. Plus d'options</translation>
-<translation id="3524138585025253783">UI pour les développeurs</translation>
+<translation id="3524138585025253783">UI des développeurs</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3542235761944717775"><ph name="KILOBYTES" /> Ko disponibles</translation>
 <translation id="3549657413697417275">Recherchez dans l'historique</translation>
@@ -520,6 +521,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4913169188695071480">Ne plus actualiser</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /> lors de la recherche d'appareils…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# page}one{# page}other{# pages}}</translation>
+<translation id="4932247056774066048">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Vos données Chrome seront donc supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="4943703118917034429">Réalité virtuelle</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> partage votre écran.</translation>
@@ -562,6 +564,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5210286577605176222">Accéder à l'onglet précédent</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5224771365102442243">Avec vidéo</translation>
+<translation id="5230560987958996918">Le site <ph name="SITE" /> souhaite rechercher les appareils Bluetooth à proximité. Les appareils suivants ont été détectés :</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="526421993248218238">Impossible de charger cette page</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
@@ -571,7 +574,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5301954838959518834">OK</translation>
 <translation id="5304593522240415983">Champ obligatoire.</translation>
 <translation id="5308380583665731573">Connexion</translation>
-<translation id="5308603654685598744">Si cette fonctionnalité est activée, une proposition de traduction des pages rédigées dans d'autres langues à l'aide de Google Traduction vous est envoyée dans Chrome.</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
@@ -586,6 +588,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5414836363063783498">Validation en cours…</translation>
 <translation id="5423934151118863508">Les pages les plus consultées s'affichent ici.</translation>
 <translation id="5424588387303617268">Espace disponible : <ph name="GIGABYTES" /> Go</translation>
+<translation id="543338862236136125">Modifier le mot de passe</translation>
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
 <translation id="543509235395288790">Téléchargement de <ph name="COUNT" /> fichiers (<ph name="MEGABYTES" />)…</translation>
 <translation id="5441522332038954058">Accéder à la barre d'adresse</translation>
@@ -660,7 +663,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5865733239029070421">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5902828464777634901">Toutes les données locales stockées par ce site, y compris les cookies, seront supprimées.</translation>
-<translation id="5911030830365207728">Google Traduction</translation>
 <translation id="5916664084637901428">Activé</translation>
 <translation id="5919204609460789179">Mettre à jour <ph name="PRODUCT_NAME" /> pour lancer la synchronisation</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> économisé(s)</translation>
@@ -805,7 +807,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6963642900430330478">Cette page est dangereuse. Informations sur le site</translation>
 <translation id="6963766334940102469">Supprimer des favoris</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Réinitialiser les paramètres de Google Traduction</translation>
 <translation id="6979737339423435258">Toutes les périodes</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="6989267951144302301">Échec du téléchargement</translation>
@@ -891,7 +892,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="757524316907819857">Empêcher les sites de lire les contenus protégés</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fichier téléchargé}one{<ph name="FILES_DOWNLOADED_MANY" /> fichier téléchargé}other{<ph name="FILES_DOWNLOADED_MANY" /> fichiers téléchargés}}</translation>
-<translation id="7588219262685291874">Activer le thème foncé lorsque l'économiseur de batterie de l'appareil est activé</translation>
+<translation id="7588219262685291874">Activer le thème sombre lorsque l'économiseur de batterie de l'appareil est activé</translation>
 <translation id="7589445247086920869">Bloquer l'accès pour le moteur de recherche actuel</translation>
 <translation id="7593557518625677601">Ouvrez paramètres Android et réactivez synchro système Android pour démarrer synchro Chrome.</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>

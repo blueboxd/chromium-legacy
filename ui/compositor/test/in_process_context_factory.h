@@ -80,10 +80,9 @@ class InProcessContextFactory : public ContextFactory,
   void DisableSwapUntilResize(ui::Compositor* compositor) override;
   void SetDisplayColorMatrix(ui::Compositor* compositor,
                              const SkMatrix44& matrix) override;
-  void SetDisplayColorSpace(
-      ui::Compositor* compositor,
-      const gfx::ColorSpace& blending_color_space,
-      const gfx::ColorSpace& output_color_space) override {}
+  void SetDisplayColorSpace(ui::Compositor* compositor,
+                            const gfx::ColorSpace& output_color_space,
+                            float sdr_white_level) override {}
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}

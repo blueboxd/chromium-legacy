@@ -201,9 +201,11 @@ void ProfilingClient::RetrieveHeapProfile(
         reinterpret_cast<const uintptr_t*>(sample.stack.data() +
                                            sample.stack.size()));
     if (g_include_thread_names) {
-      mojo_sample->stack.push_back(
-          reinterpret_cast<uintptr_t>(sample.thread_name));
-      thread_names.insert(sample.thread_name);
+      static const char* kUnknownThreadName = "<unknown>";
+      const char* thread_name =
+          sample.thread_name ? sample.thread_name : kUnknownThreadName;
+      mojo_sample->stack.push_back(reinterpret_cast<uintptr_t>(thread_name));
+      thread_names.insert(thread_name);
     }
     profile->samples.push_back(std::move(mojo_sample));
   }

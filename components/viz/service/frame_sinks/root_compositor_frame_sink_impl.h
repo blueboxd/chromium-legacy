@@ -49,8 +49,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void DisableSwapUntilResize(DisableSwapUntilResizeCallback callback) override;
   void Resize(const gfx::Size& size) override;
   void SetDisplayColorMatrix(const gfx::Transform& color_matrix) override;
-  void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& device_color_space) override;
+  void SetDisplayColorSpace(const gfx::ColorSpace& device_color_space,
+                            float sdr_white_level) override;
   void SetOutputIsSecure(bool secure) override;
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval) override;

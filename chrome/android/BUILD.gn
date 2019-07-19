@@ -2042,16 +2042,16 @@ if (enable_arcore) {
     # Include ArCore files directly instead of using bundles.
     deps += [
       "//chrome/browser/android/vr:ar_java",
-      "//third_party/android_deps:com_google_ar_core_java",
+      "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
     ]
 
     # We store this as a separate .so in the APK and only load as needed.
     if (android_64bit_target_cpu && build_apk_secondary_abi) {
-      secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      secondary_abi_loadable_modules = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
     } else if (android_64bit_target_cpu && !build_apk_secondary_abi) {
-      loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      loadable_modules = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
     } else {
-      loadable_modules = [ "$root_gen_dir/third_party/android_deps/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
+      loadable_modules = [ "$root_gen_dir/third_party/arcore-android-sdk-client/com_google_ar_core_java/jni/armeabi-v7a/libarcore_sdk_c.so" ]
     }
 
     additional_apks = [ "//net/android:net_test_support_apk" ]
@@ -2574,6 +2574,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",
     "java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",
     "java/src/org/chromium/chrome/browser/login/ChromeHttpAuthHandler.java",
+    "java/src/org/chromium/chrome/browser/media/PictureInPictureActivity.java",
     "java/src/org/chromium/chrome/browser/media/remote/RecordCastAction.java",
     "java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java",
     "java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",

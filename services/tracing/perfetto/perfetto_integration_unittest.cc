@@ -39,8 +39,8 @@ class PerfettoIntegrationTest : public testing::Test {
   void SetUp() override {
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
     PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
-    data_source_ =
-        std::make_unique<TestDataSource>(kPerfettoTestDataSourceName, 0);
+    data_source_ = TestDataSource::CreateAndRegisterDataSource(
+        kPerfettoTestDataSourceName, 0);
     perfetto_service_ = std::make_unique<PerfettoService>();
     RunUntilIdle();
   }

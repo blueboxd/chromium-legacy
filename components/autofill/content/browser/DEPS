@@ -1,5 +1,6 @@
 include_rules = [
   "+content/public/browser",
+  "+components/keyed_service/content",
   "+crypto/random.h",
   "+gpu/config/gpu_info.h",
   "+services/device/public",

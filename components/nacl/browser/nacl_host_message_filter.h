@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -35,10 +36,14 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   // content::BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnChannelClosing() override;
+  void OnFilterAdded(IPC::Channel* channel) override;
 
   int render_process_id() { return render_process_id_; }
   bool off_the_record() { return off_the_record_; }
   const base::FilePath& profile_directory() const { return profile_directory_; }
+  extensions::ExtensionSystem* extension_system() const {
+    return extension_system_;
+  }
 
  private:
   friend class content::BrowserThread;
@@ -79,6 +84,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
                                 const base::File& file,
                                 bool is_hit);
   void OnNaClDebugEnabledForURL(const GURL& nmf_url, bool* should_debug);
+  void SetUpExtensionSystem();
 
   int render_process_id_;
 
@@ -86,6 +92,9 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   // read on the IO thread.
   bool off_the_record_;
   base::FilePath profile_directory_;
+  // The extension system must be fetched on the UI thread, but the extension
+  // info map can be used on the IO thread.
+  extensions::ExtensionSystem* extension_system_;
 
   base::WeakPtrFactory<NaClHostMessageFilter> weak_ptr_factory_{this};
 

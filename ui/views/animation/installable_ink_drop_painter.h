@@ -15,24 +15,23 @@ namespace views {
 // |gfx::Canvas::ClipPath()| to control the shape.
 class VIEWS_EXPORT InstallableInkDropPainter : public Painter {
  public:
-  InstallableInkDropPainter() = default;
+  struct State {
+    float highlighted_ratio = 0.0f;
+    bool activated = false;
+  };
+
+  // |state| must outlive |this|.
+  explicit InstallableInkDropPainter(const State* state) : state_(state) {}
   ~InstallableInkDropPainter() override = default;
-
-  void set_activated(bool activated) { activated_ = activated; }
-  bool activated() const { return activated_; }
-
-  void set_highlighted_ratio(float highlighted_ratio) {
-    highlighted_ratio_ = highlighted_ratio;
-  }
-  bool highlighted_ratio() const { return highlighted_ratio_; }
 
   // Painter:
   gfx::Size GetMinimumSize() const override;
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
-  float highlighted_ratio_ = 0.0f;
-  bool activated_ = false;
+  // The current visual state. This isn't modified inside this class, but it can
+  // be modified by our user.
+  const State* const state_;
 };
 
 }  // namespace views

@@ -61,7 +61,7 @@
 <translation id="7939686037314084444">एक्सटेंशन ठीक से लोड नहीं हो पाया. शायद वह नेटवर्क अनुरोधों को बीच में रोक नहीं पाए.</translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8035920974645200807">सामने वाला कैमरा</translation>
-<translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" निर्धारित कर लिया है.</translation>
+<translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा, क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" तय कर लिया है.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="8517576857589387417">मेनिफ़ेस्ट फ़ाइल नहीं मिल रही है या पढ़ने के लिए उपलब्ध नहीं है</translation>
 <translation id="8636666366616799973">पैकेज अमान्य है. ब्यौरा: '<ph name="ERROR_MESSAGE" />'.</translation>

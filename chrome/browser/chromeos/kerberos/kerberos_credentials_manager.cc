@@ -583,6 +583,23 @@ void KerberosCredentialsManager::OnSetConfig(
   std::move(callback).Run(response.error());
 }
 
+void KerberosCredentialsManager::ValidateConfig(
+    const std::string& krb5_conf,
+    ValidateConfigCallback callback) {
+  kerberos::ValidateConfigRequest request;
+  request.set_krb5conf(krb5_conf);
+  KerberosClient::Get()->ValidateConfig(
+      request, base::BindOnce(&KerberosCredentialsManager::OnValidateConfig,
+                              weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void KerberosCredentialsManager::OnValidateConfig(
+    ValidateConfigCallback callback,
+    const kerberos::ValidateConfigResponse& response) {
+  LogError("ValidateConfig", response.error());
+  std::move(callback).Run(std::move(response));
+}
+
 void KerberosCredentialsManager::AcquireKerberosTgt(std::string principal_name,
                                                     const std::string& password,
                                                     ResultCallback callback) {

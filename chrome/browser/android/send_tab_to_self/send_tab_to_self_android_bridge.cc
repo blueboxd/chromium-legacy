@@ -91,13 +91,12 @@ static void JNI_SendTabToSelfAndroidBridge_GetAllTargetDeviceInfos(
   if (!model->IsReady()) {
     return;
   }
-  std::map<std::string, TargetDeviceInfo> all_infos =
-      model->GetTargetDeviceNameToCacheInfoMap();
-  for (std::map<std::string, TargetDeviceInfo>::iterator it = all_infos.begin();
-       it != all_infos.end(); ++it) {
+  std::vector<TargetDeviceInfo> all_infos =
+      model->GetTargetDeviceInfoSortedList();
+  for (auto it = all_infos.begin(); it != all_infos.end(); ++it) {
     Java_SendTabToSelfAndroidBridge_addToTargetDeviceInfoList(
         env, j_device_info_list_obj,
-        CreateJavaTargetDeviceInfo(env, it->first, it->second));
+        CreateJavaTargetDeviceInfo(env, it->device_name, *it));
   }
 }
 

@@ -20,7 +20,6 @@ struct TargetDeviceInfo;
 class SendTabToSelfBubbleDeviceButton : public HoverButton {
  public:
   SendTabToSelfBubbleDeviceButton(views::ButtonListener* button_listener,
-                                  const std::string& device_name,
                                   const TargetDeviceInfo& device_info,
                                   int button_tag);
   ~SendTabToSelfBubbleDeviceButton() override;

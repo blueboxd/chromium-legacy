@@ -203,9 +203,8 @@ class ProxyResolverImplTest : public testing::Test {
     std::unique_ptr<MockProxyResolverV8Tracing> mock_resolver =
         std::make_unique<MockProxyResolverV8Tracing>();
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_impl_ = std::make_unique<ProxyResolverImpl>(
-        std::move(mock_resolver),
-        std::unique_ptr<service_manager::ServiceContextRef>());
+    resolver_impl_ =
+        std::make_unique<ProxyResolverImpl>(std::move(mock_resolver));
     resolver_ = resolver_impl_.get();
   }
 

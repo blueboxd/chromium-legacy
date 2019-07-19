@@ -196,7 +196,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
-crbug.com/841567 virtual/fractional_scrolling_threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ Failure Pass Timeout ]
 crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failure Pass ]
@@ -230,14 +229,8 @@ crbug.com/857490 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 
 # Currently on main thread scrolling path, scrollend gets fired without waiting for scroll/fling snap animation. (The virtual/threaded version of the test passes.)
 crbug.com/907601 fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 virtual/fractional_scrolling/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-crbug.com/907601 virtual/fractional_scrolling_threaded/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 crbug.com/907601 virtual/scroll_customization/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
 crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-snap.html [ Skip ]
-
-# Tests not yet passing with Blink FractionalScrollOffsets enabled.
-crbug.com/414283 virtual/fractional_scrolling/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
-crbug.com/414283 virtual/fractional_scrolling_threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure Pass ]
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
@@ -751,7 +744,6 @@ crbug.com/591099 fast/multicol/vertical-lr/float-paginate.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/nested-columns.html [ Failure ]
 crbug.com/591099 fast/multicol/vertical-lr/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 fast/text/ellipsis-with-self-painting-layer.html [ Failure ]
-crbug.com/591099 virtual/fractional_scrolling_threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Failure ]
 
 # LayoutNG failures that needs to be triaged
 crbug.com/591099 fast/text/selection/selection-rect-line-height-too-small.html [ Failure ]
@@ -2150,7 +2142,6 @@ crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-transform-
 crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-transform-responsive.html [ Skip ]
 crbug.com/891427 virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
 crbug.com/891427 virtual/disable-blink-gen-property-trees/animations/responsive/viewport-unit-translate-responsive.html [ Skip ]
-crbug.com/891427 virtual/fractional_scrolling/fast/scrolling/editor-command-scroll-page-scale.html [ Pass Failure ]
 crbug.com/891427 fast/replaced/replaced-breaking.html [ Failure ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
@@ -2239,8 +2230,8 @@ crbug.com/538697 [ Win Win10 ] virtual/threaded/printing/webgl-oversized-printin
 crbug.com/538697 [ Win ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 crbug.com/904592 css3/filters/backdrop-filter-svg.html [ Failure ]
-crbug.com/974857 external/wpt/css/filter-effects/backdrop-filter-plus-mask.html [ Failure ]
-crbug.com/974857 virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-plus-mask.html [ Failure ]
+crbug.com/984766 [ Mac ] css3/filters/backdrop-filter-plus-mask.html [ Failure ]
+crbug.com/984766 [ Mac ] virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask.html [ Failure ]
 
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
@@ -2355,10 +2346,8 @@ crbug.com/770028 external/wpt/dom/events/document-level-touchmove-event-listener
 # Only virtual/threaded version of these tests pass (or running them with --enable-threaded-compositing).
 crbug.com/936891 fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
 crbug.com/936891 virtual/scroll_customization/fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
-crbug.com/936891 virtual/fractional_scrolling/fast/scrolling/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
 crbug.com/936891 fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
 crbug.com/936891 virtual/scroll_customization/fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
-crbug.com/936891 virtual/fractional_scrolling/fast/scrolling/document-level-wheel-event-listener-passive-by-default.html [ Skip ]
 
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
 
@@ -2883,7 +2872,6 @@ crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failur
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
 ### Tests added for non-fast scrolling regions that break as a result of compositor scrolling.
-crbug.com/817600 virtual/fractional_scrolling_threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-absolute-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-scrolled-position-fixed-scroller.html [ Failure ]
 crbug.com/817600 virtual/threaded/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
@@ -3135,10 +3123,6 @@ crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-autoscrolling-on-scroll
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
@@ -3147,10 +3131,6 @@ crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scroll
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/main_thread_scrollbar_gestures/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
@@ -4340,7 +4320,6 @@ crbug.com/626703 external/wpt/html/browsers/windows/noreferrer-window-name.html 
 crbug.com/626703 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout Crash ]
 crbug.com/626703 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html [ Timeout Crash ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-04.html [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/embedded-content/the-img-element/relevant-mutations.html [ Timeout Pass ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
@@ -4932,6 +4911,10 @@ crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elem
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
 crbug.com/852645 virtual/android/fullscreen/api/document-exit-fullscreen-vs-request.html [ Failure ]
 
+# snav tests fail because of a DCHECK
+crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
+crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest.html [ Crash ]
+
 # Sheriff failures 2017-02-21
 crbug.com/73609 http/tests/media/video-play-stall.html [ Pass Timeout ]
 
@@ -5026,6 +5009,13 @@ crbug.com/796034 virtual/streaming-preload/external/wpt/html/semantics/scripting
 
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
+
+# Service worker updates need to handle redirect appropriately.
+crbug.com/889798 external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
+crbug.com/889798 virtual/blink-cors/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
+crbug.com/889798 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
+crbug.com/889798 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
+crbug.com/889798 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/import-scripts-redirect.https.html [ Skip ]
 
 # Sheriff failures 2017-07-03
 crbug.com/708994 http/tests/security/cross-frame-mouse-source-capabilities.html [ Timeout Pass ]
@@ -5305,7 +5295,6 @@ crbug.com/779087 external/wpt/html/semantics/embedded-content/media-elements/aut
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] media/controls/scrubbing.html [ Skip ]
-crbug.com/916902 [ Mac ] virtual/fractional_scrolling/fast/scrolling/overflow-scrollability.html [ Skip ]
 
 # Different paths may have different anti-aliasing pixels 2018-02-21
 skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure Pass ]
@@ -5773,7 +5762,6 @@ crbug.com/719023 fast/mediarecorder/MediaRecorder-isTypeSupported-avc1.html [ Pa
 crbug.com/719023 media_capabilities/encodingInfo-avc1.html [ Pass Failure ]
 
 # Sheriff 2019-01-07
-crbug.com/919492 [ Mac ] virtual/fractional_scrolling_threaded/fast/scrolling/overflow-scrollability.html [ Timeout Pass ]
 crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html [ Pass Failure ]
 
 # WebRTC Unified Plan
@@ -6060,7 +6048,6 @@ crbug.com/947383 inspector-protocol/css/reattach-after-editing-styles.js [ Pass 
 ### external/wpt/fetch/sec-metadata/
 crbug.com/947023 external/wpt/fetch/sec-metadata/font.tentative.https.sub.html [ Pass Failure ]
 crbug.com/947023 external/wpt/fetch/sec-metadata/report.tentative.https.sub.html [ Pass Timeout ]
-crbug.com/947023 external/wpt/fetch/sec-metadata/xslt.tentative.https.sub.html [ Pass Failure ]
 
 # Sheriff 2019-04-02
 crbug.com/947690 [ Debug ] http/tests/history/back-during-beforeunload.html [ Pass Failure ]
@@ -6239,7 +6226,6 @@ crbug.com/959129 [ Linux ] virtual/threaded/http/tests/devtools/tracing/timeline
 # Sheriff 2019-06-20
 crbug.com/977153 [ Mac ] fast/forms/validation-bubble-appearance-wrap.html [ Pass Failure ]
 crbug.com/976045 fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
-crbug.com/976045 virtual/fractional_scrolling/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 virtual/scroll_customization/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 crbug.com/976045 virtual/threaded/fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
 

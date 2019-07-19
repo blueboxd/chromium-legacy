@@ -27,7 +27,7 @@
 #include "extensions/common/manifest_handlers/nacl_modules_handler.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
-#include "extensions/common/manifest_handlers/replacement_web_app.h"
+#include "extensions/common/manifest_handlers/replacement_apps.h"
 #include "extensions/common/manifest_handlers/requirements_info.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
@@ -69,7 +69,7 @@ void RegisterCommonManifestHandlers() {
 #endif
   registry->RegisterHandler(std::make_unique<OAuth2ManifestHandler>());
   registry->RegisterHandler(std::make_unique<OfflineEnabledHandler>());
-  registry->RegisterHandler(std::make_unique<ReplacementWebAppHandler>());
+  registry->RegisterHandler(std::make_unique<ReplacementAppsHandler>());
   registry->RegisterHandler(std::make_unique<RequirementsHandler>());
   registry->RegisterHandler(std::make_unique<SandboxedPageHandler>());
   registry->RegisterHandler(std::make_unique<SharedModuleHandler>());

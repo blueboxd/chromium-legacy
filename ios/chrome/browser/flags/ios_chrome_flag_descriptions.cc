@@ -353,12 +353,6 @@ const char kSendTabToSelfBroadcastDescription[] =
     "Allows users to broadcast the tab they send to all of their devices "
     "instead of targetting only one device.";
 
-const char kSendTabToSelfHistoryName[] = "Send tab to self history";
-const char kSendTabToSelfHistoryDescription[] =
-    "Allows users to view tabs that were sent to other synced devices by "
-    "accessing these tabs through a landing page either in history or in "
-    "recent tabs. Requires Send tab to self to also be enabled";
-
 const char kSendTabToSelfShowSendingUIName[] =
     "Send tab to self show sending UI";
 const char kSendTabToSelfShowSendingUIDescription[] =

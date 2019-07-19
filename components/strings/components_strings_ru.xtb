@@ -322,6 +322,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Доступ к файлу запрещен</translation>
 <translation id="2653659639078652383">Отправить</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{Нет}=1{1 пароль (для <ph name="DOMAIN_LIST" />)}=2{2 пароля (для <ph name="DOMAIN_LIST" />)}one{# пароль (для <ph name="DOMAIN_LIST" />)}few{# пароля (для <ph name="DOMAIN_LIST" />)}many{# паролей (для <ph name="DOMAIN_LIST" />)}other{# пароля (для <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Закройте другие вкладки, расширения и приложения.</translation>
 <translation id="267371737713284912">для отмены нажмите <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="2674170444375937751">Удалить эти страницы из истории посещений?</translation>
@@ -651,6 +652,7 @@
 <translation id="4435702339979719576">Открытка</translation>
 <translation id="443673843213245140">Прокси-сервер отключен, но при этом его конфигурация задана явным образом.</translation>
 <translation id="445100540951337728">Дебетовые карты, которые принимаются к оплате</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> подозрительные действия</translation>
 <translation id="4466881336512663640">Внесенные в форму изменения не сохранятся. Продолжить?</translation>
 <translation id="4477350412780666475">Следующий трек</translation>
 <translation id="4482953324121162758">Этот сайт не будет переводиться автоматически.</translation>
@@ -703,6 +705,7 @@
 <translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
 <translation id="4780900888022378816">Ваше устройство находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, а аккаунт – под управлением домена <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Переключиться на эту вкладку</translation>
+<translation id="4791134497475588553">Установленные Linux-приложения и даты их последнего использования.</translation>
 <translation id="4798078619018708837">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" />. После этого ее реквизиты из аккаунта Google будут переданы сайту.</translation>
 <translation id="4800132727771399293">Проверьте срок действия и CVC-код, а затем повторите попытку</translation>
 <translation id="480334179571489655">Ошибка политики источника</translation>
@@ -713,6 +716,7 @@
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4854362297993841467">Этот способ доставки недоступен. Выберите другой.</translation>
 <translation id="4858792381671956233">Запрос на просмотр сайта отправлен вашим родителям</translation>
+<translation id="4864052566555297930">Совет по безопасности:</translation>
 <translation id="4876188919622883022">Упрощенный просмотр</translation>
 <translation id="4876305945144899064">Имя пользователя не указано</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Нет}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> и <ph name="EXAMPLE_DOMAIN_2" />}one{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}few{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}many{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" /> <ph name="AND_MORE" />}}</translation>
@@ -813,6 +817,7 @@
 <translation id="536296301121032821">Не удалось сохранить настройки политики</translation>
 <translation id="5371425731340848620">Изменить информацию о карте</translation>
 <translation id="5377026284221673050">"Часы отстают", "Часы спешат" или &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
+<translation id="5377179979757081683">Посещение этой страницы может привести к хищению личной информации или повреждению устройства. Будьте внимательны, вводя персональные данные и открывая скачанные файлы.</translation>
 <translation id="5384855140246857529">Чтобы пользоваться картами на всех своих устройствах, войдите в аккаунт и включите синхронизацию.</translation>
 <translation id="5386426401304769735">В цепочке сертификатов этого сайта есть сертификат, подписанный с помощью алгоритма SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -977,6 +982,7 @@
 <translation id="6328786501058569169">Это поддельный сайт</translation>
 <translation id="6337133576188860026">Освободится менее <ph name="SIZE" /> пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="6337534724793800597">Фильтровать политики по названию</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{Нет}=1{1 пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}=2{2 пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}one{# пароль (для <ph name="DOMAIN_LIST" />, синхронизировано)}few{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}many{# паролей (для <ph name="DOMAIN_LIST" />, синхронизировано)}other{# пароля (для <ph name="DOMAIN_LIST" />, синхронизировано)}}</translation>
 <translation id="6358450015545214790">Что это значит?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1152,6 +1158,7 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Аффилированный пользователь:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">Закрыть сайт</translation>
 <translation id="7353601530677266744">Командная строка</translation>
 <translation id="7372973238305370288">результат поиска</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

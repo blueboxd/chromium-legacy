@@ -19,4 +19,8 @@ std::string AutofillClient::GetPageLanguage() const {
   return std::string();
 }
 
+LogManager* AutofillClient::GetLogManager() const {
+  return nullptr;
+}
+
 }  // namespace autofill

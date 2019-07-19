@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Peluncur cari</translation>
 <translation id="1399648040768741453">Papan kekunci bahasa Telugu (Fonetik)</translation>
 <translation id="1430915738399379752">Cetak</translation>
+<translation id="1439494416798956626">Dialihkan ke <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Papan kekunci bahasa Vietnam (Teleks)</translation>
 <translation id="1455548678241328678">Papan kekunci Norway</translation>
 <translation id="1464724975715666883">1 ralat.</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Mengimbas peranti media anda...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> foto disandarkan pada <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Menyalin...</translation>
+<translation id="3473378059788601120">Disalin ke <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Hamparan Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ralat.</translation>
 <translation id="3519867315646775981">Pengalihan huruf (shalom ← שלום)</translation>
@@ -437,6 +439,7 @@
 <translation id="5923484009666796948">Input Jepun (untuk papan kekunci Jepun)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Beri Linux kebenaran apl untuk mengubah fail dalam Google Drive anda. Perubahan akan disegerakkan ke peranti anda yang lain.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> item</translation>
 <translation id="5982621672636444458">Pilihan isihan</translation>
 <translation id="6005282720244019462">Papan kekunci Amerika Latin</translation>
 <translation id="6007237601604674381">Pemindahan gagal. <ph name="ERROR_MESSAGE" /></translation>

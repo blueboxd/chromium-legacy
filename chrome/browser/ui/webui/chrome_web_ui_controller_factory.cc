@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_migration_welcome_ui.h"
+#include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_ui.h"
 #include "chrome/browser/ui/webui/components_ui.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
@@ -552,6 +553,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SysInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIAssistantOptInHost)
     return &NewWebUI<chromeos::AssistantOptInUI>;
+  if (url.host_piece() == chrome::kChromeUICameraHost &&
+      chromeos::CameraUI::IsEnabled()) {
+    return &NewWebUI<chromeos::CameraUI>;
+  }
 
   if (url.host_piece() == chrome::kChromeUIArcGraphicsTracingHost) {
     if (!base::FeatureList::IsEnabled(arc::kGraphicBuffersVisualizationTool))

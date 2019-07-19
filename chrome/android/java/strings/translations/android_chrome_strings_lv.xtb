@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Vietnes krātuve</translation>
 <translation id="2328985652426384049">Nevar pierakstīties</translation>
 <translation id="2349710944427398404">Kopējais pārlūkā Chrome izmantoto datu apjoms, ieskaitot kontus, grāmatzīmes un saglabātos iestatījumus</translation>
-<translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
 <translation id="2353636109065292463">Notiek interneta savienojuma pārbaude</translation>
 <translation id="2359808026110333948">Turpināt</translation>
 <translation id="2369533728426058518">atvērt cilnes</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Atlikušas <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">neizdevās</translation>
 <translation id="2781151931089541271">Atlikusi 1 s</translation>
+<translation id="2796941233371040292">Šeit nav krātuves datu</translation>
 <translation id="2801022321632964776">Veiciet atjaunināšanu, lai varētu lasīt savā valodā jaunākajā pārlūka Chrome versijā</translation>
 <translation id="2810645512293415242">Lapa tika vienkāršota, lai samazinātu datu lietojumu un paātrinātu ielādi.</translation>
 <translation id="281504910091592009">Skatiet un pārvaldiet saglabātās paroles savā <ph name="BEGIN_LINK" />Google kontā<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Par Chrome</translation>
 <translation id="2891154217021530873">Pārtraukt lapas ielādi</translation>
 <translation id="2893180576842394309">Google var izmantot jūsu vēsturi, lai personalizētu Meklēšanu un citus Google pakalpojumus.</translation>
+<translation id="2898264748040935573">Rediģēt saglabāto paroli</translation>
 <translation id="2900528713135656174">Izveidot pasākumu</translation>
 <translation id="2902702728133930130">Pārlūka Chrome palaišanas laikā radās neparedzēta kļūda.</translation>
 <translation id="290376772003165898">Vai lapa nav šajā valodā: <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4913169188695071480">Pārtraukt atsvaidzināšanu</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Saņemiet palīdzību<ph name="END_LINK" />, meklējot ierīces…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# lapa}zero{# lapas}one{# lapa}other{# lapas}}</translation>
+<translation id="4932247056774066048">Jūs izrakstāties no konta, ko pārvalda <ph name="DOMAIN_NAME" />, tāpēc jūsu Chrome dati tiks izdzēsti no šīs ierīces. Tie joprojām būs pieejami jūsu Google kontā.</translation>
 <translation id="4943703118917034429">Virtuālā realitāte</translation>
 <translation id="4943872375798546930">Nav rezultātu</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> kopīgo jūsu ekrānu</translation>
@@ -562,6 +564,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5210286577605176222">Pāriet uz iepriekšējo cilni</translation>
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="5224771365102442243">Ar video</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> vēlas meklēt tuvumā esošas Bluetooth ierīces. Ir atrastas šīs ierīces:</translation>
 <translation id="5233638681132016545">Jauna cilne</translation>
 <translation id="526421993248218238">Šo lapu nevar ielādēt</translation>
 <translation id="5271967389191913893">Ierīcē nevar atvērt lejupielādējamo saturu.</translation>
@@ -571,7 +574,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5301954838959518834">Labi, sapratu</translation>
 <translation id="5304593522240415983">Šis lauks nevar būt tukšs.</translation>
 <translation id="5308380583665731573">Pievienošana</translation>
-<translation id="5308603654685598744">Ja šī funkcija ir ieslēgta, Chrome piedāvā tulkot citās valodās rakstītas lapas, izmantojot Google tulkotāju.</translation>
 <translation id="5313967007315987356">Pievienot vietni</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5324858694974489420">Vecāku iestatījumi</translation>
@@ -586,6 +588,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5414836363063783498">Notiek verifikācija...</translation>
 <translation id="5423934151118863508">Šeit tiks parādītas jūsu visvairāk apmeklētās lapas.</translation>
 <translation id="5424588387303617268">Pieejami <ph name="GIGABYTES" /> GB</translation>
+<translation id="543338862236136125">Rediģēt paroli</translation>
 <translation id="5433691172869980887">Lietotājvārds ir nokopēts.</translation>
 <translation id="543509235395288790">Notiek <ph name="COUNT" /> faila(-u) lejupielāde (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Pāriet uz adreses joslu</translation>
@@ -660,7 +663,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5865733239029070421">Automātiski sūtīt lietojuma statistiku un avāriju pārskatus Google serveriem</translation>
 <translation id="5869522115854928033">Saglabātās paroles</translation>
 <translation id="5902828464777634901">Visi šīs vietnes saglabātie lokālie dati, tostarp sīkfaili, tiks dzēsti.</translation>
-<translation id="5911030830365207728">Google tulkotājs</translation>
 <translation id="5916664084637901428">Iesl.</translation>
 <translation id="5919204609460789179">Lai sāktu sinhronizēšanu, atjauniniet <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696">Saglabāts: <ph name="AMOUNT" /></translation>
@@ -805,7 +807,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6963642900430330478">Šī lapa ir bīstama. Vietnes informācija</translation>
 <translation id="6963766334940102469">Dzēst grāmatzīmes</translation>
 <translation id="6965382102122355670">Labi</translation>
-<translation id="6978479750597523876">Atiestatīt tulkošanas iestatījumus</translation>
 <translation id="6979737339423435258">Visā periodā</translation>
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="6989267951144302301">Nevarēja lejupielādēt</translation>

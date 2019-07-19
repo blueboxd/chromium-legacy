@@ -926,6 +926,13 @@ html[dir=rtl] .menu-option {
   width: 144px;
 }
 
+@media (prefers-color-scheme: dark) {
+  #backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile,
+  #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile {
+    box-shadow: var(--dark-mode-shadow);
+  }
+}
+
 #backgrounds-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus,
 #backgrounds-image-menu .bg-sel-tile-bg.selected .bg-sel-tile:focus {
   outline: none;
@@ -1165,6 +1172,15 @@ html[dir=rtl] #customization-menu .bg-sel-tile .selected-check {
   background-size: 100%;
   height: 40px;
   width: 130px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mini-header-colorful {
+    -webkit-mask-image: url(icons/colored_header.svg);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 100%;
+    background: white;
+  }
 }
 
 .mini-shortcuts {

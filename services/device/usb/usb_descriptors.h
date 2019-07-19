@@ -20,16 +20,6 @@ namespace device {
 
 class UsbDeviceHandle;
 
-using UsbTransferType = mojom::UsbTransferType;
-using UsbTransferDirection = mojom::UsbTransferDirection;
-using UsbSynchronizationType = mojom::UsbSynchronizationType;
-using UsbUsageType = mojom::UsbUsageType;
-using UsbEndpointInfoPtr = mojom::UsbEndpointInfoPtr;
-using UsbAlternateInterfaceInfoPtr = mojom::UsbAlternateInterfaceInfoPtr;
-using UsbInterfaceInfoPtr = mojom::UsbInterfaceInfoPtr;
-using UsbConfigurationInfoPtr = mojom::UsbConfigurationInfoPtr;
-using UsbDeviceInfoPtr = mojom::UsbDeviceInfoPtr;
-
 struct CombinedInterfaceInfo {
   CombinedInterfaceInfo() = default;
   CombinedInterfaceInfo(const mojom::UsbInterfaceInfo* interface,
@@ -57,7 +47,7 @@ struct UsbDeviceDescriptor {
   uint8_t i_product = 0;
   uint8_t i_serial_number = 0;
   uint8_t num_configurations = 0;
-  UsbDeviceInfoPtr device_info;
+  mojom::UsbDeviceInfoPtr device_info;
 };
 
 void ReadUsbDescriptors(
@@ -73,20 +63,20 @@ void ReadUsbStringDescriptors(
     base::OnceCallback<void(std::unique_ptr<std::map<uint8_t, base::string16>>)>
         callback);
 
-UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(const uint8_t* data);
+mojom::UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(const uint8_t* data);
 
-UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(uint8_t address,
-                                           uint8_t attributes,
-                                           uint16_t maximum_packet_size,
-                                           uint8_t polling_interval);
+mojom::UsbEndpointInfoPtr BuildUsbEndpointInfoPtr(uint8_t address,
+                                                  uint8_t attributes,
+                                                  uint16_t maximum_packet_size,
+                                                  uint8_t polling_interval);
 
-UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(const uint8_t* data);
+mojom::UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(const uint8_t* data);
 
-UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(uint8_t interface_number,
-                                             uint8_t alternate_setting,
-                                             uint8_t interface_class,
-                                             uint8_t interface_subclass,
-                                             uint8_t interface_protocol);
+mojom::UsbInterfaceInfoPtr BuildUsbInterfaceInfoPtr(uint8_t interface_number,
+                                                    uint8_t alternate_setting,
+                                                    uint8_t interface_class,
+                                                    uint8_t interface_subclass,
+                                                    uint8_t interface_protocol);
 
 void AggregateInterfacesForConfig(mojom::UsbConfigurationInfo* config);
 
@@ -95,9 +85,10 @@ CombinedInterfaceInfo FindInterfaceInfoFromConfig(
     uint8_t interface_number,
     uint8_t alternate_setting);
 
-UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(const uint8_t* data);
+mojom::UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(
+    const uint8_t* data);
 
-UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(
+mojom::UsbConfigurationInfoPtr BuildUsbConfigurationInfoPtr(
     uint8_t configuration_value,
     bool self_powered,
     bool remote_wakeup,

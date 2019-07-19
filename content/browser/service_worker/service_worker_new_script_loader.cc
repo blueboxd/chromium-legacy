@@ -199,6 +199,9 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   DCHECK(client_);
   auto paused_state = version_->TakePausedStateOfChangedScript(request_url_);
+
+  // TODO(https://crbug.com/648295): Handle the case where it returns nullptr,
+  // which means the imported script was not available when checking the update.
   DCHECK(paused_state);
 
   cache_writer_ = std::move(paused_state->cache_writer);
@@ -339,6 +342,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveRedirect(
   //
   // Step 9.5: "Set request's redirect mode to "error"."
   // https://w3c.github.io/ServiceWorker/#update-algorithm
+  //
+  // TODO(https://crbug.com/889798): Follow redirects for imported scripts.
   CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT),
                   ServiceWorkerConsts::kServiceWorkerRedirectError);
 }

@@ -18,7 +18,6 @@
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/preferences/public/cpp/local_state_manifest.h"
-#include "services/proxy_resolver/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
@@ -109,7 +108,6 @@ GetChromeBuiltinServiceManifests() {
       GetFileUtilManifest(),
       patch::GetManifest(),
       unzip::GetManifest(),
-      proxy_resolver::GetManifest(),
       prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)

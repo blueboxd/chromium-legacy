@@ -174,6 +174,10 @@ const base::Feature kBlinkSchedulerDisableAntiStarvationForPriorities{
     "BlinkSchedulerDisableAntiStarvationForPriorities",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable setting high priority database task type from field trial parameters.
+const base::Feature kHighPriorityDatabaseTaskType{
+    "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace scheduler
 }  // namespace blink
 

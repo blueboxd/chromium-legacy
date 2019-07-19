@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Dane witryn:</translation>
 <translation id="2328985652426384049">Nie można się zalogować</translation>
 <translation id="2349710944427398404">Łączna ilość danych używanych przez Chrome, w tym konta, zakładki i zapisane ustawienia</translation>
-<translation id="2351097562818989364">Ustawienia tłumaczenia zostały zresetowane.</translation>
 <translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
 <translation id="2359808026110333948">Dalej</translation>
 <translation id="2369533728426058518">otwarte karty</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">Nie pobrano</translation>
 <translation id="2781151931089541271">Pozostała sekunda</translation>
+<translation id="2796941233371040292">Brak zapisanych danych</translation>
 <translation id="2801022321632964776">Zaktualizuj Chrome do najnowszej wersji, by mieć w nim dostępny swój język</translation>
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Chrome – informacje</translation>
 <translation id="2891154217021530873">Zatrzymaj wczytywanie strony</translation>
 <translation id="2893180576842394309">Google może korzystać z Twojej historii, by personalizować wyniki wyszukiwania i działanie innych usług.</translation>
+<translation id="2898264748040935573">Edytuj zapisane hasło</translation>
 <translation id="2900528713135656174">Utwórz wydarzenie</translation>
 <translation id="2902702728133930130">Podczas uruchamiania Chrome wystąpił nieoczekiwany błąd.</translation>
 <translation id="290376772003165898">Język tej strony to nie <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4913169188695071480">Zatrzymaj odświeżanie</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Pomoc<ph name="END_LINK" /> w trakcie wyszukiwania urządzeń…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# strona}few{# strony}many{# stron}other{# strony}}</translation>
+<translation id="4932247056774066048">Wylogowujesz się z konta zarządzanego w domenie <ph name="DOMAIN_NAME" />, więc Twoje dane w Chrome zostaną usunięte z tego urządzenia. Pozostaną one na Twoim koncie Google.</translation>
 <translation id="4943703118917034429">Rzeczywistość wirtualna</translation>
 <translation id="4943872375798546930">Brak wyników</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> udostępnia Twój ekran</translation>
@@ -562,6 +564,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5210286577605176222">Przejdź do poprzedniej karty</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="5224771365102442243">Z wideo</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> chce wyszukać urządzenia Bluetooth w pobliżu. Znaleziono te urządzenia:</translation>
 <translation id="5233638681132016545">Nowa karta</translation>
 <translation id="526421993248218238">Nie udało się wczytać tej strony</translation>
 <translation id="5271967389191913893">Na tym urządzeniu nie można otworzyć treści, które chcesz pobrać.</translation>
@@ -571,7 +574,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5301954838959518834">Rozumiem</translation>
 <translation id="5304593522240415983">To pole nie może być puste</translation>
 <translation id="5308380583665731573">Połącz</translation>
-<translation id="5308603654685598744">Po włączeniu tej funkcji Chrome będzie proponować tłumaczenie stron w innych językach przez Tłumacza Google.</translation>
 <translation id="5313967007315987356">Dodaj stronę</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5324858694974489420">Ustawienia rodzicielskie</translation>
@@ -586,6 +588,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5414836363063783498">Weryfikuję…</translation>
 <translation id="5423934151118863508">Tu pojawią się strony, na które najczęściej wchodzisz</translation>
 <translation id="5424588387303617268">Dostępne <ph name="GIGABYTES" /> GB</translation>
+<translation id="543338862236136125">Edytuj hasło</translation>
 <translation id="5433691172869980887">Nazwa użytkownika została skopiowana</translation>
 <translation id="543509235395288790">Pobieram pliki: <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Przejdź do paska adresu</translation>
@@ -660,7 +663,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5865733239029070421">Automatycznie przesyła do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
 <translation id="5902828464777634901">Wszystkie dane lokalne zapisane przez tę witrynę (w tym pliki cookie) zostaną usunięte.</translation>
-<translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5919204609460789179">Zaktualizuj przeglądarkę <ph name="PRODUCT_NAME" />, by rozpocząć synchronizację</translation>
 <translation id="5937580074298050696">Zaoszczędzono <ph name="AMOUNT" /></translation>
@@ -805,7 +807,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6963642900430330478">Ta strona jest niebezpieczna. Informacje o witrynie</translation>
 <translation id="6963766334940102469">Usuń zakładki</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Zresetuj ustawienia tłumaczenia</translation>
 <translation id="6979737339423435258">Od początku</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="6989267951144302301">Nie udało się pobrać</translation>

@@ -50,6 +50,7 @@ struct CC_EXPORT LayerImplTestProperties {
   FilterOperations filters;
   FilterOperations backdrop_filters;
   base::Optional<gfx::RRectF> backdrop_filter_bounds;
+  ElementId backdrop_mask_element_id;
   float backdrop_filter_quality;
   gfx::PointF filters_origin;
   SkBlendMode blend_mode;

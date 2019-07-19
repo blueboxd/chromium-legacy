@@ -27,6 +27,7 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -434,6 +435,19 @@ void TabWebContentsDelegateAndroid::UpdateUserGestureCarryoverInfo(
       navigation_interception::InterceptNavigationDelegate::Get(web_contents);
   if (intercept_navigation_delegate)
     intercept_navigation_delegate->UpdateLastUserGestureCarryoverTimestamp();
+}
+
+content::PictureInPictureResult
+TabWebContentsDelegateAndroid::EnterPictureInPicture(
+    content::WebContents* web_contents,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  return PictureInPictureWindowManager::GetInstance()->EnterPictureInPicture(
+      web_contents, surface_id, natural_size);
+}
+
+void TabWebContentsDelegateAndroid::ExitPictureInPicture() {
+  PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
 }
 
 std::unique_ptr<content::WebContents>

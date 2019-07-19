@@ -34,6 +34,31 @@ grit("multidevice_setup_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
+grit("camera_resources") {
+  source = "camera/camera_resources.grd"
+
+  defines = chrome_grit_defines
+  outputs = [
+    "grit/camera_resources.h",
+    "grit/camera_resources_map.cc",
+    "grit/camera_resources_map.h",
+    "camera_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+
+  deps = [
+    "//media/capture/video/chromeos/mojo:cros_camera_js",
+  ]
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+}
+
 group("closure_compile") {
   deps = [
     "add_supervision:closure_compile",

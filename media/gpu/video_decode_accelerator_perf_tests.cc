@@ -427,8 +427,9 @@ int main(int argc, char** argv) {
   media::test::g_env = static_cast<media::test::VideoPlayerTestEnvironment*>(
       testing::AddGlobalTestEnvironment(test_environment));
 
+  // Launch all tests sequentially and disable batching.
   base::TestSuite test_suite(argc, argv);
-  return base::LaunchUnitTestsSerially(
-      argc, argv,
+  return base::LaunchUnitTestsWithOptions(
+      argc, argv, 1, 0, true,
       base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

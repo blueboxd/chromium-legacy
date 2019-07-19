@@ -593,6 +593,7 @@ void Layer::SetMaskLayer(PictureLayer* mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.mask_layer.get() == mask_layer)
     return;
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
   if (inputs_.mask_layer.get()) {
     DCHECK_EQ(this, inputs_.mask_layer->parent());
     inputs_.mask_layer->RemoveFromParent();

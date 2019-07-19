@@ -196,6 +196,7 @@ class FormSuggestionControllerTest : public PlatformTest {
 
     accessory_mediator_ =
         [[FormInputAccessoryMediator alloc] initWithConsumer:mock_consumer_
+                                                    delegate:nil
                                                 webStateList:NULL
                                          personalDataManager:NULL
                                                passwordStore:NULL];

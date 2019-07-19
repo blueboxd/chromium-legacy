@@ -15,10 +15,10 @@ namespace net {
 
 namespace {
 
-base::Value NetLogUDPDataTranferParams(int byte_count,
-                                       const char* bytes,
-                                       const IPEndPoint* address,
-                                       NetLogCaptureMode capture_mode) {
+base::Value NetLogUDPDataTransferParams(int byte_count,
+                                        const char* bytes,
+                                        const IPEndPoint* address,
+                                        NetLogCaptureMode capture_mode) {
   base::DictionaryValue dict;
   dict.SetInteger("byte_count", byte_count);
   if (NetLogCaptureIncludesSocketBytes(capture_mode))
@@ -40,14 +40,15 @@ base::Value NetLogUDPConnectParams(
 
 }  // namespace
 
-void NetLogUDPDataTranfer(const NetLogWithSource& net_log,
-                          NetLogEventType type,
-                          int byte_count,
-                          const char* bytes,
-                          const IPEndPoint* address) {
+void NetLogUDPDataTransfer(const NetLogWithSource& net_log,
+                           NetLogEventType type,
+                           int byte_count,
+                           const char* bytes,
+                           const IPEndPoint* address) {
   DCHECK(bytes);
   net_log.AddEvent(type, [&](NetLogCaptureMode capture_mode) {
-    return NetLogUDPDataTranferParams(byte_count, bytes, address, capture_mode);
+    return NetLogUDPDataTransferParams(byte_count, bytes, address,
+                                       capture_mode);
   });
 }
 

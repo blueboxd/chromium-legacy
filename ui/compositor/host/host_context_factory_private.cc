@@ -242,13 +242,13 @@ void HostContextFactoryPrivate::SetDisplayColorMatrix(
 
 void HostContextFactoryPrivate::SetDisplayColorSpace(
     Compositor* compositor,
-    const gfx::ColorSpace& blending_color_space,
-    const gfx::ColorSpace& output_color_space) {
+    const gfx::ColorSpace& output_color_space,
+    float sdr_white_level) {
   auto iter = compositor_data_map_.find(compositor);
   if (iter == compositor_data_map_.end() || !iter->second.display_private)
     return;
-  iter->second.display_private->SetDisplayColorSpace(blending_color_space,
-                                                     output_color_space);
+  iter->second.display_private->SetDisplayColorSpace(output_color_space,
+                                                     sdr_white_level);
 }
 
 void HostContextFactoryPrivate::SetDisplayVSyncParameters(

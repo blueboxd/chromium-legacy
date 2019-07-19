@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">Cambiar contraseña</translation>
 <translation id="1090126737595388931">No se ejecutan aplicaciones de fondo</translation>
 <translation id="1090290614672149983">¿Quieres guardar los cambios en el archivo original?</translation>
-<translation id="1090918500949388876">Di "Ok Google" con la pantalla encendida para acceder al Asistente en cualquier momento</translation>
 <translation id="1091767800771861448">Presiona ESCAPE para omitir (solo compilaciones no oficiales).</translation>
 <translation id="1093457606523402488">Redes visibles:</translation>
 <translation id="1094607894174825014">Se solicitó una operación de lectura o escritura con un intervalo no válido en: "<ph name="DEVICE_NAME" />".</translation>
@@ -539,7 +538,6 @@
 <translation id="1792619191750875668">Pantalla extendida</translation>
 <translation id="1794791083288629568">Enviar comentarios para ayudarnos a solucionar este problema</translation>
 <translation id="1795214765651529549">Usar el tema clásico</translation>
-<translation id="1797738254362176886">Inserta y toca la llave de seguridad para ver los datos de acceso.</translation>
 <translation id="1799071797295057738">La extensión "<ph name="EXTENSION_NAME" />" se inhabilitó automáticamente.</translation>
 <translation id="1802687198411089702">La página no responde. Puedes esperar o salir.</translation>
 <translation id="1802931390041703523">Flash está bloqueado en esta página</translation>
@@ -785,7 +783,6 @@
 <translation id="2177950615300672361">Pestaña de incógnito: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">El complemento <ph name="PEPPER_PLUGIN_NAME" /> del dominio <ph name="PEPPER_PLUGIN_DOMAIN" /> desea acceder a tu computadora</translation>
 <translation id="2178614541317717477">Compromiso de entidad de certificación</translation>
-<translation id="2179849162388791084">No se pudieron recopilar datos de acceso de tu llave de seguridad.</translation>
 <translation id="218070003709087997">Usa un número para indicar la cantidad de copias que deseas imprimir (1 a 999).</translation>
 <translation id="2184515124301515068">Permitir que Chrome elija cuándo los sitios pueden reproducir sonido (recomendado)</translation>
 <translation id="2187895286714876935">Error en el servidor de importación de certificado</translation>
@@ -1373,7 +1370,6 @@
 <translation id="3022978424994383087">No entendí.</translation>
 <translation id="3023464535986383522">Seleccionar para pronunciar</translation>
 <translation id="3024374909719388945">Utilizar reloj de 24 horas</translation>
-<translation id="30256218463955326">El conector no es compatible</translation>
 <translation id="3031417829280473749">Agente X</translation>
 <translation id="3031557471081358569">Selecciona elementos para importar:</translation>
 <translation id="3031601332414921114">Reanudar la impresión</translation>
@@ -1563,7 +1559,6 @@
 <translation id="3348038390189153836">Se detectó un dispositivo removible.</translation>
 <translation id="3349933790966648062">Espacio en memoria</translation>
 <translation id="3350117557200012647">Activar el modo de sincronización</translation>
-<translation id="3350263973613584174">Esta llave de seguridad no tiene almacenados datos de acceso.</translation>
 <translation id="3355936511340229503">Error de conexión</translation>
 <translation id="3356580349448036450">Completo</translation>
 <translation id="3359256513598016054">Restricciones de directivas para certificados</translation>
@@ -1943,7 +1938,6 @@
 <translation id="3878840326289104869">Creando usuario supervisado</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
 <translation id="3888550877729210209">Tomar notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
-<translation id="388900914234409233">Para cargar esta Chromebook, usa una batería OEM compatible.</translation>
 <translation id="3892414795099177503">Agregar OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Leer y cambiar la configuración de accesibilidad</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
@@ -2134,7 +2128,6 @@
 <translation id="4147911968024186208">Vuelve a intentarlo. Si vuelves a ver este error, comunícate con tu representante de asistencia.</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Pantalla</translation>
-<translation id="4150234330364554482">Usa una estación de conexión OEM diseñada para funcionar con esta Chromebook.</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 pestaña}other{# pestañas}}</translation>
 <translation id="4154664944169082762">Huellas digitales</translation>
 <translation id="4157869833395312646">Criptografía controlada por servidor de Microsoft</translation>
@@ -2281,7 +2274,6 @@
 <translation id="4412698727486357573">Centro de ayuda</translation>
 <translation id="44141919652824029">¿Deseas permitir que "<ph name="APP_NAME" />" obtenga la lista de los dispositivos USB conectados?</translation>
 <translation id="4414232939543644979">Nueva ventana de &amp;incógnito</translation>
-<translation id="4414386768539506503">Para ver los datos de acceso, ingresa el PIN de tu llave de seguridad. Si no lo conoces, restablece la llave.</translation>
 <translation id="4415245286584082850">No se encontraron dispositivos. Abre un artículo del Centro de ayuda en una pestaña nueva.</translation>
 <translation id="4415276339145661267">Administrar tu Cuenta de Google</translation>
 <translation id="4415748029120993980">Curva elíptica SECG secp384r1 (también conocido como NIST P-384)</translation>
@@ -2383,7 +2375,6 @@
 <translation id="457386861538956877">Más ...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Sincronizar dispositivo Bluetooth</translation>
-<translation id="4578012756826807359">Tus datos de acceso se borraron correctamente.</translation>
 <translation id="4579581181964204535">No se puede transmitir <ph name="HOST_NAME" />.</translation>
 <translation id="4581774856936278355">Se produjo un error al restablecer Linux</translation>
 <translation id="4582563038311694664">Restablecer toda la configuración</translation>
@@ -2695,7 +2686,6 @@
 <translation id="5072836811783999860">Mostrar favoritos administrados</translation>
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
 <translation id="5075131525758602494">Ingresar el PIN de la tarjeta SIM</translation>
-<translation id="507514548843781244">Visualiza y borra los datos de acceso almacenados en la llave de seguridad</translation>
 <translation id="5078638979202084724">Agregar a favoritos todas las pestañas</translation>
 <translation id="5078796286268621944">Número de PIN incorrecto</translation>
 <translation id="5079950360618752063">Usar la contraseña sugerida</translation>
@@ -2966,7 +2956,6 @@
 <translation id="5496587651328244253">Organizar</translation>
 <translation id="549673810209994709">No se pudo traducir esta página.</translation>
 <translation id="5499313591153584299">Este archivo puede dañar el equipo.</translation>
-<translation id="5500345327355928305">Para evitar problemas de carga y rendimiento, usa un adaptador de alimentación con conexión USB tipo C o de un OEM compatible.</translation>
 <translation id="5502500733115278303">Importado desde Firefox</translation>
 <translation id="5507756662695126555">No rechazo</translation>
 <translation id="5509693895992845810">Gu&amp;ardar como...</translation>
@@ -2993,7 +2982,6 @@
 <translation id="5534304873398226603">Descartar foto o video</translation>
 <translation id="5535941515421698170">También quitar tus datos existentes de este dispositivo</translation>
 <translation id="5539221284352502426">El servidor rechazó la contraseña que ingresaste porque es demasiado corta, debe incluir números o símbolos, o debe ser diferente a las contraseñas anteriores.</translation>
-<translation id="5541687815721799001">Usar la app</translation>
 <translation id="5542132724887566711">Perfil</translation>
 <translation id="5542750926112347543">Las cookies de <ph name="DOMAIN" /> están bloqueadas</translation>
 <translation id="5543983818738093899">Comprobando estado…</translation>
@@ -3392,7 +3380,6 @@
 <translation id="6122081475643980456">Se está controlando tu conexión a Internet</translation>
 <translation id="6122095009389448667">Seguir impidiendo que este sitio vea el portapapeles</translation>
 <translation id="6122875415561139701">No se permite la operación de escritura en: "<ph name="DEVICE_NAME" />".</translation>
-<translation id="6123292156101652890">Esta llave de seguridad no puede almacenar datos de acceso.</translation>
 <translation id="6124650939968185064">Las siguientes extensiones dependen de esta extensión:</translation>
 <translation id="6124698108608891449">Este sitio necesita más permisos.</translation>
 <translation id="6125479973208104919">Lamentablemente, debes volver a agregar tu cuenta a este dispositivo <ph name="DEVICE_TYPE" />.</translation>
@@ -4062,7 +4049,6 @@
 <translation id="7143092389027215216">Iniciar el modo de demostración</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7144878232160441200">Volver a intentarlo</translation>
-<translation id="714687768418476028">Tu llave de seguridad no está protegida con un PIN. Crea uno para administrar los datos de acceso.</translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="715118844758971915">Impresoras clásicas</translation>
 <translation id="7152478047064750137">Esta extensión no requiere permisos especiales</translation>
@@ -4928,7 +4914,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8439506636278576865">Ofrecer la traducción de páginas en este idioma</translation>
 <translation id="8440630305826533614">Apps de Linux</translation>
-<translation id="844241640324986723">No se pudieron borrar tus datos de acceso.</translation>
 <translation id="8443338615972234259">Crea una nueva cuenta para tu usuario supervisado ahora.</translation>
 <translation id="8446884382197647889">Más información</translation>
 <translation id="8447409163267621480">Incluir Ctrl o Alt</translation>

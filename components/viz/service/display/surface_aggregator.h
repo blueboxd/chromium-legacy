@@ -57,8 +57,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // Set the color spaces for the created RenderPasses, which is propagated
   // to the output surface.
-  void SetOutputColorSpace(const gfx::ColorSpace& blending_color_space,
-                           const gfx::ColorSpace& output_color_space);
+  void SetOutputColorSpace(const gfx::ColorSpace& output_color_space);
 
   bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
 
@@ -256,13 +255,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   const bool aggregate_only_damaged_;
   bool output_is_secure_;
 
-  // The color space for the root render pass. If this is different from
-  // |blending_color_space_|, then a final render pass to convert between
-  // the two will be added. This space must always be valid.
+  // The color space for the root render pass. If this is different from its
+  // blending color space (e.g. for HDR), then a final render pass to convert
+  // between the two will be added. This space must always be valid.
   gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
-  // The color space in which blending is done, used for all non-root render
-  // passes. This space must always be valid.
-  gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
   // The id for the final color conversion render pass.
   RenderPassId color_conversion_render_pass_id_ = 0;
   // The id for the optional render pass used to apply the display transform.

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
 
-#include <map>
 #include <string>
+#include <vector>
 
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
@@ -74,25 +74,22 @@ class SendTabToSelfBubbleViewImplTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
-  const std::map<std::string, TargetDeviceInfo> SetUpDeviceMap() {
+  const std::vector<TargetDeviceInfo> SetUpDeviceList() {
     base::SimpleTestClock clock;
-    std::map<std::string, TargetDeviceInfo> map;
+    std::vector<TargetDeviceInfo> list;
     TargetDeviceInfo valid_device_1(
-        "device_guid_1", sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
+        "Device_1", "device_guid_1", sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
         /*last_updated_timestamp=*/clock.Now() - base::TimeDelta::FromDays(0));
     TargetDeviceInfo valid_device_2(
-        "device_guid_2", sync_pb::SyncEnums_DeviceType_TYPE_WIN,
+        "Device_2", "device_guid_2", sync_pb::SyncEnums_DeviceType_TYPE_WIN,
         /*last_updated_timestamp=*/clock.Now() - base::TimeDelta::FromDays(1));
     TargetDeviceInfo valid_device_3(
-        "device_guid_3", sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
+        "Device_3", "device_guid_3", sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
         /*last_updated_timestamp=*/clock.Now() - base::TimeDelta::FromDays(5));
-    map.insert(
-        std::pair<std::string, TargetDeviceInfo>("Device_1", valid_device_1));
-    map.insert(
-        std::pair<std::string, TargetDeviceInfo>("Device_2", valid_device_2));
-    map.insert(
-        std::pair<std::string, TargetDeviceInfo>("Device_3", valid_device_3));
-    return map;
+    list.push_back(valid_device_1);
+    list.push_back(valid_device_2);
+    list.push_back(valid_device_3);
+    return list;
   }
 
   std::unique_ptr<TestingProfile> profile_;
@@ -103,13 +100,13 @@ class SendTabToSelfBubbleViewImplTest : public ChromeViewsTestBase {
 
 TEST_F(SendTabToSelfBubbleViewImplTest, PopulateScrollView) {
   bubble_->CreateScrollView();
-  bubble_->PopulateScrollView(SetUpDeviceMap());
+  bubble_->PopulateScrollView(SetUpDeviceList());
   EXPECT_EQ(3UL, bubble_->GetDeviceButtonsForTest().size());
 }
 
 TEST_F(SendTabToSelfBubbleViewImplTest, DevicePressed) {
   bubble_->Init();
-  bubble_->PopulateScrollView(SetUpDeviceMap());
+  bubble_->PopulateScrollView(SetUpDeviceList());
   EXPECT_CALL(*controller_.get(),
               OnDeviceSelected("Device_3", "device_guid_3"));
   bubble_->DevicePressed(2);

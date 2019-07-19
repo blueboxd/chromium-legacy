@@ -72,7 +72,6 @@ class CC_EXPORT ProxyMain : public Proxy {
  private:
   // Proxy implementation.
   bool IsStarted() const override;
-  bool CommitToActiveTree() const override;
   void SetLayerTreeFrameSink(
       LayerTreeFrameSink* layer_tree_frame_sink) override;
   void SetVisible(bool visible) override;

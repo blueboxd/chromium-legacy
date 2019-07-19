@@ -7,15 +7,19 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/autofill/core/browser/autofill_internals_logging.h"
+#include "components/autofill/content/browser/autofill_internals_service_factory.h"
+#include "components/autofill/core/browser/autofill_internals_service.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
 #include "components/grit/components_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+using autofill::AutofillInternalsService;
+using autofill::AutofillInternalsServiceFactory;
 
 namespace {
 
@@ -32,12 +36,11 @@ content::WebUIDataSource* CreateAutofillInternalsHTMLSource() {
 
 // Message handler for AutofillInternalsLoggingImpl. The purpose of this class
 // is to enable safe calls to JavaScript, while the renderer is fully loaded.
-class AutofillInternalsUIHandler
-    : public content::WebUIMessageHandler,
-      public autofill::AutofillInternalsLogging::Observer {
+class AutofillInternalsUIHandler : public content::WebUIMessageHandler,
+                                   public autofill::LogReceiver {
  public:
   AutofillInternalsUIHandler() = default;
-  ~AutofillInternalsUIHandler() override = default;
+  ~AutofillInternalsUIHandler() override;
 
  private:
   // content::WebUIMessageHandler:
@@ -47,22 +50,25 @@ class AutofillInternalsUIHandler
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  // Implements autofill::AutofillInternalsLogging::Observer.
-  void Log(const base::Value& message) override;
-  void LogRaw(const base::Value& message) override;
-
-  // JavaScript call handler.
-  void OnLoaded(const base::ListValue* args);
+  // LogReceiver implementation.
+  void LogEntry(const base::Value& entry) override;
 
   void StartSubscription();
   void EndSubscription();
 
-  ScopedObserver<autofill::AutofillInternalsLogging,
-                 autofill::AutofillInternalsLogging::Observer>
-      observer_{this};
+  // JavaScript call handler.
+  void OnLoaded(const base::ListValue* args);
+
+  // Whether |this| is registered as a log receiver with the
+  // PasswordManagerInternalsService.
+  bool registered_with_logging_service_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillInternalsUIHandler);
 };
+
+AutofillInternalsUIHandler::~AutofillInternalsUIHandler() {
+  EndSubscription();
+}
 
 void AutofillInternalsUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -86,20 +92,36 @@ void AutofillInternalsUIHandler::OnLoaded(const base::ListValue* args) {
       base::Value(Profile::FromWebUI(web_ui())->IsIncognitoProfile()));
 }
 
-void AutofillInternalsUIHandler::Log(const base::Value& message) {
-  CallJavascriptFunction("addLog", message);
-}
-
-void AutofillInternalsUIHandler::LogRaw(const base::Value& message) {
-  CallJavascriptFunction("addRawLog", message);
+void AutofillInternalsUIHandler::LogEntry(const base::Value& entry) {
+  if (!registered_with_logging_service_ || entry.is_none())
+    return;
+  CallJavascriptFunction("addRawLog", entry);
 }
 
 void AutofillInternalsUIHandler::StartSubscription() {
-  observer_.Add(autofill::AutofillInternalsLogging::GetInstance());
+  AutofillInternalsService* service =
+      AutofillInternalsServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+
+  if (!service)
+    return;
+
+  registered_with_logging_service_ = true;
+
+  const auto& past_logs = service->RegisterReceiver(this);
+  for (const auto& entry : past_logs)
+    LogEntry(entry);
 }
 
 void AutofillInternalsUIHandler::EndSubscription() {
-  observer_.RemoveAll();
+  if (!registered_with_logging_service_)
+    return;
+  registered_with_logging_service_ = false;
+  AutofillInternalsService* service =
+      AutofillInternalsServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  if (service)
+    service->UnregisterReceiver(this);
 }
 
 }  // namespace

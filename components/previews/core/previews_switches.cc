@@ -42,5 +42,10 @@ const char kClearLitePageRedirectLocalBlacklist[] =
 const char kLitePageRedirectOverridesPageHints[] =
     "litepage_redirect_overrides_page_hints";
 
+// Allows defer script preview on all https pages even if optimization hints are
+// missing for that webpage.
+const char kEnableDeferAllScriptWithoutOptimizationHints[] =
+    "enable-defer-all-script-without-optimization-hints";
+
 }  // namespace switches
 }  // namespace previews

@@ -139,9 +139,22 @@ void CrostiniExportImportNotification::Close(bool by_user) {
 
 void CrostiniExportImportNotification::Click(
     const base::Optional<int>& button_index,
-    const base::Optional<base::string16>& reply) {
-  if (type_ == ExportImportType::EXPORT) {
-    platform_util::ShowItemInFolder(profile_, path_);
+    const base::Optional<base::string16>&) {
+  if (!button_index) {
+    return;
+  }
+
+  switch (status_) {
+    case Status::DONE:
+      if (type_ == ExportImportType::EXPORT) {
+        DCHECK(*button_index == 1);
+        platform_util::ShowItemInFolder(profile_, path_);
+      } else {
+        NOTREACHED();
+      }
+      return;
+    default:
+      NOTREACHED();
   }
 }
 

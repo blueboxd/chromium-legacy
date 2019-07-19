@@ -88,13 +88,15 @@ class CC_EXPORT SchedulerStateMachine {
       BeginImplFrameDeadlineMode mode);
 
   enum class BeginMainFrameState {
-    IDLE,
-    SENT,
-    STARTED,
-    READY_TO_COMMIT,
+    IDLE,             // A new BeginMainFrame can start.
+    SENT,             // A BeginMainFrame has already been issued.
+    READY_TO_COMMIT,  // A previously issued BeginMainFrame has been processed,
+                      // and is ready to commit.
   };
   static const char* BeginMainFrameStateToString(BeginMainFrameState state);
 
+  // When a redraw is forced, it goes through a complete commit -> activation ->
+  // draw cycle. Until a redraw has been forced, it remains in IDLE state.
   enum class ForcedRedrawOnTimeoutState {
     IDLE,
     WAITING_FOR_COMMIT,
@@ -109,9 +111,7 @@ class CC_EXPORT SchedulerStateMachine {
   }
 
   bool CommitPending() const {
-    return begin_main_frame_state_ == BeginMainFrameState::SENT ||
-           begin_main_frame_state_ == BeginMainFrameState::STARTED ||
-           begin_main_frame_state_ == BeginMainFrameState::READY_TO_COMMIT;
+    return begin_main_frame_state_ != BeginMainFrameState::IDLE;
   }
 
   bool NewActiveTreeLikely() const {
@@ -271,9 +271,6 @@ class CC_EXPORT SchedulerStateMachine {
   // frame sink is not ready to receive frames.
   void SetSkipDraw(bool skip);
 
-  // Indicates that scheduled BeginMainFrame is started.
-  void NotifyBeginMainFrameStarted();
-
   // Indicates that the pending tree is ready for activation. Returns whether
   // the notification received updated the state for the current pending tree,
   // if any.
@@ -383,6 +380,9 @@ class CC_EXPORT SchedulerStateMachine {
       LayerTreeFrameSinkState::NONE;
   BeginImplFrameState begin_impl_frame_state_ = BeginImplFrameState::IDLE;
   BeginMainFrameState begin_main_frame_state_ = BeginMainFrameState::IDLE;
+
+  // A redraw is forced when too many checkerboarded-frames are produced during
+  // an animation.
   ForcedRedrawOnTimeoutState forced_redraw_state_ =
       ForcedRedrawOnTimeoutState::IDLE;
 

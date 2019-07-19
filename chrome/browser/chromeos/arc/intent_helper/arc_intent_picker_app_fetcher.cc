@@ -237,6 +237,7 @@ void ArcIntentPickerAppFetcher::OnAppCandidatesReceivedForNavigation(
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         /*selected_app_package=*/std::string(), apps::mojom::AppType::kUnknown,
         apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER,
+        apps::Source::kHttpOrHttps,
         /*should_persist=*/false);
     std::move(callback).Run(apps::AppsNavigationAction::RESUME, {});
     return;
@@ -320,7 +321,8 @@ apps::PreferredPlatform ArcIntentPickerAppFetcher::DidLaunchPreferredArcApp(
       app_type = apps::mojom::AppType::kArc;
     }
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
-        package_name, app_type, close_reason, /*should_persist=*/false);
+        package_name, app_type, close_reason, apps::Source::kHttpOrHttps,
+        /*should_persist=*/false);
   }
 
   return preferred_platform;
@@ -340,7 +342,7 @@ void ArcIntentPickerAppFetcher::GetArcAppIcons(
     chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
         /*selected_app_package=*/std::string(), apps::mojom::AppType::kUnknown,
         apps::IntentPickerCloseReason::ERROR_BEFORE_PICKER,
-        /*should_persist=*/false);
+        apps::Source::kHttpOrHttps, /*should_persist=*/false);
     std::move(callback).Run({});
     return;
   }

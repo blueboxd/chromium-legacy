@@ -439,8 +439,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   cookies_.clear();
 
   store_ = nullptr;
-  TestNetLogEntry::List entries;
-  net_log.GetEntries(&entries);
+  auto entries = net_log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::COOKIE_PERSISTENT_STORE_LOAD,
       NetLogEventPhase::BEGIN);
@@ -453,8 +452,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   pos = ExpectLogContainsSomewhere(
       entries, pos, NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_STARTED,
       NetLogEventPhase::NONE);
-  std::string key;
-  EXPECT_FALSE(entries[pos].GetStringValue("key", &key));
+  EXPECT_FALSE(GetOptionalStringValueFromParams(entries[pos], "key"));
   pos = ExpectLogContainsSomewhere(
       entries, pos, NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED,
       NetLogEventPhase::NONE);

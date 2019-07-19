@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log_with_source.h"
-#include "net/log/test_net_log_entry.h"
+#include "net/log/test_net_log_util.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -255,47 +255,37 @@ base::TimeDelta TestNetworkQualityEstimator::GetRTTEstimateInternal(
 }
 
 int TestNetworkQualityEstimator::GetEntriesCount(NetLogEventType type) const {
-  TestNetLogEntry::List entries;
-  net_log_->GetEntries(&entries);
-
-  int count = 0;
-  for (const auto& entry : entries) {
-    if (entry.type == type)
-      ++count;
-  }
-  return count;
+  return net_log_->GetEntriesWithType(type).size();
 }
 
 std::string TestNetworkQualityEstimator::GetNetLogLastStringValue(
     NetLogEventType type,
     const std::string& key) const {
-  std::string return_value;
-  TestNetLogEntry::List entries;
-  net_log_->GetEntries(&entries);
+  auto entries = net_log_->GetEntries();
 
   for (int i = entries.size() - 1; i >= 0; --i) {
-    if (entries[i].type == type &&
-        entries[i].GetStringValue(key, &return_value)) {
-      return return_value;
+    if (entries[i].type == type) {
+      auto value = GetOptionalStringValueFromParams(entries[i], key);
+      if (value)
+        return *value;
     }
   }
-  return return_value;
+  return std::string();
 }
 
 int TestNetworkQualityEstimator::GetNetLogLastIntegerValue(
     NetLogEventType type,
     const std::string& key) const {
-  int return_value = 0;
-  TestNetLogEntry::List entries;
-  net_log_->GetEntries(&entries);
+  auto entries = net_log_->GetEntries();
 
   for (int i = entries.size() - 1; i >= 0; --i) {
-    if (entries[i].type == type &&
-        entries[i].GetIntegerValue(key, &return_value)) {
-      return return_value;
+    if (entries[i].type == type) {
+      auto value = GetOptionalIntegerValueFromParams(entries[i], key);
+      if (value)
+        return *value;
     }
   }
-  return return_value;
+  return 0;
 }
 
 void TestNetworkQualityEstimator::

@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">網站儲存資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和儲存的設定</translation>
-<translation id="2351097562818989364">您的翻譯設定已重設。</translation>
 <translation id="2353636109065292463">檢查你的網際網路連線</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2369533728426058518">開啟的分頁</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
 <translation id="5308380583665731573">連線</translation>
-<translation id="5308603654685598744">開啟這項功能後，Chrome 會使用 Google 翻譯來翻譯其他語言的網頁。</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5324858694974489420">家長設定</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
 <translation id="5902828464777634901">即將刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)。</translation>
-<translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5916664084637901428">開啟</translation>
 <translation id="5919204609460789179">更新 <ph name="PRODUCT_NAME" /> 即可開始同步處理</translation>
 <translation id="5937580074298050696">已儲存 <ph name="AMOUNT" /></translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">這個網頁不安全。網站資訊</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
 <translation id="6965382102122355670">確定</translation>
-<translation id="6978479750597523876">重設翻譯設定</translation>
 <translation id="6979737339423435258">不限時間</translation>
 <translation id="6981982820502123353">無障礙設定</translation>
 <translation id="6989267951144302301">無法下載</translation>

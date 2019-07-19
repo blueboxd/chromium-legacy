@@ -24,9 +24,8 @@ namespace {
 ClickToCallDialogView* g_bubble_ = nullptr;
 
 // Icon sizes in DIP.
-// TODO: Confirm the number with the team designer.
-constexpr int kPrimaryIconSize = 20;
-constexpr int kPrimaryIconBorderWidth = 6;
+constexpr int kPrimaryIconSize = 16;
+constexpr int kPrimaryIconBorderWidth = 8;
 
 SkColor GetColorfromTheme() {
   const ui::NativeTheme* native_theme =
@@ -35,21 +34,23 @@ SkColor GetColorfromTheme() {
       ui::NativeTheme::kColorId_DefaultIconColor);
 }
 
-std::unique_ptr<views::ImageView> CreateDeviceIcon(
-    const sync_pb::SyncEnums::DeviceType device_type) {
-  const gfx::VectorIcon* vector_icon;
-  if (device_type == sync_pb::SyncEnums::TYPE_TABLET) {
-    vector_icon = &kTabletIcon;
-  } else {
-    vector_icon = &kHardwareSmartphoneIcon;
-  }
-  gfx::ImageSkia image = gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize,
-                                               GetColorfromTheme());
+std::unique_ptr<views::ImageView> CreateIconView(const gfx::VectorIcon& icon) {
   auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(image);
+  icon_view->SetImage(
+      gfx::CreateVectorIcon(icon, kPrimaryIconSize, GetColorfromTheme()));
   icon_view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
   return icon_view;
+}
+
+std::unique_ptr<views::ImageView> CreateDeviceIcon(
+    const sync_pb::SyncEnums::DeviceType device_type) {
+  const gfx::VectorIcon* vector_icon;
+  if (device_type == sync_pb::SyncEnums::TYPE_TABLET)
+    vector_icon = &kTabletIcon;
+  else
+    vector_icon = &kHardwareSmartphoneIcon;
+  return CreateIconView(*vector_icon);
 }
 
 }  // namespace
@@ -122,6 +123,7 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   DCHECK(index < devices_.size() + apps_.size());
 
   if (index < devices_.size()) {
+    LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiDialog, index);
     controller_->OnDeviceChosen(devices_[index], base::DoNothing());
     CloseBubble();
     return;
@@ -130,6 +132,7 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   index -= devices_.size();
 
   if (index < apps_.size()) {
+    LogClickToCallSelectedAppIndex(kSharingClickToCallUiDialog, index);
     controller_->OnAppChosen(apps_[index]);
     CloseBubble();
   }
@@ -148,7 +151,7 @@ void ClickToCallDialogView::PopulateDialogView() {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device.device_type()),
         base::UTF8ToUTF16(device.human_readable_name()),
-        base::string16() /* No subtitle */);
+        base::string16() /* Subtitle */);
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_buttons_.push_back(
@@ -158,15 +161,16 @@ void ClickToCallDialogView::PopulateDialogView() {
   // Apps:
   LogClickToCallAppsToShow(apps_.size());
   for (const auto& app : apps_) {
-    auto dialog_button = std::make_unique<HoverButton>(this, app.name);
-    // TODO(yasmo): Create Icon View.
+    auto dialog_button =
+        std::make_unique<HoverButton>(this, CreateIconView(app.icon), app.name,
+                                      base::string16() /* Subtitle */);
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
     dialog_buttons_.push_back(
         dialog_view->AddChildView(std::move(dialog_button)));
   }
 
-  // TODO: See if GetWidget can be not null:
+  // TODO(yasmo): See if GetWidget can be not null:
   if (GetWidget())
     SizeToContents();
 }
@@ -182,7 +186,7 @@ bool ClickToCallDialogView::ShouldShowCloseButton() const {
 }
 
 base::string16 ClickToCallDialogView::GetWindowTitle() const {
-  return base::UTF8ToUTF16(controller_->GetTitle());
+  return controller_->GetTitle();
 }
 
 void ClickToCallDialogView::WindowClosing() {

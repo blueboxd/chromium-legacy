@@ -108,7 +108,8 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   binding_.Bind(mojo::MakeRequest(&host_ptr_info));
   agent->AttachDevToolsSession(
       std::move(host_ptr_info), mojo::MakeRequest(&session_ptr_),
-      mojo::MakeRequest(&io_session_ptr_), session_state_cookie_.Clone());
+      mojo::MakeRequest(&io_session_ptr_), session_state_cookie_.Clone(),
+      client_->UsesBinaryProtocol());
   session_ptr_.set_connection_error_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
 
@@ -311,18 +312,10 @@ static void DispatchProtocolResponseOrNotification(
     DevToolsAgentHostClient* client,
     DevToolsAgentHostImpl* agent_host,
     blink::mojom::DevToolsMessagePtr message) {
-  span<uint8_t> cbor(message->data.data(), message->data.size());
-  DCHECK(IsCBORMessage(cbor));
-  if (client->UsesBinaryProtocol()) {
-    client->DispatchProtocolMessage(agent_host,
-                                    std::string(cbor.begin(), cbor.end()));
-    return;
-  }
-  std::string json;
-  IPEStatus status = ConvertCBORToJSON(cbor, &json);
-  // TODO(johannes): Should we kill renderer if !status.ok() ?
-  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
-  client->DispatchProtocolMessage(agent_host, json);
+  client->DispatchProtocolMessage(
+      agent_host,
+      std::string(reinterpret_cast<const char*>(message->data.data()),
+                  message->data.size()));
 }
 
 void DevToolsSession::DispatchProtocolResponse(

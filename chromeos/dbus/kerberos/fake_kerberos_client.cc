@@ -5,10 +5,12 @@
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "third_party/cros_system_api/dbus/kerberos/dbus-constants.h"
@@ -24,6 +26,39 @@ constexpr base::TimeDelta kTgtValidity = base::TimeDelta::FromHours(10);
 
 // Fake renewal lifetime for TGTs.
 constexpr base::TimeDelta kTgtRenewal = base::TimeDelta::FromHours(24);
+
+// Blacklist for fake config validation.
+const char* const kBlacklistedConfigOptions[] = {
+    "allow_weak_crypto",
+    "ap_req_checksum_type",
+    "ccache_type",
+    "default_ccache_name ",
+    "default_client_keytab_name",
+    "default_keytab_name",
+    "default_realm",
+    "k5login_authoritative",
+    "k5login_directory",
+    "kdc_req_checksum_type",
+    "plugin_base_dir",
+    "realm_try_domains",
+    "safe_checksum_type",
+    "verify_ap_req_nofail",
+    "default_domain",
+    "v4_instance_convert",
+    "v4_realm",
+    "[appdefaults]",
+    "[plugins]",
+};
+
+// Performs a fake validation of a config line by just checking for some
+// non-whitelisted keywords. Returns true if no blacklisted items are contained.
+bool ValidateConfigLine(const std::string& line) {
+  for (const char* option : kBlacklistedConfigOptions) {
+    if (line.find(option) != std::string::npos)
+      return false;
+  }
+  return true;
+}
 
 // Posts |callback| on the current thread's task runner, passing it the
 // |response| message.
@@ -145,6 +180,30 @@ void FakeKerberosClient::SetConfig(const kerberos::SetConfigRequest& request,
 
   data->krb5conf = request.krb5conf();
   PostResponse(std::move(callback), kerberos::ERROR_NONE);
+}
+
+void FakeKerberosClient::ValidateConfig(
+    const kerberos::ValidateConfigRequest& request,
+    ValidateConfigCallback callback) {
+  kerberos::ConfigErrorInfo error_info;
+  error_info.set_code(kerberos::CONFIG_ERROR_NONE);
+
+  std::vector<std::string> lines = base::SplitString(
+      request.krb5conf(), "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (size_t line_index = 0; line_index < lines.size(); ++line_index) {
+    if (!ValidateConfigLine(lines[line_index])) {
+      error_info.set_code(kerberos::CONFIG_ERROR_KEY_NOT_SUPPORTED);
+      error_info.set_line_index(static_cast<int>(line_index));
+      break;
+    }
+  }
+
+  kerberos::ValidateConfigResponse response;
+  response.set_error(error_info.code() != kerberos::CONFIG_ERROR_NONE
+                         ? kerberos::ERROR_BAD_CONFIG
+                         : kerberos::ERROR_NONE);
+  *response.mutable_error_info() = std::move(error_info);
+  PostProtoResponse(std::move(callback), response);
 }
 
 void FakeKerberosClient::AcquireKerberosTgt(

@@ -40,7 +40,6 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
@@ -1135,8 +1134,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
   SendRequestAndExpectQuicResponse("hello!");
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged a QUIC_SESSION_PACKET_RECEIVED.
@@ -1152,9 +1150,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
       NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
-  int packet_number;
-  ASSERT_TRUE(entries[pos].GetIntegerValue("packet_number", &packet_number));
-  EXPECT_EQ(1, packet_number);
+  EXPECT_EQ(1, GetIntegerValueFromParams(entries[pos], "packet_number"));
 
   // ... and also a TYPE_QUIC_SESSION_PACKET_AUTHENTICATED.
   pos = ExpectLogContainsSomewhere(
@@ -1168,8 +1164,7 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
       NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
-  int log_stream_id;
-  ASSERT_TRUE(entries[pos].GetIntegerValue("stream_id", &log_stream_id));
+  int log_stream_id = GetIntegerValueFromParams(entries[pos], "stream_id");
   if (quic::VersionUsesQpack(version_.transport_version)) {
     EXPECT_EQ(GetNthClientInitiatedBidirectionalStreamId(0),
               static_cast<quic::QuicStreamId>(log_stream_id));
@@ -6148,8 +6143,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
   SendRequestAndExpectQuicResponse("and hello!");
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged a QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM

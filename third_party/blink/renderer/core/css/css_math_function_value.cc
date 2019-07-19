@@ -120,4 +120,8 @@ bool CSSMathFunctionValue::IsPx() const {
   return Category() == kCalcLength;
 }
 
+bool CSSMathFunctionValue::IsComputationallyIndependent() const {
+  return expression_->IsComputationallyIndependent();
+}
+
 }  // namespace blink

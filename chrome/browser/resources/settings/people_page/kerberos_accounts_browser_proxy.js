@@ -24,6 +24,17 @@ cr.exportPath('settings');
  */
 settings.KerberosAccount;
 
+/**
+ * @typedef {{
+ *   error: !settings.KerberosErrorType,
+ *   errorInfo: !{
+ *     code: !settings.KerberosConfigErrorCode,
+ *     lineIndex: (number|undefined)
+ *   }
+ * }}
+ */
+settings.ValidateKerberosConfigResult;
+
 cr.define('settings', function() {
   /**
    *  @enum {number}
@@ -50,6 +61,26 @@ cr.define('settings', function() {
     kDuplicatePrincipalName: 16,
     kInProgress: 17,
     kParsePrincipalFailed: 18,
+    kBadConfig: 19,
+    kJailFailure: 20,
+  };
+
+  /**
+   *  @enum {number}
+   *  Error codes for config validation.
+   *  These values must be kept in sync with the KerberosConfigErrorCode enum in
+   *  third_party/cros_system_api/dbus/kerberos/kerberos_service.proto.
+   */
+  const KerberosConfigErrorCode = {
+    kNone: 0,
+    kSectionNestedInGroup: 1,
+    kSectionSyntax: 2,
+    kExpectedOpeningCurlyBrace: 3,
+    kExtraCurlyBrace: 4,
+    kRelationSyntax: 5,
+    kKeyNotSupported: 6,
+    kSectionNotSupported: 7,
+    kKrb5FailedToParse: 8,
   };
 
   /** @interface */
@@ -79,6 +110,14 @@ cr.define('settings', function() {
      * @return {!Promise<!settings.KerberosErrorType>}
      */
     removeAccount(account) {}
+
+    /**
+     * Validates |krb5conf| by making sure that it does not contain syntax
+     *     errors or disallowed configuration options.
+     * @param {string} krb5Conf Kerberos configuration data (krb5.conf)
+     * @return {!Promise<!settings.ValidateKerberosConfigResult>}
+     */
+    validateConfig(krb5Conf) {}
 
     /**
      * Sets |account| as currently active account. Kerberos credentials are
@@ -111,6 +150,11 @@ cr.define('settings', function() {
     }
 
     /** @override */
+    validateConfig(krb5conf) {
+      return cr.sendWithPromise('validateKerberosConfig', krb5conf);
+    }
+
+    /** @override */
     setAsActiveAccount(account) {
       chrome.send('setAsActiveKerberosAccount', [account.principalName]);
     }
@@ -120,6 +164,7 @@ cr.define('settings', function() {
 
   return {
     KerberosErrorType: KerberosErrorType,
+    KerberosConfigErrorCode: KerberosConfigErrorCode,
     KerberosAccountsBrowserProxy: KerberosAccountsBrowserProxy,
     KerberosAccountsBrowserProxyImpl: KerberosAccountsBrowserProxyImpl,
   };

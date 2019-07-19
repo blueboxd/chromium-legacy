@@ -47,6 +47,9 @@
 // The main consumer for this mediator.
 @property(nonatomic, weak) id<FormInputAccessoryConsumer> consumer;
 
+// The delegate for this object.
+@property(nonatomic, weak) id<FormInputAccessoryMediatorDelegate> delegate;
+
 // The object that manages the currently-shown custom accessory view.
 @property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
 
@@ -117,6 +120,7 @@
 
 - (instancetype)
        initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+               delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
            webStateList:(WebStateList*)webStateList
     personalDataManager:(autofill::PersonalDataManager*)personalDataManager
           passwordStore:
@@ -125,7 +129,7 @@
   if (self) {
     _consumer = consumer;
     _consumer.navigationDelegate = self;
-
+    _delegate = delegate;
     if (webStateList) {
       _webStateList = webStateList;
       _webStateListObserver =
@@ -240,6 +244,9 @@
 - (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
   [self updateSuggestionsIfNeeded];
   [self.consumer keyboardWillChangeToState:keyboardState];
+  if (!keyboardState.isVisible) {
+    [self.delegate mediatorDidDetectKeyboardHide:self];
+  }
 }
 
 #pragma mark - FormActivityObserver

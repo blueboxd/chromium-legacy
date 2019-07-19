@@ -91,11 +91,11 @@ void ImageDownloaderBase::DidFetchImage(
 
   // Remove the image fetcher from our pending list. We're in the callback from
   // MultiResolutionImageResourceFetcher, best to delay deletion.
-  for (auto* iter = image_fetchers_.begin(); iter != image_fetchers_.end();
-       ++iter) {
-    if (iter->Get() == fetcher) {
-      iter->Release();
-      image_fetchers_.erase(iter);
+  for (auto* it = image_fetchers_.begin(); it != image_fetchers_.end(); ++it) {
+    MultiResolutionImageResourceFetcher* image_fetcher = it->Get();
+    DCHECK(image_fetcher);
+    if (image_fetcher == fetcher) {
+      it = image_fetchers_.erase(it);
       break;
     }
   }
@@ -115,7 +115,6 @@ void ImageDownloaderBase::ContextDestroyed(ExecutionContext* context) {
     // Will run callbacks with an empty image vector.
     fetchers->ContextDestroyed(context);
   }
-
   image_fetchers_.clear();
 }
 

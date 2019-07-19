@@ -67,6 +67,12 @@ Polymer({
     },
 
     /** @private */
+    configErrorText_: {
+      type: String,
+      value: '',
+    },
+
+    /** @private */
     inProgress_: {
       type: Boolean,
       value: false,
@@ -104,6 +110,15 @@ Polymer({
 
   /** @private {string} */
   actionButtonLabel_: '',
+
+  /** @private {?settings.KerberosAccountsBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.browserProxy_ =
+        settings.KerberosAccountsBrowserProxyImpl.getInstance();
+  },
 
   /** @override */
   attached: function() {
@@ -153,6 +168,7 @@ Polymer({
 
   /** @private */
   onAdd_: function() {
+    assert(!this.inProgress_);
     this.inProgress_ = true;
     this.updateErrorMessages_(settings.KerberosErrorType.kNone);
 
@@ -162,7 +178,7 @@ Polymer({
     // For new accounts (no preset), bail if the account already exists.
     const allowExisting = !!this.presetAccount;
 
-    settings.KerberosAccountsBrowserProxyImpl.getInstance()
+    this.browserProxy_
         .addAccount(
             this.username_, passwordToSubmit, this.rememberPassword_,
             this.config_, allowExisting)
@@ -198,15 +214,31 @@ Polymer({
 
   /** @private */
   onAdvancedConfigCancel_: function() {
+    this.configErrorText_ = '';
     this.showAdvancedConfig_ = false;
     this.$$('#advancedConfigDialog').cancel();
   },
 
   /** @private */
   onAdvancedConfigSave_: function() {
-    this.showAdvancedConfig_ = false;
-    this.config_ = this.editableConfig_;
-    this.$$('#advancedConfigDialog').close();
+    assert(!this.inProgress_);
+    this.inProgress_ = true;
+
+    this.browserProxy_.validateConfig(this.editableConfig_).then(result => {
+      this.inProgress_ = false;
+
+      // Success case. Close dialog.
+      if (result.error == settings.KerberosErrorType.kNone) {
+        this.showAdvancedConfig_ = false;
+        this.config_ = this.editableConfig_;
+        this.configErrorText_ = '';
+        this.$$('#advancedConfigDialog').close();
+        return;
+      }
+
+      // Triggers the UI to update error messages.
+      this.updateConfigErrorMessage_(result);
+    });
   },
 
   onAdvancedConfigClose_: function(event) {
@@ -262,8 +294,104 @@ Polymer({
         break;
       default:
         this.generalErrorText_ =
-            this.i18n('kerberosErrorGeneral', String(error));
+            this.i18n('kerberosErrorGeneral', error.toString());
     }
+  },
+
+  /**
+   * @param {!settings.ValidateKerberosConfigResult} result Result from a
+   *    validateKerberosConfig() call.
+   * @private
+   */
+  updateConfigErrorMessage_: function(result) {
+    // There should be an error at this point.
+    assert(result.error != settings.KerberosErrorType.kNone);
+
+    // Only handle kBadConfig here. Display generic error otherwise. Should only
+    // occur if something is wrong with D-Bus, but nothing user-induced.
+    if (result.error != settings.KerberosErrorType.kBadConfig) {
+      this.configErrorText_ =
+          this.i18n('kerberosErrorGeneral', result.error.toString());
+      return;
+    }
+
+    let errorLine = '';
+
+    // Don't fall for the classical blunder 0 == false.
+    if (result.errorInfo.lineIndex != undefined) {
+      const textArea = this.$$('#config').shadowRoot.querySelector('#input');
+      errorLine = this.selectAndScrollTo_(textArea, result.errorInfo.lineIndex);
+    }
+
+    // If kBadConfig, the error code should be set.
+    assert(result.errorInfo.code != settings.KerberosConfigErrorCode.kNone);
+    this.configErrorText_ =
+        this.getConfigErrorString_(result.errorInfo.code, errorLine);
+  },
+
+  /**
+   * @param {!settings.KerberosConfigErrorCode} code Error code
+   * @param {!string} errorLine Line where the error occurred
+   * @return {!string} Localized error string that corresponds to code
+   * @private
+   */
+  getConfigErrorString_: function(code, errorLine) {
+    switch (code) {
+      case settings.KerberosConfigErrorCode.kSectionNestedInGroup:
+        return this.i18n('kerberosConfigErrorSectionNestedInGroup', errorLine);
+      case settings.KerberosConfigErrorCode.kSectionSyntax:
+        return this.i18n('kerberosConfigErrorSectionSyntax', errorLine);
+      case settings.KerberosConfigErrorCode.kExpectedOpeningCurlyBrace:
+        return this.i18n(
+            'kerberosConfigErrorExpectedOpeningCurlyBrace', errorLine);
+      case settings.KerberosConfigErrorCode.kExtraCurlyBrace:
+        return this.i18n('kerberosConfigErrorExtraCurlyBrace', errorLine);
+      case settings.KerberosConfigErrorCode.kRelationSyntax:
+        return this.i18n('kerberosConfigErrorRelationSyntax', errorLine);
+      case settings.KerberosConfigErrorCode.kKeyNotSupported:
+        return this.i18n('kerberosConfigErrorKeyNotSupported', errorLine);
+      case settings.KerberosConfigErrorCode.kSectionNotSupported:
+        return this.i18n('kerberosConfigErrorSectionNotSupported', errorLine);
+      case settings.KerberosConfigErrorCode.kKrb5FailedToParse:
+        // Note: This error doesn't have an error line.
+        return this.i18n('kerberosConfigErrorKrb5FailedToParse');
+      default:
+        assertNotReached();
+    }
+  },
+
+  /**
+   * Selects a line in a text area and scrolls to it.
+   * @param {!Element} textArea A textarea element
+   * @param {!number} lineIndex 0-based index of the line to select
+   * @return {!string} The line at lineIndex.
+   * @private
+   */
+  selectAndScrollTo_: function(textArea, lineIndex) {
+    const lines = textArea.value.split('\n');
+    assert(lineIndex >= 0 && lineIndex < lines.length);
+
+    // Compute selection position in characters.
+    let startPos = 0;
+    for (let i = 0; i < lineIndex; i++) {
+      startPos += lines[i].length + 1;
+    }
+
+    // Ignore starting and trailing whitespace for the selection.
+    const trimmedLine = lines[lineIndex].trim();
+    startPos += lines[lineIndex].indexOf(trimmedLine);
+    const endPos = startPos + trimmedLine.length;
+
+    // Set selection.
+    textArea.focus();
+    textArea.setSelectionRange(startPos, endPos);
+
+    // Scroll to center the selected line.
+    const lineHeight = textArea.clientHeight / textArea.rows;
+    const firstLine = Math.max(0, lineIndex - textArea.rows / 2);
+    textArea.scrollTop = lineHeight * firstLine;
+
+    return lines[lineIndex];
   },
 
   /**

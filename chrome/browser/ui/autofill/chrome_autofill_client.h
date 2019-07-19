@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -126,6 +127,7 @@ class ChromeAutofillClient
   bool ShouldShowSigninPromo() override;
   bool AreServerCardsSupported() override;
   void ExecuteCommand(int id) override;
+  LogManager* GetLogManager() const override;
 
   // RiskDataLoader:
   void LoadRiskData(
@@ -159,6 +161,7 @@ class ChromeAutofillClient
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
+  std::unique_ptr<LogManager> log_manager_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

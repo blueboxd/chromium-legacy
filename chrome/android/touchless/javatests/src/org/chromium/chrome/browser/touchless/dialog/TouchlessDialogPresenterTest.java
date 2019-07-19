@@ -67,16 +67,14 @@ public class TouchlessDialogPresenterTest {
                 new View.OnClickListener[] {
                         (v) -> item1Callback.notifyCalled(), (v) -> item2Callback.notifyCalled()});
 
-        // Enable 'keyboard mode' by sending a key press event.
-        // Doing so, the first item will be focused when the dialog appears.
-        mUiDevice.pressDPadDown();
         showDialog(mManager, dialog);
         mUiDevice.wait(Until.findObject(By.text("dialog")), TIMEOUT_MS);
 
         UiObject2 firstItem = mUiDevice.findObject(By.text("1")).getParent();
         UiObject2 secondItem = mUiDevice.findObject(By.text("2")).getParent();
 
-        Assert.assertTrue("First item is not selected", firstItem.isFocused());
+        mUiDevice.pressDPadDown();
+        firstItem.wait(Until.focused(true), TIMEOUT_MS);
         Assert.assertFalse("Second item is selected", secondItem.isFocused());
 
         Assert.assertEquals(0, item1Callback.getCallCount());

@@ -29,7 +29,7 @@ include_rules = [
   "+components/payments/content/utility",
   "+components/services/patch",
   "+components/services/pdf_compositor/public/cpp",
-  "+components/services/pdf_compositor/public/interfaces",
+  "+components/services/pdf_compositor/public/mojom",
   "+components/services/quarantine/quarantine_service.h",
   "+components/services/quarantine/public",
   "+components/services/unzip",

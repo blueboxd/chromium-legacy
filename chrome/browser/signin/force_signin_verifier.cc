@@ -8,8 +8,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -39,11 +37,12 @@ const char kForceSigninVerificationSuccessTimeMetricsName[] =
 const char kForceSigninVerificationFailureTimeMetricsName[] =
     "Signin.ForceSigninVerificationTime.Failure";
 
-ForceSigninVerifier::ForceSigninVerifier(Profile* profile)
+ForceSigninVerifier::ForceSigninVerifier(
+    identity::IdentityManager* identity_manager)
     : has_token_verified_(false),
       backoff_entry_(&kForceSigninVerifierBackoffPolicy),
       creation_time_(base::TimeTicks::Now()),
-      identity_manager_(IdentityManagerFactory::GetForProfile(profile)) {
+      identity_manager_(identity_manager) {
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   UMA_HISTOGRAM_BOOLEAN(kForceSigninVerificationMetricsName,
                         ShouldSendRequest());

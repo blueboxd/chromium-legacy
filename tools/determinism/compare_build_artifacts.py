@@ -105,7 +105,7 @@ def diff_binary(first_filepath, second_filepath, file_len):
         for i in xrange(min(len(lhs_data), len(rhs_data))):
           if lhs_data[i] != rhs_data[i]:
             num_diffs += 1
-        if streams is not None:
+        if len(streams) < MAX_STREAMS:
           for idx in xrange(NUM_CHUNKS_IN_BLOCK):
             lhs_chunk = lhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
             rhs_chunk = rhs_data[idx * CHUNK_SIZE:(idx + 1) * CHUNK_SIZE]
@@ -114,7 +114,6 @@ def diff_binary(first_filepath, second_filepath, file_len):
                 streams.append((offset + CHUNK_SIZE * idx,
                                 lhs_chunk, rhs_chunk))
               else:
-                streams = None
                 break
       offset += len(lhs_data)
       del lhs_data

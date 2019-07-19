@@ -32,7 +32,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/socket/client_socket_pool.h"
@@ -2146,8 +2145,7 @@ TEST_F(SpdySessionTest, Initialize) {
   // Flush the read completion task.
   base::RunLoop().RunUntilIdle();
 
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged HTTP2_SESSION_INITIALIZED correctly.
@@ -2156,10 +2154,9 @@ TEST_F(SpdySessionTest, Initialize) {
       NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
-  TestNetLogEntry entry = entries[pos];
   NetLogSource socket_source;
   EXPECT_TRUE(
-      NetLogSource::FromEventParameters(entry.params.get(), &socket_source));
+      NetLogSource::FromEventParameters(&entries[pos].params, &socket_source));
   EXPECT_TRUE(socket_source.IsValid());
   EXPECT_NE(log_.bound().source().id, socket_source.id);
 }
@@ -2187,38 +2184,24 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_FALSE(session_);
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_SESSION_RECV_GOAWAY,
       NetLogEventPhase::NONE);
-  TestNetLogEntry entry = entries[pos];
-  int last_accepted_stream_id;
-  ASSERT_TRUE(entry.GetIntegerValue("last_accepted_stream_id",
-                                    &last_accepted_stream_id));
-  EXPECT_EQ(42, last_accepted_stream_id);
-  int active_streams;
-  ASSERT_TRUE(entry.GetIntegerValue("active_streams", &active_streams));
-  EXPECT_EQ(0, active_streams);
-  int unclaimed_streams;
-  ASSERT_TRUE(entry.GetIntegerValue("unclaimed_streams", &unclaimed_streams));
-  EXPECT_EQ(0, unclaimed_streams);
-  std::string error_code;
-  ASSERT_TRUE(entry.GetStringValue("error_code", &error_code));
-  EXPECT_EQ("11 (ENHANCE_YOUR_CALM)", error_code);
-  std::string debug_data;
-  ASSERT_TRUE(entry.GetStringValue("debug_data", &debug_data));
-  EXPECT_EQ("foo", debug_data);
+  ASSERT_EQ(42,
+            GetIntegerValueFromParams(entries[pos], "last_accepted_stream_id"));
+  ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "active_streams"));
+  ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "unclaimed_streams"));
+  ASSERT_EQ("11 (ENHANCE_YOUR_CALM)",
+            GetStringValueFromParams(entries[pos], "error_code"));
+  ASSERT_EQ("foo", GetStringValueFromParams(entries[pos], "debug_data"));
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
   pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_SESSION_CLOSE, NetLogEventPhase::NONE);
-  entry = entries[pos];
-  int net_error_code = 0;
-  ASSERT_TRUE(entry.GetNetErrorCode(&net_error_code));
-  EXPECT_THAT(net_error_code, IsOk());
+  EXPECT_THAT(GetNetErrorCodeFromParams(entries[pos]), IsOk());
 }
 
 TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
@@ -2242,8 +2225,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_FALSE(session_);
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
@@ -2251,10 +2233,8 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
       entries, 0, NetLogEventType::HTTP2_SESSION_CLOSE, NetLogEventPhase::NONE);
 
   if (pos < static_cast<int>(entries.size())) {
-    TestNetLogEntry entry = entries[pos];
-    int error_code = 0;
-    ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
-    EXPECT_THAT(error_code, IsError(ERR_CONNECTION_CLOSED));
+    ASSERT_THAT(GetNetErrorCodeFromParams(entries[pos]),
+                IsError(ERR_CONNECTION_CLOSED));
   } else {
     ADD_FAILURE();
   }

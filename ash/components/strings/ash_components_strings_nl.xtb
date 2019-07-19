@@ -24,7 +24,7 @@
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">www. en .com toevoegen aan je invoer in de adresbalk en de pagina vervolgens openen</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, en dan <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> of <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Het virtuele bureau aan de linkerkant activeren</translation>
+<translation id="1929866390202038233">Het virtuele bureaublad aan de linkerkant activeren</translation>
 <translation id="1996162290124031907">Naar het volgende tabblad gaan</translation>
 <translation id="2010818616644390445">Naar het laatste tabblad in het venster gaan</translation>
 <translation id="2040706009561734834">De launcher openen/sluiten</translation>
@@ -118,7 +118,7 @@
 <translation id="5554139136362089836">Zoeken op de huidige pagina</translation>
 <translation id="5563050856984839829">Druk op <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> en klik op een link</translation>
 <translation id="561814908794220892">De webpagina openen op een nieuw tabblad</translation>
-<translation id="5620219513321115856">Actief venster verplaatsen naar het bureau aan de rechterkant</translation>
+<translation id="5620219513321115856">Actief venster verplaatsen naar het bureaublad aan de rechterkant</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> of <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">De link openen op het tabblad</translation>
 <translation id="5757474750054631686">Toetsenbord dimmen (alleen voor toetsenborden met achtergrondverlichting)</translation>
@@ -181,7 +181,7 @@
 <translation id="8234414138295101081">Scherm 90 graden draaien</translation>
 <translation id="8241665785394195545">rechte haak rechts</translation>
 <translation id="8264941229485248811">De Developer Tools-inspector weergeven of verbergen</translation>
-<translation id="8355937569537581904">Het huidige virtuele bureau verwijderen</translation>
+<translation id="8355937569537581904">Het huidige virtuele bureaublad verwijderen</translation>
 <translation id="836869401750819675">De pagina Downloads openen</translation>
 <translation id="8388247778047144397">Sleep de link naar een blanco gedeelte van de tabbladstrook</translation>
 <translation id="8389638407792712197">Nieuw venster openen</translation>
@@ -193,7 +193,7 @@
 <translation id="8717459106217102612">Het vorige woord of de vorige letter selecteren</translation>
 <translation id="8727232706774971183">Je meldingen bekijken</translation>
 <translation id="8855885154700222542">Toets voor volledig scherm</translation>
-<translation id="8881584919399569791">Actief venster verplaatsen naar het bureau aan de linkerkant</translation>
+<translation id="8881584919399569791">Actief venster verplaatsen naar het bureaublad aan de linkerkant</translation>
 <translation id="88986195241502842">Page Down</translation>
 <translation id="8924883688469390268">Overschakelen naar de vorige gebruiker</translation>
 <translation id="8977648847395357314">De inhoud in de adresbalk selecteren</translation>

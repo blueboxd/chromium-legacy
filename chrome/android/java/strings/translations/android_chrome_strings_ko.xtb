@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">사이트 저장공간</translation>
 <translation id="2328985652426384049">로그인할 수 없음</translation>
 <translation id="2349710944427398404">계정, 북마크, 저장된 설정 등 Chrome에서 사용한 전체 데이터</translation>
-<translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2369533728426058518">열린 탭</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">확인</translation>
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
 <translation id="5308380583665731573">연결</translation>
-<translation id="5308603654685598744">이 기능을 사용하도록 설정하면 Chrome에서 Google 번역을 사용하여 외국어로 작성된 페이지에 대한 번역을 제공합니다.</translation>
 <translation id="5313967007315987356">사이트 추가</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5324858694974489420">자녀 보호 설정</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">사용 통계 및 비정상 종료 보고서를 Google로 자동 전송</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
 <translation id="5902828464777634901">쿠키를 포함하여 이 웹사이트에 의해 저장된 모든 로컬 데이터가 삭제됩니다.</translation>
-<translation id="5911030830365207728">Google 번역</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5919204609460789179"><ph name="PRODUCT_NAME" />을(를) 업데이트하여 동기화를 시작합니다.</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> 저장됨</translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">이 페이지는 위험합니다. 사이트 정보</translation>
 <translation id="6963766334940102469">북마크 삭제</translation>
 <translation id="6965382102122355670">확인</translation>
-<translation id="6978479750597523876">번역 설정 재설정</translation>
 <translation id="6979737339423435258">전체 기간</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="6989267951144302301">다운로드할 수 없음</translation>
@@ -952,7 +948,7 @@
 <translation id="7999064672810608036">쿠키를 포함하여 이 웹사이트의 모든 로컬 데이터를 삭제하고 모든 권한을 재설정하시겠습니까?</translation>
 <translation id="8004582292198964060">브라우저</translation>
 <translation id="8007176423574883786">기기에 대해 사용 중지됨</translation>
-<translation id="8013372441983637696">이 기기에서도 내 Chrome 데이터 삭제</translation>
+<translation id="8013372441983637696">이 기기에서 내 Chrome 데이터 삭제</translation>
 <translation id="8015452622527143194">페이지의 모든 항목을 기본 크기로 되돌리기</translation>
 <translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>

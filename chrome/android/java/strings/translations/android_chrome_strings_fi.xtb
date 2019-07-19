@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Sivustotietoja tallennettu</translation>
 <translation id="2328985652426384049">Kirjautuminen epäonnistui</translation>
 <translation id="2349710944427398404">Chromen käyttämän tallennustilan kokonaismäärä, mukaan lukien tilit, kirjanmerkit ja tallennetut asetukset.</translation>
-<translation id="2351097562818989364">Käännösasetukset on nollattu.</translation>
 <translation id="2353636109065292463">Internetyhteyttäsi tarkistetaan</translation>
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2369533728426058518">Avoimet välilehdet</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389"><ph name="SECONDS" /> sekuntia jäljellä</translation>
 <translation id="2779651927720337254">epäonnistui</translation>
 <translation id="2781151931089541271">1 sekunti jäljellä</translation>
+<translation id="2796941233371040292">Täällä ei ole tallennustilan dataa</translation>
 <translation id="2801022321632964776">Päivitä Chrome uusimpaan versioon, niin se toimii omalla kielelläsi</translation>
 <translation id="2810645512293415242">Yksinkertaistettu sivu, joka säästää dataa ja latautuu nopeammin.</translation>
 <translation id="281504910091592009">Katso ja ylläpidä <ph name="BEGIN_LINK" />Google-tilille<ph name="END_LINK" /> tallennettuja salasanoja</translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">Tietoja Chromesta</translation>
 <translation id="2891154217021530873">Pysäytä sivun lataus</translation>
 <translation id="2893180576842394309">Google voi muokata Hakua ja muita Googlen palveluita historiasi perusteella</translation>
+<translation id="2898264748040935573">Muokkaa tallennettua salasanaa</translation>
 <translation id="2900528713135656174">Luo tapahtuma</translation>
 <translation id="2902702728133930130">Chromen käynnistys epäonnistui odottamattoman virheen takia.</translation>
 <translation id="290376772003165898">Eikö sivu ole kirjoitettu kielellä <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="4913169188695071480">Lopeta päivittäminen</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /> laitteiden skannauksen aikana…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# sivu}other{# sivua}}</translation>
+<translation id="4932247056774066048">Koska olet kirjautumassa ulos tililtä, jota <ph name="DOMAIN_NAME" /> ylläpitää, Chrome-datasi poistetaan tältä laitteelta. Se pysyy Google-tililläsi.</translation>
 <translation id="4943703118917034429">Virtuaalitodellisuus</translation>
 <translation id="4943872375798546930">Ei tuloksia</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> jakaa näyttösi.</translation>
@@ -562,6 +564,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5210286577605176222">Siirry edelliselle välilehdelle</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="5224771365102442243">Video sivulla</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> haluaa etsiä lähellä olevia Bluetooth-laitteita. Seuraavat laitteet löydettiin:</translation>
 <translation id="5233638681132016545">Uusi välilehti</translation>
 <translation id="526421993248218238">Sivun lataaminen epäonnistui</translation>
 <translation id="5271967389191913893">Laite ei voi avata ladattavaa sisältöä.</translation>
@@ -571,7 +574,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5301954838959518834">Selvä</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
-<translation id="5308603654685598744">Kun tämä ominaisuus on käytössä, Chrome tarjoaa vieraskielisten sivujen käännöksiä Google Kääntäjän avulla.</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5324858694974489420">Vanhempien asetukset</translation>
@@ -586,6 +588,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5414836363063783498">Vahvistetaan…</translation>
 <translation id="5423934151118863508">Käydyimmät sivusi näkyvät täällä</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> Gt käytettävissä</translation>
+<translation id="543338862236136125">Muokkaa salasanaa</translation>
 <translation id="5433691172869980887">Käyttäjänimi kopioitu</translation>
 <translation id="543509235395288790">Ladataan <ph name="COUNT" /> tiedostoa (<ph name="MEGABYTES" />)</translation>
 <translation id="5441522332038954058">Siirry osoitepalkkiin</translation>
@@ -660,7 +663,6 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5865733239029070421">Lähettää automaattisesti käyttötilastoja ja virheraportteja Googlelle</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
 <translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot (myös evästeet) poistetaan.</translation>
-<translation id="5911030830365207728">Google Kääntäjä</translation>
 <translation id="5916664084637901428">Käytössä</translation>
 <translation id="5919204609460789179">Aloita synkronointi päivittämällä <ph name="PRODUCT_NAME" /></translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> säästetty</translation>
@@ -805,7 +807,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6963642900430330478">Tämä sivu on vaarallinen. Sivuston tiedot</translation>
 <translation id="6963766334940102469">Poista kirjanmerkkejä</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6978479750597523876">Nollaa käännösasetukset</translation>
 <translation id="6979737339423435258">Kaikki</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="6989267951144302301">Lataus epäonnistui</translation>

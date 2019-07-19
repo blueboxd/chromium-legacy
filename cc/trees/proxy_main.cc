@@ -370,12 +370,6 @@ bool ProxyMain::IsStarted() const {
   return started_;
 }
 
-bool ProxyMain::CommitToActiveTree() const {
-  // With ProxyMain, we use a pending tree and activate it once it's ready to
-  // draw to allow input to modify the active tree and draw during raster.
-  return false;
-}
-
 void ProxyMain::SetLayerTreeFrameSink(
     LayerTreeFrameSink* layer_tree_frame_sink) {
   ImplThreadTaskRunner()->PostTask(

@@ -438,23 +438,31 @@ test.util.sync.fakeKeyDown =
  *     Object containing common key modifiers : shift, alt, and ctrl.
  * @param {number=} opt_button Mouse button number as per spec, e.g.: 2 for
  *     right-click.
+ * @param {Object=} opt_eventProperties Additional properties to pass to each
+ *     event, e.g.: clientX and clientY. right-click.
  * @return {boolean} True if the all events are sent to the target, false
  *     otherwise.
  */
 test.util.sync.fakeMouseClick =
-    (contentWindow, targetQuery, opt_keyModifiers, opt_button) => {
+    (contentWindow, targetQuery, opt_keyModifiers, opt_button,
+     opt_eventProperties) => {
       const modifiers = opt_keyModifiers || {};
-      const props = {
-        bubbles: true,
-        detail: 1,
-        composed: true,  // Allow the event to bubble past shadow DOM root.
-        ctrlKey: modifiers.ctrl,
-        shiftKey: modifiers.shift,
-        altKey: modifiers.alt,
-      };
+      const eventProperties = opt_eventProperties || {};
+
+      const props = Object.assign(
+          {
+            bubbles: true,
+            detail: 1,
+            composed: true,  // Allow the event to bubble past shadow DOM root.
+            ctrlKey: modifiers.ctrl,
+            shiftKey: modifiers.shift,
+            altKey: modifiers.alt,
+          },
+          eventProperties);
       if (opt_button !== undefined) {
         props.button = opt_button;
       }
+
       if (!targetQuery) {
         return false;
       }
@@ -646,6 +654,44 @@ test.util.sync.fakeMouseUp = (contentWindow, targetQuery) => {
   return test.util.sync.sendEvent(contentWindow, targetQuery, event);
 };
 
+/**
+ * Simulates a mouse right-click on the element specified by |targetQuery|.
+ * Optionally pass X,Y coordinates to be able to choose where the right-click
+ * should occur.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @param {number=} opt_offsetBottom offset pixels applied to target element
+ *     bottom, can be negative to move above the bottom.
+ * @param {number=} opt_offsetRight offset pixels applied to target element
+ *     right can be negative to move inside the element.
+ * @return {boolean} True if the all events are sent to the target, false
+ *     otherwise.
+ */
+test.util.sync.rightClickOffset =
+    (contentWindow, targetQuery, opt_offsetBottom, opt_offsetRight) => {
+      const target = contentWindow.document &&
+          contentWindow.document.querySelector(targetQuery);
+      if (!target) {
+        return false;
+      }
+
+      // Calculate the offsets.
+      const targetRect = target.getBoundingClientRect();
+      const props = {
+        clientX: targetRect.right + (opt_offsetRight ? opt_offsetRight : 0),
+        clientY: targetRect.bottom + (opt_offsetBottom ? opt_offsetBottom : 0),
+      };
+
+      const keyModifiers = undefined;
+      const rightButton = 2;
+      if (!test.util.sync.fakeMouseClick(
+              contentWindow, targetQuery, keyModifiers, rightButton, props)) {
+        return false;
+      }
+
+      return true;
+    };
 
 /**
  * Sends a drag'n'drop set of events from |srcTarget| to |dstTarget|.

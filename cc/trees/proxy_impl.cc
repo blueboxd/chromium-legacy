@@ -395,7 +395,7 @@ bool ProxyImpl::IsBeginMainFrameExpected() {
   // not responded to a previously dispatched BeginMainFrame, then assume that
   // main-thread would want to produce an update for the current frame too.
   return scheduler_->needs_begin_main_frame() ||
-         scheduler_->IsBeginMainFrameSentOrStarted();
+         scheduler_->IsBeginMainFrameSent();
 }
 
 void ProxyImpl::RenewTreePriority() {

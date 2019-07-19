@@ -14,14 +14,8 @@ Local Modifications:
 Turning off vertical and horizontal class merging, as described in
 https://issuetracker.google.com/122902374#comment11. We should no longer make
 this modification once the linked bug is fixed.
--  public boolean enableHorizontalClassMerging = true;
--  public boolean enableVerticalClassMerging = true;
-+  public boolean enableHorizontalClassMerging = false;
-+  public boolean enableVerticalClassMerging = false;
 
 Turning off nullable inlining since it caused a performance regression here:
 crbug.com/965189. If R8 ever mitigates this, we can re-enable this.
--  public boolean enableInliningOfInvokesWithNullableReceivers =
--      System.getProperty("com.android.tools.r8.disableInliningOfInvokesWithNullableReceivers")
--          == null;
-+  public boolean enableInliningOfInvokesWithNullableReceivers = false;
+
+Patch is located at //third_party/r8/local_modifications.diff.

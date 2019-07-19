@@ -742,8 +742,8 @@ void UDPSocketWin::LogRead(int result,
   }
 
   if (net_log_.IsCapturing()) {
-    NetLogUDPDataTranfer(net_log_, NetLogEventType::UDP_BYTES_RECEIVED, result,
-                         bytes, address);
+    NetLogUDPDataTransfer(net_log_, NetLogEventType::UDP_BYTES_RECEIVED, result,
+                          bytes, address);
   }
 
   NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(result);
@@ -758,8 +758,8 @@ void UDPSocketWin::LogWrite(int result,
   }
 
   if (net_log_.IsCapturing()) {
-    NetLogUDPDataTranfer(net_log_, NetLogEventType::UDP_BYTES_SENT, result,
-                         bytes, address);
+    NetLogUDPDataTransfer(net_log_, NetLogEventType::UDP_BYTES_SENT, result,
+                          bytes, address);
   }
 
   NetworkActivityMonitor::GetInstance()->IncrementBytesSent(result);

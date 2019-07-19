@@ -17,7 +17,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/tcp_client_socket.h"
@@ -236,8 +235,7 @@ TEST_P(TransportClientSocketTest, Connect) {
   // Wait for |listen_sock_| to accept a connection.
   connect_loop_.Run();
 
-  TestNetLogEntry::List net_log_entries;
-  net_log_.GetEntries(&net_log_entries);
+  auto net_log_entries = net_log_.GetEntries();
   EXPECT_TRUE(
       LogContainsBeginEvent(net_log_entries, 0, NetLogEventType::SOCKET_ALIVE));
   EXPECT_TRUE(
@@ -250,7 +248,7 @@ TEST_P(TransportClientSocketTest, Connect) {
   }
 
   EXPECT_TRUE(sock_->IsConnected());
-  net_log_.GetEntries(&net_log_entries);
+  net_log_entries = net_log_.GetEntries();
   EXPECT_TRUE(
       LogContainsEndEvent(net_log_entries, -1, NetLogEventType::TCP_CONNECT));
 

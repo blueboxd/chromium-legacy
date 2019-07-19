@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -53,8 +54,8 @@ class BackgroundSyncMetricsBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
-                       BackgroundSyncUkmEventsAreRecorded) {
-  background_sync_metrics_->MaybeRecordRegistrationEvent(
+                       OneShotBackgroundSyncUkmEventsAreRecorded) {
+  background_sync_metrics_->MaybeRecordOneShotSyncRegistrationEvent(
       url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
       /* can_fire= */ true,
       /* is_reregistered= */ false);
@@ -72,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
         false);
   }
 
-  background_sync_metrics_->MaybeRecordCompletionEvent(
+  background_sync_metrics_->MaybeRecordOneShotSyncCompletionEvent(
       url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
       /* status_code= */ blink::ServiceWorkerStatusCode::kOk,
       /* num_attempts= */ 2, /* max_attempts= */ 5);
@@ -90,5 +91,53 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
         entry, ukm::builders::BackgroundSyncCompleted::kNumAttemptsName, 2);
     recorder_->ExpectEntryMetric(
         entry, ukm::builders::BackgroundSyncCompleted::kMaxAttemptsName, 5);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncMetricsBrowserTest,
+                       PeriodicBackgroundSyncUkmEventsAreRecorded) {
+  background_sync_metrics_->MaybeRecordPeriodicSyncRegistrationEvent(
+      url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
+      /* min_interval= */ 1000,
+      /* is_reregistered= */ false);
+  WaitForUkm();
+
+  {
+    auto entries = recorder_->GetEntriesByName(
+        ukm::builders::PeriodicBackgroundSyncRegistered::kEntryName);
+    ASSERT_EQ(entries.size(), 1u);
+    const auto* entry = entries[0];
+    recorder_->ExpectEntryMetric(
+        entry,
+        ukm::builders::PeriodicBackgroundSyncRegistered::kMinIntervalMsName,
+        ukm::GetExponentialBucketMin(1000, kUkmEventDataBucketSpacing));
+    recorder_->ExpectEntryMetric(
+        entry,
+        ukm::builders::PeriodicBackgroundSyncRegistered::kIsReregisteredName,
+        false);
+  }
+
+  background_sync_metrics_->MaybeRecordPeriodicSyncEventCompletion(
+      url::Origin::Create(embedded_test_server()->base_url().GetOrigin()),
+      /* status_code= */ blink::ServiceWorkerStatusCode::kOk,
+      /* num_attempts= */ 2, /* max_attempts= */ 5);
+  WaitForUkm();
+
+  {
+    auto entries = recorder_->GetEntriesByName(
+        ukm::builders::PeriodicBackgroundSyncEventCompleted::kEntryName);
+    ASSERT_EQ(entries.size(), 1u);
+    const auto* entry = entries[0];
+    recorder_->ExpectEntryMetric(
+        entry, ukm::builders::PeriodicBackgroundSyncEventCompleted::kStatusName,
+        static_cast<int64_t>(blink::ServiceWorkerStatusCode::kOk));
+    recorder_->ExpectEntryMetric(
+        entry,
+        ukm::builders::PeriodicBackgroundSyncEventCompleted::kNumAttemptsName,
+        2);
+    recorder_->ExpectEntryMetric(
+        entry,
+        ukm::builders::PeriodicBackgroundSyncEventCompleted::kMaxAttemptsName,
+        5);
   }
 }

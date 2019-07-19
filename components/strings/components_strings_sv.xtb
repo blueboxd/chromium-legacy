@@ -330,6 +330,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Åtkomst till filen nekades</translation>
 <translation id="2653659639078652383">Skicka</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{Inga}=1{1 lösenord (för <ph name="DOMAIN_LIST" />)}=2{2 lösenord (för <ph name="DOMAIN_LIST" />)}other{# lösenord (för <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Stäng andra flikar eller appar</translation>
 <translation id="267371737713284912">tryck på <ph name="MODIFIER_KEY_DESCRIPTION" /> för att ångra</translation>
 <translation id="2674170444375937751">Vill du ta bort de här sidorna från historiken?</translation>
@@ -660,6 +661,7 @@
 <translation id="4435702339979719576">vykort)</translation>
 <translation id="443673843213245140">Användning av proxy är inaktiverad men en explicit proxykonfiguration har angetts.</translation>
 <translation id="445100540951337728">Godkända betalkort</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> Misstänkt aktivitet</translation>
 <translation id="4466881336512663640">Ändringar i formuläret ändras inte. Vill du fortsätta?</translation>
 <translation id="4477350412780666475">Nästa spår</translation>
 <translation id="4482953324121162758">Den här webbplatsen översätts inte.</translation>
@@ -712,6 +714,7 @@
 <translation id="4771973620359291008">Ett okänt fel uppstod.</translation>
 <translation id="4780900888022378816">Enheten hanteras av <ph name="ENROLLMENT_DOMAIN" /> och kontot hanteras av <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Byt till den här fliken</translation>
+<translation id="4791134497475588553">Installerade Linux-program och när de användes senast</translation>
 <translation id="4798078619018708837">Uppdatera kortinformationen genom att ange sista giltighetsdatum och CVC-kod för <ph name="CREDIT_CARD" />. När du bekräftar delas kortuppgifter från ditt Google-konto med webbplatsen.</translation>
 <translation id="4800132727771399293">Kontrollera utgångsdatum och CVC-kod och försök igen</translation>
 <translation id="480334179571489655">Fel vid tillämpning av ursprungsprincip</translation>
@@ -722,6 +725,7 @@
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4854362297993841467">Det här leveranssättet är inte tillgängligt. Testa ett annat alternativ.</translation>
 <translation id="4858792381671956233">Du har frågat dina föräldrar om lov att besöka den här webbplatsen.</translation>
+<translation id="4864052566555297930">Säkerhetstips:</translation>
 <translation id="4876188919622883022">Förenklad visning</translation>
 <translation id="4876305945144899064">Inget användarnamn</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{Inga}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />}other{<ph name="EXAMPLE_DOMAIN_1" />, <ph name="EXAMPLE_DOMAIN_2" />, <ph name="AND_MORE" />}}</translation>
@@ -822,6 +826,7 @@
 <translation id="536296301121032821">Det gick inte att spara policyinställningarna</translation>
 <translation id="5371425731340848620">Uppdatera kortet</translation>
 <translation id="5377026284221673050">Klockan går efter, Klockan går före eller &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
+<translation id="5377179979757081683">Den här sidan kan försöka lura dig, stjäla personliga uppgifter eller skada din enhet. Var försiktig när du anger personliga uppgifter elle öppnar nedladdade filer.</translation>
 <translation id="5384855140246857529">Logga in och aktivera synkronisering så kan du använda korten på alla enheter.</translation>
 <translation id="5386426401304769735">Certifikatkedjan för den här webbplatsen innehåller ett certifikat som signerades med SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -986,6 +991,7 @@
 <translation id="6328786501058569169">Den här webbplatsen är bedräglig</translation>
 <translation id="6337133576188860026">Frigör mindre än <ph name="SIZE" />. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="6337534724793800597">Filtrera princip efter namn</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{Inga}=1{1 lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}=2{2 lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}other{# lösenord (för <ph name="DOMAIN_LIST" />, synkroniseras)}}</translation>
 <translation id="6358450015545214790">Vad innebär dessa?</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1164,6 +1170,7 @@ Mer information.
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">Är anknuten:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">Lämna webbplatsen</translation>
 <translation id="7353601530677266744">Kommandorad</translation>
 <translation id="7372973238305370288">sökresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>

@@ -295,6 +295,11 @@
       "login_screen_extension"
     ]
   },
+  "replacement_android_app": {
+    "channel": "trunk",
+    "extension_types": ["platform_app"],
+    "min_manifest_version": 2
+  },
   "replacement_web_app": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],

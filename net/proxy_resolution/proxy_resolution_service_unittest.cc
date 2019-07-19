@@ -24,7 +24,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
@@ -409,8 +408,7 @@ TEST_F(ProxyResolutionServiceTest, Direct) {
   EXPECT_TRUE(info.proxy_resolve_end_time().is_null());
 
   // Check the NetLog was filled correctly.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(3u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -915,8 +913,7 @@ TEST_F(ProxyResolutionServiceTest, PAC) {
   EXPECT_LE(info.proxy_resolve_start_time(), info.proxy_resolve_end_time());
 
   // Check the NetLog was filled correctly.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(5u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -2494,8 +2491,7 @@ TEST_F(ProxyResolutionServiceTest, CancelWhilePACFetching) {
   EXPECT_FALSE(callback1.have_result());  // Cancelled.
   EXPECT_FALSE(callback2.have_result());  // Cancelled.
 
-  TestNetLogEntry::List entries1;
-  log1.GetEntries(&entries1);
+  auto entries1 = log1.GetEntries();
 
   // Check the NetLog for request 1 (which was cancelled) got filled properly.
   EXPECT_EQ(4u, entries1.size());
@@ -3037,8 +3033,7 @@ TEST_F(ProxyResolutionServiceTest, NetworkChangeTriggersPacRefetch) {
   // Check that the expected events were output to the log stream. In particular
   // PROXY_CONFIG_CHANGED should have only been emitted once (for the initial
   // setup), and NOT a second time when the IP address changed.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_TRUE(LogContainsEntryWithType(entries, 0,
                                        NetLogEventType::PROXY_CONFIG_CHANGED));

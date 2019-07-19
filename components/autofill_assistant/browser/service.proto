@@ -980,6 +980,8 @@ message PromptProto {
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
+
+    reserved 13;
   }
   repeated Choice choices = 4;
 }
@@ -1331,6 +1333,8 @@ message CounterInputProto {
     // must contain |initial_value| or it will otherwise default to the first
     // value.
     optional int32 initial_value = 4 [default = 0];
+
+    reserved 7;
   }
 
   // A result associated to this counter.
@@ -1445,6 +1449,8 @@ message SelectionInputProto {
     // then maximum 1 Choice can have this set to true, otherwise the associated
     // FormAction will fail.
     optional bool selected = 2 [default = false];
+
+    reserved 7;
   }
 
   message Result {

@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/omnibox/browser/vector_icons.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -82,7 +82,7 @@ bool IntentPickerView::ShouldShowIcon() const {
 }
 
 const gfx::VectorIcon& IntentPickerView::GetVectorIcon() const {
-  return omnibox::kOpenInNewIcon;
+  return vector_icons::kOpenInNewIcon;
 }
 
 base::string16 IntentPickerView::GetTextForTooltipAndAccessibleName() const {

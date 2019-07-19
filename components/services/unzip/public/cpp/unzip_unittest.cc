@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/services/unzip/public/interfaces/constants.mojom.h"
+#include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/unzip_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -344,6 +344,26 @@ RemoteCall.prototype.waitAndClickElement =
 };
 
 /**
+ * Shorthand for right-clicking an element.
+ * @param {AppWindow} appWindow Application window.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
+ * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
+ *     Object
+ * @param {Promise} Promise to be fulfilled with the clicked element.
+ */
+RemoteCall.prototype.waitAndRightClick =
+    async function(windowId, query, opt_keyModifiers) {
+  const element = await this.waitForElement(windowId, query);
+  const result = await this.callRemoteTestUtil(
+      'fakeMouseRightClick', windowId, [query, opt_keyModifiers]);
+  chrome.test.assertTrue(result, 'mouse right-click failed.');
+  return element;
+};
+
+/**
  * Shorthand for focusing an element.
  * @param {AppWindow} appWindow Application window.
  * @param {!Array<string>} query Query to specify the element to be focused.

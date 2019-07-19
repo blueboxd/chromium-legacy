@@ -170,6 +170,48 @@ bool EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat>::
   return false;
 }
 
+// Make sure values in arc::mojom::DecodeStatus match to the values in
+// media::DecodeStatus.
+#define CHECK_DECODE_STATUS_ENUM(value)                              \
+  static_assert(static_cast<int>(arc::mojom::DecodeStatus::value) == \
+                    static_cast<int>(media::DecodeStatus::value),    \
+                "enum ##value mismatch")
+
+CHECK_DECODE_STATUS_ENUM(OK);
+CHECK_DECODE_STATUS_ENUM(ABORTED);
+CHECK_DECODE_STATUS_ENUM(DECODE_ERROR);
+
+#undef CHECK_DECODE_STATUS_ENUM
+
+// static
+arc::mojom::DecodeStatus
+EnumTraits<arc::mojom::DecodeStatus, media::DecodeStatus>::ToMojom(
+    media::DecodeStatus input) {
+  switch (input) {
+    case media::DecodeStatus::OK:
+    case media::DecodeStatus::ABORTED:
+    case media::DecodeStatus::DECODE_ERROR:
+      return static_cast<arc::mojom::DecodeStatus>(input);
+  }
+  NOTREACHED() << "unknown status: " << static_cast<int>(input);
+  return arc::mojom::DecodeStatus::DECODE_ERROR;
+}
+
+// static
+bool EnumTraits<arc::mojom::DecodeStatus, media::DecodeStatus>::FromMojom(
+    arc::mojom::DecodeStatus input,
+    media::DecodeStatus* output) {
+  switch (input) {
+    case arc::mojom::DecodeStatus::OK:
+    case arc::mojom::DecodeStatus::ABORTED:
+    case arc::mojom::DecodeStatus::DECODE_ERROR:
+      *output = static_cast<media::DecodeStatus>(input);
+      return true;
+  }
+  NOTREACHED() << "unknown status: " << static_cast<int>(input);
+  return false;
+}
+
 // static
 bool StructTraits<arc::mojom::VideoFramePlaneDataView, arc::VideoFramePlane>::
     Read(arc::mojom::VideoFramePlaneDataView data, arc::VideoFramePlane* out) {
@@ -191,4 +233,40 @@ bool StructTraits<arc::mojom::SizeDataView, gfx::Size>::Read(
   out->SetSize(data.width(), data.height());
   return true;
 }
+
+// static
+bool StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
+                  media::VideoFrameLayout::Plane>::
+    Read(arc::mojom::MediaVideoFramePlaneDataView data,
+         media::VideoFrameLayout::Plane* out) {
+  out->offset = data.offset();
+  out->stride = data.stride();
+  out->size = data.size();
+  return true;
+}
+
+// static
+bool StructTraits<arc::mojom::VideoFrameLayoutDataView,
+                  std::unique_ptr<media::VideoFrameLayout>>::
+    Read(arc::mojom::VideoFrameLayoutDataView data,
+         std::unique_ptr<media::VideoFrameLayout>* out) {
+  media::VideoPixelFormat format;
+  gfx::Size coded_size;
+  std::vector<media::VideoFrameLayout::Plane> planes;
+  if (!data.ReadFormat(&format) || !data.ReadCodedSize(&coded_size) ||
+      !data.ReadPlanes(&planes)) {
+    return false;
+  }
+
+  base::Optional<media::VideoFrameLayout> layout =
+      media::VideoFrameLayout::CreateWithPlanes(
+          format, coded_size, std::move(planes), data.buffer_addr_align(),
+          data.modifier());
+  if (!layout)
+    return false;
+
+  *out = std::make_unique<media::VideoFrameLayout>(*layout);
+  return true;
+}
+
 }  // namespace mojo

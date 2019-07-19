@@ -177,49 +177,49 @@ void LocationBarView::Init() {
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  location_icon_view_ = new LocationIconView(font_list, this);
-  location_icon_view_->set_drag_controller(this);
-  AddChildView(location_icon_view_);
+  auto location_icon_view = std::make_unique<LocationIconView>(font_list, this);
+  location_icon_view->set_drag_controller(this);
+  location_icon_view_ = AddChildView(std::move(location_icon_view));
 
   // Initialize the Omnibox view.
-  omnibox_view_ = new OmniboxViewViews(
+  auto omnibox_view = std::make_unique<OmniboxViewViews>(
       this, std::make_unique<ChromeOmniboxClient>(this, profile()),
       is_popup_mode_, this, font_list);
-  omnibox_view_->Init();
-  AddChildView(omnibox_view_);
+  omnibox_view->Init();
+  omnibox_view_ = AddChildView(std::move(omnibox_view));
 
   RefreshBackground();
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
-  ime_inline_autocomplete_view_ =
-      new views::Label(base::string16(), {font_list});
-  ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
-  ime_inline_autocomplete_view_->SetBackground(views::CreateSolidBackground(
+  auto ime_inline_autocomplete_view = std::make_unique<views::Label>(
+      base::string16(), views::Label::CustomFont{font_list});
+  ime_inline_autocomplete_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  ime_inline_autocomplete_view->SetAutoColorReadabilityEnabled(false);
+  ime_inline_autocomplete_view->SetBackground(views::CreateSolidBackground(
       GetColor(OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_BACKGROUND)));
-  ime_inline_autocomplete_view_->SetEnabledColor(
+  ime_inline_autocomplete_view->SetEnabledColor(
       GetColor(OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_TEXT));
-  ime_inline_autocomplete_view_->SetVisible(false);
-  AddChildView(ime_inline_autocomplete_view_);
+  ime_inline_autocomplete_view->SetVisible(false);
+  ime_inline_autocomplete_view_ =
+      AddChildView(std::move(ime_inline_autocomplete_view));
 
-  selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
-  AddChildView(selected_keyword_view_);
+  selected_keyword_view_ = AddChildView(
+      std::make_unique<SelectedKeywordView>(this, font_list, profile()));
 
-  keyword_hint_view_ = new KeywordHintView(this, profile());
-  AddChildView(keyword_hint_view_);
+  keyword_hint_view_ =
+      AddChildView(std::make_unique<KeywordHintView>(this, profile()));
 
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
   for (auto& model : models) {
-    ContentSettingImageView* image_view =
-        new ContentSettingImageView(std::move(model), this, font_list);
+    auto image_view = std::make_unique<ContentSettingImageView>(
+        std::move(model), this, font_list);
     image_view->SetIconColor(icon_color);
-    content_setting_views_.push_back(image_view);
     image_view->SetVisible(false);
-    AddChildView(image_view);
+    content_setting_views_.push_back(AddChildView(std::move(image_view)));
   }
 
   OmniboxPageActionIconContainerView::Params params;
@@ -259,33 +259,37 @@ void LocationBarView::Init() {
   params.browser = browser_;
   params.command_updater = command_updater();
   params.page_action_icon_delegate = this;
-  omnibox_page_action_icon_container_view_ =
-      new OmniboxPageActionIconContainerView(params);
-  AddChildView(omnibox_page_action_icon_container_view_);
+  omnibox_page_action_icon_container_view_ = AddChildView(
+      std::make_unique<OmniboxPageActionIconContainerView>(params));
 
+  std::vector<std::unique_ptr<PageActionIconView>> page_action_icons;
   if (browser_) {
     // Add icons only when feature is not enabled. Otherwise icons will
     // be added to the ToolbarPageActionIconContainerView.
     if (!base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableToolbarStatusChip)) {
-      save_credit_card_icon_view_ = new autofill::SaveCardIconView(
-          command_updater(), browser_, this, font_list);
-      page_action_icons_.push_back(save_credit_card_icon_view_);
+      auto save_credit_card_icon_view =
+          std::make_unique<autofill::SaveCardIconView>(
+              command_updater(), browser_, this, font_list);
+      save_credit_card_icon_view_ = save_credit_card_icon_view.get();
+      page_action_icons.push_back(std::move(save_credit_card_icon_view));
 
-      local_card_migration_icon_view_ =
-          new autofill::LocalCardMigrationIconView(command_updater(), browser_,
-                                                   this, font_list);
-      page_action_icons_.push_back(local_card_migration_icon_view_);
+      auto local_card_migration_icon_view =
+          std::make_unique<autofill::LocalCardMigrationIconView>(
+              command_updater(), browser_, this, font_list);
+      local_card_migration_icon_view_ = local_card_migration_icon_view.get();
+      page_action_icons.push_back(std::move(local_card_migration_icon_view));
     }
-
-    page_action_icons_.push_back(
-        star_view_ = new StarView(command_updater(), browser_, this));
+    auto star_view =
+        std::make_unique<StarView>(command_updater(), browser_, this);
+    star_view_ = star_view.get();
+    page_action_icons.push_back(std::move(star_view));
   }
 
-  for (PageActionIconView* icon_view : page_action_icons_) {
+  for (auto& icon_view : page_action_icons) {
     icon_view->SetVisible(false);
     icon_view->SetIconColor(icon_color);
-    AddChildView(icon_view);
+    page_action_icons_.push_back(AddChildView(std::move(icon_view)));
   }
 
   auto clear_all_button = views::CreateVectorImageButton(this);

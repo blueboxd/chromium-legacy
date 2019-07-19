@@ -75,11 +75,10 @@ class SendTabToSelfModel {
   // Returns true if the user has valid target device.
   virtual bool HasValidTargetDevice() = 0;
 
-  // Returns a map of the name of possible target devices for the send tab to
-  // self feature to their cache guid. This is a thin layer on top of
-  // DeviceInfoTracker.
-  virtual std::map<std::string, TargetDeviceInfo>
-  GetTargetDeviceNameToCacheInfoMap() = 0;
+  // Returns a vector of information about possible target devices, ordered by
+  // the last updated time stamp of the device with the most recently used
+  // device listed first. This is a thin layer on top of DeviceInfoTracker.
+  virtual std::vector<TargetDeviceInfo> GetTargetDeviceInfoSortedList() = 0;
 
  protected:
   // The observers.

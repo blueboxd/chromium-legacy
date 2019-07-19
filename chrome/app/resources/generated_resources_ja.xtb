@@ -70,7 +70,6 @@
 <translation id="1089439967362294234">パスワードを変更</translation>
 <translation id="1090126737595388931">実行中のバックグラウンド アプリはありません</translation>
 <translation id="1090290614672149983">元のファイルに変更を保存しますか？</translation>
-<translation id="1090918500949388876">画面がオンの状態で「OK Google」と話すといつでもアシスタントにアクセスできます</translation>
 <translation id="1091767800771861448">Esc キーを押すとスキップできます（非公式のビルドのみ）。</translation>
 <translation id="1093457606523402488">検出されたネットワーク:</translation>
 <translation id="1094607894174825014">「<ph name="DEVICE_NAME" />」で、無効なオフセットでの読み取りまたは書き込み操作がリクエストされました。</translation>
@@ -542,7 +541,6 @@
 <translation id="1792619191750875668">拡張ディスプレイ</translation>
 <translation id="1794791083288629568">フィードバックを送信して問題解決に協力する。</translation>
 <translation id="1795214765651529549">クラシックを使用</translation>
-<translation id="1797738254362176886">ログインデータを表示するには、セキュリティ キーを挿入してタップしてください。</translation>
 <translation id="1799071797295057738">拡張機能「<ph name="EXTENSION_NAME" />」を自動的に無効にしました。</translation>
 <translation id="1802687198411089702">ページが応答していません。しばらくお待ちいただくか、終了してください。</translation>
 <translation id="1802931390041703523">このページの Flash はブロックされました</translation>
@@ -788,7 +786,6 @@
 <translation id="2177950615300672361">シークレット タブ: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> の <ph name="PEPPER_PLUGIN_NAME" /> プラグインから、パソコンへのアクセス許可を求められています</translation>
 <translation id="2178614541317717477">認証局が侵害された</translation>
-<translation id="2179849162388791084">セキュリティ キーからログインデータを収集できませんでした。</translation>
 <translation id="218070003709087997">印刷部数を数値（1～999）で指定してください。</translation>
 <translation id="2184515124301515068">サイトで音声が再生される可能性がある場合、Chrome で自動的に許可またはブロックする（推奨）</translation>
 <translation id="2187895286714876935">サーバー証明書インポート エラー</translation>
@@ -1376,7 +1373,6 @@
 <translation id="3022978424994383087">聞き取れませんでした。</translation>
 <translation id="3023464535986383522">選択して読み上げ</translation>
 <translation id="3024374909719388945">24 時間形式を使用する</translation>
-<translation id="30256218463955326">ドッキング ステーションを使用できません</translation>
 <translation id="3031417829280473749">エージェント X</translation>
 <translation id="3031557471081358569">インポートするデータを選択:</translation>
 <translation id="3031601332414921114">印刷を再開</translation>
@@ -1566,7 +1562,6 @@
 <translation id="3348038390189153836">リムーバブル デバイスが検出されました</translation>
 <translation id="3349933790966648062">メモリ使用量</translation>
 <translation id="3350117557200012647">ペア設定モードにしてください</translation>
-<translation id="3350263973613584174">このセキュリティ キーにはログインデータは保存されていません。</translation>
 <translation id="3355936511340229503">接続エラー</translation>
 <translation id="3356580349448036450">完了</translation>
 <translation id="3359256513598016054">証明書ポリシーの制約</translation>
@@ -1946,7 +1941,6 @@
 <translation id="3878840326289104869">監視対象ユーザーを作成しています</translation>
 <translation id="3879748587602334249">ダウンロード マネージャ</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> でメモをとる</translation>
-<translation id="388900914234409233">この Chromebook を充電するには、対応する OEM 電池を使用してください。</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP を追加...</translation>
 <translation id="3893536212201235195">ユーザー補助設定の読み取りと変更</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
@@ -2137,7 +2131,6 @@
 <translation id="4147911968024186208">もう一度お試しください。このエラーが再び表示される場合は、サポート担当者にお問い合わせください。</translation>
 <translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">表示</translation>
-<translation id="4150234330364554482">この Chromebook で動作するように設計された OEM ドッキング ステーションを使用してください。</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個のタブ}other{# 個のタブ}}</translation>
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4157869833395312646">Microsoft SGC（Server Gated Cryptography）</translation>
@@ -2284,7 +2277,6 @@
 <translation id="4412698727486357573">ヘルプセンター</translation>
 <translation id="44141919652824029">接続された USB デバイスのリストを「<ph name="APP_NAME" />」が取得することを許可しますか？</translation>
 <translation id="4414232939543644979">新しいシークレット ウインドウ(&amp;I)</translation>
-<translation id="4414386768539506503">ログインデータを表示するには、セキュリティ キーの PIN を入力してください。PIN がわからない場合は、セキュリティ キーをリセットする必要があります。</translation>
 <translation id="4415245286584082850">デバイスが見つかりませんでした。新しいタブでヘルプセンター記事を開いてください。</translation>
 <translation id="4415276339145661267">Google アカウントの管理</translation>
 <translation id="4415748029120993980">SECG 楕円曲線 secp384r1（別名 NIST P-384）</translation>
@@ -2386,7 +2378,6 @@
 <translation id="457386861538956877">その他...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4576541033847873020">Bluetooth デバイスのペア設定</translation>
-<translation id="4578012756826807359">ログインデータを削除しました。</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> をキャストできません。</translation>
 <translation id="4581774856936278355">Linux の復元中にエラーが発生しました</translation>
 <translation id="4582563038311694664">すべての設定をリセット</translation>
@@ -2698,7 +2689,6 @@
 <translation id="5072836811783999860">管理対象のブックマークを表示</translation>
 <translation id="5074318175948309511">新しい設定を有効にするには、ページの再読み込みが必要な可能性があります。</translation>
 <translation id="5075131525758602494">SIM PIN を入力</translation>
-<translation id="507514548843781244">セキュリティ キーに保存されているログインデータを確認して消去します</translation>
 <translation id="5078638979202084724">すべてのタブをブックマークに追加する</translation>
 <translation id="5078796286268621944">PIN が正しくありません</translation>
 <translation id="5079950360618752063">提案されたパスワードを使用</translation>
@@ -2969,7 +2959,6 @@
 <translation id="5496587651328244253">管理</translation>
 <translation id="549673810209994709">このページを翻訳できませんでした。</translation>
 <translation id="5499313591153584299">このファイルはパソコンに危害を加える可能性があります。</translation>
-<translation id="5500345327355928305">充電やパフォーマンスに関する問題を回避するには、対応する OEM または USB Type-C の電源アダプターを使用してください。</translation>
 <translation id="5502500733115278303">Firefox ブックマーク</translation>
 <translation id="5507756662695126555">否認防止</translation>
 <translation id="5509693895992845810">別名で保存(&amp;A)...</translation>
@@ -2996,7 +2985,6 @@
 <translation id="5534304873398226603">写真または動画を破棄</translation>
 <translation id="5535941515421698170">このデバイスから既存のデータも削除する</translation>
 <translation id="5539221284352502426">入力したパスワードはサーバーによって拒否されました。考えられる原因は次のとおりです。パスワードが短すぎる。パスワードに数字または記号が含まれていない。以前と同じパスワードを指定した。</translation>
-<translation id="5541687815721799001">アプリを使用</translation>
 <translation id="5542132724887566711">プロフィール</translation>
 <translation id="5542750926112347543"><ph name="DOMAIN" /> からの Cookie がブロックされました</translation>
 <translation id="5543983818738093899">ステータスを確認しています...</translation>
@@ -3395,7 +3383,6 @@
 <translation id="6122081475643980456">インターネット接続が制限されています</translation>
 <translation id="6122095009389448667">このサイトによるクリップボードへのアクセスを引き続きブロックする</translation>
 <translation id="6122875415561139701">「<ph name="DEVICE_NAME" />」での書き込み操作は許可されていません。</translation>
-<translation id="6123292156101652890">このセキュリティ キーにはログインデータを保存できません。</translation>
 <translation id="6124650939968185064">次の拡張機能は、この拡張機能に依存しています:</translation>
 <translation id="6124698108608891449">このサイトが追加の権限をリクエストしています。</translation>
 <translation id="6125479973208104919">アカウントをもう一度この <ph name="DEVICE_TYPE" /> に追加する必要があります。</translation>
@@ -4065,7 +4052,6 @@
 <translation id="7143092389027215216">デモモードを開始します</translation>
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7144878232160441200">再読み込み</translation>
-<translation id="714687768418476028">セキュリティ キーは PIN で保護されていません。ログインデータを管理するには、まず PIN を作成してください。</translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
 <translation id="715118844758971915">従来のプリンタ</translation>
 <translation id="7152478047064750137">この拡張機能に特別な権限は必要ありません</translation>
@@ -4932,7 +4918,6 @@
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8439506636278576865">この言語のページで翻訳ツールを表示する</translation>
 <translation id="8440630305826533614">Linux アプリ</translation>
-<translation id="844241640324986723">ログインデータを削除できませんでした。</translation>
 <translation id="8443338615972234259">監視対象ユーザー用の新しいアカウントを今すぐ作成してください。</translation>
 <translation id="8446884382197647889">詳細</translation>
 <translation id="8447409163267621480">Ctrl キーまたは Alt キーが必要です</translation>

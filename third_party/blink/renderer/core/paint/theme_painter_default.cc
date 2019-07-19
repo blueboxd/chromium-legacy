@@ -373,8 +373,10 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   extra_params.slider.thumb_x = 0;
   extra_params.slider.thumb_y = 0;
   if (input) {
-    Element* thumb_element = input->UserAgentShadowRoot()->getElementById(
-        shadow_element_names::SliderThumb());
+    Element* thumb_element = input->UserAgentShadowRoot()
+                                 ? input->UserAgentShadowRoot()->getElementById(
+                                       shadow_element_names::SliderThumb())
+                                 : nullptr;
     LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : nullptr;
     if (thumb) {
       IntRect thumb_rect = PixelSnappedIntRect(thumb->FrameRect());

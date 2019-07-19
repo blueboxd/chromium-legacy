@@ -731,7 +731,11 @@ mojom::XRFrameDataPtr MixedRealityRenderLoop::GetNextFrameData() {
   UpdateWMRDataForNextFrame();
   if (!timestamp_) {
     TRACE_EVENT_INSTANT0("xr", "No Timestamp", TRACE_EVENT_SCOPE_THREAD);
-    return nullptr;
+    mojom::XRFrameDataPtr frame_data = mojom::XRFrameData::New();
+    frame_data->frame_id = next_frame_id_;
+    // TODO(crbug.com/838515): Fix inaccurate time delta reporting in
+    // VRMagicWindowProvider::GetFrameData
+    return frame_data;
   }
 
   // Once we have a prediction, we can generate a frame data.

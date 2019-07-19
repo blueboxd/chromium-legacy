@@ -705,12 +705,15 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       return schema['minimum'] != 0
     return False
 
-  def _BeginTemplate(self, intro_message_id):
+  def _BeginTemplate(self, intro_message_id, banner_message_id):
     # Add a <div> for the summary section.
     if self._GetChromiumVersionString() is not None:
       self.AddComment(self._main_div, self.config['build'] + \
           ' version: ' + self._GetChromiumVersionString())
 
+    banner_div = self._AddStyledElement(self._main_div, 'div', ['div.banner'],
+                                        {}, '')
+    self._AddParagraphs(banner_div, self.GetLocalizedMessage(banner_message_id))
     summary_div = self.AddElement(self._main_div, 'div')
     self.AddElement(summary_div, 'a', {'name': 'top'})
     self.AddElement(summary_div, 'br')
@@ -751,7 +754,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._indent_level -= 1
 
   def BeginTemplate(self):
-    self._BeginTemplate('intro')
+    self._BeginTemplate('intro', 'banner')
 
   def Init(self):
     dom_impl = minidom.getDOMImplementation('')
@@ -816,6 +819,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     # the style-sheet is a dictionary and the style attributes will be added
     # "by hand" for each element.
     self._STYLE = {
+        'div.banner': 'background-color: rgb(244,204,204); font-size: x-large; '
+                      'border: 1px solid red; padding: 20px; '
+                      'text-align: center;',
         'table': 'border-style: none; border-collapse: collapse;',
         'tr': 'height: 0px;',
         'td': 'border: 1px dotted rgb(170, 170, 170); padding: 7px; '

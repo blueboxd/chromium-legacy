@@ -3479,6 +3479,24 @@ TEST_P(PaintPropertyTreeBuilderTest, ReplacedSvgContentWithIsolation) {
             svg_properties->ReplacedContentTransform());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ReplacedContentTransformFlattening) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id="svg"
+        style="transform: perspective(100px) rotateY(0deg);"
+        width="100px"
+        height="200px"
+        viewBox="50 50 100 100">
+    </svg>
+  )HTML");
+
+  const auto* svg = ToLayoutBoxModelObject(GetLayoutObjectByElementId("svg"));
+  const auto* svg_properties = svg->FirstFragment().PaintProperties();
+
+  const auto* replaced_transform = svg_properties->ReplacedContentTransform();
+  EXPECT_TRUE(replaced_transform->FlattensInheritedTransform());
+  EXPECT_TRUE(replaced_transform->Parent()->FlattensInheritedTransform());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, ContainPaintOrStyleLayoutTreeState) {
   for (const char* containment : {"paint", "style layout"}) {
     SCOPED_TRACE(containment);
@@ -4019,14 +4037,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   auto* fixed_scroll_translation =
       fixed_overflow_scroll_properties->ScrollTranslation();
   auto* fixed_overflow_scroll_node = fixed_scroll_translation->ScrollNode();
-  // The fixed position overflow scroll node is parented under the root, not the
-  // dom-order parent or frame's scroll.
-  EXPECT_EQ(GetDocument()
-                .GetPage()
-                ->GetVisualViewport()
-                .GetScrollTranslationNode()
-                ->ScrollNode(),
-            fixed_overflow_scroll_node->Parent());
+  // The fixed position overflow scroll node is parented under the frame, not
+  // the dom-order parent.
+  EXPECT_EQ(DocScroll(), fixed_overflow_scroll_node->Parent());
   EXPECT_EQ(FloatSize(0, -43), fixed_scroll_translation->Translation2D());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
   EXPECT_EQ(IntSize(13, 4000), fixed_overflow_scroll_node->ContentsSize());

@@ -113,12 +113,19 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   // Observes |view_| and updates our visual state accordingly.
   InkDropEventHandler event_handler_;
 
+  // Completely describes the current visual state of the ink drop, including
+  // progress of animations.
+  InstallableInkDropPainter::State visual_state_;
+
+  // Handles painting |visual_state_| on request.
+  InstallableInkDropPainter painter_;
+
   // Used to synchronize the hover and activation animations within this ink
   // drop. Since we use |views::CompositorAnimationRunner|, this also
   // synchronizes them with compositor frames.
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
-  InstallableInkDropPainter painter_;
+  // Manages our animations and maniuplates |visual_state_| for us.
   InstallableInkDropAnimator animator_;
 
   bool is_hovered_ = false;

@@ -35,7 +35,7 @@ class NavigationManager {
      * Handles text navigation actions.
      * @private {!TextNavigationManager}
      */
-    this.textNavigationManager_ = new TextNavigationManager();
+    this.textNavigationManager_ = new TextNavigationManager(this);
 
     /**
      * The desktop node.
@@ -105,17 +105,10 @@ class NavigationManager {
 
   /**
    * Get the currently highlighted node.
+   * @return {!chrome.automation.AutomationNode} the current node
    */
   currentNode() {
     return this.node_;
-  }
-
-  /**
-   * TODO(rosalindag): get rid of this after moving text selection to new file
-   * Get the text_input_manager.
-   */
-  textInputManager() {
-    return this.textInputManager_;
   }
 
   /**
@@ -316,6 +309,32 @@ class NavigationManager {
    */
   moveUpOneLineOfText() {
     this.textNavigationManager_.moveUpOneLine();
+  }
+
+  /**
+   * Sets the selectionStart variable based on the selection of the current
+   * node.
+   * @public
+   */
+  setSelectStart() {
+    this.textNavigationManager_.setSelectStart();
+  }
+
+  /**
+   * Sets the selectionEnd variable based on the selection of the current node.
+   * @public
+   */
+  setSelectEnd() {
+    this.textNavigationManager_.setSelectEnd();
+  }
+
+  /**
+   * Returns whether or not the first selection index has been set.
+   * @return {boolean}
+   * @public
+   */
+  selectionStarted() {
+    return this.textNavigationManager_.isSelStartIndexSet();
   }
 
   /**

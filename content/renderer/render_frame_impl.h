@@ -641,6 +641,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::string16& javascript,
       bool wants_result,
       bool has_user_gesture,
+      int32_t world_id,
       JavaScriptExecuteRequestForTestsCallback callback) override;
   void JavaScriptExecuteRequestInIsolatedWorld(
       const base::string16& javascript,

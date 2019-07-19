@@ -90,7 +90,7 @@ specific_include_rules = {
     "+chromeos/cryptohome",
   ],
   "login_types\.*": [
-    "+chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h",
+    "+chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h",
   ],
   "policy_recommendation_restorer_unittest.cc": [
     "+components/sync_preferences/testing_pref_service_syncable.h"

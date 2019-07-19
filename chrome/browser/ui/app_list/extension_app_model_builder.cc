@@ -149,12 +149,8 @@ void ExtensionAppModelBuilder::OnAppInstalled(
 void ExtensionAppModelBuilder::OnAppUninstalled(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
-  if (service()) {
-    DVLOG(2) << service() << ": OnAppUninstalled: " << app_id.substr(0, 8);
-    service()->RemoveUninstalledItem(app_id);
-    return;
-  }
-  model_updater()->RemoveUninstalledItem(app_id);
+  const bool unsynced_change = false;
+  RemoveApp(app_id, unsynced_change);
 }
 
 void ExtensionAppModelBuilder::OnDisabledExtensionUpdated(

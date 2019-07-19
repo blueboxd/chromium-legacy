@@ -42,6 +42,7 @@ void SlotAssignmentEngine::Disconnected(ShadowRoot& shadow_root) {
 void SlotAssignmentEngine::RecalcSlotAssignments() {
   if (shadow_roots_needing_recalc_.IsEmpty())
     return;
+  TRACE_EVENT0("blink", "SlotAssignmentEngine::RecalcSlotAssignments");
   for (auto& shadow_root :
        HeapHashSet<WeakMember<ShadowRoot>>(shadow_roots_needing_recalc_)) {
     DCHECK(shadow_root->isConnected());

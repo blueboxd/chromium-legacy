@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"

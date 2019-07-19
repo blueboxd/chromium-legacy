@@ -22,6 +22,10 @@ class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
+#if defined(OS_IOS)
+class DeviceAccountsProvider;
+#endif
+
 namespace signin {
 enum class AccountConsistencyMethod;
 }
@@ -52,6 +56,9 @@ std::unique_ptr<ProfileOAuth2TokenService> BuildProfileOAuth2TokenService(
 #if !defined(OS_ANDROID)
     bool delete_signin_cookies_on_exit,
     scoped_refptr<TokenWebData> token_web_data,
+#endif
+#if defined(OS_IOS)
+    std::unique_ptr<DeviceAccountsProvider> device_accounts_provider,
 #endif
 #if defined(OS_WIN)
     MutableProfileOAuth2TokenServiceDelegate::FixRequestErrorCallback

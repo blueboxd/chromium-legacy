@@ -59,6 +59,7 @@ class AutofillProfile;
 class AutofillType;
 class CreditCard;
 class FormStructureBrowserTest;
+class LogManager;
 
 struct FormData;
 struct FormFieldData;
@@ -518,6 +519,8 @@ class AutofillManager : public AutofillHandler,
       FieldTypeGroup field_type_group) const;
 
   AutofillClient* const client_;
+
+  LogManager* log_manager_;
 
   std::string app_locale_;
 

@@ -46,11 +46,18 @@ cr.define('settings_people_page_kerberos_accounts', function() {
         'getAccounts',
         'addAccount',
         'removeAccount',
+        'validateConfig',
         'setAsActiveAccount',
       ]);
 
-      // Simulated error from a addKerberosAccount call.
+      // Simulated error from an addAccount call.
       this.addAccountError = settings.KerberosErrorType.kNone;
+
+      // Simulated error from a validateConfig call.
+      this.validateConfigResult = {
+        error: settings.KerberosErrorType.kNone,
+        errorInfo: {code: settings.KerberosConfigErrorCode.kNone}
+      };
     }
 
     /** @override */
@@ -72,6 +79,12 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     removeAccount(account) {
       this.methodCalled('removeAccount', account);
       return Promise.resolve(settings.KerberosErrorType.kNone);
+    }
+
+    /** @override */
+    validateConfig(account) {
+      this.methodCalled('validateConfig', account);
+      return Promise.resolve(this.validateConfigResult);
     }
 
     /** @override */
@@ -427,7 +440,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     }
 
     // Opens the Advanced Config dialog, sets |config| as Kerberos configuration
-    // and clicks 'Save'.
+    // and clicks 'Save'. Returns a promise with the validation result.
     function setConfig(config) {
       advancedConfigButton.click();
       Polymer.dom.flush();
@@ -437,6 +450,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       configElement.value = config;
       advancedConfigDialog.querySelector('.action-button').click();
       Polymer.dom.flush();
+      return browserProxy.whenCalled('validateConfig');
     }
 
     // Opens the Advanced Config dialog, asserts that |config| is set as
@@ -527,20 +541,22 @@ cr.define('settings_people_page_kerberos_accounts', function() {
 
       username.value = EXPECTED_USER;
       password.value = EXPECTED_PASS;
-      setConfig(EXPECTED_CONFIG);
-      rememberPassword.checked = EXPECTED_REMEMBER_PASS;
+      return setConfig(EXPECTED_CONFIG).then(function(result) {
+        rememberPassword.checked = EXPECTED_REMEMBER_PASS;
 
-      assertFalse(actionButton.disabled);
-      actionButton.click();
-      return browserProxy.whenCalled('addAccount').then(function(args) {
-        assertEquals(EXPECTED_USER, args[AddParams.PRINCIPAL_NAME]);
-        assertEquals(EXPECTED_PASS, args[AddParams.PASSWORD]);
-        assertEquals(EXPECTED_REMEMBER_PASS, args[AddParams.REMEMBER_PASSWORD]);
-        assertEquals(EXPECTED_CONFIG, args[AddParams.CONFIG]);
+        assertFalse(actionButton.disabled);
+        actionButton.click();
+        return browserProxy.whenCalled('addAccount').then(function(args) {
+          assertEquals(EXPECTED_USER, args[AddParams.PRINCIPAL_NAME]);
+          assertEquals(EXPECTED_PASS, args[AddParams.PASSWORD]);
+          assertEquals(
+              EXPECTED_REMEMBER_PASS, args[AddParams.REMEMBER_PASSWORD]);
+          assertEquals(EXPECTED_CONFIG, args[AddParams.CONFIG]);
 
-        // Should be false if a new account is added. See also
-        // AllowExistingIsTrueForPresetAccounts test.
-        assertFalse(args[AddParams.ALLOW_EXISTING]);
+          // Should be false if a new account is added. See also
+          // AllowExistingIsTrueForPresetAccounts test.
+          assertFalse(args[AddParams.ALLOW_EXISTING]);
+        });
       });
     });
 
@@ -601,12 +617,19 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertTrue(!!advancedConfigDialog);
       assertTrue(advancedConfigDialog.open);
       assertTrue(addDialog.hidden);
-      advancedConfigDialog.querySelector('.action-button').click();
-
+      const saveButton = advancedConfigDialog.querySelector('.action-button');
+      assertFalse(saveButton.disabled);
+      saveButton.click();
       Polymer.dom.flush();
-      assertTrue(!dialog.$$('#advancedConfigDialog'));
-      assertFalse(addDialog.hidden);
-      assertTrue(addDialog.open);
+      assertTrue(saveButton.disabled);
+
+      return browserProxy.whenCalled('validateConfig').then(function() {
+        Polymer.dom.flush();
+        assertFalse(saveButton.disabled);
+        assertTrue(!dialog.$$('#advancedConfigDialog'));
+        assertFalse(addDialog.hidden);
+        assertTrue(addDialog.open);
+      });
     });
 
     test('AdvancedConfigurationSaveKeepsConfig', function() {
@@ -621,8 +644,10 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       advancedConfigDialog.querySelector('.action-button').click();
 
       // Changed value should stick.
-      Polymer.dom.flush();
-      assertConfig(modifiedConfig);
+      return browserProxy.whenCalled('validateConfig').then(function() {
+        Polymer.dom.flush();
+        assertConfig(modifiedConfig);
+      });
     });
 
     test('AdvancedConfigurationCancelResetsConfig', function() {
@@ -651,6 +676,53 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       assertTrue(!!advancedConfigDialog.querySelector(
           '#advancedConfigPolicyIndicator'));
       assertTrue(advancedConfigDialog.querySelector('#config').disabled);
+    });
+
+    test('AdvancedConfigurationValidationError', function(done) {
+      advancedConfigButton.click();
+      Polymer.dom.flush();
+      const advancedConfigDialog = dialog.$$('#advancedConfigDialog');
+      assertTrue(!!advancedConfigDialog);
+
+      // Cause a validation error.
+      browserProxy.validateConfigResult = {
+        error: settings.KerberosErrorType.kBadConfig,
+        errorInfo: {
+          code: settings.KerberosConfigErrorCode.kKeyNotSupported,
+          lineIndex: 0
+        }
+      };
+
+      // Clicking the action button (aka 'Save') validates the config.
+      advancedConfigDialog.querySelector('.action-button').click();
+
+      browserProxy.whenCalled('validateConfig').then(() => {
+        // Wait for dialog to process the 'validateConfig' result (sets error
+        // message etc.).
+        setTimeout(() => {
+          // Is some error text set?
+          const configError =
+              advancedConfigDialog.querySelector('#config-error-message');
+          assertTrue(!!configError);
+          assertNotEquals(0, configError.innerText.length);
+
+          // Is something selected?
+          const configElement = advancedConfigDialog.querySelector('#config');
+          const textArea = configElement.$.input;
+          assertEquals(0, textArea.selectionStart);
+          assertNotEquals(0, textArea.selectionEnd);
+
+          // Is the config dialog is still open?
+          assertTrue(advancedConfigDialog.open);
+          assertTrue(addDialog.hidden);
+
+          // Was the config not accepted?
+          advancedConfigDialog.querySelector('.cancel-button').click();
+          Polymer.dom.flush();
+          assertConfig(loadTimeData.getString('defaultKerberosConfig'));
+          done();
+        });
+      });
     });
 
     // addAccount: KerberosErrorType.kNetworkProblem spawns a general error.

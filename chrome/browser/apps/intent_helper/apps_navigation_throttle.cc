@@ -162,21 +162,29 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     case apps::mojom::AppType::kExtension:
       NOTREACHED();
   }
-  RecordUma(launch_name, app_type, close_reason, should_persist);
+  RecordUma(launch_name, app_type, close_reason, Source::kHttpOrHttps,
+            should_persist);
 }
 
 // static
 void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
                                        apps::mojom::AppType app_type,
                                        IntentPickerCloseReason close_reason,
+                                       Source source,
                                        bool should_persist) {
   PickerAction action = GetPickerAction(app_type, close_reason, should_persist);
   Platform platform = GetDestinationPlatform(selected_app_package, action);
 
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
+  // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
+  // ARC apps.
+  if (source == Source::kExternalProtocol) {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog", action);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
 
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
-                            platform);
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
+                              platform);
+  }
 }
 
 // static

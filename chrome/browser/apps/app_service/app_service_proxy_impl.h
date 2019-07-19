@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
+#include "chrome/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
@@ -157,6 +158,7 @@ class AppServiceProxyImpl : public KeyedService,
   // as each one depends on the previous one, and in the constructor,
   // initialization happens in field order.
   InnerIconLoader inner_icon_loader_;
+  IconCoalescer icon_coalescer_;
   IconCache outer_icon_loader_;
 
 #if defined(OS_CHROMEOS)

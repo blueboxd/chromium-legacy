@@ -30,7 +30,7 @@
         observer: 'update_',
       },
 
-      selectable: {
+      selectableElements: {
         type: String,
         value: 'cr-radio-button, controlled-radio-button',
       },
@@ -41,7 +41,7 @@
        */
       selectableRegExp_: {
         value: Object,
-        computed: 'computeSelectableRegExp_(selectable)',
+        computed: 'computeSelectableRegExp_(selectableElements)',
       },
     },
 
@@ -188,7 +188,7 @@
      * @private
      */
     computeSelectableRegExp_: function() {
-      const tags = this.selectable.split(', ').join('|');
+      const tags = this.selectableElements.split(', ').join('|');
       return new RegExp(`^(${tags})$`, 'i');
     },
 
@@ -216,7 +216,7 @@
           this.$$('slot')
               .assignedNodes({flatten: true})
               .filter(n => this.selectableRegExp_.test(n.tagName)) :
-          this.queryAllEffectiveChildren(this.selectable);
+          this.queryAllEffectiveChildren(this.selectableElements);
       this.buttonEventTracker_.removeAll();
       this.buttons_.forEach(el => {
         this.buttonEventTracker_.add(

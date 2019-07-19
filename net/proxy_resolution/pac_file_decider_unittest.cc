@@ -20,7 +20,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "net/proxy_resolution/mock_pac_file_fetcher.h"
@@ -219,8 +218,7 @@ TEST(PacFileDeciderTest, CustomPacSucceeds) {
   EXPECT_FALSE(decider.script_data().from_auto_detect);
 
   // Check the NetLog was filled correctly.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(
@@ -257,8 +255,7 @@ TEST(PacFileDeciderTest, CustomPacFails1) {
   EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(
@@ -546,8 +543,7 @@ TEST(PacFileDeciderTest, AutodetectFailCustomSuccess2) {
   // Check the NetLog was filled correctly.
   // (Note that various states are repeated since both WPAD and custom
   // PAC scripts are tried).
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(10u, entries.size());
   EXPECT_TRUE(
@@ -652,8 +648,7 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
   EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(
@@ -694,8 +689,7 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithNegativeDelay) {
   EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(

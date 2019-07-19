@@ -15,8 +15,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "components/services/patch/public/interfaces/constants.mojom.h"
-#include "components/services/patch/public/interfaces/file_patcher.mojom.h"
+#include "components/services/patch/public/mojom/constants.mojom.h"
+#include "components/services/patch/public/mojom/file_patcher.mojom.h"
 #include "components/update_client/component_patcher_operation.h"  // nogncheck
 #include "services/service_manager/public/cpp/connector.h"
 

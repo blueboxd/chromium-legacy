@@ -33,7 +33,26 @@
       }
 
       #general-error-container {
-        height: 48px;
+        height: 56px;
+      }
+
+      #config-error-container {
+        height: 40px;
+        margin-top: 16px;
+      }
+
+      #general-error-message,
+      #config-error-message {
+        color: var(--settings-error-color);
+      }
+
+      .inner-error-container {
+        display: flex;
+      }
+
+      iron-icon[icon='cr:error'] {
+        fill: var(--settings-error-color);
+        margin-inline-end: 8px;
       }
 
       #rememberPasswordContainer {
@@ -56,8 +75,9 @@
         </h2>
 
         <div id="general-error-container">
-          <div hidden="[[!showError_(generalErrorText_)]]">
-            <iron-icon id="general-error-icon" icon="cr:warning"></iron-icon>
+          <div class="inner-error-container"
+              hidden="[[!showError_(generalErrorText_)]]">
+            <iron-icon id="error-icon" icon="cr:error"></iron-icon>
             <div id="general-error-message">[[generalErrorText_]]</div>
           </div>
         </div>
@@ -122,6 +142,14 @@
           <settings-textarea id="config" value="{{editableConfig_}}" rows=12
               spellcheck="false" disabled="[[isManaged_]]">
           </settings-textarea>
+
+          <div id="config-error-container">
+            <div class="inner-error-container"
+                hidden="[[!showError_(configErrorText_)]]">
+              <iron-icon id="error-icon" icon="cr:error"></iron-icon>
+              <div id="config-error-message">[[configErrorText_]]</div>
+            </div>
+          </div>
         </div>
 
         <div slot="button-container">
@@ -129,7 +157,8 @@
               on-click="onAdvancedConfigCancel_">
             $i18n{cancel}
           </cr-button>
-          <cr-button class="action-button" on-click="onAdvancedConfigSave_">
+          <cr-button class="action-button" on-click="onAdvancedConfigSave_"
+              disabled="[[inProgress_]]">
             $i18n{save}
           </cr-button>
         </div>

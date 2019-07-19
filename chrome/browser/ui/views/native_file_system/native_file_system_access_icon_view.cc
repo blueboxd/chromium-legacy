@@ -38,6 +38,12 @@ bool NativeFileSystemAccessIconView::Update() {
                       GetWebContents()->HasWritableNativeFileSystemHandles();
   if (has_write_access_ != had_write_access)
     UpdateIconImage();
+
+  // If icon isn't visible, a bubble shouldn't be shown either. Close it if
+  // it was still open.
+  if (!GetVisible())
+    NativeFileSystemUsageBubbleView::CloseCurrentBubble();
+
   return GetVisible() != was_visible || had_write_access != has_write_access_;
 }
 
@@ -78,6 +84,15 @@ void NativeFileSystemAccessIconView::OnExecuting(ExecuteSource execute_source) {
             usage.writable_files = std::move(grants.file_write_grants);
             usage.writable_directories =
                 std::move(grants.directory_write_grants);
+
+            if (usage.readable_directories.empty() &&
+                usage.writable_files.empty() &&
+                usage.writable_directories.empty()) {
+              // Async looking up of usage might result in there no longer being
+              // usage by the time we get here, in that case just abort and
+              // don't show the bubble.
+              return;
+            }
 
             NativeFileSystemUsageBubbleView::ShowBubble(web_contents, origin,
                                                         std::move(usage));

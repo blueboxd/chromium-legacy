@@ -889,7 +889,7 @@ customize.richerPicker_previewImage = function(tile) {
   } else {
     preview.dataset.hasImage = false;
     preview.style.backgroundImage = '';
-    preview.style.backgroundColor = 'white';
+    preview.style.backgroundColor = document.body.style.backgroundColor;
   }
   background.style.opacity = 0;
   preview.style.opacity = 1;

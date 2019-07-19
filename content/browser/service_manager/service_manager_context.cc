@@ -72,7 +72,6 @@
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -464,14 +463,6 @@ class BrowserServiceManagerDelegate
 #endif
     if (identity.name() == shape_detection::mojom::kServiceName)
       run_in_gpu_process = true;
-#if defined(OS_MACOSX)
-    // The proxy_resolver service runs V8, so it needs to run in the helper
-    // application that has the com.apple.security.cs.allow-jit code signing
-    // entitlement, which is CHILD_RENDERER. The service still runs under the
-    // utility process sandbox.
-    if (identity.name() == proxy_resolver::mojom::kProxyResolverServiceName)
-      child_flags = ChildProcessHost::CHILD_RENDERER;
-#endif
     return std::make_unique<ContentChildServiceProcessHost>(run_in_gpu_process,
                                                             child_flags);
   }

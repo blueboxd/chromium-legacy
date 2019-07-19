@@ -558,7 +558,7 @@ class LayerTreeHostReadbackColorSpacePixelTest
         LayerTreePixelTest::CreateLayerTreeFrameSink(
             renderer_settings, refresh_rate, compositor_context_provider,
             worker_context_provider);
-    frame_sink->SetDisplayColorSpace(output_color_space_, output_color_space_);
+    frame_sink->SetDisplayColorSpace(output_color_space_);
     return frame_sink;
   }
 

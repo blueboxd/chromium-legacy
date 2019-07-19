@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">Shranjeni podatki splet. mesta</translation>
 <translation id="2328985652426384049">Ne morem se prijaviti</translation>
 <translation id="2349710944427398404">Skupna količina podatkov, ki jih uporablja Chrome, vključno z računi, zaznamki in shranjenimi nastavitvami.</translation>
-<translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
 <translation id="2353636109065292463">Preverjanje internetne povezave</translation>
 <translation id="2359808026110333948">Naprej</translation>
 <translation id="2369533728426058518">odpiranje zavihkov</translation>
@@ -245,6 +244,7 @@
 <translation id="2777555524387840389">Še <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">ni uspelo</translation>
 <translation id="2781151931089541271">Še 1 s</translation>
+<translation id="2796941233371040292">Ni podatkov v shrambi</translation>
 <translation id="2801022321632964776">Posodobite Chrome na najnovejšo različico, če ga želite v svojem jeziku</translation>
 <translation id="2810645512293415242">Poenostavljena stran zaradi prihranka pri prenosu podatkov in hitrejšega nalaganja.</translation>
 <translation id="281504910091592009">Shranjena gesla si lahko ogledate in jih upravljate v <ph name="BEGIN_LINK" />Google Računu<ph name="END_LINK" /></translation>
@@ -260,6 +260,7 @@
 <translation id="2888126860611144412">O brskalniku Chrome</translation>
 <translation id="2891154217021530873">Ustavi nalaganje strani</translation>
 <translation id="2893180576842394309">Google lahko vašo zgodovino uporabi za prilagajanje Iskanja Google in drugih Googlovih storitev</translation>
+<translation id="2898264748040935573">Urejanje shranjenega gesla</translation>
 <translation id="2900528713135656174">Ustvarite dogodek</translation>
 <translation id="2902702728133930130">Zaradi nepričakovane napake se Chrome ni uspel zagnati.</translation>
 <translation id="290376772003165898">Stran ni v jeziku <ph name="LANGUAGE" />?</translation>
@@ -520,6 +521,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4913169188695071480">Ustavitev osveževanja</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /> med iskanjem naprav …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# stran}one{# stran}two{# strani}few{# strani}other{# strani}}</translation>
+<translation id="4932247056774066048">Ker se prijavljate iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />, bodo podatki v Chromu izbrisani iz te naprave. Ostali bodo v računu Google.</translation>
 <translation id="4943703118917034429">Navidezna resničnost</translation>
 <translation id="4943872375798546930">Ni rezultatov</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dostopa do vašega zaslona</translation>
@@ -562,6 +564,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5210286577605176222">Premik na prejšnji zavihek</translation>
 <translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="5224771365102442243">Z videoposnetkom</translation>
+<translation id="5230560987958996918"><ph name="SITE" /> želi iskati naprave Bluetooth v bližini. Najdene so bile te naprave:</translation>
 <translation id="5233638681132016545">Nov zavihek</translation>
 <translation id="526421993248218238">Te strani ni mogoče naložiti</translation>
 <translation id="5271967389191913893">Naprava ne more odpreti vsebine za prenos.</translation>
@@ -571,7 +574,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5301954838959518834">V redu, razumem</translation>
 <translation id="5304593522240415983">To polje ne sme biti prazno</translation>
 <translation id="5308380583665731573">Povezovanje</translation>
-<translation id="5308603654685598744">Kadar je ta funkcija vklopljena, Chrome ponuja prevajanje strani v drugih jezikih z Google Prevajalnikom.</translation>
 <translation id="5313967007315987356">Dodajanje mesta</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5324858694974489420">Starševske nastavitve</translation>
@@ -586,6 +588,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5414836363063783498">Preverjanje …</translation>
 <translation id="5423934151118863508">Tu bodo prikazane strani, ki jih obiskujete najpogosteje</translation>
 <translation id="5424588387303617268">Na voljo: <ph name="GIGABYTES" /> GB</translation>
+<translation id="543338862236136125">Uredi geslo</translation>
 <translation id="5433691172869980887">Uporabniško ime kopirano</translation>
 <translation id="543509235395288790">Prenašanje toliko datotek: <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
 <translation id="5441522332038954058">Premik na naslovno vrstico</translation>
@@ -660,7 +663,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5865733239029070421">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="5869522115854928033">Shranjena gesla</translation>
 <translation id="5902828464777634901">Vsi lokalni podatki, ki jih je shranilo to spletno mesto, vključno s piškotki, bodo izbrisani.</translation>
-<translation id="5911030830365207728">Google Prevajalnik</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
 <translation id="5919204609460789179">Posodobite izdelek <ph name="PRODUCT_NAME" />, če želite začeti sinhronizacijo</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> prihranka pri količini prenesenih podatkov</translation>
@@ -805,7 +807,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6963642900430330478">Ta stran je nevarna. Podatki o spletnem mestu.</translation>
 <translation id="6963766334940102469">Izbriši zaznamke</translation>
 <translation id="6965382102122355670">V redu</translation>
-<translation id="6978479750597523876">Ponastavljanje nastavitev za prevajanje</translation>
 <translation id="6979737339423435258">Od začetka</translation>
 <translation id="6981982820502123353">Dostopnost</translation>
 <translation id="6989267951144302301">Ni bilo mogoče prenesti</translation>

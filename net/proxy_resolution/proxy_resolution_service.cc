@@ -437,7 +437,6 @@ class ProxyResolutionService::InitProxyResolver {
   InitProxyResolver()
       : proxy_resolver_factory_(nullptr),
         proxy_resolver_(nullptr),
-        resolver_using_auto_detected_script_(nullptr),
         next_state_(STATE_NONE),
         quick_check_enabled_(true) {}
 
@@ -449,11 +448,7 @@ class ProxyResolutionService::InitProxyResolver {
   // Begins initializing the proxy resolver; calls |callback| when done. A
   // ProxyResolver instance will be created using |proxy_resolver_factory| and
   // assigned to |*proxy_resolver| if the final result is OK.
-  // |*resolver_using_auto_detected_script| will be set to true if
-  // |proxy_resolver| was initialized using script data that originates from
-  // proxy auto-detection.
   int Start(std::unique_ptr<ProxyResolver>* proxy_resolver,
-            bool* resolver_using_auto_detected_script,
             ProxyResolverFactory* proxy_resolver_factory,
             PacFileFetcher* pac_file_fetcher,
             DhcpPacFileFetcher* dhcp_pac_file_fetcher,
@@ -463,7 +458,6 @@ class ProxyResolutionService::InitProxyResolver {
             CompletionOnceCallback callback) {
     DCHECK_EQ(STATE_NONE, next_state_);
     proxy_resolver_ = proxy_resolver;
-    resolver_using_auto_detected_script_ = resolver_using_auto_detected_script;
     proxy_resolver_factory_ = proxy_resolver_factory;
 
     decider_.reset(
@@ -482,11 +476,7 @@ class ProxyResolutionService::InitProxyResolver {
   // inputs for initializing the ProxyResolver. A ProxyResolver instance will
   // be created using |proxy_resolver_factory| and assigned to
   // |*proxy_resolver| if the final result is OK.
-  // |*resolver_using_auto_detected_script| will be set to true if
-  // |proxy_resolver| was initialized using script data that originates from
-  // proxy auto-detection.
   int StartSkipDecider(std::unique_ptr<ProxyResolver>* proxy_resolver,
-                       bool* resolver_using_auto_detected_script,
                        ProxyResolverFactory* proxy_resolver_factory,
                        const ProxyConfigWithAnnotation& effective_config,
                        int decider_result,
@@ -494,7 +484,6 @@ class ProxyResolutionService::InitProxyResolver {
                        CompletionOnceCallback callback) {
     DCHECK_EQ(STATE_NONE, next_state_);
     proxy_resolver_ = proxy_resolver;
-    resolver_using_auto_detected_script_ = resolver_using_auto_detected_script;
     proxy_resolver_factory_ = proxy_resolver_factory;
 
     effective_config_ = effective_config;
@@ -609,11 +598,8 @@ class ProxyResolutionService::InitProxyResolver {
   }
 
   int DoCreateResolverComplete(int result) {
-    if (result == OK) {
-      *resolver_using_auto_detected_script_ = script_data_.from_auto_detect;
-    } else {
+    if (result != OK)
       proxy_resolver_->reset();
-    }
     return result;
   }
 
@@ -632,7 +618,6 @@ class ProxyResolutionService::InitProxyResolver {
   ProxyResolverFactory* proxy_resolver_factory_;
   std::unique_ptr<ProxyResolverFactory::Request> create_resolver_request_;
   std::unique_ptr<ProxyResolver>* proxy_resolver_;
-  bool* resolver_using_auto_detected_script_;
   CompletionOnceCallback callback_;
   State next_state_;
   bool quick_check_enabled_;
@@ -900,7 +885,6 @@ class ProxyResolutionService::RequestImpl
   // Outstanding requests are cancelled during ~ProxyResolutionService, so this
   // is guaranteed to be valid throughout our lifetime.
   ProxyResolutionService* service_;
-  bool resolver_using_auto_detected_script_;
   CompletionOnceCallback user_callback_;
   ProxyInfo* results_;
   GURL url_;
@@ -959,8 +943,6 @@ int ProxyResolutionService::RequestImpl::Start() {
   if (service_->ApplyPacBypassRules(url_, results_))
     return OK;
 
-  resolver_using_auto_detected_script_ =
-      service_->resolver_using_auto_detected_script_;
   return resolver()->GetProxyForURL(
       url_, results_,
       base::Bind(&ProxyResolutionService::RequestImpl::QueryComplete,
@@ -998,8 +980,6 @@ int ProxyResolutionService::RequestImpl::QueryDidComplete(int result_code) {
   // Make a note in the results which configuration was in use at the
   // time of the resolve.
   results_->did_use_pac_script_ = true;
-  results_->did_use_auto_detected_pac_script_ =
-      resolver_using_auto_detected_script_;
   results_->proxy_resolve_start_time_ = creation_time_;
   results_->proxy_resolve_end_time_ = TimeTicks::Now();
 
@@ -1681,8 +1661,7 @@ void ProxyResolutionService::InitializeUsingLastFetchedConfig() {
   init_proxy_resolver_.reset(new InitProxyResolver());
   init_proxy_resolver_->set_quick_check_enabled(quick_check_enabled_);
   int rv = init_proxy_resolver_->Start(
-      &resolver_, &resolver_using_auto_detected_script_,
-      resolver_factory_.get(), pac_file_fetcher_.get(),
+      &resolver_, resolver_factory_.get(), pac_file_fetcher_.get(),
       dhcp_pac_file_fetcher_.get(), net_log_, fetched_config_.value(),
       wait_delay,
       base::Bind(&ProxyResolutionService::OnInitProxyResolverComplete,
@@ -1705,8 +1684,8 @@ void ProxyResolutionService::InitializeUsingDecidedConfig(
 
   init_proxy_resolver_.reset(new InitProxyResolver());
   int rv = init_proxy_resolver_->StartSkipDecider(
-      &resolver_, &resolver_using_auto_detected_script_,
-      resolver_factory_.get(), effective_config, decider_result, script_data,
+      &resolver_, resolver_factory_.get(), effective_config, decider_result,
+      script_data,
       base::Bind(&ProxyResolutionService::OnInitProxyResolverComplete,
                  base::Unretained(this)));
 

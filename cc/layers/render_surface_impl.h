@@ -30,6 +30,7 @@ class FilterOperations;
 class Occlusion;
 class LayerImpl;
 class LayerTreeImpl;
+class PictureLayerImpl;
 
 class CC_EXPORT RenderSurfaceImpl {
  public:
@@ -160,6 +161,7 @@ class CC_EXPORT RenderSurfaceImpl {
   const FilterOperations& Filters() const;
   const FilterOperations& BackdropFilters() const;
   base::Optional<gfx::RRectF> BackdropFilterBounds() const;
+  LayerImpl* BackdropMaskLayer() const;
   gfx::PointF FiltersOrigin() const;
   gfx::Transform SurfaceScale() const;
 
@@ -180,6 +182,9 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::Rect GetDamageRect() const;
 
   std::unique_ptr<viz::RenderPass> CreateRenderPass();
+  viz::ResourceId GetMaskResourceFromLayer(PictureLayerImpl* mask_layer,
+                                           gfx::Size* mask_texture_size,
+                                           gfx::RectF* mask_uv_rect) const;
   void AppendQuads(DrawMode draw_mode,
                    viz::RenderPass* render_pass,
                    AppendQuadsData* append_quads_data);

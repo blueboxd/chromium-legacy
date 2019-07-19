@@ -56,10 +56,11 @@ testcase.formatDialog = async () => {
   await openFormatDialog(appId, 'fake-usb');
 
   // Check the correct size is displayed.
-  const msg = await remoteCall.waitForElement(appId, [
+  const warning = await remoteCall.waitForElement(appId, [
     'files-format-dialog', '#warning-container:not([hidden]) #warning-message'
   ]);
-  chrome.test.assertEq('51 bytes of files will be deleted', msg.text.trim());
+  chrome.test.assertEq(
+      '51 bytes of files will be deleted', warning.text.trim());
 
   // Click format button.
   const formatButtonQuery = ['files-format-dialog', 'cr-button#format-button'];

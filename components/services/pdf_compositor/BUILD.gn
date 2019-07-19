@@ -26,7 +26,7 @@ static_library("pdf_compositor") {
   ]
 
   public_deps = [
-    "//components/services/pdf_compositor/public/interfaces",
+    "//components/services/pdf_compositor/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }
@@ -51,7 +51,7 @@ if (enable_basic_printing) {
       "//base/test:test_support",
       "//cc/paint:paint",
       "//components/crash/core/common:crash_key",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
       "//services/service_manager/public/cpp/test:test_support",
       "//skia",
       "//testing/gmock",

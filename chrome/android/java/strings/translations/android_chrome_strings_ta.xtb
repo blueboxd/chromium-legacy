@@ -188,7 +188,6 @@
 <translation id="2323763861024343754">தளச் சேமிப்பகம்</translation>
 <translation id="2328985652426384049">உள்நுழைய முடியவில்லை</translation>
 <translation id="2349710944427398404">கணக்குகள், புக்மார்க்குகள், சேமித்த அமைப்புகள் உள்பட Chrome பயன்படுத்தும் மொத்தத் தரவு</translation>
-<translation id="2351097562818989364">உங்களின் மொழியாக்க அமைப்புகள் மீட்டமைக்கப்பட்டன.</translation>
 <translation id="2353636109065292463">உங்கள் இணைய இணைப்பைச் சரிபார்க்கிறது</translation>
 <translation id="2359808026110333948">தொடர்க</translation>
 <translation id="2369533728426058518">திறக்கப்பட்டுள்ள தாவல்கள்</translation>
@@ -571,7 +570,6 @@
 <translation id="5301954838959518834">சரி, புரிந்தது</translation>
 <translation id="5304593522240415983">இந்தப் புலம் காலியாக இருக்கக் கூடாது</translation>
 <translation id="5308380583665731573">இணை</translation>
-<translation id="5308603654685598744">இந்த அம்சம் இயக்கத்தில் இருக்கும்போது, Google மொழியாக்கத்தைப் பயன்படுத்தி பிற மொழிகளில் எழுதப்பட்ட பக்கங்களை மொழிபெயர்க்க Chrome அனுமதிக்கும்.</translation>
 <translation id="5313967007315987356">தளத்தைச் சேர்</translation>
 <translation id="5317780077021120954">சேமி</translation>
 <translation id="5324858694974489420">பெற்றோர் அமைப்புகள்</translation>
@@ -660,7 +658,6 @@
 <translation id="5865733239029070421">பயன்பாட்டுப் புள்ளிவிவரங்களையும் சிதைவு அறிக்கைகளையும் தானாகவே Googleளுக்கு அனுப்பும்</translation>
 <translation id="5869522115854928033">சேமிக்கப்பட்ட கடவுச்சொற்கள்</translation>
 <translation id="5902828464777634901">குக்கீகள் உட்பட, இந்த இணைய தளத்தால் சேமிக்கப்படும் அனைத்து அகத் தரவும் நீக்கப்படும்.</translation>
-<translation id="5911030830365207728">Google மொழியாக்கம்</translation>
 <translation id="5916664084637901428">இயக்கு</translation>
 <translation id="5919204609460789179">ஒத்திசைவைத் தொடங்க, <ph name="PRODUCT_NAME" />ஐப் புதுப்பிக்கவும்</translation>
 <translation id="5937580074298050696"><ph name="AMOUNT" /> சேமிக்கப்பட்டது</translation>
@@ -805,7 +802,6 @@
 <translation id="6963642900430330478">இந்தப் பக்கம் ஆபத்தானது. தளத் தகவல்</translation>
 <translation id="6963766334940102469">புத்தகக்குறிகளை நீக்கு</translation>
 <translation id="6965382102122355670">சரி</translation>
-<translation id="6978479750597523876">மொழியாக்க அமைப்புகளை மீட்டமை</translation>
 <translation id="6979737339423435258">எல்லா நேரமும்</translation>
 <translation id="6981982820502123353">அணுகல் தன்மை</translation>
 <translation id="6989267951144302301">பதிவிறக்க முடியவில்லை</translation>

@@ -81,8 +81,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
 
   // Forward the color space to the existant Display, or the new one when it is
   // created.
-  void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
-                            const gfx::ColorSpace& output_color_space);
+  void SetDisplayColorSpace(const gfx::ColorSpace& output_color_space);
 
   viz::Display* display() const { return display_.get(); }
 
@@ -143,7 +142,6 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
       parent_local_surface_id_allocator_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
-  gfx::ColorSpace blending_color_space_ = gfx::ColorSpace::CreateSRGB();
   gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
 
   // Uses surface_manager_.

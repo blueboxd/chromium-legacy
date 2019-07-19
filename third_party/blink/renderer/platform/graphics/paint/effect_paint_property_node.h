@@ -58,6 +58,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     // === End of effects ===
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
+    // The compositor element id for any masks that are applied to elements that
+    // also have backdrop-filters applied.
+    CompositorElementId backdrop_mask_element_id;
     // TODO(crbug.com/900241): Use direct_compositing_reasons to check for
     // active animations when we can track animations for each property type.
     bool has_active_opacity_animation = false;
@@ -188,6 +191,10 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 
   const base::Optional<gfx::RRectF>& BackdropFilterBounds() const {
     return state_.backdrop_filter_bounds;
+  }
+
+  const CompositorElementId& BackdropMaskElementId() const {
+    return state_.backdrop_mask_element_id;
   }
 
   bool HasFilterThatMovesPixels() const {

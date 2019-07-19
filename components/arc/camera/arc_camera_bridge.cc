@@ -15,6 +15,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "crypto/random.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -131,6 +132,12 @@ void ArcCameraBridge::StartCameraService(StartCameraServiceCallback callback) {
 
   chromeos::ArcCameraClient::Get()->StartService(
       fd.get(), token, base::BindOnce([](bool success) {}));
+}
+
+void ArcCameraBridge::RegisterCameraHalClient(
+    cros::mojom::CameraHalClientPtr client) {
+  media::CameraHalDispatcherImpl::GetInstance()->RegisterClient(
+      std::move(client));
 }
 
 }  // namespace arc

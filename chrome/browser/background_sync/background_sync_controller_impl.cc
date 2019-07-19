@@ -15,6 +15,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "content/public/browser/background_sync_registration.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -136,24 +137,45 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
   return;
 }
 
-void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
+void BackgroundSyncControllerImpl::NotifyOneShotBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
     bool is_reregistered) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  background_sync_metrics_.MaybeRecordRegistrationEvent(origin, can_fire,
-                                                        is_reregistered);
+  background_sync_metrics_.MaybeRecordOneShotSyncRegistrationEvent(
+      origin, can_fire, is_reregistered);
 }
 
-void BackgroundSyncControllerImpl::NotifyBackgroundSyncCompleted(
+void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncRegistered(
+    const url::Origin& origin,
+    int min_interval,
+    bool is_reregistered) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordPeriodicSyncRegistrationEvent(
+      origin, min_interval, is_reregistered);
+}
+
+void BackgroundSyncControllerImpl::NotifyOneShotBackgroundSyncCompleted(
     const url::Origin& origin,
     blink::ServiceWorkerStatusCode status_code,
     int num_attempts,
     int max_attempts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  background_sync_metrics_.MaybeRecordCompletionEvent(
+  background_sync_metrics_.MaybeRecordOneShotSyncCompletionEvent(
+      origin, status_code, num_attempts, max_attempts);
+}
+
+void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncCompleted(
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordPeriodicSyncEventCompletion(
       origin, status_code, num_attempts, max_attempts);
 }
 
@@ -194,30 +216,44 @@ int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
   return kEngagementLevelNonePenalty;
 }
 
-base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
-    const url::Origin& origin,
+base::TimeDelta BackgroundSyncControllerImpl::SnapToMaxOriginFrequency(
     int64_t min_interval,
-    int num_attempts,
-    blink::mojom::BackgroundSyncType sync_type,
+    int64_t min_gap_for_origin) {
+  DCHECK_GE(min_gap_for_origin, 0);
+  DCHECK_GE(min_interval, 0);
+
+  if (min_interval < min_gap_for_origin)
+    return base::TimeDelta::FromMilliseconds(min_gap_for_origin);
+  if (min_interval % min_gap_for_origin == 0)
+    return base::TimeDelta::FromMilliseconds(min_interval);
+  return base::TimeDelta::FromMilliseconds(
+      (min_interval / min_gap_for_origin + 1) * min_gap_for_origin);
+}
+
+base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
+    const content::BackgroundSyncRegistration& registration,
     content::BackgroundSyncParameters* parameters) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(parameters);
 
+  int num_attempts = registration.num_attempts();
+
   if (!num_attempts) {
     // First attempt.
-    switch (sync_type) {
+    switch (registration.sync_type()) {
       case blink::mojom::BackgroundSyncType::ONE_SHOT:
         return base::TimeDelta();
       case blink::mojom::BackgroundSyncType::PERIODIC:
-        int site_engagement_factor = GetSiteEngagementPenalty(origin.GetURL());
+        int site_engagement_factor =
+            GetSiteEngagementPenalty(registration.origin().GetURL());
         if (!site_engagement_factor)
           return base::TimeDelta::Max();
 
         int64_t effective_gap_ms =
             site_engagement_factor *
             parameters->min_periodic_sync_events_interval.InMilliseconds();
-        return base::TimeDelta::FromMilliseconds(
-            std::max(min_interval, effective_gap_ms));
+        return SnapToMaxOriginFrequency(registration.options()->min_interval,
+                                        effective_gap_ms);
     }
   }
 

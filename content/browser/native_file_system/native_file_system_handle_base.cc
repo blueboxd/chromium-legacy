@@ -46,10 +46,12 @@ class NativeFileSystemHandleBase::UsageIndicatorTracker
       return;
 
     is_readable_ = readable;
-    if (is_readable_)
-      web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
-    else
-      web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
+    if (is_directory_) {
+      if (is_readable_)
+        web_contents()->AddNativeFileSystemDirectoryHandle(directory_path_);
+      else
+        web_contents()->RemoveNativeFileSystemDirectoryHandle(directory_path_);
+    }
   }
 
   void SetWritable(bool writable) {

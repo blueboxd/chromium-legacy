@@ -15,8 +15,6 @@
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
-class Profile;
-
 namespace identity {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
@@ -33,7 +31,7 @@ extern const char kForceSigninVerificationFailureTimeMetricsName[];
 class ForceSigninVerifier
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  explicit ForceSigninVerifier(Profile* profile);
+  explicit ForceSigninVerifier(identity::IdentityManager* identity_manager);
   ~ForceSigninVerifier() override;
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
@@ -76,12 +74,12 @@ class ForceSigninVerifier
 
   // Indicates whether the verification is finished successfully or with a
   // persistent error.
-  bool has_token_verified_;
+  bool has_token_verified_ = false;
   net::BackoffEntry backoff_entry_;
   base::OneShotTimer backoff_request_timer_;
   base::TimeTicks creation_time_;
 
-  identity::IdentityManager* identity_manager_;
+  identity::IdentityManager* identity_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ForceSigninVerifier);
 };

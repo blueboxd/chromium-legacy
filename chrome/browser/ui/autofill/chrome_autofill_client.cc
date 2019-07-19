@@ -35,8 +35,10 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/content/browser/autofill_internals_service_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_internals_service.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
@@ -513,6 +515,10 @@ void ChromeAutofillClient::ExecuteCommand(int id) {
 #endif
 }
 
+LogManager* ChromeAutofillClient::GetLogManager() const {
+  return log_manager_.get();
+}
+
 void ChromeAutofillClient::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   ::autofill::LoadRiskData(0, web_contents(), std::move(callback));
@@ -561,6 +567,13 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->IsOffTheRecord()) {
+  // TODO(crbug.com/928595): Replace the closure with a callback to the renderer
+  // that indicates if log messages should be sent from the renderer.
+  log_manager_ =
+      LogManager::Create(AutofillInternalsServiceFactory::GetForBrowserContext(
+                             web_contents->GetBrowserContext()),
+                         base::Closure());
+
 #if !defined(OS_ANDROID)
   // Since ZoomController is also a WebContentsObserver, we need to be careful
   // about disconnecting from it since the relative order of destruction of

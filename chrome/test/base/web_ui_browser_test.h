@@ -5,7 +5,9 @@
 #ifndef CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_WEB_UI_BROWSER_TEST_H_
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -108,6 +110,7 @@ class BaseWebUIBrowserTest : public JavaScriptBrowserTest {
   void set_preload_test_name(const std::string& preload_test_name);
 
   void set_loader_file(const std::string& loader_file);
+  void set_webui_host(const std::string& webui_host);
 
   // Enable command line flags for test.
   void SetUpCommandLine(base::CommandLine* command_line) override;

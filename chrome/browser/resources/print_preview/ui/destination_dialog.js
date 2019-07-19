@@ -287,6 +287,7 @@ Polymer({
 
   show: function() {
     this.$.dialog.showModal();
+    this.$.searchBox.focus();
     this.loadingDestinations_ = this.destinationStore === undefined ||
         this.destinationStore.isPrintDestinationSearchInProgress;
     this.metrics_.record(

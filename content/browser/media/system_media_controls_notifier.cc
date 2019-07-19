@@ -73,13 +73,10 @@ void SystemMediaControlsNotifier::Initialize() {
   media_controller_ptr_->AddObserver(std::move(media_controller_observer_ptr));
 
   // Observe the active media controller for changes to provided artwork.
-  mojo::PendingRemote<media_session::mojom::MediaControllerImageObserver>
-      image_observer_remote;
-  media_controller_image_observer_receiver_.Bind(
-      image_observer_remote.InitWithNewPipeAndPassReceiver());
   media_controller_ptr_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kArtwork, kMinImageSize,
-      kDesiredImageSize, std::move(image_observer_remote));
+      kDesiredImageSize,
+      media_controller_image_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 void SystemMediaControlsNotifier::CheckLockState() {

@@ -264,6 +264,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
                                     mojom::ServiceWorkerEventStatus);
   void DidHandleCookieChangeEvent(int event_id,
                                   mojom::ServiceWorkerEventStatus);
+  void DidHandleContentDeleteEvent(int event_id,
+                                   mojom::ServiceWorkerEventStatus);
 
   mojom::blink::CacheStoragePtrInfo TakeCacheStorage();
 
@@ -427,6 +429,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       const WebCanonicalCookie& cookie,
       ::network::mojom::blink::CookieChangeCause cause,
       DispatchCookieChangeEventCallback callback) override;
+  void DispatchContentDeleteEvent(
+      const String& id,
+      DispatchContentDeleteEventCallback callback) override;
   void Ping(PingCallback callback) override;
   void SetIdleTimerDelayToZero() override;
 
@@ -494,6 +499,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   HashMap<int, DispatchCookieChangeEventCallback>
       cookie_change_event_callbacks_;
   HashMap<int, DispatchExtendableMessageEventCallback> message_event_callbacks_;
+  HashMap<int, DispatchContentDeleteEventCallback> content_delete_callbacks_;
 
   // Maps for response callbacks.
   // These are mapped from an event id to the Mojo interface pointer which is

@@ -2614,6 +2614,7 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
     const base::string16& javascript,
     bool wants_result,
     bool has_user_gesture,
+    int32_t world_id,
     JavaScriptExecuteRequestForTestsCallback callback) {
   TRACE_EVENT_INSTANT0("test_tracing", "JavaScriptExecuteRequestForTests",
                        TRACE_EVENT_SCOPE_THREAD);
@@ -2628,8 +2629,14 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
     gesture.emplace(frame_);
 
   v8::HandleScope handle_scope(blink::MainThreadIsolate());
-  v8::Local<v8::Value> result = frame_->ExecuteScriptAndReturnValue(
-      WebScriptSource(WebString::FromUTF16(javascript)));
+  v8::Local<v8::Value> result;
+  if (world_id == ISOLATED_WORLD_ID_GLOBAL) {
+    result = frame_->ExecuteScriptAndReturnValue(
+        WebScriptSource(WebString::FromUTF16(javascript)));
+  } else {
+    result = frame_->ExecuteScriptInIsolatedWorldAndReturnValue(
+        world_id, WebScriptSource(WebString::FromUTF16(javascript)));
+  }
 
   if (!weak_this)
     return;

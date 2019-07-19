@@ -330,6 +330,7 @@
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">تم رفض الدخول إلى الملف</translation>
 <translation id="2653659639078652383">إرسال</translation>
+<translation id="2664887757054927933">{COUNT,plural, =0{ما من كلمات مرور}=1{كلمة مرور واحدة (للقائمة <ph name="DOMAIN_LIST" />)}=2{كلمتا مرور (للقائمة <ph name="DOMAIN_LIST" />)}few{# كلمات مرور (للقائمة <ph name="DOMAIN_LIST" />)}many{# كلمة مرور (للقائمة <ph name="DOMAIN_LIST" />)}other{# كلمة مرور (للقائمة <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">إغلاق علامات التبويب والتطبيقات الأخرى</translation>
 <translation id="267371737713284912">اضغط على <ph name="MODIFIER_KEY_DESCRIPTION" /> للتراجع</translation>
 <translation id="2674170444375937751">هل تريد فعلًا حذف هذه الصفحات من السجل؟</translation>
@@ -660,6 +661,7 @@
 <translation id="4435702339979719576">بطاقة بريدية)</translation>
 <translation id="443673843213245140">تم إيقاف استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="445100540951337728">بطاقات السحب الآلي المقبولة</translation>
+<translation id="4453237654902532092"><ph name="SAFETY_TIP" /> سلوك مريب</translation>
 <translation id="4466881336512663640">سيتم فقدان تغييرات النموذج. هل تريد فعلاً المتابعة؟</translation>
 <translation id="4477350412780666475">المقطع الصوتي التالي</translation>
 <translation id="4482953324121162758">لن تتم ترجمة هذا الموقع.</translation>
@@ -712,6 +714,7 @@
 <translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>
 <translation id="4780900888022378816">يدير <ph name="ENROLLMENT_DOMAIN" /> جهازك ويدير <ph name="ACCOUNT_DOMAIN" /> حسابك.</translation>
 <translation id="4785689107224900852">التبديل إلى علامة التبويب هذه</translation>
+<translation id="4791134497475588553">‏تم تثبيت تطبيقات Linux عند آخر مرة تم استخدامها</translation>
 <translation id="4798078619018708837">‏يمكنك إدخال تاريخ انتهاء الصلاحية ورمز التحقُّق من البطاقة (CVC) لبطاقة <ph name="CREDIT_CARD" /> لتحديث تفاصيلها. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حسابك على Google مع هذا الموقع الإلكتروني.</translation>
 <translation id="4800132727771399293">‏تحقق من تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) وأعد المحاولة مرة أخرى.</translation>
 <translation id="480334179571489655">خطأ في سياسة المصدر</translation>
@@ -722,6 +725,7 @@
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4854362297993841467">طريقة التسليم هذه غير متاحة. جرِّب طريقة أخرى.</translation>
 <translation id="4858792381671956233">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>
+<translation id="4864052566555297930">نصيحة الأمان:</translation>
 <translation id="4876188919622883022">العرض المبسَّط</translation>
 <translation id="4876305945144899064">ليس هناك اسم مستخدم</translation>
 <translation id="4877083676943085827">{COUNT,plural, =0{ما من أسماء نطاقات.}=1{<ph name="EXAMPLE_DOMAIN_1" />}=2{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" />}few{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاقات أخرى}many{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاقًا آخر}other{<ph name="EXAMPLE_DOMAIN_1" /> و<ph name="EXAMPLE_DOMAIN_2" /> و<ph name="AND_MORE" /> نطاق آخر}}</translation>
@@ -822,6 +826,7 @@
 <translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
 <translation id="5371425731340848620">تحديث البطاقة</translation>
 <translation id="5377026284221673050">‏""توقيت ساعتك متأخِّر" أو "توقيت ساعتك متقدِّم" أو "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
+<translation id="5377179979757081683">قد تحاول هذه الصفحة الاحتيال عليك أو سرقة معلوماتك الشخصية أو إلحاق الضرر بجهازك. يُرجى توخي الحذر عند إدخال معلوماتك الشخصية أو فتح الملفات التي تم تنزيلها.</translation>
 <translation id="5384855140246857529">لاستخدام بطاقاتك على جميع الأجهزة، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="5386426401304769735">‏تتضمن سلسلة الشهادات لهذا الموقع شهادة موقعة باستخدام SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
@@ -986,6 +991,7 @@
 <translation id="6328786501058569169">هذا الموقع مخادع</translation>
 <translation id="6337133576188860026">سيتم توفير أقل من <ph name="SIZE" />. وقد يتم تحميل بعض مواقع الويب بشكل أبطأ عند زيارتها في المرة القادمة.</translation>
 <translation id="6337534724793800597">تصفية السياسات بحسب الاسم</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{ما من كلمات مرور}=1{كلمة مرور واحدة (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}=2{كلمتا مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}few{# كلمات مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}many{# كلمة مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}other{# كلمة مرور (للقائمة <ph name="DOMAIN_LIST" />، تمت المزامنة)}}</translation>
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6361757823711327522">B7</translation>
 <translation id="6380497234672085559">A0</translation>
@@ -1164,6 +1170,7 @@
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">تابع إلى:</translation>
 <translation id="7349430561505560861">A4-Extra</translation>
+<translation id="7352902249897488700">مغادرة هذا الموقع الإلكتروني</translation>
 <translation id="7353601530677266744">سطر الأوامر</translation>
 <translation id="7372973238305370288">نتيجة البحث</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" />‏ - <ph name="FULL_DATE" /></translation>

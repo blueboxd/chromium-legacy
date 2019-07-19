@@ -19,11 +19,6 @@ extern const base::Feature kSendTabToSelfShowSendingUI;
 // targeted to a specific device. This only affects the receiving side.
 extern const base::Feature kSendTabToSelfBroadcast;
 
-// If this feature is enabled, the tabs will be accessible after they are shared
-// in the history tab on desktop devices or in the recent tab page on mobile
-// devices.
-extern const base::Feature kSendTabToSelfHistory;
-
 // If this feature is enabled, we will use signed-in, ephemeral data rather than
 // persistent sync data. Users who are signed in can use the feature regardless
 // of whether they have the sync feature enabled.
@@ -39,10 +34,6 @@ bool IsReceivingEnabledByUserOnThisDevice(PrefService* prefs);
 // persistent sync data. Then the feature may be used by signed-in users,
 // regardless of whether they have full sync enabled.
 bool EnabledOnSignIn();
-
-// Returns whether we should show the send tab to self history ui on desktop or
-// the recent tab UI on mobile, in order to access previously sent tabs.
-bool HistoryViewEnabled();
 }  // namespace send_tab_to_self
 
 #endif  // COMPONENTS_SEND_TAB_TO_SELF_FEATURES_H_

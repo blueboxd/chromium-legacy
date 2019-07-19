@@ -10,18 +10,20 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/service_process_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
-#include "services/service_manager/public/mojom/service_manager.mojom.h"
 
 namespace {
 
@@ -31,88 +33,6 @@ constexpr base::TimeDelta kServiceShutdownTimeout =
 constexpr char kPacScript[] =
     "function FindProxyForURL(url, host) { return 'PROXY proxy.example.com:1; "
     "DIRECT'; }";
-
-// An implementation of ServiceManagerListener that tracks creation/destruction
-// of the proxy resolver service.
-class TestServiceManagerListener
-    : public service_manager::mojom::ServiceManagerListener {
- public:
-  explicit TestServiceManagerListener(
-      service_manager::mojom::ServiceManager* service_manager) {
-    service_manager::mojom::ServiceManagerListenerPtr listener;
-    receiver_.Bind(mojo::MakeRequest(&listener));
-    service_manager->AddListener(std::move(listener));
-  }
-
-  bool service_running() const { return service_running_; }
-
-  void WaitUntilServiceStarted() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!on_service_event_loop_closure_);
-    if (service_running_)
-      return;
-    base::RunLoop run_loop;
-    on_service_event_loop_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-    on_service_event_loop_closure_.Reset();
-  }
-
-  void WaitUntilServiceStopped() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    DCHECK(!on_service_event_loop_closure_);
-    if (!service_running_)
-      return;
-    base::RunLoop run_loop;
-    on_service_event_loop_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-    on_service_event_loop_closure_.Reset();
-  }
-
- private:
-  // service_manager::mojom::ServiceManagerListener implementation:
-
-  void OnInit(std::vector<service_manager::mojom::RunningServiceInfoPtr>
-                  running_services) override {}
-
-  void OnServiceCreated(
-      service_manager::mojom::RunningServiceInfoPtr service) override {}
-
-  void OnServiceStarted(const service_manager::Identity& identity,
-                        uint32_t pid) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (identity.name() != proxy_resolver::mojom::kProxyResolverServiceName)
-      return;
-
-    EXPECT_FALSE(service_running_);
-    service_running_ = true;
-    if (on_service_event_loop_closure_)
-      std::move(on_service_event_loop_closure_).Run();
-  }
-
-  void OnServicePIDReceived(const service_manager::Identity& identity,
-                            uint32_t pid) override {}
-  void OnServiceFailedToStart(
-      const service_manager::Identity& identity) override {}
-
-  void OnServiceStopped(const service_manager::Identity& identity) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (identity.name() != proxy_resolver::mojom::kProxyResolverServiceName)
-      return;
-
-    EXPECT_TRUE(service_running_);
-    service_running_ = false;
-    if (on_service_event_loop_closure_)
-      std::move(on_service_event_loop_closure_).Run();
-  }
-
-  mojo::Receiver<service_manager::mojom::ServiceManagerListener> receiver_{
-      this};
-
-  bool service_running_ = false;
-  base::OnceClosure on_service_event_loop_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestServiceManagerListener);
-};
 
 // Dummy consumer of a ProxyResolverFactory. It just calls CreateResolver, and
 // keeps Mojo objects alive from when CreateResolver() is called until it's
@@ -160,24 +80,52 @@ class DumbProxyResolverFactoryRequestClient
   base::RunLoop run_loop_;
 };
 
-class ChromeMojoProxyResolverFactoryBrowserTest : public InProcessBrowserTest {
- public:
-  void SetUpOnMainThread() override {
-    // Access the service manager so a listener for service creation/destruction
-    // can be set-up.
-    content::GetSystemConnector()->Connect(
-        service_manager::mojom::kServiceName,
-        service_manager_.BindNewPipeAndPassReceiver());
+using ChromeMojoProxyResolverFactoryBrowserTest = InProcessBrowserTest;
 
-    listener_ =
-        std::make_unique<TestServiceManagerListener>(service_manager_.get());
+class ProxyResolverProcessObserver
+    : public content::ServiceProcessHost::Observer {
+ public:
+  ProxyResolverProcessObserver() {
+    content::ServiceProcessHost::AddObserver(this);
   }
 
-  TestServiceManagerListener* listener() const { return listener_.get(); }
+  ~ProxyResolverProcessObserver() override {
+    content::ServiceProcessHost::RemoveObserver(this);
+  }
+
+  bool is_service_running() const { return is_service_running_; }
+
+  void WaitForLaunch() { launch_loop_.Run(); }
+  void WaitForDeath() { death_loop_.Run(); }
 
  private:
-  mojo::Remote<service_manager::mojom::ServiceManager> service_manager_;
-  std::unique_ptr<TestServiceManagerListener> listener_;
+  // content::ServiceProcessHost::Observer:
+  void OnServiceProcessLaunched(
+      const content::ServiceProcessInfo& info) override {
+    if (!info.IsService<proxy_resolver::mojom::ProxyResolverFactory>())
+      return;
+
+    ASSERT_FALSE(is_service_running_);
+    is_service_running_ = true;
+    launch_loop_.Quit();
+  }
+
+  void OnServiceProcessTerminatedNormally(
+      const content::ServiceProcessInfo& info) override {
+    if (!info.IsService<proxy_resolver::mojom::ProxyResolverFactory>())
+      return;
+
+    ASSERT_TRUE(is_service_running_);
+    is_service_running_ = false;
+    death_loop_.Quit();
+  }
+
+ private:
+  bool is_service_running_ = false;
+  base::RunLoop launch_loop_;
+  base::RunLoop death_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverProcessObserver);
 };
 
 // Ensures the proxy resolver service is started correctly and stopped when no
@@ -188,12 +136,13 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory(
       ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver());
 
+  ProxyResolverProcessObserver observer;
+
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client1 =
       std::make_unique<DumbProxyResolverFactoryRequestClient>();
   resolver_client1->CreateResolver(resolver_factory.get());
-
-  listener()->WaitUntilServiceStarted();
+  observer.WaitForLaunch();
 
   // Create another resolver, no new service should be created (the listener
   // will assert if that's the case).
@@ -213,11 +162,12 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                                     kServiceShutdownTimeout);
     run_loop.Run();
   }
-  ASSERT_TRUE(listener()->service_running());
+
+  EXPECT_TRUE(observer.is_service_running());
 
   // Close the last resolver, the service should now go away.
   resolver_client2.reset();
-  listener()->WaitUntilServiceStopped();
+  observer.WaitForDeath();
 }
 
 // Same as above, but destroys the ProxyResolverFactory, which should have no
@@ -228,12 +178,13 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory(
       ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver());
 
+  ProxyResolverProcessObserver observer;
+
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client1 =
       std::make_unique<DumbProxyResolverFactoryRequestClient>();
   resolver_client1->CreateResolver(resolver_factory.get());
-
-  listener()->WaitUntilServiceStarted();
+  observer.WaitForLaunch();
 
   // Create another resolver, no new service should be created (the listener
   // will assert if that's the case).
@@ -256,11 +207,12 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
                                     kServiceShutdownTimeout);
     run_loop.Run();
   }
-  ASSERT_TRUE(listener()->service_running());
+
+  EXPECT_TRUE(observer.is_service_running());
 
   // Close the last resolver, the service should now go away.
   resolver_client2.reset();
-  listener()->WaitUntilServiceStopped();
+  observer.WaitForDeath();
 }
 
 // Make sure the service can be started again after it's been stopped.
@@ -270,25 +222,28 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   mojo::Remote<proxy_resolver::mojom::ProxyResolverFactory> resolver_factory(
       ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver());
 
+  base::Optional<ProxyResolverProcessObserver> observer{base::in_place};
+
   // Create a resolver, this should create and start the service.
   std::unique_ptr<DumbProxyResolverFactoryRequestClient> resolver_client =
       std::make_unique<DumbProxyResolverFactoryRequestClient>();
   resolver_client->CreateResolver(resolver_factory.get());
-  listener()->WaitUntilServiceStarted();
+  observer->WaitForLaunch();
 
   // Close the resolver, the service should stop.
   resolver_client.reset();
-  listener()->WaitUntilServiceStopped();
+  observer->WaitForDeath();
 
+  observer.emplace();
   // Create a resolver again, using the same factory. This should create and
   // start the service.
   resolver_client = std::make_unique<DumbProxyResolverFactoryRequestClient>();
   resolver_client->CreateResolver(resolver_factory.get());
-  listener()->WaitUntilServiceStarted();
+  observer->WaitForLaunch();
 
   // Close the resolver again, the service should stop.
   resolver_client.reset();
-  listener()->WaitUntilServiceStopped();
+  observer->WaitForDeath();
 }
 
 }  // namespace

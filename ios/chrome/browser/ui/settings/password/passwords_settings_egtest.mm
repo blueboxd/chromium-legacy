@@ -1521,12 +1521,22 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Wait until the alerts are dismissed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  // Check that export button is disabled
+  // On iOS 13+ when building with the iOS 12 SDK, the share sheet is presented
+  // fullscreen, so the export button is removed from the view hierarchy.  Check
+  // that the button is not present.  Otherwise, the export button should remain
+  // visible but be disabled.
+  id<GREYMatcher> exportButtonStatusMatcher =
+      grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
+#if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    exportButtonStatusMatcher = grey_nil();
+  }
+#endif
+
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_IOS_EXPORT_PASSWORDS)]
-      assertWithMatcher:grey_accessibilityTrait(
-                            UIAccessibilityTraitNotEnabled)];
+      assertWithMatcher:exportButtonStatusMatcher];
 
   if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap outside the activity view to dismiss it, because it is not

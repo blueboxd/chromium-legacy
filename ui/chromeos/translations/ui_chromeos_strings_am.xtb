@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">የመፈለጊያ ተንሸራታች</translation>
 <translation id="1399648040768741453">የቴሉጉ ቁልፍ ሰሌዳ (ፎነቲክ)</translation>
 <translation id="1430915738399379752">አትም</translation>
+<translation id="1439494416798956626">ተወስዷል ወደ <ph name="FOLDER_NAME" /></translation>
 <translation id="1441841714100794440">የቪዬትናምኛ የቁልፍ ሰሌዳ (ቴለክስ)</translation>
 <translation id="1455548678241328678">የኖርዌይኛ ቁልፍ ሰሌዳ</translation>
 <translation id="1464724975715666883">1 ስህተት።</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">የእርስዎን ሚዲያ መሣሪያ በመቃኘት ላይ...</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> ፎቶዎች ወደ <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> በምትኬ ተቀምጠዋል</translation>
 <translation id="3470502288861289375">በመቅዳት ላይ...</translation>
+<translation id="3473378059788601120">ወደ <ph name="FOLDER_NAME" /> ተቀድቷል።</translation>
 <translation id="3475447146579922140">Google ተመን ሉህ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ስህተቶች።</translation>
 <translation id="3519867315646775981">በቋንቋ ፊደል መጻፍ (shalom ← שלום)</translation>
@@ -436,6 +438,7 @@
 <translation id="5923484009666796948">የጃፓንኛ ግቤት (ለጃፓንኛ ቁልፍ ሰሌዳ)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">የLinux መተግበሪያዎች በእርስዎ Google Drive ውስጥ ፋይሎችን የመቀየር ፈቃድ ይስጧቸው። ለውጦች ከሌሎች መሣሪያዎችዎ ጋር ይሳመራሉ።</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> ንጥሎች</translation>
 <translation id="5982621672636444458">የድርደራ አማራጮች</translation>
 <translation id="6005282720244019462">የላቲን አሜሪካ ቁልፍ ሰሌዳ</translation>
 <translation id="6007237601604674381">መውሰድ አልተሳካም። <ph name="ERROR_MESSAGE" /></translation>

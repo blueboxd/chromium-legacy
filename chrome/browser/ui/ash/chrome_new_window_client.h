@@ -5,13 +5,21 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_CLIENT_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_NEW_WINDOW_CLIENT_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/new_window_delegate.h"
 #include "base/macros.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
+
+namespace arc {
+namespace mojom {
+enum class ChromePage;
+}
+}  // namespace arc
 
 namespace content {
 class WebContents;
@@ -48,6 +56,7 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
       int32_t surface_id,
       int32_t top_margin,
       arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override;
+  void OpenChromePageFromArc(arc::mojom::ChromePage page) override;
 
  private:
   class TabRestoreHelper;
@@ -61,6 +70,12 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
                                     bool from_user_interaction);
 
   std::unique_ptr<TabRestoreHelper> tab_restore_helper_;
+
+  const std::map<arc::mojom::ChromePage, std::string> os_settings_pages_;
+
+  const std::map<arc::mojom::ChromePage, std::string> browser_settings_pages_;
+
+  const std::map<arc::mojom::ChromePage, std::string> about_pages_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNewWindowClient);
 };

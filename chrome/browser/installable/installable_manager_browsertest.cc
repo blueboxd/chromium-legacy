@@ -346,7 +346,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckNoManifest) {
   ui_test_utils::NavigateToURL(
       browser(),
       embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
-  GetManager(browser())->RecordMenuOpenHistogram();
   RunInstallableManager(browser(), tester.get(), GetManifestParams());
   run_loop.Run();
 
@@ -361,24 +360,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckNoManifest) {
   EXPECT_TRUE(tester->badge_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->badge_icon());
   EXPECT_EQ(std::vector<InstallableStatusCode>{NO_MANIFEST}, tester->errors());
-
-  histograms.ExpectUniqueSample(
-      "Webapp.InstallabilityCheckStatus.MenuOpen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
-
-  GetManager(browser())->RecordMenuItemAddToHomescreenHistogram();
-  histograms.ExpectUniqueSample(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-      static_cast<int>(
-          InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP),
-      1);
-
-  GetManager(browser())->RecordAddToHomescreenNoTimeout();
-  histograms.ExpectUniqueSample(
-      "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-      static_cast<int>(
-          AddToHomescreenTimeoutStatus::NO_TIMEOUT_NON_PROGRESSIVE_WEB_APP),
-      1);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckManifest404) {
@@ -725,7 +706,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
-    GetManager(browser())->RecordMenuItemAddToHomescreenHistogram();
     RunInstallableManager(browser(), tester.get(), GetWebAppParams());
     run_loop.Run();
 
@@ -754,24 +734,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
     EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(IconPurpose::ANY)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
-
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-        static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
-
-    GetManager(browser())->RecordMenuOpenHistogram();
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.MenuOpen",
-        static_cast<int>(
-            InstallabilityCheckStatus::COMPLETE_PROGRESSIVE_WEB_APP),
-        1);
-
-    GetManager(browser())->RecordAddToHomescreenNoTimeout();
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-        static_cast<int>(
-            AddToHomescreenTimeoutStatus::NO_TIMEOUT_PROGRESSIVE_WEB_APP),
-        1);
   }
 
   // Request everything except badge icon again without navigating away. This
@@ -916,42 +878,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckMaskableIcon) {
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        CheckNavigationWithoutRunning) {
-  // Verify that we record "not started" metrics if we don't run the installable
-  // manager and navigate away.
-  {
-    base::HistogramTester histograms;
-    ui_test_utils::NavigateToURL(
-        browser(),
-        embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
-
-    InstallableManager* manager = GetManager(browser());
-    manager->RecordMenuOpenHistogram();
-    manager->RecordMenuOpenHistogram();
-    manager->RecordMenuItemAddToHomescreenHistogram();
-    manager->RecordMenuItemAddToHomescreenHistogram();
-    manager->RecordAddToHomescreenInstallabilityTimeout();
-    manager->RecordAddToHomescreenInstallabilityTimeout();
-
-    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.MenuOpen",
-        static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 2);
-
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-        static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 2);
-
-    histograms.ExpectBucketCount(
-        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-        static_cast<int>(
-            AddToHomescreenTimeoutStatus::TIMEOUT_INSTALLABILITY_CHECK_UNKNOWN),
-        2);
-
-    histograms.ExpectTotalCount(
-        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout", 2);
-  }
-
   {
     // Expect the call to ManifestAndIconTimeout to kick off an installable
     // check and fail it on a not installable page.
@@ -961,7 +887,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
         embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
 
     InstallableManager* manager = GetManager(browser());
-    manager->RecordAddToHomescreenManifestAndIconTimeout();
 
     base::RunLoop run_loop;
     std::unique_ptr<CallbackTester> tester(
@@ -976,12 +901,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     run_loop.Run();
 
     ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-        static_cast<int>(AddToHomescreenTimeoutStatus::
-                             TIMEOUT_MANIFEST_FETCH_NON_PROGRESSIVE_WEB_APP),
-        1);
   }
 
   {
@@ -993,7 +912,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
         embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
     InstallableManager* manager = GetManager(browser());
-    manager->RecordAddToHomescreenManifestAndIconTimeout();
 
     base::RunLoop run_loop;
     std::unique_ptr<CallbackTester> tester(
@@ -1008,12 +926,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     run_loop.Run();
 
     ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-        static_cast<int>(AddToHomescreenTimeoutStatus::
-                             TIMEOUT_MANIFEST_FETCH_PROGRESSIVE_WEB_APP),
-        1);
   }
 }
 
@@ -1228,65 +1140,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(nullptr, tester->badge_icon());
   EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
             tester->errors());
-}
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
-                       WaitingForServiceWorkerRecordsNonPwa) {
-  base::RunLoop tester_run_loop, sw_run_loop;
-  base::HistogramTester histograms;
-  std::unique_ptr<CallbackTester> tester(
-      new CallbackTester(tester_run_loop.QuitClosure()));
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  auto manager = std::make_unique<LazyWorkerInstallableManager>(
-      web_contents, sw_run_loop.QuitClosure());
-
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-
-  {
-    // Load a URL with no service worker.
-    GURL test_url = embedded_test_server()->GetURL(
-        "/banners/manifest_no_service_worker.html");
-    ui_test_utils::NavigateToURL(browser(), test_url);
-
-    // Kick off fetching the data. This should block on waiting for a worker.
-    manager->GetData(
-        GetWebAppParams(),
-        base::BindOnce(&CallbackTester::OnDidFinishInstallableCheck,
-                       base::Unretained(tester.get())));
-    sw_run_loop.Run();
-  }
-
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuOpenHistogram();
-  manager->RecordMenuItemAddToHomescreenHistogram();
-
-  // Navigate to force metrics recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-  // Expect to record that we completed the check and found a non-PWA since we
-  // waited until navigation and didn't get a service worker.
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuOpen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuOpen",
-      static_cast<int>(
-          InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP),
-      2);
-  histograms.ExpectTotalCount("Webapp.InstallabilityCheckStatus.MenuOpen", 3);
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-      static_cast<int>(InstallabilityCheckStatus::NOT_STARTED), 1);
-  histograms.ExpectBucketCount(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen",
-      static_cast<int>(
-          InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP),
-      1);
-  histograms.ExpectTotalCount(
-      "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,

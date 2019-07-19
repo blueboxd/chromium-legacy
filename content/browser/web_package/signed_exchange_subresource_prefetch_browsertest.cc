@@ -369,6 +369,7 @@ class SignedExchangePrefetchBrowserTest
       const net::SHA256HashValue& header_integrity,
       const std::string& content,
       const std::vector<std::pair<std::string, std::string>>& sxg_outer_headers,
+      const std::vector<std::string>& sxg_inner_headers = {},
       const base::Time& signature_expire_time = base::Time()) {
     auto sxg_request_counter =
         RequestCounter::CreateAndMonitor(embedded_test_server(), sxg_path);
@@ -390,7 +391,8 @@ class SignedExchangePrefetchBrowserTest
 
     MockSignedExchangeHandlerFactory factory({MockSignedExchangeHandlerParams(
         sxg_url, SignedExchangeLoadResult::kSuccess, net::OK, inner_url,
-        "text/html", {}, header_integrity, signature_expire_time)});
+        "text/html", sxg_inner_headers, header_integrity,
+        signature_expire_time)});
     ScopedSignedExchangeHandlerFactory scoped_factory(&factory);
 
     EXPECT_EQ(0, sxg_request_counter->GetRequestCount());
@@ -467,7 +469,33 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* inner_url_path */,
       net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
-      {} /* sxg_outer_headers */);
+      {} /* sxg_outer_headers */, {} /* sxg_inner_headers */);
+  const auto cached_exchanges = GetCachedExchanges(shell());
+  // The content of prefetched SXG is larger than the Blob storage limit.
+  // So the SXG should not be stored to the cache.
+  EXPECT_EQ(0u, cached_exchanges.size());
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SignedExchangePrefetchBrowserTest,
+    PrefetchMainResourceSXG_BlobStorageLimitWithContentLength) {
+  // BlobBuilderFromStream's behavior is different when "content-length"
+  // header is set. So we have BlobStorageLimit test with "content-length".
+  SetBlobLimits();
+
+  std::string content = "<head><title>Prefetch Target (SXG)</title></head>";
+  // Make the content larger than the disk space.
+  content.resize(kTestBlobStorageMaxDiskSpace + 1, ' ');
+  LoadPrefetchMainResourceSXGTestPage(
+      "example.com" /* prefetch_page_hostname */,
+      "/prefetch.html" /* prefetch_page_path */,
+      "example.com" /* sxg_hostname */, "/target.sxg" /* sxg_path */,
+      "example.com" /* inner_url_hostname */,
+      "/target.html" /* inner_url_path */,
+      net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
+      {} /* sxg_outer_headers */,
+      {base::StringPrintf("content-length: %" PRIuS,
+                          content.size())} /* sxg_inner_headers */);
   const auto cached_exchanges = GetCachedExchanges(shell());
   // The content of prefetched SXG is larger than the Blob storage limit.
   // So the SXG should not be stored to the cache.
@@ -486,7 +514,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* inner_url_path */,
       net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
-      {{"cache-control", "no-store"}} /* sxg_outer_headers */);
+      {{"cache-control", "no-store"}} /* sxg_outer_headers */,
+      {} /* sxg_inner_headers */);
   const auto cached_exchanges = GetCachedExchanges(shell());
   // The signed exchange which response header has "cache-control: no-store"
   // header should not be stored to the cache.
@@ -505,7 +534,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* inner_url_path */,
       net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
-      {{"vary", "*"}} /* sxg_outer_headers */);
+      {{"vary", "*"}} /* sxg_outer_headers */, {} /* sxg_inner_headers */);
   const auto cached_exchanges = GetCachedExchanges(shell());
   // The signed exchange which response header has "vary: *" header should not
   // be stored to the cache.
@@ -524,7 +553,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       "example.com" /* inner_url_hostname */,
       "/target.html" /* inner_url_path */,
       net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
-      {{"vary", "accept-encoding"}} /* sxg_outer_headers */);
+      {{"vary", "accept-encoding"}} /* sxg_outer_headers */,
+      {} /* sxg_inner_headers */);
   // The signed exchange which response header has "vary: accept-encoding"
   // header should be stored to the cache.
   const auto cached_exchanges = GetCachedExchanges(shell());
@@ -546,7 +576,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
       hostname, inner_url_path,
       net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
-      {} /* sxg_outer_headers */);
+      {} /* sxg_outer_headers */, {} /* sxg_inner_headers */);
   EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
 
   const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
@@ -590,7 +620,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       {{"cache-control",
         base::StringPrintf("public, max-age=%d",
                            net::HttpCache::kPrefetchReuseMins * 3 *
-                               60)}} /* sxg_outer_headers */);
+                               60)}} /* sxg_outer_headers */,
+      {} /* sxg_inner_headers */);
   EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
 
   const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
@@ -637,7 +668,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       {{"cache-control",
         base::StringPrintf("public, max-age=%d",
                            net::HttpCache::kPrefetchReuseMins * 3 *
-                               60)}} /* sxg_outer_headers */);
+                               60)}} /* sxg_outer_headers */,
+      {} /* sxg_inner_headers */);
   EXPECT_EQ(1, sxg_request_counter->GetRequestCount());
 
   const GURL sxg_url = embedded_test_server()->GetURL(hostname, sxg_path);
@@ -678,7 +710,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest,
       hostname, "/prefetch.html" /* prefetch_page_path */, hostname, sxg_path,
       hostname, inner_url_path,
       net::SHA256HashValue({{0x01}}) /* header_integrity */, content,
-      {} /* sxg_outer_headers */,
+      {} /* sxg_outer_headers */, {} /* sxg_inner_headers */,
       base::Time::Now() +
           base::TimeDelta::FromMinutes(net::HttpCache::kPrefetchReuseMins * 2));
   EXPECT_EQ(1, sxg_request_counter->GetRequestCount());

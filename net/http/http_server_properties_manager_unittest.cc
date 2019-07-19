@@ -98,11 +98,7 @@ class MockPrefDelegate : public net::HttpServerPropertiesManager::PrefDelegate {
 
 }  // namespace
 
-// TODO(rtenneti): After we stop supporting version 3 and everyone has migrated
-// to version 4, delete the following code.
-static const int kHttpServerPropertiesVersions[] = {3, 4, 5};
-
-class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
+class HttpServerPropertiesManagerTest : public testing::Test,
                                         public WithScopedTaskEnvironment {
  protected:
   HttpServerPropertiesManagerTest()
@@ -142,6 +138,13 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
     return !alternative_service_info_vector.empty();
   }
 
+  // Returns a dictionary with only the version field populated.
+  static base::DictionaryValue DictWithVersion() {
+    base::DictionaryValue http_server_properties_dict;
+    http_server_properties_dict.SetInteger("version", 5);
+    return http_server_properties_dict;
+  }
+
   MockPrefDelegate* pref_delegate_;  // Owned by HttpServerPropertiesManager.
   std::unique_ptr<HttpServerPropertiesManager> http_server_props_manager_;
   base::Time one_day_from_now_;
@@ -151,11 +154,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int>,
   DISALLOW_COPY_AND_ASSIGN(HttpServerPropertiesManagerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         HttpServerPropertiesManagerTest,
-                         ::testing::ValuesIn(kHttpServerPropertiesVersions));
-
-TEST_P(HttpServerPropertiesManagerTest,
+TEST_F(HttpServerPropertiesManagerTest,
        SingleUpdateForTwoSpdyServerPrefChanges) {
   // Set up the prefs for https://www.google.com and https://mail.google.com and
   // then set it twice. Only expect a single cache update.
@@ -187,15 +186,11 @@ TEST_P(HttpServerPropertiesManagerTest,
 
   // Set the server preference for https://www.google.com.
   auto servers_dict = std::make_unique<base::DictionaryValue>();
-  servers_dict->SetWithoutPathExpansion(
-      GetParam() >= 5 ? "https://www.google.com" : "www.google.com:443",
-      std::move(server_pref_dict));
-  std::unique_ptr<base::ListValue> servers_list;
-  if (GetParam() >= 4) {
-    servers_list = std::make_unique<base::ListValue>();
-    servers_list->Append(std::move(servers_dict));
-    servers_dict = std::make_unique<base::DictionaryValue>();
-  }
+  servers_dict->SetWithoutPathExpansion("https://www.google.com",
+                                        std::move(server_pref_dict));
+  auto servers_list = std::make_unique<base::ListValue>();
+  servers_list->Append(std::move(servers_dict));
+  servers_dict = std::make_unique<base::DictionaryValue>();
 
   // Set the preference for mail.google.com server.
   auto server_pref_dict1 = std::make_unique<base::DictionaryValue>();
@@ -219,26 +214,12 @@ TEST_P(HttpServerPropertiesManagerTest,
   server_pref_dict1->SetWithoutPathExpansion("network_stats",
                                              std::move(stats1));
   // Set the server preference for https://mail.google.com.
-  servers_dict->SetWithoutPathExpansion(
-      GetParam() >= 5 ? "https://mail.google.com" : "mail.google.com:443",
-      std::move(server_pref_dict1));
-  base::DictionaryValue http_server_properties_dict;
-  if (GetParam() >= 4) {
-    servers_list->AppendIfNotPresent(std::move(servers_dict));
-    if (GetParam() == 5) {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
-    } else {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                              GetParam());
-    }
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_list));
-  } else {
-    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                            GetParam());
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_dict));
-  }
+  servers_dict->SetWithoutPathExpansion("https://mail.google.com",
+                                        std::move(server_pref_dict1));
+  servers_list->Append(std::move(servers_dict));
+  base::DictionaryValue http_server_properties_dict = DictWithVersion();
+  http_server_properties_dict.SetWithoutPathExpansion("servers",
+                                                      std::move(servers_list));
   auto supports_quic = std::make_unique<base::DictionaryValue>();
   supports_quic->SetBoolean("used_quic", true);
   supports_quic->SetString("address", "127.0.0.1");
@@ -344,7 +325,7 @@ TEST_P(HttpServerPropertiesManagerTest,
                                    play_quic_server_id));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
+TEST_F(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   auto server_pref_dict = std::make_unique<base::DictionaryValue>();
 
   // Set supports_spdy for www.google.com:65536.
@@ -368,24 +349,11 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   auto servers_dict = std::make_unique<base::DictionaryValue>();
   servers_dict->SetWithoutPathExpansion("www.google.com:65536",
                                         std::move(server_pref_dict));
-  base::DictionaryValue http_server_properties_dict;
-  if (GetParam() >= 4) {
     auto servers_list = std::make_unique<base::ListValue>();
     servers_list->Append(std::move(servers_dict));
-    if (GetParam() == 5) {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
-    } else {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                              GetParam());
-    }
+    base::DictionaryValue http_server_properties_dict = DictWithVersion();
     http_server_properties_dict.SetWithoutPathExpansion(
         "servers", std::move(servers_list));
-  } else {
-    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                            GetParam());
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_dict));
-  }
 
   // Set quic_server_info for www.google.com:65536.
   auto quic_servers_dict = std::make_unique<base::DictionaryValue>();
@@ -422,7 +390,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   EXPECT_EQ(0u, http_server_props_manager_->quic_server_info_map().size());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
+TEST_F(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   auto server_pref_dict = std::make_unique<base::DictionaryValue>();
 
   // Set supports_spdy for www.google.com:80.
@@ -441,24 +409,11 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   auto servers_dict = std::make_unique<base::DictionaryValue>();
   servers_dict->SetWithoutPathExpansion("www.google.com:80",
                                         std::move(server_pref_dict));
-  base::DictionaryValue http_server_properties_dict;
-  if (GetParam() >= 4) {
     auto servers_list = std::make_unique<base::ListValue>();
     servers_list->Append(std::move(servers_dict));
-    if (GetParam() == 5) {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
-    } else {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                              GetParam());
-    }
+    base::DictionaryValue http_server_properties_dict = DictWithVersion();
     http_server_properties_dict.SetWithoutPathExpansion(
         "servers", std::move(servers_list));
-  } else {
-    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                            GetParam());
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_dict));
-  }
 
   // Set up the pref.
   pref_delegate_->SetPrefs(http_server_properties_dict);
@@ -474,7 +429,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
       HasAlternativeService(url::SchemeHostPort("http", "www.google.com", 80)));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
+TEST_F(HttpServerPropertiesManagerTest, SupportsSpdy) {
   // Add mail.google.com:443 as a supporting spdy server.
   url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
   EXPECT_FALSE(
@@ -503,7 +458,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
 // scheduled if multiple updates happen in a given time period. Subsequent pref
 // update could also be scheduled once the previous scheduled update is
 // completed.
-TEST_P(HttpServerPropertiesManagerTest,
+TEST_F(HttpServerPropertiesManagerTest,
        SinglePrefUpdateForTwoSpdyServerCacheChanges) {
   // Post an update task. SetSupportsSpdy calls ScheduleUpdatePrefs with a delay
   // of 60ms.
@@ -546,7 +501,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_EQ(1, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
+TEST_F(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
@@ -570,7 +525,7 @@ TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServiceInfos) {
             alternative_service_info_vector[0].alternative_service());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
+TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
   AlternativeServiceInfoVector alternative_service_info_vector;
@@ -604,7 +559,7 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
             alternative_service_info_vector2[1].alternative_service());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
+TEST_F(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
   const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
@@ -618,7 +573,7 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
+TEST_F(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
   url::SchemeHostPort spdy_server_mail;
   AlternativeService alternative_service;
 
@@ -664,7 +619,7 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
       alternative_service));
 }
 
-TEST_P(HttpServerPropertiesManagerTest,
+TEST_F(HttpServerPropertiesManagerTest,
        ConfirmBrokenUntilDefaultNetworkChanges) {
   url::SchemeHostPort spdy_server_mail;
   AlternativeService alternative_service;
@@ -713,7 +668,7 @@ TEST_P(HttpServerPropertiesManagerTest,
       alternative_service));
 }
 
-TEST_P(HttpServerPropertiesManagerTest,
+TEST_F(HttpServerPropertiesManagerTest,
        OnDefaultNetworkChangedWithBrokenUntilDefaultNetworkChanges) {
   url::SchemeHostPort spdy_server_mail;
   AlternativeService alternative_service;
@@ -762,7 +717,7 @@ TEST_P(HttpServerPropertiesManagerTest,
       alternative_service));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
+TEST_F(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
   url::SchemeHostPort spdy_server_mail;
   AlternativeService alternative_service;
 
@@ -808,7 +763,7 @@ TEST_P(HttpServerPropertiesManagerTest, OnDefaultNetworkChangedWithBrokenOnly) {
       alternative_service));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
+TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
   IPAddress address;
   EXPECT_FALSE(http_server_props_manager_->GetSupportsQuic(&address));
 
@@ -832,7 +787,7 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
+TEST_F(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   url::SchemeHostPort mail_server("http", "mail.google.com", 80);
   const ServerNetworkStats* stats =
       http_server_props_manager_->GetServerNetworkStats(mail_server);
@@ -870,7 +825,7 @@ TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
             http_server_props_manager_->GetServerNetworkStats(mail_server));
 }
 
-TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
+TEST_F(HttpServerPropertiesManagerTest, QuicServerInfo) {
   quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
   EXPECT_EQ(nullptr,
             http_server_props_manager_->GetQuicServerInfo(mail_quic_server_id));
@@ -897,7 +852,7 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, Clear) {
+TEST_F(HttpServerPropertiesManagerTest, Clear) {
   const url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
   const IPAddress actual_address(127, 0, 0, 1);
   const quic::QuicServerId mail_quic_server_id("mail.google.com", 80, false);
@@ -973,11 +928,10 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
 
 // https://crbug.com/444956: Add 200 alternative_service servers followed by
 // supports_quic and verify we have read supports_quic from prefs.
-TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
+TEST_F(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   auto servers_dict = std::make_unique<base::DictionaryValue>();
-  std::unique_ptr<base::ListValue> servers_list;
-  if (GetParam() >= 4)
-    servers_list = std::make_unique<base::ListValue>();
+  std::unique_ptr<base::ListValue> servers_list =
+      std::make_unique<base::ListValue>();
 
   for (int i = 1; i <= 200; ++i) {
     // Set up alternative_service for www.google.com:i.
@@ -989,46 +943,21 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     auto server_pref_dict = std::make_unique<base::DictionaryValue>();
     server_pref_dict->SetWithoutPathExpansion(
         "alternative_service", std::move(alternative_service_list));
-    if (GetParam() >= 5) {
       servers_dict->SetWithoutPathExpansion(
           StringPrintf("https://www.google.com:%d", i),
           std::move(server_pref_dict));
-    } else {
-      servers_dict->SetWithoutPathExpansion(
-          StringPrintf("www.google.com:%d", i), std::move(server_pref_dict));
-    }
-    if (GetParam() >= 4) {
       servers_list->AppendIfNotPresent(std::move(servers_dict));
       servers_dict = std::make_unique<base::DictionaryValue>();
-    }
   }
 
   // Set the server preference for http://mail.google.com server.
   auto server_pref_dict1 = std::make_unique<base::DictionaryValue>();
-  if (GetParam() >= 5) {
     servers_dict->SetWithoutPathExpansion("https://mail.google.com",
                                           std::move(server_pref_dict1));
-  } else {
-    servers_dict->SetWithoutPathExpansion("mail.google.com:80",
-                                          std::move(server_pref_dict1));
-  }
-  base::DictionaryValue http_server_properties_dict;
-  if (GetParam() >= 4) {
     servers_list->AppendIfNotPresent(std::move(servers_dict));
-    if (GetParam() == 5) {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict, -1);
-    } else {
-      HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                              GetParam());
-    }
+    base::DictionaryValue http_server_properties_dict = DictWithVersion();
     http_server_properties_dict.SetWithoutPathExpansion(
         "servers", std::move(servers_list));
-  } else {
-    HttpServerPropertiesManager::SetVersion(&http_server_properties_dict,
-                                            GetParam());
-    http_server_properties_dict.SetWithoutPathExpansion(
-        "servers", std::move(servers_dict));
-  }
 
   // Set up SupportsQuic for 127.0.0.1
   auto supports_quic = std::make_unique<base::DictionaryValue>();
@@ -1044,11 +973,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   // Verify alternative service.
   for (int i = 1; i <= 200; ++i) {
     GURL server_gurl;
-    if (GetParam() >= 5) {
       server_gurl = GURL(StringPrintf("https://www.google.com:%d", i));
-    } else {
-      server_gurl = GURL(StringPrintf("https://www.google.com:%d", i));
-    }
     url::SchemeHostPort server(server_gurl);
     AlternativeServiceInfoVector alternative_service_info_vector =
         http_server_props_manager_->GetAlternativeServiceInfos(server);
@@ -1065,7 +990,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   EXPECT_EQ("127.0.0.1", address.ToString());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
+TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   const url::SchemeHostPort server_www("https", "www.google.com", 80);
   const url::SchemeHostPort server_mail("https", "mail.google.com", 80);
 
@@ -1211,7 +1136,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   EXPECT_EQ(expected_json, preferences_json);
 }
 
-TEST_P(HttpServerPropertiesManagerTest,
+TEST_F(HttpServerPropertiesManagerTest,
        SingleCacheUpdateForMultipleUpdatesScheduled) {
   EXPECT_EQ(0u, GetPendingMainThreadTaskCount());
   // Update cache.
@@ -1242,7 +1167,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
+TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
@@ -1294,7 +1219,7 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
 }
 
 // Regression test for https://crbug.com/615497.
-TEST_P(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
+TEST_F(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
   std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\","
       "\"expiration\":\"9223372036854775807\"}]}");
@@ -1312,7 +1237,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
 }
 
 // Do not persist expired alternative service entries to disk.
-TEST_P(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
+TEST_F(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
   AlternativeServiceInfoVector alternative_service_info_vector;
 
   const AlternativeService broken_alternative_service(
@@ -1387,7 +1312,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotPersistExpiredAlternativeService) {
 }
 
 // Test that expired alternative service entries on disk are ignored.
-TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
+TEST_F(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   auto alternative_service_list = std::make_unique<base::ListValue>();
   auto expired_dict = std::make_unique<base::DictionaryValue>();
   expired_dict->SetString("protocol_str", "h2");
@@ -1430,7 +1355,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
 }
 
 // Make sure prefs are updated on destruction.
-TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsOnShutdown) {
+TEST_F(HttpServerPropertiesManagerTest, UpdatePrefsOnShutdown) {
   int pref_updates = 0;
   pref_delegate_->set_extra_update_prefs_callback(
       base::Bind([](int* updates) { (*updates)++; }, &pref_updates));
@@ -1438,7 +1363,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsOnShutdown) {
   EXPECT_EQ(1, pref_updates);
 }
 
-TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
+TEST_F(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   const url::SchemeHostPort server_www("https", "www.google.com", 80);
   const url::SchemeHostPort server_mail("https", "mail.google.com", 80);
 
@@ -1518,7 +1443,7 @@ TEST_P(HttpServerPropertiesManagerTest, PersistAdvertisedVersionsToPref) {
   EXPECT_EQ(expected_json, preferences_json);
 }
 
-TEST_P(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
+TEST_F(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
   std::unique_ptr<base::Value> server_value = base::JSONReader::ReadDeprecated(
       "{\"alternative_service\":["
       "{\"port\":443,\"protocol_str\":\"quic\"},"
@@ -1569,7 +1494,7 @@ TEST_P(HttpServerPropertiesManagerTest, ReadAdvertisedVersionsFromPref) {
             loaded_advertised_versions[1]);
 }
 
-TEST_P(HttpServerPropertiesManagerTest,
+TEST_F(HttpServerPropertiesManagerTest,
        UpdatePrefWhenAdvertisedVersionsChange) {
   const url::SchemeHostPort server_www("https", "www.google.com", 80);
 
@@ -1672,7 +1597,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   EXPECT_EQ(0, pref_delegate_->GetAndClearNumPrefUpdates());
 }
 
-TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
+TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   AlternativeService cached_broken_service(kProtoQUIC, "cached_broken", 443);
   AlternativeService cached_broken_service2(kProtoQUIC, "cached_broken2", 443);
   AlternativeService cached_recently_broken_service(kProtoQUIC,

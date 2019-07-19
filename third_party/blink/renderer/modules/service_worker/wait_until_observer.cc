@@ -325,6 +325,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       service_worker_global_scope->DidHandleBackgroundFetchSuccessEvent(
           event_id_, status);
       break;
+    case kContentDelete:
+      service_worker_global_scope->DidHandleContentDeleteEvent(event_id_,
+                                                               status);
+      break;
   }
 }
 

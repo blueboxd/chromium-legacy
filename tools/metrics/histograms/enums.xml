@@ -1044,6 +1044,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AddToHomescreenTimeoutStatus">
+  <obsolete>
+    Deprecated in M77.
+  </obsolete>
   <int value="0" label="No timeout, site is not a PWA"/>
   <int value="1" label="No timeout, site is a PWA"/>
   <int value="2" label="Timeout during manifest/icon fetch, site is not a PWA"/>
@@ -31064,6 +31067,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="InstallabilityCheckStatus">
+  <obsolete>
+    Deprecated in M77.
+  </obsolete>
   <int value="0" label="Check not started"/>
   <int value="1" label="Check terminated before it could finish"/>
   <int value="2" label="Check not complete, site is not a PWA"/>
@@ -34165,6 +34171,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
+  <int value="-1408370474" label="AssistantRoutines:enabled"/>
   <int value="-1408288176" label="enable-account-consistency"/>
   <int value="-1405349891" label="PictureInPictureAPI:enabled"/>
   <int value="-1405048637" label="OfflinePagesResourceBasedSnapshot:enabled"/>
@@ -34518,6 +34525,8 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:enabled"/>
   <int value="-933316841" label="enable-permissions-blacklist"/>
   <int value="-932474660" label="VirtualDesks:enabled"/>
+  <int value="-932261921"
+      label="enable-defer-all-script-without-optimization-hints"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
@@ -34547,6 +34556,7 @@ from previous Chrome versions.
   <int value="-894185031" label="HighDynamicRange:disabled"/>
   <int value="-892428689" label="ManualPasswordGenerationAndroid:enabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
+  <int value="-889670978" label="AssistantRoutines:disabled"/>
   <int value="-886912558" label="ChromeHomePromo:enabled"/>
   <int value="-885601782" label="enable-contextual-search"/>
   <int value="-884864731" label="WebPaymentsSingleAppUiSkip:enabled"/>
@@ -52285,6 +52295,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Remote"/>
 </enum>
 
+<enum name="SendWebPushMessageResult">
+  <int value="0" label="Successful"/>
+  <int value="1" label="Encryption failed"/>
+  <int value="2" label="Failed to create JWT"/>
+  <int value="3" label="Network error"/>
+  <int value="4" label="Server error"/>
+  <int value="5" label="Failed to parse response"/>
+</enum>
+
 <enum name="ServiceProcessEventType">
   <int value="0" label="SERVICE_EVENT_INITIALIZE"/>
   <int value="1" label="SERVICE_EVENT_ENABLED_ON_LAUNCH"/>
@@ -52404,6 +52423,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="All"/>
 </enum>
 
+<enum name="ServiceWorkerEventStatus">
+  <int value="0" label="Completed"/>
+  <int value="1" label="Rejected"/>
+  <int value="2" label="Aborted"/>
+  <int value="3" label="Timeout"/>
+</enum>
+
 <enum name="ServiceWorkerInstalledScriptsManager.FinishedReason">
   <int value="0" label="NOT_FINISHED"/>
   <int value="1" label="SUCCESS"/>
@@ -52474,6 +52500,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="31" label="LONG_RUNNING_MESSAGE"/>
   <int value="32" label="BACKGROUND_FETCH_SUCCESS"/>
   <int value="33" label="PERIODIC_SYNC"/>
+  <int value="34" label="CONTENT_DELETE"/>
 </enum>
 
 <enum name="ServiceWorkerPreparationType">

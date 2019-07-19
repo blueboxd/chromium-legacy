@@ -28,7 +28,7 @@ class ClickToCallSharingDialogController : public SharingDialogController {
   ~ClickToCallSharingDialogController() override;
 
   // Overridden from SharingDialogController:
-  std::string GetTitle() override;
+  base::string16 GetTitle() override;
   std::vector<SharingDeviceInfo> GetSyncedDevices() override;
   std::vector<App> GetApps() override;
   void OnDeviceChosen(const SharingDeviceInfo& device,

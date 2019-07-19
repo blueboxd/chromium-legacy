@@ -103,6 +103,14 @@ class AppListSyncableService : public syncer::SyncableService,
   // Registers prefs to support local storage.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Some sync behavior depends on whether or not an app was installed by
+  // default (as opposed to e.g. installed via explicit user action). Some
+  // tests want the AppListSyncableService to consider an app to be installed
+  // by default, without going through the heavyweight process of completely
+  // installing an app. These functions facilitate that.
+  static bool AppIsDefaultForTest(Profile* profile, const std::string& id);
+  static void SetAppIsDefaultForTest(Profile* profile, const std::string& id);
+
   // Adds |item| to |sync_items_| and |model_|. If a sync item already exists,
   // updates the existing sync item instead.
   void AddItem(std::unique_ptr<ChromeAppListItem> app_item);

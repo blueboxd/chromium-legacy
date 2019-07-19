@@ -32,6 +32,13 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
+
 void HandleTransferCompletion(PlatformUsbTransferHandle transfer);
 
 namespace {
@@ -475,13 +482,16 @@ void UsbDeviceHandleImpl::Transfer::TransferComplete(UsbTransferStatus status,
   base::OnceClosure closure;
   if (transfer_type_ == UsbTransferType::ISOCHRONOUS) {
     DCHECK_NE(LIBUSB_TRANSFER_COMPLETED, platform_transfer_->status);
-    std::vector<IsochronousPacket> packets(platform_transfer_->num_iso_packets);
+    std::vector<UsbIsochronousPacketPtr> packets(
+        platform_transfer_->num_iso_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
-      packets[i].length = platform_transfer_->iso_packet_desc[i].length;
-      packets[i].transferred_length = 0;
-      packets[i].status = status;
+      packets[i] = mojom::UsbIsochronousPacket::New();
+      packets[i]->length = platform_transfer_->iso_packet_desc[i].length;
+      packets[i]->transferred_length = 0;
+      packets[i]->status = status;
     }
-    closure = base::BindOnce(std::move(iso_callback_), buffer_, packets);
+    closure =
+        base::BindOnce(std::move(iso_callback_), buffer_, std::move(packets));
   } else {
     closure = base::BindOnce(std::move(callback_), status, buffer_,
                              bytes_transferred);
@@ -493,19 +503,21 @@ void UsbDeviceHandleImpl::Transfer::TransferComplete(UsbTransferStatus status,
 }
 
 void UsbDeviceHandleImpl::Transfer::IsochronousTransferComplete() {
-  std::vector<IsochronousPacket> packets(platform_transfer_->num_iso_packets);
+  std::vector<UsbIsochronousPacketPtr> packets(
+      platform_transfer_->num_iso_packets);
   for (size_t i = 0; i < packets.size(); ++i) {
-    packets[i].length = platform_transfer_->iso_packet_desc[i].length;
-    packets[i].transferred_length =
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = platform_transfer_->iso_packet_desc[i].length;
+    packets[i]->transferred_length =
         platform_transfer_->iso_packet_desc[i].actual_length;
-    packets[i].status =
+    packets[i]->status =
         ConvertTransferStatus(platform_transfer_->iso_packet_desc[i].status);
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&UsbDeviceHandleImpl::TransferComplete,
-                                        device_handle_, base::Unretained(this),
-                                        base::BindOnce(std::move(iso_callback_),
-                                                       buffer_, packets)));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::TransferComplete,
+                                device_handle_, base::Unretained(this),
+                                base::BindOnce(std::move(iso_callback_),
+                                               buffer_, std::move(packets))));
 }
 
 scoped_refptr<UsbDevice> UsbDeviceHandleImpl::GetDevice() const {
@@ -1020,15 +1032,15 @@ void UsbDeviceHandleImpl::ReportIsochronousTransferError(
     UsbTransferStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::vector<UsbDeviceHandle::IsochronousPacket> packets(
-      packet_lengths.size());
+  std::vector<UsbIsochronousPacketPtr> packets(packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = packet_lengths[i];
+    packets[i]->transferred_length = 0;
+    packets[i]->status = status;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), nullptr, packets));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr,
+                                                   std::move(packets)));
 }
 
 void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {

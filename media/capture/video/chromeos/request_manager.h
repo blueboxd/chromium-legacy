@@ -122,6 +122,7 @@ class CAPTURE_EXPORT RequestManager final
   RequestManager(cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
                  std::unique_ptr<StreamCaptureInterface> capture_interface,
                  CameraDeviceContext* device_context,
+                 VideoCaptureBufferType buffer_type,
                  std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
                  BlobifyCallback blobify_callback,
                  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
@@ -263,6 +264,9 @@ class CAPTURE_EXPORT RequestManager final
   void SubmitCaptureResult(uint32_t frame_number,
                            StreamType stream_type,
                            cros::mojom::Camera3StreamBufferPtr stream_buffer);
+  void SubmitCapturedPreviewBuffer(uint32_t frame_number,
+                                   uint64_t buffer_ipc_id);
+  void SubmitCapturedJpegBuffer(uint32_t frame_number, uint64_t buffer_ipc_id);
 
   // If there are some metadata set by SetCaptureMetadata() or
   // SetRepeatingCaptureMetadata(), update them onto |capture_settings|.
@@ -273,6 +277,8 @@ class CAPTURE_EXPORT RequestManager final
   std::unique_ptr<StreamCaptureInterface> capture_interface_;
 
   CameraDeviceContext* device_context_;
+
+  bool video_capture_use_gmb_;
 
   // StreamBufferManager should be declared before RequestBuilder since
   // RequestBuilder holds an instance of StreamBufferManager and should be

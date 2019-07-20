@@ -802,22 +802,20 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_ForegroundAndBackgroundPages) {
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url1 = embedded_test_server()->GetURL("a.com", "/empty.html");
   const GURL url2 = embedded_test_server()->GetURL("b.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  tab_observer.Wait();
-  content::WebContents* tab1 = tab_observer.GetTab();
+  content::WebContents* tab1 = add_tab.Wait();
 
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab2;
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  tab_observer.Wait();
-  content::WebContents* tab2 = tab_observer.GetTab();
+  content::WebContents* tab2 = add_tab2.Wait();
 
   base::HistogramTester histogram_tester;
   {

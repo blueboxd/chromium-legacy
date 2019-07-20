@@ -94,7 +94,7 @@ class SharedWorkerHostTest : public testing::Test {
     mojo::MakeStrongBinding(
         std::make_unique<NotImplementedNetworkURLLoaderFactory>(),
         mojo::MakeRequest(&loader_factory_ptr));
-    subresource_loader_params->appcache_loader_factory_info =
+    subresource_loader_params->pending_appcache_loader_factory =
         loader_factory_ptr.PassInterface();
 
     host->Start(std::move(factory), std::move(provider_info),

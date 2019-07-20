@@ -156,7 +156,8 @@ class NetworkHandler : public DevToolsDomainHandler,
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
-      network::mojom::URLLoaderFactoryRequest* target_factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          target_factory_receiver);
 
   void ApplyOverrides(net::HttpRequestHeaders* headers,
                       bool* skip_service_worker,

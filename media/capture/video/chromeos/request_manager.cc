@@ -38,14 +38,18 @@ RequestManager::RequestManager(
     cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
     std::unique_ptr<StreamCaptureInterface> capture_interface,
     CameraDeviceContext* device_context,
+    VideoCaptureBufferType buffer_type,
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
     BlobifyCallback blobify_callback,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
     : callback_ops_(this, std::move(callback_ops_request)),
       capture_interface_(std::move(capture_interface)),
       device_context_(device_context),
+      video_capture_use_gmb_(buffer_type ==
+                             VideoCaptureBufferType::kGpuMemoryBuffer),
       stream_buffer_manager_(
           new StreamBufferManager(device_context_,
+                                  video_capture_use_gmb_,
                                   std::move(camera_buffer_factory))),
       blobify_callback_(std::move(blobify_callback)),
       ipc_task_runner_(std::move(ipc_task_runner)),
@@ -63,7 +67,7 @@ RequestManager::RequestManager(
   // to StreamBufferManager since RequestBuilder constructs after
   // StreamBufferManager.
   auto request_buffer_callback =
-      base::BindRepeating(&StreamBufferManager::RequestBuffer,
+      base::BindRepeating(&StreamBufferManager::RequestBufferForCaptureRequest,
                           base::Unretained(stream_buffer_manager_.get()));
   request_builder_ = std::make_unique<RequestBuilder>(
       device_context_, std::move(request_buffer_callback));
@@ -716,7 +720,6 @@ void RequestManager::SubmitCaptureResult(
   for (auto* observer : result_metadata_observers_) {
     observer->OnResultMetadataAvailable(pending_result.metadata);
   }
-  uint64_t buffer_id = stream_buffer->buffer_id;
 
   // Wait on release fence before delivering the result buffer to client.
   if (stream_buffer->release_fence.is_valid()) {
@@ -739,73 +742,30 @@ void RequestManager::SubmitCaptureResult(
     }
   }
 
-  bool should_release_buffer = true;
+  uint64_t buffer_ipc_id = stream_buffer->buffer_id;
   // Deliver the captured data to client.
   if (stream_buffer->status ==
       cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_OK) {
-    gfx::GpuMemoryBuffer* buffer =
-        stream_buffer_manager_->GetBufferById(stream_type, buffer_id);
     if (stream_type == StreamType::kPreviewOutput) {
-      device_context_->SubmitCapturedData(
-          buffer, stream_buffer_manager_->GetStreamCaptureFormat(stream_type),
-          pending_result.reference_time, pending_result.timestamp);
+      SubmitCapturedPreviewBuffer(frame_number, buffer_ipc_id);
     } else if (stream_type == StreamType::kJpegOutput) {
-      DCHECK(pending_result.still_capture_callback);
-      const Camera3JpegBlob* header = reinterpret_cast<Camera3JpegBlob*>(
-          reinterpret_cast<uintptr_t>(buffer->memory(0)) +
-          buffer->GetSize().width() - sizeof(Camera3JpegBlob));
-      if (header->jpeg_blob_id != kCamera3JpegBlobId) {
-        device_context_->SetErrorState(
-            media::VideoCaptureError::kCrosHalV3BufferManagerInvalidJpegBlob,
-            FROM_HERE, "Invalid JPEG blob");
-        return;
-      }
-      // Still capture result from HALv3 already has orientation info in EXIF,
-      // so just provide 0 as screen rotation in |blobify_callback_| parameters.
-      mojom::BlobPtr blob = blobify_callback_.Run(
-          reinterpret_cast<uint8_t*>(buffer->memory(0)), header->jpeg_size,
-          stream_buffer_manager_->GetStreamCaptureFormat(stream_type), 0);
-      if (blob) {
-        int task_status = kReprocessSuccess;
-        if (stream_buffer_manager_->IsReprocessSupported()) {
-          task_status = ReprocessManager::GetReprocessReturnCode(
-              pending_result.reprocess_effect, &pending_result.metadata);
-        }
-        std::move(pending_result.still_capture_callback)
-            .Run(task_status, std::move(blob));
-      } else {
-        // TODO(wtlee): If it is fatal, we should set error state here.
-        LOG(ERROR) << "Failed to blobify the captured JPEG image";
-      }
-
-      if (pending_result.input_buffer_id) {
-        // Remove the id from processing list to run next reprocess task.
-        processing_buffer_ids_.erase(*pending_result.input_buffer_id);
-
-        // If all reprocess tasks are done for this buffer, release the buffer.
-        if (!base::Contains(buffer_id_reprocess_job_info_map_,
-                            *pending_result.input_buffer_id)) {
-          stream_buffer_manager_->ReleaseBuffer(
-              StreamType::kYUVOutput, *pending_result.input_buffer_id);
-        }
-      }
+      SubmitCapturedJpegBuffer(frame_number, buffer_ipc_id);
     } else if (stream_type == StreamType::kYUVOutput) {
       DCHECK_GT(pending_result.shutter_timestamp, 0UL);
       ReprocessJobInfo reprocess_job_info(
           std::move(frame_number_reprocess_tasks_map_[frame_number]),
           pending_result.shutter_timestamp);
-      buffer_id_reprocess_job_info_map_.emplace(buffer_id,
+      buffer_id_reprocess_job_info_map_.emplace(buffer_ipc_id,
                                                 std::move(reprocess_job_info));
       frame_number_reprocess_tasks_map_.erase(frame_number);
 
       // Don't release the buffer since we will need it as input buffer for
       // reprocessing. We will release it until all reprocess tasks for this
       // buffer are done.
-      should_release_buffer = false;
     }
-  }
-  if (should_release_buffer) {
-    stream_buffer_manager_->ReleaseBuffer(stream_type, buffer_id);
+  } else {
+    stream_buffer_manager_->ReleaseBufferFromCaptureResult(stream_type,
+                                                           buffer_ipc_id);
   }
   pending_result.unsubmitted_buffer_count--;
 
@@ -815,6 +775,97 @@ void RequestManager::SubmitCaptureResult(
   // Every time a buffer is released, try to prepare another capture request
   // again.
   PrepareCaptureRequest();
+}
+
+void RequestManager::SubmitCapturedPreviewBuffer(uint32_t frame_number,
+                                                 uint64_t buffer_ipc_id) {
+  const CaptureResult& pending_result = pending_results_[frame_number];
+  if (video_capture_use_gmb_) {
+    base::Optional<VideoCaptureDevice::Client::Buffer> buffer =
+        stream_buffer_manager_->AcquireBufferForClientById(
+            StreamType::kPreviewOutput, buffer_ipc_id);
+    CHECK(buffer);
+    device_context_->SubmitCapturedVideoCaptureBuffer(
+        std::move(*buffer),
+        stream_buffer_manager_->GetStreamCaptureFormat(
+            StreamType::kPreviewOutput),
+        pending_result.reference_time, pending_result.timestamp);
+    // |buffer| ownership is transferred to client, so we need to reserve a
+    // new video buffer.
+    stream_buffer_manager_->ReserveBuffer(StreamType::kPreviewOutput);
+  } else {
+    gfx::GpuMemoryBuffer* gmb = stream_buffer_manager_->GetGpuMemoryBufferById(
+        StreamType::kPreviewOutput, buffer_ipc_id);
+    CHECK(gmb);
+    device_context_->SubmitCapturedGpuMemoryBuffer(
+        gmb,
+        stream_buffer_manager_->GetStreamCaptureFormat(
+            StreamType::kPreviewOutput),
+        pending_result.reference_time, pending_result.timestamp);
+    stream_buffer_manager_->ReleaseBufferFromCaptureResult(
+        StreamType::kPreviewOutput, buffer_ipc_id);
+  }
+}
+
+void RequestManager::SubmitCapturedJpegBuffer(uint32_t frame_number,
+                                              uint64_t buffer_ipc_id) {
+  CaptureResult& pending_result = pending_results_[frame_number];
+  DCHECK(pending_result.still_capture_callback);
+  gfx::Size buffer_dimension =
+      stream_buffer_manager_->GetBufferDimension(StreamType::kJpegOutput);
+  gfx::GpuMemoryBuffer* gmb = stream_buffer_manager_->GetGpuMemoryBufferById(
+      StreamType::kJpegOutput, buffer_ipc_id);
+  CHECK(gmb);
+  if (!gmb->Map()) {
+    device_context_->SetErrorState(
+        media::VideoCaptureError::
+            kCrosHalV3BufferManagerFailedToCreateGpuMemoryBuffer,
+        FROM_HERE, "Failed to map GPU memory buffer");
+    return;
+  }
+  const Camera3JpegBlob* header = reinterpret_cast<Camera3JpegBlob*>(
+      reinterpret_cast<const uintptr_t>(gmb->memory(0)) +
+      buffer_dimension.width() - sizeof(Camera3JpegBlob));
+  if (header->jpeg_blob_id != kCamera3JpegBlobId) {
+    device_context_->SetErrorState(
+        media::VideoCaptureError::kCrosHalV3BufferManagerInvalidJpegBlob,
+        FROM_HERE, "Invalid JPEG blob");
+    gmb->Unmap();
+    return;
+  }
+  // Still capture result from HALv3 already has orientation info in EXIF,
+  // so just provide 0 as screen rotation in |blobify_callback_| parameters.
+  mojom::BlobPtr blob = blobify_callback_.Run(
+      reinterpret_cast<const uint8_t*>(gmb->memory(0)), header->jpeg_size,
+      stream_buffer_manager_->GetStreamCaptureFormat(StreamType::kJpegOutput),
+      0);
+  if (blob) {
+    int task_status = kReprocessSuccess;
+    if (stream_buffer_manager_->IsReprocessSupported()) {
+      task_status = ReprocessManager::GetReprocessReturnCode(
+          pending_result.reprocess_effect, &pending_result.metadata);
+    }
+    std::move(pending_result.still_capture_callback)
+        .Run(task_status, std::move(blob));
+  } else {
+    // TODO(wtlee): If it is fatal, we should set error state here.
+    LOG(ERROR) << "Failed to blobify the captured JPEG image";
+  }
+
+  if (pending_result.input_buffer_id) {
+    // Remove the id from processing list to run next reprocess task.
+    processing_buffer_ids_.erase(*pending_result.input_buffer_id);
+
+    // If all reprocess tasks are done for this buffer, release the buffer.
+    if (!base::Contains(buffer_id_reprocess_job_info_map_,
+                        *pending_result.input_buffer_id)) {
+      stream_buffer_manager_->ReleaseBufferFromCaptureResult(
+          StreamType::kYUVOutput, *pending_result.input_buffer_id);
+    }
+  }
+  stream_buffer_manager_->ReleaseBufferFromCaptureResult(
+      StreamType::kJpegOutput, buffer_ipc_id);
+  gmb->Unmap();
 }
 
 void RequestManager::UpdateCaptureSettings(

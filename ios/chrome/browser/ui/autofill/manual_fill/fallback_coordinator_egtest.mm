@@ -177,11 +177,17 @@ BOOL IsKeyboardDockedForLayout(UIView* layout) {
 }
 
 // Undocks and split the keyboard by swiping it up. Does nothing if already
-// undocked.
+// undocked.  Only works on iOS 12; it is an error to call this method on
+// iOS 13.
 void UndockAndSplitKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
+
+  // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
+  // support iOS 13.
+  DCHECK(!base::ios::IsRunningOnIOS13OrLater())
+      << "Undocking the keyboard via this method does not work on iOS 13";
 
   UITextField* textField = ShowKeyboard();
 
@@ -218,13 +224,22 @@ void UndockAndSplitKeyboard() {
   id action = grey_swipeFastInDirectionWithStartPoint(
       kGREYDirectionUp, startPoint.x, startPoint.y);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:action];
+
+  GREYAssertTrue(!IsKeyboardDockedForLayout(layout),
+                 @"Keyboard should be undocked");
 }
 
-// Docks the keyboard by swiping it down. Does nothing if already docked.
+// Docks the keyboard by swiping it down. Does nothing if already docked.  Only
+// works on iOS 12; it is an error to call this method on iOS 13.
 void DockKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
+
+  // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
+  // support iOS 13.
+  DCHECK(!base::ios::IsRunningOnIOS13OrLater())
+      << "Docking the keyboard via this method does not work on iOS 13";
 
   UITextField* textField = ShowKeyboard();
 
@@ -262,6 +277,9 @@ void DockKeyboard() {
 
   // If we created a dummy textfield for this, remove it.
   [textField removeFromSuperview];
+
+  GREYAssertTrue(IsKeyboardDockedForLayout(layout),
+                 @"Keyboard should be docked");
 }
 
 }  // namespace
@@ -358,7 +376,11 @@ void DockKeyboard() {
     [[EarlGrey selectElementWithMatcher:grey_kindOfClass([UITableView class])]
         assertWithMatcher:grey_notVisible()];
   }
-  DockKeyboard();
+  if (!base::ios::IsRunningOnIOS13OrLater()) {
+    // TODO(crbug.com/985977): Remove this conditional once DockKeyboard() is
+    // updated to support iOS 13.
+    DockKeyboard();
+  }
   [super tearDown];
 }
 
@@ -503,6 +525,12 @@ void DockKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
+
+  // TODO(crbug.com/985977): Reenable once undocking is supported on iOS 13.
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Undocking the keyboard does not work on iOS 13");
+  }
+
   // Add the profile to be used.
   AddAutofillProfile(_personalDataManager);
 
@@ -565,6 +593,12 @@ void DockKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test not applicable for iPhone.");
   }
+
+  // TODO(crbug.com/985977): Reenable once undocking is supported on iOS 13.
+  if (base::ios::IsRunningOnIOS13OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Undocking the keyboard does not work on iOS 13");
+  }
+
   // Add the profile to use for verification.
   AddAutofillProfile(_personalDataManager);
 

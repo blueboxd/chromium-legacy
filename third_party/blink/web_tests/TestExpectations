@@ -6304,3 +6304,6 @@ crbug.com/985232 [ Win7 ] virtual/streaming-preload/external/wpt/html/semantics/
 crbug.com/985811 [ Win7 ] http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Pass Timeout ]
 crbug.com/985869 [ Linux Win7 ] http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
+
+# Sheriff 2019-07-20
+crbug.com/986019 [ Linux Win7 ] animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]

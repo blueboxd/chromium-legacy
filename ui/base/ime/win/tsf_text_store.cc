@@ -1249,10 +1249,14 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     // composition text if there is any. Construct |new_committed_string| to be
     // current composition text so that |TextInputClient::InsertText| will
     // commit current composition text.
+    // Also clamp the offsets if they are out of bounds of the buffer
+    const size_t new_committed_string_offset =
+        std::min(static_cast<ULONG>(replace_text_range_.start()),
+                 static_cast<ULONG>(string_buffer_document_.size()));
     const base::string16& new_committed_string = string_buffer_document_.substr(
-        replace_text_range_.start(),
-        (new_text_size == 0 && selection_.end() > replace_text_range_.start())
-            ? selection_.end() - replace_text_range_.start()
+        new_committed_string_offset,
+        (new_text_size == 0 && selection_.end() > new_committed_string_offset)
+            ? selection_.end() - new_committed_string_offset
             : new_text_size);
     // if the |replace_text_range_| start is greater than |old_size|, then we
     // don't need to delete anything because the replacement text hasn't been
@@ -1280,6 +1284,10 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
     // with current composition text if there is any. Construct
     // |new_committed_string| to be current composition text so that
     // |TextInputClient::InsertText| will commit current composition text.
+    // Also clamp the offsets if they are out of bounds of the buffer
+    new_committed_string_offset =
+        std::min(static_cast<ULONG>(new_committed_string_offset),
+                 static_cast<ULONG>(string_buffer_document_.size()));
     const base::string16& new_committed_string = string_buffer_document_.substr(
         new_committed_string_offset,
         (new_committed_string_size == 0 &&

@@ -648,14 +648,16 @@ bool DevToolsURLLoaderInterceptor::CreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* request) const {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* receiver) const {
   if (!enabled_)
     return false;
 
+  // TODO(crbug.com/955171): Replace these with PendingReceiver and
+  // PendingRemote.
   network::mojom::URLLoaderFactoryRequest original_request =
-      std::move(*request);
+      std::move(*receiver);
   network::mojom::URLLoaderFactoryPtrInfo target_ptr_info;
-  *request = MakeRequest(&target_ptr_info);
+  *receiver = MakeRequest(&target_ptr_info);
   network::mojom::CookieManagerPtrInfo cookie_manager;
   int process_id = is_navigation ? 0 : rph->GetID();
   rph->GetStoragePartition()->GetNetworkContext()->GetCookieManager(

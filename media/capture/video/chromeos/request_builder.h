@@ -22,8 +22,9 @@ class CameraDeviceContext;
 // BufferInfo is used to store information about the buffer that is needed when
 // building buffers.
 struct BufferInfo {
-  uint64_t id;
-  const gfx::GpuMemoryBuffer* gpu_memory_buffer;
+  uint64_t ipc_id;
+  gfx::Size dimension;
+  gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle;
   uint32_t drm_format;
   cros::mojom::HalPixelFormat hal_pixel_format;
 };

@@ -22,7 +22,8 @@ namespace blink {
 class TestSupportingGC : public testing::Test {
  public:
   // Performs a precise garbage collection with eager sweeping.
-  static void PreciselyCollectGarbage();
+  static void PreciselyCollectGarbage(
+      BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
 
   // Performs a conservative garbage collection.
   static void ConservativelyCollectGarbage(

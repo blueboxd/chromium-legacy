@@ -974,8 +974,9 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
                                                 const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-  network::mojom::URLLoaderFactoryRequest default_factory_request =
-      mojo::MakeRequest(&factory_bundle->default_factory_info());
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+      default_factory_receiver = factory_bundle->pending_default_factory()
+                                     .InitWithNewPipeAndPassReceiver();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo default_header_client;
   bool bypass_redirect_checks = false;
 
@@ -984,22 +985,22 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rph->GetBrowserContext(), nullptr /* frame_host */, rph->GetID(),
         false /* is_navigation */, false /* is_download */, origin,
-        &default_factory_request, &default_header_client,
+        &default_factory_receiver, &default_header_client,
         &bypass_redirect_checks);
     devtools_instrumentation::WillCreateURLLoaderFactoryForServiceWorker(
-        rph, routing_id, &default_factory_request);
+        rph, routing_id, &default_factory_receiver);
   }
 
   if (GetNetworkFactoryCallbackForTest().is_null()) {
     rph->CreateURLLoaderFactory(
         origin, nullptr /* preferences */, net::NetworkIsolationKey(origin),
-        std::move(default_header_client), std::move(default_factory_request));
+        std::move(default_header_client), std::move(default_factory_receiver));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     rph->CreateURLLoaderFactory(
         origin, nullptr /* preferences */, net::NetworkIsolationKey(origin),
         std::move(default_header_client), mojo::MakeRequest(&original_factory));
-    GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_request),
+    GetNetworkFactoryCallbackForTest().Run(std::move(default_factory_receiver),
                                            rph->GetID(),
                                            original_factory.PassInterface());
   }
@@ -1027,7 +1028,7 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(RenderProcessHost* rph,
     network::mojom::URLLoaderFactoryPtr factory_ptr;
     mojo::MakeStrongBinding(std::move(factory),
                             mojo::MakeRequest(&factory_ptr));
-    factory_bundle->scheme_specific_factory_infos().emplace(
+    factory_bundle->pending_scheme_specific_factories().emplace(
         scheme, factory_ptr.PassInterface());
   }
   return factory_bundle;

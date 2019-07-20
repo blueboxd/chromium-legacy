@@ -616,13 +616,14 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
     return base::nullopt;
 
   // The factory is destroyed when the renderer drops the connection.
+  // TODO(crbug.com/955171): Replace this with Remote.
   network::mojom::URLLoaderFactoryPtr factory_ptr;
 
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(appcache_host_,
                                                         &factory_ptr);
 
   SubresourceLoaderParams params;
-  params.appcache_loader_factory_info = factory_ptr.PassInterface();
+  params.pending_appcache_loader_factory = factory_ptr.PassInterface();
   return base::Optional<SubresourceLoaderParams>(std::move(params));
 }
 

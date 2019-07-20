@@ -236,12 +236,13 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_navigation,
       bool is_download,
       const url::Origin& request_initiator,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
   void WillCreateURLLoaderFactoryForAppCacheSubresource(
       int render_process_id,
-      network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) override;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory)
+      override;
   uint32_t GetWebSocketOptions(content::RenderFrameHost* frame) override;
   bool WillCreateRestrictedCookieManager(
       content::BrowserContext* browser_context,

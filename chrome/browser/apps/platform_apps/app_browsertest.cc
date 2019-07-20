@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_switches.h"
@@ -96,28 +97,40 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
 
 // This class keeps track of tabs as they are added to the browser. It will be
 // "done" (i.e. won't block on Wait()) once |observations| tabs have been added.
-class TabsAddedNotificationObserver
-    : public content::WindowedNotificationObserver {
+class TabsAddedNotificationObserver : public TabStripModelObserver {
  public:
-  explicit TabsAddedNotificationObserver(size_t observations)
-      : content::WindowedNotificationObserver(
-            chrome::NOTIFICATION_TAB_ADDED,
-            content::NotificationService::AllSources()),
-        observations_(observations) {}
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    observed_tabs_.push_back(content::Details<WebContents>(details).ptr());
-    if (observed_tabs_.size() == observations_)
-      content::WindowedNotificationObserver::Observe(type, source, details);
+  TabsAddedNotificationObserver(Browser* browser, size_t observations)
+      : observations_(observations) {
+    tab_strip_observer_.Add(browser->tab_strip_model());
   }
+
+  ~TabsAddedNotificationObserver() override = default;
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kInserted)
+      return;
+
+    for (auto& tab : change.GetInsert()->contents)
+      observed_tabs_.push_back(tab.contents);
+
+    if (observed_tabs_.size() >= observations_)
+      run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
 
   const std::vector<content::WebContents*>& tabs() { return observed_tabs_; }
 
  private:
+  base::RunLoop run_loop_;
   size_t observations_;
   std::vector<content::WebContents*> observed_tabs_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
@@ -422,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
-  TabsAddedNotificationObserver observer(1);
+  TabsAddedNotificationObserver observer(browser(), 1);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
@@ -437,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // The test will try to open in app urls and external urls via clicking links
   // and window.open(). Only the external urls should succeed in opening tabs.
   const size_t kExpectedNumberOfTabs = 2u;
-  TabsAddedNotificationObserver observer(kExpectedNumberOfTabs);
+  TabsAddedNotificationObserver observer(browser(), kExpectedNumberOfTabs);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/background_page_navigation"))
       << message_;
   observer.Wait();
@@ -751,11 +764,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::Source<content::WebContentsDelegate>(browser()));
   LoadAndLaunchPlatformApp("open_link", "Launched");
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
 

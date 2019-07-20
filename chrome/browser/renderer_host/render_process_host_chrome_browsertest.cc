@@ -180,10 +180,9 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     // Create a new normal tab with a data URL. It should be in its own process.
     GURL page1("data:text/html,hello world1");
 
-    ui_test_utils::WindowedTabAddedNotificationObserver observer1(
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter add_tab1(browser());
     ::ShowSingletonTab(browser(), page1);
-    observer1.Wait();
+    add_tab1.Wait();
 
     tab_count++;
     host_count++;
@@ -198,10 +197,9 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     // own process, but without Site Isolation, it can share the previous
     // process.
     GURL page2("data:text/html,hello world2");
-    ui_test_utils::WindowedTabAddedNotificationObserver observer2(
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter add_tab2(browser());
     ::ShowSingletonTab(browser(), page2);
-    observer2.Wait();
+    add_tab2.Wait();
     tab_count++;
     if (content::AreAllSitesIsolatedForTesting())
       host_count++;
@@ -220,10 +218,9 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     // 43448 where extension and WebUI tabs could get combined into normal
     // renderers.
     GURL history(chrome::kChromeUIHistoryURL);
-    ui_test_utils::WindowedTabAddedNotificationObserver observer3(
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter add_tab3(browser());
     ::ShowSingletonTab(browser(), history);
-    observer3.Wait();
+    add_tab3.Wait();
     tab_count++;
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -234,11 +231,10 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
 
     // Create an extension tab.  It should be in its own process.
     GURL extension_url("chrome-extension://" + extension->id());
-    ui_test_utils::WindowedTabAddedNotificationObserver observer4(
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter add_tab4(browser());
     ::ShowSingletonTab(browser(), extension_url);
 
-    observer4.Wait();
+    add_tab4.Wait();
     tab_count++;
     host_count++;
     EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -300,10 +296,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
 
   // Create a new normal tab with a data URL.  It should be in its own process.
   GURL page1("data:text/html,hello world1");
-  ui_test_utils::WindowedTabAddedNotificationObserver observer1(
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter add_tab1(browser());
   ::ShowSingletonTab(browser(), page1);
-  observer1.Wait();
+  add_tab1.Wait();
   tab_count++;
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -312,10 +307,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest, ProcessPerTab) {
   // Create another data URL tab.  With Site Isolation, this will require its
   // own process, but without Site Isolation, it can share the previous process.
   GURL page2("data:text/html,hello world2");
-  ui_test_utils::WindowedTabAddedNotificationObserver observer2(
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter add_tab2(browser());
   ::ShowSingletonTab(browser(), page2);
-  observer2.Wait();
+  add_tab2.Wait();
   tab_count++;
   if (content::AreAllSitesIsolatedForTesting())
     host_count++;
@@ -497,10 +491,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
-  ui_test_utils::WindowedTabAddedNotificationObserver observer1(
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter add_tab(browser());
   ::ShowSingletonTab(browser(), page1);
-  observer1.Wait();
+  add_tab.Wait();
   tab_count++;
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());
@@ -538,10 +531,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
   int host_count = 1;
 
   GURL page1("data:text/html,hello world1");
-  ui_test_utils::WindowedTabAddedNotificationObserver observer1(
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter add_tab1(browser());
   ::ShowSingletonTab(browser(), page1);
-  observer1.Wait();
+  add_tab1.Wait();
   tab_count++;
   host_count++;
   EXPECT_EQ(tab_count, browser()->tab_strip_model()->count());

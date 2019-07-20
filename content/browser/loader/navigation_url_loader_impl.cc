@@ -1718,22 +1718,22 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     // requests that it can. If it elects to do so, we'll pass its proxy
     // endpoints off to the URLLoaderRequestController where wthey will be
     // connected if the request type supports proxying.
-    network::mojom::URLLoaderFactoryPtrInfo factory_info;
-    auto factory_request = mojo::MakeRequest(&factory_info);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
+    auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
         frame_tree_node->current_frame_host()->GetProcess()->GetID(),
         true /* is_navigation */, false /* is_download */,
-        navigation_request_initiator, &factory_request, &header_client,
+        navigation_request_initiator, &factory_receiver, &header_client,
         &bypass_redirect_checks);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true /* is_navigation */,
-            false /* is_download */, &factory_request)) {
+            false /* is_download */, &factory_receiver)) {
       use_proxy = true;
     }
     if (use_proxy) {
-      proxied_factory_request = std::move(factory_request);
-      proxied_factory_info = std::move(factory_info);
+      proxied_factory_request = std::move(factory_receiver);
+      proxied_factory_info = std::move(pending_factory);
     }
 
     const std::string storage_domain;
@@ -1903,7 +1903,7 @@ void NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
 // static
 void NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
-    network::mojom::URLLoaderFactoryRequest factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
     StoragePartitionImpl* partition) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -1916,7 +1916,7 @@ void NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
           switches::kDisableWebSecurity);
 
   partition->GetNetworkContext()->CreateURLLoaderFactory(
-      std::move(factory_request), std::move(params));
+      std::move(factory_receiver), std::move(params));
 }
 
 // static
@@ -1947,7 +1947,7 @@ void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {
 void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
     int frame_tree_node_id,
     const GURL& url,
-    network::mojom::URLLoaderFactoryRequest factory) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver) {
   auto it = non_network_url_loader_factories_.find(url.scheme());
   if (it == non_network_url_loader_factories_.end()) {
     DVLOG(1) << "Ignoring request with unknown scheme: " << url.spec();
@@ -1965,9 +1965,9 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
       frame->GetProcess()->GetID(), true /* is_navigation */,
-      false /* is_download */, navigation_request_initiator, &factory,
+      false /* is_download */, navigation_request_initiator, &factory_receiver,
       nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
-  it->second->Clone(std::move(factory));
+  it->second->Clone(std::move(factory_receiver));
 }
 
 }  // namespace content

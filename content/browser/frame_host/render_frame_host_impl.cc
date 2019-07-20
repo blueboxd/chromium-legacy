@@ -1288,7 +1288,7 @@ void RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories =
             std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-    subresource_loader_factories->initiator_specific_factory_infos() =
+    subresource_loader_factories->pending_initiator_specific_factories() =
         CreateInitiatorSpecificURLLoaderFactories(request_initiators);
     GetNavigationControl()->UpdateSubresourceLoaderFactories(
         std::move(subresource_loader_factories));
@@ -4908,30 +4908,30 @@ void RenderFrameHostImpl::CommitNavigation(
     // however only do this for cross-document navigations, because the
     // alternative would be redundant effort.
     if (subresource_loader_params &&
-        subresource_loader_params->appcache_loader_factory_info.is_valid()) {
+        subresource_loader_params->pending_appcache_loader_factory.is_valid()) {
       // If the caller has supplied a factory for AppCache, use it.
-
-      auto factory_ptr_info =
-          std::move(subresource_loader_params->appcache_loader_factory_info);
+      auto pending_factory =
+          std::move(subresource_loader_params->pending_appcache_loader_factory);
 
 #if defined(OS_ANDROID)
       GetContentClient()
           ->browser()
           ->WillCreateURLLoaderFactoryForAppCacheSubresource(
-              GetProcess()->GetID(), &factory_ptr_info);
+              GetProcess()->GetID(), &pending_factory);
 #endif
 
-      subresource_loader_factories->appcache_factory_info() =
-          std::move(factory_ptr_info);
+      subresource_loader_factories->pending_appcache_factory() =
+          std::move(pending_factory);
 
       // Inject test intermediary if needed.
       if (!GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
-        network::mojom::URLLoaderFactoryPtrInfo original_factory =
-            std::move(subresource_loader_factories->appcache_factory_info());
-        network::mojom::URLLoaderFactoryRequest new_request = mojo::MakeRequest(
-            &subresource_loader_factories->appcache_factory_info());
+        mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory =
+            std::move(subresource_loader_factories->pending_appcache_factory());
+        mojo::PendingReceiver<network::mojom::URLLoaderFactory> new_receiver =
+            subresource_loader_factories->pending_appcache_factory()
+                .InitWithNewPipeAndPassReceiver();
         GetCreateNetworkFactoryCallbackForRenderFrame().Run(
-            std::move(new_request), GetProcess()->GetID(),
+            std::move(new_receiver), GetProcess()->GetID(),
             std::move(original_factory));
       }
     }
@@ -4939,7 +4939,8 @@ void RenderFrameHostImpl::CommitNavigation(
     non_network_url_loader_factories_.clear();
 
     // Set up the default factory.
-    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        pending_default_factory;
 
     // See if this is for WebUI.
     std::string scheme = common_params.url.scheme();
@@ -4954,7 +4955,7 @@ void RenderFrameHostImpl::CommitNavigation(
       if ((enabled_bindings_ & kWebUIBindingsPolicyMask) &&
           !GetContentClient()->browser()->IsWebUIAllowedToMakeNetworkRequests(
               url::Origin::Create(common_params.url.GetOrigin()))) {
-        default_factory_info = factory_for_webui.PassInterface();
+        pending_default_factory = factory_for_webui.PassInterface();
         // WebUIURLLoaderFactory will kill the renderer if it sees a request
         // with a non-chrome scheme. Register a URLLoaderFactory for the about
         // scheme so about:blank doesn't kill the renderer.
@@ -4963,26 +4964,26 @@ void RenderFrameHostImpl::CommitNavigation(
       } else {
         // This is a webui scheme that doesn't have webui bindings. Give it
         // access to the network loader as it might require it.
-        subresource_loader_factories->scheme_specific_factory_infos().emplace(
-            scheme, factory_for_webui.PassInterface());
+        subresource_loader_factories->pending_scheme_specific_factories()
+            .emplace(scheme, factory_for_webui.PassInterface());
       }
     }
 
-    if (!default_factory_info) {
+    if (!pending_default_factory) {
       // Otherwise default to a Network Service-backed loader from the
       // appropriate NetworkContext.
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
               GetOriginForURLLoaderFactory(navigation_request),
-              mojo::MakeRequest(&default_factory_info));
+              pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
     }
 
-    DCHECK(default_factory_info);
-    subresource_loader_factories->default_factory_info() =
-        std::move(default_factory_info);
+    DCHECK(pending_default_factory);
+    subresource_loader_factories->pending_default_factory() =
+        std::move(pending_default_factory);
 
     // Only file resources can load file subresources.
     //
@@ -5036,25 +5037,27 @@ void RenderFrameHostImpl::CommitNavigation(
             process_->GetID(), routing_id_, &non_network_url_loader_factories_);
 
     for (auto& factory : non_network_url_loader_factories_) {
-      network::mojom::URLLoaderFactoryPtrInfo factory_proxy_info;
-      auto factory_request = mojo::MakeRequest(&factory_proxy_info);
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_factory_proxy;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
+          pending_factory_proxy.InitWithNewPipeAndPassReceiver();
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           false /* is_navigation */, false /* is_download */,
           GetOriginForURLLoaderFactory(navigation_request)
               .value_or(url::Origin()),
-          &factory_request, nullptr /* header_client */,
+          &factory_receiver, nullptr /* header_client */,
           nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
-          &factory_request);
-      factory.second->Clone(std::move(factory_request));
-      subresource_loader_factories->scheme_specific_factory_infos().emplace(
-          factory.first, std::move(factory_proxy_info));
+          &factory_receiver);
+      factory.second->Clone(std::move(factory_receiver));
+      subresource_loader_factories->pending_scheme_specific_factories().emplace(
+          factory.first, std::move(pending_factory_proxy));
     }
 
-    subresource_loader_factories->initiator_specific_factory_infos() =
+    subresource_loader_factories->pending_initiator_specific_factories() =
         CreateInitiatorSpecificURLLoaderFactories(
             initiators_requiring_separate_url_loader_factory_);
   }
@@ -5103,11 +5106,11 @@ void RenderFrameHostImpl::CommitNavigation(
       DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
       factory_bundle_for_prefetch =
           std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-      network::mojom::URLLoaderFactoryPtrInfo factory_info;
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
       CreateNetworkServiceDefaultFactoryInternal(
-          url::Origin(), mojo::MakeRequest(&factory_info));
-      factory_bundle_for_prefetch->default_factory_info() =
-          std::move(factory_info);
+          url::Origin(), pending_factory.InitWithNewPipeAndPassReceiver());
+      factory_bundle_for_prefetch->pending_default_factory() =
+          std::move(pending_factory);
     }
 
     if (factory_bundle_for_prefetch) {
@@ -5243,6 +5246,7 @@ void RenderFrameHostImpl::FailedNavigation(
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // TODO(domfarolino, crbug.com/955171): Replace this with Remote.
     network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
     bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
         origin, mojo::MakeRequest(&default_factory_info));
@@ -5332,7 +5336,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
   navigation_control_.reset();
   frame_input_handler_.reset();
 
-  // Disconnect with ImageDownloader Mojo service in RenderFrame.
+  // Disconnect with ImageDownloader Mojo service in Blink.
   mojo_image_downloader_.reset();
 
   // The geolocation service and sensor provider proxy may attempt to cancel
@@ -5792,9 +5796,10 @@ void RenderFrameHostImpl::NavigationRequestCancelled(
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     const base::Optional<url::Origin>& origin,
-    network::mojom::URLLoaderFactoryRequest default_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        default_factory_receiver) {
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryInternal(
-      origin, std::move(default_factory_request));
+      origin, std::move(default_factory_receiver));
 
   // Add connection error observer when Network Service is running
   // out-of-process.
@@ -5819,7 +5824,8 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     const base::Optional<url::Origin>& origin,
-    network::mojom::URLLoaderFactoryRequest default_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        default_factory_receiver) {
   auto* context = GetSiteInstance()->GetBrowserContext();
   bool bypass_redirect_checks = false;
 
@@ -5828,28 +5834,28 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
         context, this, GetProcess()->GetID(), false /* is_navigation */,
         false /* is_download */, origin.value_or(url::Origin()),
-        &default_factory_request, &header_client, &bypass_redirect_checks);
+        &default_factory_receiver, &header_client, &bypass_redirect_checks);
   }
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
-      &default_factory_request);
+      &default_factory_receiver);
 
   // Create the URLLoaderFactory - either via ContentBrowserClient or ourselves.
   WebPreferences preferences = GetRenderViewHost()->GetWebkitPreferences();
   if (GetCreateNetworkFactoryCallbackForRenderFrame().is_null()) {
     GetProcess()->CreateURLLoaderFactory(
         origin, &preferences, network_isolation_key_, std::move(header_client),
-        std::move(default_factory_request));
+        std::move(default_factory_receiver));
   } else {
-    network::mojom::URLLoaderFactoryPtr original_factory;
+    mojo::Remote<network::mojom::URLLoaderFactory> original_factory;
     GetProcess()->CreateURLLoaderFactory(
         origin, &preferences, network_isolation_key_, std::move(header_client),
-        mojo::MakeRequest(&original_factory));
+        original_factory.BindNewPipeAndPassReceiver());
     GetCreateNetworkFactoryCallbackForRenderFrame().Run(
-        std::move(default_factory_request), GetProcess()->GetID(),
-        original_factory.PassInterface());
+        std::move(default_factory_receiver), GetProcess()->GetID(),
+        original_factory.Unbind());
   }
 
   return bypass_redirect_checks;

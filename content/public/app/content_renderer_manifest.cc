@@ -71,7 +71,6 @@ const service_manager::Manifest& GetContentRendererManifest() {
                   "blink.mojom.MediaDevicesListener",
                   "blink.mojom.MediaStreamDeviceObserver",
                   "blink.mojom.TextSuggestionBackend",
-                  "content.mojom.ImageDownloader",
                   "content.mojom.FrameInputHandler",
                   "content.mojom.FullscreenVideoElementHandler",
                   "content.mojom.Widget", "viz.mojom.InputTargetClient"})

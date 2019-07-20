@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -6067,6 +6068,54 @@ TEST_F(HeapTest, PersistentAssignsDeletedValue) {
   Persistent<IntWrapper> pre_initialized(MakeGarbageCollected<IntWrapper>(1));
   pre_initialized = deleted;
   PreciselyCollectGarbage();
+}
+
+struct HeapHashMapWrapper : GarbageCollectedFinalized<HeapHashMapWrapper> {
+  HeapHashMapWrapper() {
+    for (int i = 0; i < 100; ++i) {
+      map_.insert(MakeGarbageCollected<IntWrapper>(i),
+                  NonTriviallyDestructible());
+    }
+  }
+  // This should call ~HeapHapMap() -> ~HashMap() -> ~HashTable().
+  ~HeapHashMapWrapper() = default;
+
+  void Trace(Visitor* visitor) { visitor->Trace(map_); }
+
+ private:
+  struct NonTriviallyDestructible {
+    ~NonTriviallyDestructible() {}
+  };
+  HeapHashMap<Member<IntWrapper>, NonTriviallyDestructible> map_;
+};
+
+TEST_F(HeapTest, AccessDeletedBackingStore) {
+  // Regression test: https://crbug.com/985443
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      blink::features::kBlinkHeapConcurrentSweeping);
+  ClearOutOldGarbage();
+
+  ThreadState* thread_state = ThreadState::Current();
+
+  auto* map = MakeGarbageCollected<HeapHashMapWrapper>();
+  // Run marking.
+  PreciselyCollectGarbage(BlinkGC::kConcurrentAndLazySweeping);
+  // Perform complete sweep on hash_arena.
+  BaseArena* hash_arena =
+      thread_state->Heap().Arena(BlinkGC::kHashTableArenaIndex);
+  {
+    ThreadState::AtomicPauseScope scope(thread_state);
+    ThreadState::SweepForbiddenScope sweep_forbidden(thread_state);
+    hash_arena->CompleteSweep();
+  }
+  BaseArena* map_arena = PageFromObject(map)->Arena();
+  // Sweep normal arena, but don't call finalizers.
+  map_arena->SweepOnConcurrentThread();
+  // Now complete sweeping with PerformIdleLazySweep and call finalizers.
+  while (thread_state->IsSweepingInProgress()) {
+    thread_state->PerformIdleLazySweep(base::TimeTicks::Max());
+  }
 }
 
 }  // namespace blink

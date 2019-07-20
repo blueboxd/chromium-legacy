@@ -586,8 +586,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, CopyLinkTextTouchTextImage) {
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
   ContextMenuNotificationObserver menu_observer(
       IDC_CONTENT_CONTEXT_OPENLINKNEWTAB);
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
 
   // Go to a page with a link
   ui_test_utils::NavigateToURL(
@@ -610,8 +609,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
 
   // The menu_observer will select "Open in new tab", wait for the new tab to
   // be added.
-  tab_observer.Wait();
-  tab = tab_observer.GetTab();
+  tab = add_tab.Wait();
   content::WaitForLoadStop(tab);
 
   // Verify that it's the correct tab.
@@ -620,8 +618,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, RealMenu) {
 
 // Verify that "Open Link in New Tab" doesn't send URL fragment as referrer.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL echoheader(embedded_test_server()->GetURL("/echoheader?Referer"));
@@ -646,8 +643,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 
-  tab_observer.Wait();
-  content::WebContents* tab = tab_observer.GetTab();
+  content::WebContents* tab = add_tab.Wait();
   content::WaitForLoadStop(tab);
 
   // Verify that it's the correct tab.
@@ -670,8 +666,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
 
 // Verify that "Open Link in Incognito Window " doesn't send referrer URL.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL echoheader(embedded_test_server()->GetURL("/echoheader?Referer"));
@@ -697,8 +692,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD, 0);
 
-  tab_observer.Wait();
-  content::WebContents* tab = tab_observer.GetTab();
+  content::WebContents* tab = add_tab.Wait();
   content::WaitForLoadStop(tab);
 
   // Verify that it's the correct tab.
@@ -952,14 +946,12 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   // Open the menu items. They should match their corresponding profiles in
   // |profiles_in_menu|.
   for (Profile* profile : profiles_in_menu) {
-    ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-        content::NotificationService::AllSources());
+    ui_test_utils::AllBrowserTabAddedWaiter add_tab;
     int command_id = menu->GetCommandIDByProfilePath(profile->GetPath());
     ASSERT_NE(-1, command_id);
     menu->ExecuteCommand(command_id, 0);
 
-    tab_observer.Wait();
-    content::WebContents* tab = tab_observer.GetTab();
+    content::WebContents* tab = add_tab.Wait();
     content::WaitForLoadStop(tab);
 
     // Verify that it's the correct tab and profile.
@@ -1042,13 +1034,11 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {
   static const char kValidImage[] = "/image_search/valid.png";
   SetupAndLoadImagePage(kValidImage);
 
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
   AttemptImageSearch();
 
   // The browser should open a new tab for an image search.
-  tab_observer.Wait();
-  content::WebContents* new_tab = tab_observer.GetTab();
+  content::WebContents* new_tab = add_tab.Wait();
   content::WaitForLoadStop(new_tab);
   EXPECT_EQ(GetImageSearchURL(), new_tab->GetURL());
 }

@@ -19,7 +19,7 @@
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/file_select_listener.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
@@ -249,7 +249,8 @@ bool MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        target_factory_receiver) {
   if (!agent_host)
     return false;
   bool had_interceptors = false;
@@ -257,7 +258,7 @@ bool MaybeCreateProxyForInterception(
   for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) {
     had_interceptors = (*it)->MaybeCreateProxyForInterception(
                            rph, frame_token, is_navigation, is_download,
-                           target_factory_request) ||
+                           target_factory_receiver) ||
                        had_interceptors;
   }
   return had_interceptors;
@@ -269,7 +270,8 @@ bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        target_factory_receiver) {
   DCHECK(!is_download || is_navigation);
 
   // Order of targets and sessions matters -- the latter proxy is created,
@@ -285,18 +287,18 @@ bool WillCreateURLLoaderFactory(
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::NetworkHandler>(
           frame_agent_host, rph, frame_token, is_navigation, is_download,
-          target_factory_request);
+          target_factory_receiver);
 
   had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                          frame_agent_host, rph, frame_token, is_navigation,
-                         is_download, target_factory_request) ||
+                         is_download, target_factory_receiver) ||
                      had_interceptors;
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                            browser_agent_host, rph, frame_token, is_navigation,
-                           is_download, target_factory_request) ||
+                           is_download, target_factory_receiver) ||
                        had_interceptors;
   }
   return had_interceptors;
@@ -321,7 +323,8 @@ bool InterceptFileChooser(
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,
     int routing_id,
-    network::mojom::URLLoaderFactoryRequest* loader_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        loader_factory_receiver) {
   ServiceWorkerDevToolsAgentHost* worker_agent_host =
       ServiceWorkerDevToolsManager::GetInstance()
           ->GetDevToolsAgentHostForWorker(rph->GetID(), routing_id);
@@ -335,13 +338,13 @@ bool WillCreateURLLoaderFactoryForServiceWorker(
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::FetchHandler>(
           worker_agent_host, rph, worker_token, false, false,
-          loader_factory_request);
+          loader_factory_receiver);
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                            browser_agent_host, rph, worker_token, false, false,
-                           loader_factory_request) ||
+                           loader_factory_receiver) ||
                        had_interceptors;
   }
   return had_interceptors;
@@ -352,12 +355,13 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     std::unique_ptr<network::mojom::URLLoaderFactory>* factory) {
+  // TODO(crbug.com/955171): Replace this with PendingRemote.
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory;
-  network::mojom::URLLoaderFactoryRequest request =
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       mojo::MakeRequest(&proxied_factory);
-  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &request))
+  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &receiver))
     return false;
-  mojo::MakeStrongBinding(std::move(*factory), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(*factory), std::move(receiver));
   *factory = std::make_unique<DevToolsURLLoaderFactoryAdapter>(
       mojo::MakeProxy(std::move(proxied_factory)));
   return true;

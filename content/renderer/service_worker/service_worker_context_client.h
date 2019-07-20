@@ -247,6 +247,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // Out-of-process NetworkService:
   // Detects disconnection from the network service.
+  // TODO(crbug.com/955171): Replace this with Remote.
   network::mojom::URLLoaderFactoryPtr
       network_service_connection_error_handler_holder_;
 

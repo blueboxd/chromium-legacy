@@ -30,7 +30,8 @@ struct CONTENT_EXPORT SubresourceLoaderParams {
   // For AppCache.
   // Subresource loader factory info for appcache, that is to be used to
   // create a subresource loader in the renderer.
-  network::mojom::URLLoaderFactoryPtrInfo appcache_loader_factory_info;
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      pending_appcache_loader_factory;
 
   // For ServiceWorkers.
   // The controller service worker, non-null if the frame is to be

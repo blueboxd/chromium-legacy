@@ -55,6 +55,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
 // SharedURLLoaderFactory. It is not sequence safe but can be passed across
 // sequences. Please see the comments of SharedURLLoaderFactory for how this
 // class is used.
+// TODO(domfarolino, crbug.com/955171): This class should be renamed to not
+// include "Info".
 class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactoryInfo {
  public:
   SharedURLLoaderFactoryInfo();

@@ -5078,7 +5078,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     const url::Origin& request_initiator,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   bool use_proxy = false;
@@ -5094,7 +5094,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     bool use_proxy_for_web_request =
         web_request_api->MaybeProxyURLLoaderFactory(
             browser_context, frame, render_process_id, is_navigation,
-            is_download, factory_request, header_client);
+            is_download, factory_receiver, header_client);
     if (bypass_redirect_checks)
       *bypass_redirect_checks = use_proxy_for_web_request;
     use_proxy |= use_proxy_for_web_request;
@@ -5102,7 +5102,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #endif
 
   use_proxy |= signin::ProxyingURLLoaderFactory::MaybeProxyRequest(
-      frame, is_navigation, request_initiator, factory_request);
+      frame, is_navigation, request_initiator, factory_receiver);
 
   return use_proxy;
 }

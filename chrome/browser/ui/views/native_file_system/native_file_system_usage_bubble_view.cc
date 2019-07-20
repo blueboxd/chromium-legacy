@@ -48,31 +48,44 @@ namespace {
 // of the dialog to explain lifetime.
 int ComputeHeadingMessageFromUsage(
     const NativeFileSystemUsageBubbleView::Usage& usage,
-    bool* need_lifetime_text_at_end) {
-  if (!usage.writable_files.empty() && !usage.writable_directories.empty()) {
-    *need_lifetime_text_at_end = true;
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT;
-  }
-  if (!usage.writable_files.empty()) {
-    if (usage.readable_directories.empty()) {
-      *need_lifetime_text_at_end = false;
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
+    base::FilePath* embedded_path) {
+  // Only writable files.
+  if (usage.writable_directories.empty() &&
+      usage.readable_directories.empty()) {
+    if (usage.writable_files.size() == 1) {
+      *embedded_path = usage.writable_files.front();
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT;
     }
-    *need_lifetime_text_at_end = true;
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_NO_LIFETIME_TEXT;
-  }
-  if (!usage.writable_directories.empty()) {
-    if (usage.readable_directories.empty()) {
-      *need_lifetime_text_at_end = false;
-      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
-    }
-    *need_lifetime_text_at_end = true;
-    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_NO_LIFETIME_TEXT;
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT;
   }
 
-  DCHECK(!usage.readable_directories.empty());
-  *need_lifetime_text_at_end = false;
-  return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
+  // Only writable directories.
+  if (usage.writable_files.empty() && usage.readable_directories.empty()) {
+    if (usage.writable_directories.size() == 1) {
+      *embedded_path = usage.writable_directories.front();
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT;
+    }
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT;
+  }
+
+  // Both writable files and writable directories, but no read-only directories.
+  if (usage.readable_directories.empty()) {
+    DCHECK(!usage.writable_files.empty());
+    DCHECK(!usage.writable_directories.empty());
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT;
+  }
+
+  // Only readable directories.
+  if (usage.writable_files.empty() && usage.writable_directories.empty()) {
+    if (usage.readable_directories.size() == 1) {
+      *embedded_path = usage.readable_directories.front();
+      return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT;
+    }
+    return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT;
+  }
+
+  // Some combination of read and write access.
+  return IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READ_AND_WRITE;
 }
 
 // Displays a (one-column) table model as a one-line summary showing the
@@ -131,6 +144,8 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
     button->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_COLLAPSE));
     expand_collapse_button_ = label_container->AddChildView(std::move(button));
+    if (model->RowCount() < 3)
+      expand_collapse_button_->SetVisible(false);
     int preferred_width = label_container->GetPreferredSize().width();
     AddChildView(std::move(label_container));
 
@@ -299,15 +314,17 @@ base::string16 NativeFileSystemUsageBubbleView::GetDialogButtonLabel(
 }
 
 bool NativeFileSystemUsageBubbleView::ShouldShowCloseButton() const {
-  return false;
+  return true;
 }
 
 void NativeFileSystemUsageBubbleView::Init() {
   // Set up the layout of the bubble.
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
+  gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
+      gfx::Insets(0, dialog_insets.left(), 0, dialog_insets.right()),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   set_margins(
       gfx::Insets(provider->GetDistanceMetric(
@@ -317,41 +334,42 @@ void NativeFileSystemUsageBubbleView::Init() {
                       views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
                   0));
 
-  bool need_lifetime_text_at_end = false;
+  base::FilePath embedded_path;
   int heading_message_id =
-      ComputeHeadingMessageFromUsage(usage_, &need_lifetime_text_at_end);
+      ComputeHeadingMessageFromUsage(usage_, &embedded_path);
 
-  AddChildView(native_file_system_ui_helper::CreateOriginLabel(
-      heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE));
+  if (!embedded_path.empty()) {
+    AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
+        heading_message_id, origin_, embedded_path, CONTEXT_BODY_TEXT_LARGE));
+  } else {
+    AddChildView(native_file_system_ui_helper::CreateOriginLabel(
+        heading_message_id, origin_, CONTEXT_BODY_TEXT_LARGE));
 
-  if (writable_paths_model_.RowCount() > 0)
-    AddChildView(std::make_unique<CollapsibleListView>(&writable_paths_model_));
+    if (writable_paths_model_.RowCount() > 0) {
+      if (readable_paths_model_.RowCount() > 0) {
+        auto label = std::make_unique<views::Label>(
+            l10n_util::GetStringUTF16(
+                IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES),
+            CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED_SECONDARY);
+        label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+        AddChildView(std::move(label));
+      }
+      AddChildView(
+          std::make_unique<CollapsibleListView>(&writable_paths_model_));
+    }
 
-  // If the header wasn't already the "readable directories" header (i.e. we
-  // had at least one writable file or directory as well) add a secondary header
-  // for the readable directories section.
-  if (heading_message_id !=
-      IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT) {
-    auto directory_label = std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(
-            IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_ALSO_READABLE_DIRECTORIES_TEXT),
-        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
-    directory_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    directory_label->SetMultiLine(true);
-    AddChildView(std::move(directory_label));
-  }
-
-  if (readable_paths_model_.RowCount() > 0)
-    AddChildView(std::make_unique<CollapsibleListView>(&readable_paths_model_));
-
-  if (need_lifetime_text_at_end) {
-    auto lifetime_label = std::make_unique<views::Label>(
-        l10n_util::GetStringUTF16(
-            IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_LIFETIME_TEXT),
-        CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
-    lifetime_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    lifetime_label->SetMultiLine(true);
-    AddChildView(std::move(lifetime_label));
+    if (readable_paths_model_.RowCount() > 0) {
+      if (writable_paths_model_.RowCount() > 0) {
+        auto label = std::make_unique<views::Label>(
+            l10n_util::GetStringUTF16(
+                IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES),
+            CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED_SECONDARY);
+        label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+        AddChildView(std::move(label));
+      }
+      AddChildView(
+          std::make_unique<CollapsibleListView>(&readable_paths_model_));
+    }
   }
 }
 

@@ -506,12 +506,12 @@ ServiceWorkerContextCore::GetLoaderFactoryBundleForUpdateCheck() {
   network::mojom::URLLoaderFactoryPtr network_factory_ptr;
   loader_factory_getter_->CloneNetworkFactory(
       mojo::MakeRequest(&network_factory_ptr));
-  auto factory_bundle_info =
+  auto pending_factory_bundle =
       std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-  factory_bundle_info->default_factory_info() =
+  pending_factory_bundle->pending_default_factory() =
       network_factory_ptr.PassInterface();
   loader_factory_bundle_for_update_check_->Update(
-      std::move(factory_bundle_info));
+      std::move(pending_factory_bundle));
   return loader_factory_bundle_for_update_check_;
 }
 

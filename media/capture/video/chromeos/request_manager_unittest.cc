@@ -93,6 +93,7 @@ class RequestManagerTest : public ::testing::Test {
     request_manager_ = std::make_unique<RequestManager>(
         std::move(callback_ops_request),
         std::make_unique<MockStreamCaptureInterface>(), device_context_.get(),
+        VideoCaptureBufferType::kSharedMemory,
         std::make_unique<FakeCameraBufferFactory>(),
         base::BindRepeating(
             [](const uint8_t* buffer, const uint32_t bytesused,

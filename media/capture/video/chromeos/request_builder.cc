@@ -36,10 +36,11 @@ cros::mojom::Camera3CaptureRequestPtr RequestBuilder::BuildRequest(
     if (!buffer_info) {
       return capture_request;
     }
-    const uint64_t buffer_id = buffer_info->id;
-    auto buffer_handle = CreateCameraBufferHandle(stream_type, *buffer_info);
-    auto stream_buffer =
-        CreateStreamBuffer(stream_type, buffer_id, std::move(buffer_handle));
+    const uint64_t buffer_ipc_id = buffer_info->ipc_id;
+    auto buffer_handle =
+        CreateCameraBufferHandle(stream_type, std::move(*buffer_info));
+    auto stream_buffer = CreateStreamBuffer(stream_type, buffer_ipc_id,
+                                            std::move(buffer_handle));
     if (IsInputStream(stream_type)) {
       capture_request->input_buffer = std::move(stream_buffer);
     } else {
@@ -57,14 +58,14 @@ cros::mojom::CameraBufferHandlePtr RequestBuilder::CreateCameraBufferHandle(
     BufferInfo buffer_info) {
   auto buffer_handle = cros::mojom::CameraBufferHandle::New();
 
-  buffer_handle->buffer_id = buffer_info.id;
+  buffer_handle->buffer_id = buffer_info.ipc_id;
   buffer_handle->drm_format = buffer_info.drm_format;
   buffer_handle->hal_pixel_format = buffer_info.hal_pixel_format;
-  buffer_handle->width = buffer_info.gpu_memory_buffer->GetSize().width();
-  buffer_handle->height = buffer_info.gpu_memory_buffer->GetSize().height();
+  buffer_handle->width = buffer_info.dimension.width();
+  buffer_handle->height = buffer_info.dimension.height();
 
-  gfx::NativePixmapHandle native_pixmap_handle =
-      buffer_info.gpu_memory_buffer->CloneHandle().native_pixmap_handle;
+  gfx::NativePixmapHandle& native_pixmap_handle =
+      buffer_info.gpu_memory_buffer_handle.native_pixmap_handle;
 
   size_t num_planes = native_pixmap_handle.planes.size();
   std::vector<StreamCaptureInterface::Plane> planes(num_planes);
@@ -88,12 +89,12 @@ cros::mojom::CameraBufferHandlePtr RequestBuilder::CreateCameraBufferHandle(
 
 cros::mojom::Camera3StreamBufferPtr RequestBuilder::CreateStreamBuffer(
     StreamType stream_type,
-    uint64_t buffer_id,
+    uint64_t buffer_ipc_id,
     cros::mojom::CameraBufferHandlePtr buffer_handle) {
   cros::mojom::Camera3StreamBufferPtr buffer =
       cros::mojom::Camera3StreamBuffer::New();
   buffer->stream_id = static_cast<uint64_t>(stream_type);
-  buffer->buffer_id = buffer_id;
+  buffer->buffer_id = buffer_ipc_id;
   buffer->status = cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_OK;
   buffer->buffer_handle = std::move(buffer_handle);
   return buffer;

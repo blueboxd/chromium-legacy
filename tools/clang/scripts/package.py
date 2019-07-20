@@ -252,6 +252,10 @@ def main():
     ])
   elif sys.platform.startswith('linux'):
     want.extend([
+      # Copy the stdlibc++.so.6 we linked the binaries against.
+      'lib/libstdc++.so.6',
+
+      # Add LLD.
       'bin/lld',
 
       # Add llvm-ar for LTO.

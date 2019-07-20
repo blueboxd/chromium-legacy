@@ -176,11 +176,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     }
 
     // Set up the default network loader factory.
-    network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-    CreateNetworkFactory(mojo::MakeRequest(&default_factory_info),
-                         render_process_host);
-    subresource_loader_factories->default_factory_info() =
-        std::move(default_factory_info);
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>
+        pending_default_factory;
+    CreateNetworkFactory(
+        pending_default_factory.InitWithNewPipeAndPassReceiver(),
+        render_process_host);
+    subresource_loader_factories->pending_default_factory() =
+        std::move(pending_default_factory);
 
     // Prepare the controller service worker info to pass to the renderer.
     // |object_info| can be nullptr when the service worker context or the

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -217,30 +218,6 @@ void GetCookies(const GURL& url,
                 int* value_size,
                 std::string* value);
 
-// A WindowedNotificationObserver hard-wired to observe
-// chrome::NOTIFICATION_TAB_ADDED.
-class WindowedTabAddedNotificationObserver
-    : public content::WindowedNotificationObserver {
- public:
-  // Register to listen for notifications of NOTIFICATION_TAB_ADDED from either
-  // a specific source, or from all sources if |source| is
-  // NotificationService::AllSources().
-  explicit WindowedTabAddedNotificationObserver(
-      const content::NotificationSource& source);
-
-  // Returns the added tab, or NULL if no notification was observed yet.
-  content::WebContents* GetTab() { return added_tab_; }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
- private:
-  content::WebContents* added_tab_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowedTabAddedNotificationObserver);
-};
-
 // Similar to WindowedNotificationObserver but also provides a way of retrieving
 // the details associated with the notification.
 // Note that in order to use that class the details class should be copiable,
@@ -318,6 +295,7 @@ class BrowserAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(BrowserAddedObserver);
 };
 
+// A helper that will wait until a tab is added to a specific Browser.
 class TabAddedWaiter : public TabStripModelObserver {
  public:
   explicit TabAddedWaiter(Browser* browser);
@@ -336,6 +314,36 @@ class TabAddedWaiter : public TabStripModelObserver {
   ScopedObserver<TabStripModel, TabStripModelObserver> scoped_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabAddedWaiter);
+};
+
+// Similar to TabAddedWaiter, but will observe tabs added to all Browser
+// objects, and can return the last tab that was added.
+class AllBrowserTabAddedWaiter : public TabStripModelObserver,
+                                 public BrowserListObserver {
+ public:
+  AllBrowserTabAddedWaiter();
+  ~AllBrowserTabAddedWaiter() override;
+
+  content::WebContents* Wait();
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
+
+ private:
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
+      this};
+  base::RunLoop run_loop_;
+
+  // The last tab that was added.
+  content::WebContents* web_contents_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(AllBrowserTabAddedWaiter);
 };
 
 // Enumerates all history contents on the backend thread. Returns them in

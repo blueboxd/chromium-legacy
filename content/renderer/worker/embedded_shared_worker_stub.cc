@@ -98,9 +98,10 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
   // the same as the worker's process crashing.
   if (IsOutOfProcessNetworkService()) {
     default_factory_connection_error_handler_holder_.Bind(std::move(
-        subresource_loader_factory_bundle_info->default_factory_info()));
-    default_factory_connection_error_handler_holder_->Clone(mojo::MakeRequest(
-        &subresource_loader_factory_bundle_info->default_factory_info()));
+        subresource_loader_factory_bundle_info->pending_default_factory()));
+    default_factory_connection_error_handler_holder_->Clone(
+        subresource_loader_factory_bundle_info->pending_default_factory()
+            .InitWithNewPipeAndPassReceiver());
     default_factory_connection_error_handler_holder_
         .set_connection_error_handler(base::BindOnce(
             &EmbeddedSharedWorkerStub::Terminate, base::Unretained(this)));

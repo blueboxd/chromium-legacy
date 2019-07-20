@@ -294,7 +294,7 @@ void GrantFileAccessToProcess(int process_id,
 void CreateNetworkFactoryForNavigationPreloadOnUI(
     int frame_tree_node_id,
     scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
@@ -325,12 +325,12 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       partition->browser_context(), frame_tree_node->current_frame_host(),
       frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-      /*is_navigation=*/true, /*is_download=*/false, initiator, &request,
+      /*is_navigation=*/true, /*is_download=*/false, initiator, &receiver,
       &header_client, &bypass_redirect_checks_unused);
 
   // Make the network factory.
   NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(
-      std::move(header_client), std::move(request), partition);
+      std::move(header_client), std::move(receiver), partition);
 }
 
 }  // namespace

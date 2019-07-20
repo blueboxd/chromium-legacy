@@ -22,7 +22,7 @@ namespace {
 // Whether to pin code in memory. Pinning happens in Java, but is controlled
 // from here, to obtain the range.
 const Feature kPinOrderedCodeInMemory{"PinOrderedCodeInMemory",
-                                      FEATURE_DISABLED_BY_DEFAULT};
+                                      FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace
 

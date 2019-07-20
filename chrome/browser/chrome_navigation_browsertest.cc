@@ -1131,12 +1131,10 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Click a link with noopener that navigates in a new window.
   content::WebContents* link_web_contents = nullptr;
   {
-    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
-        content::NotificationService::AllSources());
+    ui_test_utils::AllBrowserTabAddedWaiter tab_added;
     EXPECT_TRUE(
         content::ExecJs(main_contents, "clickSameSiteNoOpenerTargetedLink();"));
-    tab_added_observer.Wait();
-    link_web_contents = tab_added_observer.GetTab();
+    link_web_contents = tab_added.Wait();
   }
 
   EXPECT_NE(main_contents, link_web_contents);
@@ -1145,14 +1143,12 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // Execute window.open() with noopener.
   content::WebContents* open_web_contents = nullptr;
   {
-    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
-        content::NotificationService::AllSources());
+    ui_test_utils::AllBrowserTabAddedWaiter tab_added;
     EXPECT_TRUE(content::ExecJs(
         main_contents, content::JsReplace("window.open($1, 'bar', 'noopener');",
                                           embedded_test_server()->GetURL(
                                               "a.com", "/title1.html"))));
-    tab_added_observer.Wait();
-    open_web_contents = tab_added_observer.GetTab();
+    open_web_contents = tab_added.Wait();
   }
 
   EXPECT_NE(main_contents, open_web_contents);

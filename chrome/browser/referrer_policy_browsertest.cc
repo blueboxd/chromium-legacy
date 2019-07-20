@@ -178,8 +178,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
                                   : embedded_test_server();
     const GURL start_url = start_test_server->GetURL(relative_url);
 
-    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
-        content::NotificationService::AllSources());
+    ui_test_utils::AllBrowserTabAddedWaiter add_tab;
 
     base::string16 expected_title =
         GetExpectedTitle(start_url, expected_referrer);
@@ -207,8 +206,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     if (disposition == WindowOpenDisposition::CURRENT_TAB) {
       EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
     } else {
-      tab_added_observer.Wait();
-      tab = tab_added_observer.GetTab();
+      tab = add_tab.Wait();
       EXPECT_TRUE(tab);
       content::TitleWatcher title_watcher2(tab, expected_title);
 

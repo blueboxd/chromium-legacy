@@ -1,3 +1,6 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CASE_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CASE_MAP_H_
@@ -7,6 +10,8 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
+
+class TextOffsetMap;
 
 // This class performs the full Unicode case-mapping.
 //
@@ -43,6 +48,9 @@ class WTF_EXPORT CaseMap {
 
   scoped_refptr<StringImpl> ToLower(StringImpl* source) const;
   scoped_refptr<StringImpl> ToUpper(StringImpl* source) const;
+
+  String ToLower(const String& source, TextOffsetMap* offset_map) const;
+  String ToUpper(const String& source, TextOffsetMap* offset_map) const;
 
   UChar32 ToUpper(UChar32 c) const;
 

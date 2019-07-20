@@ -55,7 +55,8 @@ bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* loader_factory_request);
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        loader_factory_receiver);
 
 bool InterceptFileChooser(
     RenderFrameHostImpl* rfh,
@@ -65,7 +66,8 @@ bool InterceptFileChooser(
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,
     int routing_id,
-    network::mojom::URLLoaderFactoryRequest* loader_factory_request);
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        loader_factory_receiver);
 
 bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,

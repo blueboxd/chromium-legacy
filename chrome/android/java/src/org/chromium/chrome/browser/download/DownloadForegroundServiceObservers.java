@@ -23,7 +23,11 @@ public final class DownloadForegroundServiceObservers {
 
     /**
      * An Observer interfaces that allows other classes to know when this service is shutting down.
-     * There is a requirement for any implementations to have a public, no-param constructor.
+     * Implementing classes must be marked as @UsedByReflection in order to prevent the class name
+     * from being obfuscated.
+     * Implementing classes must also have a public parameterless constructor that is marked as
+     * @UsedByReflection.
+     * Implementing classes may never be renamed, as class names are persisted between app updates.
      */
     public interface Observer {
         /**

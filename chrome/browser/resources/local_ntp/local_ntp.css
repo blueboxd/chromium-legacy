@@ -1565,16 +1565,23 @@ input:checked + .toggle .highlight {
   }
 }
 
+#colors-menu {
+  --check-mark-size: 20px;
+  --check-mark-top: 2px;
+  --tile-size: 64px;
+  --tile-margin: 25px;
+}
+
 #colors-menu .bg-sel-tile-bg {
   background-color: unset;
-  border-radius: 45px;
+  border-radius: calc(var(--tile-size)/2);
   box-sizing: border-box;
-  height: 80px;
-  margin-bottom: 32px;
-  margin-inline-end: 33px;
+  height: var(--tile-size);
+  margin-bottom: var(--tile-margin);
+  margin-inline-end: var(--tile-margin);
   margin-inline-start: 0;
   margin-top: 0;
-  width: 80px;
+  width: var(--tile-size);
 }
 
 #colors-menu .bg-sel-tile-bg.selected {
@@ -1587,9 +1594,15 @@ input:checked + .toggle .highlight {
   }
 }
 
+/*
+ To avoid circle showing behind the checkmark, draw it 2px smaller and 1px
+ below so that it is always 1px smaller then the checkmark from all sides.
+ */
 #colors-menu .bg-sel-tile .selected-circle {
+  height: calc(var(--check-mark-size) - 2px);
   right: 0;
-  top: 6px;
+  top: calc(var(--check-mark-top) + 1px);
+  width: calc(var(--check-mark-size) - 2px);
 }
 
 html[dir=rtl] #colors-menu .bg-sel-tile .selected-circle {
@@ -1597,16 +1610,29 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-circle {
 }
 
 #colors-menu .bg-sel-tile .selected-check {
+  background: url(icons/check_circle.svg) no-repeat center;
+  background-size: var(--check-mark-size) var(--check-mark-size);
+  height: var(--check-mark-size);
   right: 0;
-  top: 4px;
+  top: var(--check-mark-top);
+  width: var(--check-mark-size);
 }
 
 html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
   left: 0;
 }
 
+@media (prefers-color-scheme: dark) {
+  #colors-menu .bg-sel-tile .selected-check::after {
+    -webkit-mask-image: url(icons/check_circle.svg);
+    -webkit-mask-size: var(--check-mark-size);
+    height: var(--check-mark-size);
+    width: var(--check-mark-size);
+  }
+}
+
 #colors-default-icon {
-  background-image: url(icons/default-theme.svg);
+  background-image: url(icons/default_theme.svg);
   background-repeat: no-repeat;
   background-size: contain;
   opacity: 1;
@@ -1614,7 +1640,7 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
 
 @media (prefers-color-scheme: dark) {
   #colors-default-icon {
-    background-image: url(icons/default-theme-dark.svg);
+    background-image: url(icons/default_theme_dark.svg);
   }
 }
 

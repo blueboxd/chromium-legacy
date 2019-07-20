@@ -9480,39 +9480,45 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
     <!-- Native File System usage indicator -->
     <message name="IDS_NATIVE_FILE_SYSTEM_WRITE_USAGE_TOOLTIP" desc="Tooltip for native file system omnibox usage indicator.">
-      This page is allowed to save to original files.
+      This page is allowed to save to files.
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_DIRECTORY_USAGE_TOOLTIP" desc="Tooltip for native file system omnibox usage indicator.">
-      This page is allowed to read a folder on your device.
+      This page is allowed to view all the files in a folder on your device.
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_FILE_TEXT" desc="Text of the bubble showing what file an origin can currently write to">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to <ph name="FILENAME">$2<ex>README.md</ex></ph>
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_TEXT" desc="Text of the bubble showing what files an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files. This site can save changes only while this tab is open.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_NO_LIFETIME_TEXT" desc="Text of the bubble showing what files an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files.
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_WRITABLE_DIRECTORY_TEXT" desc="Text of the bubble showing what file an origin can currently write to">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what directories an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the files in the following folders. This site can save changes only while this tab is open.
-    </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_NO_LIFETIME_TEXT" desc="Text of the bubble showing what directories an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the files in the following folders.
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files an origin can currently write to">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following folders
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_WRITABLE_FILES_AND_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently write to">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files and folders.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can save your changes directly to the following files and folders
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_LIFETIME_TEXT" desc="Text explaining lifetimes of grants in the bubble showing what files and directories an origin can currently write to">
-      This site can save and read changes only while the tab is open.
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SINGLE_READABLE_DIRECTORY_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view all the files in <ph name="FOLDERNAME">$2<ex>My Project</ex></ph>
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
-      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can read all the files in the following folders. This site can see changes to the folder only while this tab is open.
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view all the files in the following folders
     </message>
-    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_ALSO_READABLE_DIRECTORIES_TEXT" desc="Text of the bubble showing what files and directories an origin can currently access">
-      This site can also read all the files in the following folders.
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_READ_AND_WRITE" desc="Text of the bubble showing what files and directories an origin can currently read and write to">
+      <ph name="ORIGIN">$1<ex>example.com</ex></ph> can view and save your changes directly to the following files and folders
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_SAVE_CHANGES" desc="">
+      Save changes
+    </message>
+    <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_VIEW_CHANGES" desc="">
+      View changes
     </message>
     <message name="IDS_NATIVE_FILE_SYSTEM_USAGE_BUBBLE_FILES_TEXT" desc="Text to display a list of files in the native file system usage bubble">
       {0, plural, offset:2
         =1 {<ph name="FILE1">{1}<ex>README.md</ex></ph>}
-        =2 {<ph name="FILE1">{1}<ex>README.md</ex></ph> and <ph name="FILE2">{2}<ex>Chrome.png</ex></ph>}
+        =2 {<ph name="FILE1">{1}<ex>README.md</ex></ph>, <ph name="FILE2">{2}<ex>Chrome.png</ex></ph>}
         other {<ph name="FILE1">{1}<ex>README.md</ex></ph>, <ph name="FILE2">{2}<ex>Chrome.png</ex></ph>, and # more}
       }
     </message>

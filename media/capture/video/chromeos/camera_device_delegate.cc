@@ -488,7 +488,8 @@ void CameraDeviceDelegate::Initialize() {
   request_manager_ = std::make_unique<RequestManager>(
       std::move(callback_ops_request),
       std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
-      device_context_, std::make_unique<CameraBufferFactory>(),
+      device_context_, chrome_capture_params_.buffer_type,
+      std::make_unique<CameraBufferFactory>(),
       base::BindRepeating(&RotateAndBlobify), ipc_task_runner_);
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);

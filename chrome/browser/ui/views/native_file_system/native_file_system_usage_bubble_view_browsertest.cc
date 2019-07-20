@@ -24,12 +24,36 @@ class NativeFileSystemUsageBubbleViewTest : public DialogBrowserTest {
     if (name == "SingleWritableFile") {
       usage.writable_files.emplace_back(
           FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
+    } else if (name == "TwoWritableFiles") {
+      usage.writable_files.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
+      usage.writable_files.emplace_back(FILE_PATH_LITERAL("/bla/README.txt"));
     } else if (name == "SingleWritableFolder") {
+      usage.writable_directories.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Code"));
+    } else if (name == "MultipleWritableFolders") {
+      usage.writable_directories.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Code"));
+      usage.writable_directories.emplace_back(
+          FILE_PATH_LITERAL("/baz/My Project"));
+      usage.writable_directories.emplace_back(FILE_PATH_LITERAL("/baz/Assets"));
+      usage.writable_directories.emplace_back(
+          FILE_PATH_LITERAL("/la/asdf/Processing"));
+    } else if (name == "WritableFilesAndFolders") {
+      usage.writable_files.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Shapes.sketch"));
+      usage.writable_files.emplace_back(FILE_PATH_LITERAL("/bla/README.txt"));
       usage.writable_directories.emplace_back(
           FILE_PATH_LITERAL("/foo/bar/Code"));
     } else if (name == "SingleReadableFolder") {
       usage.readable_directories.emplace_back(
           FILE_PATH_LITERAL("/foo/bar/Images"));
+    } else if (name == "MultipleReadableFolders") {
+      usage.readable_directories.emplace_back(
+          FILE_PATH_LITERAL("/foo/bar/Images"));
+      usage.readable_directories.emplace_back(
+          FILE_PATH_LITERAL("/baz/My Project"));
+      usage.readable_directories.emplace_back(FILE_PATH_LITERAL("/baz/Assets"));
     } else if (name == "default") {
       usage.readable_directories.emplace_back(
           FILE_PATH_LITERAL("/home/me/Images"));
@@ -67,11 +91,31 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
 }
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_TwoWritableFiles) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
                        InvokeUi_SingleWritableFolder) {
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_MultipleWritableFolders) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_WritableFilesAndFolders) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
                        InvokeUi_SingleReadableFolder) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemUsageBubbleViewTest,
+                       InvokeUi_MultipleReadableFolders) {
   ShowAndVerifyUi();
 }

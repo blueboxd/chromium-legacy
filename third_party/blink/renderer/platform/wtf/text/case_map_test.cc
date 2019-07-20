@@ -1,9 +1,109 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_offset_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+using testing::ElementsAreArray;
+
 namespace WTF {
+
+static struct CaseMapTestData {
+  const char16_t* source;
+  const char* locale;
+  const char16_t* lower_expected;
+  const char16_t* upper_expected;
+  std::vector<TextOffsetMap::Entry> lower_map = {};
+  std::vector<TextOffsetMap::Entry> upper_map = {};
+} case_map_test_data[] = {
+    // Empty string.
+    {nullptr, "", nullptr, nullptr},
+    {u"", "", u"", u""},
+    // Non-letters
+    {u"123", "", u"123", u"123"},
+    // ASCII lower/uppercases.
+    {u"xyz", "", u"xyz", u"XYZ"},
+    {u"XYZ", "", u"xyz", u"XYZ"},
+    {u"Xyz", "", u"xyz", u"XYZ"},
+    {u"xYz", "", u"xyz", u"XYZ"},
+    // German eszett. Uppercasing makes the string longer.
+    {u"\u00DF", "", u"\u00DF", u"SS", {}, {{1, 2}}},
+    {u"\u00DFz", "", u"\u00DFz", u"SSZ", {}, {{1, 2}}},
+    {u"x\u00DF", "", u"x\u00DF", u"XSS", {}, {{2, 3}}},
+    {u"x\u00DFz", "", u"x\u00DFz", u"XSSZ", {}, {{2, 3}}},
+    // Turkish/Azeri.
+    {u"\u0130", "tr", u"\u0069", u"\u0130"},
+    // Turkish/Azeri. Lowercasing can make the string shorter.
+    {u"I\u0307", "tr", u"i", u"I\u0307", {{2, 1}}},
+    // Lithuanian. Uppercasing can make the string shorter.
+    {u"i\u0307", "lt", u"i\u0307", u"I", {}, {{2, 1}}},
+    {u"i\u0307z", "lt", u"i\u0307z", u"IZ", {}, {{2, 1}}},
+    {u"xi\u0307", "lt", u"xi\u0307", u"XI", {}, {{3, 2}}},
+    {u"xi\u0307z", "lt", u"xi\u0307z", u"XIZ", {}, {{3, 2}}},
+    // Lithuanian. Lowercasing can make the string longer.
+    {u"\u00CC", "lt", u"\u0069\u0307\u0300", u"\u00CC", {{1, 3}}},
+    // Mix of longer ones and shorter ones.
+    {u"\u00DFi\u0307", "lt", u"\u00DFi\u0307", u"SSI", {}, {{1, 2}, {3, 3}}},
+    {u"\u00DFyi\u0307z",
+     "lt",
+     u"\u00DFyi\u0307z",
+     u"SSYIZ",
+     {},
+     {{1, 2}, {4, 4}}},
+    {u"i\u0307\u00DF", "lt", u"i\u0307\u00DF", u"ISS", {}, {{2, 1}, {3, 3}}},
+};
+
+std::ostream& operator<<(std::ostream& os, const CaseMapTestData& data) {
+  return os << String(data.source) << " locale=" << data.locale;
+}
+
+class CaseMapTest : public testing::Test,
+                    public testing::WithParamInterface<CaseMapTestData> {};
+
+INSTANTIATE_TEST_SUITE_P(CaseMapTest,
+                         CaseMapTest,
+                         testing::ValuesIn(case_map_test_data));
+
+TEST_P(CaseMapTest, ToLowerWithoutOffset) {
+  const auto data = GetParam();
+  CaseMap case_map(data.locale);
+  String source(data.source);
+  String lower = case_map.ToLower(source);
+  EXPECT_EQ(lower, String(data.lower_expected));
+}
+
+TEST_P(CaseMapTest, ToUpperWithoutOffset) {
+  const auto data = GetParam();
+  CaseMap case_map(data.locale);
+  String source(data.source);
+  String upper = case_map.ToUpper(source);
+  EXPECT_EQ(upper, String(data.upper_expected));
+}
+
+TEST_P(CaseMapTest, ToLower) {
+  const auto data = GetParam();
+  CaseMap case_map(data.locale);
+  String source(data.source);
+  TextOffsetMap offset_map;
+  String lower = case_map.ToLower(source, &offset_map);
+  EXPECT_EQ(lower, String(data.lower_expected));
+  EXPECT_THAT(offset_map.Entries(), ElementsAreArray(data.lower_map));
+}
+
+TEST_P(CaseMapTest, ToUpper) {
+  const auto data = GetParam();
+  CaseMap case_map(data.locale);
+  String source(data.source);
+  TextOffsetMap offset_map;
+  String upper = case_map.ToUpper(source, &offset_map);
+  EXPECT_EQ(upper, String(data.upper_expected));
+  EXPECT_THAT(offset_map.Entries(), ElementsAreArray(data.upper_map));
+}
 
 struct CaseFoldingTestData {
   const char* source_description;

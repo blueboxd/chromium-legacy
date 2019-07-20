@@ -29,6 +29,8 @@ class CAPTURE_EXPORT CameraBufferFactory {
   virtual ChromiumPixelFormat ResolveStreamBufferFormat(
       cros::mojom::HalPixelFormat hal_format);
 
+  static gfx::BufferUsage GetBufferUsage(gfx::BufferFormat format);
+
  private:
   std::unordered_map<cros::mojom::HalPixelFormat, ChromiumPixelFormat>
       resolved_hal_formats_;

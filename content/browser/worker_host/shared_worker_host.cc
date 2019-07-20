@@ -178,7 +178,7 @@ void SharedWorkerHost::Start(
   DCHECK(service_worker_provider_info);
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factories);
-  DCHECK(!subresource_loader_factories->default_factory_info());
+  DCHECK(!subresource_loader_factories->pending_default_factory());
 
   AdvanceTo(Phase::kStarted);
 
@@ -223,10 +223,11 @@ void SharedWorkerHost::Start(
 
   // Set the default factory to the bundle for subresource loading to pass to
   // the renderer.
-  network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
-  CreateNetworkFactory(mojo::MakeRequest(&default_factory_info));
-  subresource_loader_factories->default_factory_info() =
-      std::move(default_factory_info);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_default_factory;
+  CreateNetworkFactory(
+      pending_default_factory.InitWithNewPipeAndPassReceiver());
+  subresource_loader_factories->pending_default_factory() =
+      std::move(pending_default_factory);
 
   // Prepare the controller service worker info to pass to the renderer.
   // |object_info| can be nullptr when the service worker context or the service

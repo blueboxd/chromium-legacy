@@ -285,6 +285,8 @@ scoped_refptr<download::DownloadURLLoaderFactoryGetter>
 CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
                                      RenderFrameHost* rfh,
                                      bool is_download) {
+  // TODO(crbug.com/955171): Replace these with PendingRemote and
+  // PendingReceiver.
   network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
   network::mojom::URLLoaderFactoryRequest proxy_factory_request;
   if (rfh) {
@@ -293,26 +295,27 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
     // Create an intermediate pipe that can be used to proxy the download's
     // URLLoaderFactory.
     network::mojom::URLLoaderFactoryPtrInfo maybe_proxy_factory_ptr_info;
-    network::mojom::URLLoaderFactoryRequest maybe_proxy_factory_request =
-        MakeRequest(&maybe_proxy_factory_ptr_info);
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        maybe_proxy_factory_receiver =
+            MakeRequest(&maybe_proxy_factory_ptr_info);
 
     // Allow DevTools to potentially inject itself into the proxy pipe.
     should_proxy = devtools_instrumentation::WillCreateURLLoaderFactory(
         static_cast<RenderFrameHostImpl*>(rfh), true, is_download,
-        &maybe_proxy_factory_request);
+        &maybe_proxy_factory_receiver);
 
     // Also allow the Content embedder to inject itself if it wants to.
     should_proxy |= GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rfh->GetSiteInstance()->GetBrowserContext(), rfh,
         rfh->GetProcess()->GetID(), false /* is_navigation */,
-        true /* is_download/ */, url::Origin(), &maybe_proxy_factory_request,
+        true /* is_download/ */, url::Origin(), &maybe_proxy_factory_receiver,
         nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
 
     // If anyone above indicated that they care about proxying, pass the
     // intermediate pipe along to the NetworkDownloadURLLoaderFactoryGetter.
     if (should_proxy) {
       proxy_factory_ptr_info = std::move(maybe_proxy_factory_ptr_info);
-      proxy_factory_request = std::move(maybe_proxy_factory_request);
+      proxy_factory_request = std::move(maybe_proxy_factory_receiver);
     }
   }
 

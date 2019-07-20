@@ -97,10 +97,13 @@ void ApplicationCacheHostForFrame::LogMessage(
 
 void ApplicationCacheHostForFrame::SetSubresourceFactory(
     network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) {
-  auto info = std::make_unique<URLLoaderFactoryBundleInfo>();
-  info->appcache_factory_info().set_handle(
-      url_loader_factory.PassInterface().PassHandle());
-  local_frame_->Client()->UpdateSubresourceFactory(std::move(info));
+  auto pending_factories = std::make_unique<URLLoaderFactoryBundleInfo>();
+  pending_factories->pending_appcache_factory() =
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>(
+          url_loader_factory.PassInterface().PassHandle(),
+          url_loader_factory.version());
+  local_frame_->Client()->UpdateSubresourceFactory(
+      std::move(pending_factories));
 }
 
 void ApplicationCacheHostForFrame::WillStartLoadingMainResource(

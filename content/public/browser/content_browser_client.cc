@@ -745,7 +745,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     const url::Origin& request_initiator,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   DCHECK(browser_context);
@@ -755,7 +755,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
 #if defined(OS_ANDROID)
 void ContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
     int render_process_id,
-    network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) {}
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory) {}
 #endif
 
 bool ContentBrowserClient::WillInterceptWebSocket(RenderFrameHost*) {

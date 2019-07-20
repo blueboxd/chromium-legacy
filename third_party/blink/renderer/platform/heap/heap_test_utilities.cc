@@ -11,10 +11,11 @@
 namespace blink {
 
 // static
-void TestSupportingGC::PreciselyCollectGarbage() {
+void TestSupportingGC::PreciselyCollectGarbage(
+    BlinkGC::SweepingType sweeping_type) {
   ThreadState::Current()->CollectGarbage(
-      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGCForTesting);
+      BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking, sweeping_type,
+      BlinkGC::GCReason::kForcedGCForTesting);
 }
 
 // static

@@ -51,7 +51,8 @@ class ProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
       content::RenderFrameHost* render_frame_host,
       bool is_navigation,
       const url::Origin& request_initiator,
-      network::mojom::URLLoaderFactoryRequest* factory_request);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          factory_receiver);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,

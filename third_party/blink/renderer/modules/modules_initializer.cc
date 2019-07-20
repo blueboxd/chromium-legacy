@@ -161,9 +161,6 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
-    // Only main frame has ImageDownloader service.
-    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-        &ImageDownloaderImpl::CreateMojoService, WrapWeakPersistent(&frame)));
   }
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
@@ -197,6 +194,10 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   InspectorAccessibilityAgent::ProvideTo(&frame);
   ManifestManager::ProvideTo(frame);
   InstalledAppController::ProvideTo(frame);
+  if (frame.IsMainFrame()) {
+    // Only main frame has ImageDownloader service.
+    ImageDownloaderImpl::ProvideTo(frame);
+  }
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(

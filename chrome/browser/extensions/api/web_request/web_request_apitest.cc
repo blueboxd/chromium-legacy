@@ -86,6 +86,7 @@
 #include "extensions/test/result_catcher.h"
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -1769,20 +1770,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   content::BrowserContext::GetDefaultStoragePartition(temp_profile)
       ->FlushNetworkInterfaceForTesting();
 
-  network::mojom::URLLoaderFactoryPtr factory;
-  auto request = mojo::MakeRequest(&factory);
+  mojo::Remote<network::mojom::URLLoaderFactory> factory;
+  auto pending_receiver = factory.BindNewPipeAndPassReceiver();
   auto temp_web_contents =
       WebContents::Create(WebContents::CreateParams(temp_profile));
   content::RenderFrameHost* frame = temp_web_contents->GetMainFrame();
   EXPECT_TRUE(api->MaybeProxyURLLoaderFactory(
       frame->GetProcess()->GetBrowserContext(), frame,
-      frame->GetProcess()->GetID(), false, false, &request, nullptr));
+      frame->GetProcess()->GetID(), false, false, &pending_receiver, nullptr));
   temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;
   content::BrowserContext::GetDefaultStoragePartition(temp_profile)
       ->GetNetworkContext()
-      ->CreateURLLoaderFactory(std::move(request), std::move(params));
+      ->CreateURLLoaderFactory(std::move(pending_receiver), std::move(params));
 
   network::TestURLLoaderClient client;
   network::mojom::URLLoaderPtr loader;

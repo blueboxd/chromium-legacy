@@ -291,6 +291,7 @@ jumbo_component("capture_lib") {
       "//chromeos/dbus/power",
       "//components/chromeos_camera:mojo_mjpeg_decode_accelerator",
       "//components/chromeos_camera/common",
+      "//gpu/ipc/common:common",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//third_party/libsync",
     ]

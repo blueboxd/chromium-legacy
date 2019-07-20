@@ -235,6 +235,16 @@ def AddGnuWinToPath():
     f.write('group: files\n')
 
 
+def MaybeDownloadHostGcc(args):
+  """Download a modern GCC host compiler on Linux."""
+  if not sys.platform.startswith('linux') or args.gcc_toolchain:
+    return
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc510trusty')
+  if not os.path.exists(gcc_dir):
+    DownloadAndUnpack(CDS_URL + '/tools/gcc510trusty.tgz', gcc_dir)
+  args.gcc_toolchain = gcc_dir
+
+
 def SetMacXcodePath():
   """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
   if sys.platform != 'darwin':
@@ -261,6 +271,37 @@ def VerifyVersionOfBuiltClangMatchesVERSION():
     sys.exit(1)
 
 
+def CopyLibstdcpp(args, build_dir):
+  if not args.gcc_toolchain:
+    return
+  # Find libstdc++.so.6
+  libstdcpp = subprocess.check_output(
+      [os.path.join(args.gcc_toolchain, 'bin', 'g++'),
+       '-print-file-name=libstdc++.so.6']).rstrip()
+
+  # Copy libstdc++.so.6 into the build dir so that the built binaries can find
+  # it. Binaries get their rpath set to $origin/../lib/. For clang, lld,
+  # etc. that live in the bin/ directory, this means they expect to find the .so
+  # in their neighbouring lib/ dir. For other tools however, this doesn't work
+  # since those exeuctables are spread out into different directories.
+  # TODO(hans): Unit tests don't get rpath set at all, unittests/ copying
+  # below doesn't help at the moment.
+  for d in ['lib',
+            'test/tools/llvm-isel-fuzzer/lib',
+            'test/tools/llvm-opt-fuzzer/lib',
+            'unittests/CodeGen/lib',
+            'unittests/DebugInfo/lib',
+            'unittests/ExecutionEngine/lib',
+            'unittests/Support/lib',
+            'unittests/Target/lib',
+            'unittests/Transforms/lib',
+            'unittests/lib',
+            'unittests/tools/lib',
+            'unittests/tools/llvm-exegesis/lib']:
+    EnsureDirExists(os.path.join(build_dir, d))
+    CopyFile(libstdcpp, os.path.join(build_dir, d))
+
+
 def gn_arg(v):
   if v == 'True':
     return True
@@ -276,7 +317,9 @@ def main():
                       help='first build clang with CC, then with itself.')
   parser.add_argument('--disable-asserts', action='store_true',
                       help='build with asserts disabled')
-  parser.add_argument('--gcc-toolchain', help='(no longer used)')
+  parser.add_argument('--gcc-toolchain', help='what gcc toolchain to use for '
+                      'building; --gcc-toolchain=/opt/foo picks '
+                      '/opt/foo/bin/gcc')
   parser.add_argument('--lto-lld', action='store_true',
                       help='build lld with LTO (only applies on Linux)')
   parser.add_argument('--pgo', action='store_true', help='build with PGO')
@@ -353,6 +396,10 @@ def main():
   # move this down to where we fetch other build tools.
   AddGnuWinToPath()
 
+  # TODO(crbug.com/929645): Remove once we build on host systems with a modern
+  # enough GCC to build Clang.
+  MaybeDownloadHostGcc(args)
+
   global CLANG_REVISION, PACKAGE_VERSION
   if args.llvm_force_head_revision:
     CLANG_REVISION = GetLatestLLVMCommit()
@@ -386,6 +433,14 @@ def main():
   # LLVM_ENABLE_LLD).
   cc, cxx, lld = None, None, None
 
+  if args.gcc_toolchain:
+    # Use the specified gcc installation for building.
+    cc = os.path.join(args.gcc_toolchain, 'bin', 'gcc')
+    cxx = os.path.join(args.gcc_toolchain, 'bin', 'g++')
+    if not os.access(cc, os.X_OK):
+      print('Invalid --gcc-toolchain: ' + args.gcc_toolchain)
+      return 1
+
   cflags = []
   cxxflags = []
   ldflags = []
@@ -411,14 +466,23 @@ def main():
                      '-DCLANG_PLUGIN_SUPPORT=OFF',
                      '-DCLANG_ENABLE_STATIC_ANALYZER=OFF',
                      '-DCLANG_ENABLE_ARCMT=OFF',
-                     # TODO(crbug.com/929645): Use newer toolchain to host.
-                     '-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON',
                      '-DBUG_REPORT_URL=' + BUG_REPORT_URL,
                      # See PR41956: Don't link libcxx into libfuzzer.
                      '-DCOMPILER_RT_USE_LIBCXX=NO',
                      # Don't run Go bindings tests; PGO makes them confused.
                      '-DLLVM_INCLUDE_GO_TESTS=OFF',
+                     # Don't build libfuzzer. It needs to be built using the
+                     # same C++ standard library as the code that's going to use
+                     # it.
+                     '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
                      ]
+
+  if args.gcc_toolchain:
+    # Don't use the custom gcc toolchain when building compiler-rt tests; those
+    # tests are built with the just-built Clang, and target both i386 and x86_64
+    # for example, so should ust the system's libstdc++.
+    base_cmake_args.append(
+        '-DCOMPILER_RT_TEST_COMPILER_CFLAGS=--gcc-toolchain=')
 
   if sys.platform == 'win32':
     base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
@@ -460,6 +524,7 @@ def main():
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
+        '-DCOMPILER_RT_BUILD_XRAY=OFF',
         # Ignore args.disable_asserts for the bootstrap compiler.
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         ]
@@ -484,6 +549,8 @@ def main():
     if lld is not None: bootstrap_args.append('-DCMAKE_LINKER=' + lld)
     RunCommand(['cmake'] + bootstrap_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
+    CopyLibstdcpp(args, LLVM_BOOTSTRAP_DIR)
+    CopyLibstdcpp(args, LLVM_BOOTSTRAP_INSTALL_DIR)
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
       test_targets = [ 'check-all' ]
@@ -509,6 +576,12 @@ def main():
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
     if sys.platform.startswith('linux'):
       base_cmake_args.append('-DLLVM_ENABLE_LLD=ON')
+
+    if args.gcc_toolchain:
+      # Tell the bootstrap compiler where to find the standard library headers
+      # and shared object files.
+      cflags.append('--gcc-toolchain=' + args.gcc_toolchain)
+      cxxflags.append('--gcc-toolchain=' + args.gcc_toolchain)
 
     print('Bootstrap compiler installed.')
 
@@ -538,6 +611,7 @@ def main():
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
+    CopyLibstdcpp(args, LLVM_INSTRUMENTED_DIR)
     RunCommand(['ninja'], msvc_arch='x64')
     print('Instrumented compiler built.')
 
@@ -676,6 +750,7 @@ def main():
   RunCommand(['cmake'] + threads_enabled_cmake_args +
              [os.path.join(LLVM_DIR, 'llvm')],
              msvc_arch='x64', env=deployment_env)
+  CopyLibstdcpp(args, THREADS_ENABLED_BUILD_DIR)
   RunCommand(['ninja'] + tools_with_threading, msvc_arch='x64')
 
   print('Building final compiler.')
@@ -710,6 +785,7 @@ def main():
   os.chdir(LLVM_BUILD_DIR)
   RunCommand(['cmake'] + cmake_args + [os.path.join(LLVM_DIR, 'llvm')],
              msvc_arch='x64', env=deployment_env)
+  CopyLibstdcpp(args, LLVM_BUILD_DIR)
   RunCommand(['ninja'], msvc_arch='x64')
 
   # Copy in the threaded versions of lld and other tools.

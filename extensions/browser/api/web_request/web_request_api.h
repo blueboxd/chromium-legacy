@@ -192,7 +192,7 @@ class WebRequestAPI : public BrowserContextKeyedAPI,
       int render_process_id,
       bool is_navigation,
       bool is_download,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client);
 
   // Any request which requires authentication to complete will be bounced

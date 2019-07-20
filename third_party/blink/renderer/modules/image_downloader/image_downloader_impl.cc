@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -89,27 +91,36 @@ void FilterAndResizeImagesForMaximalSize(
 
 namespace blink {
 
-ImageDownloaderImpl::ImageDownloaderImpl(
-    LocalFrame& frame,
-    mojom::blink::ImageDownloaderRequest request)
-    : ImageDownloaderBase(GetExecutionContext(), frame),
-      binding_(this, std::move(request)) {
-  binding_.set_connection_error_handler(
-      WTF::Bind(&ImageDownloaderImpl::Dispose, WrapWeakPersistent(this)));
+// static
+const char ImageDownloaderImpl::kSupplementName[] = "ImageDownloader";
+
+// static
+ImageDownloaderImpl* ImageDownloaderImpl::From(LocalFrame& frame) {
+  return Supplement<LocalFrame>::From<ImageDownloaderImpl>(frame);
+}
+
+// static
+void ImageDownloaderImpl::ProvideTo(LocalFrame& frame) {
+  if (ImageDownloaderImpl::From(frame))
+    return;
+  Supplement<LocalFrame>::ProvideTo(
+      frame, MakeGarbageCollected<ImageDownloaderImpl>(frame));
+}
+
+ImageDownloaderImpl::ImageDownloaderImpl(LocalFrame& frame)
+    : Supplement<LocalFrame>(frame),
+      ImageDownloaderBase(frame.GetDocument()->GetExecutionContext(), frame) {
+  frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+      &ImageDownloaderImpl::CreateMojoService, WrapWeakPersistent(this)));
 }
 
 ImageDownloaderImpl::~ImageDownloaderImpl() {}
 
-// static
 void ImageDownloaderImpl::CreateMojoService(
-    LocalFrame* frame,
     mojom::blink::ImageDownloaderRequest request) {
-  DVLOG(1) << "ImageDownloaderImpl::CreateMojoService";
-  DCHECK(frame);
-
-  // Owns itself. Will be deleted when message pipe is destroyed or
-  // LocalFrame is destructed.
-  MakeGarbageCollected<ImageDownloaderImpl>(*frame, std::move(request));
+  binding_.Bind(std::move(request));
+  binding_.set_connection_error_handler(
+      WTF::Bind(&ImageDownloaderImpl::Dispose, WrapWeakPersistent(this)));
 }
 
 // ImageDownloader methods:
@@ -141,15 +152,17 @@ void ImageDownloaderImpl::DidDownloadImage(
                           result_original_image_sizes);
 }
 
+void ImageDownloaderImpl::ContextDestroyed(ExecutionContext* context) {
+  ImageDownloaderBase::ContextDestroyed(context);
+  Dispose();
+}
+
 void ImageDownloaderImpl::Dispose() {
   binding_.Close();
 }
 
-void ImageDownloaderImpl::ContextDestroyed(ExecutionContext*) {
-  Dispose();
-}
-
 void ImageDownloaderImpl::Trace(Visitor* visitor) {
+  Supplement<LocalFrame>::Trace(visitor);
   ImageDownloaderBase::Trace(visitor);
 }
 

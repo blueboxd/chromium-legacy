@@ -637,12 +637,14 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
     sweep_completed = Heap().AdvanceLazySweep(deadline);
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
-    if (!sweep_completed)
+    if (sweep_completed) {
+      SynchronizeAndFinishConcurrentSweeping();
+    } else {
       ScheduleIdleLazySweep();
+    }
   }
 
   if (sweep_completed) {
-    SynchronizeAndFinishConcurrentSweeping();
     PostSweep();
   }
 }
@@ -931,6 +933,7 @@ void ThreadState::CompleteSweep() {
 void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
   DCHECK(CheckThread());
   DCHECK(IsSweepingInProgress());
+  DCHECK(SweepForbidden());
 
   // Wait for concurrent sweepers.
   sweeper_scheduler_.CancelAndWait();

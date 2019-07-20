@@ -441,7 +441,7 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
     content::RenderFrameHost* render_frame_host,
     bool is_navigation,
     const url::Origin& request_initiator,
-    network::mojom::URLLoaderFactoryRequest* factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Navigation requests are handled using signin::URLLoaderThrottle.
@@ -471,20 +471,21 @@ bool ProxyingURLLoaderFactory::MaybeProxyRequest(
   }
 #endif
 
-  auto proxied_request = std::move(*factory_request);
+  auto proxied_receiver = std::move(*factory_receiver);
+  // TODO(crbug.com/955171): Replace this with PendingRemote.
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-  *factory_request = mojo::MakeRequest(&target_factory_info);
+  *factory_receiver = mojo::MakeRequest(&target_factory_info);
 
   auto web_contents_getter =
       base::BindRepeating(&content::WebContents::FromFrameTreeNodeId,
                           render_frame_host->GetFrameTreeNodeId());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&ResourceContextData::StartProxying,
-                     profile->GetResourceContext(),
-                     std::move(web_contents_getter), std::move(proxied_request),
-                     std::move(target_factory_info)));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                           base::BindOnce(&ResourceContextData::StartProxying,
+                                          profile->GetResourceContext(),
+                                          std::move(web_contents_getter),
+                                          std::move(proxied_receiver),
+                                          std::move(target_factory_info)));
   return true;
 }
 

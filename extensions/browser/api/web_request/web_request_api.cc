@@ -642,7 +642,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     int render_process_id,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!MayHaveProxies()) {
@@ -669,9 +669,9 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
       return false;
   }
 
-  auto proxied_request = std::move(*factory_request);
+  auto proxied_receiver = std::move(*factory_receiver);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-  *factory_request = mojo::MakeRequest(&target_factory_info);
+  *factory_receiver = mojo::MakeRequest(&target_factory_info);
 
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data;
   if (is_navigation) {
@@ -701,7 +701,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
       // which takes a net::URLRequest*.
       is_navigation ? -1 : render_process_id, is_download,
       request_id_generator_, std::move(navigation_ui_data),
-      std::move(proxied_request), std::move(target_factory_info),
+      std::move(proxied_receiver), std::move(target_factory_info),
       std::move(header_client_request), proxies_.get());
   return true;
 }

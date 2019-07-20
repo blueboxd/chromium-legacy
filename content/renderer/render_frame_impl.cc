@@ -4001,7 +4001,7 @@ void RenderFrameImpl::MarkInitiatorAsRequiringSeparateURLLoaderFactory(
   // UpdateSubresourceLoaderFactories() below.
   GetLoaderFactoryBundle();
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
-  factory_bundle->initiator_specific_factory_infos()[initiator_origin] =
+  factory_bundle->pending_initiator_specific_factories()[initiator_origin] =
       url_loader_factory.PassInterface();
   UpdateSubresourceLoaderFactories(std::move(factory_bundle));
 }

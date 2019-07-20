@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom-blink.h"
 #include "third_party/blink/renderer/modules/image_downloader/image_downloader_base.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -16,17 +17,21 @@ class LocalFrame;
 
 class ImageDownloaderImpl final
     : public GarbageCollectedFinalized<ImageDownloaderImpl>,
+      public Supplement<LocalFrame>,
       public ImageDownloaderBase,
       public mojom::blink::ImageDownloader {
   USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
 
  public:
-  ImageDownloaderImpl(LocalFrame&, mojom::blink::ImageDownloaderRequest);
+  static const char kSupplementName[];
+
+  explicit ImageDownloaderImpl(LocalFrame&);
   ~ImageDownloaderImpl() override;
 
-  static void CreateMojoService(LocalFrame*,
-                                mojom::blink::ImageDownloaderRequest request);
+  static ImageDownloaderImpl* From(LocalFrame&);
+
+  static void ProvideTo(LocalFrame&);
 
   void Trace(Visitor*) override;
 
@@ -51,11 +56,13 @@ class ImageDownloaderImpl final
                         int32_t http_status_code,
                         const WTF::Vector<SkBitmap>& images);
 
+  void CreateMojoService(mojom::blink::ImageDownloaderRequest request);
+
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.
   void Dispose();
 
-  mojo::Binding<mojom::blink::ImageDownloader> binding_;
+  mojo::Binding<mojom::blink::ImageDownloader> binding_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ImageDownloaderImpl);
 };

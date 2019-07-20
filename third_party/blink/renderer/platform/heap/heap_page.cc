@@ -356,6 +356,9 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
 }
 
 void BaseArena::InvokeFinalizersOnSweptPages() {
+  DCHECK(GetThreadState()->CheckThread());
+  DCHECK(GetThreadState()->IsSweepingInProgress());
+  DCHECK(GetThreadState()->SweepForbidden());
   while (BasePage* page = swept_unfinalized_pages_.PopLocked()) {
     swept_pages_.PushLocked(page);
     page->FinalizeSweep(SweepResult::kPageNotEmpty);

@@ -136,9 +136,10 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     // Note that the default factory is the network service factory. It's set
     // on the start worker sequence.
     network_service_connection_error_handler_holder_.Bind(
-        std::move(subresource_loaders->default_factory_info()));
+        std::move(subresource_loaders->pending_default_factory()));
     network_service_connection_error_handler_holder_->Clone(
-        mojo::MakeRequest(&subresource_loaders->default_factory_info()));
+        subresource_loaders->pending_default_factory()
+            .InitWithNewPipeAndPassReceiver());
     network_service_connection_error_handler_holder_
         .set_connection_error_handler(
             base::BindOnce(&ServiceWorkerContextClient::StopWorkerOnMainThread,

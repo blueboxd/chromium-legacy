@@ -480,7 +480,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_navigation,
       bool is_download,
       const url::Origin& request_initiator,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>

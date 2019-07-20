@@ -166,6 +166,8 @@ jumbo_component("wtf") {
     "text/text_encoding.h",
     "text/text_encoding_registry.cc",
     "text/text_encoding_registry.h",
+    "text/text_offset_map.cc",
+    "text/text_offset_map.h",
     "text/text_position.cc",
     "text/text_position.h",
     "text/text_stream.cc",

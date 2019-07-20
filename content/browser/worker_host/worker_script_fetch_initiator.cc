@@ -203,7 +203,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     network::mojom::URLLoaderFactoryPtr factory_ptr;
     mojo::MakeStrongBinding(std::move(factory),
                             mojo::MakeRequest(&factory_ptr));
-    factory_bundle->scheme_specific_factory_infos().emplace(
+    factory_bundle->pending_scheme_specific_factories().emplace(
         scheme, factory_ptr.PassInterface());
   }
 
@@ -216,7 +216,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
     network::mojom::URLLoaderFactoryPtr file_factory_ptr;
     mojo::MakeStrongBinding(std::move(file_factory),
                             mojo::MakeRequest(&file_factory_ptr));
-    factory_bundle->scheme_specific_factory_infos().emplace(
+    factory_bundle->pending_scheme_specific_factories().emplace(
         url::kFileScheme, file_factory_ptr.PassInterface());
   }
 
@@ -314,7 +314,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
     network::mojom::URLLoaderFactoryPtr network_factory_ptr;
     loader_factory_getter->CloneNetworkFactory(
         mojo::MakeRequest(&network_factory_ptr));
-    factory_bundle_for_browser_info->default_factory_info() =
+    factory_bundle_for_browser_info->pending_default_factory() =
         network_factory_ptr.PassInterface();
     url_loader_factory = base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
         std::move(factory_bundle_for_browser_info));
@@ -371,9 +371,9 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
 
   // If a URLLoaderFactory for AppCache is supplied, use that.
   if (subresource_loader_params &&
-      subresource_loader_params->appcache_loader_factory_info) {
-    subresource_loader_factories->appcache_factory_info() =
-        std::move(subresource_loader_params->appcache_loader_factory_info);
+      subresource_loader_params->pending_appcache_loader_factory) {
+    subresource_loader_factories->pending_appcache_factory() =
+        std::move(subresource_loader_params->pending_appcache_loader_factory);
   }
 
   // Prepare the controller service worker info to pass to the renderer.

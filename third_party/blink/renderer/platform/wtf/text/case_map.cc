@@ -1,9 +1,16 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
+
+#include <unicode/casemap.h>
 
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_offset_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
@@ -23,16 +30,13 @@ inline bool LocaleIdMatchesLang(const AtomicString& locale_id,
          maybe_delimiter == '@';
 }
 
-typedef int32_t (*icuCaseConverter)(UChar*,
-                                    int32_t,
-                                    const UChar*,
-                                    int32_t,
-                                    const char*,
-                                    UErrorCode*);
+enum class CaseMapType { kLower, kUpper, kLowerLegacy, kUpperLegacy };
 
-scoped_refptr<StringImpl> CaseConvert(icuCaseConverter converter,
+scoped_refptr<StringImpl> CaseConvert(CaseMapType type,
                                       StringImpl* source,
-                                      const char* locale) {
+                                      const char* locale,
+                                      TextOffsetMap* offset_map = nullptr) {
+  DCHECK(source);
   CHECK_LE(source->length(),
            static_cast<wtf_size_t>(std::numeric_limits<int32_t>::max()));
   const wtf_size_t source_length = source->length();
@@ -46,9 +50,44 @@ scoped_refptr<StringImpl> CaseConvert(icuCaseConverter converter,
       StringImpl::CreateUninitialized(target_length, data16);
   while (true) {
     UErrorCode status = U_ZERO_ERROR;
-    target_length = converter(data16, target_length, source16, source_length,
-                              locale, &status);
+    icu::Edits edits;
+    bool is_edits_valid = false;
+    switch (type) {
+      case CaseMapType::kLower:
+        target_length = icu::CaseMap::toLower(
+            locale, /* options */ 0,
+            reinterpret_cast<const char16_t*>(source16), source_length,
+            reinterpret_cast<char16_t*>(data16), target_length, &edits, status);
+        is_edits_valid = true;
+        break;
+      case CaseMapType::kUpper:
+        target_length = icu::CaseMap::toUpper(
+            locale, /* options */ 0,
+            reinterpret_cast<const char16_t*>(source16), source_length,
+            reinterpret_cast<char16_t*>(data16), target_length, &edits, status);
+        is_edits_valid = true;
+        break;
+      case CaseMapType::kLowerLegacy:
+        DCHECK(!offset_map);
+        target_length = u_strToLower(data16, target_length, source16,
+                                     source_length, locale, &status);
+        break;
+      case CaseMapType::kUpperLegacy:
+        DCHECK(!offset_map);
+        target_length = u_strToUpper(data16, target_length, source16,
+                                     source_length, locale, &status);
+        break;
+    }
+
     if (U_SUCCESS(status)) {
+      if (is_edits_valid) {
+        if (!edits.hasChanges())
+          return source;
+
+        if (offset_map)
+          offset_map->Append(edits);
+      }
+
       if (source_length == target_length)
         return output;
       return output->Substring(0, target_length);
@@ -97,14 +136,14 @@ scoped_refptr<StringImpl> CaseMap::ToLower(StringImpl* source) const {
   if (!case_map_locale_)
     return source->LowerUnicode();
 
-  return CaseConvert(u_strToLower, source, case_map_locale_);
+  return CaseConvert(CaseMapType::kLowerLegacy, source, case_map_locale_);
 }
 
 scoped_refptr<StringImpl> CaseMap::ToUpper(StringImpl* source) const {
   if (!case_map_locale_)
     return source->UpperUnicode();
 
-  return CaseConvert(u_strToUpper, source, case_map_locale_);
+  return CaseConvert(CaseMapType::kUpperLegacy, source, case_map_locale_);
 }
 
 String CaseMap::ToLower(const String& source) const {
@@ -117,6 +156,30 @@ String CaseMap::ToUpper(const String& source) const {
   if (StringImpl* impl = source.Impl())
     return ToUpper(impl);
   return String();
+}
+
+String CaseMap::ToLower(const String& source, TextOffsetMap* offset_map) const {
+  DCHECK(offset_map && offset_map->IsEmpty());
+
+  if (UNLIKELY(source.IsEmpty()))
+    return source;
+
+  // TODO(kojii): Implement fast-path for simple cases.
+
+  return CaseConvert(CaseMapType::kLower, source.Impl(), case_map_locale_,
+                     offset_map);
+}
+
+String CaseMap::ToUpper(const String& source, TextOffsetMap* offset_map) const {
+  DCHECK(offset_map && offset_map->IsEmpty());
+
+  if (UNLIKELY(source.IsEmpty()))
+    return source;
+
+  // TODO(kojii): Implement fast-path for simple cases.
+
+  return CaseConvert(CaseMapType::kUpper, source.Impl(), case_map_locale_,
+                     offset_map);
 }
 
 UChar32 CaseMap::ToUpper(UChar32 c) const {

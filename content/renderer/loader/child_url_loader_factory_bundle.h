@@ -28,6 +28,8 @@ namespace content {
 // pressure), and also adds special handling for Signed Exchanges (SXG) when the
 // flag is enabled. TODO(crbug/803776): deprecate this once SXG specific code is
 // moved into Network Service unless we see huge memory benefit for doing this.
+// TODO(domfarolino, crbug.com/955171): This class should be renamed to not
+// include "Info".
 class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
     : public blink::URLLoaderFactoryBundleInfo {
  public:
@@ -36,12 +38,14 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundleInfo
 
   ChildURLLoaderFactoryBundleInfo();
   explicit ChildURLLoaderFactoryBundleInfo(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> base_info);
+      std::unique_ptr<URLLoaderFactoryBundleInfo> base_factories);
   ChildURLLoaderFactoryBundleInfo(
-      network::mojom::URLLoaderFactoryPtrInfo default_factory_info,
-      network::mojom::URLLoaderFactoryPtrInfo default_network_factory_info,
-      SchemeMap scheme_specific_factory_infos,
-      OriginMap initiator_specific_factory_infos,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_default_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          pending_default_network_factory,
+      SchemeMap pending_scheme_specific_factories,
+      OriginMap pending_initiator_specific_factories,
       PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
@@ -85,7 +89,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
   ChildURLLoaderFactoryBundle();
 
   explicit ChildURLLoaderFactoryBundle(
-      std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info);
+      std::unique_ptr<ChildURLLoaderFactoryBundleInfo> pending_factories);
 
   ChildURLLoaderFactoryBundle(
       PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter);
@@ -110,7 +114,8 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
 
   std::unique_ptr<ChildURLLoaderFactoryBundleInfo> PassInterface();
 
-  void Update(std::unique_ptr<ChildURLLoaderFactoryBundleInfo> info);
+  void Update(
+      std::unique_ptr<ChildURLLoaderFactoryBundleInfo> pending_factories);
   void UpdateSubresourceOverrides(
       std::vector<mojom::TransferrableURLLoaderPtr>* subresource_overrides);
   void SetPrefetchLoaderFactory(

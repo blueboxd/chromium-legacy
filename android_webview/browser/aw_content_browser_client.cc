@@ -1053,41 +1053,42 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     const url::Origin& request_initiator,
-    network::mojom::URLLoaderFactoryRequest* factory_request,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
     bool* bypass_redirect_checks) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto proxied_request = std::move(*factory_request);
+  auto proxied_receiver = std::move(*factory_receiver);
   network::mojom::URLLoaderFactoryPtrInfo target_factory_info;
-  *factory_request = mojo::MakeRequest(&target_factory_info);
+  *factory_receiver = mojo::MakeRequest(&target_factory_info);
   int process_id = is_navigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy, process_id,
-                     std::move(proxied_request), std::move(target_factory_info),
+                     std::move(proxied_receiver),
+                     std::move(target_factory_info),
                      nullptr /* AwInterceptedRequestHandler */));
   return true;
 }
 
 void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
     int render_process_id,
-    network::mojom::URLLoaderFactoryPtrInfo* factory_ptr_info) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory>* pending_factory) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto proxied_ptr_info = std::move(*factory_ptr_info);
-  network::mojom::URLLoaderFactoryRequest factory_request =
-      mojo::MakeRequest(factory_ptr_info);
+  auto pending_proxy = std::move(*pending_factory);
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
+      pending_factory->InitWithNewPipeAndPassReceiver();
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                     render_process_id, std::move(factory_request),
-                     std::move(proxied_ptr_info),
+                     render_process_id, std::move(factory_receiver),
+                     std::move(pending_proxy),
                      nullptr /* AwInterceptedRequestHandler */));
 }
 

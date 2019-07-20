@@ -54,7 +54,8 @@ class DevToolsURLLoaderInterceptor {
       const base::UnguessableToken& frame_token,
       bool is_navigation,
       bool is_download,
-      network::mojom::URLLoaderFactoryRequest* target_factory_request) const;
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          target_factory_receiver) const;
 
  private:
   bool enabled_;

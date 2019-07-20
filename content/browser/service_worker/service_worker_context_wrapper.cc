@@ -1520,7 +1520,7 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
     network::mojom::URLLoaderFactoryPtr factory_ptr;
     mojo::MakeStrongBinding(std::move(factory),
                             mojo::MakeRequest(&factory_ptr));
-    factory_bundle->scheme_specific_factory_infos().emplace(
+    factory_bundle->pending_scheme_specific_factories().emplace(
         scheme, factory_ptr.PassInterface());
   }
 

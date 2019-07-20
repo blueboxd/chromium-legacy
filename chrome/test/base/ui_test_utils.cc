@@ -524,20 +524,6 @@ void GetCookies(const GURL& url,
   }
 }
 
-WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(
-    const content::NotificationSource& source)
-    : WindowedNotificationObserver(chrome::NOTIFICATION_TAB_ADDED, source),
-      added_tab_(NULL) {
-}
-
-void WindowedTabAddedNotificationObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  added_tab_ = content::Details<WebContents>(details).ptr();
-  content::WindowedNotificationObserver::Observe(type, source, details);
-}
-
 UrlLoadObserver::UrlLoadObserver(const GURL& url,
                                  const content::NotificationSource& source)
     : WindowedNotificationObserver(content::NOTIFICATION_LOAD_STOP, source),
@@ -660,6 +646,36 @@ void TabAddedWaiter::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   if (change.type() == TabStripModelChange::kInserted)
     run_loop_.Quit();
+}
+
+AllBrowserTabAddedWaiter::AllBrowserTabAddedWaiter() {
+  BrowserList::AddObserver(this);
+  for (const Browser* browser : *BrowserList::GetInstance())
+    tab_strip_observer_.Add(browser->tab_strip_model());
+}
+
+AllBrowserTabAddedWaiter::~AllBrowserTabAddedWaiter() {
+  BrowserList::RemoveObserver(this);
+}
+
+content::WebContents* AllBrowserTabAddedWaiter::Wait() {
+  run_loop_.Run();
+  return web_contents_;
+}
+
+void AllBrowserTabAddedWaiter::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() != TabStripModelChange::kInserted)
+    return;
+
+  web_contents_ = change.GetInsert()->contents[0].contents;
+  run_loop_.Quit();
+}
+
+void AllBrowserTabAddedWaiter::OnBrowserAdded(Browser* browser) {
+  tab_strip_observer_.Add(browser->tab_strip_model());
 }
 
 }  // namespace ui_test_utils

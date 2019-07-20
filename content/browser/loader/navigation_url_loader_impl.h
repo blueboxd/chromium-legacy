@@ -100,7 +100,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   // URLLoaderFactoryGetter. Called on the UI thread.
   static void CreateURLLoaderFactoryWithHeaderClient(
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
-      network::mojom::URLLoaderFactoryRequest factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver,
       StoragePartitionImpl* partition);
 
   // Returns a Request ID for browser-initiated navigation requests. Called on
@@ -121,7 +121,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
   void BindNonNetworkURLLoaderFactoryRequest(
       int frame_tree_node_id,
       const GURL& url,
-      network::mojom::URLLoaderFactoryRequest factory);
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver);
 
   NavigationURLLoaderDelegate* delegate_;
 
